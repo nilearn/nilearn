@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = _build
+BUILDDIR      = ../webpage
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -13,6 +13,8 @@ PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
+
+default: html
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -95,3 +97,13 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+install: html
+	rm -rf ../webpage/nisl.github.com
+	cd ../webpage/ && \
+	git clone git@github.com:nisl/nisl.github.com.git && \
+	cp -r html/* nisl.github.com && \
+	cd nisl.github.com && \
+	git commit -a -m 'Make install' && \
+	git push
+    

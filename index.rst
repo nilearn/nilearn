@@ -1,33 +1,36 @@
 
 
-****************************************
-`Scikits-learn <http://scikit-learn.sourceforge.net/>`_ for fMRI data analysis
-****************************************
+==================================================================================================================
+NeuroImaging with the `Scikit-learn <http://scikit-learn.sourceforge.net/>`_: fMRI inverse inference tutorial 
+==================================================================================================================
 
-INRIA Parietal Project Team and scikits-learn folks, \
-among which **V. Michel, A. Gramfort, G. Varoquaux, \
-F. Pedregosa and B. Thirion**
+**Autors:** `INRIA Parietal Project Team
+<https://parietal.saclay.inria.fr/>`_ and `scikit-learn
+<http://scikit-learn.sourceforge.net/>`_ folks, among which **A.
+Gramfort, V. Michel, G. Varoquaux, F. Pedregosa and B. Thirion**
 
 Thanks to M. Hanke and Y. Halchenko for data and packaging.
 
-Objectives
-==========
 
-At the end of this session you will be able to:
+.. topic:: Objectives
 
-  1. Install and use the required tools (Nibabel and scikits-learn).
-  2. Load fMRI volumes in python.
-  3. Perform a state-of-the-art decoding analysis of fMRI data.
-  4. Perform even more sophisticated analyzes of fMRI data.
+   At the end of this tutorial you will be able to:
+
+    1. Install and use the required tools (Nibabel and scikits-learn).
+    2. Load fMRI volumes in Python.
+    3. Perform a state-of-the-art decoding analysis of fMRI data.
+    4. Perform even more sophisticated analyzes of fMRI data.
 
 .. role:: input(strong)
 
 
+Introduction
+==============
 
-What is Scikits-learn?
----------------------
+What is the scikit-learn?
+---------------------------
 
-Scikits-learn is a Python library for machine learning.
+Scikit-learn is a Python library for machine learning.
 
 Principal features:
 
@@ -45,7 +48,7 @@ Technical choices:
 
 
 Installation of the required materials
---------------------------------------
+---------------------------------------
 
 The data
 ^^^^^^^^
@@ -87,32 +90,20 @@ and if you can not be root::
 
 
 Scikits-learn
-^^^^^^^^
+^^^^^^^^^^^^^^
 
 (Quick) installation::
 
   $ easy_install scikits.learn
 
 
-
-
-
-
-
-
-
-
-
-
-
-First step: looking at the data (always interesting...)
-=======================================================
+First step: looking at the data
+================================
 
 
 Now, launch ipython::
 
   $ ipython
-
 
 First, we load the data. We have to import the nibabel module and the numpy
 module (basic array manipulations):
@@ -153,7 +144,7 @@ Finally, we can detrend the data (for each session separately):
 
     >>> from scipy import signal
     >>> for s in np.unique(session):
-            X[session==s] = signal.detrend(X[session==s], axis=0)
+    ...     X[session==s] = signal.detrend(X[session==s], axis=0)
 
 Now, we take a look to the target y:
 
@@ -165,14 +156,12 @@ Now, we take a look to the target y:
 where 0 is rest period, and [1..8] is the label of each object.
 
 
-Exercise
-^^^^^^^^
+.. topic:: Exercise
 
   1. Extract the period of activity from the data (i.e. remove the remainder).
 
 
-Solution
-^^^^^^^^
+.. topic:: Solution
 
     >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
 
@@ -190,11 +179,8 @@ and we have the 8 conditions:
     >>> n_conditions
     8
 
-
-
-
-Second step: basic (but state of the art) decoding analysis
-=============================================================
+Second step: decoding analysis
+================================
 
 In a decoding analysis we construct a model, so that one can predict
 a value of y given a set X of images.
@@ -202,8 +188,9 @@ a value of y given a set X of images.
 Prediction function
 -------------------
 
-We define here a simple Support Vector Classification (or SVC) with C=1, and a
-linear kernel. We first import the correct module from scikits-learn:
+We define here a simple Support Vector Classification (or SVC) with C=1,
+and a linear kernel. We first import the correct module from
+scikits-learn:
 
     >>> from scikits.learn.svm import SVC
 
@@ -245,11 +232,11 @@ Dimension reduction
 But a classification with few samples and many features is plagued by the
 *curse of dimensionality*. Let us add a feature selection procedure.
 
-For this, we need to import the correct module:
+For this, we need to import the correct module::
 
     >>> from scikits.learn.feature_selection import SelectKBest, f_classif
 
-and define a simple F-score based feature selection (a.k.a. Anova):
+and define a simple F-score based feature selection (a.k.a. Anova)::
 
     >>> feature_selection = SelectKBest(f_classif, k=500)
     >>> feature_selection
@@ -258,8 +245,7 @@ and define a simple F-score based feature selection (a.k.a. Anova):
 
 We have our classifier (SVC), our feature selection (SelectKBest), and now, we
 can plug them together in a *pipeline* that performs the two operations
-successively:
-
+successively::
 
     >>> from scikits.learn.pipeline import Pipeline
     >>> anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
@@ -270,23 +256,19 @@ successively:
     cache_size=100.0, shrinking=True, gamma=0.0))])
 
 We use a univariate feature selection, but we can use other dimension
-reduction such as
-`RFE
+reduction such as `RFE
 <http://scikit-learn.sourceforge.net/modules/generated/scikits.learn.
 feature_selection.rfe.RFE.html>`_
-
-
-
 
 Third step: launch it on real data
 ==================================
 
-Fit (train) and predict (test):
+Fit (train) and predict (test)
 -------------------------------
 
 In scikits-learn, prediction function have a very simple API:
 
-    - a *fit* function that "learn" the parameters of the model from the data.
+  - a *fit* function that "learn" the parameters of the model from the data.
     Thus, we need to give some training data to *fit*
 
     >>> anova_svc.fit(X, y)
@@ -295,7 +277,7 @@ In scikits-learn, prediction function have a very simple API:
     degree=3, coef0=0.0, eps=0.001,
     cache_size=100.0, shrinking=True, gamma=0.0))])
 
-    - a *predict* function that "predict" a target from new data.
+  - a *predict* function that "predict" a target from new data.
     Here, we just have to give the new set of images (as the target should be
     unknown).
 
@@ -309,37 +291,36 @@ In scikits-learn, prediction function have a very simple API:
     heavily biased (see next paragraph). This is used here to check that 
     we have one predicted value per image.
 
-    Note that you could have done this in only 1 line:
+    Note that you could have done this in only 1 line::
 
-    >>> y_pred = anova_svc.fit(X, y).predict(X)
+     >>> y_pred = anova_svc.fit(X, y).predict(X)
 
 Cross-validation
 ----------------
 
-    However, the last analysis is *wrong*, as we have learned and testeddd 
-    on the same set of data.
-    We need to use a cross-validation to split the data into different sets.
+However, the last analysis is *wrong*, as we have learned and tested on
+the same set of data. We need to use a cross-validation to split the data
+into different sets.
 
-    Let us define a Leave-one-session-out cross-validation:
+Let us define a Leave-one-session-out cross-validation::
 
     >>> from scikits.learn.cross_val import LeaveOneLabelOut
     >>> cv = LeaveOneLabelOut(session)
 
-    In scikits-learn, a cross-validation is simply a function that generates
-    the index of the folds within a loop.
-    So, now, we can apply the previously defined *pipeline* with the
-    cross-validation::
+In scikit-learn, a cross-validation is simply a function that generates
+the index of the folds within a loop.
+So, now, we can apply the previously defined *pipeline* with the
+cross-validation::
 
-    >>> cv_scores = [] # will store the number of correct predictions in each
-fold
+    >>> cv_scores = [] # will store the number of correct predictions in each fold
     >>> for train, test in cv:
     >>>     y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])
     >>>     cv_scores.append(np.sum(y_pred == y[test]))
 
 
-    But we are lazy people, so there is a specific
-    function, *cross_val_score* that computes for you the results for the
-    different folds of cross-validation:
+But we are lazy people, so there is a specific
+function, *cross_val_score* that computes for you the results for the
+different folds of cross-validation::
 
     >>> from scikits.learn.cross_val import cross_val_score
     >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=1,
@@ -365,14 +346,11 @@ Prediction accuracy
     This is simply the number of correct predictions for each fold.
 
 
-Exercise
-^^^^^^^^
+.. topic:: Exercise
 
   1. Compute the mean prediction accuracy using *cv_scores*
 
-
-Solution
-^^^^^^^^
+.. topic:: Solution
 
     >>> classification_accuracy = np.sum(cv_scores) / float(n_samples)
     >>> classification_accuracy
@@ -402,11 +380,9 @@ An thus, the global script is::
     from scipy import signal
     import nibabel as ni
     from scikits.learn.svm import SVC
-    from scikits.learn.feature_selection import SelectKBest
-    from scikits.learn.feature_selection import f_classif
+    from scikits.learn.feature_selection import SelectKBest, f_classif
     from scikits.learn.pipeline import Pipeline
-    from scikits.learn.cross_val import LeaveOneLabelOut
-    from scikits.learn.cross_val import cross_val_score
+    from scikits.learn.cross_val import LeaveOneLabelOut, cross_val_score
 
     ### Load data
     y, session = np.loadtxt("attributes.txt").astype("int").T
