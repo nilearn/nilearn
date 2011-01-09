@@ -549,8 +549,6 @@ Any questions ?
 
  `http://scikit-learn.sourceforge.net/ <http://scikit-learn.sourceforge.net/>`_
 
-.. image:: release.png
-
 
 
 
