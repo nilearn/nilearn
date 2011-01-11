@@ -381,8 +381,9 @@ Going further with scikit-learn
 We have seen a very simple analysis with scikits-learn.
 
 
-`Other prediction functions with
-Scikits-learn <http://scikit-learn.sourceforge.net/modules/glm.html>`_
+`Other prediction functions for supervised learning: Linear models,
+Support vector machines, Nearest Neighbor, etc.
+<http://scikit-learn.sourceforge.net/supervised_learning.html>`_
 
 `Unsupervised learning (e.g. clustering, PCA, ICA) with
 Scikits-learn <http://scikit-learn.sourceforge.net/modules/clustering.html>`_
