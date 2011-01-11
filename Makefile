@@ -104,6 +104,7 @@ install: html
 	git clone git@github.com:nisl/nisl.github.com.git && \
 	cp -r html/* nisl.github.com && \
 	cd nisl.github.com && \
+	git add * && \
 	git commit -a -m 'Make install' && \
 	git push
     
