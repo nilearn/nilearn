@@ -326,11 +326,13 @@ different folds of cross-validation::
     >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=1,
                             verbose=1, iid=True)
 
-    n_jobs = 1 means that the computation is not parallel.
-    But, if you are the happy owner of a multiple processors computer, you can
-    even speed up the computation:
+    n_jobs = 1 means that the computation run sequentially.  But, if
+    you are the happy owner of a multiple processors computer you can
+    speed up the computation by using n_jobs=-1, which will spread the
+    computation equally across all processors (python version 2.6 or
+    newer is required):
 
-    >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=4,
+    >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1,
                             verbose=1, iid=True)
 
 
@@ -411,7 +413,7 @@ Construct the new prediction function and use it in a pipeline:
 
 and recompute the cross-validation score:
 
-    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, n_jobs=4,
+    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, n_jobs=-1,
                             verbose=1, iid=True)
     >>> classification_accuracy = np.sum(cv_scores) / float(n_samples)
     >>> print "Classification accuracy: %f" % classification_accuracy, \
@@ -440,7 +442,7 @@ and create a new pipeline:
 
 and recompute the cross-validation score:
 
-    >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=4,
+    >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=-1,
                             verbose=1, iid=True)
 
 But, be aware that this can take A WHILE...
