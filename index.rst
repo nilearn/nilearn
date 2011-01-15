@@ -82,11 +82,11 @@ Nibabel
 Easy to use reader of ANALYZE (plain, SPM99, SPM2), GIFTI, NIfTI1, MINC
 (former PyNIfTI)::
 
-  $ easy_install nibabel
+  $ easy_install -U nibabel
 
 and if you can not be root::
 
-  $ easy_install --prefix=~/usr nibabel
+  $ easy_install -U --prefix=~/usr nibabel
 
 
 Scikits-learn
@@ -94,7 +94,7 @@ Scikits-learn
 
 (Quick) installation::
 
-  $ easy_install scikits.learn
+  $ easy_install -U scikits.learn
 
 
 First step: looking at the data
