@@ -1,5 +1,7 @@
-import hierarchical_clustering
 
+# Author : Jean Kossaifi
+
+from .. import hierarchical_clustering
 
 import numpy as np
 from nose.tools import assert_true
@@ -195,12 +197,12 @@ def test_predict():
 ###############################################################################
 # Tests
 # Uncomment to run tests whithout nosetest
-test_tree_roots()
-test_average_signals()
-test_parcel_based_signals()
-test_split_parcel()
-test_split_parcellation()
-test_give_label()
-test_parcellation_to_label()
-test_fit()
-test_predict()
+#test_tree_roots()
+#test_average_signals()
+#test_parcel_based_signals()
+#test_split_parcel()
+#test_split_parcellation()
+#test_give_label()
+#test_parcellation_to_label()
+#test_fit()
+#test_predict()

@@ -19,6 +19,8 @@ from scipy import linalg, ndimage
 
 from scikits.learn.feature_extraction.image import grid_to_graph
 from scikits.learn.linear_model import BayesianRidge
+#from scikits.learn.linear_model import RidgeCV
+#from scikits.learn import svm
 
 ###############################################################################
 # Generate data
@@ -49,22 +51,19 @@ y += noise_coef * noise # add noise
 # Hierarchical clustering
 #clf = RidgeCV(alphas=[0.1, 1.0, 10.0])
 clf = BayesianRidge()
+#clf = svm.SVR(kernel='linear')
 A = grid_to_graph(n_x=size, n_y=size)
 hc = hierarchical_clustering.HierarchicalClustering(clf, A)
 tab = hc.fit(X, y, n_iterations, verbose=1)
 
-# For visualising only the clusters of the parcellation
-#tab = tab.reshape((size, size))
-#pl.imshow(tab, interpolation='nearest')
-#pl.show()
-
-
-#For visualising coeffs of clf :
+# Plotting the result
+# Computing an array of the fitted coefs
 tab2 = tab.copy()
 coefs=hc.coef_
 for i in np.unique(tab):
-    tab2[tab==i]=coefs[i-1]
+    tab2[tab==i]=coefs[...,i-1]
 tab2 = tab2.reshape((size, size))
+# Plotting the result
 pl.close('all')
 pl.figure(figsize=(15, 15))
 # Plotting true weights
@@ -72,6 +71,8 @@ pl.subplot(2, 2, 1)
 pl.imshow(coef, interpolation="nearest", cmap=pl.cm.RdBu_r)
 pl.title("True weights")
 # Plotting the result of the hierarchical clustering
+# (if you want to plot the clusters, not the coefs, 
+# tab = tab.reshape((size, size)), then plot tab
 pl.subplot(2, 2, 2)
 pl.imshow(tab2, interpolation='nearest', cmap=pl.cm.RdBu_r)
 pl.title("Hierarchical Clustering, \n%d iterations,\n %d parcels " % 

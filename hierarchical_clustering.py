@@ -292,13 +292,16 @@ def select_best_parcellation(parcellations, clf, avg_signals, y, n_jobs,
     """
     # Computing scores for each parcellation
     scores = Parallel(n_jobs)(delayed(cross_val.cross_val_score)
-            (estimator=clf, X=avg_signals[:, j], y=y, n_jobs=1)
+            (estimator=clf, X=avg_signals[:, j], y=y,
+                #cv=cross_val.KFold(avg_signals.shape[0], 5),
+                    n_jobs=1)
             for j in parcellations)
+
     if verbose >= 2:
         print " Scores of each parcellation for current iteration :"
         print scores
 
-    scores = Parallel(n_jobs)(delayed(sum)(i) for i in scores)
+    scores = Parallel(n_jobs)(delayed(np.mean)(i) for i in scores)
     indice = scores.index(max(scores))
     return parcellations[indice], scores[indice]
 
