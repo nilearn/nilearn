@@ -14,11 +14,13 @@ iteratively starting from the root(s)
 # Author: Jean Kossaifi <jean.kossaifi@gmail.com>
 
 import numpy as np
+from scipy import sparse
 
 from scikits.learn.cluster import ward_tree
 from scikits.learn import cross_val
-from scipy import sparse
 from scikits.learn.externals.joblib import Parallel, delayed
+from scikits.learn.base import BaseEstimator
+from scikits.learn.linear_model import BayesianRidge
 
 
 ###############################################################################
@@ -300,6 +302,7 @@ def select_best_parcellation(parcellations, clf, avg_signals, y, n_jobs,
     if verbose >= 2:
         print " Scores of each parcellation for current iteration :"
         print scores
+        print scores
 
     scores = Parallel(n_jobs)(delayed(np.mean)(i) for i in scores)
     indice = scores.index(max(scores))
@@ -309,7 +312,7 @@ def select_best_parcellation(parcellations, clf, avg_signals, y, n_jobs,
 ###############################################################################
 # Class for using hierarchical clustering
 
-class HierarchicalClustering():
+class HierarchicalClustering(BaseEstimator):
     """
     A classifier using hierarchical clustering to reduce  features number
 
@@ -349,7 +352,7 @@ class HierarchicalClustering():
         else:
             self.n_components_A = 1
 
-    def fit(self, X, y, n_iterations, verbose=0):
+    def fit(self, X, y, n_iterations=25, verbose=0):
         """
         Fits Hierarchical CLustering.
 
@@ -422,7 +425,8 @@ class HierarchicalClustering():
         # Computing the corresponding labels array
         self.tab = parcellation_to_label(parcellation, children, n_leaves)
         self.clf.fit(avg_signals[:, parcellation], y)
-        self.coef_ = self.clf.coef_
+        if hasattr(self.clf, 'coef_'):
+            self.coef_ = self.clf.coef_
         return self.tab
 
     def predict(self, X):
@@ -441,3 +445,28 @@ class HierarchicalClustering():
 
         avg_signals = parcel_based_signals(X, self.tab)
         return self.clf.predict(avg_signals)
+
+
+    def score(self, X, y):
+        """
+        Return the error of the classifier self.clf,
+        using the parcel_based_signal constructed with X
+
+        Parameters
+        ----------
+        X : array_like, shape = [n_samples, n_features]
+            Training set.
+
+        y : array_like, shape = [n_samples]
+            Labels for X.
+
+        Returns
+        -------
+        z : float
+
+        Note
+        ----
+        See the clf score function for more details
+        """
+        avg_signals = parcel_based_signals(X, self.tab)
+        return self.clf.score(avg_signals, y)
