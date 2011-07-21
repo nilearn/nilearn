@@ -263,8 +263,8 @@ def parcellation_to_label(parcellation, children, n_leaves):
 
 
 ###############################################################################
-def select_best_parcellation(parcellations, clf, avg_signals, y, n_jobs,
-        verbose):
+def select_best_parcellation(parcellations, clf, avg_signals, y, n_jobs=1,
+        verbose=False):
     """
     Returns the best parcellation of the parcellations given in arguments.
 
@@ -281,7 +281,7 @@ def select_best_parcellation(parcellations, clf, avg_signals, y, n_jobs,
 
     y : ndarray of shape = (n_samples)
 
-    n_jobs : int
+    n_jobs : int, optional
         number of cpu to use
 
     verbose : int, optional
@@ -305,7 +305,7 @@ def select_best_parcellation(parcellations, clf, avg_signals, y, n_jobs,
         print scores
 
     scores = Parallel(n_jobs)(delayed(np.mean)(i) for i in scores)
-    indice = scores.index(max(scores))
+    indice = np.argmax(scores)
     return parcellations[indice], scores[indice]
 
 
@@ -429,6 +429,11 @@ class HierarchicalClustering(BaseEstimator):
             self.coef_ = self.clf.coef_
         return self.tab
 
+    def transform(self, X):
+        """ Return the average signal on the selected parcels.
+        """
+        return parcel_based_signals(X, self.tab)
+
     def predict(self, X):
         """ 
         Predicts target values according to the fitted model
@@ -442,8 +447,7 @@ class HierarchicalClustering(BaseEstimator):
         The return type is the result of the clf predict function applied to
         the previously computed parcellation based signal.
         """
-
-        avg_signals = parcel_based_signals(X, self.tab)
+        avg_signals = self.transform(X)
         return self.clf.predict(avg_signals)
 
 
@@ -468,5 +472,5 @@ class HierarchicalClustering(BaseEstimator):
         ----
         See the clf score function for more details
         """
-        avg_signals = parcel_based_signals(X, self.tab)
+        avg_signals = self.transform(X)
         return self.clf.score(avg_signals, y)
