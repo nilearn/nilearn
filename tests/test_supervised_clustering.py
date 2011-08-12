@@ -61,7 +61,7 @@ def test_find_children():
     """
     children = [[0, 1], [4, 2], [3, 5], [6, 7]]
     child = supervised_clustering.find_children(7, children, n_leaves=5)
-    child.sort() # The order isn't important
+    child.sort()  # The order isn't important
     assert_true(np.array_equal(child, np.array([0, 1, 3])))
 
 
@@ -117,7 +117,7 @@ def test_split_parcellation():
     parcellations = supervised_clustering.split_parcellation(
             supervised_clustering.tree_roots(
                 children, n_components, n_leaves), children, n_leaves)
-    for i in parcellations: # the order of the parcels is not important
+    for i in parcellations:  # the order of the parcels is not important
         i.sort()
     parcellations.sort()
     real_result = [[8, 9, 13], [10, 11, 12]]
@@ -128,7 +128,7 @@ def test_split_parcellation():
             supervised_clustering.tree_roots(
                 children2, n_components2, n_leaves2), children2, n_leaves2)
     assert_true(np.array_equal(parcellations, [[29, 28]])
-            or np.array_equal(parcellations, [[28, 29]] ))
+            or np.array_equal(parcellations, [[28, 29]]))
 
     # checking that the larger parcellation possible is not splitted
     # (how could it be, it's composed of leaves !)
@@ -151,7 +151,7 @@ def test_parcellation_to_label():
     # Checking that there are the write number of labels
     assert_true(len(np.unique(labels)) == 3)
     # checking that every feature in the same parcel has the same label
-    assert_true(labels[0] == labels[1] ==  labels[3])
+    assert_true(labels[0] == labels[1] == labels[3])
     # checking that every parcel has a different label associated
     assert_true(labels[0] != labels[2] != labels[4])
     # This test may be carefully removed :

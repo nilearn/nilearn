@@ -28,9 +28,8 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
     generator = check_random_state(random_state)
     roi_size = 2  # size / 3
     smooth_X = 2
-    X, y ,z = np.indices((size, size, size))
     ### Coefs
-    w = np.zeros((size,size,size))
+    w = np.zeros((size, size, size))
     w[0:roi_size, 0:roi_size, 0:roi_size] = -0.5
     w[-roi_size:, -roi_size:, 0:roi_size] = 0.5
     w[0:roi_size, -roi_size:, -roi_size:] = -0.5
@@ -54,8 +53,8 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
     # Add additive noise
     noise = noise_coef * orig_noise
     snr = 20 * np.log(linalg.norm(y, 2) / linalg.norm(noise, 2))
-    print "SNR : ",snr
-    y +=  noise
+    print "SNR : %d " % snr
+    y += noise
 
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]
@@ -86,7 +85,7 @@ sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
 sc.fit(X_train, y_train)
 
 computed_coefs = sc.inverse_transform()
-score =  sc.score(Xtest, y_test)
+score = sc.score(Xtest, y_test)
 
 
 ###############################################################################
@@ -97,10 +96,10 @@ score =  sc.score(Xtest, y_test)
 
 print "Score of the supervised_clustering: ", score
 pl.close('all')
-computed_coefs = np.reshape(computed_coefs, [size,size,size])
-pl.figure(figsize=[2.5,4])
-pl.subplots_adjust(left=0.,right=1.,bottom=0.05,top=0.8,
-                wspace=0.05,hspace=0.05)
+computed_coefs = np.reshape(computed_coefs, [size, size, size])
+pl.figure(figsize=[2.5, 4])
+pl.subplots_adjust(left=0., right=1., bottom=0.05, top=0.8, wspace=0.05,
+        hspace=0.05)
 vminmax = np.max(np.abs(computed_coefs))
 vmin = 0
 vmin = -vminmax

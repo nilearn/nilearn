@@ -52,7 +52,7 @@ def tree_roots(children, n_components, n_leaves):
     else:
         #A node is a root if it's not in the list of children
         #(it's not merged with another one)
-        return list(set(range(2*n_leaves-n_components))
+        return list(set(range(2 * n_leaves - n_components))
                 .difference(set(np.array(children).flatten())))
 
 
@@ -152,7 +152,7 @@ def split_parcellation(parcellation, children, n_leaves):
     """
     parcellations = []
     for i in range(len(parcellation)):
-        if parcellation[i] >= n_leaves: # We can't cut the leaves
+        if parcellation[i] >= n_leaves:  # We can't cut the leaves
             # l = list(p) gets a copy of p, not l = p !!!
             l = list(parcellation)
             l.remove(parcellation[i])
@@ -218,7 +218,7 @@ def parcellation_to_label(parcellation, children, n_leaves):
     """
     labels = np.empty(n_leaves, dtype=np.int)
     for i, root in enumerate(parcellation):
-        labels[find_children(root, children, n_leaves)] = (i+1)
+        labels[find_children(root, children, n_leaves)] = (i + 1)
 
     return labels
 
@@ -361,13 +361,13 @@ class BaseSupervisedClustering(BaseEstimator):
 
         children, n_components, n_leaves = ward_tree(X.T,
                 connectivity=self.connectivity, n_components=self.n_components)
-        children = children.tolist() # Faster with a list
+        children = children.tolist()  # Faster with a list
         avg_signals = average_signals(X, children, n_leaves)
         # The first parcellations is the list of the tree roots
         parcellation = tree_roots(children, n_components, n_leaves)
         parcellations = []  # List of the best parcellations
         self.scores = []
-        if self.verbose>=2:
+        if self.verbose >= 2:
             print "\n# First parcellation (=tree roots) : %s" % parcellations
 
         ## EXPLORATION LOOP
@@ -466,7 +466,6 @@ class BaseSupervisedClustering(BaseEstimator):
         avg_signals = self.transform(X)
         return self.estimator.predict((avg_signals - self.mean) / self.std)
 
-
     def score(self, X, y):
         """
         Returns the error of the classifier self.estimator,
@@ -497,7 +496,7 @@ def SupervisedClusteringClassifier(
         n_iterations=50, connectivity=None, copy=True,
         cv=None, n_jobs=1, verbose=0):
     """
-    A classifier using hierarchical clustering to reduce  features number
+    A classifier using hierarchical clustering to reduce features number
 
     Parameters
     ----------
@@ -596,6 +595,7 @@ def SupervisedClusteringClassifier(
     return BaseSupervisedClustering(estimator, n_iterations=n_iterations,
             connectivity=connectivity, copy=copy, cv=cv, n_jobs=n_jobs,
             verbose=verbose)
+
 
 def SupervisedClusteringRegressor(
         estimator=BayesianRidge(fit_intercept=True, normalize=True),
