@@ -398,17 +398,18 @@ class BaseSupervisedClustering(BaseEstimator):
         ## SELECTION LOOP
         # We select the parcellation for wich the variation of score is
         # the bigger, only if it score is > score_max / 2
-        score_min = 4 * (np.max(self.scores_) / 5)
+        score_min = 5 * (np.max(self.scores_) / 6)
         max = 0
         indice = 0
         for i in range(1, len(self.scores_)-1):
             if self.scores_[i+1] >= score_min:
-                print "ok"
                 current_delta = self.scores_[i+1] - self.scores_[i]
                 if current_delta > max:
                     max = current_delta
                     indice = i
-                    print i
+                self.delta_scores_.append(current_delta)
+        else:
+            self.delta_scores_.append(0)
 
         parcellation = parcellations[indice]
 
