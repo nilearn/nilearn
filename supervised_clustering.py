@@ -401,6 +401,7 @@ class BaseSupervisedClustering(BaseEstimator):
         score_min = 5 * (np.max(self.scores_) / 6)
         max = 0
         indice = 0
+        self.delta_scores = []
         for i in range(1, len(self.scores_)-1):
             if self.scores_[i+1] >= score_min:
                 current_delta = self.scores_[i+1] - self.scores_[i]
