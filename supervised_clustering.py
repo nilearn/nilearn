@@ -366,7 +366,7 @@ class BaseSupervisedClustering(BaseEstimator):
         # The first parcellations is the list of the tree roots
         parcellation = tree_roots(children, n_components, n_leaves)
         parcellations = []  # List of the best parcellations
-        self.scores = []
+        self.scores_ = []
         if self.verbose >= 2:
             print "\n# First parcellation (=tree roots) : %s" % parcellations
 
@@ -393,16 +393,23 @@ class BaseSupervisedClustering(BaseEstimator):
             indice = np.argmax(scores)
             parcellation = np.copy(iteration_parcellations[indice])
             parcellations.append(np.copy(parcellation))
-            self.scores.append(np.copy(scores[indice]))
+            self.scores_.append(np.copy(scores[indice]))
 
         ## SELECTION LOOP
-        self.delta_scores = [(self.scores[i+1] - self.scores[i])\
-                for i in range(len(self.scores)-1)]
-        if (len(self.delta_scores)>10):
-            min_step = 10
-            indice = np.argmax(self.delta_scores[min_step:]) + min_step + 1
-        else:
-            indice = np.argmax(self.delta_scores)
+        # We select the parcellation for wich the variation of score is
+        # the bigger, only if it score is > score_max / 2
+        score_min = 4 * (np.max(self.scores_) / 5)
+        max = 0
+        indice = 0
+        for i in range(1, len(self.scores_)-1):
+            if self.scores_[i+1] >= score_min:
+                print "ok"
+                current_delta = self.scores_[i+1] - self.scores_[i]
+                if current_delta > max:
+                    max = current_delta
+                    indice = i
+                    print i
+
         parcellation = parcellations[indice]
 
         # Computing the corresponding labels array

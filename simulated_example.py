@@ -71,7 +71,7 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
 size = 12
 n_samples = 400
 X_train, Xtest, y_train, y_test, snr, noise, coefs, size =\
-        create_simulation_data(snr=5, n_samples=n_samples, size=size)
+        create_simulation_data(snr=30, n_samples=n_samples, size=size)
 
 
 ###############################################################################
@@ -81,7 +81,7 @@ A = grid_to_graph(n_x=size, n_y=size, n_z=size)
 clf = BayesianRidge(fit_intercept=True, normalize=True)
 
 sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
-        n_iterations=30, verbose=0, n_jobs=8, cv=KFold(X_train.shape[0], 4))
+        n_iterations=30, verbose=0, n_jobs=8, cv=KFold(X_train.shape[0], 9))
 sc.fit(X_train, y_train)
 
 computed_coefs = sc.inverse_transform()
