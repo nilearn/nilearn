@@ -18,7 +18,8 @@ from supervised_clustering import SupervisedClusteringClassifier
 y, session = np.loadtxt("attributes.txt").astype("int").T
 X = ni.load("bold.nii.gz").get_data()
 mask = ni.load("mask.nii.gz").get_data()
-shape = X.shape
+img_shape = X[..., 0].shape
+original_img = X[..., 0]
 
 # Process the data in order to have a two-dimensional design matrix X of
 # shape (nb_samples, nb_features).
@@ -37,6 +38,8 @@ X, y, session = X[y!=0], y[y!=0], session[y!=0]
 n_samples, n_features = X.shape
 n_conditions = np.size(np.unique(y))
 
+print "y : ", y, "\n\n"
+print "session : ", session, "\n\n## unique :", np.unique(session)
 
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
@@ -67,8 +70,9 @@ print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
 
 ### Same test using the supervised clustering
-A =  grid_to_graph(n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask)
-sc = SupervisedClusteringClassifier(connectivity=A, n_jobs=8, n_iterations=100)
+A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2], mask=mask)
+sc = SupervisedClusteringClassifier(connectivity=A, n_jobs=8, n_iterations=600,
+        verbose=1)
 cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=1,
                             verbose=1, iid=True)
 classification_accuracy = np.sum(cv_scores) / float(n_samples)
@@ -76,12 +80,41 @@ print "=== SUPERVISED CLUSTERING ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
 sc.fit(X, y)
-print "Number of parcellations : %d" % len(sc.coef_)
+computed_coefs = sc.inverse_transform()
+print "Number of parcellations : %d" % len(np.unique(sc.labels_))
+
+###############################################################################
+# Plot the results
+
+pl.close('all')
+pl.figure()
+pl.title('Scores of the supervised clustering')
+pl.subplot(2, 1, 1)
+pl.bar(np.arange(len(sc.scores_)), sc.scores_)
+pl.xlabel('scores')
+pl.ylabel('iteration')
+pl.title('Score of the best parcellation of each iteration')
+pl.subplot(2, 1, 2)
+pl.bar(np.arange(len(sc.delta_scores_)), sc.delta_scores_)
+pl.xlabel('delta_scores (min = %f) ' % sc.score_min_)
+pl.ylabel('iteration')
+
+coef_ = np.zeros(mask.shape)
+coef_[mask!=0] = computed_coefs
+coef_ = coef_.reshape(img_shape)
+
 pl.figure()
 pl.subplot(2, 1, 1)
-pl.plot(sc.scores_)
-pl.title('scores')
+pl.title('Original image')
+pl.contour(mask[:, :, img_shape[2]/2])
+pl.imshow(original_img[:, :, img_shape[2]/2])
 pl.subplot(2, 1, 2)
-pl.plot(sc.delta_scores_)
-pl.title('delta')
+pl.title('cut at z/2')
+vminmax = np.max(np.abs(computed_coefs))
+vmin = -vminmax
+vmax = +vminmax
+pl.contour(mask[:, :, img_shape[2]/2])
+pl.imshow(coef_[:, :, img_shape[2]/2], interpolation='nearest',
+        vmin=vmin, vmax=vmax, cmap=pl.cm.RdBu_r)
+
 pl.show()
