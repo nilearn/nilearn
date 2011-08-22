@@ -387,7 +387,7 @@ class BaseSupervisedClustering(BaseEstimator):
             # Selecting the best parcellation for current iteration
             scores = Parallel(n_jobs=self.n_jobs)(delayed(cross_val_score)
                 (estimator=self.estimator, X=avg_signals[:, j], y=y,
-                cv=self.cv, n_jobs=1, verbose=self.verbose)
+                cv=self.cv, n_jobs=1, verbose=0)
                 for j in iteration_parcellations)
             scores = np.mean(scores, axis=1)
             indice = np.argmax(scores)
@@ -398,12 +398,12 @@ class BaseSupervisedClustering(BaseEstimator):
         ## SELECTION LOOP
         # We select the parcellation for wich the variation of score is
         # the bigger, only if it score is > score_max / 2
-        score_min = 5 * (np.max(self.scores_) / 6)
+        self.score_min_ = 9 * (np.max(self.scores_) / 10)
         max = 0
         indice = 0
         self.delta_scores_ = []
         for i in range(1, len(self.scores_)-1):
-            if self.scores_[i+1] >= score_min:
+            if self.scores_[i+1] >= self.score_min_:
                 current_delta = self.scores_[i+1] - self.scores_[i]
                 if current_delta > max:
                     max = current_delta

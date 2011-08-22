@@ -91,11 +91,22 @@ score = sc.score(Xtest, y_test)
 ###############################################################################
 # Plot the results
 
-#sc.plot_scores()
-#pl.show()
+pl.close('all')
+pl.figure()
+pl.title('Scores of the supervised clustering')
+pl.subplot(2, 1, 1)
+pl.bar(np.arange(len(sc.scores_)), sc.scores_)
+pl.xlabel('score')
+pl.ylabel('iteration')
+pl.title('Score of the best parcellation of each iteration')
+pl.subplot(2, 1, 2)
+pl.bar(np.arange(len(sc.delta_scores_)), sc.delta_scores_)
+pl.xlabel('delta_score')
+pl.ylabel('iteration')
+pl.title('Delta_Score of the best parcellation of each iteration')
+
 
 print "Score of the supervised_clustering: ", score
-pl.close('all')
 computed_coefs = np.reshape(computed_coefs, [size, size, size])
 pl.figure(figsize=[2.5, 4])
 pl.subplots_adjust(left=0., right=1., bottom=0.05, top=0.8, wspace=0.05,
