@@ -425,7 +425,7 @@ class BaseSupervisedClustering(BaseEstimator):
                 / self.std, y)
 
         if hasattr(self.estimator, 'coef_'):
-            self.coef_ = self.estimator.coef_
+            self.coef_ = self.estimator.coef_[-1]
 
         return self
 
