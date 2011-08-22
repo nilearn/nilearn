@@ -15,7 +15,7 @@ from scipy import linalg, ndimage
 from scikits.learn.utils import check_random_state
 from scikits.learn.feature_extraction.image import grid_to_graph
 from scikits.learn.linear_model import BayesianRidge
-from scikits.learn.cross_val import KFold
+from scikits.learn.cross_val import ShuffleSplit
 
 
 import supervised_clustering
@@ -71,7 +71,7 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
 size = 12
 n_samples = 400
 X_train, Xtest, y_train, y_test, snr, noise, coefs, size =\
-        create_simulation_data(snr=30, n_samples=n_samples, size=size)
+        create_simulation_data(snr=10, n_samples=n_samples, size=size)
 
 
 ###############################################################################
@@ -80,8 +80,12 @@ X_train, Xtest, y_train, y_test, snr, noise, coefs, size =\
 A = grid_to_graph(n_x=size, n_y=size, n_z=size)
 clf = BayesianRidge(fit_intercept=True, normalize=True)
 
+#sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
+#        n_iterations=30, verbose=1, n_jobs=8, cv=KFold(X_train.shape[0], 25))
 sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
-        n_iterations=30, verbose=0, n_jobs=8, cv=KFold(X_train.shape[0], 9))
+        n_iterations=30, verbose=1, n_jobs=8,
+        cv=ShuffleSplit(X_train.shape[0], n_splits=25, test_fraction=0.1,
+            random_state=0))
 sc.fit(X_train, y_train)
 
 computed_coefs = sc.inverse_transform()
@@ -107,6 +111,7 @@ pl.title('Delta_Score of the best parcellation of each iteration')
 
 
 print "Score of the supervised_clustering: ", score
+print "Number of parcels : %d" % len(np.unique(sc.labels_))
 computed_coefs = np.reshape(computed_coefs, [size, size, size])
 pl.figure(figsize=[2.5, 4])
 pl.subplots_adjust(left=0., right=1., bottom=0.05, top=0.8, wspace=0.05,

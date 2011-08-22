@@ -409,8 +409,8 @@ class BaseSupervisedClustering(BaseEstimator):
                     max = current_delta
                     indice = i
                 self.delta_scores_.append(current_delta)
-        else:
-            self.delta_scores_.append(0)
+            else:
+                self.delta_scores_.append(0)
 
         parcellation = parcellations[indice]
 

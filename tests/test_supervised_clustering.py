@@ -199,8 +199,8 @@ def test_predict():
     hc = supervised_clustering.SupervisedClusteringClassifier(connectivity=A,
             verbose=0, n_jobs=8)
     y = Y.copy()
-    y[Y>=50] = 1
-    y[Y<50] = 0
+    y[Y >= 50] = 1
+    y[Y < 50] = 0
     # The algorithm will (normally) stop before 40 iterations
     # (there are not enought leaves)
     hc.fit(X, y)
