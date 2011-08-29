@@ -2,6 +2,7 @@
 import numpy as np
 import pylab as pl
 from scipy import signal
+import datasets
 import nibabel as ni
 from scikits.learn.svm import SVC
 from scikits.learn.feature_selection import SelectKBest, f_classif
@@ -15,9 +16,10 @@ mem = Memory('./')
 from supervised_clustering import SupervisedClusteringClassifier
 
 ### Load data
-y, session = np.loadtxt("attributes.txt").astype("int").T
-X = ni.load("bold.nii.gz").get_data()
-mask = ni.load("mask.nii.gz").get_data()
+attributes_file, X_file, mask_file = datasets.fetch_haxby_data()
+y, session = np.loadtxt(attributes_file).astype("int").T
+X = ni.load(X_file).get_data()
+mask = ni.load(mask_file).get_data()
 img_shape = X[..., 0].shape
 original_img = X[..., 0]
 
