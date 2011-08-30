@@ -83,7 +83,7 @@ clf = BayesianRidge(fit_intercept=True, normalize=True)
 #sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
 #        n_iterations=30, verbose=1, n_jobs=8, cv=KFold(X_train.shape[0], 25))
 sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
-        n_iterations=30, verbose=1, n_jobs=8,
+        n_iterations=15, verbose=1, n_jobs=8,
         cv=ShuffleSplit(X_train.shape[0], n_splits=25, test_fraction=0.1,
             random_state=0))
 sc.fit(X_train, y_train)
@@ -113,17 +113,29 @@ pl.title('Delta_Score of the best parcellation of each iteration')
 print "Score of the supervised_clustering: ", score
 print "Number of parcels : %d" % len(np.unique(sc.labels_))
 computed_coefs = np.reshape(computed_coefs, [size, size, size])
-pl.figure(figsize=[2.5, 4])
+pl.figure(figsize=[5, 4])
 pl.subplots_adjust(left=0., right=1., bottom=0.05, top=0.8, wspace=0.05,
         hspace=0.05)
 vminmax = np.max(np.abs(computed_coefs))
 vmin = 0
 vmin = -vminmax
 vmax = +vminmax
+pl.axes()
+
 for i in range(size):
-    pl.subplot(4, 3, i+1)
+    pl.subplot(4, 7, i+1+(i/3)*4)
     pl.imshow(computed_coefs[:, :, i], vmin=vmin, vmax=vmax,
             interpolation="nearest", cmap=pl.cm.RdBu_r)
     pl.xticks(())
     pl.yticks(())
+
+coefs = coefs.reshape((size, size, size))
+for i in range(size):
+    pl.subplot(4, 7, i+(i/3+1)*4)
+    pl.imshow(coefs[:, :, i], vmin=vmin, vmax=vmax,
+            interpolation="nearest", cmap=pl.cm.RdBu_r)
+    pl.xticks(())
+    pl.yticks(())
+
+
 pl.show()
