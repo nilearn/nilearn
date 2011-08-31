@@ -52,24 +52,29 @@ def fetch_star_plus_data():
 
     # Converting data to a more readable format :)
     file_names = [join(data_dir, i) for i in file_names]
+    print "Converting data from matlab to python..."
     for indice, name in enumerate(file_names):
         if not exists(join(data_dir, "data-starplus-%d-X.npy" %indice))\
                 or not exists(join(data_dir, "data-starplus-%d-y.npy" %indice)):
+            print "Converting file %d on 6..." % indice
             # General information
-            print "Converting data from matlab to python..."
             data = loadmat(name)
             n_voxels = data['meta'][0][0].nvoxels[0][0]
             n_trials = data['meta'][0][0].ntrials[0][0]
-            print "X = %d, y=%d, z=%d" %(data['meta'][0][0].dimx,
-                    data['meta'][0][0].dimy,
-                    data['meta'][0][0].dimz)
+            dim_x = data['meta'][0][0].dimx[0][0]
+            dim_y = data['meta'][0][0].dimy[0][0]
+            dim_z = data['meta'][0][0].dimz[0][0]
             # Loading X
             X_temp = data['data']
             X_temp = X_temp[:, 0]
-            X = np.empty((n_trials, n_voxels))
+            X = np.zeros((n_trials, dim_x, dim_y, dim_z))
             # Averaging on the time
             for i in range(n_trials):
-                   X[i] = np.mean(X_temp[i], axis=0)
+                for j in range(n_voxels):
+                    # Getting the right coords of the voxels
+                    coords = data['meta'][0][0].colToCoord[j, :]
+                    X[i, coords[0]-1, coords[1]-1, coords[2]-1] =\
+                            X_temp[i][:, j].mean()
             # Loading y
             y = data['info']
             y = y[0, :]
@@ -81,16 +86,17 @@ def fetch_star_plus_data():
             #for i in range(0, n_voxels, 255):
             #    mask_[i:i+255] = mask_temp[i%255].coords
             X.astype(float)
+            # XXX : Warning : we may not want to binarize y
             y.astype(bool)
             print "...done."
             print "saving data..."
             name = "data-starplus-%d-X.npy" % indice
             name = join(data_dir, name)
-            np.savetxt(name, X)
+            np.save(name, X)
             name = "data-starplus-%d-y.npy" % indice
             name = join(data_dir, name)
-            np.savetxt(name, y)
-            print "...done."
+            np.save(name, y)
+    print "...done."
 
     file_names_X = [join(data_dir, 'data-starplus-%d-X.npy' % i) for i in range(6)]
     file_names_y = [join(data_dir, 'data-starplus-%d-y.npy' % i) for i in range(6)]
