@@ -79,9 +79,8 @@ def fetch_star_plus_data():
             y = data['info']
             y = y[0, :]
             y = np.array([y[i].actionRT[0][0] for i in range(n_trials)])
-            X = X.astype(np.float32)
-            # XXX : Warning : we may not want to binarize y
-            y = y.astype(bool)
+            X = X.astype(np.float)
+            y = y.astype(np.float)
             print "...done."
             print "saving data..."
             name = "data-starplus-%d-X.npy" % indice
