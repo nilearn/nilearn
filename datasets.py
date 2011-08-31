@@ -22,6 +22,10 @@ def fetch_star_plus_data():
     ----
     Each element will be of the form :
     PATH/*.npy
+
+    The star plus datasets is composed of n_trials trials.
+    Each trial is composed of 13 time units.
+    We decided here to average on the time
     """
     # Retrieving the .mat data and saving it
     data_dir = join(getcwd(), 'nisl_data')
@@ -75,12 +79,6 @@ def fetch_star_plus_data():
             y = data['info']
             y = y[0, :]
             y = np.array([y[i].actionRT[0][0] for i in range(n_trials)])
-            # Loading mask
-            mask_temp = data['meta']
-            mask_temp = mask_temp[0][0].rois[0, :]
-            mask_ = np.empty((n_voxels, 3))
-            #for i in range(0, n_voxels, 255):
-            #    mask_[i:i+255] = mask_temp[i%255].coords
             X = X.astype(np.float32)
             # XXX : Warning : we may not want to binarize y
             y = y.astype(bool)
