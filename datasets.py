@@ -12,7 +12,7 @@ from scipy.io import loadmat
 
 def fetch_star_plus_data():
     """Function returning a list of the locations of the star_plus_data
-    files
+    files saved in a numpy format
 
     Returns
     -------
@@ -21,11 +21,7 @@ def fetch_star_plus_data():
     Note
     ----
     Each element will be of the form :
-    PATH/file.mat
-    so that you just have to import io from scipy
-    and then do io.loadmat(location[i])
-    where location[i] is the i-th location returned by
-    fetch star_plus_data
+    PATH/*.npy
     """
     # Retrieving the .mat data and saving it
     data_dir = join(getcwd(), 'nisl_data')
@@ -85,9 +81,9 @@ def fetch_star_plus_data():
             mask_ = np.empty((n_voxels, 3))
             #for i in range(0, n_voxels, 255):
             #    mask_[i:i+255] = mask_temp[i%255].coords
-            X.astype(float)
+            X = X.astype(np.float32)
             # XXX : Warning : we may not want to binarize y
-            y.astype(bool)
+            y = y.astype(bool)
             print "...done."
             print "saving data..."
             name = "data-starplus-%d-X.npy" % indice
