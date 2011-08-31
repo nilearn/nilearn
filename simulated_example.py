@@ -16,7 +16,7 @@ from scikits.learn.utils import check_random_state
 from scikits.learn.feature_extraction.image import grid_to_graph
 from scikits.learn.linear_model import BayesianRidge
 from scikits.learn.cross_val import KFold
-#from scikits.learn.cross_val import ShuffleSplit
+from scikits.learn.cross_val import ShuffleSplit
 
 
 import supervised_clustering
@@ -31,9 +31,9 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
     smooth_X = 2
     ### Coefs
     w = np.zeros((size, size, size))
-    w[0:roi_size, 0:roi_size, 0:roi_size] = -0.5
+    w[0:roi_size, 0:roi_size, 0:roi_size] = -0.6
     w[-roi_size:, -roi_size:, 0:roi_size] = 0.5
-    w[0:roi_size, -roi_size:, -roi_size:] = -0.5
+    w[0:roi_size, -roi_size:, -roi_size:] = -0.6
     w[-roi_size:, 0:roi_size:, -roi_size:] = 0.5
     w = w.ravel()
     ### Images
@@ -82,10 +82,10 @@ A = grid_to_graph(n_x=size, n_y=size, n_z=size)
 clf = BayesianRidge(fit_intercept=True, normalize=True)
 
 sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
-        n_iterations=30, verbose=1, n_jobs=8, cv=KFold(X_train.shape[0], 10))
+        n_iterations=30, verbose=1, n_jobs=8, cv=KFold(X_train.shape[0], 25))
 #sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
 #        n_iterations=30, verbose=1, n_jobs=8,
-#        cv=ShuffleSplit(X_train.shape[0], n_splits=25, test_fraction=0.1,
+#        cv=ShuffleSplit(X_train.shape[0], n_splits=10, test_fraction=0.6,
 #            random_state=0))
 sc.fit(X_train, y_train)
 
@@ -122,22 +122,23 @@ vmin = 0
 vmin = -vminmax
 vmax = +vminmax
 pl.axes()
+computed_coefs *= 5
 
-for i in [0, 5, 11]:
+for i in [0, 6, 11]:
     pl.subplot(3, 3, i/5+1)
     pl.imshow(computed_coefs[:, :, i], vmin=vmin, vmax=vmax,
             interpolation="nearest", cmap=pl.cm.RdBu_r)
-    if i==5:
+    if i==6:
         pl.title('computed coefs')
     pl.xticks(())
     pl.yticks(())
 
 coefs = coefs.reshape((size, size, size))
-for i in [0, 5, 11]:
+for i in [0, 6, 11]:
     pl.subplot(3, 3, i/5+7)
     pl.imshow(coefs[:, :, i], vmin=vmin, vmax=vmax,
             interpolation="nearest", cmap=pl.cm.RdBu_r)
-    if i == 5:
+    if i == 6:
         pl.title('real coefs')
     pl.xticks(())
     pl.yticks(())
