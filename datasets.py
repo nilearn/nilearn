@@ -6,6 +6,8 @@ from os.path import exists, join
 from os import makedirs, getcwd
 from urllib2 import Request, urlopen, URLError, HTTPError
 import tarfile
+import numpy as np
+from scipy.io import loadmat
 
 
 def fetch_star_plus_data():
@@ -25,6 +27,7 @@ def fetch_star_plus_data():
     where location[i] is the i-th location returned by
     fetch star_plus_data
     """
+    # Retrieving the .mat data and saving it
     data_dir = join(getcwd(), 'nisl_data')
     if not exists(data_dir):
         makedirs(data_dir)
@@ -47,8 +50,52 @@ def fetch_star_plus_data():
                 print "URL Error:", e, data_url
             print '...done.'
 
+    # Converting data to a more readable format :)
     file_names = [join(data_dir, i) for i in file_names]
-    return file_names
+    for indice, name in enumerate(file_names):
+        if not exists(join(data_dir, "data-starplus-%d-X.npy" %indice))\
+                or not exists(join(data_dir, "data-starplus-%d-y.npy" %indice)):
+            # General information
+            print "Converting data from matlab to python..."
+            data = loadmat(name)
+            n_voxels = data['meta'][0][0].nvoxels[0][0]
+            n_trials = data['meta'][0][0].ntrials[0][0]
+            print "X = %d, y=%d, z=%d" %(data['meta'][0][0].dimx,
+                    data['meta'][0][0].dimy,
+                    data['meta'][0][0].dimz)
+            # Loading X
+            X_temp = data['data']
+            X_temp = X_temp[:, 0]
+            X = np.empty((n_trials, n_voxels))
+            # Averaging on the time
+            for i in range(n_trials):
+                   X[i] = np.mean(X_temp[i], axis=0)
+            # Loading y
+            y = data['info']
+            y = y[0, :]
+            y = np.array([y[i].actionRT[0][0] for i in range(n_trials)])
+            # Loading mask
+            mask_temp = data['meta']
+            mask_temp = mask_temp[0][0].rois[0, :]
+            mask_ = np.empty((n_voxels, 3))
+            #for i in range(0, n_voxels, 255):
+            #    mask_[i:i+255] = mask_temp[i%255].coords
+            X.astype(float)
+            y.astype(bool)
+            print "...done."
+            print "saving data..."
+            name = "data-starplus-%d-X.npy" % indice
+            name = join(data_dir, name)
+            np.savetxt(name, X)
+            name = "data-starplus-%d-y.npy" % indice
+            name = join(data_dir, name)
+            np.savetxt(name, y)
+            print "...done."
+
+    file_names_X = [join(data_dir, 'data-starplus-%d-X.npy' % i) for i in range(6)]
+    file_names_y = [join(data_dir, 'data-starplus-%d-y.npy' % i) for i in range(6)]
+
+    return file_names_X, file_names_y
 
 
 def fetch_haxby_data():
@@ -94,3 +141,4 @@ def fetch_haxby_data():
 
     file_names = [join(data_dir, i) for i in file_names]
     return file_names
+
