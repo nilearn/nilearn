@@ -155,6 +155,7 @@ def fetch_haxby_data():
         'target' : numpy array
                     target of the data
         'mask' : the masks for the data
+        'session' : the labels for LeaveOneLabelOut cross validation
     """
     data_dir = join(getcwd(), 'nisl_data')
     if not exists(data_dir):
@@ -196,5 +197,5 @@ def fetch_haxby_data():
     X = ni.load(file_names[1]).get_data()
     mask = ni.load(file_names[2]).get_data()
 
-    return Bunch(data=X, target=y, mask=mask)
+    return Bunch(data=X, target=y, mask=mask, session=session)
 
