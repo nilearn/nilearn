@@ -1,28 +1,48 @@
+"""Module to lauch the supervised clustering on star plus data
+"""
+
+
 from datasets import fetch_star_plus_data
 import numpy as np
 from scikits.learn.feature_extraction.image import grid_to_graph
-from supervised_clustering import SupervisedClusteringClassifier
+from supervised_clustering import SupervisedClusteringRegressor
 from scikits.learn.cross_val import KFold, cross_val_score
+import pylab as pl
 
 # Loading data
-file_X, file_y = fetch_star_plus_data()
-X = np.load(file_X[0])
-y = np.load(file_y[0])
-mask = X[0, :]
-mask[mask!=0] = 1
-mask.astype(np.bool)
+data = fetch_star_plus_data()
+X = data.datas[0]
+y = data.targets[0]
+mask = data.masks[0]
 img_shape = mask.shape
-X = X.reshape((X.shape[0], X.shape[1]*X.shape[2]*X.shape[3]))
+X = X[:, mask!=0]
 
-stop
+# Binarizing y
+y = y.astype(np.bool)
+
 # Connectivity matrix
 print "computing connectivity matrix"
 A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2],
         mask=mask)
-sc = SupervisedClusteringClassifier(n_jobs=4, n_iterations=30,
+sc = SupervisedClusteringRegressor(n_jobs=1, n_iterations=100,
                 verbose=1)
-cv = KFold(X.shape[0], 4)
+cv = KFold(X.shape[0], 6)
 print "computing score"
-cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=1,
-                                    verbose=1, iid=True)
-print "score : ", np.mean(cv_scores)
+cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=8, verbose=1)
+sc.fit(X, y)
+print "regression score : ", np.mean(cv_scores)
+print "number of parcels : %d" % len(np.unique(sc.labels_))
+
+coefs = np.zeros(img_shape)
+coefs[mask!=0] = sc.inverse_transform()
+pl.figure()
+vminmax = np.max(np.abs(coefs))
+vmin = -vminmax
+vmax = +vminmax
+for i in range(8):
+    pl.subplot(2, 4, i+1)
+    pl.contour(mask[:, :, i])
+    pl.imshow(coefs[:, :, i], interpolation='nearest',
+            vmin=vmin, vmax=vmax, cmap=pl.cm.RdBu_r)
+pl.title('supervised clustering on star plus\n\
+        using regression, 50 iteration')

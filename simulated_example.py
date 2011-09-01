@@ -71,7 +71,7 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
 # Create data
 size = 12
 n_samples = 400
-X_train, Xtest, y_train, y_test, snr, noise, coefs, size =\
+X_train, X_test, y_train, y_test, snr, noise, coefs, size =\
         create_simulation_data(snr=10, n_samples=n_samples, size=size)
 
 
@@ -79,7 +79,7 @@ X_train, Xtest, y_train, y_test, snr, noise, coefs, size =\
 # Compute the results
 
 A = grid_to_graph(n_x=size, n_y=size, n_z=size)
-clf = BayesianRidge(fit_intercept=True, normalize=True)
+clf = BayesianRidge(fit_intercept=True, normalize=True, overwrite_X=False)
 
 sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
         n_iterations=30, verbose=1, n_jobs=8, cv=KFold(X_train.shape[0], 25))
@@ -90,7 +90,7 @@ sc = supervised_clustering.SupervisedClusteringRegressor(clf, connectivity=A,
 sc.fit(X_train, y_train)
 
 computed_coefs = sc.inverse_transform()
-score = sc.score(Xtest, y_test)
+score = sc.score(X_test, y_test)
 
 
 ###############################################################################
@@ -122,10 +122,10 @@ vmin = 0
 vmin = -vminmax
 vmax = +vminmax
 pl.axes()
-computed_coefs *= 5
+computed_coefs *= 4
 
 for i in [0, 6, 11]:
-    pl.subplot(3, 3, i/5+1)
+    pl.subplot(5, 3, i/5+1)
     pl.imshow(computed_coefs[:, :, i], vmin=vmin, vmax=vmax,
             interpolation="nearest", cmap=pl.cm.RdBu_r)
     if i==6:
@@ -135,7 +135,7 @@ for i in [0, 6, 11]:
 
 coefs = coefs.reshape((size, size, size))
 for i in [0, 6, 11]:
-    pl.subplot(3, 3, i/5+7)
+    pl.subplot(5, 3, i/5+7)
     pl.imshow(coefs[:, :, i], vmin=vmin, vmax=vmax,
             interpolation="nearest", cmap=pl.cm.RdBu_r)
     if i == 6:
@@ -143,5 +143,20 @@ for i in [0, 6, 11]:
     pl.xticks(())
     pl.yticks(())
 
+bayes = BayesianRidge()
+bayes.fit(X_train, y_train)
+bayes_score = bayes.score(X_test, y_test)
+coefs_clf = bayes.coef_.reshape((size, size, size))
+coefs_clf *= 4
+print "Score of the simple BayesianRidge :", bayes_score
+for i in [0, 6, 11]:
+    pl.subplot(5, 3, i/5+13)
+    pl.imshow(coefs_clf[:, :, i], vmin=vmin, vmax=vmax,
+            interpolation="nearest", cmap=pl.cm.RdBu_r)
+    if i == 6:
+        pl.title('simple bayesian ridge')
+    pl.xticks(())
+    pl.yticks(())
 
+pl.subplots_adjust(hspace=0.05, wspace=0.05)
 pl.show()
