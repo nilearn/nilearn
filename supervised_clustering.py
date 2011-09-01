@@ -181,13 +181,18 @@ def find_children(root, children, n_leaves):
     -------
     numpy array : a list of all the children of 'root'
     """
-    if (root < n_leaves):
+    if root < n_leaves:
         return [root]
     else:
-        a, b = children[root - n_leaves]
-        l1 = find_children(a, children, n_leaves)
-        l1.extend(find_children(b, children, n_leaves))
-        return l1
+        result = []
+        temp = children[root - n_leaves]
+    for node in temp:
+        if (node < n_leaves):
+            result.append(node)
+        else:
+            temp.extend(children[node - n_leaves])
+
+    return result
 
 
 ###############################################################################
