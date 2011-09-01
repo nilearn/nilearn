@@ -8,15 +8,29 @@ from urllib2 import Request, urlopen, URLError, HTTPError
 import tarfile
 import numpy as np
 from scipy.io import loadmat
+import nibabel as ni
+
+
+class Bunch(dict):
+    """Container object for datasets: dictionary-like object that
+       exposes its keys as attributes."""
+
+    def __init__(self, **kwargs):
+        dict.__init__(self, kwargs)
+        self.__dict__ = self
 
 
 def fetch_star_plus_data():
-    """Function returning a list of the locations of the star_plus_data
-    files saved in a numpy format
+    """Function returning the starplus data, downloading them if needed
 
     Returns
     -------
-    String list : list of the location of the data files
+    data : Bunch
+        Dictionary-like object, the interest attributes are :
+        'datas' : a list of 6 numpy arrays representing the data to learn
+        'targets' : list
+                    targets of the datas
+        'masks' : the masks for the datas
 
     Note
     ----
@@ -26,37 +40,57 @@ def fetch_star_plus_data():
     The star plus datasets is composed of n_trials trials.
     Each trial is composed of 13 time units.
     We decided here to average on the time
+    /!\ y is not binarized !
+
+    Reference
+    ---------
+    Documentation :
+    http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/\
+            README-data-documentation.txt
+
+    Data :
+    http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/
     """
-    # Retrieving the .mat data and saving it
+
+    # If the directory for the data doesn't exists we create it
     data_dir = join(getcwd(), 'nisl_data')
     if not exists(data_dir):
         makedirs(data_dir)
-    file_names = ['data-starplus-0%d-v7.mat' % i for i in [4799,
-                  4820, 4847,5675, 5680, 5710]]
-    url = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
-    for name in file_names:
-        if not exists(join(data_dir, name)):
-            data_url = join(url, name)
-            try:
-                print 'Downloading data from %s ...' % data_url
-                req = Request(data_url)
-                data = urlopen(req)
-                local_file = open(join(data_dir, name), "wb")
-                local_file.write(data.read())
-                local_file.close()
-            except HTTPError, e:
-                print "HTTP Error:", e, data_url
-            except URLError, e:
-                print "URL Error:", e, data_url
-            print '...done.'
 
-    # Converting data to a more readable format :)
-    file_names = [join(data_dir, i) for i in file_names]
-    print "Converting data from matlab to python..."
-    for indice, name in enumerate(file_names):
+    file_names = ['data-starplus-0%d-v7.mat' % i for i in [4847,
+                  4799, 5710, 4820, 5675, 5680]]
+    url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
+    url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
+    full_names = [join(data_dir, name) for name in file_names]
+
+    for indice, name in enumerate(full_names):
+        print "dealing file : ", name
         if not exists(join(data_dir, "data-starplus-%d-X.npy" %indice))\
-                or not exists(join(data_dir, "data-starplus-%d-y.npy" %indice)):
-            print "Converting file %d on 6..." % indice
+           or not exists(join(data_dir, "data-starplus-%d-y.npy" %indice)):
+
+            # Retrieving the .mat data and saving it if needed
+            if not exists(name):
+                if indice >= 3:
+                    url = url2
+                else:
+                    url = url1
+
+                data_url = join(url, file_names[indice])
+                try:
+                    print 'Downloading data from %s ...' % data_url
+                    req = Request(data_url)
+                    data = urlopen(req)
+                    local_file = open(name, "wb")
+                    local_file.write(data.read())
+                    local_file.close()
+                except HTTPError, e:
+                    print "HTTP Error:", e, data_url
+                except URLError, e:
+                    print "URL Error:", e, data_url
+                print '...done.'
+
+            # Converting data to a more readable format
+            print "Converting file %d on 6..." % (indice+1)
             # General information
             data = loadmat(name)
             n_voxels = data['meta'][0][0].nvoxels[0][0]
@@ -75,34 +109,52 @@ def fetch_star_plus_data():
                     coords = data['meta'][0][0].colToCoord[j, :]
                     X[i, coords[0]-1, coords[1]-1, coords[2]-1] =\
                             X_temp[i][:, j].mean()
+            # Removing the unused data
+            os.remove(name)
+
             # Loading y
             y = data['info']
             y = y[0, :]
             y = np.array([y[i].actionRT[0][0] for i in range(n_trials)])
             X = X.astype(np.float)
             y = y.astype(np.float)
-            print "...done."
-            print "saving data..."
             name = "data-starplus-%d-X.npy" % indice
             name = join(data_dir, name)
             np.save(name, X)
             name = "data-starplus-%d-y.npy" % indice
             name = join(data_dir, name)
             np.save(name, y)
+            name = "data-starplus-%d-mask.npy" % indice
+            name = join(data_dir, name)
+            mask = X[0, ...]
+            mask = mask.astype(np.bool)
+            np.save(name, mask)
+
+            print "...done."
     print "...done."
 
-    file_names_X = [join(data_dir, 'data-starplus-%d-X.npy' % i) for i in range(6)]
-    file_names_y = [join(data_dir, 'data-starplus-%d-y.npy' % i) for i in range(6)]
+    Xs = [np.load(join(data_dir, 'data-starplus-%d-X.npy' % i))\
+            for i in range(6)]
+    ys = [np.load(join(data_dir, 'data-starplus-%d-y.npy' % i))\
+            for i in range(6)]
+    masks = [np.load(join(data_dir, 'data-starplus-%d-mask.npy' % i))\
+            for i in range(6)]
 
-    return file_names_X, file_names_y
+    return Bunch(datas=Xs, targets=ys,
+            masks=masks)
 
 
 def fetch_haxby_data():
-    """Returns the directory where the data are stored
+    """Returns the haxby datas
 
     Returns
     -------
-    String
+    data : Bunch
+        Dictionary-like object, the interest attributes are :
+        'data' : numpy array : the data to learn
+        'target' : numpy array
+                    target of the data
+        'mask' : the masks for the data
     """
     data_dir = join(getcwd(), 'nisl_data')
     if not exists(data_dir):
@@ -139,5 +191,10 @@ def fetch_haxby_data():
         os.remove(temp_name)
 
     file_names = [join(data_dir, i) for i in file_names]
-    return file_names
+
+    y, session = np.loadtxt(file_names[0]).astype("int").T
+    X = ni.load(file_names[1]).get_data()
+    mask = ni.load(file_names[2]).get_data()
+
+    return Bunch(data=X, target=y, mask=mask)
 
