@@ -421,13 +421,7 @@ class BaseSupervisedClustering(BaseEstimator):
 
         # Computing the corresponding labels array
         self.labels_ = parcellation_to_label(parcellation, children, n_leaves)
-        X = avg_signals[:, parcellation]
-        self.mean = X.mean(axis=0)
-        self.std = X.std(axis=0)
-        self.std[self.std==0] = 1
-
-        self.estimator.fit((avg_signals[:, parcellation] - self.mean)
-                / self.std, y)
+        self.estimator.fit(avg_signals[:, parcellation], y)
 
         if hasattr(self.estimator, 'coef_'):
             if len(self.estimator.coef_.shape):
@@ -481,7 +475,7 @@ class BaseSupervisedClustering(BaseEstimator):
         to the previously computed parcellation based signal.
         """
         avg_signals = self.transform(X)
-        return self.estimator.predict((avg_signals - self.mean) / self.std)
+        return self.estimator.predict(avg_signals)
 
     def score(self, X, y):
         """
@@ -505,7 +499,7 @@ class BaseSupervisedClustering(BaseEstimator):
         See the estimator score function for more details
         """
         avg_signals = self.transform(X)
-        return self.estimator.score((avg_signals - self.mean) / self.std, y)
+        return self.estimator.score(avg_signals)
 
 
 def SupervisedClusteringClassifier(
