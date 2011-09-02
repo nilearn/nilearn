@@ -499,7 +499,7 @@ class BaseSupervisedClustering(BaseEstimator):
         See the estimator score function for more details
         """
         avg_signals = self.transform(X)
-        return self.estimator.score(avg_signals)
+        return self.estimator.score(avg_signals, y)
 
 
 def SupervisedClusteringClassifier(
