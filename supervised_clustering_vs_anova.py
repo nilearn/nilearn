@@ -97,7 +97,7 @@ anova_score = anova_svc.score(X_test, y_test)
 A = grid_to_graph(n_x=size, n_y=size, n_z=size)
 estimator = SVC(kernel='linear', C=1.)
 sc = supervised_clustering.SupervisedClusteringClassifier(estimator=estimator,
-        connectivity=A, n_iterations=15, verbose=0, n_jobs=-1, n_folds=9)
+        connectivity=A, n_iterations=15, cv=9, verbose=0, n_jobs=-1)
 sc.fit(X_train, y_train)
 sc_score = sc.score(X_test, y_test)
 
