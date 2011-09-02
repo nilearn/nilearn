@@ -54,22 +54,30 @@ cv = LeaveOneLabelOut(session)
 cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=1)
 
 ### Return the corresponding mean prediction accuracy
-classification_accuracy = np.sum(cv_scores) / float(n_samples)
+classification_accuracy = np.mean(cv_scores)
 print "=== ANOVA ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
 
+
 ### Same test using the supervised clustering
+estimator = SVC(kernel='linear', C=1.)
 A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2], mask=mask)
-sc = SupervisedClusteringClassifier(connectivity=A, n_jobs=8, n_iterations=500,
-        verbose=1)
+sc = SupervisedClusteringClassifier(estimator=estimator, connectivity=A, n_jobs=8, n_iterations=250, verbose=1,
+        n_folds=6)
 cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=1, verbose=1)
-classification_accuracy = np.sum(cv_scores) / float(n_samples)
+
+sc.fit(X, y)
+computed_coefs = sc.inverse_transform()
+
+print "=== ANOVA ==="
+print "Classification accuracy: %f" % classification_accuracy, \
+    " / Chance level: %f" % (1. / n_conditions)
+
+classification_accuracy = np.mean(cv_scores)
 print "=== SUPERVISED CLUSTERING ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
-sc.fit(X, y)
-computed_coefs = sc.inverse_transform()
 print "Number of parcellations : %d" % len(np.unique(sc.labels_))
 
 ###############################################################################
