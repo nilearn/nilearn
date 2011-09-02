@@ -246,8 +246,9 @@ class BaseSupervisedClustering(BaseEstimator):
     connectivity : sparse matrix, optionnal
         connectivity matrix
 
-    cv : scikits cross_validation model, optional
+    cv : scikits cross_validation model OR integer, optional
         the type of cross validation to use
+        If integer, the number of folds to use during internal cross validation
 
     copy : bool, optional
         true if you want to use a copy of connectivity
@@ -521,8 +522,9 @@ def SupervisedClusteringClassifier(
     connectivity : sparse matrix, optionnal
         connectivity matrix
 
-    cv : scikits cross_validation model, optional
+    cv : scikits cross_validation model OR integer, optional
         the type of cross validation to use
+        If integer, the number of folds to use during internal cross validation
 
     copy : bool, optional
         true if you want to use a copy of connectivity
@@ -628,8 +630,9 @@ def SupervisedClusteringRegressor(
     connectivity : sparse matrix, optionnal
         connectivity matrix
 
-    cv : scikits cross_validation model, optional
+    cv : scikits cross_validation model OR integer, optional
         the type of cross validation to use
+        If integer, the number of folds to use during internal cross validation
 
     copy : bool, optional
         true if you want to use a copy of connectivity
