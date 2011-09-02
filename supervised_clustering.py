@@ -17,7 +17,7 @@ from scikits.learn.externals.joblib import Parallel, delayed
 from scikits.learn.base import BaseEstimator
 from scikits.learn.linear_model import BayesianRidge
 from scikits.learn.linear_model import SGDClassifier
-from scikits.learn.cross_val import cross_val_score
+from scikits.learn.cross_val import cross_val_score, StratifiedKFold, KFold
 
 
 ###############################################################################
@@ -331,7 +331,8 @@ class BaseSupervisedClustering(BaseEstimator):
     """
 
     def __init__(self, estimator, n_iterations=50, connectivity=None,
-            copy=True, cv=None, n_jobs=1, verbose=0):
+            copy=True, cv=None, n_jobs=1, verbose=0, n_folds=None,
+            estimator_type='regressor'):
         if copy and connectivity is not None:
             self.connectivity = connectivity.copy()
         else:
@@ -343,6 +344,8 @@ class BaseSupervisedClustering(BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
         self.copy = copy
+        self.n_folds = n_folds
+        self.estimator_type = estimator_type
 
     def fit(self, X, y):
         """
@@ -368,6 +371,13 @@ class BaseSupervisedClustering(BaseEstimator):
                 connectivity=self.connectivity, n_components=self.n_components)
         children = children.tolist()  # Faster with a list
         avg_signals = average_signals(X, children, n_leaves)
+        # Setting the cross validation model
+        if self.cv is None and self.n_folds is not None:
+                if self.estimator_type == 'regressor':
+                    self.cv = KFold(X.shape[0], self.n_folds)
+                else:
+                    self.cv = StratifiedKFold(y, self.n_folds)
+
         # The first parcellations is the list of the tree roots
         parcellation = tree_roots(children, n_components, n_leaves)
         parcellations = []  # List of the best parcellations
@@ -424,7 +434,7 @@ class BaseSupervisedClustering(BaseEstimator):
         self.estimator.fit(avg_signals[:, parcellation], y)
 
         if hasattr(self.estimator, 'coef_'):
-            if len(self.estimator.coef_.shape):
+            if len(self.estimator.coef_.shape)==1:
                 self.coef_ = self.estimator.coef_
             else:
                 self.coef_ = self.estimator.coef_[-1]
@@ -505,7 +515,8 @@ class BaseSupervisedClustering(BaseEstimator):
 def SupervisedClusteringClassifier(
         estimator=SGDClassifier(loss="hinge", penalty="l1"),
         n_iterations=50, connectivity=None, copy=True,
-        cv=None, n_jobs=1, verbose=0):
+        cv=None, n_jobs=1, verbose=0, n_folds=None, 
+        estimator_type='classifier'):
     """
     A classifier using hierarchical clustering to reduce features number
 
@@ -605,13 +616,14 @@ def SupervisedClusteringClassifier(
     """
     return BaseSupervisedClustering(estimator, n_iterations=n_iterations,
             connectivity=connectivity, copy=copy, cv=cv, n_jobs=n_jobs,
-            verbose=verbose)
+            verbose=verbose, estimator_type=estimator_type, n_folds=n_folds)
 
 
 def SupervisedClusteringRegressor(
         estimator=BayesianRidge(fit_intercept=True, normalize=True),
         n_iterations=50, connectivity=None, copy=True,
-        cv=None, n_jobs=1, verbose=0):
+        cv=None, n_jobs=1, verbose=0, n_folds=None,
+        estimator_type='classifier'):
     """
     A regressor using hierarchical clustering to reduce features number
 
@@ -712,4 +724,4 @@ def SupervisedClusteringRegressor(
     """
     return BaseSupervisedClustering(estimator, n_iterations=n_iterations,
             connectivity=connectivity, copy=copy, cv=cv, n_jobs=n_jobs,
-            verbose=verbose)
+            verbose=verbose, estimator_type=estimator_type, n_folds=n_folds)
