@@ -15,8 +15,7 @@ from scipy import linalg, ndimage
 from scikits.learn.utils import check_random_state
 from scikits.learn.feature_extraction.image import grid_to_graph
 from scikits.learn.linear_model import BayesianRidge
-
-
+from time import time
 
 import supervised_clustering
 
@@ -82,7 +81,9 @@ sc = supervised_clustering.SupervisedClusteringRegressor(estimator=clf,
 #        n_iterations=30, verbose=1, n_jobs=8,
 #        cv=ShuffleSplit(X_train.shape[0], n_splits=10, test_fraction=0.6,
 #            random_state=0))
+t1 = time()
 sc.fit(X_train, y_train)
+sc_time = time() -t1
 computed_coefs = sc.inverse_transform()
 computed_coefs = np.reshape(computed_coefs, [size, size, size])
 score = sc.score(X_test, y_test)
@@ -90,7 +91,9 @@ score = sc.score(X_test, y_test)
 
 ###############################################################################
 # Compute the results for simple BayesianRidge
+t1 = time()
 clf.fit(X_train, y_train)
+bayes_time = time() - t1
 bayes_coefs = clf.coef_
 bayes_score = clf.score(X_test, y_test)
 bayes_coefs = bayes_coefs.reshape((size, size, size))
@@ -121,7 +124,8 @@ vmin = 0
 vmin = -vminmax
 vmax = +vminmax
 computed_coefs *= 3
-pl.suptitle('Supervised Clustering VS simple estimator,\nSNR = %d' % snr, size=27)
+pl.suptitle('Supervised Clustering VS simple estimator,\nSNR = %d' % snr,
+        size=27)
 
 coefs = coefs.reshape((size, size, size))
 for i in [0, 6, 11]:
@@ -129,7 +133,7 @@ for i in [0, 6, 11]:
     pl.imshow(coefs[:, :, i], vmin=vmin, vmax=vmax,
             interpolation="nearest", cmap=pl.cm.RdBu_r)
     if i == 0:
-        pl.ylabel('real coefs', size=19)
+        pl.ylabel('real coefs', size=18)
     pl.xticks(())
     pl.yticks(())
 
@@ -139,8 +143,9 @@ for i in [0, 6, 11]:
             interpolation="nearest", cmap=pl.cm.RdBu_r)
     if i==0:
         pl.ylabel('Supervised Clustering coefs,\n\
-                score = %f,\n\
-                %d parcels' % (score, len(np.unique(sc.labels_))), size=19)
+                score = %f,\n %d parcels,\n\
+                execution time : %f' % (score, len(np.unique(sc.labels_)),
+                    sc_time), size=18)
     pl.xticks(())
     pl.yticks(())
 
@@ -157,7 +162,8 @@ for i in [0, 6, 11]:
     pl.imshow(bayes_coefs[:, :, i], vmin=vmin, vmax=vmax,
             interpolation="nearest", cmap=pl.cm.RdBu_r)
     if i == 0:
-        pl.ylabel('simple BayesianRidge,\n score = %f' % bayes_score, size=19)
+        pl.ylabel('simple BayesianRidge,\n score = %f,\n execution time = %f'\
+                % (bayes_score, bayes_time), size=19)
     pl.xticks(())
     pl.yticks(())
 
