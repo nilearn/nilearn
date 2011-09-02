@@ -63,8 +63,9 @@ def fetch_star_plus_data():
     url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
     full_names = [join(data_dir, name) for name in file_names]
 
+    success_indices = []
     for indice, name in enumerate(full_names):
-        print "dealing file : ", name
+        print "Fetching file : %s" % name
         if not exists(join(data_dir, "data-starplus-%d-X.npy" %indice))\
            or not exists(join(data_dir, "data-starplus-%d-y.npy" %indice)):
 
@@ -84,61 +85,66 @@ def fetch_star_plus_data():
                     local_file.write(data.read())
                     local_file.close()
                 except HTTPError, e:
-                    print "HTTP Error:", e, data_url
+                    print "HTTP Error: %s, %s" % (e, data_url)
                 except URLError, e:
-                    print "URL Error:", e, data_url
+                    print "URL Error: %s, %s" %  (e, data_url)
                 print '...done.'
 
             # Converting data to a more readable format
             print "Converting file %d on 6..." % (indice+1)
             # General information
-            data = loadmat(name)
-            n_voxels = data['meta'][0][0].nvoxels[0][0]
-            n_trials = data['meta'][0][0].ntrials[0][0]
-            dim_x = data['meta'][0][0].dimx[0][0]
-            dim_y = data['meta'][0][0].dimy[0][0]
-            dim_z = data['meta'][0][0].dimz[0][0]
-            # Loading X
-            X_temp = data['data']
-            X_temp = X_temp[:, 0]
-            X = np.zeros((n_trials, dim_x, dim_y, dim_z))
-            # Averaging on the time
-            for i in range(n_trials):
-                for j in range(n_voxels):
-                    # Getting the right coords of the voxels
-                    coords = data['meta'][0][0].colToCoord[j, :]
-                    X[i, coords[0]-1, coords[1]-1, coords[2]-1] =\
-                            X_temp[i][:, j].mean()
-            # Removing the unused data
-            os.remove(name)
+            try:
+                data = loadmat(name)
+                n_voxels = data['meta'][0][0].nvoxels[0][0]
+                n_trials = data['meta'][0][0].ntrials[0][0]
+                dim_x = data['meta'][0][0].dimx[0][0]
+                dim_y = data['meta'][0][0].dimy[0][0]
+                dim_z = data['meta'][0][0].dimz[0][0]
+                # Loading X
+                X_temp = data['data']
+                X_temp = X_temp[:, 0]
+                X = np.zeros((n_trials, dim_x, dim_y, dim_z))
+                # Averaging on the time
+                for i in range(n_trials):
+                    for j in range(n_voxels):
+                        # Getting the right coords of the voxels
+                        coords = data['meta'][0][0].colToCoord[j, :]
+                        X[i, coords[0]-1, coords[1]-1, coords[2]-1] =\
+                                X_temp[i][:, j].mean()
+                # Removing the unused data
+                os.remove(name)
 
-            # Loading y
-            y = data['info']
-            y = y[0, :]
-            y = np.array([y[i].actionRT[0][0] for i in range(n_trials)])
-            X = X.astype(np.float)
-            y = y.astype(np.float)
-            name = "data-starplus-%d-X.npy" % indice
-            name = join(data_dir, name)
-            np.save(name, X)
-            name = "data-starplus-%d-y.npy" % indice
-            name = join(data_dir, name)
-            np.save(name, y)
-            name = "data-starplus-%d-mask.npy" % indice
-            name = join(data_dir, name)
-            mask = X[0, ...]
-            mask = mask.astype(np.bool)
-            np.save(name, mask)
+                # Loading y
+                y = data['info']
+                y = y[0, :]
+                y = np.array([y[i].actionRT[0][0] for i in range(n_trials)])
+                X = X.astype(np.float)
+                y = y.astype(np.float)
+                name = "data-starplus-%d-X.npy" % indice
+                name = join(data_dir, name)
+                np.save(name, X)
+                name = "data-starplus-%d-y.npy" % indice
+                name = join(data_dir, name)
+                np.save(name, y)
+                name = "data-starplus-%d-mask.npy" % indice
+                name = join(data_dir, name)
+                mask = X[0, ...]
+                mask = mask.astype(np.bool)
+                np.save(name, mask)
+                print "...done."
+                success_indices.append(indice)
 
-            print "...done."
+            except:
+                print "Impossible to convert the file!"
+
     print "...done."
 
     Xs = [np.load(join(data_dir, 'data-starplus-%d-X.npy' % i))\
-            for i in range(6)]
+            for i in success_indices]
     ys = [np.load(join(data_dir, 'data-starplus-%d-y.npy' % i))\
-            for i in range(6)]
+            for i in success_indices]
     masks = [np.load(join(data_dir, 'data-starplus-%d-mask.npy' % i))\
-            for i in range(6)]
+            for i in success_indices]
 
     return Bunch(datas=Xs, targets=ys,
             masks=masks)
