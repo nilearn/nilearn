@@ -2,15 +2,15 @@
 ==============================
 Supervised clustering VS Anova
 ==============================
+
+Chance level = 0.5
 """
 
 # Licence : BSD
 
 print __doc__
 
-
 import numpy as np
-import pylab as pl
 from scipy import linalg, ndimage
 from scikits.learn.utils import check_random_state
 from scikits.learn.feature_extraction.image import grid_to_graph
@@ -91,89 +91,22 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
 # Computing the score with anova
 anova_svc.fit(X_train, y_train)
 anova_score = anova_svc.score(X_test, y_test)
-clf.fit(feature_selection.transform(X_train), y_train)
-anova_coefs = clf.coef_
 
 ###############################################################################
 # Computing the score with supervised clustering
 A = grid_to_graph(n_x=size, n_y=size, n_z=size)
 estimator = SVC(kernel='linear', C=1.)
 sc = supervised_clustering.SupervisedClusteringClassifier(estimator=estimator,
-        connectivity=A, n_iterations=25, verbose=1, n_jobs=8, n_folds=9)
+        connectivity=A, n_iterations=15, verbose=0, n_jobs=-1, n_folds=9)
 sc.fit(X_train, y_train)
-computed_coefs = sc.inverse_transform()
 sc_score = sc.score(X_test, y_test)
 
 
 # Printing the scores
-print "Score of the supervised_clustering: %f" % sc_score
-print "Number of parcels : %d" % len(np.unique(sc.labels_))
-
-print "Score of Anova: %f" % anova_score
-print "n_parcels : %d" % len(clf.coef_[0])
-
-###############################################################################
-# Plot the results
-
-pl.close('all')
-pl.figure()
-pl.title('Scores of the supervised clustering')
-pl.subplot(2, 1, 1)
-pl.bar(np.arange(len(sc.scores_)), sc.scores_)
-pl.xlabel('score')
-pl.ylabel('iteration')
-pl.title('Score of the best parcellation of each iteration')
-pl.subplot(2, 1, 2)
-pl.bar(np.arange(len(sc.delta_scores_)), sc.delta_scores_)
-pl.xlabel('delta_score')
-pl.ylabel('iteration')
-pl.title('Delta_Score of the best parcellation of each iteration')
-
-
-computed_coefs = np.reshape(computed_coefs, [size, size, size])
-pl.figure(figsize=(3*2, 3*1.5))
-vminmax = np.max(np.abs(computed_coefs))
-vmin = 0
-vmin = -vminmax
-vmax = +vminmax
-computed_coefs *= 3
-pl.suptitle('Supervised Clustering VS simple estimator', size=27)
-
-for i in [0, 6, 11]:
-    pl.subplot(3, 3, i/5+1)
-    pl.imshow(computed_coefs[:, :, i], vmin=vmin, vmax=vmax,
-            interpolation="nearest", cmap=pl.cm.RdBu_r)
-    if i==0:
-        pl.ylabel('computed coefs', size=19)
-    pl.xticks(())
-    pl.yticks(())
-
-coefs = coefs.reshape((size, size, size))
-for i in [0, 6, 11]:
-    pl.subplot(3, 3, i/5+4)
-    pl.imshow(coefs[:, :, i], vmin=vmin, vmax=vmax,
-            interpolation="nearest", cmap=pl.cm.RdBu_r)
-    if i == 0:
-        pl.ylabel('real coefs', size=19)
-    pl.xticks(())
-    pl.yticks(())
-
-anova_coefs = feature_selection.inverse_transform(anova_coefs).reshape((size, size, size))
-vminmax = np.max(np.abs(anova_coefs))
-vmin = 0
-vmin = -vminmax
-vmax = +vminmax
-
-anova_coefs *= 3
-
-for i in [0, 6, 11]:
-    pl.subplot(3, 3, i/5+7)
-    pl.imshow(anova_coefs[:, :, i], vmin=vmin, vmax=vmax,
-            interpolation="nearest", cmap=pl.cm.RdBu_r)
-    if i == 0:
-        pl.ylabel('Anova', size=19)
-    pl.xticks(())
-    pl.yticks(())
-
-pl.subplots_adjust(hspace=0.05, wspace=0.05)
-pl.show()
+print "\n============================================"
+print "Score of the supervised_clustering with SVC: %f" % sc_score
+print "( %d parcels)" % len(np.unique(sc.labels_))
+print "============================================\n"
+print "========================"
+print "Score of Anova with SVC: %f" % anova_score
+print "========================\n\n"
