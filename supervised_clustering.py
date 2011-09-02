@@ -408,8 +408,8 @@ class BaseSupervisedClustering(BaseEstimator):
         self.score_min_ = 9 * (np.max(self.scores_) / 10)
         max = 0
         indice = 0
-        self.delta_scores_ = []
-        for i in range(1, len(self.scores_)-1):
+        self.delta_scores_ = [0]
+        for i in range(0, len(self.scores_)-1):
             if self.scores_[i+1] >= self.score_min_:
                 current_delta = self.scores_[i+1] - self.scores_[i]
                 if current_delta > max:
@@ -426,7 +426,7 @@ class BaseSupervisedClustering(BaseEstimator):
         self.estimator.fit(avg_signals[:, parcellation], y)
 
         if hasattr(self.estimator, 'coef_'):
-            if len(self.estimator.coef_.shape)==1:
+            if len(self.estimator.coef_.shape) == 1:
                 self.coef_ = self.estimator.coef_
             else:
                 self.coef_ = self.estimator.coef_[-1]
