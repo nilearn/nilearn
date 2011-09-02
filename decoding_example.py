@@ -63,8 +63,8 @@ print "Classification accuracy: %f" % classification_accuracy, \
 ### Same test using the supervised clustering
 estimator = SVC(kernel='linear', C=1.)
 A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2], mask=mask)
-sc = SupervisedClusteringClassifier(estimator=estimator, connectivity=A, n_jobs=8, n_iterations=250, verbose=1,
-        n_folds=6)
+sc = SupervisedClusteringClassifier(estimator=estimator, connectivity=A, n_jobs=8,
+        cv=6, n_iterations=250, verbose=1)
 cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=1, verbose=1)
 
 sc.fit(X, y)
