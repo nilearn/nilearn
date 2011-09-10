@@ -2,9 +2,7 @@
 """
 
 import os
-from os.path import exists, join
-from os import makedirs, getcwd
-from urllib2 import Request, urlopen, URLError, HTTPError
+import urllib2
 import tarfile
 
 import numpy as np
@@ -47,41 +45,43 @@ def fetch_star_plus_data():
     """
 
     # If the directory for the data doesn't exists we create it
-    data_dir = join(getcwd(), 'nisl_data')
-    if not exists(data_dir):
-        makedirs(data_dir)
+    data_dir = os.path.join(os.getcwd(), 'nisl_data')
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
 
     file_names = ['data-starplus-0%d-v7.mat' % i for i in [4847,
                   4799, 5710, 4820, 5675, 5680]]
     url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
     url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
-    full_names = [join(data_dir, name) for name in file_names]
+    full_names = [os.path.join(data_dir, name) for name in file_names]
 
     success_indices = []
     for indice, name in enumerate(full_names):
         print "Fetching file : %s" % name
-        if (exists(join(data_dir, "data-starplus-%d-X.npy" %indice))
-                and exists(join(data_dir, "data-starplus-%d-y.npy" %indice))):
+        if (os.path.exists(os.path.join(data_dir, 
+                        "data-starplus-%d-X.npy" % indice))
+                and os.path.exists(os.path.join(data_dir, 
+                            "data-starplus-%d-y.npy" %indice))):
             success_indices.append(indice)
         else:
             # Retrieving the .mat data and saving it if needed
-            if not exists(name):
+            if not os.path.exists(name):
                 if indice >= 3:
                     url = url2
                 else:
                     url = url1
 
-                data_url = join(url, file_names[indice])
+                data_url = os.path.join(url, file_names[indice])
                 try:
                     print 'Downloading data from %s ...' % data_url
-                    req = Request(data_url)
-                    data = urlopen(req)
+                    req = urllib2.Request(data_url)
+                    data = urllib2.urlopen(req)
                     local_file = open(name, "wb")
                     local_file.write(data.read())
                     local_file.close()
-                except HTTPError, e:
+                except urllib2.HTTPError, e:
                     print "HTTP Error: %s, %s" % (e, data_url)
-                except URLError, e:
+                except urllib2.URLError, e:
                     print "URL Error: %s, %s" %  (e, data_url)
                 print '...done.'
 
@@ -114,13 +114,13 @@ def fetch_star_plus_data():
                 X = X.astype(np.float)
                 y = y.astype(np.float)
                 name = "data-starplus-%d-X.npy" % indice
-                name = join(data_dir, name)
+                name = os.path.join(data_dir, name)
                 np.save(name, X)
                 name = "data-starplus-%d-y.npy" % indice
-                name = join(data_dir, name)
+                name = os.path.join(data_dir, name)
                 np.save(name, y)
                 name = "data-starplus-%d-mask.npy" % indice
-                name = join(data_dir, name)
+                name = os.path.join(data_dir, name)
                 mask = X[0, ...]
                 mask = mask.astype(np.bool)
                 np.save(name, mask)
@@ -135,11 +135,11 @@ def fetch_star_plus_data():
 
     print "...done."
 
-    Xs = [np.load(join(data_dir, 'data-starplus-%d-X.npy' % i))\
+    Xs = [np.load(os.path.join(data_dir, 'data-starplus-%d-X.npy' % i))
             for i in success_indices]
-    ys = [np.load(join(data_dir, 'data-starplus-%d-y.npy' % i))\
+    ys = [np.load(os.path.join(data_dir, 'data-starplus-%d-y.npy' % i))
             for i in success_indices]
-    masks = [np.load(join(data_dir, 'data-starplus-%d-mask.npy' % i))\
+    masks = [np.load(os.path.join(data_dir, 'data-starplus-%d-mask.npy' % i))
             for i in success_indices]
 
     return Bunch(datas=Xs, targets=ys,
@@ -159,30 +159,30 @@ def fetch_haxby_data():
         'mask' : the masks for the data
         'session' : the labels for LeaveOneLabelOut cross validation
     """
-    data_dir = join(getcwd(), 'nisl_data')
-    if not exists(data_dir):
-        makedirs(data_dir)
+    data_dir = os.path.join(os.getcwd(), 'nisl_data')
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
     url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
-    file_names = [join('pymvpa-exampledata', i) for i in file_names]
+    file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
     download = False
     for name in file_names:
         # if one of those files doesn't exist, we download the archive
-        if not exists(join(data_dir, name)):
+        if not os.path.exists(os.path.join(data_dir, name)):
             download = True
 
     if download:
         try:
             print 'Downloading data from %s ...' % url
-            data = urlopen(url)
-            temp_name = join(data_dir, 'temp.tar.bz2')
-            if not exists(temp_name):
+            data = urllib2.urlopen(url)
+            temp_name = os.path.join(data_dir, 'temp.tar.bz2')
+            if not os.path.exists(temp_name):
                 local_file = open(temp_name, "wb")
                 local_file.write(data.read())
                 local_file.close()
-        except HTTPError, e:
+        except urllib2.HTTPError, e:
             print "HTTP Error:", e, url
-        except URLError, e:
+        except urllib2.URLError, e:
             print "URL Error:", e, url
         print '...done.'
         print 'extracting data from %s...' % temp_name
@@ -193,7 +193,7 @@ def fetch_haxby_data():
             print '   ...done.'
         os.remove(temp_name)
 
-    file_names = [join(data_dir, i) for i in file_names]
+    file_names = [os.path.join(data_dir, i) for i in file_names]
 
     y, session = np.loadtxt(file_names[0]).astype("int").T
     X = ni.load(file_names[1]).get_data()
