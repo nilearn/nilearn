@@ -6,18 +6,12 @@ from os.path import exists, join
 from os import makedirs, getcwd
 from urllib2 import Request, urlopen, URLError, HTTPError
 import tarfile
+
 import numpy as np
-from scipy.io import loadmat
+from scipy import io
+from sklearn.datasets.base import Bunch
+
 import nibabel as ni
-
-
-class Bunch(dict):
-    """Container object for datasets: dictionary-like object that
-       exposes its keys as attributes."""
-
-    def __init__(self, **kwargs):
-        dict.__init__(self, kwargs)
-        self.__dict__ = self
 
 
 def fetch_star_plus_data():
@@ -66,9 +60,10 @@ def fetch_star_plus_data():
     success_indices = []
     for indice, name in enumerate(full_names):
         print "Fetching file : %s" % name
-        if not exists(join(data_dir, "data-starplus-%d-X.npy" %indice))\
-           or not exists(join(data_dir, "data-starplus-%d-y.npy" %indice)):
-
+        if (exists(join(data_dir, "data-starplus-%d-X.npy" %indice))
+                and exists(join(data_dir, "data-starplus-%d-y.npy" %indice))):
+            success_indices.append(indice)
+        else:
             # Retrieving the .mat data and saving it if needed
             if not exists(name):
                 if indice >= 3:
@@ -94,12 +89,12 @@ def fetch_star_plus_data():
             print "Converting file %d on 6..." % (indice+1)
             # General information
             try:
-                data = loadmat(name)
-                n_voxels = data['meta'][0][0].nvoxels[0][0]
-                n_trials = data['meta'][0][0].ntrials[0][0]
-                dim_x = data['meta'][0][0].dimx[0][0]
-                dim_y = data['meta'][0][0].dimy[0][0]
-                dim_z = data['meta'][0][0].dimz[0][0]
+                data = io.loadmat(name)
+                n_voxels = data['meta']['nvoxels'].flat[0].squeeze()
+                n_trials = data['meta']['ntrials'].flat[0].squeeze()
+                dim_x = data['meta']['dimx'].flat[0].squeeze()
+                dim_y = data['meta']['dimy'].flat[0].squeeze()
+                dim_z = data['meta']['dimz'].flat[0].squeeze()
                 # Loading X
                 X_temp = data['data']
                 X_temp = X_temp[:, 0]
@@ -108,16 +103,14 @@ def fetch_star_plus_data():
                 for i in range(n_trials):
                     for j in range(n_voxels):
                         # Getting the right coords of the voxels
-                        coords = data['meta'][0][0].colToCoord[j, :]
+                        coords = data['meta']['colToCoord'].flat[0][j, :]
                         X[i, coords[0]-1, coords[1]-1, coords[2]-1] =\
                                 X_temp[i][:, j].mean()
-                # Removing the unused data
-                os.remove(name)
-
                 # Loading y
                 y = data['info']
                 y = y[0, :]
-                y = np.array([y[i].actionRT[0][0] for i in range(n_trials)])
+                y = np.array([y[i].flat[0]['actionRT'].flat[0] 
+                              for i in range(n_trials)])
                 X = X.astype(np.float)
                 y = y.astype(np.float)
                 name = "data-starplus-%d-X.npy" % indice
@@ -134,8 +127,11 @@ def fetch_star_plus_data():
                 print "...done."
                 success_indices.append(indice)
 
-            except:
-                print "Impossible to convert the file!"
+                # Removing the unused data
+                os.remove(name)
+            except Exception, e:
+                print "Impossible to convert the file %s:\n %s " % (
+                                        name, e)
 
     print "...done."
 

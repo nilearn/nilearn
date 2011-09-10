@@ -4,9 +4,9 @@
 
 from datasets import fetch_star_plus_data
 import numpy as np
-from slearn.feature_extraction.image import grid_to_graph
+from sklearn.feature_extraction.image import grid_to_graph
 from supervised_clustering import SupervisedClusteringRegressor
-from slearn.cross_val import KFold, cross_val_score
+from sklearn.cross_val import KFold, cross_val_score
 import pylab as pl
 
 # Loading data
