@@ -1,16 +1,24 @@
 ### All the imports
 import numpy as np
+import pylab as pl
 from scipy import signal
-import nibabel as ni
+import datasets
 from scikits.learn.svm import SVC
 from scikits.learn.feature_selection import SelectKBest, f_classif
 from scikits.learn.pipeline import Pipeline
 from scikits.learn.cross_val import LeaveOneLabelOut, cross_val_score
+from scikits.learn.feature_extraction.image import grid_to_graph
+
+from supervised_clustering import SupervisedClusteringClassifier
 
 ### Load data
-y, session = np.loadtxt("attributes.txt").astype("int").T
-X = ni.load("bold.nii.gz").get_data()
-mask = ni.load("mask.nii.gz").get_data()
+data = datasets.fetch_haxby_data()
+y = data.target
+session = data.session
+X = data.data
+mask = data.mask
+img_shape = X[..., 0].shape
+original_img = X[..., 0]
 
 # Process the data in order to have a two-dimensional design matrix X of
 # shape (nb_samples, nb_features).
@@ -43,11 +51,67 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
 cv = LeaveOneLabelOut(session)
 
 ### Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1,
-                            verbose=1, iid=True)
+cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=1)
 
 ### Return the corresponding mean prediction accuracy
-classification_accuracy = np.sum(cv_scores) / float(n_samples)
+classification_accuracy = np.mean(cv_scores)
+print "=== ANOVA ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
 
+
+### Same test using the supervised clustering
+estimator = SVC(kernel='linear', C=1.)
+A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2], mask=mask)
+sc = SupervisedClusteringClassifier(estimator=estimator, connectivity=A, n_jobs=8,
+        cv=6, n_iterations=250, verbose=1)
+cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=1, verbose=1)
+
+sc.fit(X, y)
+computed_coefs = sc.inverse_transform()
+
+print "=== ANOVA ==="
+print "Classification accuracy: %f" % classification_accuracy, \
+    " / Chance level: %f" % (1. / n_conditions)
+
+classification_accuracy = np.mean(cv_scores)
+print "=== SUPERVISED CLUSTERING ==="
+print "Classification accuracy: %f" % classification_accuracy, \
+    " / Chance level: %f" % (1. / n_conditions)
+print "Number of parcellations : %d" % len(np.unique(sc.labels_))
+
+###############################################################################
+# Plot the results
+
+pl.close('all')
+pl.figure()
+pl.title('Scores of the supervised clustering')
+pl.subplot(2, 1, 1)
+pl.bar(np.arange(len(sc.scores_)), sc.scores_)
+pl.xlabel('scores')
+pl.ylabel('iteration')
+pl.title('Score of the best parcellation of each iteration')
+pl.subplot(2, 1, 2)
+pl.bar(np.arange(len(sc.delta_scores_)), sc.delta_scores_)
+pl.xlabel('delta_scores (min = %f) ' % sc.score_min_)
+pl.ylabel('iteration')
+
+coef_ = np.zeros(mask.shape)
+coef_[mask!=0] = computed_coefs
+coef_ = coef_.reshape(img_shape)
+
+pl.figure()
+pl.subplot(2, 1, 1)
+pl.title('Original image')
+pl.contour(mask[:, :, img_shape[2]/2])
+pl.imshow(original_img[:, :, img_shape[2]/2])
+pl.subplot(2, 1, 2)
+pl.title('cut at z/2')
+vminmax = np.max(np.abs(computed_coefs))
+vmin = -vminmax
+vmax = +vminmax
+pl.contour(mask[:, :, img_shape[2]/2])
+pl.imshow(coef_[:, :, img_shape[2]/2], interpolation='nearest',
+        vmin=vmin, vmax=vmax, cmap=pl.cm.RdBu_r)
+
+pl.show()
