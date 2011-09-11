@@ -8,6 +8,7 @@ An estimator that performs classification or regression,
 It performs feature agglomeration to reduce the number of features.
 """
 
+# Licence : BSD
 # Author: Jean Kossaifi <jean.kossaifi@gmail.com>
 
 import numpy as np
@@ -405,11 +406,12 @@ class BaseSupervisedClustering(BaseEstimator):
         ## SELECTION LOOP
         # We select the parcellation for wich the variation of score is
         # the bigger, only if it score is > score_max / 2
-        self.score_min_ = 9 * (np.max(self.scores_) / 10)
+        indice_min = 10
+        self.score_min_ = 7 * (np.max(self.scores_) / 10)
         max = 0
         indice = 0
         self.delta_scores_ = [0]
-        for i in range(0, len(self.scores_)-1):
+        for i in range(indice_min, len(self.scores_)-1):
             if self.scores_[i+1] >= self.score_min_:
                 current_delta = self.scores_[i+1] - self.scores_[i]
                 if current_delta > max:
@@ -613,7 +615,7 @@ def SupervisedClusteringClassifier(
 
 def SupervisedClusteringRegressor(
         estimator=BayesianRidge(fit_intercept=True, normalize=True),
-        n_iterations=50, connectivity=None, copy=True,
+        n_iterations=50, connectivity=None, copy=False,
         cv=None, n_jobs=1, verbose=0):
     """
     A regressor using hierarchical clustering to reduce features number
