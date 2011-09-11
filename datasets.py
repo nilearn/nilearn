@@ -63,7 +63,6 @@ def fetch_star_plus_data():
     url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
     full_names = [join(data_dir, name) for name in file_names]
 
-    success_indices = []
     for indice, name in enumerate(full_names):
         print "Fetching file : %s" % name
         if not exists(join(data_dir, "data-starplus-%d-X.npy" %indice))\
@@ -132,19 +131,18 @@ def fetch_star_plus_data():
                 mask = mask.astype(np.bool)
                 np.save(name, mask)
                 print "...done."
-                success_indices.append(indice)
 
             except:
                 print "Impossible to convert the file!"
 
     print "...done."
-
+    
     Xs = [np.load(join(data_dir, 'data-starplus-%d-X.npy' % i))\
-            for i in success_indices]
+            for i in range(6)]
     ys = [np.load(join(data_dir, 'data-starplus-%d-y.npy' % i))\
-            for i in success_indices]
+            for i in range(6)]
     masks = [np.load(join(data_dir, 'data-starplus-%d-mask.npy' % i))\
-            for i in success_indices]
+            for i in range(6)]
 
     return Bunch(datas=Xs, targets=ys,
             masks=masks)
