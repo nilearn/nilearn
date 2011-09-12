@@ -56,16 +56,16 @@ def fetch_star_plus_data():
     full_names = [os.path.join(data_dir, name) for name in file_names]
 
     success_indices = []
-    for indice, name in enumerate(full_names):
-        print "Fetching file : %s" % name
-        if (os.path.exists(os.path.join(data_dir, 
+    for indice, full_name in enumerate(full_names):
+        print "Fetching file : %s" % full_name
+        if (os.path.exists(os.path.join(data_dir,
                         "data-starplus-%d-X.npy" % indice))
-                and os.path.exists(os.path.join(data_dir, 
-                            "data-starplus-%d-y.npy" %indice))):
+                and os.path.exists(os.path.join(data_dir,
+                            "data-starplus-%d-y.npy" % indice))):
             success_indices.append(indice)
         else:
             # Retrieving the .mat data and saving it if needed
-            if not os.path.exists(name):
+            if not os.path.exists(full_name):
                 if indice >= 3:
                     url = url2
                 else:
@@ -76,43 +76,74 @@ def fetch_star_plus_data():
                     print 'Downloading data from %s ...' % data_url
                     req = urllib2.Request(data_url)
                     data = urllib2.urlopen(req)
-                    local_file = open(name, "wb")
+                    local_file = open(full_name, "wb")
                     local_file.write(data.read())
                     local_file.close()
                 except urllib2.HTTPError, e:
                     print "HTTP Error: %s, %s" % (e, data_url)
                 except urllib2.URLError, e:
-                    print "URL Error: %s, %s" %  (e, data_url)
+                    print "URL Error: %s, %s" % (e, data_url)
                 print '...done.'
 
             # Converting data to a more readable format
-            print "Converting file %d on 6..." % (indice+1)
+            print "Converting file %d on 6..." % (indice + 1)
             # General information
             try:
-                data = io.loadmat(name)
+                data = io.loadmat(full_name)
                 n_voxels = data['meta']['nvoxels'].flat[0].squeeze()
                 n_trials = data['meta']['ntrials'].flat[0].squeeze()
                 dim_x = data['meta']['dimx'].flat[0].squeeze()
                 dim_y = data['meta']['dimy'].flat[0].squeeze()
                 dim_z = data['meta']['dimz'].flat[0].squeeze()
+
                 # Loading X
-                X_temp = data['data']
-                X_temp = X_temp[:, 0]
-                X = np.zeros((n_trials, dim_x, dim_y, dim_z))
-                # Averaging on the time
-                for i in range(n_trials):
-                    for j in range(n_voxels):
-                        # Getting the right coords of the voxels
-                        coords = data['meta']['colToCoord'].flat[0][j, :]
-                        X[i, coords[0]-1, coords[1]-1, coords[2]-1] =\
-                                X_temp[i][:, j].mean()
+                X_temp = data['data'][:, 0]
+
                 # Loading y
                 y = data['info']
                 y = y[0, :]
-                y = np.array([y[i].flat[0]['actionRT'].flat[0] 
+
+                # y = np.array([y[i].flat[0]['actionRT'].flat[0]
+                y = np.array([y[i].flat[0]['cond'].flat[0]
                               for i in range(n_trials)])
+
+                good_trials = np.where(y > 1)[0]
+                n_good_trials = len(good_trials)
+                n_times = 16  # 8 seconds
+
+                # sentences
+                XS = np.zeros((n_good_trials, dim_x, dim_y, dim_z))
+                # pictures
+                XP = np.zeros((n_good_trials, dim_x, dim_y, dim_z))
+                first_stim = data['info']['firstStimulus']
+
+                # Averaging on the time
+                for k, i_trial in enumerate(good_trials):
+                    i_first_stim = str(first_stim.flat[i_trial][0])
+                    XSk = XS[k]
+                    XPk = XP[k]
+                    for j in range(n_voxels):
+                        # Getting the right coords of the voxels
+                        x, y, z = data['meta']['colToCoord'].flat[0][j, :] - 1
+                        Xkxyz = X_temp[i_trial][:, j]
+                        # Xkxyz -= Xkxyz.mean()  # remove drifts
+                        if i_first_stim == 'S':  # sentence
+                            XSk[x, y, z] = Xkxyz[:n_times].mean()
+                            XPk[x, y, z] = Xkxyz[n_times:2 * n_times].mean()
+                        elif i_first_stim == 'P':  # picture
+                            XPk[x, y, z] = Xkxyz[:n_times].mean()
+                            XSk[x, y, z] = Xkxyz[n_times:2 * n_times].mean()
+                        else:
+                            raise ValueError('Uknown first_stim : %s'
+                                             % first_stim)
+
+                X = np.r_[XP, XS]
+                y = np.ones(2 * n_good_trials)
+                y[:n_good_trials] = 0
+
                 X = X.astype(np.float)
                 y = y.astype(np.float)
+
                 name = "data-starplus-%d-X.npy" % indice
                 name = os.path.join(data_dir, name)
                 np.save(name, X)
@@ -128,22 +159,20 @@ def fetch_star_plus_data():
                 success_indices.append(indice)
 
                 # Removing the unused data
-                os.remove(name)
+                os.remove(full_name)
             except Exception, e:
-                print "Impossible to convert the file %s:\n %s " % (
-                                        name, e)
+                print "Impossible to convert the file %s:\n %s " % (name, e)
 
     print "...done."
 
-    Xs = [np.load(os.path.join(data_dir, 'data-starplus-%d-X.npy' % i))
-            for i in success_indices]
-    ys = [np.load(os.path.join(data_dir, 'data-starplus-%d-y.npy' % i))
-            for i in success_indices]
-    masks = [np.load(os.path.join(data_dir, 'data-starplus-%d-mask.npy' % i))
-            for i in success_indices]
+    all_subject = list()
+    for i in success_indices:
+        X = np.load(os.path.join(data_dir, 'data-starplus-%d-X.npy' % i))
+        y = np.load(os.path.join(data_dir, 'data-starplus-%d-y.npy' % i))
+        mask = np.load(os.path.join(data_dir, 'data-starplus-%d-mask.npy' % i))
+        all_subject.append(Bunch(data=X, target=y, mask=mask))
 
-    return Bunch(datas=Xs, targets=ys,
-            masks=masks)
+    return all_subject
 
 
 def fetch_haxby_data():
@@ -200,4 +229,3 @@ def fetch_haxby_data():
     mask = ni.load(file_names[2]).get_data()
 
     return Bunch(data=X, target=y, mask=mask, session=session)
-
