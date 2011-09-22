@@ -164,8 +164,8 @@ def fetch_star_plus_data():
             success_indices.append(indice)
 
     print "...done."
-
-    all_subject = list()
+    
+    all_subject = []
     for i in success_indices:
         X = np.load(os.path.join(data_dir, 'data-starplus-%d-X.npy' % i))
         y = np.load(os.path.join(data_dir, 'data-starplus-%d-y.npy' % i))

@@ -406,11 +406,15 @@ class BaseSupervisedClustering(BaseEstimator):
         ## SELECTION LOOP
         # We select the parcellation for wich the variation of score is
         # the bigger, only if it score is > score_max / 2
-        indice_min = 10
+        # Furthermore we select only parcellations obtained after 20 iterations
+        indice_min = 20
         self.score_min_ = 7 * (np.max(self.scores_) / 10)
         max = 0
         indice = 0
         self.delta_scores_ = [0]
+        for i in range(indice_min):
+            self.delta_scores.append(0)
+
         for i in range(indice_min, len(self.scores_)-1):
             if self.scores_[i+1] >= self.score_min_:
                 current_delta = self.scores_[i+1] - self.scores_[i]

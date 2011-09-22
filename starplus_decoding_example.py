@@ -6,9 +6,9 @@ Decoding example using supervised clustering on starplus data
 print __doc__
 
 import numpy as np
-from scikits.learn.feature_extraction.image import grid_to_graph
-from scikits.learn.cross_val import StratifiedKFold, cross_val_score
-from scikits.learn.svm import SVC
+from sklearn.feature_extraction.image import grid_to_graph
+from sklearn.cross_val import StratifiedKFold, cross_val_score
+from sklearn.svm import SVC
 
 from datasets import fetch_star_plus_data
 from supervised_clustering import SupervisedClusteringClassifier
@@ -21,9 +21,9 @@ scores = []
 # We compute the score for each patient
 for i in range(6):
     # Using the data corresponding to the patient
-    X = data.datas[i]
-    y = data.targets[i]
-    mask = data.masks[i]
+    X = data[i].data
+    y = data[i].target
+    mask = data[i].mask
     img_shape = mask.shape
     X = X[:, mask!=0]
 

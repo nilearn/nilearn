@@ -12,9 +12,9 @@ print __doc__
 import numpy as np
 import pylab as pl
 from scipy import linalg, ndimage
-from scikits.learn.utils import check_random_state
-from scikits.learn.feature_extraction.image import grid_to_graph
-from scikits.learn.linear_model import BayesianRidge
+from sklearn.utils import check_random_state
+from sklearn.feature_extraction.image import grid_to_graph
+from sklearn.linear_model import BayesianRidge
 from time import time
 
 import supervised_clustering

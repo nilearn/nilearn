@@ -1,20 +1,20 @@
 """Module to lauch the supervised clustering on star plus data
 """
 
-
 from datasets import fetch_star_plus_data
 import numpy as np
-from scikits.learn.feature_extraction.image import grid_to_graph
+from sklearn.feature_extraction.image import grid_to_graph
 from supervised_clustering import SupervisedClusteringClassifier
-from scikits.learn.cross_val import StratifiedKFold, cross_val_score
-from scikits.learn.svm import SVC
+from sklearn.cross_val import StratifiedKFold, cross_val_score
+from sklearn.svm import SVC
 import pylab as pl
 
 # Loading data
 data = fetch_star_plus_data()
-X = data.datas[0]
-y = data.targets[0]
-mask = data.masks[0]
+data = data[0]
+X = data.data
+y = data.target
+mask = data.mask
 img_shape = mask.shape
 X = X[:, mask!=0]
 
@@ -26,7 +26,7 @@ print "computing connectivity matrix"
 A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2],
         mask=mask)
 estimator = SVC(kernel='linear', C=1.)
-sc = SupervisedClusteringClassifier(estimator=estimator, n_jobs=1, n_iterations=200,
+sc = SupervisedClusteringClassifier(estimator=estimator, n_jobs=1, n_iterations=30,
                 verbose=1, cv=5, connectivity=A)
 cv = StratifiedKFold(y, 5)
 print "computing score"

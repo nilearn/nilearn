@@ -12,11 +12,11 @@ print __doc__
 
 import numpy as np
 from scipy import linalg, ndimage
-from scikits.learn.utils import check_random_state
-from scikits.learn.feature_extraction.image import grid_to_graph
-from scikits.learn.svm import SVC
-from scikits.learn.feature_selection import SelectKBest, f_classif
-from scikits.learn.pipeline import Pipeline
+from sklearn.utils import check_random_state
+from sklearn.feature_extraction.image import grid_to_graph
+from sklearn.svm import SVC
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.pipeline import Pipeline
 
 import supervised_clustering
 
