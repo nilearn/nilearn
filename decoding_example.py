@@ -24,14 +24,21 @@ original_img = X[..., 0]
 # shape (nb_samples, nb_features).
 X = X[mask!=0].T
 
+print "detrending data"
 # Detrend data on each session independently
 for s in np.unique(session):
     X[session==s] = signal.detrend(X[session==s], axis=0)
 
+print "removing mask"
 # Remove volumes corresponding to rest
 X, y, session = X[y!=0], y[y!=0], session[y!=0]
 n_samples, n_features = X.shape
 n_conditions = np.size(np.unique(y))
+
+X = X[y<=2]
+session = session[y<=2]
+y = y[y<=2]
+session /= 5
 
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
@@ -63,9 +70,10 @@ print "Classification accuracy: %f" % classification_accuracy, \
 ### Same test using the supervised clustering
 estimator = SVC(kernel='linear', C=1.)
 A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2], mask=mask)
-sc = SupervisedClusteringClassifier(estimator=estimator, connectivity=A, n_jobs=8,
-        cv=6, n_iterations=250, verbose=1)
-cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=1, verbose=1)
+print "computed connectivity matrix"
+sc = SupervisedClusteringClassifier(estimator=estimator, connectivity=A, n_jobs=1,
+        cv=5, n_iterations=50, verbose=1)
+cv_scores = cross_val_score(sc, X, y, cv=cv, n_jobs=4, verbose=1)
 
 sc.fit(X, y)
 computed_coefs = sc.inverse_transform()
