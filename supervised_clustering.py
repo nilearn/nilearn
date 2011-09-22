@@ -12,13 +12,13 @@ It performs feature agglomeration to reduce the number of features.
 # Author: Jean Kossaifi <jean.kossaifi@gmail.com>
 
 import numpy as np
-from scikits.learn.utils._csgraph import cs_graph_components
-from scikits.learn.cluster import ward_tree
-from scikits.learn.externals.joblib import Parallel, delayed
-from scikits.learn.base import BaseEstimator
-from scikits.learn.linear_model import BayesianRidge
-from scikits.learn.linear_model import SGDClassifier
-from scikits.learn.cross_val import cross_val_score
+from sklearn.utils.graph import cs_graph_components
+from sklearn.cluster import ward_tree
+from sklearn.externals.joblib import Parallel, delayed
+from sklearn.base import BaseEstimator
+from sklearn.linear_model import BayesianRidge
+from sklearn.linear_model import SGDClassifier
+from sklearn.cross_val import cross_val_score
 
 
 ###############################################################################
