@@ -125,7 +125,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
         if list_i[i] not in row:
             row.append(list_i[i])
         par_scores[i] = np.sum(cross_val_score(estimator, X[:, row],
-                    y, score_func, cv, iid=True, n_jobs=1)) / float(y.size)
+                    y, score_func, cv, n_jobs=1)) / float(y.size)
         if verbose:
             print "%d / %d : %2.2f" % (list_i[i], X.shape[1], par_scores[i])
     return par_scores
