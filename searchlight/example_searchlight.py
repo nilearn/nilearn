@@ -23,7 +23,7 @@ License: BSD
 """
 import os
 import numpy as np
-from scipy import io
+from scipy import io, sparse
 import pylab as pl
 
 from sklearn import neighbors
@@ -45,7 +45,7 @@ if not os.path.exists('data-starplus-04847-v7.mat'):
 
 ### Load the data with respect to the Scikit-learn API
 
-mat = io.loadmat('data-starplus-04847-v7.mat')
+mat = io.loadmat('data-starplus-04847-v7.mat', struct_as_record=False)
 
 ### Read the mask and meta data
 meta_data = mat['meta'][0][0]
@@ -75,6 +75,7 @@ n_samples = y.shape[0]
 ### Create the adjacency matrix
 clf = neighbors.NearestNeighbors(radius=4)
 dist, ind = clf.fit(mask).kneighbors(mask)
+A = sparse.lil_matrix((mask.shape[0], mask.shape[0]))
 for i, li in enumerate(ind):
     A[i, list(li[1:])] = np.ones(len(li[1:]))
     
