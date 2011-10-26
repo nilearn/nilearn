@@ -53,8 +53,14 @@ Installation of the required materials
 The data
 ^^^^^^^^
 
-We use here the *Haxby 2001* dataset  [Haxby et al. (2001)], that has been
-reanalyzed in [Hanson et al (2004), O'Toole et al. (2005)].
+We use here the *Haxby 2001* dataset used in `Distributed and Overlapping Representations 
+of Faces and Objects in Ventral Temporal Cortex
+<http://www.sciencemag.org/content/293/5539/2425.full>`_, Haxby et al. (2001),
+that has been reanalyzed in `Combinatorial codes in ventral temporal lobe for object
+recognition: Haxby (2001) revisited: is there a “face” area?
+<http://www.sciencedirect.com/science/article/pii/S105381190400299X>`_, Hanson et al (2004)
+and `Partially Distributed Representations of Objects and Faces in Ventral Temporal Cortex
+<http://www.mitpressjournals.org/doi/abs/10.1162/0898929053467550?journalCode=jocn>`_, O'Toole et al. (2005).
 
 In short, we have:
 
@@ -94,7 +100,7 @@ Scikits-learn
 
 (Quick) installation::
 
-  $ easy_install -U scikits.learn
+  $ easy_install -U scikit-learn
 
 
 First step: looking at the data
@@ -192,7 +198,7 @@ We define here a simple Support Vector Classification (or SVC) with C=1,
 and a linear kernel. We first import the correct module from
 scikits-learn:
 
-    >>> from scikits.learn.svm import SVC
+    >>> from sklearn.svm import SVC
 
 and we define the classifier:
 
@@ -205,7 +211,7 @@ Need some doc ?
 
     >>> clf ?
     Type:             SVC
-    Base Class:       <class 'scikits.learn.svm.libsvm.SVC'>
+    Base Class:       <class 'sklearn.svm.libsvm.SVC'>
     String Form:
     SVC(kernel=linear, C=1.0, probability=False, degree=3, coef0=0.0, eps=0.001,
     cache_size=100.0, shrinking=True, gamma=0.0)
@@ -234,7 +240,7 @@ But a classification with few samples and many features is plagued by the
 
 For this, we need to import the correct module::
 
-    >>> from scikits.learn.feature_selection import SelectKBest, f_classif
+    >>> from sklearn.feature_selection import SelectKBest, f_classif
 
 and define a simple F-score based feature selection (a.k.a. Anova)::
 
@@ -247,7 +253,7 @@ We have our classifier (SVC), our feature selection (SelectKBest), and now, we
 can plug them together in a *pipeline* that performs the two operations
 successively::
 
-    >>> from scikits.learn.pipeline import Pipeline
+    >>> from sklearn.pipeline import Pipeline
     >>> anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
     >>> anova_svc
     Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
@@ -257,8 +263,7 @@ successively::
 
 We use a univariate feature selection, but we can use other dimension
 reduction such as `RFE
-<http://scikit-learn.sourceforge.net/modules/generated/scikits.learn.
-feature_selection.rfe.RFE.html>`_
+<http://scikit-learn.sourceforge.net/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
 
 Third step: launch it on real data
 ==================================
@@ -304,7 +309,7 @@ into different sets.
 
 Let us define a Leave-one-session-out cross-validation::
 
-    >>> from scikits.learn.cross_val import LeaveOneLabelOut
+    >>> from sklearn.cross_val import LeaveOneLabelOut
     >>> cv = LeaveOneLabelOut(session)
 
 In scikit-learn, a cross-validation is simply a function that generates
@@ -322,7 +327,7 @@ But we are lazy people, so there is a specific
 function, *cross_val_score* that computes for you the results for the
 different folds of cross-validation::
 
-    >>> from scikits.learn.cross_val import cross_val_score
+    >>> from sklearn.cross_val import cross_val_score
     >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=1,
                             verbose=1, iid=True)
 
@@ -404,7 +409,7 @@ We can try the Linear Discriminant Analysis
 
 Import the module:
 
-    >>> from scikits.learn.lda import LDA
+    >>> from sklearn.lda import LDA
 
 Construct the new prediction function and use it in a pipeline:
 
@@ -425,12 +430,11 @@ Changing the feature selection
 ------------------------------
 Let's say that you want a more sophisticated feature selection, for example a
 `Recursive Feature Elimination
-(RFE) <http://scikit-learn.sourceforge.net/modules/generated/scikits.learn.
-feature_selection.rfe.RFE.html>`_
+(RFE) <http://scikit-learn.sourceforge.net/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
 
 Import the module:
 
-    >>> from scikits.learn.feature_selection import RFE
+    >>> from sklearn.feature_selection import RFE
 
 Construct your new fancy selection:
 
