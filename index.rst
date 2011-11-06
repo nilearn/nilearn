@@ -1,12 +1,12 @@
 
 
 ==================================================================================================================
-NeuroImaging with the `Scikit-learn <http://scikit-learn.sourceforge.net/>`_: fMRI inverse inference tutorial 
+NeuroImaging with the `Scikit-learn <http://scikit-learn.org/>`_: fMRI inverse inference tutorial 
 ==================================================================================================================
 
 **Autors:** `INRIA Parietal Project Team
 <https://parietal.saclay.inria.fr/>`_ and `scikit-learn
-<http://scikit-learn.sourceforge.net/>`_ folks, among which **A.
+<http://scikit-learn.org/>`_ folks, among which **A.
 Gramfort, V. Michel, G. Varoquaux, F. Pedregosa and B. Thirion**
 
 Thanks to M. Hanke and Y. Halchenko for data and packaging.
@@ -225,11 +225,11 @@ Need some doc ?
     ...
 
 Or go to the `scikits-learn
-documentation <http://scikit-learn.sourceforge.net/modules/svm.html>`_
+documentation <http://scikit-learn.org/modules/svm.html>`_
 
 We use a SVC here, but we can use
 `many other
-classifiers <http://scikit-learn.sourceforge.net/supervised_learning.html>`_
+classifiers <http://scikit-learn.org/supervised_learning.html>`_
 
 
 Dimension reduction
@@ -263,7 +263,7 @@ successively::
 
 We use a univariate feature selection, but we can use other dimension
 reduction such as `RFE
-<http://scikit-learn.sourceforge.net/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
+<http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
 
 Third step: launch it on real data
 ==================================
@@ -390,10 +390,10 @@ We have seen a very simple analysis with scikits-learn.
 
 `Other prediction functions for supervised learning: Linear models,
 Support vector machines, Nearest Neighbor, etc.
-<http://scikit-learn.sourceforge.net/supervised_learning.html>`_
+<http://scikit-learn.org/supervised_learning.html>`_
 
 `Unsupervised learning (e.g. clustering, PCA, ICA) with
-Scikits-learn <http://scikit-learn.sourceforge.net/modules/clustering.html>`_
+Scikits-learn <http://scikit-learn.org/modules/clustering.html>`_
 
 Example of the simplicity of scikit-learn
 -----------------------------------------
@@ -405,7 +405,7 @@ Changing the prediction function
 
 We now see how one can easily change the prediction function, if needed.
 We can try the Linear Discriminant Analysis
-(LDA) `<http://scikit-learn.sourceforge.net/auto_examples/plot_lda_qda.html>`_
+(LDA) `<http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
 
 Import the module:
 
@@ -430,7 +430,7 @@ Changing the feature selection
 ------------------------------
 Let's say that you want a more sophisticated feature selection, for example a
 `Recursive Feature Elimination
-(RFE) <http://scikit-learn.sourceforge.net/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
+(RFE) <http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
 
 Import the module:
 
@@ -456,6 +456,6 @@ Any questions ?
 ===============
 
 
- `http://scikit-learn.sourceforge.net/ <http://scikit-learn.sourceforge.net/>`_
+ `http://scikit-learn.org/ <http://scikit-learn.org/>`_
 
 
