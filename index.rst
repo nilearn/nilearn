@@ -359,7 +359,7 @@ Prediction accuracy
 
 .. topic:: Solution
 
-    >>> classification_accuracy = np.sum(cv_scores) / float(n_samples)
+    >>> classification_accuracy = np.mean(cv_scores)
     >>> classification_accuracy
     0.74421296296296291
 

@@ -1,15 +1,11 @@
 ### All the imports
 import numpy as np
-import pylab as pl
 from scipy import signal
 import datasets
 from sklearn.svm import SVC
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.pipeline import Pipeline
 from sklearn.cross_val import LeaveOneLabelOut, cross_val_score
-from sklearn.feature_extraction.image import grid_to_graph
-
-from supervised_clustering import SupervisedClusteringClassifier
 
 ### Load data
 data = datasets.fetch_haxby_data()
@@ -64,6 +60,8 @@ cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=1)
 classification_accuracy = np.mean(cv_scores)
 
 #### Same test using the supervised clustering
+#from sklearn.feature_extraction.image import grid_to_graph
+#from supervised_clustering import SupervisedClusteringClassifier
 #estimator = SVC(kernel='linear', C=1.)
 #A =  grid_to_graph(n_x=img_shape[0], n_y=img_shape[1], n_z=img_shape[2], mask=mask)
 #print "computed connectivity matrix"
@@ -87,6 +85,7 @@ print "Classification accuracy: %f" % classification_accuracy, \
 #
 ################################################################################
 ## Ploting the results
+#import pylab as pl
 #pl.close('all')
 #pl.figure()
 #pl.title('Scores of the supervised clustering')
