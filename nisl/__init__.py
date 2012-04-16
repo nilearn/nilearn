@@ -1,16 +1,8 @@
 """
-Machine Learning module in python
-=================================
+Machine Learning module for NeuroImaging in python
+==================================================
 
-sklearn is a Python module integrating classical machine
-learning algorithms in the tightly-knit world of scientific Python
-packages (numpy, scipy, matplotlib).
-
-It aims to provide simple and efficient solutions to learning problems
-that are accessible to everybody and reusable in various contexts:
-machine-learning as a versatile tool for science and engineering.
-
-See http://scikit-learn.sourceforge.net for complete documentation.
+See http://nisl.github.com for complete documentation.
 """
 
 #from . import check_build
@@ -47,4 +39,4 @@ except:
 
 __all__ = ['datasets']
 
-__version__ = '0.1-git'
+__version__ = '2010'

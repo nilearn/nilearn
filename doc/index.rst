@@ -5,7 +5,7 @@
     
 .. raw:: html
 
-    <h1>ni-learn: machine learning for Neuro Imaging in Python</h1>
+    <h1>nisl: machine learning for Neuro Imaging in Python</h1>
     <style type="text/css">
     p {
         margin: 7px 0 7px 0 ;
@@ -57,57 +57,11 @@
     |center-div| |banner1| |end-div|
 
 
-.. topic:: Easy-to-use and general-purpose machine learning in Python
-
-    ``scikit-learn`` is a Python module integrating classic machine
-    learning algorithms in the tightly-knit scientific Python
-    world (`numpy <http://numpy.scipy.org>`_, `scipy
-    <http://www.scipy.org>`_, `matplotlib
-    <http://matplotlib.sourceforge.net/>`_).
-    It aims to provide simple and efficient solutions to learning
-    problems, accessible to everybody and reusable in various
-    contexts: **machine-learning as a versatile tool for science and
-    engineering**.
-
-
-.. raw:: html
-
-  <table class="contentstable" style="width: 100% ; margin-top: -8px">
-    <tr valign="top"><td width="28%">
-      <p class="biglink"><a class="biglink" href="supervised_learning.html">
-                Supervised learning</a><br/>
-         <span class="linkdescr">
-                <a href="modules/svm.html">Support vector machines</a>,
-                <a href="modules/linear_model.html">linear models</a>,
-                <a href="modules/naive_bayes.html">naives Bayes</a>,
-                <a href="modules/gaussian_process.html">Gaussian process</a>...
-         </span></p>
-    </td><td align="center" width="32%">
-      <p class="biglink"><a class="biglink" href="unsupervised_learning.html">
-        Unsupervised learning</a><br/>
-         <span class="linkdescr">
-                <a href="modules/clustering.html">Clustering</a>,
-                <a href="modules/mixture.html">Gaussian mixture models</a>,
-                <a href="modules/manifold.html">manifold learning</a>,
-                <a href="modules/decomposition.html">matrix factorization</a>,
-                <a href="modules/covariance.html">covariance</a>...
-         </span></p>
-    </td><td align="right" width="30%">
-      <p class="biglink"><a class="biglink" href="index.html#user-guide">
-        And much more</a><br/>
-         <span class="linkdescr">
-                <a href="model_selection.html">Model selection</a>,
-                <a href="datasets/index.html">datasets</a>,
-                <a href="modules/feature_extraction.html">feature extraction...</a>
-                <strong>See below</strong>.</span></p>
-    </td></tr>
-  </table>
-
 **License:** Open source, commercially usable: **BSD license** (3 clause)
 
 .. include:: includes/big_toc_css.rst
 
-Documentation for scikit-learn **version** |release|. For other versions and
+Documentation for nisl **version** |release|. For other versions and
 printable format, see :ref:`documentation_resources`.
 
 User Guide

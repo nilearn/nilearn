@@ -12,7 +12,7 @@ def configuration(parent_package='', top_path=None):
     # config.add_subpackage('datasets')
 
     # add the test directory
-    # config.add_subpackage('tests')
+    config.add_subpackage('tests')
 
     return config
 

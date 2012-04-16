@@ -72,9 +72,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/scikit-learn.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/nisl.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/scikit-learn.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/nisl.qhc"
 
 latex:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
@@ -106,4 +106,3 @@ doctest:
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
 download-data:
-	python -c "from scikits.learn.datasets.lfw import check_fetch_lfw; check_fetch_lfw()"

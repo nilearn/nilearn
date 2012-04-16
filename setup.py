@@ -12,11 +12,11 @@ import shutil
 DISTNAME = 'nisl'
 DESCRIPTION = 'A set of python modules for neuroimaging'
 LONG_DESCRIPTION = open('README.rst').read()
-MAINTAINER = 'Fabian Pedregosa'
-MAINTAINER_EMAIL = 'fabian.pedregosa@inria.fr'
+MAINTAINER = 'Gael Varoquaux'
+MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nisl.github.com'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'http://sourceforge.net/projects/scikit-learn/files/'
+DOWNLOAD_URL = 'http://nisl.github.com'
 VERSION = '0.1-git'
 
 import setuptools  # we are using a setuptools namespace
