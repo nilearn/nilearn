@@ -12,6 +12,7 @@ from sklearn.datasets.base import Bunch
 
 import nibabel as ni
 
+
 def chunk_report(bytes_so_far, chunk_size, total_size):
     percent = float(bytes_so_far) / total_size
     percent = round(percent*100, 2)
@@ -20,6 +21,7 @@ def chunk_report(bytes_so_far, chunk_size, total_size):
 
     if bytes_so_far >= total_size:
         sys.stdout.write('\n')
+
 
 def chunk_read(response, chunk_size=8192, report_hook=None):
     total_size = response.info().getheader('Content-Length').strip()
@@ -39,6 +41,54 @@ def chunk_read(response, chunk_size=8192, report_hook=None):
             chunk_report(bytes_so_far, chunk_size, total_size)
 
     return "".join(data)
+
+
+def fetch_data(dataset_name, url, file_names, data_dir=None, compression=False, 
+        force_download=False):
+    """Function loading requested data, downloading it if needed or requested
+
+    """
+
+    # Determine data path
+    if not data_dir: 
+        data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(), 'nisl_data'))
+   
+    data_dir = os.path.join(data_dir, dataset_name)
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+    
+    files = [None] * len(file_names)
+    for index, file_name in enumerate(file_names):
+        full_name = os.path.join(data_dir, file_name)
+        if (not os.path.exists(full_name)) or force_download:
+            # Download data
+            try:
+                data_url = os.path.join(url, file_name)
+                print 'Downloading data from %s ...' % data_url
+                req = urllib2.Request(data_url)
+                data = urllib2.urlopen(req)
+                chunks = chunk_read(data, report_hook=True)
+                local_file = open(full_name, "wb")
+                local_file.write(chunks)
+                local_file.close()
+                print '...done.'
+            except urllib2.HTTPError, e:
+                print "HTTP Error:", e, url
+                continue
+            except urllib2.URLError, e:
+                print "URL Error:", e, url
+                continue
+        files[index] = full_name
+
+     
+    for file_name in [f for f in files if f]:
+        if compression:
+            print 'extracting data from %s...' % full_name
+            tar = tarfile.open(full_name, "r")
+            tar.extractall(path=data_dir)
+            print '   ...done.'
+
+    return data_dir, files
 
 
 def fetch_star_plus_data():
@@ -187,7 +237,7 @@ def fetch_star_plus_data():
                 np.save(name, mask)
                 print "...done."
 
-            	success_indices.append(indice)
+                success_indices.append(indice)
 
                 # Removing the unused data
                 os.remove(full_name)
@@ -253,6 +303,36 @@ def fetch_haxby_data():
             print '   ...done.'
         os.remove(temp_name)
 
+    file_names = [os.path.join(data_dir, i) for i in file_names]
+
+    y, session = np.loadtxt(file_names[0]).astype("int").T
+    X = ni.load(file_names[1]).get_data()
+    mask = ni.load(file_names[2]).get_data()
+
+    return Bunch(data=X, target=y, mask=mask, session=session)
+
+
+def fetch_haxby_data_new():
+    """Returns the haxby datas
+
+    Returns
+    -------
+    data : Bunch
+        Dictionary-like object, the interest attributes are :
+        'data' : numpy array : the data to learn
+        'target' : numpy array
+                    target of the data
+        'mask' : the masks for the data
+        'session' : the labels for LeaveOneLabelOut cross validation
+    """
+    
+    url = 'http://www.pymvpa.org/files'
+    file_name = 'pymvpa_exampledata.tar.bz2'
+    file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
+    file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
+    
+    data_dir, files = fetch_data('haxby2001', url, [file_name], compression=True); 
+    
     file_names = [os.path.join(data_dir, i) for i in file_names]
 
     y, session = np.loadtxt(file_names[0]).astype("int").T
