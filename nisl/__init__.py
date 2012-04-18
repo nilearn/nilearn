@@ -4,7 +4,7 @@ Machine Learning module for NeuroImaging in python
 
 See http://nisl.github.com for complete documentation.
 """
-
+"""
 try:
     import numpy
 except ImportError:
@@ -20,8 +20,7 @@ try:
     import sklearn
 except ImportError:
     print 'Sklearn could not be found, please install it properly to use nisl.'
-
-
+"""
 try:
     from numpy.testing import nosetester
 

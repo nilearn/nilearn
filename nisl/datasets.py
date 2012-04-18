@@ -43,29 +43,52 @@ def chunk_read(response, chunk_size=8192, report_hook=None):
     return "".join(data)
 
 
-def fetch_data(dataset_name, url, file_names, data_dir=None, compression=False, 
+def get_dataset_dir(dataset_name, data_dir=None):
+    if not data_dir: 
+        data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(), 'nisl_data'))
+    data_dir = os.path.join(data_dir, dataset_name)
+    return data_dir
+
+
+def clean_dataset(dataset_name, data_dir=None):
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
+    os.removedirs(data_dir)
+    return
+
+
+def uncompress_dataset(dataset_name, files, data_dir=None, delete_archive=True):
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
+    for file in files:
+        full_name = os.path.join(data_dir, file)
+        print 'extracting data from %s...' % full_name
+        tar = tarfile.open(full_name, "r")
+        tar.extractall(path=data_dir)
+        if delete_archive:
+            os.remove(full_name)
+        print '   ...done.'
+    return
+
+
+def fetch_dataset(dataset_name, urls, data_dir=None,
         force_download=False):
     """Function loading requested data, downloading it if needed or requested
 
     """
 
     # Determine data path
-    if not data_dir: 
-        data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(), 'nisl_data'))
-   
-    data_dir = os.path.join(data_dir, dataset_name)
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     
-    files = [None] * len(file_names)
-    for index, file_name in enumerate(file_names):
+    files = []
+    for url in urls:
+        file_name = os.path.basename(url)
         full_name = os.path.join(data_dir, file_name)
         if (not os.path.exists(full_name)) or force_download:
             # Download data
             try:
-                data_url = os.path.join(url, file_name)
-                print 'Downloading data from %s ...' % data_url
-                req = urllib2.Request(data_url)
+                print 'Downloading data from %s ...' % url
+                req = urllib2.Request(url)
                 data = urllib2.urlopen(req)
                 chunks = chunk_read(data, report_hook=True)
                 local_file = open(full_name, "wb")
@@ -74,21 +97,26 @@ def fetch_data(dataset_name, url, file_names, data_dir=None, compression=False,
                 print '...done.'
             except urllib2.HTTPError, e:
                 print "HTTP Error:", e, url
-                continue
+                os.removedirs(data_dir)
+                return
             except urllib2.URLError, e:
                 print "URL Error:", e, url
-                continue
-        files[index] = full_name
+                os.removedirs(data_dir)
+                return
+        files.append(full_name)
 
-     
-    for file_name in [f for f in files if f]:
-        if compression:
-            print 'extracting data from %s...' % full_name
-            tar = tarfile.open(full_name, "r")
-            tar.extractall(path=data_dir)
-            print '   ...done.'
+    return files
 
-    return data_dir, files
+
+def get_dataset(dataset_name, file_names, data_dir=None):
+    data_dir=get_dataset_dir(dataset_name, data_dir = data_dir);
+    file_paths = []
+    for file_name in file_names:
+        full_name = os.path.join(data_dir, file_name)
+        if not os.path.exists(full_name):
+            raise IOError("No such file: '%s'" % full_name)
+        file_paths.append(full_name)
+    return file_paths
 
 
 def fetch_star_plus_data():
@@ -312,7 +340,7 @@ def fetch_haxby_data():
     return Bunch(data=X, target=y, mask=mask, session=session)
 
 
-def fetch_haxby_data_new():
+def fetch_haxby_data_new(data_dir=None, force_download=False):
     """Returns the haxby datas
 
     Returns
@@ -326,17 +354,22 @@ def fetch_haxby_data_new():
         'session' : the labels for LeaveOneLabelOut cross validation
     """
     
-    url = 'http://www.pymvpa.org/files'
-    file_name = 'pymvpa_exampledata.tar.bz2'
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
     file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
-    
-    data_dir, files = fetch_data('haxby2001', url, [file_name], compression=True); 
-    
-    file_names = [os.path.join(data_dir, i) for i in file_names]
 
-    y, session = np.loadtxt(file_names[0]).astype("int").T
-    X = ni.load(file_names[1]).get_data()
-    mask = ni.load(file_names[2]).get_data()
+    try:
+        files = get_dataset("haxby2001", file_names, data_dir = data_dir)
+    except IOError:
+        url = 'http://www.pymvpa.org/files'
+        tar_name = 'pymvpa_exampledata.tar.bz2'
+        urls = [os.path.join(url, tar_name)]
+        tar = fetch_dataset('haxby2001', urls, data_dir = data_dir,
+                force_download=force_download); 
+        uncompress_dataset('haxby2001', [tar_name], data_dir = data_dir)
+        files = get_dataset("haxby2001", file_names, data_dir = data_dir)
+   
+    y, session = np.loadtxt(files[0]).astype("int").T
+    X = ni.load(files[1]).get_data()
+    mask = ni.load(files[2]).get_data()
 
     return Bunch(data=X, target=y, mask=mask, session=session)

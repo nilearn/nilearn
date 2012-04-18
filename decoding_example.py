@@ -1,14 +1,14 @@
 ### All the imports
 import numpy as np
 from scipy import signal
-import datasets
 from sklearn.svm import SVC
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.pipeline import Pipeline
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
+from nisl import datasets
 
 ### Load data
-data = datasets.fetch_haxby_data()
+data = datasets.fetch_haxby_data_new()
 y = data.target
 session = data.session
 X = data.data

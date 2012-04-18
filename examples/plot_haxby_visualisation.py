@@ -11,6 +11,6 @@ from matplotlib import pyplot as plt
 
 from nisl import datasets
 
-haxby = datasets.fetch_haxby_data()
+haxby = datasets.fetch_haxby_data_new(data_dir='..')
 img = haxby.data[:, 29, :, 0] * haxby.mask[:, 29, :]
 plt.imshow(img, cmap=plt.cm.spectral)
