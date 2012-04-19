@@ -156,8 +156,8 @@ def fetch_star_plus_data():
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    file_names = ['data-starplus-0%d-v7.mat' % i for i in [4847,
-                  4799, 5710, 4820, 5675, 5680]]
+    file_names = ['data-starplus-0%d-v7.mat' % i for i in 
+            [4847, 4799, 5710, 4820, 5675, 5680]]
     url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
     url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
     full_names = [os.path.join(data_dir, name) for name in file_names]
@@ -284,63 +284,7 @@ def fetch_star_plus_data():
     return all_subject
 
 
-def fetch_haxby_data():
-    """Returns the haxby datas
-
-    Returns
-    -------
-    data : Bunch
-        Dictionary-like object, the interest attributes are :
-        'data' : numpy array : the data to learn
-        'target' : numpy array
-                    target of the data
-        'mask' : the masks for the data
-        'session' : the labels for LeaveOneLabelOut cross validation
-    """
-    data_dir = os.path.join(os.getcwd(), 'nisl_data')
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-    url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-    file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
-    file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
-    download = False
-    for name in file_names:
-        # if one of those files doesn't exist, we download the archive
-        if not os.path.exists(os.path.join(data_dir, name)):
-            download = True
-
-    if download:
-        try:
-            print 'Downloading data from %s ...' % url
-            data = urllib2.urlopen(url)
-            temp_name = os.path.join(data_dir, 'temp.tar.bz2')
-            if not os.path.exists(temp_name):
-                local_file = open(temp_name, "wb")
-                local_file.write(data.read())
-                local_file.close()
-        except urllib2.HTTPError, e:
-            print "HTTP Error:", e, url
-        except urllib2.URLError, e:
-            print "URL Error:", e, url
-        print '...done.'
-        print 'extracting data from %s...' % temp_name
-        tar = tarfile.open(temp_name, "r:bz2")
-        for name in file_names:
-            print '   extracting %s...' % name
-            tar.extract(name, path=data_dir)
-            print '   ...done.'
-        os.remove(temp_name)
-
-    file_names = [os.path.join(data_dir, i) for i in file_names]
-
-    y, session = np.loadtxt(file_names[0]).astype("int").T
-    X = ni.load(file_names[1]).get_data()
-    mask = ni.load(file_names[2]).get_data()
-
-    return Bunch(data=X, target=y, mask=mask, session=session)
-
-
-def fetch_haxby_data_new(data_dir=None, force_download=False):
+def fetch_haxby_data(data_dir=None, force_download=False):
     """Returns the haxby datas
 
     Returns
