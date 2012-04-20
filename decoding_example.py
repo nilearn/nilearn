@@ -8,7 +8,7 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 from nisl import datasets
 import nibabel as ni
 import os
-import pylab
+from matplotlib import pyplot as plt
 
 ### Load data
 data = datasets.fetch_haxby_data()
@@ -68,25 +68,22 @@ print "=== ANOVA ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
 
-#Look at the discriminating weights
+### Look at the discriminating weights
 # re-train classifier on the full dataset
 anova_svc.fit(X, y)
-support = anova_svc.steps[0][1].get_support()
-coef_ = np.zeros(support.size)
-coef_[support] = anova_svc.steps[1][1].coef_
-coef = np.zeros(mask.shape)
-coef[mask != 0] = coef_
+svc = clf.support_vectors_
+# reverse feature selection
+svc = feature_selection.inverse_transform(svc)
+# reverse masking
+act = np.zeros(img_shape)
+act[mask != 0] = svc[0]
+act = np.ma.masked_array(act, act == 0)
 
-from nipy.labs import viz
-path = os.path.join('pymvpa-exampledata', 'mask.nii.gz')
-affine = ni.load(os.path.join(
-    datasets.get_dataset_dir("haxby2001"), path)).get_affine()
-viz.plot_map(coef,
-        affine = affine,
-        threshold=np.abs(coef).max()/10,
-        cmap=viz.cm.cold_hot,
-        anat=mean_img,
-        anat_affine=affine)
-
-pylab.show()
-
+### Create the figure
+plt.axis('off')
+plt.title('SVM vectors')
+plt.imshow(np.swapaxes(mean_img[:, 20, :], 0, 1), cmap=plt.cm.gray,
+        interpolation=None)
+plt.imshow(np.swapaxes(act[:, 20, :], 0, 1), cmap=plt.cm.hot,
+        interpolation=None)
+plt.show()

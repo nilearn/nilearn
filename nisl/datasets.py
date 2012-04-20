@@ -119,7 +119,7 @@ def get_dataset(dataset_name, file_names, data_dir=None):
     return file_paths
 
 
-def fetch_star_plus_data():
+def fetch_star_plus_data(data_dir=None, force_download = False):
     """Function returning the starplus data, downloading them if needed
 
     Returns
@@ -151,48 +151,26 @@ def fetch_star_plus_data():
     http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/
     """
 
-    # If the directory for the data doesn't exists we create it
-    data_dir = os.path.join(os.getcwd(), 'nisl_data')
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+    dataset_files = ['data-starplus-%d-%s.npy' % (i, j) for i in range(0, 6)
+            for j in ['mask', 'X', 'y']]
+    dataset_dir = get_dataset_dir("starplus", data_dir=data_dir)
 
-    file_names = ['data-starplus-0%d-v7.mat' % i for i in 
-            [4847, 4799, 5710, 4820, 5675, 5680]]
-    url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
-    url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
-    full_names = [os.path.join(data_dir, name) for name in file_names]
-
-    success_indices = []
-    for indice, full_name in enumerate(full_names):
-        print "Fetching file : %s" % full_name
-        if (os.path.exists(os.path.join(data_dir,
-                        "data-starplus-%d-X.npy" % indice))
-                and os.path.exists(os.path.join(data_dir,
-                            "data-starplus-%d-y.npy" % indice))):
-            success_indices.append(indice)
-        else:
-            # Retrieving the .mat data and saving it if needed
-            if not os.path.exists(full_name):
-                if indice >= 3:
-                    url = url2
-                else:
-                    url = url1
-
-                data_url = os.path.join(url, file_names[indice])
-                try:
-                    print 'Downloading data from %s ...' % data_url
-                    req = urllib2.Request(data_url)
-                    data = urllib2.urlopen(req)
-                    chunks = chunk_read(data, report_hook=True)
-                    local_file = open(full_name, "wb")
-                    local_file.write(chunks)
-                    local_file.close()
-                except urllib2.HTTPError, e:
-                    print "HTTP Error: %s, %s" % (e, data_url)
-                except urllib2.URLError, e:
-                    print "URL Error: %s, %s" % (e, data_url)
-                print '...done.'
-
+    try:
+        files = get_dataset("starplus", dataset_files, data_dir = data_dir)
+    except IOError:
+        file_names = ['data-starplus-0%d-v7.mat' % i for i in 
+                [4847, 4799, 5710, 4820, 5675, 5680]]
+        url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
+        url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
+    
+        url1_files = [os.path.join(url1, i) for i in file_names[0:3]]
+        url2_files = [os.path.join(url2, i) for i in file_names[3:6]]
+        urls = url1_files + url2_files
+   
+        full_names = fetch_dataset('starplus', urls, data_dir = data_dir,
+                force_download=force_download); 
+           
+        for indice, full_name in enumerate(full_names):
             # Converting data to a more readable format
             print "Converting file %d on 6..." % (indice + 1)
             # General information
@@ -253,32 +231,32 @@ def fetch_star_plus_data():
                 y = y.astype(np.float)
 
                 name = "data-starplus-%d-X.npy" % indice
-                name = os.path.join(data_dir, name)
+                name = os.path.join(dataset_dir, name)
                 np.save(name, X)
                 name = "data-starplus-%d-y.npy" % indice
-                name = os.path.join(data_dir, name)
+                name = os.path.join(dataset_dir, name)
                 np.save(name, y)
                 name = "data-starplus-%d-mask.npy" % indice
-                name = os.path.join(data_dir, name)
+                name = os.path.join(dataset_dir, name)
                 mask = X[0, ...]
                 mask = mask.astype(np.bool)
                 np.save(name, mask)
                 print "...done."
 
-                success_indices.append(indice)
-
                 # Removing the unused data
                 os.remove(full_name)
             except Exception, e:
                 print "Impossible to convert the file %s:\n %s " % (name, e)
+                os.removedirs(dataset_dir)
+                raise e
 
     print "...done."
     
     all_subject = []
-    for i in success_indices:
-        X = np.load(os.path.join(data_dir, 'data-starplus-%d-X.npy' % i))
-        y = np.load(os.path.join(data_dir, 'data-starplus-%d-y.npy' % i))
-        mask = np.load(os.path.join(data_dir, 'data-starplus-%d-mask.npy' % i))
+    for i in range(0,6):
+        X = np.load(os.path.join(dataset_dir, 'data-starplus-%d-X.npy' % i))
+        y = np.load(os.path.join(dataset_dir, 'data-starplus-%d-y.npy' % i))
+        mask = np.load(os.path.join(dataset_dir, 'data-starplus-%d-mask.npy' % i))
         all_subject.append(Bunch(data=X, target=y, mask=mask))
 
     return all_subject
