@@ -19,7 +19,7 @@ except ImportError:
 try:
     import sklearn
 except ImportError:
-    print 'Sklearn could not be found, please install it properly to use nisl.'
+    print 'Scikit-learn could not be found, please install it properly to use nisl.'
 """
 try:
     from numpy.testing import nosetester
