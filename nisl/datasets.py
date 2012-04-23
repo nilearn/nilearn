@@ -1,4 +1,4 @@
-"""File to import StarPlus data
+"""File to import NeuroImaging datasets
 """
 
 import os
@@ -13,19 +13,53 @@ from sklearn.datasets.base import Bunch
 import nibabel as ni
 
 
-def chunk_report(bytes_so_far, chunk_size, total_size):
-    percent = float(bytes_so_far) / total_size
-    percent = round(percent*100, 2)
-    sys.stdout.write("Downloaded %d of %d bytes (%0.2f%%)\r" % 
-         (bytes_so_far, total_size, percent))
+def chunk_report_(bytes_so_far, total_size=None):
+    """Show downloading percentage
 
-    if bytes_so_far >= total_size:
-        sys.stdout.write('\n')
+    Parameters
+    ----------
+    bytes_so_far: integer
+        Number of downloaded bytes
+
+    total_size: integer, optional
+        Total size of the file. If not given, a question mark will be showed
+        instead of it. Default: None
+    """
+    if total_size:
+        percent = float(bytes_so_far) / total_size
+        percent = round(percent * 100, 2)
+        sys.stdout.write("Downloaded %d of %d bytes (%0.2f%%)\r" %
+            (bytes_so_far, total_size, percent))
+    else:
+        sys.stdout.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
 
-def chunk_read(response, chunk_size=8192, report_hook=None):
+def chunk_read_(response, chunk_size=8192, report_hook=None):
+    """Download a file chunk by chunk and show advancement
+
+    Parameters
+    ----------
+    response: urllib.addinfourl
+        Response to the download request in order to get file size
+
+    chunk_size: integer, optional
+        Size of downloaded chunks. Default: 8192
+
+    report_hook: boolean
+        Whether or not to show downloading advancement. Default: None
+
+    Returns
+    -------
+    data: string
+        The downloaded file.
+
+    """
     total_size = response.info().getheader('Content-Length').strip()
-    total_size = int(total_size)
+    try:
+        total_size = int(total_size)
+    except Exception, e:
+        print "Total size could not be determined. Error: ", e
+        total_size = None
     bytes_so_far = 0
     data = []
 
@@ -34,29 +68,89 @@ def chunk_read(response, chunk_size=8192, report_hook=None):
         bytes_so_far += len(chunk)
 
         if not chunk:
+            if report_hook:
+                sys.stdout.write('\n')
             break
 
         data += chunk
         if report_hook:
-            chunk_report(bytes_so_far, chunk_size, total_size)
+            chunk_report_(bytes_so_far, total_size)
 
     return "".join(data)
 
 
 def get_dataset_dir(dataset_name, data_dir=None):
-    if not data_dir: 
-        data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(), 'nisl_data'))
+    """Returns data directory of given dataset
+
+    Parameters
+    ----------
+    dataset_name: string
+        The unique name of the dataset.
+
+    data_dir: string
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    Returns
+    -------
+    data_dir: string
+        Path of the given dataset directory.
+
+    Notes
+    -----
+    This function retrieve the datasets directory (or data directory) using
+    the following priority :
+    1. the keyword argument data_dir
+    2. the environment variable NISL_DATA
+    3. "nisl_data" directory into the current working directory
+    """
+    if not data_dir:
+        data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(),
+            'nisl_data'))
     data_dir = os.path.join(data_dir, dataset_name)
     return data_dir
 
 
 def clean_dataset(dataset_name, data_dir=None):
+    """Erase the directory of a given dataset
+
+    Parameters
+    ----------
+    dataset_name: string
+        Unique dataset name
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+    """
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     os.removedirs(data_dir)
-    return
 
 
-def uncompress_dataset(dataset_name, files, data_dir=None, delete_archive=True):
+def uncompress_dataset(dataset_name, files, data_dir=None,
+        delete_archive=True):
+    """Uncompress files contained in a data_set.
+
+    Parameters
+    ----------
+    dataset_name: string
+        Unique dataset name
+
+    files: array of strings
+        Contains the names of files to be uncompressed.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    delete_archive: boolean, optional
+        Wheteher or not to delete archive once it is uncompressed.
+        Default: True
+
+    Notes
+    -----
+    This handles tar, gzip and bzip files only.
+    """
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     for file in files:
         full_name = os.path.join(data_dir, file)
@@ -66,20 +160,43 @@ def uncompress_dataset(dataset_name, files, data_dir=None, delete_archive=True):
         if delete_archive:
             os.remove(full_name)
         print '   ...done.'
-    return
 
 
 def fetch_dataset(dataset_name, urls, data_dir=None,
         force_download=False):
-    """Function loading requested data, downloading it if needed or requested
+    """Load requested dataset, downloading it if needed or requested
 
+    Parameters
+    ----------
+    dataset_name: string
+        Unique dataset name
+
+    urls: array of strings
+        Contains the urls of files to be downloaded.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    force_download: boolean, optional
+        Wheteher or not to force download of data (in case of data corruption
+        for example). Default: False
+
+    Returns
+    -------
+    files: array of string
+        Absolute paths of downloaded files on disk
+
+    Notes
+    -----
+    If, for any reason, the download procedure fails, all downloaded data are
+    cleaned.
     """
-
     # Determine data path
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-    
+
     files = []
     for url in urls:
         file_name = os.path.basename(url)
@@ -90,7 +207,7 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
                 print 'Downloading data from %s ...' % url
                 req = urllib2.Request(url)
                 data = urllib2.urlopen(req)
-                chunks = chunk_read(data, report_hook=True)
+                chunks = chunk_read_(data, report_hook=True)
                 local_file = open(full_name, "wb")
                 local_file.write(chunks)
                 local_file.close()
@@ -109,7 +226,30 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
 
 
 def get_dataset(dataset_name, file_names, data_dir=None):
-    data_dir=get_dataset_dir(dataset_name, data_dir = data_dir);
+    """Returns absolute paths of a dataset files if exist
+
+    Parameters
+    ----------
+    dataset_name: string
+        Unique dataset name
+
+    file_names: array of strings
+        File that compose the dataset to be retrieved on the disk.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    Returns
+    -------
+    files: array of string
+        List of dataset files on disk
+
+    Notes
+    -----
+    If at least one file is missing, an IOError is raised.
+    """
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     file_paths = []
     for file_name in file_names:
         full_name = os.path.join(data_dir, file_name)
@@ -119,7 +259,7 @@ def get_dataset(dataset_name, file_names, data_dir=None):
     return file_paths
 
 
-def fetch_star_plus_data(data_dir=None, force_download = False):
+def fetch_star_plus_data(data_dir=None, force_download=False):
     """Function returning the starplus data, downloading them if needed
 
     Returns
@@ -156,20 +296,20 @@ def fetch_star_plus_data(data_dir=None, force_download = False):
     dataset_dir = get_dataset_dir("starplus", data_dir=data_dir)
 
     try:
-        files = get_dataset("starplus", dataset_files, data_dir = data_dir)
+        get_dataset("starplus", dataset_files, data_dir=data_dir)
     except IOError:
-        file_names = ['data-starplus-0%d-v7.mat' % i for i in 
+        file_names = ['data-starplus-0%d-v7.mat' % i for i in
                 [4847, 4799, 5710, 4820, 5675, 5680]]
         url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
         url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
-    
+
         url1_files = [os.path.join(url1, i) for i in file_names[0:3]]
         url2_files = [os.path.join(url2, i) for i in file_names[3:6]]
         urls = url1_files + url2_files
-   
-        full_names = fetch_dataset('starplus', urls, data_dir = data_dir,
-                force_download=force_download); 
-           
+
+        full_names = fetch_dataset('starplus', urls, data_dir=data_dir,
+                force_download=force_download)
+
         for indice, full_name in enumerate(full_names):
             # Converting data to a more readable format
             print "Converting file %d on 6..." % (indice + 1)
@@ -251,12 +391,13 @@ def fetch_star_plus_data(data_dir=None, force_download = False):
                 raise e
 
     print "...done."
-    
+
     all_subject = []
-    for i in range(0,6):
+    for i in range(0, 6):
         X = np.load(os.path.join(dataset_dir, 'data-starplus-%d-X.npy' % i))
         y = np.load(os.path.join(dataset_dir, 'data-starplus-%d-y.npy' % i))
-        mask = np.load(os.path.join(dataset_dir, 'data-starplus-%d-mask.npy' % i))
+        mask = np.load(os.path.join(dataset_dir,
+            'data-starplus-%d-mask.npy' % i))
         all_subject.append(Bunch(data=X, target=y, mask=mask))
 
     return all_subject
@@ -275,21 +416,21 @@ def fetch_haxby_data(data_dir=None, force_download=False):
         'mask' : the masks for the data
         'session' : the labels for LeaveOneLabelOut cross validation
     """
-    
+
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
     file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
 
     try:
-        files = get_dataset("haxby2001", file_names, data_dir = data_dir)
+        files = get_dataset("haxby2001", file_names, data_dir=data_dir)
     except IOError:
         url = 'http://www.pymvpa.org/files'
         tar_name = 'pymvpa_exampledata.tar.bz2'
         urls = [os.path.join(url, tar_name)]
-        tar = fetch_dataset('haxby2001', urls, data_dir = data_dir,
-                force_download=force_download); 
-        uncompress_dataset('haxby2001', [tar_name], data_dir = data_dir)
-        files = get_dataset("haxby2001", file_names, data_dir = data_dir)
-   
+        fetch_dataset('haxby2001', urls, data_dir=data_dir,
+                force_download=force_download)
+        uncompress_dataset('haxby2001', [tar_name], data_dir=data_dir)
+        files = get_dataset("haxby2001", file_names, data_dir=data_dir)
+
     y, session = np.loadtxt(files[0]).astype("int").T
     X = ni.load(files[1]).get_data()
     mask = ni.load(files[2]).get_data()
