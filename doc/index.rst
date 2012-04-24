@@ -21,7 +21,7 @@
 
 .. only:: html
 
-    .. |banner1| image:: auto_examples/images/plot_test_1.png
+    .. |banner1| image:: auto_examples/images/plot_haxby_visualisation_1.png
        :height: 140
        :target: auto_examples/plot_test.html
 

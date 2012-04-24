@@ -70,18 +70,6 @@ In short, we have:
 
 Additional information : http://www.sciencemag.org/content/293/5539/2425
 
-Download the data::
-
-  $ wget http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2
-
-decompress them::
-
-  $ tar xjfv pymvpa_exampledata.tar.bz2
-
-and go to the data directory::
-
-  $ cd pymvpa-exampledata
-
 
 Nibabel
 ^^^^^^^^
@@ -112,37 +100,26 @@ Now, launch ipython::
 
   $ ipython
 
-First, we load the data. We have to import the nibabel module and the numpy
-module (basic array manipulations):
+First, we load the data. Nisl provides an easy way to download and preprocess
+data. Simply call:
 
-    >>> import nibabel as ni
-    >>> import numpy as np
+    >>> from nisl import datasets
+    >>> dataset = datasets.fetch_haxby_data()
+    >>> X = dataset.data
+    >>> mask = dataset.mask
+    >>> y = dataset.target
+    >>> session = dataset.session
 
-... load the fMRI volumes (what we will call X)
+... compute the mean of the image to replace anatomic data
 
-    >>> X = ni.load("bold.nii.gz").get_data()
-
-... the mask
-
-    >>> mask = ni.load("mask.nii.gz").get_data()
-
-... and the target (that we will call y), and the session index:
-
-    >>> y, session = np.loadtxt("attributes.txt").astype("int").T
-
-
+    >>> mean_img = X.mean(-1)
+    
 Check the dimensions of the data:
 
     >>> X.shape
     (40, 64, 64, 1452)
     >>> mask.shape
     (40, 64, 64)
-
-We can visualize an extract from our data:
-
-.. figure:: ../auto_examples/images/plot_haxby_visualisation_1.png
-   :target: ../auto_examples/plot_haxby_visualisation.html
-   :align: center
 
 Mask the data X and transpose the matrix, so that its shape becomes (n_samples,
 n_features):
@@ -156,6 +133,7 @@ and we (hopefully) retrieve the correct number of voxels (39912).
 Finally, we can detrend the data (for each session separately):
 
     >>> from scipy import signal
+    >>> import numpy as np
     >>> for s in np.unique(session):
     ...     X[session==s] = signal.detrend(X[session==s], axis=0)
 
@@ -211,12 +189,13 @@ and we define the classifier:
 
     >>> clf = SVC(kernel='linear', C=1.)
     >>> clf
-    SVC(kernel='linear', C=1.0, probability=False, degree=3, coef0=0.0,
-    eps=0.001, cache_size=100.0, shrinking=True, gamma=0.0)
+    SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, degree=3, gamma=0.0,
+      kernel='linear', probability=False, scale_C=True, shrinking=True,
+      tol=0.001, verbose=False)
 
 Need some doc ?
 
-    >>> clf ?
+    >>> clf ? # doctest: +SKIP
     Type:             SVC
     Base Class:       <class 'sklearn.svm.libsvm.SVC'>
     String Form:
@@ -252,8 +231,8 @@ For this, we need to import the correct module::
 and define a simple F-score based feature selection (a.k.a. Anova)::
 
     >>> feature_selection = SelectKBest(f_classif, k=500)
-    >>> feature_selection
-    SelectKBest(k=500, score_func=<function f_classif at 0x8c93684>)
+    >>> feature_selection # doctest: +ELLIPSIS
+    SelectKBest(k=500, score_func=<function f_classif at 0x...>)
 
 
 We have our classifier (SVC), our feature selection (SelectKBest), and now, we
@@ -262,11 +241,11 @@ successively::
 
     >>> from sklearn.pipeline import Pipeline
     >>> anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
-    >>> anova_svc
+    >>> anova_svc # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
-    f_classif at 0x8c93684>)), ('svc', SVC(kernel='linear', C=1.0,
-    probability=False, degree=3, coef0=0.0, eps=0.001,
-    cache_size=100.0, shrinking=True, gamma=0.0))])
+    f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
+    coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
+    scale_C=True, shrinking=True, tol=0.001, verbose=False))])
 
 We use a univariate feature selection, but we can use other dimension
 reduction such as `RFE
@@ -283,11 +262,11 @@ In scikits-learn, prediction function have a very simple API:
   - a *fit* function that "learn" the parameters of the model from the data.
     Thus, we need to give some training data to *fit*::
 
-     >>> anova_svc.fit(X, y)
-     Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function f_classif
-     at 0x8c93684>)), ('svc', SVC(kernel='linear', C=1.0, probability=False,
-     degree=3, coef0=0.0, eps=0.001,
-     cache_size=100.0, shrinking=True, gamma=0.0))])
+     >>> anova_svc.fit(X, y) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+     Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
+     f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
+     coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
+     scale_C=True, shrinking=True, tol=0.001, verbose=False))])
 
   - a *predict* function that "predict" a target from new data.
     Here, we just have to give the new set of images (as the target should be
@@ -307,6 +286,16 @@ Note that you could have done this in only 1 line::
 
     >>> y_pred = anova_svc.fit(X, y).predict(X)
 
+Visualisation
+-------------
+
+We can visualize the result of our algorithm:
+
+.. figure:: ../auto_examples/images/plot_haxby_visualisation_1.png
+   :target: ../auto_examples/plot_haxby_visualisation.html
+   :align: center
+
+
 Cross-validation
 ----------------
 
@@ -316,7 +305,7 @@ into different sets.
 
 Let us define a Leave-one-session-out cross-validation::
 
-    >>> from sklearn.cross_val import LeaveOneLabelOut
+    >>> from sklearn.cross_validation import LeaveOneLabelOut
     >>> cv = LeaveOneLabelOut(session)
 
 In scikit-learn, a cross-validation is simply a function that generates
@@ -326,17 +315,17 @@ cross-validation::
 
     >>> cv_scores = [] # will store the number of correct predictions in each fold
     >>> for train, test in cv:
-    >>>     y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])
-    >>>     cv_scores.append(np.sum(y_pred == y[test]))
+    ...     y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])
+    ...     cv_scores.append(np.sum(y_pred == y[test]))
 
 
 But we are lazy people, so there is a specific
 function, *cross_val_score* that computes for you the results for the
 different folds of cross-validation::
 
-    >>> from sklearn.cross_val import cross_val_score
+    >>> from sklearn.cross_validation import cross_val_score
     >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=1,
-                            verbose=1, iid=True)
+    ...     verbose=1)
 
     n_jobs = 1 means that the computation run sequentially.  But, if
     you are the happy owner of a multiple processors computer you can
@@ -345,7 +334,7 @@ different folds of cross-validation::
     newer is required):
 
     >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1,
-                            verbose=1, iid=True)
+    ...     verbose=1)
 
 
 Prediction accuracy
@@ -353,11 +342,12 @@ Prediction accuracy
 
     We can take a look to the results of the *cross_val_score* function:
 
-    >>> cv_scores
-    array([ 60.,  59.,  65.,  49.,  57.,  56.,  52.,  44.,  54.,  47.,  49.,
-        51.])
+    >>> cv_scores # doctest: +SKIP
+    array([ 0.81944444,  0.81944444,  0.90277778,  0.68055556,  0.79166667,
+            0.79166667,  0.70833333,  0.59722222,  0.75      ,  0.63888889,
+            0.68055556,  0.70833333])
 
-    This is simply the number of correct predictions for each fold.
+    This is simply the prediction score for each fold.
 
 
 .. topic:: Exercise
@@ -367,7 +357,7 @@ Prediction accuracy
 .. topic:: Solution
 
     >>> classification_accuracy = np.mean(cv_scores)
-    >>> classification_accuracy
+    >>> classification_accuracy # doctest: +SKIP
     0.74421296296296291
 
 We have a total prediction accuracy of 74% across the different folds.
@@ -376,16 +366,16 @@ We have a total prediction accuracy of 74% across the different folds.
 We can add a line to print the results::
 
     >>> print "Classification accuracy: %f" % classification_accuracy, \
-        " / Chance level: %f" % (1. / n_conditions)
+    ...     " / Chance level: %f" % (1. / n_conditions) # doctest: +SKIP
     Classification accuracy: 0.744213  / Chance level: 0.125000
 
 
 Final script
 ============
 
-An thus, the complete script is (:download:`decoding_example.py`):
+An thus, the complete script is (:download:`../../decoding_example.py`):
 
-.. literalinclude:: decoding_example.py
+.. literalinclude:: ../../decoding_example.py
 
 Now, you just have to publish the results :)
 
@@ -426,10 +416,10 @@ Construct the new prediction function and use it in a pipeline:
 and recompute the cross-validation score:
 
     >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, n_jobs=-1,
-                            verbose=1, iid=True)
+    ...     verbose=1)
     >>> classification_accuracy = np.sum(cv_scores) / float(n_samples)
     >>> print "Classification accuracy: %f" % classification_accuracy, \
-        " / Chance level: %f" % (1. / n_conditions)
+    ...     " / Chance level: %f" % (1. / n_conditions) # doctest: +SKIP
     Classification accuracy: 0.728009   / Chance level: 0.125000
 
 
@@ -445,7 +435,7 @@ Import the module:
 
 Construct your new fancy selection:
 
-    >>> rfe = RFE(SVC(kernel='linear', C=1.), n_features=50, percentage=0.25)
+    >>> rfe = RFE(SVC(kernel='linear', C=1.), 50, step=0.25)
 
 and create a new pipeline:
 
@@ -454,7 +444,7 @@ and create a new pipeline:
 and recompute the cross-validation score:
 
     >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=-1,
-                            verbose=1, iid=True)
+    ...     verbose=True) # doctest: +SKIP
 
 But, be aware that this can take A WHILE...
 

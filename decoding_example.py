@@ -6,38 +6,36 @@ from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.pipeline import Pipeline
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 from nisl import datasets
-import nibabel as ni
-import os
 from matplotlib import pyplot as plt
 
-### Load data
-data = datasets.fetch_haxby_data()
-y = data.target
-session = data.session
-X = data.data
-mask = data.mask
-img_shape = X[..., 0].shape
-original_img = X[..., 0]
+### Load dataset
+dataset = datasets.fetch_haxby_data()
+X = dataset.data
+mask = dataset.mask
+y = dataset.target
+session = dataset.session
+
+### Build the mean image because we have no anatomic data
 mean_img = X.mean(-1)
 
 # Process the data in order to have a two-dimensional design matrix X of
 # shape (nb_samples, nb_features).
-X = X[mask!=0].T
+X = X[mask != 0].T
 
 print "detrending data"
 # Detrend data on each session independently
 for s in np.unique(session):
-    X[session==s] = signal.detrend(X[session==s], axis=0)
+    X[session == s] = signal.detrend(X[session == s], axis=0)
 
 print "removing mask"
 # Remove volumes corresponding to rest
-X, y, session = X[y!=0], y[y!=0], session[y!=0]
+X, y, session = X[y != 0], y[y != 0], session[y != 0]
 n_samples, n_features = X.shape
 n_conditions = np.size(np.unique(y))
 
-X = X[y<=2]
-session = session[y<=2]
-y = y[y<=2]
+X = X[y <= 2]
+session = session[y <= 2]
+y = y[y <= 2]
 session /= 5
 
 ### Define the prediction function to be used.
@@ -75,15 +73,15 @@ svc = clf.support_vectors_
 # reverse feature selection
 svc = feature_selection.inverse_transform(svc)
 # reverse masking
-act = np.zeros(img_shape)
+act = np.zeros(mean_img.shape)
 act[mask != 0] = svc[0]
 act = np.ma.masked_array(act, act == 0)
 
-### Create the figure
+### Create the figure on z=13
 plt.axis('off')
 plt.title('SVM vectors')
-plt.imshow(np.swapaxes(mean_img[:, 20, :], 0, 1), cmap=plt.cm.gray,
+plt.imshow(mean_img[:, 13, :], cmap=plt.cm.gray,
         interpolation=None)
-plt.imshow(np.swapaxes(act[:, 20, :], 0, 1), cmap=plt.cm.hot,
+plt.imshow(act[:, 13, :], cmap=plt.cm.hot,
         interpolation=None)
 plt.show()
