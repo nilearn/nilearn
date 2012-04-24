@@ -103,49 +103,21 @@ Now, launch ipython::
 First, we load the data. Nisl provides an easy way to download and preprocess
 data. Simply call:
 
-    >>> from nisl import datasets
-    >>> dataset = datasets.fetch_haxby_data()
-    >>> X = dataset.data
-    >>> mask = dataset.mask
-    >>> y = dataset.target
-    >>> session = dataset.session
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Load Haxby dataset ########################################################
+        :end-before: ### Preprocess data ########################################################### 
 
-... compute the mean of the image to replace anatomic data
+Then we preprocess the data to get make it handier:
 
-    >>> mean_img = X.mean(-1)
-    
-Check the dimensions of the data:
+- compute the mean of the image to replace anatomic data
+- check its dimension (1452 trials of 40x64x64 voxels)
+- mask the data X and transpose the matrix, so that its shape becomes
+  (n_samples, n_features)
+- finally detrend the data for each session
 
-    >>> X.shape
-    (40, 64, 64, 1452)
-    >>> mask.shape
-    (40, 64, 64)
-
-Mask the data X and transpose the matrix, so that its shape becomes (n_samples,
-n_features):
-
-    >>> X = X[mask!=0].T
-    >>> X.shape
-    (1452, 39912)
-
-and we (hopefully) retrieve the correct number of voxels (39912).
-
-Finally, we can detrend the data (for each session separately):
-
-    >>> from scipy import signal
-    >>> import numpy as np
-    >>> for s in np.unique(session):
-    ...     X[session==s] = signal.detrend(X[session==s], axis=0)
-
-Now, we take a look to the target y:
-
-    >>> y.shape
-    (1452,)
-    >>> np.unique(y)
-    array([0, 1, 2, 3, 4, 5, 6, 7, 8])
-
-where 0 is rest period, and [1..8] is the label of each object.
-
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Preprocess data ########################################################### 
+        :end-before: ### Remove rest period ########################################################
 
 .. topic:: Exercise
 
@@ -156,19 +128,11 @@ where 0 is rest period, and [1..8] is the label of each object.
 
     >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
 
-We can check that:
+We can check and look at our 8 conditions:
 
-    >>> n_samples, n_features = X.shape
-    >>> n_samples
-    864
-    >>> n_features
-    39912
-
-and we have the 8 conditions:
-
-    >>> n_conditions = np.size(np.unique(y))
-    >>> n_conditions
-    8
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Remove rest period ########################################################
+        :end-before: ### Prepare pipeline ##########################################################
 
 Second step: decoding analysis
 ================================
@@ -376,6 +340,8 @@ Final script
 An thus, the complete script is (:download:`../../decoding_example.py`):
 
 .. literalinclude:: ../../decoding_example.py
+        :start-after: ### Load Haxby dataset ########################################################
+        :end-before: ### Build the mean image because we have no anatomic data
 
 Now, you just have to publish the results :)
 

@@ -1,42 +1,72 @@
 ### All the imports
-import numpy as np
-from scipy import signal
 from sklearn.svm import SVC
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.pipeline import Pipeline
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-from nisl import datasets
 from matplotlib import pyplot as plt
 
-### Load dataset
+### Load Haxby dataset ########################################################
+from nisl import datasets
 dataset = datasets.fetch_haxby_data()
 X = dataset.data
 mask = dataset.mask
 y = dataset.target
 session = dataset.session
 
-### Build the mean image because we have no anatomic data
+### Preprocess data ###########################################################
+import numpy as np
+from scipy import signal
+
+# Build the mean image because we have no anatomic data
 mean_img = X.mean(-1)
+
+X.shape
+# (40, 64, 64, 1452)
+mask.shape
+# (40, 64, 64)
 
 # Process the data in order to have a two-dimensional design matrix X of
 # shape (nb_samples, nb_features).
 X = X[mask != 0].T
 
-print "detrending data"
+X.shape
+# (1452, 39912)
+
 # Detrend data on each session independently
+print "detrending data"
 for s in np.unique(session):
     X[session == s] = signal.detrend(X[session == s], axis=0)
 
-print "removing mask"
+
+### Remove rest period ########################################################
+
 # Remove volumes corresponding to rest
 X, y, session = X[y != 0], y[y != 0], session[y != 0]
-n_samples, n_features = X.shape
-n_conditions = np.size(np.unique(y))
 
-X = X[y <= 2]
-session = session[y <= 2]
-y = y[y <= 2]
-session /= 5
+# We can check that
+n_samples, n_features = X.shape
+n_samples
+# 864
+n_features
+# 39912
+
+# Look at target y
+y.shape
+# (1452,)
+
+# Check conditions:
+# - 0 is the rest period
+# - [1..8] is the label of each object
+np.unique(y)
+# array([0, 1, 2, 3, 4, 5, 6, 7, 8])
+
+# We have the 8 conditions
+n_conditions = np.size(np.unique(y))
+n_conditions
+# 8
+
+
+### Prepare pipeline ##########################################################
 
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
