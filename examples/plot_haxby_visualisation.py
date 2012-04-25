@@ -41,11 +41,6 @@ X, y, session = X[y != 0], y[y != 0], session[y != 0]
 n_samples, n_features = X.shape
 n_conditions = np.size(np.unique(y))
 
-X = X[y <= 2]
-session = session[y <= 2]
-y = y[y <= 2]
-session /= 5
-
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
 clf = SVC(kernel='linear', C=1.)

@@ -132,7 +132,7 @@ We can check and look at our 8 conditions:
 
 .. literalinclude:: ../../decoding_example.py
         :start-after: ### Remove rest period ########################################################
-        :end-before: ### Prepare pipeline ##########################################################
+        :end-before: ### Prediction function #######################################################
 
 Second step: decoding analysis
 ================================
@@ -145,17 +145,11 @@ Prediction function
 
 We define here a simple Support Vector Classification (or SVC) with C=1,
 and a linear kernel. We first import the correct module from
-scikits-learn:
+scikits-learn and we define the classifier:
 
-    >>> from sklearn.svm import SVC
-
-and we define the classifier:
-
-    >>> clf = SVC(kernel='linear', C=1.)
-    >>> clf
-    SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, degree=3, gamma=0.0,
-      kernel='linear', probability=False, scale_C=True, shrinking=True,
-      tol=0.001, verbose=False)
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Prediction function #######################################################
+        :end-before: ### Dimension reduction #######################################################
 
 Need some doc ?
 
@@ -188,28 +182,21 @@ Dimension reduction
 But a classification with few samples and many features is plagued by the
 *curse of dimensionality*. Let us add a feature selection procedure.
 
-For this, we need to import the correct module::
+For this, we need to import the correct module and define a simple F-score
+based feature selection (a.k.a. Anova):
 
-    >>> from sklearn.feature_selection import SelectKBest, f_classif
-
-and define a simple F-score based feature selection (a.k.a. Anova)::
-
-    >>> feature_selection = SelectKBest(f_classif, k=500)
-    >>> feature_selection # doctest: +ELLIPSIS
-    SelectKBest(k=500, score_func=<function f_classif at 0x...>)
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Dimension reduction #######################################################
+        :end-before: ### Pipeline ##################################################################
 
 
 We have our classifier (SVC), our feature selection (SelectKBest), and now, we
 can plug them together in a *pipeline* that performs the two operations
-successively::
+successively:
 
-    >>> from sklearn.pipeline import Pipeline
-    >>> anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
-    >>> anova_svc # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
-    f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
-    coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
-    scale_C=True, shrinking=True, tol=0.001, verbose=False))])
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Pipeline ##################################################################
+        :end-before: ### Fit and predict ###########################################################
 
 We use a univariate feature selection, but we can use other dimension
 reduction such as `RFE
@@ -224,27 +211,18 @@ Fit (train) and predict (test)
 In scikits-learn, prediction function have a very simple API:
 
   - a *fit* function that "learn" the parameters of the model from the data.
-    Thus, we need to give some training data to *fit*::
-
-     >>> anova_svc.fit(X, y) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-     Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
-     f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
-     coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
-     scale_C=True, shrinking=True, tol=0.001, verbose=False))])
-
+    Thus, we need to give some training data to *fit*
   - a *predict* function that "predict" a target from new data.
     Here, we just have to give the new set of images (as the target should be
-    unknown)::
+    unknown):
 
-     >>> y_pred = anova_svc.predict(X)
-     >>> y_pred.shape
-     (864,)
-     >>> X.shape
-     (864, 39912)
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Fit and predict ###########################################################
+        :end-before: ### Visualisation #############################################################
 
-    **Warning ! Do not do this at home !** the score that we obtain here is 
-    heavily biased (see next paragraph). This is used here to check that 
-    we have one predicted value per image.
+**Warning ! Do not do this at home !** the score that we obtain here is 
+heavily biased (see next paragraph). This is used here to check that 
+we have one predicted value per image.
 
 Note that you could have done this in only 1 line::
 
@@ -255,9 +233,18 @@ Visualisation
 
 We can visualize the result of our algorithm:
 
+  - we first get the support vectors of the SVC and revert the feature
+    selection mechanism
+  - we remove the mask
+  - then we overlay our mean image computed before with our support vectors
+
 .. figure:: ../auto_examples/images/plot_haxby_visualisation_1.png
    :target: ../auto_examples/plot_haxby_visualisation.html
    :align: center
+
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Visualisation #############################################################
+        :end-before: ### Cross validation ########################################################## 
 
 
 Cross-validation
@@ -267,21 +254,14 @@ However, the last analysis is *wrong*, as we have learned and tested on
 the same set of data. We need to use a cross-validation to split the data
 into different sets.
 
-Let us define a Leave-one-session-out cross-validation::
-
-    >>> from sklearn.cross_validation import LeaveOneLabelOut
-    >>> cv = LeaveOneLabelOut(session)
-
 In scikit-learn, a cross-validation is simply a function that generates
 the index of the folds within a loop.
 So, now, we can apply the previously defined *pipeline* with the
-cross-validation::
+cross-validation:
 
-    >>> cv_scores = [] # will store the number of correct predictions in each fold
-    >>> for train, test in cv:
-    ...     y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])
-    ...     cv_scores.append(np.sum(y_pred == y[test]))
-
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Cross validation ########################################################## 
+        :end-before: ### Print results #############################################################
 
 But we are lazy people, so there is a specific
 function, *cross_val_score* that computes for you the results for the
@@ -291,11 +271,11 @@ different folds of cross-validation::
     >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=1,
     ...     verbose=1)
 
-    n_jobs = 1 means that the computation run sequentially.  But, if
-    you are the happy owner of a multiple processors computer you can
-    speed up the computation by using n_jobs=-1, which will spread the
-    computation equally across all processors (python version 2.6 or
-    newer is required):
+n_jobs = 1 means that the computation run sequentially.  But, if
+you are the happy owner of a multiple processors computer you can
+speed up the computation by using n_jobs=-1, which will spread the
+computation equally across all processors (python version 2.6 or
+newer is required)::
 
     >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1,
     ...     verbose=1)
@@ -327,21 +307,18 @@ Prediction accuracy
 We have a total prediction accuracy of 74% across the different folds.
 
 
-We can add a line to print the results::
+We can add a line to print the results:
 
-    >>> print "Classification accuracy: %f" % classification_accuracy, \
-    ...     " / Chance level: %f" % (1. / n_conditions) # doctest: +SKIP
-    Classification accuracy: 0.744213  / Chance level: 0.125000
+.. literalinclude:: ../../decoding_example.py
+        :start-after: ### Print results #############################################################
 
 
 Final script
 ============
 
-An thus, the complete script is (:download:`../../decoding_example.py`):
+An thus, the complete script is (:download:`decoding_example.py <../../decoding_example.py>`):
 
 .. literalinclude:: ../../decoding_example.py
-        :start-after: ### Load Haxby dataset ########################################################
-        :end-before: ### Build the mean image because we have no anatomic data
 
 Now, you just have to publish the results :)
 
