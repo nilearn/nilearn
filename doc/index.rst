@@ -23,7 +23,7 @@
 
     .. |banner1| image:: auto_examples/images/plot_haxby_visualisation_1.png
        :height: 140
-       :target: auto_examples/plot_test.html
+       :target: auto_examples/plot_haxby_visualisation.html
 
     .. |center-div| raw:: html
 
@@ -40,7 +40,7 @@
           var size = 4;
           var num_choices = e.size();
 
-          while (size >= 1) {
+          while (size >= 1 && num_choices >= 1) {
             var rand = Math.floor(Math.random() * num_choices);
             var temp = e.get(rand);      // grab a random div from our set
             replace.append(temp);        // add the selected div to our new set
