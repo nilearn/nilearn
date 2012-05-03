@@ -436,3 +436,58 @@ def fetch_haxby_data(data_dir=None, force_download=False):
     mask = ni.load(files[2]).get_data()
 
     return Bunch(data=X, target=y, mask=mask, session=session)
+
+
+def fetch_kamitani_data(data_dir=None, force_download=False):
+    """Returns the kamitani dataset
+
+    Returns
+    -------
+    data : Bunch
+        Dictionary-like object, the interest attributes are :
+        'data' : numpy array : the data to learn
+        'target' : numpy array
+                    target of the data
+        'mask' : the masks for the data
+        'xyz' : index to 3D-coordinate array
+    """
+
+    file_names = ['public_beta_201005015.mat']
+
+    try:
+        files = get_dataset("kamitani", file_names, data_dir=data_dir)
+    except IOError:
+        url = ''
+        tar_name = 'public_beta_20100515.zip'
+        urls = [os.path.join(url, tar_name)]
+        fetch_dataset('kamitani', urls, data_dir=data_dir,
+                force_download=force_download)
+        uncompress_dataset('kamitani', [tar_name], data_dir=data_dir)
+        files = get_dataset("kamitani", file_names, data_dir=data_dir)
+
+    mat = io.loadmat(files[0], struct_as_record=True)
+
+    """
+    Matrix content :
+    - data : already masked fMRI (20 random and 12 figures, 18064 voxels, 145
+             shots)
+    - label : picture shown to the patient (20 random and 12 figures, 10x10)
+    - roi_name + roi_volInd : ROIs and corresponding coordinates (11x4)
+    - volInd : indices of each point of data
+    - xyz : mapping of each voxel in 3D-coordinates
+    """
+
+    y_random = mat['D']['label'].flat[0]['random'].flat[0].squeeze()
+    y_figure = mat['D']['label'].flat[0]['figure'].flat[0].squeeze()
+    X_random = mat['D']['data'].flat[0]['random'].flat[0].squeeze()
+    X_figure = mat['D']['data'].flat[0]['figure'].flat[0].squeeze()
+    roi_name = mat['D']['roi_name'].flat[0]
+    roi_volInd = mat['D']['roi_volInd'].flat[0]
+    volInd = mat['D']['volInd'].flat[0]
+    xyz = mat['D']['xyz'].flat[0]
+    # Convert MNI to convenient 3D coordinates
+    xyz = xyz / 3 - 0.5 + [[32], [32], [15]]
+
+    return Bunch(data_random=X_random, data_figure=X_figure,
+           target_random=y_random, target_figure=y_figure,
+           roi_name=roi_name, roi_volInd=roi_volInd, volInd=volInd, xyz=xyz)
