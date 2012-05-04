@@ -483,7 +483,7 @@ def fetch_kamitani_data(data_dir=None, force_download=False):
     X_figure = mat['D']['data'].flat[0]['figure'].flat[0].squeeze()
     roi_name = mat['D']['roi_name'].flat[0]
     roi_volInd = mat['D']['roi_volInd'].flat[0]
-    volInd = mat['D']['volInd'].flat[0]
+    volInd = mat['D']['volInd'].flat[0].squeeze()
     xyz = mat['D']['xyz'].flat[0]
     # Convert MNI to convenient 3D coordinates
     xyz = xyz / 3 - 0.5 + [[32], [32], [15]]
