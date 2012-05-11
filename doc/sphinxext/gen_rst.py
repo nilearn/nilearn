@@ -21,6 +21,20 @@ matplotlib.use('Agg')
 import token
 import tokenize
 
+###############################################################################
+# A tee object to redict streams to multiple outputs
+
+class Tee(object):
+
+    def __init__(self, file1, file2):
+        self.file1 = file1
+        self.file2 = file2
+
+    def write(self, data):
+        self.file1.write(data)
+        self.file2.write(data)
+
+###############################################################################
 rst_template = """
 
 .. _example_%(short_fname)s:
@@ -277,12 +291,13 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                 # created by the example get created in this directory
                 orig_stdout = sys.stdout
                 os.chdir(os.path.dirname(src_file))
-                my_stdout = StringIO()
+                my_buffer = StringIO()
+                my_stdout = Tee(sys.stdout, my_buffer)
                 sys.stdout = my_stdout
                 my_globals = {'pl': plt}
                 execfile(os.path.basename(src_file), my_globals)
                 sys.stdout = orig_stdout
-                my_stdout = my_stdout.getvalue()
+                my_stdout = my_buffer.getvalue()
                 if '__doc__' in my_globals:
                     # The __doc__ is often printed in the example, we
                     # don't with to echo it
