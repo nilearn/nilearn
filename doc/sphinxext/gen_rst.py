@@ -62,7 +62,7 @@ plot_rst_template = """
 
 %(stdout)s
 
-**Generation time:** %(time_elapsed)s
+**Total running time of the example:** %(time_elapsed).2g seconds
     """
 
 # The following strings are used when we have several pictures: we use
