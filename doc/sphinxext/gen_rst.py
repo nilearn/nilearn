@@ -265,6 +265,8 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     image_path = os.path.join(image_dir, image_fname)
     stdout_path = os.path.join(image_dir,
                                'stdout_%s.txt' % base_image_name)
+    time_path = os.path.join(image_dir,
+                               'time_%s.txt' % base_image_name)
     thumb_file = os.path.join(thumb_dir, fname[:-3] + '.png')
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
@@ -276,6 +278,8 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
             stdout = open(stdout_path).read()
         else:
             stdout = ''
+        if os.path.exists(time_path):
+            time_elapsed = float(open(time_path).read())
 
         if (not os.path.exists(first_image_file) or
                 os.stat(first_image_file).st_mtime <=
@@ -296,6 +300,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                 sys.stdout = my_stdout
                 my_globals = {'pl': plt}
                 execfile(os.path.basename(src_file), my_globals)
+                time_elapsed = time() - t0
                 sys.stdout = orig_stdout
                 my_stdout = my_buffer.getvalue()
                 if '__doc__' in my_globals:
@@ -309,6 +314,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                     stdout = '**Script output**::\n\n  %s\n\n' % (
                         '\n  '.join(my_stdout.split('\n')))
                 open(stdout_path, 'w').write(stdout)
+                open(time_path, 'w').write('%f' % time_elapsed)
                 os.chdir(cwd)
 
                 # In order to save every figure we have two solutions :
@@ -333,7 +339,6 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                 os.chdir(cwd)
                 sys.stdout = orig_stdout
             
-            time_elapsed = time() - t0
             print " - time elapsed : %.2g sec" % time_elapsed
         else:
             figure_list = [f[len(image_dir):]
