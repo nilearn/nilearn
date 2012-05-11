@@ -1,3 +1,9 @@
+"""
+The Kamitani paper: reconstruction of visual stimuli
+======================================================
+
+"""
+
 from matplotlib import pyplot as plt
 ### Load Kamitani dataset #####################################################
 from nisl import datasets

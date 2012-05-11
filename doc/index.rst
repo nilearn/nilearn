@@ -13,6 +13,9 @@
     span.linkdescr a {
         color:  #3E4349 ;
     }
+    div.banner img {
+        vertical-align: middle;
+    }
     </style>
 
 ..  
@@ -21,13 +24,17 @@
 
 .. only:: html
 
-    .. |banner1| image:: auto_examples/images/plot_haxby_visualisation_1.png
+    .. |banner1| image:: auto_examples/images/plot_haxby_decoding_1.png
        :height: 140
-       :target: auto_examples/plot_haxby_visualisation.html
+       :target: auto_examples/plot_haxby_decoding.html
+
+    .. |banner2| image:: auto_examples/images/plot_simulated_data_3.png
+       :height: 100
+       :target: auto_examples/plot_simulated_data.html
 
     .. |center-div| raw:: html
 
-        <div style="text-align: center; margin: -7px 0 -10px 0;" id="banner">
+        <div style="text-align: center; vertical-align: middle; margin: -7px 0 -10px 0;" id="banner" class="banner">
 
     .. |end-div| raw:: html
 
@@ -54,26 +61,22 @@
         shuffle ($('#banner a.external'));
         </SCRIPT>
 
-    |center-div| |banner1| |end-div|
+    |center-div| |banner1| |banner2| |end-div|
 
 
 **License:** Open source, commercially usable: **BSD license** (3 clause)
 
 .. include:: includes/big_toc_css.rst
 
-Documentation for nisl **version** |release|. For other versions and
-printable format, see :ref:`documentation_resources`.
+Tutoral nisl **version** |release|. 
 
-User Guide
+Tutorial
 ==========
 
 .. toctree::
    :maxdepth: 2
 
    tutorial/index.rst
-
-Example Gallery
-===============
 
 .. toctree::
    :maxdepth: 2

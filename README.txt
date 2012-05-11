@@ -1,1 +1,2 @@
-Examples of statistical learning with the scikit-learn
+General-purpose and introductory examples for neuroimaging with the 
+scikit-learn.
