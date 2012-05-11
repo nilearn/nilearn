@@ -2,6 +2,10 @@
 =================================================
 Example of pattern recognition on simulated data
 =================================================
+
+This examples simulates data according to a very simple sketch of brain
+imaging data and applies machine learing techniques to predict output
+values.
 """
 
 # Licence : BSD

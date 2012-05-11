@@ -119,7 +119,7 @@ def generate_example_rst(app):
         examples.
     """
     root_dir = os.path.join(app.builder.srcdir, 'auto_examples')
-    example_dir = os.path.abspath(app.builder.srcdir + '/../' + 'examples')
+    example_dir = os.path.abspath(app.builder.srcdir + '/..')
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
     except TypeError:
@@ -170,9 +170,9 @@ Examples
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     generate_dir_rst('.', fhindex, example_dir, root_dir, plot_gallery)
-    for dir in sorted(os.listdir(example_dir)):
-        if os.path.isdir(os.path.join(example_dir, dir)):
-            generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery)
+    #for dir in sorted(os.listdir(example_dir)):
+    #    if os.path.isdir(os.path.join(example_dir, dir)):
+    #        generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery)
     fhindex.flush()
 
 
@@ -208,6 +208,8 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
             return 'zz' + a
         return a
     for fname in sorted(os.listdir(src_dir), key=sort_key):
+        if fname == 'setup.py':
+            continue
         if fname.endswith('py'):
             generate_file_rst(fname, target_dir, src_dir, plot_gallery)
             thumb = os.path.join(dir, 'images', 'thumb', fname[:-3] + '.png')
