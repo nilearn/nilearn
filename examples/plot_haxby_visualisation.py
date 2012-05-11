@@ -29,6 +29,8 @@ mean_img = X.mean(-1)
 # Process the data in order to have a two-dimensional design matrix X of
 # shape (nb_samples, nb_features).
 X = X[mask != 0].T
+# Convert X to floats: working with integers gives rounding errors
+X = X.astype(np.float)
 
 print "detrending data"
 # Detrend data on each session independently
