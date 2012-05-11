@@ -21,6 +21,9 @@ import os
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
 
+# We also add the directory just above to enable local imports of nisl
+sys.path.insert(0, os.path.abspath('..'))
+
 # -- General configuration ---------------------------------------------------
 
 # Try to override the matplotlib configuration as early as possible
