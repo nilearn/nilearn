@@ -109,3 +109,13 @@ doctest:
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
 download-data:
+
+install: html
+	rm -rf _build/nisl.github.com
+	cd _build/ && \
+        git clone git@github.com:nisl/nisl.github.com.git && \
+	cp -r html/* nisl.github.com && \
+	cd nisl.github.com && \
+	git add * && \
+	git commit -a -m 'Make install' && \
+	git push

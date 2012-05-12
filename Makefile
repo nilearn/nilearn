@@ -57,3 +57,7 @@ doc: inplace
 
 doc-noplot: inplace
 	make -C doc html-noplot
+
+install: 
+	cd doc && make install
+ 
