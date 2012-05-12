@@ -16,12 +16,9 @@ Important links
 Dependencies
 ============
 
-The required dependencies to build the software are Python >= 2.6,
-setuptools, Numpy >= 1.3, SciPy >= 0.7, Scikit-learn >= 0.10 and a working
-C/C++ compiler.
+The required dependencies to sue the software are Python >= 2.6,
+setuptools, Numpy >= 1.3, SciPy >= 0.7, Scikit-learn >= 0.10
 This configuration matches the Ubuntu 10.04 LTS release from April 2010.
-
-To run the tests you will also need nose >= 0.10.
 
 
 Install
@@ -56,5 +53,3 @@ or if you have write privileges::
     git clone git@github.com:nisl/tutorial
 
 
-Testing
--------
