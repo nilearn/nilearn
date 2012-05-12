@@ -5,7 +5,7 @@
     
 .. raw:: html
 
-    <h1>nisl: machine learning for Neuro Imaging in Python</h1>
+    <h1>Machine learning for Neuro Imaging in Python</h1>
     <style type="text/css">
     p {
         margin: 7px 0 7px 0 ;
@@ -63,14 +63,22 @@
 
     |center-div| |banner1| |banner2| |end-div|
 
+.. topic:: Learn machine learning for fMRI
 
-**License:** Open source, commercially usable: **BSD license** (3 clause)
+   This document compiles examples and tutorials to learn to apply
+   machine learning to fMRI using Python and the `scikit-learn
+   <http://scikit-learn.org>`__. It requires `nibabel
+   <htpp://nipy.org/nibabel>`__ and the `scikit-learn
+   <http://scikit-learn.org>`__.
+
+
+**License:** All material Open source: **BSD license** (3 clause)
 
 .. include:: includes/big_toc_css.rst
 
 Tutoral nisl **version** |release|. 
 
-Tutorial
+Contents
 ==========
 
 .. toctree::

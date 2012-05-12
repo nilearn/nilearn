@@ -1,7 +1,7 @@
 
 
 ==================================================================================================================
-NeuroImaging with the `Scikit-learn <http://scikit-learn.org/>`_: fMRI inverse inference tutorial 
+NeuroImaging with the `Scikit-learn <http://scikit-learn.org/>`_: fMRI decoding tutorial 
 ==================================================================================================================
 
 **Autors:** `INRIA Parietal Project Team
