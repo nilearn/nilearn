@@ -19,12 +19,12 @@ import pylab as pl
 from scipy import linalg, ndimage
 
 from sklearn import linear_model, svm
+from sklearn.utils import check_random_state
 
 
 ###############################################################################
 # Fonction to generate data
-def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
-    from sklearn.utils import check_random_state
+def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
     generator = check_random_state(random_state)
     roi_size = 2  # size / 3
     smooth_X = 2
@@ -46,7 +46,7 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
         y.append(np.dot(Xi, w))
     X = np.array(X)
     y = np.array(y)
-    norm_noise = linalg.norm(y, 2) / np.exp(snr/20.)
+    norm_noise = linalg.norm(y, 2) / np.exp(snr / 20.)
     orig_noise = generator.randn(y.shape[0])
     noise_coef = norm_noise / linalg.norm(orig_noise, 2)
     # Add additive noise
@@ -57,10 +57,10 @@ def create_simulation_data(snr=5, n_samples=2*100, size=12, random_state=0):
 
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]
-    X_test = X[n_samples/2:, :]
-    X_train = X[:n_samples/2, :]
-    y_test = y[n_samples/2:]
-    y = y[:n_samples/2]
+    X_test = X[n_samples / 2:, :]
+    X_train = X[:n_samples / 2, :]
+    y_test = y[n_samples / 2:]
+    y = y[:n_samples / 2]
 
     return X_train, X_test, y, y_test, snr, noise, w, size
 
@@ -69,7 +69,7 @@ def plot_slices(data, title=None):
     pl.figure(figsize=(5.5, 2))
     vmax = np.abs(data).max()
     for i in (0, 6, 11):
-        pl.subplot(1, 3, i/5+1)
+        pl.subplot(1, 3, i / 5 + 1)
         pl.imshow(data[:, :, i], vmin=-vmax, vmax=vmax,
                 interpolation="nearest", cmap=pl.cm.RdBu_r)
         pl.xticks(())
@@ -91,8 +91,9 @@ X_train, X_test, y_train, y_test, snr, noise, coefs, size =\
 # Compute the results and coef maps for different estimators
 classifiers = {
     'bayesian_ridge': linear_model.BayesianRidge(normalize=True),
-    'svr': svm.SVR(kernel='linear'),
-    'ridge_cv': linear_model.RidgeCV(),
+    'svr': svm.SVR(kernel='linear', C=0.001),
+    'ridge_cv': linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5),
+    'enet_cv': linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05),
 }
 
 coefs = np.reshape(coefs, [size, size, size])
