@@ -528,3 +528,63 @@ def fetch_kamitani(data_dir=None, force_download=False):
     return Bunch(files=files, data_random=X_random, data_figure=X_figure,
            target_random=y_random, target_figure=y_figure, roi_name=roi_name,
            roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
+
+def fetch_nyu_rest(data_dir=None, force_download=False):
+    """Returns the NYU Test Retest dataset
+
+    Returns
+    -------
+    data : Bunch
+        Dictionary-like object, the interest attributes are :
+        'data' : numpy array : the data to learn
+        'target' : numpy array
+                    target of the data
+        'mask' : the masks for the data
+        'xyz' : index to 3D-coordinate array
+    """
+
+    file_names = [os.path.join('anat', 'mprage_anonymized.nii.gz'),
+        os.path.join('anat', 'mprage_skullstripped.nii.gz'),
+        os.path.join('func', 'lfo.nii.gz')]
+
+    # Warning : only Session 1 subs for the moment
+    sub_names = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
+            'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
+            'sub36678', 'sub38579', 'sub39529']
+
+    file_names = [os.path.join(sub, f) for sub in sub_names
+            for f in file_names]
+
+    try:
+        files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
+    except IOError:
+        url = 'http://www.nitrc.org/frs/download.php/'
+        tar_prefixes = ['1071']
+        tar_names = ['NYU_TRT_session1a.tar.gz']
+        """
+        tar_prefixes = ['1071', '1072', '1073', '1074', '1075', '1076']
+        tar_names = ['NYU_TRT_session1a.tar.gz',
+            'NYU_TRT_session1b.tar.gz', 'NYU_TRT_session2a.tar.gz',
+            'NYU_TRT_session2b.tar.gz', 'NYU_TRT_session3a.tar.gz',
+            'NYU_TRT_session3b.tar.gz']
+        """
+        tar_full_names = []
+        # merge lists
+        for i, p in enumerate(tar_prefixes):
+            tar_full_names.append(p + tar_names[i])
+        urls = [os.path.join(url, name) for name in tar_full_names]
+        fetch_dataset('nyu_rest', urls, data_dir=data_dir,
+                force_download=force_download)
+        uncompress_dataset('nyu_rest', tar_names, data_dir=data_dir)
+        files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
+
+    anat_anon = []
+    anat_skull = []
+    func = []
+
+    for i in np.multiply(range(len(sub_names)), 3):
+        anat_anon.append(ni.load(files[i]).get_data())
+        anat_skull.append(ni.load(files[i + 1]).get_data())
+        func.append(ni.load(files[i + 2]).get_data())
+
+    return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func)
