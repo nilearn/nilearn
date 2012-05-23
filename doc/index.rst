@@ -80,6 +80,7 @@
    :maxdepth: 2
    :numbered:
 
+   introduction.rst
    haxby_decoding.rst
    auto_examples/index
 

@@ -1,7 +1,7 @@
 
 
 ================================================================================
-fMRI decoding tutorial: predicting which objects a subject is viewing 
+fMRI decoding: predicting which objects a subject is viewing 
 ================================================================================
 
 **Autors:** `INRIA Parietal Project Team
@@ -23,36 +23,8 @@ Thanks to M. Hanke and Y. Halchenko for data and packaging.
 
 .. role:: input(strong)
 
-
-Introduction
-==============
-
-What is the scikit-learn?
----------------------------
-
-
-Scikit-learn is a Python library for machine learning.
-
-Principal features:
-
-- Easy to use.
-- Easy to install.
-- Well documented.
-- Provide standard machine learning methods for non-experts.
-
-Technical choices:
-
-- Python: general-purpose, high-level language.
-- Simple data structures (numpy arrays).
-- BSD license : reuse even in commercial settings
-
-
-
-Installation of the required materials
----------------------------------------
-
-The data
-^^^^^^^^
+The haxby dataset
+===================
 
 We use here the *Haxby 2001* dataset used in `Distributed and Overlapping Representations 
 of Faces and Objects in Ventral Temporal Cortex
@@ -69,28 +41,6 @@ In short, we have:
   - 864 volumes containing 39912 voxels
 
 Additional information : http://www.sciencemag.org/content/293/5539/2425
-
-
-Nibabel
-^^^^^^^^
-
-Easy to use reader of ANALYZE (plain, SPM99, SPM2), GIFTI, NIfTI1, MINC
-(former PyNIfTI)::
-
-  $ easy_install -U nibabel
-
-and if you can not be root::
-
-  $ easy_install -U --prefix=~/usr nibabel
-
-
-Scikit-learn
-^^^^^^^^^^^^^^
-
-(Quick) installation::
-
-  $ easy_install -U scikit-learn
-
 
 First step: looking at the data
 ================================
@@ -391,12 +341,4 @@ and recompute the cross-validation score::
     ...     verbose=True) # doctest: +SKIP
 
 But, be aware that this can take A WHILE...
-
-
-Any questions ?
-===============
-
-
- `http://scikit-learn.org/ <http://scikit-learn.org/>`_
-
 
