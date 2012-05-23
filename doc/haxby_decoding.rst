@@ -16,7 +16,7 @@ Thanks to M. Hanke and Y. Halchenko for data and packaging.
 
    At the end of this tutorial you will be able to:
 
-    1. Install and use the required tools (Nibabel and scikits-learn).
+    1. Install and use the required tools (Nibabel and scikit-learn).
     2. Load fMRI volumes in Python.
     3. Perform a state-of-the-art decoding analysis of fMRI data.
     4. Perform even more sophisticated analyzes of fMRI data.
@@ -84,7 +84,7 @@ and if you can not be root::
   $ easy_install -U --prefix=~/usr nibabel
 
 
-Scikits-learn
+Scikit-learn
 ^^^^^^^^^^^^^^
 
 (Quick) installation::
@@ -103,7 +103,7 @@ Now, launch ipython::
 First, we load the data. Nisl provides an easy way to download and preprocess
 data. Simply call:
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Load Haxby dataset ########################################################
         :end-before: ### Preprocess data ########################################################### 
 
@@ -115,7 +115,7 @@ Then we preprocess the data to get make it handier:
   (n_samples, n_features)
 - finally detrend the data for each session
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Preprocess data ########################################################### 
         :end-before: ### Remove rest period ########################################################
 
@@ -130,7 +130,7 @@ Then we preprocess the data to get make it handier:
 
 We can check and look at our 8 conditions:
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Remove rest period ########################################################
         :end-before: ### Prediction function #######################################################
 
@@ -145,9 +145,9 @@ Prediction function
 
 We define here a simple Support Vector Classification (or SVC) with C=1,
 and a linear kernel. We first import the correct module from
-scikits-learn and we define the classifier:
+scikit-learn and we define the classifier:
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Prediction function #######################################################
         :end-before: ### Dimension reduction #######################################################
 
@@ -168,7 +168,7 @@ Need some doc ?
             penalty parameter C of the error term.
     ...
 
-Or go to the `scikits-learn
+Or go to the `scikit-learn
 documentation <http://scikit-learn.org/modules/svm.html>`_
 
 We use a SVC here, but we can use
@@ -185,7 +185,7 @@ But a classification with few samples and many features is plagued by the
 For this, we need to import the correct module and define a simple F-score
 based feature selection (a.k.a. Anova):
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Dimension reduction #######################################################
         :end-before: ### Pipeline ##################################################################
 
@@ -194,7 +194,7 @@ We have our classifier (SVC), our feature selection (SelectKBest), and now, we
 can plug them together in a *pipeline* that performs the two operations
 successively:
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Pipeline ##################################################################
         :end-before: ### Fit and predict ###########################################################
 
@@ -208,7 +208,7 @@ Third step: launch it on real data
 Fit (train) and predict (test)
 -------------------------------
 
-In scikits-learn, prediction function have a very simple API:
+In scikit-learn, prediction function have a very simple API:
 
   - a *fit* function that "learn" the parameters of the model from the data.
     Thus, we need to give some training data to *fit*
@@ -216,7 +216,7 @@ In scikits-learn, prediction function have a very simple API:
     Here, we just have to give the new set of images (as the target should be
     unknown):
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Fit and predict ###########################################################
         :end-before: ### Visualisation #############################################################
 
@@ -238,11 +238,11 @@ We can visualize the result of our algorithm:
   - we remove the mask
   - then we overlay our mean image computed before with our support vectors
 
-.. figure:: ../auto_examples/images/plot_haxby_visualisation_1.png
-   :target: ../auto_examples/plot_haxby_visualisation.html
+.. figure:: auto_examples/images/plot_haxby_decoding_1.png
+   :target: auto_examples/plot_haxby_decoding.html
    :align: center
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Visualisation #############################################################
         :end-before: ### Cross validation ########################################################## 
 
@@ -259,7 +259,7 @@ the index of the folds within a loop.
 So, now, we can apply the previously defined *pipeline* with the
 cross-validation:
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Cross validation ########################################################## 
         :end-before: ### Print results #############################################################
 
@@ -309,23 +309,23 @@ We have a total prediction accuracy of 74% across the different folds.
 
 We can add a line to print the results:
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Print results #############################################################
 
 
 Final script
 ============
 
-An thus, the complete script is (:download:`decoding_example.py <../../decoding_example.py>`):
+An thus, the complete script is (:download:`decoding_example.py <../plot_haxby_decoding.py>`):
 
-.. literalinclude:: ../../decoding_example.py
+.. literalinclude:: ../plot_haxby_decoding.py
 
 Now, you just have to publish the results :)
 
 Going further with scikit-learn
 ===================================
 
-We have seen a very simple analysis with scikits-learn.
+We have seen a very simple analysis with scikit-learn.
 
 
 `Other prediction functions for supervised learning: Linear models,
@@ -333,12 +333,12 @@ Support vector machines, Nearest Neighbor, etc.
 <http://scikit-learn.org/supervised_learning.html>`_
 
 `Unsupervised learning (e.g. clustering, PCA, ICA) with
-Scikits-learn <http://scikit-learn.org/modules/clustering.html>`_
+Scikit-learn <http://scikit-learn.org/modules/clustering.html>`_
 
 Example of the simplicity of scikit-learn
 -----------------------------------------
 
-One of the major assets of scikits-learn is the real simplicity of use.
+One of the major assets of scikit-learn is the real simplicity of use.
 
 Changing the prediction function
 --------------------------------
@@ -347,16 +347,16 @@ We now see how one can easily change the prediction function, if needed.
 We can try the Linear Discriminant Analysis
 (LDA) `<http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
 
-Import the module:
+Import the module::
 
     >>> from sklearn.lda import LDA
 
-Construct the new prediction function and use it in a pipeline:
+Construct the new prediction function and use it in a pipeline::
 
     >>> lda = LDA()
     >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
 
-and recompute the cross-validation score:
+and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, n_jobs=-1,
     ...     verbose=1)
@@ -368,23 +368,24 @@ and recompute the cross-validation score:
 
 Changing the feature selection
 ------------------------------
+
 Let's say that you want a more sophisticated feature selection, for example a
 `Recursive Feature Elimination
 (RFE) <http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
 
-Import the module:
+Import the module::
 
     >>> from sklearn.feature_selection import RFE
 
-Construct your new fancy selection:
+Construct your new fancy selection::
 
     >>> rfe = RFE(SVC(kernel='linear', C=1.), 50, step=0.25)
 
-and create a new pipeline:
+and create a new pipeline::
 
     >>> rfe_svc = Pipeline([('rfe', rfe), ('svc', clf)])
 
-and recompute the cross-validation score:
+and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=-1,
     ...     verbose=True) # doctest: +SKIP

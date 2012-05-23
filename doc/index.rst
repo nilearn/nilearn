@@ -83,12 +83,9 @@ Contents
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
 
-   tutorial/index.rst
-
-.. toctree::
-   :maxdepth: 2
-
+   haxby_decoding.rst
    auto_examples/index
 
 
