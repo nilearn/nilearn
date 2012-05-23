@@ -162,8 +162,8 @@ def generate_example_rst(app):
     }
     </style>
 
-Examples
-========
+All the examples
+=================
 
 .. _examples-index:
 """)

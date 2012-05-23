@@ -1,8 +1,8 @@
 
 
-==================================================================================================================
-NeuroImaging with the `Scikit-learn <http://scikit-learn.org/>`_: fMRI decoding tutorial 
-==================================================================================================================
+================================================================================
+fMRI decoding tutorial: predicting which objects a subject is viewing 
+================================================================================
 
 **Autors:** `INRIA Parietal Project Team
 <https://parietal.saclay.inria.fr/>`_ and `scikit-learn
