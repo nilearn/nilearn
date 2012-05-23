@@ -4,29 +4,43 @@ The Kamitani paper: reconstruction of visual stimuli
 
 """
 
-# Options
-# =======
+### Options ###################################################################
 
 # Preprocessing
-remove_rest_period = True
-foveal_focus_radius = None  # 2.5 is a good value if set
-multi_scale = True          # Not compatible with foveal focal radius
-voxel_restriction = 'roi'   # could also be 'V1' or None
-preprocessing = 'detrend'
+remove_rest_period = [False, True]
+foveal_focus_radius = [None, 2., 2.5, 3.]  # 2.5 is a good value if set
+multi_scale = [False, True]  # Not compatible with foveal focal radius
+voxel_restriction = [None, 'V1', 'roi']  # could also be 'V1' or None
+preprocessing = [None, 'detrend', 'normalize']
 
 # Learning
-learn_fusion_params = False  # Learn fusion params with LinearRegression
-# Available classifiers :
-# - anova_svc: f_classif 50 features + linear SVC (C = 1.)
-# - ridge: ridge regression
-# - omp: Orthgonal Matching Pursuit (n_nonzero_coefs=20)
-# - anova_ridge: f_classif 50 features + ridge regression
-# - lassolars
-# - bayesianridge: Bayesian Ridge
-classifier = 'bayesianridge'
+learn_fusion_params = [True, False]  # Learn params with LinearRegression
+classifier = [
+    'anova_svc',  # f_classif 50 features + linear SVC (C = 1.)
+    'ridge',  # ridge regression
+    'omp',  # Orthgonal Matching Pursuit (n_nonzero_coefs=20)
+    'anova_ridge',  # anova_ridge: f_classif 50 features + ridge regression
+    'lassolars',  # Lasso Lars
+    'bayesianridge'  # Bayesian Ridge
+    ]
 
 # Output
-generate_video = 'testBR.mp4'
+generate_video = [None, 'video.mp4']
+generate_image = [None, 'picture.png']
+
+### Init ######################################################################
+
+remove_rest_period = True
+foveal_focus_radius = None
+multi_scale = True
+voxel_restriction = 'roi'
+preprocessing = 'detrend'
+
+learn_fusion_params = False  # Learn fusion params with LinearRegression
+classifier = 'omp'
+
+generate_video = 'video.mp4'
+generate_image = None
 
 ### Imports ###################################################################
 
@@ -405,6 +419,9 @@ print "Result : %d" % np.mean(acc)
 """
 Show brains !
 """
+
+if generate_image:
+    print 'ok'
 
 if generate_video:
     from matplotlib import animation
