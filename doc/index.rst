@@ -76,11 +76,6 @@
 
 .. include:: includes/big_toc_css.rst
 
-Tutoral nisl **version** |release|. 
-
-Contents
-==========
-
 .. toctree::
    :maxdepth: 2
    :numbered:
@@ -89,8 +84,4 @@ Contents
    auto_examples/index
 
 
-.. toctree::
-   :hidden:
 
-..   support
-..   whats_new
