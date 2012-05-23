@@ -63,8 +63,8 @@
           <!--	  
 	    <li><a href="{{pathto('install')}}">Download</a></li>
             <li><a href="{{pathto('support')}}">Support</a></li>
-            <li><a href="{{pathto('user_guide')}}">User Guide</a></li>
 	  -->
+            <li><a href="{{pathto('haxby_decoding')}}">fMRI decoding</a></li>
             <li><a href="{{pathto('auto_examples/index')}}">Examples</a></li>
           <!--	  
 	    <li><a href="{{pathto('modules/classes')}}">Reference</a></li>
@@ -106,9 +106,11 @@
 	   {% else %}
 	   <div class="rel rellarge">
 	     {% endif %}
-	<!-- rellinks[1:] is an ugly hack to avoid link to module
-	    index  -->
-	{%- for rellink in rellinks[1:]|reverse %}
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	     rellinks[1:]|reverse
+	    -->
+	{%- for rellink in rellinks|reverse %}
 	<div class="rellink">
 	<a href="{{ pathto(rellink[0]) }}" title="{{ rellink[1]|striptags|e }}"
 	    {{ accesskey(rellink[2]) }}>{{ rellink[3]|capitalize }}
@@ -204,7 +206,11 @@
     {% else %}
      <div class="rel rellarge">
     {% endif %}
-    {%- for rellink in rellinks[1:]|reverse %}
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	rellinks[1:]|reverse
+	-->
+    {%- for rellink in rellinks|reverse %}
     <div class="{{ loop.cycle('buttonPrevious', 'buttonNext') }}">
       <a href="{{ pathto(rellink[0]) }}">
         {{loop.cycle('Previous', 'Next')}}
