@@ -16,10 +16,9 @@ Thanks to M. Hanke and Y. Halchenko for data and packaging.
 
    At the end of this tutorial you will be able to:
 
-    1. Install and use the required tools (Nibabel and scikit-learn).
-    2. Load fMRI volumes in Python.
-    3. Perform a state-of-the-art decoding analysis of fMRI data.
-    4. Perform even more sophisticated analyzes of fMRI data.
+    1. Load fMRI volumes in Python.
+    2. Perform a state-of-the-art decoding analysis of fMRI data.
+    3. Perform even more sophisticated analyzes of fMRI data.
 
 .. role:: input(strong)
 
