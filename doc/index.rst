@@ -72,8 +72,6 @@
    <http://scikit-learn.org>`__.
 
 
-**License:** All material Open source: **BSD license** (3 clause)
-
 .. include:: includes/big_toc_css.rst
 
 .. toctree::
