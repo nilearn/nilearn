@@ -10,12 +10,12 @@ from sklearn.feature_extraction.image import grid_to_graph
 from sklearn.cross_val import StratifiedKFold, cross_val_score
 from sklearn.svm import SVC
 
-from datasets import fetch_star_plus_data
+from datasets import fetch_star_plus
 from supervised_clustering import SupervisedClusteringClassifier
 
 
 # Loading data
-data = fetch_star_plus_data()
+data = fetch_star_plus()
 scores = []
 
 # We compute the score for each patient

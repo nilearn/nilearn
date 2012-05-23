@@ -259,7 +259,7 @@ def get_dataset(dataset_name, file_names, data_dir=None):
     return file_paths
 
 
-def fetch_star_plus_data(data_dir=None, force_download=False):
+def fetch_star_plus(data_dir=None, force_download=False):
     """Function returning the starplus data, downloading them if needed
 
     Returns
@@ -403,7 +403,7 @@ def fetch_star_plus_data(data_dir=None, force_download=False):
     return all_subject
 
 
-def fetch_haxby_data(data_dir=None, force_download=False):
+def fetch_haxby(data_dir=None, force_download=False):
     """Returns the haxby datas
 
     Returns
@@ -438,8 +438,13 @@ def fetch_haxby_data(data_dir=None, force_download=False):
     return Bunch(data=X, target=y, mask=mask, session=session)
 
 
-def fetch_kamitani_data(data_dir=None, force_download=False):
+def fetch_kamitani(data_dir=None, force_download=False):
     """Returns the kamitani dataset
+
+    Notes
+    -----
+    Kamitani dataset cannot be downloaded for the moment because it requires
+    registration.
 
     Returns
     -------

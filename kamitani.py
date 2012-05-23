@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 from sklearn.feature_selection import SelectKBest, f_classif
 ### Load Kamitani dataset #####################################################
 from nisl import datasets
-dataset = datasets.fetch_kamitani_data()
+dataset = datasets.fetch_kamitani()
 X_random = dataset.data_random
 X_figure = dataset.data_figure
 y_random = dataset.target_random
