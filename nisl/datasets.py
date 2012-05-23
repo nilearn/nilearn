@@ -474,11 +474,6 @@ def fetch_haxby(data_dir=None, force_download=False):
 def fetch_kamitani(data_dir=None, force_download=False):
     """Returns the kamitani dataset
 
-    Notes
-    -----
-    Kamitani dataset cannot be downloaded for the moment because it requires
-    registration.
-
     Returns
     -------
     data : Bunch
@@ -488,6 +483,12 @@ def fetch_kamitani(data_dir=None, force_download=False):
                     target of the data
         'mask' : the masks for the data
         'xyz' : index to 3D-coordinate array
+
+    Notes
+    -----
+    Kamitani dataset cannot be downloaded for the moment because it requires
+    registration.
+
     """
 
     file_names = ['public_beta_201005015.mat']
@@ -541,6 +542,14 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
                     target of the data
         'mask' : the masks for the data
         'xyz' : index to 3D-coordinate array
+
+    Reference
+    ---------
+    Documentation :
+    http://www.nitrc.org/docman/?group_id=274
+
+    Data :
+    http://www.nitrc.org/frs/?group_id=274
     """
 
     file_names = [os.path.join('anat', 'mprage_anonymized.nii.gz'),
