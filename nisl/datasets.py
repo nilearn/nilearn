@@ -550,6 +550,11 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
 
     Data :
     http://www.nitrc.org/frs/?group_id=274
+
+    Notes
+    -----
+    
+
     """
 
     file_names = [os.path.join('anat', 'mprage_anonymized.nii.gz'),
