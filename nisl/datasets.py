@@ -271,8 +271,8 @@ def fetch_star_plus(data_dir=None, force_download=False):
                     targets of the datas
         'masks' : the masks for the datas
 
-    Note
-    ----
+    Notes
+    -----
     Each element will be of the form :
     PATH/*.npy
 
@@ -281,8 +281,8 @@ def fetch_star_plus(data_dir=None, force_download=False):
     We decided here to average on the time
     /!\ y is not binarized !
 
-    Reference
-    ---------
+    References
+    ----------
     Documentation :
     http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/\
             README-data-documentation.txt
@@ -403,6 +403,7 @@ def fetch_star_plus(data_dir=None, force_download=False):
     return all_subject
 
 
+### Haxby: function definition
 def fetch_haxby(data_dir=None, force_download=False):
     """Returns the haxby datas
 
@@ -415,14 +416,33 @@ def fetch_haxby(data_dir=None, force_download=False):
                     target of the data
         'mask' : the masks for the data
         'session' : the labels for LeaveOneLabelOut cross validation
+
+    References
+    ----------
+    `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
+    and Pietrini, P. (2001). Distributed and overlapping representations of
+    faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
+
+    Notes
+    -----
+    PyMVPA provides a tutorial using this dataset :
+    http://www.pymvpa.org/tutorial.html
+
+    More informations about its structure :
+    http://dev.pymvpa.org/datadb/haxby2001.html
     """
 
+    ### Haxby: definition of dataset files
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
     file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
 
+    ### Haxby: load the dataset
     try:
+        # Try to load the dataset
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
+
     except IOError:
+        # If the dataset does not exists, we download it
         url = 'http://www.pymvpa.org/files'
         tar_name = 'pymvpa_exampledata.tar.bz2'
         urls = [os.path.join(url, tar_name)]
@@ -431,11 +451,14 @@ def fetch_haxby(data_dir=None, force_download=False):
         uncompress_dataset('haxby2001', [tar_name], data_dir=data_dir)
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
 
+    ### Haxby: preprocess data
     y, session = np.loadtxt(files[0]).astype("int").T
     X = ni.load(files[1]).get_data()
     mask = ni.load(files[2]).get_data()
 
+    ### Haxby: return data
     return Bunch(data=X, target=y, mask=mask, session=session)
+    ### Haxby: end
 
 
 def fetch_kamitani(data_dir=None, force_download=False):
