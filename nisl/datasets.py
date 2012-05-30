@@ -553,7 +553,6 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
 
     Notes
     -----
-    
 
     """
 
