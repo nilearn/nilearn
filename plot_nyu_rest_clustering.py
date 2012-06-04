@@ -23,10 +23,12 @@ X_masked = X[m]
 s = m.shape
 connectivity = image.grid_to_graph(n_x=s[0], n_y=s[1], n_z=s[2], mask=m)
 # Launch the ward
-from sklearn.cluster import Ward
+from sklearn.cluster import WardAgglomeration
 n_clusters = 1000
-ward = Ward(n_clusters=n_clusters, connectivity=connectivity)
-ward.fit(X_masked)
+ward = WardAgglomeration(n_clusters=n_clusters, connectivity=connectivity)
+ward.fit(X_masked.T)
+X_r = ward.transform(X_masked.T)
+X_c = ward.inverse_transform(X_r)
 labels = ward.labels_
 
 ### Spectral clustering #######################################################
@@ -44,10 +46,18 @@ labels = labels.reshape(X.shape)
 
 L = - np.ones(X[:, :, :, 0].shape)
 L[m] = labels
+C = - np.ones(X[:, :, :, 0].shape)
+C[m] = X_c[0]
 
 ### Show result ###############################################################
 
+plt.figure()
+plt.subplot(121)
 plt.axis('off')
-plt.title('NYU Clustering')
 plt.imshow(L[:, :, 20], interpolation='nearest', cmap=plt.cm.spectral)
+plt.title('NYU Clustering')
+plt.subplot(122)
+plt.axis('off')
+plt.imshow(C[:, :, 20], interpolation='nearest', cmap=plt.cm.gray)
+plt.title('Compressed representation')
 plt.show()
