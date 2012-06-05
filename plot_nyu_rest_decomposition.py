@@ -35,8 +35,6 @@ X_masked = X[mask]
 
 ### Apply requested algorithm #################################################
 
-plt.axis('off')
-
 from sklearn.decomposition import FastICA
 X_masked_shape = X_masked.shape
 ica = FastICA(n_components=n_components, random_state=42)
@@ -53,11 +51,20 @@ S[np.abs(S) < threshold] = 0
 
 S = np.ma.masked_equal(S, 0, copy=False)
 
-for i in range(n_components):
-    vmax = np.max(np.abs(S[..., i]))
-    plt.figure(i)
-    plt.imshow(mean_img[:, :, 25], interpolation='nearest', cmap=plt.cm.gray)
-    plt.imshow(S[:, :, 25, i], interpolation='nearest', cmap=plt.cm.jet,
-            vmax=vmax, vmin=-vmax)
-
+# Show some interesting slices
+plt.figure()
+plt.subplot(121)
+plt.axis('off')
+plt.title('Default mode')
+vmax = np.max(np.abs(S[..., 10]))
+plt.imshow(mean_img[:, :, 20], interpolation='nearest', cmap=plt.cm.gray)
+plt.imshow(S[:, :, 20, 10], interpolation='nearest', cmap=plt.cm.jet,
+    vmax=vmax, vmin=-vmax)
+plt.subplot(122)
+plt.axis('off')
+plt.title('Ventral attention network')
+vmax = np.max(np.abs(S[..., 19]))
+plt.imshow(mean_img[:, :, 25], interpolation='nearest', cmap=plt.cm.gray)
+plt.imshow(S[:, :, 25, 19], interpolation='nearest', cmap=plt.cm.jet,
+    vmax=vmax, vmin=-vmax)
 plt.show()
