@@ -80,6 +80,7 @@
 
    introduction.rst
    haxby_decoding.rst
+   datasets/nyu.rst
    auto_examples/index
 
 

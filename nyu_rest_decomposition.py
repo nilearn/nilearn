@@ -2,8 +2,8 @@
 
 ### Init ######################################################################
 
-n_components = 42
-threshold = 5e-3
+n_components = 20
+threshold = 5e-1
 
 ### Imports ###################################################################
 
@@ -24,8 +24,12 @@ X = np.concatenate((
     dataset.func[1],
     dataset.func[2]),
     axis=3)
-
 mean_img = np.mean(X, axis=3)
+
+from scipy import ndimage
+for image in X.T:
+    image[...] = ndimage.gaussian_filter(image, 1.5)
+
 mask = mask.compute_mask(mean_img)
 X_masked = X[mask]
 
@@ -35,9 +39,12 @@ plt.axis('off')
 
 from sklearn.decomposition import FastICA
 X_masked_shape = X_masked.shape
-ica = FastICA(n_components=n_components)
+ica = FastICA(n_components=n_components, random_state=42)
 S_masked = ica.fit(X_masked).transform(X_masked)
+S_masked -= S_masked.mean(axis=0)
+S_masked /= S_masked.std(axis=0)
 (x, y, z) = mean_img.shape
+
 S = np.zeros((x, y, z, n_components))
 S[mask] = S_masked
 
@@ -46,7 +53,11 @@ S[np.abs(S) < threshold] = 0
 
 S = np.ma.masked_equal(S, 0, copy=False)
 
-plt.imshow(mean_img[:, :, 20], interpolation='nearest', cmap=plt.cm.gray)
-plt.imshow(S[:, :, 20, 0], interpolation='nearest', cmap=plt.cm.hot)
+for i in range(n_components):
+    vmax = np.max(np.abs(S[..., i]))
+    plt.figure(i)
+    plt.imshow(mean_img[:, :, 25], interpolation='nearest', cmap=plt.cm.gray)
+    plt.imshow(S[:, :, 25, i], interpolation='nearest', cmap=plt.cm.jet,
+            vmax=vmax, vmin=-vmax)
 
 plt.show()
