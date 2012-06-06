@@ -41,11 +41,25 @@ Loading
 NIfTI data can be loaded simply thanks to *nibabel*. Once the file is
 downloaded, a single line is needed to load it.
 
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: # Haxby: Fetch data
+     :end-before: # Haxby: Visualization
+
+
 Visualization
 `````````````
 Once that NIfTI data is loaded, visualization is simply the display of the
 desired slice. For haxby, data is rotated so we have to turn each image
 counter clockwise.
+
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: # Haxby: Visualization
+     :end-before: ### Matlab: kamitani ##########################################################
+
+.. figure:: ../auto_examples/images/plot_visualization_1.png
+        :target: ../auto_examples/plot_visualization.html
+        :align: center
+
 
 Matlab : the kamitani dataset
 -----------------------------
@@ -64,6 +78,11 @@ particular case of Matlab structures, one can see that raw data is wrapped
 several times, requiring usage of several flat/squeeze methods to fall back
 on a more classical formatting.
 
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: # Kamitani: Fetch data
+     :end-before: # Kamitani: take the data of the first scan of the first session
+
+
 Visualisation
 `````````````
 As said before, the way to visualize data depends on its formatting. In the
@@ -80,3 +99,12 @@ Three matrices are needed to reconstruct a full 3D scan:
 Thanks to *xyz* and *volInd*, we can build a map of MNI coordinates given the
 index of the voxel in the *data* array. And then it is easy to build an
 original 3D scan from the data.
+
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: # Kamitani: take the data of the first scan of the first session
+
+
+.. figure:: ../auto_examples/images/plot_visualization_2.png
+        :target: ../auto_examples/plot_visualization.html
+        :align: center
+
