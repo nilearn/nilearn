@@ -457,7 +457,7 @@ def fetch_haxby(data_dir=None, force_download=False):
     mask = ni.load(files[2]).get_data()
 
     ### Haxby: return data
-    return Bunch(data=X, target=y, mask=mask, session=session)
+    return Bunch(data=X, target=y, mask=mask, session=session, files=files)
     ### Haxby: end
 
 
@@ -513,7 +513,8 @@ def fetch_kamitani(data_dir=None, force_download=False):
     roi_volInd = mat['D']['roi_volInd'].flat[0]
     volInd = mat['D']['volInd'].flat[0].squeeze()
     xyz = mat['D']['xyz'].flat[0]
+    ijk = xyz / 3 - 0.5 + [[32], [32], [15]]
 
-    return Bunch(data_random=X_random, data_figure=X_figure,
-           target_random=y_random, target_figure=y_figure,
-           roi_name=roi_name, roi_volInd=roi_volInd, volInd=volInd, xyz=xyz)
+    return Bunch(files=files, data_random=X_random, data_figure=X_figure,
+           target_random=y_random, target_figure=y_figure, roi_name=roi_name,
+           roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
