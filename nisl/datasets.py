@@ -513,8 +513,6 @@ def fetch_kamitani(data_dir=None, force_download=False):
     roi_volInd = mat['D']['roi_volInd'].flat[0]
     volInd = mat['D']['volInd'].flat[0].squeeze()
     xyz = mat['D']['xyz'].flat[0]
-    # Convert MNI to convenient 3D coordinates
-    xyz = xyz / 3 - 0.5 + [[32], [32], [15]]
 
     return Bunch(data_random=X_random, data_figure=X_figure,
            target_random=y_random, target_figure=y_figure,
