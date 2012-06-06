@@ -31,6 +31,7 @@ All information relative to this data format can be found on their official
 website : http://nifti.nimh.nih.gov/nifti-1/
 
 A NIfTI file contains three main components :
+
 - *data*: raw scans bundled in a numpy array
 - *affine*: allows to switch between voxel index and spatial location
 - *header*: informations about the data (slice duration...)
@@ -57,5 +58,25 @@ standard-like formatting most of the time.
 Loading
 ```````
 Matlab files can be loaded in Python thanks to SciPy. After that, one has to
-refer to the dataset documentation to know how data is formatted.
+refer to the dataset documentation to know how data is formatted. Given that we
+deal with non native Python data, some adaptations are needed. In the
+particular case of Matlab structures, one can see that raw data is wrapped
+several times, requiring usage of several flat/squeeze methods to fall back
+on a more classical formatting.
 
+Visualisation
+`````````````
+As said before, the way to visualize data depends on its formatting. In the
+Kamitani dataset, scans are already masked and flattened so we have to go
+back through this process to get a 3D representation, which is not trivial.
+
+Three matrices are needed to reconstruct a full 3D scan:
+
+- *data* contains flattened arrays for each scan
+- *xyz* are MNI coordinates of a full scan voxels
+- *volInd* makes the link between the index in the *data* array and
+  the corresponding MNI coordinate in *xyz*
+
+Thanks to *xyz* and *volInd*, we can build a map of MNI coordinates given the
+index of the voxel in the *data* array. And then it is easy to build an
+original 3D scan from the data.
