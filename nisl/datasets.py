@@ -543,16 +543,19 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
         'mask' : the masks for the data
         'xyz' : index to 3D-coordinate array
 
-    Reference
-    ---------
+    References
+    ----------
     Documentation :
     http://www.nitrc.org/docman/?group_id=274
 
     Data :
     http://www.nitrc.org/frs/?group_id=274
 
-    Notes
-    -----
+    Paper:
+    `Zarrar Shehzad, A. M. Clare Kelly, Philip T. Reiss, Dylan G. Gee,
+    Kristin Gotimer, Lucina Q. Uddin, Sang Han Lee, Daniel S. Margulies,
+    Amy Krain Roy, Bharat B. Biswal, Eva Petkova, F. Xavier Castellanos and
+    Michael P. Milham. The Resting Brain: Unconstrained yet Reliable`
 
     """
 

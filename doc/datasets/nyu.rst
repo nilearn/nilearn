@@ -11,6 +11,24 @@ NYU Test Re-test dataset
 
 This dataset can be downloaded at http://www.nitrc.org/frs/?group_id=274
 
+We use here the *NYU Test Retest* dataset used in 
+`The Resting Brain: Unconstrained yet Reliable
+<http://cercor.oxfordjournals.org/content/19/10/2209>`_, Zarrar Shehzad,
+A. M. Clare Kelly, Philip T. Reiss, Dylan G. Gee, Kristin Gotimer,
+Lucina Q. Uddin, Sang Han Lee, Daniel S. Margulies, Amy Krain Roy,
+Bharat B. Biswal, Eva Petkova, F. Xavier Castellanos and Michael P. Milham,
+that has been reanalyzed in `The oscillating brain: Complex and reliable
+<http://www.sciencedirect.com/science/article/pii/S1053811909010167>`_,
+Xi-Nian Zuo, Adriana Di Martino, Clare Kelly, Zarrar E. Shehzad,
+Dylan G. Gee, Donald F. Klein, F. Xavier Castellanos, Bharat B. Biswal,
+Michael P. Milham and 
+`Reliable intrinsic connectivity networks: Test–retest evaluation using ICA
+and dual regression approach
+<http://www.sciencedirect.com/science/article/pii/S1053811909011525>`_,
+Nian Zuo, Clare Kelly, Jonathan S. Adelstein, Donald F. Klein,
+F. Xavier Castellanos, Michael P. Milham.
+
+
 This dataset is composed of 3 sessions of 26 participants (11 males). For each
 session, three sets of data are available:
 
