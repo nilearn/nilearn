@@ -61,8 +61,8 @@ counter clockwise.
         :align: center
 
 
-Matlab : the kamitani dataset
------------------------------
+Load a matlab dataset
+---------------------
 
 Specifications
 ``````````````
