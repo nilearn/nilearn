@@ -9,8 +9,8 @@ files = haxby.files
 bold = files[1]
 
 # Haxby: Load the NIfTI data
-import nibabel as ni
-data = ni.load(bold).get_data()
+import nibabel
+data = nibabel.load(bold).get_data()
 
 # Haxby: Visualization
 import numpy as np
