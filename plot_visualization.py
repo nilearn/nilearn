@@ -14,24 +14,24 @@ data = ni.load(bold).get_data()
 
 # Haxby: Visualization
 import numpy as np
-from matplotlib import pyplot as pl
-pl.figure()
-pl.subplot(131)
-pl.axis('off')
-pl.title('Coronal')
-pl.imshow(np.rot90(data[:, 32, :, 100]), interpolation='nearest',
-    cmap=pl.cm.gray)
-pl.subplot(132)
-pl.axis('off')
-pl.title('Sagittal')
-pl.imshow(np.rot90(data[15, :, :, 100]), interpolation='nearest',
-    cmap=pl.cm.gray)
-pl.subplot(133)
-pl.axis('off')
-pl.title('Axial')
-pl.imshow(np.rot90(data[:, :, 32, 100]), interpolation='nearest',
-    cmap=pl.cm.gray)
-pl.show()
+from matplotlib import pyplot
+pyplot.figure()
+pyplot.subplot(131)
+pyplot.axis('off')
+pyplot.title('Coronal')
+pyplot.imshow(np.rot90(data[:, 32, :, 100]), interpolation='nearest',
+    cmap=pyplot.cm.gray)
+pyplot.subplot(132)
+pyplot.axis('off')
+pyplot.title('Sagittal')
+pyplot.imshow(np.rot90(data[15, :, :, 100]), interpolation='nearest',
+    cmap=pyplot.cm.gray)
+pyplot.subplot(133)
+pyplot.axis('off')
+pyplot.title('Axial')
+pyplot.imshow(np.rot90(data[:, :, 32, 100]), interpolation='nearest',
+    cmap=pyplot.cm.gray)
+pyplot.show()
 
 ### Matlab: kamitani ##########################################################
 
@@ -59,20 +59,20 @@ for i, v in enumerate(scan):
 # Kamitani: Visualization
 import numpy as np
 from matplotlib import pyplot as pl
-pl.figure()
-pl.subplot(131)
-pl.axis('off')
-pl.title('Coronal')
-pl.imshow(np.rot90(fullscan[:, 8, :]), interpolation='nearest',
-    cmap=pl.cm.gray)
-pl.subplot(132)
-pl.axis('off')
-pl.title('Sagittal')
-pl.imshow(np.rot90(fullscan[21, :, :]), interpolation='nearest',
-    cmap=pl.cm.gray)
-pl.subplot(133)
-pl.axis('off')
-pl.title('Axial')
-pl.imshow(np.rot90(fullscan[:, :, 12]), interpolation='nearest',
-    cmap=pl.cm.gray)
-pl.show()
+pyplot.figure()
+pyplot.subplot(131)
+pyplot.axis('off')
+pyplot.title('Coronal')
+pyplot.imshow(np.rot90(fullscan[:, 8, :]), interpolation='nearest',
+    cmap=pyplot.cm.gray)
+pyplot.subplot(132)
+pyplot.axis('off')
+pyplot.title('Sagittal')
+pyplot.imshow(np.rot90(fullscan[21, :, :]), interpolation='nearest',
+    cmap=pyplot.cm.gray)
+pyplot.subplot(133)
+pyplot.axis('off')
+pyplot.title('Axial')
+pyplot.imshow(np.rot90(fullscan[:, :, 12]), interpolation='nearest',
+    cmap=pyplot.cm.gray)
+pyplot.show()
