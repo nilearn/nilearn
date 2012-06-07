@@ -8,8 +8,10 @@ dataset = datasets.fetch_nyu_rest()
 from nisl import mask
 import numpy as np
 X = dataset.func[0]
+# Calculate the mean of all images to compute the mask
 mean_img = np.mean(X, axis=3)
 m = mask.compute_mask(mean_img)
+# Mask data
 X_masked = X[m]
 
 ### Ward ######################################################################
@@ -60,12 +62,16 @@ C[m] = X_c[0]
 
 from matplotlib import pyplot as plt
 plt.figure()
-plt.subplot(121)
+plt.subplot(1, 3, 1)
+plt.axis('off')
+plt.imshow(X[..., 20, 0], interpolation='nearest', cmap=plt.cm.gray)
+plt.title('Original')
+plt.subplot(1, 3, 2)
 plt.axis('off')
 plt.imshow(L[:, :, 20], interpolation='nearest', cmap=plt.cm.spectral)
-plt.title('NYU Clustering')
-plt.subplot(122)
+plt.title('Labels')
+plt.subplot(1, 3, 3)
 plt.axis('off')
-plt.imshow(C[:, :, 20], interpolation='nearest', cmap=plt.cm.gray)
+plt.imshow(C[:, :, 20], interpolation='nearest', cmap=plt.cm.jet)
 plt.title('Compressed representation')
 plt.show()

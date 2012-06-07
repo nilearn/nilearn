@@ -58,7 +58,7 @@ plt.axis('off')
 plt.title('Default mode')
 vmax = np.max(np.abs(S[..., 10]))
 plt.imshow(mean_img[:, :, 20], interpolation='nearest', cmap=plt.cm.gray)
-plt.imshow(S[:, :, 20, 10], interpolation='nearest', cmap=plt.cm.jet,
+plt.imshow(S[:, :, 20, 16], interpolation='nearest', cmap=plt.cm.jet,
     vmax=vmax, vmin=-vmax)
 plt.subplot(122)
 plt.axis('off')
