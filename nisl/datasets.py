@@ -4,6 +4,7 @@
 import os
 import urllib2
 import tarfile
+import zipfile
 import sys
 
 import numpy as np
@@ -149,17 +150,26 @@ def uncompress_dataset(dataset_name, files, data_dir=None,
 
     Notes
     -----
-    This handles tar, gzip and bzip files only.
+    This handles zip, tar, gzip and bzip files only.
     """
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     for file in files:
         full_name = os.path.join(data_dir, file)
         print 'extracting data from %s...' % full_name
-        tar = tarfile.open(full_name, "r")
-        tar.extractall(path=data_dir)
-        if delete_archive:
-            os.remove(full_name)
-        print '   ...done.'
+        # We first try to see if it is a zip file
+        try:
+            if file.endswith('.zip'):
+                z = zipfile.Zipfile(full_name)
+                z.extractall(data_dir)
+                z.close()
+            else:
+                tar = tarfile.open(full_name, "r")
+                tar.extractall(path=data_dir)
+            if delete_archive:
+                os.remove(full_name)
+            print '   ...done.'
+        except Exception as e:
+            print 'error: ' + e
 
 
 def fetch_dataset(dataset_name, urls, data_dir=None,
