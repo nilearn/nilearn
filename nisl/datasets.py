@@ -169,7 +169,7 @@ def uncompress_dataset(dataset_name, files, data_dir=None,
                 os.remove(full_name)
             print '   ...done.'
         except Exception as e:
-            print 'error: ' + e
+            print 'error: ', e
 
 
 def fetch_dataset(dataset_name, urls, data_dir=None,
