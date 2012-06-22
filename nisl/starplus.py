@@ -1,7 +1,7 @@
 """Module to lauch the supervised clustering on star plus data
 """
 
-from datasets import fetch_star_plus_data
+from datasets import fetch_star_plus
 import numpy as np
 from sklearn.feature_extraction.image import grid_to_graph
 from supervised_clustering import SupervisedClusteringClassifier
@@ -10,7 +10,7 @@ from sklearn.svm import SVC
 import pylab as pl
 
 # Loading data
-data = fetch_star_plus_data()
+data = fetch_star_plus()
 data = data[0]
 X = data.data
 y = data.target
