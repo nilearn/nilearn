@@ -7,7 +7,7 @@ The haxby dataset: face vs house in object recognition
 
 ### Load Haxby dataset ########################################################
 from nisl import datasets
-dataset = datasets.fetch_haxby_data()
+dataset = datasets.fetch_haxby()
 X = dataset.data
 mask = dataset.mask
 y = dataset.target

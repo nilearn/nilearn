@@ -4,6 +4,7 @@
 import os
 import urllib2
 import tarfile
+import zipfile
 import sys
 
 import numpy as np
@@ -149,17 +150,26 @@ def uncompress_dataset(dataset_name, files, data_dir=None,
 
     Notes
     -----
-    This handles tar, gzip and bzip files only.
+    This handles zip, tar, gzip and bzip files only.
     """
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     for file in files:
         full_name = os.path.join(data_dir, file)
         print 'extracting data from %s...' % full_name
-        tar = tarfile.open(full_name, "r")
-        tar.extractall(path=data_dir)
-        if delete_archive:
-            os.remove(full_name)
-        print '   ...done.'
+        # We first try to see if it is a zip file
+        try:
+            if file.endswith('.zip'):
+                z = zipfile.Zipfile(full_name)
+                z.extractall(data_dir)
+                z.close()
+            else:
+                tar = tarfile.open(full_name, "r")
+                tar.extractall(path=data_dir)
+            if delete_archive:
+                os.remove(full_name)
+            print '   ...done.'
+        except Exception as e:
+            print 'error: ', e
 
 
 def fetch_dataset(dataset_name, urls, data_dir=None,
@@ -259,7 +269,7 @@ def get_dataset(dataset_name, file_names, data_dir=None):
     return file_paths
 
 
-def fetch_star_plus_data(data_dir=None, force_download=False):
+def fetch_star_plus(data_dir=None, force_download=False):
     """Function returning the starplus data, downloading them if needed
 
     Returns
@@ -271,8 +281,8 @@ def fetch_star_plus_data(data_dir=None, force_download=False):
                     targets of the datas
         'masks' : the masks for the datas
 
-    Note
-    ----
+    Notes
+    -----
     Each element will be of the form :
     PATH/*.npy
 
@@ -281,8 +291,8 @@ def fetch_star_plus_data(data_dir=None, force_download=False):
     We decided here to average on the time
     /!\ y is not binarized !
 
-    Reference
-    ---------
+    References
+    ----------
     Documentation :
     http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/\
             README-data-documentation.txt
@@ -403,7 +413,8 @@ def fetch_star_plus_data(data_dir=None, force_download=False):
     return all_subject
 
 
-def fetch_haxby_data(data_dir=None, force_download=False):
+### Haxby: function definition
+def fetch_haxby(data_dir=None, force_download=False):
     """Returns the haxby datas
 
     Returns
@@ -415,14 +426,33 @@ def fetch_haxby_data(data_dir=None, force_download=False):
                     target of the data
         'mask' : the masks for the data
         'session' : the labels for LeaveOneLabelOut cross validation
+
+    References
+    ----------
+    `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
+    and Pietrini, P. (2001). Distributed and overlapping representations of
+    faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
+
+    Notes
+    -----
+    PyMVPA provides a tutorial using this dataset :
+    http://www.pymvpa.org/tutorial.html
+
+    More informations about its structure :
+    http://dev.pymvpa.org/datadb/haxby2001.html
     """
 
+    ### Haxby: definition of dataset files
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
     file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
 
+    ### Haxby: load the dataset
     try:
+        # Try to load the dataset
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
+
     except IOError:
+        # If the dataset does not exists, we download it
         url = 'http://www.pymvpa.org/files'
         tar_name = 'pymvpa_exampledata.tar.bz2'
         urls = [os.path.join(url, tar_name)]
@@ -431,15 +461,23 @@ def fetch_haxby_data(data_dir=None, force_download=False):
         uncompress_dataset('haxby2001', [tar_name], data_dir=data_dir)
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
 
+    ### Haxby: preprocess data
     y, session = np.loadtxt(files[0]).astype("int").T
     X = ni.load(files[1]).get_data()
     mask = ni.load(files[2]).get_data()
 
-    return Bunch(data=X, target=y, mask=mask, session=session)
+    ### Haxby: return data
+    return Bunch(data=X, target=y, mask=mask, session=session, files=files)
+    ### Haxby: end
 
 
-def fetch_kamitani_data(data_dir=None, force_download=False):
+def fetch_kamitani(data_dir=None, force_download=False):
     """Returns the kamitani dataset
+
+    Notes
+    -----
+    Kamitani dataset cannot be downloaded for the moment because it requires
+    registration.
 
     Returns
     -------
@@ -485,9 +523,8 @@ def fetch_kamitani_data(data_dir=None, force_download=False):
     roi_volInd = mat['D']['roi_volInd'].flat[0]
     volInd = mat['D']['volInd'].flat[0].squeeze()
     xyz = mat['D']['xyz'].flat[0]
-    # Convert MNI to convenient 3D coordinates
-    xyz = xyz / 3 - 0.5 + [[32], [32], [15]]
+    ijk = xyz / 3 - 0.5 + [[32], [32], [15]]
 
-    return Bunch(data_random=X_random, data_figure=X_figure,
-           target_random=y_random, target_figure=y_figure,
-           roi_name=roi_name, roi_volInd=roi_volInd, volInd=volInd, xyz=xyz)
+    return Bunch(files=files, data_random=X_random, data_figure=X_figure,
+           target_random=y_random, target_figure=y_figure, roi_name=roi_name,
+           roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
