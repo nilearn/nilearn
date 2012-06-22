@@ -39,7 +39,7 @@ preprocessing = 'detrend'
 learn_fusion_params = False  # Learn fusion params with LinearRegression
 classifier = 'omp'
 
-generate_video = 'video.mp4'
+generate_video = None
 generate_image = None
 
 ### Imports ###################################################################
@@ -148,7 +148,7 @@ if voxel_restriction:
         volInd = np.unique(
             np.concatenate((rv[0, 2], rv[0, 3], rv[4, 2], rv[4, 3])))
     elif voxel_restriction == 'roi':
-        volInd = np.unique(np.array([x for y in rv.flatten() for x in y]))
+        volInd = np.unique(np.array([x for y in rv.flat for x in y.squeeze()]))
     else:
         print 'Error: unknown voxel restriction'
         exit
