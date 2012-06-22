@@ -24,9 +24,8 @@ import numpy as np
 
 from joblib.parallel import Parallel, delayed
 
-from sklearn.cross_val import cross_val_score
+from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
-
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
                  verbose=True):
@@ -124,8 +123,11 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
     for i, row in enumerate(list_rows):
         if list_i[i] not in row:
             row.append(list_i[i])
-        par_scores[i] = np.sum(cross_val_score(estimator, X[:, row],
-                    y, score_func, cv, n_jobs=1)) / float(y.size)
+        if cv:
+            par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
+                    y, score_func, cv, n_jobs=1))
+        else:
+            par_scores[i] = estimator.fit(X[:, row], y).score(X[:, row], y)
         if verbose:
             print "%d / %d : %2.2f" % (list_i[i], X.shape[1], par_scores[i])
     return par_scores
