@@ -316,7 +316,9 @@ def fetch_star_plus(data_dir=None):
         'datas' : a list of 6 numpy arrays representing the data to learn
         'targets' : list
                     targets of the datas
-        'masks' : the masks for the datas
+        'masks' : the masks for the datas. If indices is true, returns the
+            coordinates of the voxels instead of a binary map to deal with
+            sparse matrices.
 
     Notes
     -----
@@ -427,6 +429,9 @@ def fetch_star_plus(data_dir=None):
                 mask = X[0, ...]
                 mask = mask.astype(np.bool)
                 np.save(name, mask)
+                name = "data-starplus-%d-mask_indices.npy" % indice
+                name = os.path.join(dataset_dir, name)
+                np.save(name, data['meta']['colToCoord'].flat[0])
                 print "...done."
 
                 # Removing the unused data
