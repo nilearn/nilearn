@@ -12,6 +12,9 @@ dataset = datasets.fetch_haxby()
 
 X = dataset.data
 mask = dataset.mask
+mask[:, 35:] = 0
+mask[..., 35:] = 0
+mask[..., :20] = 0
 y = dataset.target
 session = dataset.session
 X = X[mask != 0].T
