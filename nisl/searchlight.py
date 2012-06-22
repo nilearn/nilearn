@@ -15,11 +15,13 @@ Information-based functional brain mapping.
 Proceedings of the National Academy of Sciences
 of the United States of America,
 vol. 103, no. 10, pages 3863-3868, March 2006
-
-Authors : Vincent Michel (vm.michel@gmail.com)
-          Alexandre Gramfort (alexandre.gramfort@inria.fr)
-License: BSD 3 clause
 """
+
+#Authors : Vincent Michel (vm.michel@gmail.com)
+#          Alexandre Gramfort (alexandre.gramfort@inria.fr)
+#
+#License: BSD 3 clause
+
 import numpy as np
 
 from joblib.parallel import Parallel, delayed
@@ -83,21 +85,17 @@ class GroupIterator(object):
 
     Provides group of features for search_light loop
     that may be used with Parallel.
+    
+    Parameters
+    =========== 
+    n_features: int
+                Total number of features
+    n_jobs: integer, optional
+            The number of CPUs to use to do the computation. -1 means
+            'all CPUs'. Defaut is 1
     """
 
     def __init__(self, n_features, n_jobs=1):
-        """Group iterator
-
-        Provides group of features for search_light loop
-
-        Parameters
-        ===========
-        n_features: int
-                    Total number of features
-        n_jobs: integer, optional
-                The number of CPUs to use to do the computation. -1 means
-                'all CPUs'. Defaut is 1
-        """
         self.n_features = n_features
         if n_jobs == -1:
             import multiprocessing
@@ -118,6 +116,12 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
                             cv, verbose):
     """
     Function for grouped iterations of search_light
+    
+    Parameters
+    -----------
+    
+    ?
+    
     """
     par_scores = np.zeros(len(list_rows))
     for i, row in enumerate(list_rows):
@@ -142,23 +146,22 @@ class SearchLight(BaseEstimator):
     """
     SearchLight class.
     Class to perform a search_light using an arbitrary type of classifier.
-    """
-
-    def __init__(self, A, estimator, n_jobs=-1):
-        """
-        Parameters
-        ----------
-        A : sparse matrix.
+    
+    Parameters
+    -----------
+    A : sparse matrix.
         adjacency matrix. Defines for each sample the neigbhoring samples
         following a given structure of the data.
 
-        estimator: estimator object implementing 'fit'
+    estimator: estimator object implementing 'fit'
         The object to use to fit the data
 
-        n_jobs: integer, optional. Default is -1.
+    n_jobs: integer, optional. Default is -1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
-        """
+    """
+
+    def __init__(self, A, estimator, n_jobs=-1):
         self.A = A.tolil()
         self.estimator = estimator
         self.n_jobs = n_jobs
@@ -186,7 +189,7 @@ class SearchLight(BaseEstimator):
         verbose: boolean, optional
         The verbosity level. Defaut is False
 
-        Attributs
+        Attributes
         ---------
         scores: array-like of shape (number of rows in A)
             search_light scores
