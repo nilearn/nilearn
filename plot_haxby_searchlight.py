@@ -4,7 +4,6 @@ from scipy import sparse, signal
 from sklearn import neighbors
 from sklearn.cross_validation import KFold
 from sklearn.metrics import precision_score
-from sklearn import svm
 
 from nisl import searchlight, datasets
 
@@ -27,17 +26,16 @@ X, y, session = X[y != 0], y[y != 0], session[y != 0]
 X, y, session = X[y < 3], y[y < 3], session[y < 3]
 
 ### Create the adjacency matrix
-clf = neighbors.NearestNeighbors(radius=4., n_neighbors=30)
+clf = neighbors.NearestNeighbors(radius=4., n_neighbors=50)
 dist, ind = clf.fit(mask).kneighbors(mask)
 A = sparse.lil_matrix((mask.shape[0], mask.shape[0]))
 for i, li in enumerate(ind):
     A[i, list(li[1:])] = np.ones(len(li[1:]))
 
 ### Instanciate the searchlight model
-n_jobs = 7
-estimator = svm.SVC(kernel='linear', C=1)
-searchlight = searchlight.SearchLight(A, estimator, n_jobs=n_jobs)
+n_jobs = 2
+searchlight = searchlight.SearchLight(A, n_jobs=n_jobs)
 score_func = precision_score
-cv = KFold(y.size, k=8)
+cv = KFold(y.size, k=4)
 # cv = None
 scores = searchlight.fit(X, y, score_func=score_func, verbose=True, cv=cv)

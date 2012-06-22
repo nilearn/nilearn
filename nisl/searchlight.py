@@ -26,8 +26,10 @@ import numpy as np
 
 from joblib.parallel import Parallel, delayed
 
+from sklearn.svm import LinearSVC
 from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
+
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
                  verbose=True):
@@ -85,9 +87,9 @@ class GroupIterator(object):
 
     Provides group of features for search_light loop
     that may be used with Parallel.
-    
+
     Parameters
-    =========== 
+    ===========
     n_features: int
                 Total number of features
     n_jobs: integer, optional
@@ -116,12 +118,12 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
                             cv, verbose):
     """
     Function for grouped iterations of search_light
-    
+
     Parameters
     -----------
-    
+
     ?
-    
+
     """
     par_scores = np.zeros(len(list_rows))
     for i, row in enumerate(list_rows):
@@ -146,7 +148,7 @@ class SearchLight(BaseEstimator):
     """
     SearchLight class.
     Class to perform a search_light using an arbitrary type of classifier.
-    
+
     Parameters
     -----------
     A : sparse matrix.
@@ -161,7 +163,7 @@ class SearchLight(BaseEstimator):
         'all CPUs'.
     """
 
-    def __init__(self, A, estimator, n_jobs=-1):
+    def __init__(self, A, estimator=LinearSVC(C=1), n_jobs=-1):
         self.A = A.tolil()
         self.estimator = estimator
         self.n_jobs = n_jobs
