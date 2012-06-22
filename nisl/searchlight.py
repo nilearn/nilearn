@@ -75,8 +75,8 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     """
     scores = np.zeros(len(A.rows), dtype=float)
     group_iter = GroupIterator(X.shape[1], n_jobs)
-    scores = Parallel(n_jobs=n_jobs)\
-             (delayed(_group_iter_search_light)(list_i, A.rows[list_i],
+    scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
+              delayed(_group_iter_search_light)(list_i, A.rows[list_i],
               estimator, X, y, score_func, cv, verbose)
               for list_i in group_iter)
     return np.concatenate(scores)
@@ -176,8 +176,8 @@ class SearchLight(BaseEstimator):
         The verbosity level. Defaut is False
     """
 
-    def __init__(self, A, estimator=LinearSVC(C=1), n_jobs=-1, score_func=None,
-            cv=None, verbose=False):
+    def __init__(self, A, estimator=LinearSVC(C=1), n_jobs=-1,
+                 score_func=None, cv=None, verbose=False):
         self.A = A.tolil()
         self.estimator = estimator
         self.n_jobs = n_jobs
