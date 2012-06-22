@@ -42,36 +42,36 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
         The data to fit.
 
     y: array-like
-    The target variable to try to predict.
+        The target variable to try to predict.
 
     estimator: estimator object implementing 'fit'
-    The object to use to fit the data
+        The object to use to fit the data
 
     A : sparse matrix.
-    adjacency matrix. Defines for each sample the neigbhoring samples
-    following a given structure of the data.
+        adjacency matrix. Defines for each sample the neigbhoring samples
+        following a given structure of the data.
 
     score_func: callable, optional
-    callable taking as arguments the fitted estimator, the
-    test data (X_test) and the test target (y_test) if y is
-    not None.
+        callable taking as arguments the fitted estimator, the
+        test data (X_test) and the test target (y_test) if y is
+        not None.
 
     cv: cross-validation generator, optional
-    A cross-validation generator. If None, a 3-fold cross
-    validation is used or 3-fold stratified cross-validation
-    when y is supplied.
+        A cross-validation generator. If None, a 3-fold cross
+        validation is used or 3-fold stratified cross-validation
+        when y is supplied.
 
     n_jobs: integer, optional
-    The number of CPUs to use to do the computation. -1 means
-    'all CPUs'.
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
 
     verbose: boolean, optional
-    The verbosity level. Defaut is False
+        The verbosity level. Defaut is False
 
     Return
     ------
     scores: array-like of shape (number of rows in A)
-            search_light scores
+        search_light scores
     """
     scores = np.zeros(len(A.rows), dtype=float)
     group_iter = GroupIterator(X.shape[1], n_jobs)
@@ -91,10 +91,10 @@ class GroupIterator(object):
     Parameters
     ===========
     n_features: int
-                Total number of features
+        Total number of features
     n_jobs: integer, optional
-            The number of CPUs to use to do the computation. -1 means
-            'all CPUs'. Defaut is 1
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'. Defaut is 1
     """
 
     def __init__(self, n_features, n_jobs=1):
@@ -161,44 +161,45 @@ class SearchLight(BaseEstimator):
     n_jobs: integer, optional. Default is -1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
-    """
 
-    def __init__(self, A, estimator=LinearSVC(C=1), n_jobs=-1):
-        self.A = A.tolil()
-        self.estimator = estimator
-        self.n_jobs = n_jobs
-
-    def fit(self, X, y, score_func=None, cv=None, verbose=False):
-        """
-        Fit the search_light
-
-        X: array-like of shape at least 2D
-        The data to fit.
-
-        y: array-like
-        The target variable to try to predict.
-
-        score_func: callable, optional
+    score_func: callable, optional
         callable taking as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-        cv: cross-validation generator, optional
+    cv: cross-validation generator, optional
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-        verbose: boolean, optional
+    verbose: boolean, optional
         The verbosity level. Defaut is False
+    """
 
-        Attributes
-        ---------
-        scores: array-like of shape (number of rows in A)
-            search_light scores
-        """
+    def __init__(self, A, estimator=LinearSVC(C=1), n_jobs=-1, score_func=None,
+            cv=None, verbose=False):
+        self.A = A.tolil()
+        self.estimator = estimator
+        self.n_jobs = n_jobs
         self.score_func = score_func
         self.cv = cv
         self.verbose = verbose
+
+    def fit(self, X, y):
+        """
+        Fit the search_light
+
+        X: array-like of shape at least 2D
+            The data to fit.
+
+        y: array-like
+            The target variable to try to predict.
+
+        Attributes
+        ----------
+        scores: array-like of shape (number of rows in A)
+            search_light scores
+        """
         self.scores = search_light(X, y, self.estimator, self.A,
-                      self.score_func, self.cv, self.n_jobs, self.verbose)
+              self.score_func, self.cv, self.n_jobs, self.verbose)
         return self
