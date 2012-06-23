@@ -576,7 +576,7 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
             'sub36678', 'sub38579', 'sub39529']
 
     file_names = [os.path.join(sub, f) for sub in sub_names
-            for f in file_names]
+                  for f in file_names]
 
     try:
         files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
@@ -597,7 +597,7 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
             tar_full_names.append(p + tar_names[i])
         urls = [os.path.join(url, name) for name in tar_full_names]
         fetch_dataset('nyu_rest', urls, data_dir=data_dir,
-                force_download=force_download)
+                      force_download=force_download)
         uncompress_dataset('nyu_rest', tar_names, data_dir=data_dir)
         files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
 
