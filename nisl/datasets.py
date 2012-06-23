@@ -6,6 +6,7 @@ import urllib2
 import tarfile
 import zipfile
 import sys
+import shutil
 
 import numpy as np
 from scipy import io
@@ -125,7 +126,7 @@ def clean_dataset(dataset_name, data_dir=None):
         location. Default: None
     """
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
-    os.removedirs(data_dir)
+    shutil.rmtree(data_dir)
 
 
 def uncompress_dataset(dataset_name, files, data_dir=None,
@@ -224,11 +225,11 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
                 print '...done.'
             except urllib2.HTTPError, e:
                 print "HTTP Error:", e, url
-                os.removedirs(data_dir)
+                shutil.rmtree(data_dir)
                 return
             except urllib2.URLError, e:
                 print "URL Error:", e, url
-                os.removedirs(data_dir)
+                shutil.rmtree(data_dir)
                 return
         files.append(full_name)
 
@@ -397,7 +398,7 @@ def fetch_star_plus(data_dir=None, force_download=False):
                 os.remove(full_name)
             except Exception, e:
                 print "Impossible to convert the file %s:\n %s " % (name, e)
-                os.removedirs(dataset_dir)
+                shutil.rmtree(dataset_dir)
                 raise e
 
     print "...done."
