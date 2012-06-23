@@ -57,7 +57,7 @@ First step: looking at the data
 
 Now, launch ipython::
 
-  $ ipython
+  $ ipython -pylab
 
 First, we load the data. Nisl provides an easy way to download and preprocess
 data. Simply call:
@@ -146,15 +146,6 @@ based feature selection (a.k.a. Anova):
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Dimension reduction #######################################################
-        :end-before: ### Pipeline ##################################################################
-
-
-We have our classifier (SVC), our feature selection (SelectKBest), and now, we
-can plug them together in a *pipeline* that performs the two operations
-successively:
-
-.. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Pipeline ##################################################################
         :end-before: ### Fit and predict ###########################################################
 
 We use a univariate feature selection, but we can use other dimension

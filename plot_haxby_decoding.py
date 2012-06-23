@@ -4,7 +4,6 @@ The haxby dataset: face vs house in object recognition
 
 """
 
-
 ### Load Haxby dataset ########################################################
 from nisl import datasets
 dataset = datasets.fetch_haxby()
@@ -15,7 +14,6 @@ session = dataset.session
 
 ### Preprocess data ###########################################################
 import numpy as np
-from scipy import signal
 
 # Build the mean image because we have no anatomic data
 mean_img = X.mean(axis=-1)
@@ -26,14 +24,14 @@ mask.shape
 # (40, 64, 64)
 
 # Process the data in order to have a two-dimensional design matrix X of
-# shape (nb_samples, nb_features).
-X = X[mask != 0].T
+# shape (n_samples, n_features).
+X = X[mask].T
 
 X.shape
 # (1452, 39912)
 
 # Detrend data on each session independently
-print "detrending data"
+from scipy import signal
 for s in np.unique(session):
     X[session == s] = signal.detrend(X[session == s], axis=0)
 
@@ -62,9 +60,6 @@ np.unique(y)
 
 # We have the 8 conditions
 n_conditions = np.size(np.unique(y))
-n_conditions
-# 8
-
 
 ### Prediction function #######################################################
 
@@ -73,10 +68,6 @@ from sklearn.svm import SVC
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
 clf = SVC(kernel='linear', C=1.)
-clf
-# SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, degree=3, gamma=0.0,
-#   kernel='linear', probability=False, scale_C=True, shrinking=True,
-#   tol=0.001, verbose=False)
 
 ### Dimension reduction #######################################################
 
@@ -86,30 +77,16 @@ from sklearn.feature_selection import SelectKBest, f_classif
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 500
 feature_selection = SelectKBest(f_classif, k=500)
-# >>> feature_selection
-# SelectKBest(k=500, score_func=<function f_classif at 0x...>)
 
-### Pipeline ##################################################################
-
+# We have our classifier (SVC), our feature selection (SelectKBest), and now,
+# we can plug them together in a *pipeline* that performs the two operations
+# successively:
 from sklearn.pipeline import Pipeline
-
-### We combine the dimension reduction and the prediction function
 anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
-anova_svc
-# Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
-#   f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
-#   coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
-#   scale_C=True, shrinking=True, tol=0.001, verbose=False))])
-
 
 ### Fit and predict ###########################################################
 
 anova_svc.fit(X, y)
-# Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
-#   f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
-#   coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
-#   scale_C=True, shrinking=True, tol=0.001, verbose=False))])
-
 y_pred = anova_svc.predict(X)
 y_pred.shape
 # (864,)
@@ -129,11 +106,13 @@ act = np.zeros(mean_img.shape)
 act[mask != 0] = svc[0]
 act = np.ma.masked_array(act, act == 0)
 
-### Create the figure on z=20
+### Create the figure on z=13
 plt.axis('off')
 plt.title('SVM vectors')
-plt.imshow(np.rot90(mean_img[:, 20, :], k=3), cmap=plt.cm.gray, interpolation='nearest')
-plt.imshow(np.rot90(act[:, 20, :], k=3), cmap=plt.cm.hot, interpolation='nearest')
+plt.imshow(np.rot90(mean_img[:, 13, :], k=3), cmap=plt.cm.gray,
+           interpolation='nearest')
+plt.imshow(np.rot90(act[:, 13, :], k=3), cmap=plt.cm.hot,
+           interpolation='nearest')
 plt.show()
 
 
@@ -147,7 +126,6 @@ from sklearn.cross_validation import LeaveOneLabelOut
 cv = LeaveOneLabelOut(session)
 
 ### Compute the prediction accuracy for the different folds (i.e. session)
-#cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=1)
 cv_scores = []
 for train, test in cv:
     y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])
