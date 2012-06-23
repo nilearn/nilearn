@@ -1,3 +1,13 @@
+.. for doctests to run, we need to define variables that are define in
+   the literal includes
+    >>> import numpy as np
+    >>> from sklearn import datasets
+    >>> iris = datasets.load_iris()
+    >>> X = iris.data
+    >>> y = iris.target
+    >>> y += 1
+    >>> session = np.ones_like(y)
+    >>> n_samples = len(y)
 
 
 ================================================================================
@@ -173,6 +183,10 @@ In scikit-learn, prediction function have a very simple API:
 heavily biased (see next paragraph). This is used here to check that 
 we have one predicted value per image.
 
+.. for doctests (smoke testing):
+    >>> from sklearn.svm import LinearSVC, SVC
+    >>> anova_svc = LinearSVC()
+
 Note that you could have done this in only 1 line::
 
     >>> y_pred = anova_svc.fit(X, y).predict(X)
@@ -211,6 +225,9 @@ cross-validation:
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Cross validation ########################################################## 
         :end-before: ### Print results #############################################################
+
+.. for doctests:
+   >>> cv = 2
 
 But we are lazy people, so there is a specific
 function, *cross_val_score* that computes for you the results for the
@@ -292,6 +309,11 @@ One of the major assets of scikit-learn is the real simplicity of use.
 Changing the prediction function
 --------------------------------
 
+.. for doctest:
+    >>> from sklearn.feature_selection import SelectKBest, f_classif
+    >>> feature_selection = SelectKBest(f_classif, k=4)
+    >>> clf = LinearSVC()
+
 We now see how one can easily change the prediction function, if needed.
 We can try the Linear Discriminant Analysis
 (LDA) `<http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
@@ -302,13 +324,13 @@ Import the module::
 
 Construct the new prediction function and use it in a pipeline::
 
+    >>> from sklearn.pipeline import Pipeline
     >>> lda = LDA()
     >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
 
 and recompute the cross-validation score::
 
-    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=1)
+    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, verbose=1)
     >>> classification_accuracy = np.sum(cv_scores) / float(n_samples)
     >>> print "Classification accuracy: %f" % classification_accuracy, \
     ...     " / Chance level: %f" % (1. / n_conditions) # doctest: +SKIP
