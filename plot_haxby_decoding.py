@@ -106,12 +106,12 @@ act = np.zeros(mean_img.shape)
 act[mask != 0] = svc[0]
 act = np.ma.masked_array(act, act == 0)
 
-### Create the figure on z=13
+### Create the figure on z=23
 plt.axis('off')
 plt.title('SVM vectors')
-plt.imshow(np.rot90(mean_img[:, 13, :], k=3), cmap=plt.cm.gray,
+plt.imshow(np.rot90(mean_img[..., 23]), cmap=plt.cm.gray,
            interpolation='nearest')
-plt.imshow(np.rot90(act[:, 13, :], k=3), cmap=plt.cm.hot,
+plt.imshow(np.rot90(act[..., 23]), cmap=plt.cm.hot,
            interpolation='nearest')
 plt.show()
 
