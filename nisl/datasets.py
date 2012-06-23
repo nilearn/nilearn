@@ -15,7 +15,7 @@ from sklearn.datasets.base import Bunch
 import nibabel as ni
 
 
-def chunk_report_(bytes_so_far, total_size=None):
+def _chunk_report_(bytes_so_far, total_size=None):
     """Show downloading percentage
 
     Parameters
@@ -36,7 +36,7 @@ def chunk_report_(bytes_so_far, total_size=None):
         sys.stdout.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
 
-def chunk_read_(response, chunk_size=8192, report_hook=None):
+def _chunk_read_(response, chunk_size=8192, report_hook=None):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -76,7 +76,7 @@ def chunk_read_(response, chunk_size=8192, report_hook=None):
 
         data += chunk
         if report_hook:
-            chunk_report_(bytes_so_far, total_size)
+            _chunk_report_(bytes_so_far, total_size)
 
     return "".join(data)
 
@@ -218,7 +218,7 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
                 print 'Downloading data from %s ...' % url
                 req = urllib2.Request(url)
                 data = urllib2.urlopen(req)
-                chunks = chunk_read_(data, report_hook=True)
+                chunks = _chunk_read_(data, report_hook=True)
                 local_file = open(full_name, "wb")
                 local_file.write(chunks)
                 local_file.close()
@@ -269,6 +269,9 @@ def get_dataset(dataset_name, file_names, data_dir=None):
         file_paths.append(full_name)
     return file_paths
 
+
+###############################################################################
+# Dataset downloading functions
 
 def fetch_star_plus(data_dir=None, force_download=False):
     """Function returning the starplus data, downloading them if needed
@@ -415,7 +418,6 @@ def fetch_star_plus(data_dir=None, force_download=False):
     return all_subject
 
 
-### Haxby: function definition
 def fetch_haxby(data_dir=None, force_download=False):
     """Returns the haxby datas
 
