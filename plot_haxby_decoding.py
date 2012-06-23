@@ -132,8 +132,8 @@ act = np.ma.masked_array(act, act == 0)
 ### Create the figure on z=20
 plt.axis('off')
 plt.title('SVM vectors')
-plt.imshow(mean_img[:, 20, :], cmap=plt.cm.gray, interpolation=None)
-plt.imshow(act[:, 20, :], cmap=plt.cm.hot, interpolation=None)
+plt.imshow(np.rot90(mean_img[:, 20, :], k=3), cmap=plt.cm.gray, interpolation='nearest')
+plt.imshow(np.rot90(act[:, 20, :], k=3), cmap=plt.cm.hot, interpolation='nearest')
 plt.show()
 
 
