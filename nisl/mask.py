@@ -7,18 +7,19 @@ from scipy import ndimage
 ###############################################################################
 
 
-def largest_cc(mask):
-    """ Return the largest connected component of a 3D mask array.
+def largest_connected_component(mask):
+    """
+    Return the largest connected component of a 3D mask array.
 
-        Parameters
-        -----------
-        mask: 3D boolean array
-            3D array indicating a mask.
+    Parameters
+    -----------
+    mask: 3D boolean array
+        3D array indicating a mask.
 
-        Returns
-        --------
-        mask: 3D boolean array
-            3D array indicating a mask, with only one connected component.
+    Returns
+    --------
+    mask: 3D boolean array
+        3D array indicating a mask, with only one connected component.
     """
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
@@ -85,6 +86,6 @@ def compute_mask(mean_volume, m=0.2, M=0.9, cc=True,
     mask = (mean_volume >= threshold)
 
     if cc:
-        mask = largest_cc(mask)
+        mask = largest_connected_component(mask)
 
     return mask.astype(bool)

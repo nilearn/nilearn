@@ -6,6 +6,7 @@ import urllib2
 import tarfile
 import zipfile
 import sys
+import shutil
 
 import numpy as np
 from scipy import io
@@ -14,7 +15,7 @@ from sklearn.datasets.base import Bunch
 import nibabel as ni
 
 
-def chunk_report_(bytes_so_far, total_size=None):
+def _chunk_report_(bytes_so_far, total_size=None):
     """Show downloading percentage
 
     Parameters
@@ -35,7 +36,7 @@ def chunk_report_(bytes_so_far, total_size=None):
         sys.stdout.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
 
-def chunk_read_(response, chunk_size=8192, report_hook=None):
+def _chunk_read_(response, chunk_size=8192, report_hook=None):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -75,7 +76,7 @@ def chunk_read_(response, chunk_size=8192, report_hook=None):
 
         data += chunk
         if report_hook:
-            chunk_report_(bytes_so_far, total_size)
+            _chunk_report_(bytes_so_far, total_size)
 
     return "".join(data)
 
@@ -125,7 +126,7 @@ def clean_dataset(dataset_name, data_dir=None):
         location. Default: None
     """
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
-    os.removedirs(data_dir)
+    shutil.rmtree(data_dir)
 
 
 def uncompress_dataset(dataset_name, files, data_dir=None,
@@ -217,18 +218,18 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
                 print 'Downloading data from %s ...' % url
                 req = urllib2.Request(url)
                 data = urllib2.urlopen(req)
-                chunks = chunk_read_(data, report_hook=True)
+                chunks = _chunk_read_(data, report_hook=True)
                 local_file = open(full_name, "wb")
                 local_file.write(chunks)
                 local_file.close()
                 print '...done.'
             except urllib2.HTTPError, e:
                 print "HTTP Error:", e, url
-                os.removedirs(data_dir)
+                shutil.rmtree(data_dir)
                 return
             except urllib2.URLError, e:
                 print "URL Error:", e, url
-                os.removedirs(data_dir)
+                shutil.rmtree(data_dir)
                 return
         files.append(full_name)
 
@@ -268,6 +269,9 @@ def get_dataset(dataset_name, file_names, data_dir=None):
         file_paths.append(full_name)
     return file_paths
 
+
+###############################################################################
+# Dataset downloading functions
 
 def fetch_star_plus(data_dir=None, force_download=False):
     """Function returning the starplus data, downloading them if needed
@@ -397,7 +401,7 @@ def fetch_star_plus(data_dir=None, force_download=False):
                 os.remove(full_name)
             except Exception, e:
                 print "Impossible to convert the file %s:\n %s " % (name, e)
-                os.removedirs(dataset_dir)
+                shutil.rmtree(dataset_dir)
                 raise e
 
     print "...done."
@@ -408,12 +412,12 @@ def fetch_star_plus(data_dir=None, force_download=False):
         y = np.load(os.path.join(dataset_dir, 'data-starplus-%d-y.npy' % i))
         mask = np.load(os.path.join(dataset_dir,
             'data-starplus-%d-mask.npy' % i))
-        all_subject.append(Bunch(data=X, target=y, mask=mask))
+        all_subject.append(Bunch(data=X, target=y,
+                                 mask=mask.astype(np.bool)))
 
     return all_subject
 
 
-### Haxby: function definition
 def fetch_haxby(data_dir=None, force_download=False):
     """Returns the haxby datas
 
@@ -442,11 +446,11 @@ def fetch_haxby(data_dir=None, force_download=False):
     http://dev.pymvpa.org/datadb/haxby2001.html
     """
 
-    ### Haxby: definition of dataset files
+    # definition of dataset files
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
     file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
 
-    ### Haxby: load the dataset
+    # load the dataset
     try:
         # Try to load the dataset
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
@@ -461,14 +465,17 @@ def fetch_haxby(data_dir=None, force_download=False):
         uncompress_dataset('haxby2001', [tar_name], data_dir=data_dir)
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
 
-    ### Haxby: preprocess data
+    # preprocess data
     y, session = np.loadtxt(files[0]).astype("int").T
     X = ni.load(files[1]).get_data()
-    mask = ni.load(files[2]).get_data()
+    mask = ni.load(files[2]).get_data().astype(np.bool)
 
-    ### Haxby: return data
+    # Crop a bit
+    X = X[:, 7:56, 11:52]
+    mask = mask[:, 7:56, 11:52]
+
+    # return the data
     return Bunch(data=X, target=y, mask=mask, session=session, files=files)
-    ### Haxby: end
 
 
 def fetch_kamitani(data_dir=None, force_download=False):
