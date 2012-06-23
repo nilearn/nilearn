@@ -409,7 +409,8 @@ def fetch_star_plus(data_dir=None, force_download=False):
         y = np.load(os.path.join(dataset_dir, 'data-starplus-%d-y.npy' % i))
         mask = np.load(os.path.join(dataset_dir,
             'data-starplus-%d-mask.npy' % i))
-        all_subject.append(Bunch(data=X, target=y, mask=mask))
+        all_subject.append(Bunch(data=X, target=y,
+                                 mask=mask.astype(np.bool)))
 
     return all_subject
 
@@ -443,11 +444,11 @@ def fetch_haxby(data_dir=None, force_download=False):
     http://dev.pymvpa.org/datadb/haxby2001.html
     """
 
-    ### Haxby: definition of dataset files
+    # definition of dataset files
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
     file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
 
-    ### Haxby: load the dataset
+    # load the dataset
     try:
         # Try to load the dataset
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
@@ -462,14 +463,17 @@ def fetch_haxby(data_dir=None, force_download=False):
         uncompress_dataset('haxby2001', [tar_name], data_dir=data_dir)
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
 
-    ### Haxby: preprocess data
+    # preprocess data
     y, session = np.loadtxt(files[0]).astype("int").T
     X = ni.load(files[1]).get_data()
-    mask = ni.load(files[2]).get_data()
+    mask = ni.load(files[2]).get_data().astype(np.bool)
 
-    ### Haxby: return data
+    # Crop a bit
+    X = X[:, 7:56, 11:52]
+    mask = mask[:, 7:56, 11:52]
+
+    # return the data
     return Bunch(data=X, target=y, mask=mask, session=session, files=files)
-    ### Haxby: end
 
 
 def fetch_kamitani(data_dir=None, force_download=False):
