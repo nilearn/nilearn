@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import sparse, signal
+from matplotlib import pyplot
 
 from sklearn import neighbors
 from sklearn.cross_validation import KFold
@@ -11,10 +12,11 @@ from nisl import searchlight, datasets
 dataset = datasets.fetch_haxby()
 
 X = dataset.data
+mean_img = np.mean(X, axis=3)
 mask = dataset.mask
-mask[:, 35:] = 0
-mask[..., 35:] = 0
-mask[..., :20] = 0
+mask[..., 25:] = 0
+mask[..., :23] = 0
+img_mask = (mask != 0)
 y = dataset.target
 session = dataset.session
 X = X[mask != 0].T
@@ -37,8 +39,14 @@ for i, li in enumerate(ind):
 
 ### Instanciate the searchlight model
 n_jobs = 2
-searchlight = searchlight.SearchLight(A, n_jobs=n_jobs)
 score_func = precision_score
 cv = KFold(y.size, k=4)
+searchlight = searchlight.SearchLight(A, n_jobs=n_jobs,
+        score_func=score_func, verbose=True, cv=cv)
 # cv = None
-scores = searchlight.fit(X, y, score_func=score_func, verbose=True, cv=cv)
+scores = searchlight.fit(X, y)
+S = np.zeros(img_mask.shape)
+S[img_mask] = scores.scores
+pyplot.imshow(np.rot90(S[..., 24]), interpolation='nearest',
+        cmap=pyplot.cm.spectral)
+pyplot.show()
