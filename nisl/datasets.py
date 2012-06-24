@@ -482,11 +482,8 @@ def fetch_haxby(data_dir=None):
 
     except IOError:
         # If the dataset does not exists, we download it
-        url = 'http://www.pymvpa.org/files'
-        tar_name = 'pymvpa_exampledata.tar.bz2'
-        urls = [os.path.join(url, tar_name)]
-        _fetch_dataset('haxby2001', urls, data_dir=data_dir,
-                      uncompress=True)
+        url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
+        _fetch_dataset('haxby2001', [url, ], data_dir=data_dir)
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     # preprocess data
@@ -494,9 +491,10 @@ def fetch_haxby(data_dir=None):
     X = ni.load(files[1]).get_data()
     mask = ni.load(files[2]).get_data().astype(np.bool)
 
-    # Crop a bit
-    X = X[:, 7:56, 11:52]
-    mask = mask[:, 7:56, 11:52]
+    # Crop a bit. We are copying to loose the reference to the original
+    # data
+    X = np.copy(X[:, 7:56, 11:52])
+    mask = np.copy(mask[:, 7:56, 11:52])
 
     # return the data
     return Bunch(data=X, target=y, mask=mask, session=session, files=files)
@@ -530,8 +528,7 @@ def _fetch_kamitani(data_dir=None):
         url = ''
         tar_name = 'public_beta_20100515.zip'
         urls = [os.path.join(url, tar_name)]
-        _fetch_dataset('kamitani', urls, data_dir=data_dir,
-                      uncompress=True)
+        _fetch_dataset('kamitani', urls, data_dir=data_dir)
         files = _get_dataset("kamitani", file_names, data_dir=data_dir)
 
     mat = io.loadmat(files[0], struct_as_record=True)
