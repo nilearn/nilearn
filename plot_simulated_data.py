@@ -66,7 +66,7 @@ def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
 
 
 def plot_slices(data, title=None):
-    pl.figure(figsize=(5.5, 2))
+    pl.figure(figsize=(5.5, 2.2))
     vmax = np.abs(data).max()
     for i in (0, 6, 11):
         pl.subplot(1, 3, i / 5 + 1)

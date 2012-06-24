@@ -33,11 +33,11 @@
        :target: auto_examples/plot_simulated_data.html
 
     .. |banner3| image:: auto_examples/images/plot_nyu_rest_clustering_1.png
-       :height: 100
+       :height: 120
        :target: auto_examples/plot_nyu_rest_clustering.html
 
     .. |banner4| image:: auto_examples/images/plot_nyu_rest_decomposition_1.png
-       :height: 100
+       :height: 120
        :target: auto_examples/plot_nyu_rest_decomposition.html
 
 
