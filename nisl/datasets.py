@@ -151,6 +151,7 @@ def _uncompress_file(file, delete_archive=True):
         else:
             tar = tarfile.open(file, "r")
             tar.extractall(path=data_dir)
+            tar.close()
         if delete_archive:
             os.remove(file)
         print '   ...done.'
@@ -349,8 +350,8 @@ def fetch_star_plus(data_dir=None):
         url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
         url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
 
-        url1_files = [os.path.join(url1, i) for i in file_names[0:3]]
-        url2_files = [os.path.join(url2, i) for i in file_names[3:6]]
+        url1_files = ["/".join(url1, i) for i in file_names[0:3]]
+        url2_files = ["/".join(url2, i) for i in file_names[3:6]]
         urls = url1_files + url2_files
 
         full_names = _fetch_dataset('starplus', urls, data_dir=data_dir)
@@ -545,7 +546,7 @@ def _fetch_kamitani(data_dir=None):
     except IOError:
         url = ''
         tar_name = 'public_beta_20100515.zip'
-        urls = [os.path.join(url, tar_name)]
+        urls = ['/'.join(url, tar_name)]
         _fetch_dataset('kamitani', urls, data_dir=data_dir)
         files = _get_dataset("kamitani", file_names, data_dir=data_dir)
 
@@ -642,7 +643,7 @@ def fetch_nyu_rest(n_subjects=None, data_dir=None):
         """
         tar_full_names = [os.path.join(prefix, name)
                           for prefix, name in zip(tar_prefixes, tar_names)]
-        urls = [os.path.join(url, name) for name in tar_full_names]
+        urls = ['/'.join(url, name) for name in tar_full_names]
         _fetch_dataset('nyu_rest', urls, data_dir=data_dir)
         files = _get_dataset("nyu_rest", file_names, data_dir=data_dir)
 
