@@ -11,7 +11,7 @@ from scipy import ndimage
 ###############################################################################
 
 
-def largest_connected_component(mask):
+def _largest_connected_component(mask):
     """
     Return the largest connected component of a 3D mask array.
 
@@ -39,32 +39,31 @@ def largest_connected_component(mask):
 
 
 ###############################################################################
-# Utilities to calculate masks
+# Utilities to compute masks
 ###############################################################################
 
 
-def compute_mask(mean_volume, m=0.2, M=0.9, cc=True,
-                    exclude_zeros=False):
+def compute_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
+                 connected=True, exclude_zeros=False):
     """
-    Compute a mask file from fMRI data in 3D or 4D ndarrays.
+    Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
-    Compute and write the mask of an image based on the grey level
     This is based on an heuristic proposed by T.Nichols:
     find the least dense point of the histogram, between fractions
-    m and M of the total image histogram.
+    lower_cutoff and upper_cutoff of the total image histogram.
 
-    In case of failure, it is usually advisable to increase m.
+    In case of failure, it is usually advisable to increase lower_cutoff.
 
     Parameters
     ----------
-    mean_volume : 3D ndarray
-        mean EPI image, used to compute the threshold for the mask.
-    m : float, optional
+    epi_img : 3D ndarray
+        EPI image, used to compute the mask.
+    lower_cutoff : float, optional
         lower fraction of the histogram to be discarded.
-    M: float, optional
+    upper_cutoff: float, optional
         upper fraction of the histogram to be discarded.
-    cc: boolean, optional
-        if cc is True, only the largest connect component is kept.
+    connected: boolean, optional
+        if connected is True, only the largest connect component is kept.
     exclude_zeros: boolean, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -75,21 +74,23 @@ def compute_mask(mean_volume, m=0.2, M=0.9, cc=True,
     mask : 3D boolean ndarray
         The brain mask
     """
-    sorted_input = np.sort(mean_volume.reshape(-1))
+    if len(epi_img.shape) == 4:
+        epi_img = epi_img.mean(axis=-1)
+    sorted_input = np.sort(np.ravel(epi_img))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
-    limite_inf = np.floor(m * len(sorted_input))
-    limite_sup = np.floor(M * len(sorted_input))
+    lower_cutoff = np.floor(lower_cutoff * len(sorted_input))
+    upper_cutoff = np.floor(upper_cutoff * len(sorted_input))
 
-    delta = sorted_input[limite_inf + 1:limite_sup + 1] \
-            - sorted_input[limite_inf:limite_sup]
+    delta = sorted_input[lower_cutoff + 1:upper_cutoff + 1] \
+            - sorted_input[lower_cutoff:upper_cutoff]
     ia = delta.argmax()
-    threshold = 0.5 * (sorted_input[ia + limite_inf]
-                        + sorted_input[ia + limite_inf + 1])
+    threshold = 0.5 * (sorted_input[ia + lower_cutoff]
+                        + sorted_input[ia + lower_cutoff + 1])
 
-    mask = (mean_volume >= threshold)
+    mask = (epi_img >= threshold)
 
-    if cc:
-        mask = largest_connected_component(mask)
+    if connected:
+        mask = _largest_connected_component(mask)
 
     return mask.astype(bool)
