@@ -37,11 +37,11 @@ def _chunk_report_(bytes_so_far, total_size, t0):
         dt = time.time() - t0
         # We use a max to avoid a division by zero
         remaining = (100. - percent) / max(0.01, percent) * dt
-        sys.stdout.write(
+        sys.stderr.write(
             "Downloaded %d of %d bytes (%0.2f%%, %i seconds remaining)\r"
             % (bytes_so_far, total_size, percent, remaining))
     else:
-        sys.stdout.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
+        sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None):
@@ -82,7 +82,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None):
 
         if not chunk:
             if report_hook:
-                sys.stdout.write('\n')
+                sys.stderr.write('\n')
             break
 
         local_file.write(chunk)
