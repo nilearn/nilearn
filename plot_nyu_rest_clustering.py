@@ -35,17 +35,6 @@ ward = WardAgglomeration(n_clusters=1000, connectivity=c, memory='ward')
 ward.fit(X_masked.T)
 print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 
-### Spectral clustering #######################################################
-
-"""
-from sklearn.cluster import spectral_clustering
-X = dataset.func[0][:, :, :, 0]
-graph = image.img_to_graph(X, mask=m)
-graph.data = np.exp(-graph.data / graph.data.std())
-labels = spectral_clustering(graph, k=n_clusters)
-labels = labels.reshape(X.shape)
-"""
-
 ### Prepare output ############################################################
 
 # Unmask data
