@@ -7,6 +7,7 @@ import tarfile
 import zipfile
 import sys
 import shutil
+import time
 
 import numpy as np
 from scipy import io
@@ -15,7 +16,7 @@ from sklearn.datasets.base import Bunch
 import nibabel as ni
 
 
-def _chunk_report_(bytes_so_far, total_size=None):
+def _chunk_report_(bytes_so_far, total_size, t0):
     """Show downloading percentage
 
     Parameters
@@ -24,14 +25,21 @@ def _chunk_report_(bytes_so_far, total_size=None):
         Number of downloaded bytes
 
     total_size: integer, optional
-        Total size of the file. If not given, a question mark will be showed
-        instead of it. Default: None
+        Total size of the file. None is valid
+
+    t0: integer, optional
+        The time in seconds (as returned by time.time()) at which the
+        download was started.
     """
     if total_size:
         percent = float(bytes_so_far) / total_size
         percent = round(percent * 100, 2)
-        sys.stdout.write("Downloaded %d of %d bytes (%0.2f%%)\r" %
-            (bytes_so_far, total_size, percent))
+        dt = time.time() - t0
+        # We use a max to avoid a division by zero
+        remaining = (100. - percent) / max(0.01, percent) * dt
+        sys.stdout.write(
+            "Downloaded %d of %d bytes (%0.2f%%, %i seconds remaining)\r"
+            % (bytes_so_far, total_size, percent, remaining))
     else:
         sys.stdout.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
@@ -65,6 +73,7 @@ def _chunk_read_(response, chunk_size=8192, report_hook=None):
     bytes_so_far = 0
     data = []
 
+    t0 = time.time()
     while 1:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
@@ -76,12 +85,12 @@ def _chunk_read_(response, chunk_size=8192, report_hook=None):
 
         data += chunk
         if report_hook:
-            _chunk_report_(bytes_so_far, total_size)
+            _chunk_report_(bytes_so_far, total_size, t0)
 
     return "".join(data)
 
 
-def get_dataset_dir(dataset_name, data_dir=None):
+def _get_dataset_dir(dataset_name, data_dir=None):
     """Returns data directory of given dataset
 
     Parameters
@@ -113,23 +122,7 @@ def get_dataset_dir(dataset_name, data_dir=None):
     return data_dir
 
 
-def clean_dataset(dataset_name, data_dir=None):
-    """Erase the directory of a given dataset
-
-    Parameters
-    ----------
-    dataset_name: string
-        Unique dataset name
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-    """
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
-    shutil.rmtree(data_dir)
-
-
-def uncompress_file(file, delete_archive=True):
+def _uncompress_file(file, delete_archive=True):
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -164,7 +157,7 @@ def uncompress_file(file, delete_archive=True):
         raise
 
 
-def fetch_file(url, data_dir):
+def _fetch_file(url, data_dir):
     """Load requested file, downloading it if needed or requested
 
     Parameters
@@ -196,6 +189,7 @@ def fetch_file(url, data_dir):
     file_name = os.path.basename(url)
     full_name = os.path.join(data_dir, file_name)
     if not os.path.exists(full_name):
+        t0 = time.time()
         try:
             # Download data
             print 'Downloading data from %s ...' % url
@@ -205,7 +199,8 @@ def fetch_file(url, data_dir):
             local_file = open(full_name, "wb")
             local_file.write(chunks)
             local_file.close()
-            print '...done.'
+            dt = time.time() - t0
+            print '...done. (%i seconds, %i min)' % (dt, dt/60)
         except urllib2.HTTPError, e:
             print "HTTP Error:", e, url
             return None
@@ -215,7 +210,7 @@ def fetch_file(url, data_dir):
     return full_name
 
 
-def fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
+def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -241,31 +236,31 @@ def fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
     cleaned.
     """
     # Determine data path
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     files = []
     for url in urls:
-        full_name = fetch_file(url, data_dir)
+        full_name = _fetch_file(url, data_dir)
         if not full_name:
             print 'An error occured, abort fetching'
             shutil.rmtree(data_dir)
         if uncompress:
             try:
-                uncompress_file(full_name)
+                _uncompress_file(full_name)
             except Exception:
                 # We are giving it a second try, but won't try a third
                 # time :)
                 print 'archive corrupted, trying to download it again'
-                fetch_file(url, data_dir)
-                uncompress_file(full_name)
+                _fetch_file(url, data_dir)
+                _uncompress_file(full_name)
         files.append(full_name)
 
     return files
 
 
-def get_dataset(dataset_name, file_names, data_dir=None):
+def _get_dataset(dataset_name, file_names, data_dir=None):
     """Returns absolute paths of a dataset files if exist
 
     Parameters
@@ -289,7 +284,7 @@ def get_dataset(dataset_name, file_names, data_dir=None):
     -----
     If at least one file is missing, an IOError is raised.
     """
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     file_paths = []
     for file_name in file_names:
         full_name = os.path.join(data_dir, file_name)
@@ -336,10 +331,10 @@ def fetch_star_plus(data_dir=None):
 
     dataset_files = ['data-starplus-%d-%s.npy' % (i, j) for i in range(0, 6)
             for j in ['mask', 'X', 'y']]
-    dataset_dir = get_dataset_dir("starplus", data_dir=data_dir)
+    dataset_dir = _get_dataset_dir("starplus", data_dir=data_dir)
 
     try:
-        get_dataset("starplus", dataset_files, data_dir=data_dir)
+        _get_dataset("starplus", dataset_files, data_dir=data_dir)
     except IOError:
         file_names = ['data-starplus-0%d-v7.mat' % i for i in
                 [4847, 4799, 5710, 4820, 5675, 5680]]
@@ -350,7 +345,7 @@ def fetch_star_plus(data_dir=None):
         url2_files = [os.path.join(url2, i) for i in file_names[3:6]]
         urls = url1_files + url2_files
 
-        full_names = fetch_dataset('starplus', urls, data_dir=data_dir)
+        full_names = _fetch_dataset('starplus', urls, data_dir=data_dir)
 
         for indice, full_name in enumerate(full_names):
             # Converting data to a more readable format
@@ -481,16 +476,16 @@ def fetch_haxby(data_dir=None):
     # load the dataset
     try:
         # Try to load the dataset
-        files = get_dataset("haxby2001", file_names, data_dir=data_dir)
+        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     except IOError:
         # If the dataset does not exists, we download it
         url = 'http://www.pymvpa.org/files'
         tar_name = 'pymvpa_exampledata.tar.bz2'
         urls = [os.path.join(url, tar_name)]
-        fetch_dataset('haxby2001', urls, data_dir=data_dir,
+        _fetch_dataset('haxby2001', urls, data_dir=data_dir,
                       uncompress=True)
-        files = get_dataset("haxby2001", file_names, data_dir=data_dir)
+        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     # preprocess data
     y, session = np.loadtxt(files[0]).astype("int").T
@@ -505,7 +500,7 @@ def fetch_haxby(data_dir=None):
     return Bunch(data=X, target=y, mask=mask, session=session, files=files)
 
 
-def fetch_kamitani(data_dir=None):
+def _fetch_kamitani(data_dir=None):
     """Returns the kamitani dataset
 
     Returns
@@ -528,14 +523,14 @@ def fetch_kamitani(data_dir=None):
     file_names = ['public_beta_201005015.mat']
 
     try:
-        files = get_dataset("kamitani", file_names, data_dir=data_dir)
+        files = _get_dataset("kamitani", file_names, data_dir=data_dir)
     except IOError:
         url = ''
         tar_name = 'public_beta_20100515.zip'
         urls = [os.path.join(url, tar_name)]
-        fetch_dataset('kamitani', urls, data_dir=data_dir,
+        _fetch_dataset('kamitani', urls, data_dir=data_dir,
                       uncompress=True)
-        files = get_dataset("kamitani", file_names, data_dir=data_dir)
+        files = _get_dataset("kamitani", file_names, data_dir=data_dir)
 
     mat = io.loadmat(files[0], struct_as_record=True)
 
@@ -606,7 +601,7 @@ def fetch_nyu_rest(data_dir=None):
                   for f in file_names]
 
     try:
-        files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
+        files = _get_dataset("nyu_rest", file_names, data_dir=data_dir)
     except IOError:
         url = 'http://www.nitrc.org/frs/download.php/'
         tar_prefixes = ['1071']
@@ -621,8 +616,8 @@ def fetch_nyu_rest(data_dir=None):
         tar_full_names = [os.path.join(prefix, name)
                           for prefix, name in zip(tar_prefixes, tar_names)]
         urls = [os.path.join(url, name) for name in tar_full_names]
-        fetch_dataset('nyu_rest', urls, data_dir=data_dir)
-        files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
+        _fetch_dataset('nyu_rest', urls, data_dir=data_dir)
+        files = _get_dataset("nyu_rest", file_names, data_dir=data_dir)
 
     anat_anon = []
     anat_skull = []
