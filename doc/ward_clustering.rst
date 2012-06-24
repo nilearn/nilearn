@@ -78,10 +78,10 @@ idea is to threshold values and eliminates voxels present in the "black peak"
         :start-after: ### Mask ######################################################################
         :end-before: ### Ward ######################################################################
 
-The result is a numpy.nadarray of boolean that is used to mask our original X.
+The result is a numpy array of boolean that is used to mask our original X.
 
-Applying the Ward
-=================
+Applying Ward clustering
+==========================
 
 Compute connectivity map
 ------------------------

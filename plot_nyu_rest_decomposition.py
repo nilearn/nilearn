@@ -18,7 +18,7 @@ dataset = datasets.fetch_nyu_rest()
 ### Preprocess ################################################################
 
 # Mask non brain areas
-from nisl import mask
+from nisl import masking
 X = np.concatenate((
     dataset.func[0],
     dataset.func[1],
@@ -30,7 +30,7 @@ from scipy import ndimage
 for image in X.T:
     image[...] = ndimage.gaussian_filter(image, 1.5)
 
-mask = mask.compute_mask(mean_img)
+mask = masking.compute_mask(mean_img)
 X_masked = X[mask]
 
 ### Apply requested algorithm #################################################

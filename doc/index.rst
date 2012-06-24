@@ -80,7 +80,7 @@
 
    introduction.rst
    haxby_decoding.rst
-   datasets/nyu.rst
+   ward_clustering.rst
    auto_examples/index
 
 

@@ -573,6 +573,7 @@ def fetch_kamitani(data_dir=None, force_download=False):
            target_random=y_random, target_figure=y_figure, roi_name=roi_name,
            roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
 
+
 def fetch_nyu_rest(data_dir=None, force_download=False):
     """Returns the NYU Test Retest dataset
 
@@ -603,8 +604,8 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
     """
 
     file_names = [os.path.join('anat', 'mprage_anonymized.nii.gz'),
-        os.path.join('anat', 'mprage_skullstripped.nii.gz'),
-        os.path.join('func', 'lfo.nii.gz')]
+                  os.path.join('anat', 'mprage_skullstripped.nii.gz'),
+                  os.path.join('func', 'lfo.nii.gz')]
 
     # Warning : only Session 1 subs for the moment
     sub_names = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
@@ -612,7 +613,7 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
             'sub36678', 'sub38579', 'sub39529']
 
     file_names = [os.path.join(sub, f) for sub in sub_names
-            for f in file_names]
+                  for f in file_names]
 
     try:
         files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
@@ -627,13 +628,11 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
             'NYU_TRT_session2b.tar.gz', 'NYU_TRT_session3a.tar.gz',
             'NYU_TRT_session3b.tar.gz']
         """
-        tar_full_names = []
-        # merge lists
-        for i, p in enumerate(tar_prefixes):
-            tar_full_names.append(p + tar_names[i])
+        tar_full_names = [os.path.join(prefix, name)
+                          for prefix, name in zip(tar_prefixes, tar_names)]
         urls = [os.path.join(url, name) for name in tar_full_names]
         fetch_dataset('nyu_rest', urls, data_dir=data_dir,
-                force_download=force_download)
+                      force_download=force_download)
         uncompress_dataset('nyu_rest', tar_names, data_dir=data_dir)
         files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
 
