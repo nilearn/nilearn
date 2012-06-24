@@ -29,15 +29,15 @@
        :target: auto_examples/plot_haxby_decoding.html
 
     .. |banner2| image:: auto_examples/images/plot_simulated_data_3.png
-       :height: 100
+       :height: 90
        :target: auto_examples/plot_simulated_data.html
 
-    .. |banner3| image:: auto_examples/images/plot_nyu_rest_clustering_1.png
-       :height: 120
-       :target: auto_examples/plot_nyu_rest_clustering.html
+    .. |banner3| image:: auto_examples/images/plot_rest_clustering_1.png
+       :height: 140
+       :target: auto_examples/plot_rest_clustering.html
 
     .. |banner4| image:: auto_examples/images/plot_ica_resting_state_1.png
-       :height: 120
+       :height: 140
        :target: auto_examples/plot_ica_resting_state.html
 
 

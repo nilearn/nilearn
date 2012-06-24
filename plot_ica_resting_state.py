@@ -54,16 +54,18 @@ import pylab as pl
 pl.figure()
 pl.axis('off')
 vmax = np.max(np.abs(components[:, :, 20, 16]))
-pl.imshow(mean_img[:, :, 20], interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(components[:, :, 20, 16], interpolation='nearest',
+pl.imshow(np.rot90(mean_img[:, :, 20]), interpolation='nearest',
+          cmap=pl.cm.gray)
+pl.imshow(np.rot90(components[:, :, 20, 16]), interpolation='nearest',
            cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 pl.title('Default mode')
 
 pl.figure()
 pl.axis('off')
 vmax = np.max(np.abs(components[:, :, 25, 19]))
-pl.imshow(mean_img[:, :, 25], interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(components[:, :, 25, 19], interpolation='nearest',
+pl.imshow(np.rot90(mean_img[:, :, 25]), interpolation='nearest',
+          cmap=pl.cm.gray)
+pl.imshow(np.rot90(components[:, :, 25, 19]), interpolation='nearest',
            cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 pl.title('Ventral attention network')
 pl.show()

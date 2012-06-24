@@ -47,7 +47,6 @@ print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 ### Show result ###############################################################
 
 from matplotlib import pyplot as pl
-pl.figure()
 
 # Display the labels
 # Unmask data
@@ -58,15 +57,16 @@ labels[mask] = ward.labels_
 cut = labels[:, :, 20].astype(np.int)
 colors = np.random.random(size=(ward.n_clusters + 1, 3))
 colors[-1] = 0
+pl.figure()
 pl.axis('off')
-pl.imshow(colors[cut], interpolation='nearest')
+pl.imshow(colors[np.rot90(cut)], interpolation='nearest')
 pl.title('Ward parcellation')
 
 # Display the original data
 pl.figure()
 first_epi_img = epi_img[..., 0].copy()
 first_epi_img[np.logical_not(mask)] = 0
-pl.imshow(first_epi_img[..., 20], interpolation='nearest',
+pl.imshow(np.rot90(first_epi_img[..., 20]), interpolation='nearest',
            cmap=pl.cm.spectral)
 pl.axis('off')
 pl.title('Original')
@@ -78,7 +78,7 @@ compressed_img = np.zeros(mask.shape)
 compressed_img[mask] = X_c[0]
 
 pl.figure()
-pl.imshow(compressed_img[:, :, 20], interpolation='nearest',
+pl.imshow(np.rot90(compressed_img[:, :, 20]), interpolation='nearest',
            cmap=pl.cm.spectral)
 pl.title('Compressed representation')
 pl.axis('off')
