@@ -26,14 +26,14 @@ from sklearn.cluster import WardAgglomeration
 import time
 start = time.time()
 ward = WardAgglomeration(n_clusters=500, connectivity=connectivity,
-                         memory='ward')
+                         memory='nisl_cache')
 ward.fit(epi_masked.T)
 print "Ward agglomeration 500 clusters: %.2fs" % (time.time() - start)
 
 # Compute the ward with more clusters, should be faster
 start = time.time()
 ward = WardAgglomeration(n_clusters=1000, connectivity=connectivity,
-                         memory='ward')
+                         memory='nisl_cache')
 ward.fit(epi_masked.T)
 print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 
