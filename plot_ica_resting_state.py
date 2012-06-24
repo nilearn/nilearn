@@ -58,7 +58,6 @@ pl.imshow(np.rot90(mean_img[:, :, 20]), interpolation='nearest',
           cmap=pl.cm.gray)
 pl.imshow(np.rot90(components[:, :, 20, 16]), interpolation='nearest',
            cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
-pl.title('Default mode')
 
 pl.figure()
 pl.axis('off')
@@ -67,5 +66,4 @@ pl.imshow(np.rot90(mean_img[:, :, 25]), interpolation='nearest',
           cmap=pl.cm.gray)
 pl.imshow(np.rot90(components[:, :, 25, 19]), interpolation='nearest',
            cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
-pl.title('Ventral attention network')
 pl.show()
