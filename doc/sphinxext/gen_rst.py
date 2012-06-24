@@ -330,7 +330,14 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                     # Set the fig_num figure as the current figure as we can't
                     # save a figure that's not the current figure.
                     plt.figure(fig_num)
-                    plt.savefig(image_path % fig_num)
+                    fig_file_name = image_path % fig_num
+                    try:
+                        plt.tight_layout(pad=.5)
+                    except Exception:
+                        # tight_layout is present only is recent versions
+                        # of matplotlib
+                        pass
+                    plt.savefig(fig_file_name)
                     figure_list.append(image_fname % fig_num)
             except:
                 print 80 * '_'

@@ -46,10 +46,18 @@ pl.figure()
 # A plot the axial view of the mask to compare with the axial
 # view of the raw data displayed previously
 pl.imshow(np.rot90(mask[:, :, 32]), interpolation='nearest')
-pl.show()
 
 # Applying the mask #########################################################
 
+# Applying the mask is just a simple array manipulation
 masked_data = data[mask]
 
+# masked_data is now a voxel x time matrix. We can plot the first 10
+# lines: they correspond to time-series of 10 voxels on the side of the
+# brain
+pl.figure()
+pl.plot(masked_data[:10].T)
+pl.xlabel('Time')
+pl.ylabel('Voxel')
 
+pl.show()

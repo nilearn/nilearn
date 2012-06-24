@@ -72,8 +72,9 @@ counter clockwise.
      :end-before: # Extracting a brain mask ###################################################
 
 .. figure:: auto_examples/images/plot_visualization_1.png
-        :target: auto_examples/plot_visualization.html
-        :align: center
+    :target: auto_examples/plot_visualization.html
+    :align: center
+    :scale: 60
 
 
 Masking the data
@@ -124,11 +125,13 @@ convenient to apply a brain mask and go from a 4D array to a 2D array,
     .. image:: masking.jpg
         :align: center
 
-With Python, it is as easy as doing the following:
-
 .. literalinclude:: ../plot_visualization.py
      :start-after: # Applying the mask #########################################################
 
 
+.. figure:: auto_examples/images/plot_visualization_3.png
+    :target: auto_examples/plot_visualization.html
+    :align: center
+    :scale: 50
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
