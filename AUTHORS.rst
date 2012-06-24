@@ -1,9 +1,5 @@
 .. -*- mode: rst -*-
 
-History
--------
-
-
 People
 ------
 

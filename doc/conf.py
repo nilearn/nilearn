@@ -14,6 +14,7 @@
 
 import sys
 import os
+import shutil
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
@@ -23,6 +24,8 @@ sys.path.insert(0, os.path.abspath('sphinxext'))
 
 # We also add the directory just above to enable local imports of nisl
 sys.path.insert(0, os.path.abspath('..'))
+
+shutil.copy('../AUTHORS.rst', '.')
 
 # -- General configuration ---------------------------------------------------
 
