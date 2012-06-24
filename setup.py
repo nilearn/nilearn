@@ -10,7 +10,7 @@ import os
 import shutil
 
 DISTNAME = 'nisl'
-DESCRIPTION = 'A set of python modules for neuroimaging'
+DESCRIPTION = 'Statistical learning for neuroimaging in Python'
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
@@ -19,7 +19,6 @@ LICENSE = 'new BSD'
 DOWNLOAD_URL = 'http://nisl.github.com'
 VERSION = '0.1-git'
 
-import setuptools  # we are using a setuptools namespace
 from numpy.distutils.core import setup
 
 
@@ -28,8 +27,7 @@ def configuration(parent_package='', top_path=None):
         os.remove('MANIFEST')
 
     from numpy.distutils.misc_util import Configuration
-    config = Configuration(None, parent_package, top_path,
-        namespace_packages=['nisl'])
+    config = Configuration(None, parent_package, top_path)
 
     config.add_subpackage('nisl')
     
