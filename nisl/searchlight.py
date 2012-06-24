@@ -121,21 +121,48 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
 
     Parameters
     -----------
+    list_i: array of integers
+        Indices of voxels to be processed by the thread.
 
-    ?
+    list_rows: array of array of integers
+        Indices of adjacency rows corresponding to list_i voxels
 
+    estimator: estimator object implementing 'fit'
+        The object to use to fit the data
+
+    X: array-like of shape at least 2D
+        The data to fit.
+
+    y: array-like
+        The target variable to try to predict.
+
+    score_func: callable, optional
+        callable taking as arguments the fitted estimator, the
+        test data (X_test) and the test target (y_test) if y is
+        not None.
+
+    cv: cross-validation generator, optional
+        A cross-validation generator. If None, a 3-fold cross
+        validation is used or 3-fold stratified cross-validation
+        when y is supplied.
+
+    verbose: boolean, optional
+        The verbosity level. Defaut is False
+
+    Return
+    ------
+    par_scores: array of float
+        precision of each voxel
     """
     par_scores = np.zeros(len(list_rows))
     for i, row in enumerate(list_rows):
         if list_i[i] not in row:
             row.append(list_i[i])
-        if cv:
-            par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                    y, score_func, cv, n_jobs=1))
-        else:
-            par_scores[i] = estimator.fit(X[:, row], y).score(X[:, row], y)
+        par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
+                y, score_func, cv, n_jobs=1))
         if verbose:
-            print "%d / %d : %2.2f" % (list_i[i], X.shape[1], par_scores[i])
+            print "Processing voxel #%d on %d. Precision is %2.2f" %\
+                (list_i[i], X.shape[1], par_scores[i])
     return par_scores
 
 
