@@ -503,7 +503,9 @@ def fetch_haxby(data_dir=None):
     # preprocess data
     y, session = np.loadtxt(files[0]).astype("int").T
     y_strings = np.recfromtxt(files[-1])['f0']
-    X = ni.load(files[1]).get_data()
+    bold_img = ni.load(files[1])
+    X = bold_img.get_data()
+    affine = bold_img.get_affine()
     mask = ni.load(files[2]).get_data().astype(np.bool)
 
     # Crop a bit. We are copying to loose the reference to the original
@@ -513,7 +515,7 @@ def fetch_haxby(data_dir=None):
 
     # return the data
     return Bunch(data=X, target=y, mask=mask, session=session,
-                 files=files, target_strings=y_strings)
+                 files=files, target_strings=y_strings, affine=affine)
 
 
 def _fetch_kamitani(data_dir=None):

@@ -2,6 +2,9 @@
 The haxby dataset: face vs house in object recognition
 =======================================================
 
+A significant part of the running time of this example is actually spent
+in loading the data: we load all the data but only use the face and
+houses conditions.
 """
 
 ### Load Haxby dataset ########################################################
@@ -9,6 +12,7 @@ from nisl import datasets
 dataset = datasets.fetch_haxby()
 fmri_data = dataset.data
 mask = dataset.mask
+affine = dataset.affine
 y = dataset.target
 conditions = dataset.target_strings
 session = dataset.session
@@ -34,7 +38,7 @@ for s in np.unique(session):
     X[session == s] = signal.detrend(X[session == s], axis=0)
 
 
-### Remove rest period ########################################################
+### Restrict to faces and houses ##############################################
 
 # Keep only data corresponding to face or houses
 condition_mask = np.in1d(conditions, ('face', 'house'))
@@ -62,8 +66,8 @@ from sklearn.feature_selection import SelectKBest, f_classif
 
 ### Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
-# namely Anova. We set the number of features to be selected to 500
-feature_selection = SelectKBest(f_classif, k=500)
+# namely Anova. We set the number of features to be selected to 1000
+feature_selection = SelectKBest(f_classif, k=1000)
 
 # We have our classifier (SVC), our feature selection (SelectKBest), and now,
 # we can plug them together in a *pipeline* that performs the two operations
@@ -92,12 +96,16 @@ act = np.ma.masked_array(act, act == 0)
 import pylab as pl
 pl.axis('off')
 pl.title('SVM vectors')
-pl.imshow(np.rot90(mean_img[..., 23]), cmap=pl.cm.gray,
+pl.imshow(np.rot90(mean_img[..., 16]), cmap=pl.cm.gray,
           interpolation='nearest')
-pl.imshow(np.rot90(act[..., 23]), cmap=pl.cm.hot,
+pl.imshow(np.rot90(act[..., 16]), cmap=pl.cm.hot,
           interpolation='nearest')
 pl.show()
 
+# Saving the results as a Nifti file may also be important
+import nibabel
+img = nibabel.Nifti1Image(act, affine)
+nibabel.save(img, 'haxby_face_vs_house.nii')
 
 ### Cross validation ##########################################################
 
@@ -123,3 +131,4 @@ classification_accuracy = np.mean(cv_scores)
 print "=== ANOVA ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
+# Classification accuracy: 0.986111  / Chance level: 0.500000

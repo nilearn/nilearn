@@ -76,22 +76,24 @@ Then we preprocess the data to get make it handier:
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Preprocess data ########################################################### 
-        :end-before: ### Remove rest period ########################################################
+        :end-before: ### Restrict to faces and houses ##############################################
 
 .. topic:: **Exercise**
    :class: green
 
    1. Extract the period of activity from the data (i.e. remove the remainder).
 
-
 .. topic:: Solution
 
-    >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
+    As 'y == 0' in rest, we want to keep only time points for which 
+    `y != 0`::
 
-We can check and look at our 8 conditions:
+     >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
+
+Here, we limit to face and house conditions:
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Remove rest period ########################################################
+        :start_after: ### Restrict to faces and houses ##############################################
         :end-before: ### Prediction function #######################################################
 
 Second step: decoding analysis
@@ -225,31 +227,29 @@ But we are lazy people, so there is a specific
 function, *cross_val_score* that computes for you the results for the
 different folds of cross-validation::
 
-    >>> from sklearn.cross_validation import cross_val_score
-    >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=1,
-    ...     verbose=1)
+  >>> from sklearn.cross_validation import cross_val_score
+  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, verbose=1)
 
 n_jobs = 1 means that the computation run sequentially.  But, if
 you are the happy owner of a multiple processors computer you can
 speed up the computation by using n_jobs=-1, which will spread the
-computation equally across all processors (python version 2.6 or
-newer is required)::
+computation equally across all processors (this will probably not work
+under Windows)::
 
-    >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=1)
+ >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=1)
 
 
 Prediction accuracy
 -------------------
 
-    We can take a look to the results of the *cross_val_score* function:
+We can take a look to the results of the *cross_val_score* function::
 
-    >>> cv_scores # doctest: +SKIP
-    array([ 0.81944444,  0.81944444,  0.90277778,  0.68055556,  0.79166667,
-            0.79166667,  0.70833333,  0.59722222,  0.75      ,  0.63888889,
-            0.68055556,  0.70833333])
+  >>> cv_scores # doctest: +SKIP
+  array([ 0.81944444,  0.81944444,  0.90277778,  0.68055556,  0.79166667,
+          0.79166667,  0.70833333,  0.59722222,  0.75      ,  0.63888889,
+          0.68055556,  0.70833333])
 
-    This is simply the prediction score for each fold.
+This is simply the prediction score for each fold.
 
 
 .. topic:: **Exercise**
@@ -276,7 +276,6 @@ We can add a line to print the results:
 
     The complete script can be found as 
     :ref:`an example <example_tutorial_plot_haxby_decoding.py>`
-
     Now, you just have to publish the results :)
 
 Going further with scikit-learn
