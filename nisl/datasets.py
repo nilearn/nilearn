@@ -442,7 +442,7 @@ def fetch_star_plus(data_dir=None):
 
 
 def fetch_haxby(data_dir=None):
-    """Returns the haxby datas
+    """Returns the haxby dataset
 
     Returns
     -------
