@@ -52,9 +52,11 @@ ctags:
 	# Install with: sudo apt-get install exuberant-ctags
 	$(CTAGS) -R *
 
+.PHONY : doc
 doc:
 	make -C doc html
 
+.PHONY : doc-noplot
 doc-noplot:
 	make -C doc html-noplot
 
