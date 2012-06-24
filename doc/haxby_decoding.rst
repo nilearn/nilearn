@@ -272,14 +272,12 @@ We can add a line to print the results:
         :start-after: ### Print results #############################################################
 
 
-Final script
-============
+.. topic:: Final script
 
-An thus, the complete script is (:download:`decoding_example.py <../plot_haxby_decoding.py>`):
+    The complete script can be found as 
+    :ref:`an example <example_tutorial_plot_haxby_decoding.py>`
 
-.. literalinclude:: ../plot_haxby_decoding.py
-
-Now, you just have to publish the results :)
+    Now, you just have to publish the results :)
 
 Going further with scikit-learn
 ===================================
