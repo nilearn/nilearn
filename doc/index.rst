@@ -80,6 +80,7 @@
 
    introduction.rst
    haxby_decoding.rst
+   ward_clustering.rst
    auto_examples/index
 
 

@@ -1,3 +1,7 @@
+"""
+Utilities to compute a brain mask from EPI images
+"""
+
 import numpy as np
 from scipy import ndimage
 

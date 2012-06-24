@@ -129,21 +129,13 @@ def clean_dataset(dataset_name, data_dir=None):
     shutil.rmtree(data_dir)
 
 
-def uncompress_dataset(dataset_name, files, data_dir=None,
-        delete_archive=True):
+def uncompress(file, delete_archive=True):
     """Uncompress files contained in a data_set.
 
     Parameters
     ----------
-    dataset_name: string
-        Unique dataset name
-
-    files: array of strings
-        Contains the names of files to be uncompressed.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+    file: string
+        path of file to be uncompressed.
 
     delete_archive: boolean, optional
         Wheteher or not to delete archive once it is uncompressed.
@@ -153,28 +145,91 @@ def uncompress_dataset(dataset_name, files, data_dir=None,
     -----
     This handles zip, tar, gzip and bzip files only.
     """
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
-    for file in files:
-        full_name = os.path.join(data_dir, file)
-        print 'extracting data from %s...' % full_name
-        # We first try to see if it is a zip file
+    print 'extracting data from %s...' % file
+    data_dir = os.path.dirname(file)
+    # We first try to see if it is a zip file
+    try:
+        if file.endswith('.zip'):
+            z = zipfile.Zipfile(file)
+            z.extractall(data_dir)
+            z.close()
+        else:
+            tar = tarfile.open(file, "r")
+            tar.extractall(path=data_dir)
+        if delete_archive:
+            os.remove(file)
+        print '   ...done.'
+    except Exception as e:
+        print 'error: ', e
+        raise
+
+
+def fetch_file(url, data_dir, force_download=False, uncompress=False):
+    """Load requested file, downloading it if needed or requested
+
+    Parameters
+    ----------
+    dataset_name: string
+        Unique dataset name
+
+    urls: array of strings
+        Contains the urls of files to be downloaded.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    force_download: boolean, optional
+        Wheteher or not to force download of data (in case of data corruption
+        for example). Default: False
+
+    Returns
+    -------
+    files: array of string
+        Absolute paths of downloaded files on disk
+
+    Notes
+    -----
+    If, for any reason, the download procedure fails, all downloaded data are
+    cleaned.
+    """
+    # Determine data path
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    file_name = os.path.basename(url)
+    full_name = os.path.join(data_dir, file_name)
+    if (not os.path.exists(full_name)) or force_download:
         try:
-            if file.endswith('.zip'):
-                z = zipfile.Zipfile(full_name)
-                z.extractall(data_dir)
-                z.close()
-            else:
-                tar = tarfile.open(full_name, "r")
-                tar.extractall(path=data_dir)
-            if delete_archive:
-                os.remove(full_name)
-            print '   ...done.'
+            # Download data
+            print 'Downloading data from %s ...' % url
+            req = urllib2.Request(url)
+            data = urllib2.urlopen(req)
+            chunks = _chunk_read_(data, report_hook=True)
+            local_file = open(full_name, "wb")
+            local_file.write(chunks)
+            local_file.close()
+            print '...done.'
+        except urllib2.HTTPError, e:
+            print "HTTP Error:", e, url
+            return None
+        except urllib2.URLError, e:
+            print "URL Error:", e, url
+            return None
+    if uncompress:
+        try:
+            uncompress()
         except Exception as e:
-            print 'error: ', e
+            if not force_download:
+                print 'archive corrupted, trying to download it again'
+                fetch_file(url, data_dir, True, uncompress)
+            else:
+                return None
+    return full_name
 
 
 def fetch_dataset(dataset_name, urls, data_dir=None,
-        force_download=False):
+        force_download=False, uncompress=False):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -210,27 +265,10 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
 
     files = []
     for url in urls:
-        file_name = os.path.basename(url)
-        full_name = os.path.join(data_dir, file_name)
-        if (not os.path.exists(full_name)) or force_download:
-            # Download data
-            try:
-                print 'Downloading data from %s ...' % url
-                req = urllib2.Request(url)
-                data = urllib2.urlopen(req)
-                chunks = _chunk_read_(data, report_hook=True)
-                local_file = open(full_name, "wb")
-                local_file.write(chunks)
-                local_file.close()
-                print '...done.'
-            except urllib2.HTTPError, e:
-                print "HTTP Error:", e, url
-                shutil.rmtree(data_dir)
-                return
-            except urllib2.URLError, e:
-                print "URL Error:", e, url
-                shutil.rmtree(data_dir)
-                return
+        full_name = fetch_file(url, data_dir, force_download, uncompress)
+        if not full_name:
+            print 'An error occured, abort fetching'
+            shutil.rmtree(data_dir)
         files.append(full_name)
 
     return files
@@ -461,8 +499,7 @@ def fetch_haxby(data_dir=None, force_download=False):
         tar_name = 'pymvpa_exampledata.tar.bz2'
         urls = [os.path.join(url, tar_name)]
         fetch_dataset('haxby2001', urls, data_dir=data_dir,
-                force_download=force_download)
-        uncompress_dataset('haxby2001', [tar_name], data_dir=data_dir)
+                force_download=force_download, uncompress=True)
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     # preprocess data
@@ -481,11 +518,6 @@ def fetch_haxby(data_dir=None, force_download=False):
 def fetch_kamitani(data_dir=None, force_download=False):
     """Returns the kamitani dataset
 
-    Notes
-    -----
-    Kamitani dataset cannot be downloaded for the moment because it requires
-    registration.
-
     Returns
     -------
     data : Bunch
@@ -495,6 +527,12 @@ def fetch_kamitani(data_dir=None, force_download=False):
                     target of the data
         'mask' : the masks for the data
         'xyz' : index to 3D-coordinate array
+
+    Notes
+    -----
+    Kamitani dataset cannot be downloaded for the moment because it requires
+    registration.
+
     """
 
     file_names = ['public_beta_201005015.mat']
@@ -506,8 +544,7 @@ def fetch_kamitani(data_dir=None, force_download=False):
         tar_name = 'public_beta_20100515.zip'
         urls = [os.path.join(url, tar_name)]
         fetch_dataset('kamitani', urls, data_dir=data_dir,
-                force_download=force_download)
-        uncompress_dataset('kamitani', [tar_name], data_dir=data_dir)
+                force_download=force_download, uncompress=True)
         files = get_dataset("kamitani", file_names, data_dir=data_dir)
 
     mat = io.loadmat(files[0], struct_as_record=True)
@@ -535,3 +572,78 @@ def fetch_kamitani(data_dir=None, force_download=False):
     return Bunch(files=files, data_random=X_random, data_figure=X_figure,
            target_random=y_random, target_figure=y_figure, roi_name=roi_name,
            roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
+
+
+def fetch_nyu_rest(data_dir=None, force_download=False):
+    """Returns the NYU Test Retest dataset
+
+    Returns
+    -------
+    data : Bunch
+        Dictionary-like object, the interest attributes are :
+        'data' : numpy array : the data to learn
+        'target' : numpy array
+                    target of the data
+        'mask' : the masks for the data
+        'xyz' : index to 3D-coordinate array
+
+    References
+    ----------
+    Documentation :
+    http://www.nitrc.org/docman/?group_id=274
+
+    Data :
+    http://www.nitrc.org/frs/?group_id=274
+
+    Paper:
+    `Zarrar Shehzad, A. M. Clare Kelly, Philip T. Reiss, Dylan G. Gee,
+    Kristin Gotimer, Lucina Q. Uddin, Sang Han Lee, Daniel S. Margulies,
+    Amy Krain Roy, Bharat B. Biswal, Eva Petkova, F. Xavier Castellanos and
+    Michael P. Milham. The Resting Brain: Unconstrained yet Reliable`
+
+    """
+
+    file_names = [os.path.join('anat', 'mprage_anonymized.nii.gz'),
+                  os.path.join('anat', 'mprage_skullstripped.nii.gz'),
+                  os.path.join('func', 'lfo.nii.gz')]
+
+    # Warning : only Session 1 subs for the moment
+    sub_names = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
+            'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
+            'sub36678', 'sub38579', 'sub39529']
+
+    file_names = [os.path.join(sub, f) for sub in sub_names
+                  for f in file_names]
+
+    try:
+        files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
+    except IOError:
+        url = 'http://www.nitrc.org/frs/download.php/'
+        tar_prefixes = ['1071']
+        tar_names = ['NYU_TRT_session1a.tar.gz']
+        """
+        tar_prefixes = ['1071', '1072', '1073', '1074', '1075', '1076']
+        tar_names = ['NYU_TRT_session1a.tar.gz',
+            'NYU_TRT_session1b.tar.gz', 'NYU_TRT_session2a.tar.gz',
+            'NYU_TRT_session2b.tar.gz', 'NYU_TRT_session3a.tar.gz',
+            'NYU_TRT_session3b.tar.gz']
+        """
+        tar_full_names = [os.path.join(prefix, name)
+                          for prefix, name in zip(tar_prefixes, tar_names)]
+        urls = [os.path.join(url, name) for name in tar_full_names]
+        fetch_dataset('nyu_rest', urls, data_dir=data_dir,
+                      force_download=force_download)
+        uncompress_dataset('nyu_rest', tar_names, data_dir=data_dir)
+        files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
+
+    anat_anon = []
+    anat_skull = []
+    func = []
+
+    for i in np.multiply(range(len(sub_names)), 3):
+        anat_anon.append(ni.load(files[i]).get_data())
+        anat_skull.append(ni.load(files[i + 1]).get_data())
+        func.append(ni.load(files[i + 2]).get_data())
+
+    return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
+            files=files)

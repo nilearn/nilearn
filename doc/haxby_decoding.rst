@@ -78,9 +78,10 @@ Then we preprocess the data to get make it handier:
         :start-after: ### Preprocess data ########################################################### 
         :end-before: ### Remove rest period ########################################################
 
-.. topic:: Exercise
+.. topic:: **Exercise**
+   :class: green
 
-  1. Extract the period of activity from the data (i.e. remove the remainder).
+   1. Extract the period of activity from the data (i.e. remove the remainder).
 
 
 .. topic:: Solution
@@ -251,9 +252,10 @@ Prediction accuracy
     This is simply the prediction score for each fold.
 
 
-.. topic:: Exercise
+.. topic:: **Exercise**
+   :class: green
 
-  1. Compute the mean prediction accuracy using *cv_scores*
+   1. Compute the mean prediction accuracy using *cv_scores*
 
 .. topic:: Solution
 
