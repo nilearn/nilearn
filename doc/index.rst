@@ -32,6 +32,15 @@
        :height: 100
        :target: auto_examples/plot_simulated_data.html
 
+    .. |banner3| image:: auto_examples/images/plot_nyu_rest_clustering_1.png
+       :height: 100
+       :target: auto_examples/plot_nyu_rest_clustering.html
+
+    .. |banner4| image:: auto_examples/images/plot_nyu_rest_decomposition_1.png
+       :height: 100
+       :target: auto_examples/plot_nyu_rest_decomposition.html
+
+
     .. |center-div| raw:: html
 
         <div style="text-align: center; vertical-align: middle; margin: -7px 0 -10px 0;" id="banner" class="banner">
@@ -61,7 +70,7 @@
         shuffle ($('#banner a.external'));
         </SCRIPT>
 
-    |center-div| |banner1| |banner2| |end-div|
+    |center-div| |banner1| |banner2| |banner3| |banner4| |end-div|
 
 .. topic:: Learn machine learning for fMRI
 

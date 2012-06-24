@@ -53,14 +53,14 @@ S = np.ma.masked_equal(S, 0, copy=False)
 
 # Show some interesting slices
 plt.figure()
-plt.subplot(121)
 plt.axis('off')
-plt.title('Default mode')
 vmax = np.max(np.abs(S[..., 10]))
 plt.imshow(mean_img[:, :, 20], interpolation='nearest', cmap=plt.cm.gray)
 plt.imshow(S[:, :, 20, 16], interpolation='nearest', cmap=plt.cm.jet,
     vmax=vmax, vmin=-vmax)
-plt.subplot(122)
+plt.title('Default mode')
+
+plt.figure()
 plt.axis('off')
 plt.title('Ventral attention network')
 vmax = np.max(np.abs(S[..., 19]))

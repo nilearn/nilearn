@@ -222,14 +222,14 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
                                                                fname[:-3]))
             else:
                 fhindex.write('   :target: ./%s.html\n\n' % link_name[:-3])
-            fhindex.write("""   :ref:`example_%s`
+            fhindex.write("""   :ref:`%s <example_%s>`
 
 .. toctree::
    :hidden:
 
    %s/%s
 
-""" % (link_name, dir, fname[:-3]))
+""" % (link_name[:-3], link_name, dir, fname[:-3]))
     fhindex.write("""
 .. raw:: html
 

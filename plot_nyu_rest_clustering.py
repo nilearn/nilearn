@@ -54,7 +54,7 @@ colors = np.random.random(size=(ward.n_clusters + 1, 3))
 colors[-1] = 0
 plt.axis('off')
 plt.imshow(colors[cut], interpolation='nearest')
-plt.title('Labels')
+plt.title('Ward parcellation')
 
 # Display the original data
 plt.figure()
