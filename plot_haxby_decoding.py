@@ -10,6 +10,7 @@ dataset = datasets.fetch_haxby()
 fmri_data = dataset.data
 mask = dataset.mask
 y = dataset.target
+conditions = dataset.target_strings
 session = dataset.session
 
 # fmri_data.shape is (40, 64, 64, 1452)
@@ -35,19 +36,17 @@ for s in np.unique(session):
 
 ### Remove rest period ########################################################
 
-# Remove volumes corresponding to rest
-X, y, session = X[y != 0], y[y != 0], session[y != 0]
+# Keep only data corresponding to face or houses
+condition_mask = np.in1d(conditions, ('face', 'house'))
+X = X[condition_mask]
+y = y[condition_mask]
+session = session[condition_mask]
+conditions = conditions[condition_mask]
 
 # We now have n_samples, n_features = X.shape = 864, 39912
 n_samples, n_features = X.shape
 
-# Check conditions:
-# - 0 is the rest period
-# - [1..8] is the label of each object
-np.unique(y)
-# array([0, 1, 2, 3, 4, 5, 6, 7, 8])
-
-# We have the 8 conditions
+# We have 2 conditions
 n_conditions = np.size(np.unique(y))
 
 ### Prediction function #######################################################
@@ -124,4 +123,3 @@ classification_accuracy = np.mean(cv_scores)
 print "=== ANOVA ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
-# Classification accuracy: 0.744213  / Chance level: 0.125000

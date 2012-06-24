@@ -485,7 +485,8 @@ def fetch_haxby(data_dir=None):
     """
 
     # definition of dataset files
-    file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz']
+    file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz',
+                  'attributes_literal.txt']
     file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
 
     # load the dataset
@@ -501,6 +502,7 @@ def fetch_haxby(data_dir=None):
 
     # preprocess data
     y, session = np.loadtxt(files[0]).astype("int").T
+    y_strings = np.recfromtxt(files[-1])['f0']
     X = ni.load(files[1]).get_data()
     mask = ni.load(files[2]).get_data().astype(np.bool)
 
@@ -510,7 +512,8 @@ def fetch_haxby(data_dir=None):
     mask = np.copy(mask[:, 7:56, 11:52])
 
     # return the data
-    return Bunch(data=X, target=y, mask=mask, session=session, files=files)
+    return Bunch(data=X, target=y, mask=mask, session=session,
+                 files=files, target_strings=y_strings)
 
 
 def _fetch_kamitani(data_dir=None):
