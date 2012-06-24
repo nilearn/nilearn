@@ -7,7 +7,7 @@ CYTHON ?= cython
 NOSETESTS ?= nosetests
 CTAGS ?= ctags
 
-all: clean inplace test
+all: clean inplace test doc-noplot
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
