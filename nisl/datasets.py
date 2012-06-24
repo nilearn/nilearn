@@ -44,13 +44,16 @@ def _chunk_report_(bytes_so_far, total_size, t0):
         sys.stdout.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
 
-def _chunk_read_(response, chunk_size=8192, report_hook=None):
+def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None):
     """Download a file chunk by chunk and show advancement
 
     Parameters
     ----------
     response: urllib.addinfourl
         Response to the download request in order to get file size
+
+    local_file: file
+        Hard disk file where data should be written
 
     chunk_size: integer, optional
         Size of downloaded chunks. Default: 8192
@@ -71,7 +74,6 @@ def _chunk_read_(response, chunk_size=8192, report_hook=None):
         print "Total size could not be determined. Error: ", e
         total_size = None
     bytes_so_far = 0
-    data = []
 
     t0 = time.time()
     while 1:
@@ -83,11 +85,11 @@ def _chunk_read_(response, chunk_size=8192, report_hook=None):
                 sys.stdout.write('\n')
             break
 
-        data += chunk
+        local_file.write(chunk)
         if report_hook:
             _chunk_report_(bytes_so_far, total_size, t0)
 
-    return "".join(data)
+    return
 
 
 def _get_dataset_dir(dataset_name, data_dir=None):
@@ -195,10 +197,8 @@ def _fetch_file(url, data_dir):
             print 'Downloading data from %s ...' % url
             req = urllib2.Request(url)
             data = urllib2.urlopen(req)
-            chunks = _chunk_read_(data, report_hook=True)
             local_file = open(full_name, "wb")
-            local_file.write(chunks)
-            local_file.close()
+            _chunk_read_(data, local_file, report_hook=True)
             dt = time.time() - t0
             print '...done. (%i seconds, %i min)' % (dt, dt/60)
         except urllib2.HTTPError, e:
@@ -207,6 +207,8 @@ def _fetch_file(url, data_dir):
         except urllib2.URLError, e:
             print "URL Error:", e, url
             return None
+        finally:
+            local_file.close()
     return full_name
 
 
