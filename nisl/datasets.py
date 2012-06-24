@@ -302,6 +302,12 @@ def _get_dataset(dataset_name, file_names, data_dir=None):
 def fetch_star_plus(data_dir=None):
     """Function returning the starplus data, downloading them if needed
 
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
     Returns
     -------
     data : Bunch
@@ -446,6 +452,12 @@ def fetch_star_plus(data_dir=None):
 def fetch_haxby(data_dir=None):
     """Returns the haxby dataset
 
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
     Returns
     -------
     data : Bunch
@@ -503,6 +515,12 @@ def fetch_haxby(data_dir=None):
 def _fetch_kamitani(data_dir=None):
     """Returns the kamitani dataset
 
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
     Returns
     -------
     data : Bunch
@@ -558,8 +576,18 @@ def _fetch_kamitani(data_dir=None):
            roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
 
 
-def fetch_nyu_rest(data_dir=None):
+def fetch_nyu_rest(n_subjects=None, data_dir=None):
     """Returns the NYU Test Retest dataset
+
+    Parameters
+    ----------
+    n_subjects: integer optional
+        The number of subjects to load. If None is given, all the
+        subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
 
     Returns
     -------
@@ -622,7 +650,12 @@ def fetch_nyu_rest(data_dir=None):
     anat_skull = []
     func = []
 
-    for i in np.multiply(range(len(sub_names)), 3):
+    if n_subjects is None:
+        n_subjects = len(sub_names)
+
+    for i in range(n_subjects):
+        # We are considering files 3 by 3
+        i *= 3
         anat_anon.append(ni.load(files[i]).get_data())
         anat_skull.append(ni.load(files[i + 1]).get_data())
         func.append(ni.load(files[i + 2]).get_data())
