@@ -62,7 +62,7 @@ Thanks to nisl dataset manager, fetching the dataset is rather easy. Do not
 forget to set your environment variable *NISL_DATA* is you want your dataset
 to be stored in a specific path.
 
-.. literalinclude:: ../../plot_nyu_rest_clustering.py
+.. literalinclude:: ../plot_nyu_rest_clustering.py
         :start-after: ### Load nyu_rest dataset #####################################################
         :end-before: ### Mask ######################################################################
 
@@ -74,7 +74,7 @@ simple heuristic proposed by T. Nichols based on the picture histogram. The
 idea is to threshold values and eliminates voxels present in the "black peak"
 (peak in the histogram representing background dark voxels).
 
-.. literalinclude:: ../../plot_nyu_rest_clustering.py
+.. literalinclude:: ../plot_nyu_rest_clustering.py
         :start-after: ### Mask ######################################################################
         :end-before: ### Ward ######################################################################
 
@@ -126,7 +126,7 @@ Apply the ward
 
 Here we simply launch the ward to find 500 clusters and we time it.
 
-.. literalinclude:: ../../plot_nyu_rest_clustering.py
+.. literalinclude:: ../plot_nyu_rest_clustering.py
         :start-after: # Computing the ward for the first time, this is long...
         :end-before: # Compute the ward with more clusters, should be faster
 
@@ -134,7 +134,7 @@ This runs in about 10 seconds (depending on your computer configuration). Now,
 we are not satisfied of the result and we want to cluster the picture in 1000
 elements.
 
-.. literalinclude:: ../../plot_nyu_rest_clustering.py
+.. literalinclude:: ../plot_nyu_rest_clustering.py
         :start-after: # Compute the ward with more clusters, should be faster
         :end-before: ### Spectral clustering #######################################################
 
@@ -149,7 +149,7 @@ Unmasking
 
 After applying the ward, we must unmask the data. This can be done simply :
 
-.. literalinclude:: ../../plot_nyu_rest_clustering.py
+.. literalinclude:: ../plot_nyu_rest_clustering.py
         :start-after: # Unmask data
         :end-before: # Create a compressed picture
 
@@ -170,7 +170,7 @@ thanks to a two step procedure :
 - call *ward.inverse_transform* on the previous result to turn it back into
   the masked picture shape
 
-.. literalinclude:: ../../plot_nyu_rest_clustering.py
+.. literalinclude:: ../plot_nyu_rest_clustering.py
         :start-after: # Create a compressed picture
         :end-before: ### Show result ###############################################################
 
@@ -181,9 +181,9 @@ Then we can visualize the clusters. One color from the spectrum will be
 attributed to each cluster for the labels visualisation and the compressed
 picture is show in the classical gray colormap.
 
-.. literalinclude:: ../../plot_nyu_rest_clustering.py
+.. literalinclude:: ../plot_nyu_rest_clustering.py
         :start-after: ### Show result ###############################################################
 
-.. figure:: ../auto_examples/images/plot_nyu_rest_clustering_1.png
-   :target: ../auto_examples/plot_nyu_rest_clustering.html
+.. figure:: auto_examples/images/plot_nyu_rest_clustering_1.png
+   :target: auto_examples/plot_nyu_rest_clustering.html
    :align: center
