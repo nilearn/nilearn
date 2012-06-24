@@ -1,16 +1,22 @@
+"""
+Independent component analysis of resting-state fMRI
+=====================================================
+
+An example applying ICA to resting-state data.
+"""
+
 import numpy as np
 
 ### Load nyu_trt dataset ######################################################
 from nisl import datasets
+# Here we use only 3 subjects to get faster-running code. For better
+# results, simply increase this number
 dataset = datasets.fetch_nyu_rest(n_subjects=3)
 
 ### Preprocess ################################################################
 
-fmri_data = np.concatenate((
-                            dataset.func[0],
-                            dataset.func[1],
-                            dataset.func[2]),
-                            axis=3)
+# Concatenate all the subjects
+fmri_data = np.concatenate(dataset.func, axis=3)
 
 # Apply a small amount of Gaussian smoothing
 from scipy import ndimage
@@ -42,6 +48,7 @@ components[mask] = components_masked
 components[np.abs(components) < .5] = 0
 components = np.ma.masked_equal(components, 0, copy=False)
 
+### Visualize the results #####################################################
 # Show some interesting components
 import pylab as pl
 pl.figure()

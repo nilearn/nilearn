@@ -1,3 +1,8 @@
+"""
+Learning a brain parcellation from rest fMRI
+=============================================
+"""
+
 ### Load nyu_rest dataset #####################################################
 
 from nisl import datasets

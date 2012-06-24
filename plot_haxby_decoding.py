@@ -7,28 +7,25 @@ The haxby dataset: face vs house in object recognition
 ### Load Haxby dataset ########################################################
 from nisl import datasets
 dataset = datasets.fetch_haxby()
-X = dataset.data
+fmri_data = dataset.data
 mask = dataset.mask
 y = dataset.target
 session = dataset.session
+
+# fmri_data.shape is (40, 64, 64, 1452)
+# and mask.shape is (40, 64, 64)
 
 ### Preprocess data ###########################################################
 import numpy as np
 
 # Build the mean image because we have no anatomic data
-mean_img = X.mean(axis=-1)
-
-X.shape
-# (40, 64, 64, 1452)
-mask.shape
-# (40, 64, 64)
+mean_img = fmri_data.mean(axis=-1)
 
 # Process the data in order to have a two-dimensional design matrix X of
 # shape (n_samples, n_features).
-X = X[mask].T
+X = fmri_data[mask].T
 
-X.shape
-# (1452, 39912)
+# X.shape is (1452, 39912)
 
 # Detrend data on each session independently
 from scipy import signal
@@ -41,16 +38,8 @@ for s in np.unique(session):
 # Remove volumes corresponding to rest
 X, y, session = X[y != 0], y[y != 0], session[y != 0]
 
-# We can check that
+# We now have n_samples, n_features = X.shape = 864, 39912
 n_samples, n_features = X.shape
-n_samples
-# 864
-n_features
-# 39912
-
-# Look at target y
-y.shape
-# (1452,)
 
 # Check conditions:
 # - 0 is the rest period
@@ -63,10 +52,9 @@ n_conditions = np.size(np.unique(y))
 
 ### Prediction function #######################################################
 
-from sklearn.svm import SVC
-
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
+from sklearn.svm import SVC
 clf = SVC(kernel='linear', C=1.)
 
 ### Dimension reduction #######################################################
@@ -88,14 +76,9 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
 
 anova_svc.fit(X, y)
 y_pred = anova_svc.predict(X)
-y_pred.shape
-# (864,)
-X.shape
-# (864, 39912)
 
 ### Visualisation #############################################################
 
-from matplotlib import pyplot as plt
 
 ### Look at the discriminating weights
 svc = clf.support_vectors_
@@ -107,13 +90,14 @@ act[mask != 0] = svc[0]
 act = np.ma.masked_array(act, act == 0)
 
 ### Create the figure on z=23
-plt.axis('off')
-plt.title('SVM vectors')
-plt.imshow(np.rot90(mean_img[..., 23]), cmap=plt.cm.gray,
-           interpolation='nearest')
-plt.imshow(np.rot90(act[..., 23]), cmap=plt.cm.hot,
-           interpolation='nearest')
-plt.show()
+import pylab as pl
+pl.axis('off')
+pl.title('SVM vectors')
+pl.imshow(np.rot90(mean_img[..., 23]), cmap=pl.cm.gray,
+          interpolation='nearest')
+pl.imshow(np.rot90(act[..., 23]), cmap=pl.cm.hot,
+          interpolation='nearest')
+pl.show()
 
 
 ### Cross validation ##########################################################

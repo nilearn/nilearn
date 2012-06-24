@@ -36,9 +36,9 @@
        :height: 120
        :target: auto_examples/plot_nyu_rest_clustering.html
 
-    .. |banner4| image:: auto_examples/images/plot_nyu_rest_decomposition_1.png
+    .. |banner4| image:: auto_examples/images/plot_ica_resting_state_1.png
        :height: 120
-       :target: auto_examples/plot_nyu_rest_decomposition.html
+       :target: auto_examples/plot_ica_resting_state.html
 
 
     .. |center-div| raw:: html
