@@ -1,4 +1,4 @@
-"""File to import NeuroImaging datasets
+""" Utilities to download NeuroImaging datasets
 """
 
 import os
@@ -600,19 +600,58 @@ def fetch_nyu_rest(n_subjects=None, data_dir=None):
         'mask' : the masks for the data
         'xyz' : index to 3D-coordinate array
 
+    Notes
+    ------
+
+    This dataset is composed of 3 sessions of 26 participants (11 males).
+    For each session, three sets of data are available:
+
+    - anatomical:
+
+      * anonymized data (defaced thanks to BIRN defacer)
+      * skullstripped data (using 3DSkullStrip from AFNI)
+
+    - functional
+
+    For each participant, 3 resting-state scans of 197 continuous EPI functional
+    volumes were collected :
+
+    - 39 slices
+    - matrix = 64 x 64
+    - acquisition voxel size = 3 x 3 x 3 mm
+
+    Sessions 2 and 3 were conducted in a single scan session, 45 min
+    apart, and were 5-16 months after Scan 1.
+
+    All details about this dataset can be found here :
+    http://cercor.oxfordjournals.org/content/19/10/2209.full
+
     References
     ----------
-    Documentation :
-    http://www.nitrc.org/docman/?group_id=274
+    :Documentation:
+        http://www.nitrc.org/docman/?group_id=274
 
-    Data :
-    http://www.nitrc.org/frs/?group_id=274
+    :Download:
+        http://www.nitrc.org/frs/?group_id=274
 
-    Paper:
-    `Zarrar Shehzad, A. M. Clare Kelly, Philip T. Reiss, Dylan G. Gee,
-    Kristin Gotimer, Lucina Q. Uddin, Sang Han Lee, Daniel S. Margulies,
-    Amy Krain Roy, Bharat B. Biswal, Eva Petkova, F. Xavier Castellanos and
-    Michael P. Milham. The Resting Brain: Unconstrained yet Reliable`
+    :Paper to cite:
+        `The Resting Brain: Unconstrained yet Reliable
+        <http://cercor.oxfordjournals.org/content/19/10/2209>`_
+        Z. Shehzad, A.M.C. Kelly, P.T. Reiss, D.G. Gee, K. Gotimer,
+        L.Q. Uddin, S.H. Lee, D.S. Margulies, A.K. Roy, B.B. Biswal,
+        E. Petkova, F.X. Castellanos and M.P. Milham.
+
+    :Other references:
+        * `The oscillating brain: Complex and Reliable
+          <http://dx.doi.org/10.1016/j.neuroimage.2009.09.037>`_
+          X-N. Zuo, A. Di Martino, C. Kelly, Z. Shehzad, D.G. Gee,
+          D.F. Klein, F.X. Castellanos, B.B. Biswal, M.P. Milham
+
+        * `Reliable intrinsic connectivity networks: Test-retest
+          evaluation using ICA and dual regression approach
+          <http://dx.doi.org/10.1016/j.neuroimage.2009.10.080>`_,
+          X-N. Zuo, C. Kelly, J.S. Adelstein, D.F. Klein,
+          F.X. Castellanos, M.P. Milham
 
     """
 
