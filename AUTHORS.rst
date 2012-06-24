@@ -7,6 +7,10 @@ History
 People
 ------
 
+This tutorial is brought to you by the `INRIA Parietal Project Team
+<https://parietal.saclay.inria.fr/>`_ and `scikit-learn
+<http://scikit-learn.org/>`_ folks.
+
 .. hlist::
 
   * Alexandre Abraham
@@ -15,3 +19,6 @@ People
   * Bertrand Thirion
   * `Fabian Pedregosa <http://fseoane.net>`_
   * `Gael Varoquaux <http://gael-varoquaux.info/blog/>`_
+
+Thanks to M. Hanke and Y. Halchenko for data and packaging.
+

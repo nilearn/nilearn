@@ -14,14 +14,6 @@
 fMRI decoding: predicting which objects a subject is viewing 
 ================================================================================
 
-**Autors:** `INRIA Parietal Project Team
-<https://parietal.saclay.inria.fr/>`_ and `scikit-learn
-<http://scikit-learn.org/>`_ folks, among which **A.
-Gramfort, V. Michel, G. Varoquaux, F. Pedregosa and B. Thirion**
-
-Thanks to M. Hanke and Y. Halchenko for data and packaging.
-
-
 .. topic:: Objectives
 
    At the end of this tutorial you will be able to:
