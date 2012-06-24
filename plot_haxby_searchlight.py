@@ -2,7 +2,6 @@ import numpy as np
 from scipy import signal
 from matplotlib import pyplot
 
-from sklearn import neighbors
 from sklearn.cross_validation import KFold
 from sklearn.metrics import precision_score
 
@@ -27,8 +26,6 @@ process_mask[..., :23] = False
 
 X = X[process_mask != 0].T
 
-mask_indices = np.asarray(np.where(mask != 0)).T
-process_mask_indices = np.asarray(np.where(process_mask != 0)).T
 print "detrending data"
 for s in np.unique(session):
     X[session == s] = signal.detrend(X[session == s], axis=0)
@@ -37,19 +34,14 @@ for s in np.unique(session):
 X, y, session = X[y != 0], y[y != 0], session[y != 0]
 X, y, session = X[y < 3], y[y < 3], session[y < 3]
 
-### Create the adjacency matrix
-# A sphere of a given radius centered on each voxel is taken
-clf = neighbors.NearestNeighbors(radius=2.)
-A = clf.fit(process_mask_indices).radius_neighbors_graph(process_mask_indices)
-
 ### Instanciate the searchlight model
 # Make processing parallel
 n_jobs = 2
 score_func = precision_score
 # A cross validation method is needed to measure precision of each voxel
 cv = KFold(y.size, k=4)
-searchlight = searchlight.SearchLight(A, n_jobs=n_jobs,
-        score_func=score_func, verbose=True, cv=cv)
+searchlight = searchlight.SearchLight(process_mask, radius=2.,
+        n_jobs=n_jobs, score_func=score_func, verbose=True, cv=cv)
 # scores.scores is an array containing per voxel precision
 scores = searchlight.fit(X, y)
 

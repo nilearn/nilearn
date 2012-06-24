@@ -29,6 +29,7 @@ from joblib.parallel import Parallel, delayed
 from sklearn.svm import LinearSVC
 from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
+from sklearn import neighbors
 
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
@@ -178,9 +179,11 @@ class SearchLight(BaseEstimator):
 
     Parameters
     -----------
-    A : sparse matrix.
-        adjacency matrix. Defines for each sample the neigbhoring samples
-        following a given structure of the data.
+    mask : boolean matrix.
+        data mask
+
+    radius: float, optional
+        radius of the searchlight sphere
 
     estimator: estimator object implementing 'fit'
         The object to use to fit the data
@@ -203,8 +206,11 @@ class SearchLight(BaseEstimator):
         The verbosity level. Defaut is False
     """
 
-    def __init__(self, A, estimator=LinearSVC(C=1), n_jobs=-1,
+    def __init__(self, mask, radius=2., estimator=LinearSVC(C=1), n_jobs=-1,
                  score_func=None, cv=None, verbose=False):
+        clf = neighbors.NearestNeighbors(radius=radius)
+        mask_indices = np.asarray(np.where(mask != 0)).T
+        A = clf.fit(mask_indices).radius_neighbors_graph(mask_indices)
         self.A = A.tolil()
         self.estimator = estimator
         self.n_jobs = n_jobs
