@@ -646,4 +646,4 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
         func.append(ni.load(files[i + 2]).get_data())
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
-            files=files)
+                 files=files)
