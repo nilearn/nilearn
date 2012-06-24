@@ -5,7 +5,7 @@
     
 .. raw:: html
 
-    <h1>Machine learning for Neuro Imaging in Python</h1>
+    <h1>Machine learning for NeuroImaging in Python</h1>
     <style type="text/css">
     p {
         margin: 7px 0 7px 0 ;
