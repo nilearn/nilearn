@@ -129,7 +129,7 @@ def clean_dataset(dataset_name, data_dir=None):
     shutil.rmtree(data_dir)
 
 
-def uncompress(file, delete_archive=True):
+def uncompress_file(file, delete_archive=True):
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -164,7 +164,7 @@ def uncompress(file, delete_archive=True):
         raise
 
 
-def fetch_file(url, data_dir, force_download=False, uncompress=False):
+def fetch_file(url, data_dir):
     """Load requested file, downloading it if needed or requested
 
     Parameters
@@ -178,10 +178,6 @@ def fetch_file(url, data_dir, force_download=False, uncompress=False):
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
-    force_download: boolean, optional
-        Wheteher or not to force download of data (in case of data corruption
-        for example). Default: False
 
     Returns
     -------
@@ -199,7 +195,7 @@ def fetch_file(url, data_dir, force_download=False, uncompress=False):
 
     file_name = os.path.basename(url)
     full_name = os.path.join(data_dir, file_name)
-    if (not os.path.exists(full_name)) or force_download:
+    if not os.path.exists(full_name):
         try:
             # Download data
             print 'Downloading data from %s ...' % url
@@ -216,20 +212,10 @@ def fetch_file(url, data_dir, force_download=False, uncompress=False):
         except urllib2.URLError, e:
             print "URL Error:", e, url
             return None
-    if uncompress:
-        try:
-            uncompress()
-        except Exception as e:
-            if not force_download:
-                print 'archive corrupted, trying to download it again'
-                fetch_file(url, data_dir, True, uncompress)
-            else:
-                return None
     return full_name
 
 
-def fetch_dataset(dataset_name, urls, data_dir=None,
-        force_download=False, uncompress=False):
+def fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -243,10 +229,6 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
-    force_download: boolean, optional
-        Wheteher or not to force download of data (in case of data corruption
-        for example). Default: False
 
     Returns
     -------
@@ -265,10 +247,19 @@ def fetch_dataset(dataset_name, urls, data_dir=None,
 
     files = []
     for url in urls:
-        full_name = fetch_file(url, data_dir, force_download, uncompress)
+        full_name = fetch_file(url, data_dir)
         if not full_name:
             print 'An error occured, abort fetching'
             shutil.rmtree(data_dir)
+        if uncompress:
+            try:
+                uncompress_file(full_name)
+            except Exception:
+                # We are giving it a second try, but won't try a third
+                # time :)
+                print 'archive corrupted, trying to download it again'
+                fetch_file(url, data_dir)
+                uncompress_file(full_name)
         files.append(full_name)
 
     return files
@@ -311,7 +302,7 @@ def get_dataset(dataset_name, file_names, data_dir=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_star_plus(data_dir=None, force_download=False):
+def fetch_star_plus(data_dir=None):
     """Function returning the starplus data, downloading them if needed
 
     Returns
@@ -359,8 +350,7 @@ def fetch_star_plus(data_dir=None, force_download=False):
         url2_files = [os.path.join(url2, i) for i in file_names[3:6]]
         urls = url1_files + url2_files
 
-        full_names = fetch_dataset('starplus', urls, data_dir=data_dir,
-                force_download=force_download)
+        full_names = fetch_dataset('starplus', urls, data_dir=data_dir)
 
         for indice, full_name in enumerate(full_names):
             # Converting data to a more readable format
@@ -456,7 +446,7 @@ def fetch_star_plus(data_dir=None, force_download=False):
     return all_subject
 
 
-def fetch_haxby(data_dir=None, force_download=False):
+def fetch_haxby(data_dir=None):
     """Returns the haxby datas
 
     Returns
@@ -499,7 +489,7 @@ def fetch_haxby(data_dir=None, force_download=False):
         tar_name = 'pymvpa_exampledata.tar.bz2'
         urls = [os.path.join(url, tar_name)]
         fetch_dataset('haxby2001', urls, data_dir=data_dir,
-                force_download=force_download, uncompress=True)
+                      uncompress=True)
         files = get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     # preprocess data
@@ -515,7 +505,7 @@ def fetch_haxby(data_dir=None, force_download=False):
     return Bunch(data=X, target=y, mask=mask, session=session, files=files)
 
 
-def fetch_kamitani(data_dir=None, force_download=False):
+def fetch_kamitani(data_dir=None):
     """Returns the kamitani dataset
 
     Returns
@@ -544,7 +534,7 @@ def fetch_kamitani(data_dir=None, force_download=False):
         tar_name = 'public_beta_20100515.zip'
         urls = [os.path.join(url, tar_name)]
         fetch_dataset('kamitani', urls, data_dir=data_dir,
-                force_download=force_download, uncompress=True)
+                      uncompress=True)
         files = get_dataset("kamitani", file_names, data_dir=data_dir)
 
     mat = io.loadmat(files[0], struct_as_record=True)
@@ -574,7 +564,7 @@ def fetch_kamitani(data_dir=None, force_download=False):
            roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
 
 
-def fetch_nyu_rest(data_dir=None, force_download=False):
+def fetch_nyu_rest(data_dir=None):
     """Returns the NYU Test Retest dataset
 
     Returns
@@ -631,9 +621,7 @@ def fetch_nyu_rest(data_dir=None, force_download=False):
         tar_full_names = [os.path.join(prefix, name)
                           for prefix, name in zip(tar_prefixes, tar_names)]
         urls = [os.path.join(url, name) for name in tar_full_names]
-        fetch_dataset('nyu_rest', urls, data_dir=data_dir,
-                      force_download=force_download)
-        uncompress_dataset('nyu_rest', tar_names, data_dir=data_dir)
+        fetch_dataset('nyu_rest', urls, data_dir=data_dir)
         files = get_dataset("nyu_rest", file_names, data_dir=data_dir)
 
     anat_anon = []
