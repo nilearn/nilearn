@@ -7,7 +7,7 @@ CYTHON ?= cython
 NOSETESTS ?= nosetests
 CTAGS ?= ctags
 
-all: clean inplace test doc-noplot
+all: clean test doc-noplot
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
@@ -28,7 +28,7 @@ in: inplace # just a shortcut
 inplace:
 	$(PYTHON) setup.py build_ext -i
 
-test-code: in
+test-code:
 	$(NOSETESTS) -s nisl 
 test-doc:
 	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \
@@ -52,10 +52,10 @@ ctags:
 	# Install with: sudo apt-get install exuberant-ctags
 	$(CTAGS) -R *
 
-doc: inplace
+doc:
 	make -C doc html
 
-doc-noplot: inplace
+doc-noplot:
 	make -C doc html-noplot
 
 install: 
