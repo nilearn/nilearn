@@ -35,7 +35,7 @@
 {% endblock %}
 
 {%- if pagename == 'index' %}
-    {% set title = 'scikit-learn: machine learning in Python' %}
+    {% set title = 'nisl: machine learning for NueroImaging in Python using scikits-learn' %}
 {%- endif %}
 
 {% block header %}
@@ -43,7 +43,7 @@
      <div class="warning-wrapper">
        <p>Warning: This documentation is
          for {{project}} <strong>version {{ release|e }}</strong>.
-         &mdash; <a href="http://scikit-learn.org/stable/">
+         &mdash; <a href="http://nisl.github.com">
            Latest stable version</a></p></p>
      </div>
    {%- endif %}
@@ -60,11 +60,15 @@
           {%- block navbar -%}
           <div class="navbar">
           <ul>
-            <li><a href="{{pathto('install')}}">Download</a></li>
+          <!--	  
+	    <li><a href="{{pathto('install')}}">Download</a></li>
             <li><a href="{{pathto('support')}}">Support</a></li>
-            <li><a href="{{pathto('user_guide')}}">User Guide</a></li>
+	  -->
+            <li><a href="{{pathto('haxby_decoding')}}">fMRI decoding</a></li>
             <li><a href="{{pathto('auto_examples/index')}}">Examples</a></li>
-            <li><a href="{{pathto('modules/classes')}}">Reference</a></li>
+          <!--	  
+	    <li><a href="{{pathto('modules/classes')}}">Reference</a></li>
+	  -->
        </ul>
 
 <div class="search_form">
@@ -102,9 +106,11 @@
 	   {% else %}
 	   <div class="rel rellarge">
 	     {% endif %}
-	<!-- rellinks[1:] is an ugly hack to avoid link to module
-	    index  -->
-	{%- for rellink in rellinks[1:]|reverse %}
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	     rellinks[1:]|reverse
+	    -->
+	{%- for rellink in rellinks|reverse %}
 	<div class="rellink">
 	<a href="{{ pathto(rellink[0]) }}" title="{{ rellink[1]|striptags|e }}"
 	    {{ accesskey(rellink[2]) }}>{{ rellink[3]|capitalize }}
@@ -146,53 +152,20 @@
 	</div>
     {%- endif %}
     </div>
-    <p style="text-align: center; background-color: #FFE4E4">This documentation is
-    for {{project}} <strong>version {{ release|e }}</strong>
-    &mdash; <a href="http://scikit-learn.org/stable/support.html#documentation-resources">Other versions</a></p>
-    {% else %}
-    <h3>News</h3>
-
-    <p>scikit-learn 0.11 is available
-    for <a href="https://sourceforge.net/projects/scikit-learn/files/">download</a>.
-    See <a href="{{pathto('whats_new')}}">what's new</a> and tips
-    on <a href="{{pathto('install')}}">installing</a>.</p>
-
-
-    <h3>Presentations</h3>
-    <p>Get into the spirit with <a href="{{pathto('presentations')}}">videos</a> from Scikit-Learn tutorials.</p>
-
-    <h3>Participate</h3>
-
-    <p>Fork
-    the <a href="http://github.com/scikit-learn/scikit-learn">source
-    code</a>, join the
-    <a href="{{pathto('support')}}#mailing-list">mailing
-    lists</a>, report bugs to
-    the <a href="https://github.com/scikit-learn/scikit-learn/issues">issue
-    tracker</a> or participate in the next
-    <a href="http://github.com/scikit-learn/scikit-learn/wiki/Upcoming-events">coding sprint</a>. <a href="{{pathto('developers/index')}}">Read More...</a>
-    </p>
-
-    <h3>Funding</h3>
-    <p>Generous funding provided
-    by <a href="http://www.inria.fr">INRIA</a>,
-    <a href="http://code.google.com/opensource/">Google</a>
-    and others.</p>
-    <p style="text-align: center;"><a href="http://www.inria.fr"><img src="{{pathto('_static',1)}}/inria-small.jpg"
-    alt="INRIA"/></a></p>
-    <p style="text-align: center;"><a href="http://http://code.google.com/opensource/"><img src="{{pathto('_static',1)}}/google-logo.png"
-    alt="INRIA"/></a></p>
-
-    <p><a href="{{pathto('about')}}">Read more ...</a></p>
-
-    {% endif %}
-    <h3>Citing</h3>
-    <p>If you use the software, please consider
-    <a href="{{pathto('about')}}#citing-scikit-learn">citing scikit-learn</a>.</p>
+    {%- endif %}
 
     {%- if (pagename != 'index') %}
     <h3>{{ _('This page') }}</h3>
 	{{ toc }}
+    {% else %}
+    <h3>News</h3>
+    <p>Gaël Varoquaux will present a <a
+    href="http://www.mlnl.cs.ucl.ac.uk/prni2012/programme.html">tutorial</a>
+    on neuroimaging with scikit-learn at PRNI, in London July 2nd 2012.</p>
+
+    <h3>Licensing</h3>
+    <p>All material Open source: <strong>BSD license</strong> (3 clause).</p>
+
     {% endif %}
     </div>
 	  </div>
@@ -226,7 +199,7 @@
       {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
     {%- endif %}
     {%- if show_sphinx %}
-      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}{% endtrans %}. Design by <a href="http://desgrana.es">Desgrana</a>.
+      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}{% endtrans %}. Design by <a href="http://webylimonada.com">Web y Limonada</a>.
     {%- endif %}
     {%- if show_source and has_source and sourcename %}
     <span style="padding-left: 5ex;">
@@ -242,7 +215,11 @@
     {% else %}
      <div class="rel rellarge">
     {% endif %}
-    {%- for rellink in rellinks[1:]|reverse %}
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	rellinks[1:]|reverse
+	-->
+    {%- for rellink in rellinks|reverse %}
     <div class="{{ loop.cycle('buttonPrevious', 'buttonNext') }}">
       <a href="{{ pathto(rellink[0]) }}">
         {{loop.cycle('Previous', 'Next')}}
