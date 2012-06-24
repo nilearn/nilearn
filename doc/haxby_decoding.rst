@@ -85,7 +85,7 @@ Then we preprocess the data to get make it handier:
 Here, we limit to face and house conditions:
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start_after: ### Restrict to faces and houses ##############################################
+        :start-after: ### Restrict to faces and houses ##############################################
         :end-before: ### Prediction function #######################################################
 
 Second step: decoding analysis
@@ -190,6 +190,7 @@ We can visualize the result of our algorithm:
 .. figure:: auto_examples/images/plot_haxby_decoding_1.png
    :target: auto_examples/plot_haxby_decoding.html
    :align: center
+   :scale: 60
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Visualisation #############################################################
@@ -220,15 +221,14 @@ function, *cross_val_score* that computes for you the results for the
 different folds of cross-validation::
 
   >>> from sklearn.cross_validation import cross_val_score
-  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, verbose=1)
+  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, verbose=10)
 
-n_jobs = 1 means that the computation run sequentially.  But, if
-you are the happy owner of a multiple processors computer you can
+If you are the happy owner of a multiple processors computer you can
 speed up the computation by using n_jobs=-1, which will spread the
 computation equally across all processors (this will probably not work
 under Windows)::
 
- >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=1)
+ >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10)
 
 
 Prediction accuracy
@@ -237,11 +237,12 @@ Prediction accuracy
 We can take a look to the results of the *cross_val_score* function::
 
   >>> cv_scores # doctest: +SKIP
-  array([ 0.81944444,  0.81944444,  0.90277778,  0.68055556,  0.79166667,
-          0.79166667,  0.70833333,  0.59722222,  0.75      ,  0.63888889,
-          0.68055556,  0.70833333])
+  array([ 1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+          1.        ,  1.        ,  0.83333333,  1.        ,  1.        ,
+          1.        ,  1.        ])
 
-This is simply the prediction score for each fold.
+This is simply the prediction score for each fold, i.e. the fraction of
+correct predictions on the left-out data.
 
 
 .. topic:: **Exercise**
