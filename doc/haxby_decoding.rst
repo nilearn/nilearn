@@ -41,7 +41,7 @@ In short, we have:
   - 8 objects presented once in 12 sessions
   - 864 volumes containing 39912 voxels
 
-Additional information : http://www.sciencemag.org/content/293/5539/2425
+See `additional information <http://www.sciencemag.org/content/293/5539/2425>`_
 
 First step: looking at the data
 ================================
@@ -58,7 +58,7 @@ data. Simply call:
         :start-after: ### Load Haxby dataset ########################################################
         :end-before: ### Preprocess data ########################################################### 
 
-Then we preprocess the data to get make it handier:
+Then we preprocess the data to make it handier:
 
 - compute the mean of the image to replace anatomic data
 - check its dimension (1452 trials of 40x64x64 voxels)
@@ -92,7 +92,7 @@ Second step: decoding analysis
 ================================
 
 In a decoding analysis we construct a model, so that one can predict
-a value of y given a set X of images.
+a value of **y** given a set **X** of images.
 
 Prediction function
 -------------------
@@ -127,7 +127,7 @@ documentation <http://scikit-learn.org/modules/svm.html>`_
 
 We use a SVC here, but we can use
 `many other
-classifiers <http://scikit-learn.org/supervised_learning.html>`_
+classifiers <http://scikit-learn.org/stable/supervised_learning.html>`_
 
 
 Dimension reduction
@@ -137,7 +137,8 @@ But a classification with few samples and many features is plagued by the
 *curse of dimensionality*. Let us add a feature selection procedure.
 
 For this, we need to import the correct module and define a simple F-score
-based feature selection (a.k.a. Anova):
+based feature selection (a.k.a. 
+`Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_):
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Dimension reduction #######################################################
@@ -145,7 +146,7 @@ based feature selection (a.k.a. Anova):
 
 We use a univariate feature selection, but we can use other dimension
 reduction such as `RFE
-<http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
+<http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 
 Third step: launch it on real data
 ==================================
@@ -153,11 +154,11 @@ Third step: launch it on real data
 Fit (train) and predict (test)
 -------------------------------
 
-In scikit-learn, prediction function have a very simple API:
+In scikit-learn, the prediction function has a very simple API:
 
-  - a *fit* function that "learn" the parameters of the model from the data.
-    Thus, we need to give some training data to *fit*
-  - a *predict* function that "predict" a target from new data.
+  - a *fit* function that "learns" the parameters of the model from the data.
+    Thus, we need to give some training data to *fit*.
+  - a *predict* function that "predicts" a target from new data.
     Here, we just have to give the new set of images (as the target should be
     unknown):
 
@@ -165,7 +166,7 @@ In scikit-learn, prediction function have a very simple API:
         :start-after: ### Fit and predict ###########################################################
         :end-before: ### Visualisation #############################################################
 
-**Warning ! Do not do this at home !** the score that we obtain here is 
+**Warning ! Do not do this at home:** the score that we obtain here is 
 heavily biased (see next paragraph). This is used here to check that 
 we have one predicted value per image.
 
@@ -185,7 +186,7 @@ We can visualize the result of our algorithm:
   - we first get the support vectors of the SVC and revert the feature
     selection mechanism
   - we remove the mask
-  - then we overlay our mean image computed before with our support vectors
+  - then we overlay our previousely-computed, mean image with our support vectors
 
 .. figure:: auto_examples/images/plot_haxby_decoding_1.png
    :target: auto_examples/plot_haxby_decoding.html
@@ -228,7 +229,7 @@ speed up the computation by using n_jobs=-1, which will spread the
 computation equally across all processors (this will probably not work
 under Windows)::
 
- >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10)
+ >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
 
 Prediction accuracy
@@ -279,7 +280,7 @@ We have seen a very simple analysis with scikit-learn.
 
 `Other prediction functions for supervised learning: Linear models,
 Support vector machines, Nearest Neighbor, etc.
-<http://scikit-learn.org/supervised_learning.html>`_
+<http://scikit-learn.org/stable/supervised_learning.html>`_
 
 `Unsupervised learning (e.g. clustering, PCA, ICA) with
 Scikit-learn <http://scikit-learn.org/modules/clustering.html>`_
@@ -298,8 +299,8 @@ Changing the prediction function
     >>> clf = LinearSVC()
 
 We now see how one can easily change the prediction function, if needed.
-We can try the Linear Discriminant Analysis
-(LDA) `<http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
+We can try the `Linear Discriminant Analysis (LDA) 
+<http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
 
 Import the module::
 
@@ -324,8 +325,8 @@ Changing the feature selection
 ------------------------------
 
 Let's say that you want a more sophisticated feature selection, for example a
-`Recursive Feature Elimination
-(RFE) <http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html>`_
+`Recursive Feature Elimination (RFE) 
+<http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 
 Import the module::
 
