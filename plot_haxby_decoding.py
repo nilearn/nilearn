@@ -30,7 +30,7 @@ mean_img = fmri_data.mean(axis=-1)
 # shape (n_samples, n_features).
 X = fmri_data[mask].T
 
-# X.shape is (1452, 39912)
+# X.shape is (n_samples, n_features): (1452, 39912)
 
 # Detrend data on each session independently
 from scipy import signal

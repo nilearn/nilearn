@@ -482,6 +482,9 @@ def fetch_haxby(data_dir=None):
 
     More informations about its structure :
     http://dev.pymvpa.org/datadb/haxby2001.html
+
+    See `additional information
+    <http://www.sciencemag.org/content/293/5539/2425>`_
     """
 
     # definition of dataset files

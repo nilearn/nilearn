@@ -22,53 +22,31 @@ fMRI decoding: predicting which objects a subject is viewing
     2. Perform a state-of-the-art decoding analysis of fMRI data.
     3. Perform even more sophisticated analyzes of fMRI data.
 
-.. role:: input(strong)
-
-The haxby dataset
-===================
-
-We use here the *Haxby 2001* dataset used in `Distributed and Overlapping Representations 
-of Faces and Objects in Ventral Temporal Cortex
-<http://www.sciencemag.org/content/293/5539/2425.full>`_, Haxby et al. (2001),
-that has been reanalyzed in `Combinatorial codes in ventral temporal lobe for object
-recognition: Haxby (2001) revisited: is there a “face” area?
-<http://www.sciencedirect.com/science/article/pii/S105381190400299X>`_, Hanson et al (2004)
-and `Partially Distributed Representations of Objects and Faces in Ventral Temporal Cortex
-<http://www.mitpressjournals.org/doi/abs/10.1162/0898929053467550?journalCode=jocn>`_, O'Toole et al. (2005).
-
-In short, we have:
-
-  - 8 objects presented once in 12 sessions
-  - 864 volumes containing 39912 voxels
-
-See `additional information <http://www.sciencemag.org/content/293/5539/2425>`_
-
-First step: looking at the data
+Data loading and preprocessing
 ================================
 
-
-Now, launch ipython::
+We launch ipython::
 
   $ ipython -pylab
 
-First, we load the data. Nisl provides an easy way to download and preprocess
-data. Simply call:
+First, we load the data using the tutorial's data downloader,
+:func:`nisl.datasets.fetch_haxby`:
 
 .. literalinclude:: ../plot_haxby_decoding.py
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Preprocess data ########################################################### 
 
-Then we preprocess the data to make it handier:
+Then we preprocess the data to make:
 
 - compute the mean of the image to replace anatomic data
-- check its dimension (1452 trials of 40x64x64 voxels)
 - mask the data X and transpose the matrix, so that its shape becomes
-  (n_samples, n_features)
+  (n_samples, n_features) (see :ref:`mask_4d_2_3d` for a discussion on using 
+  masks)
 - finally detrend the data for each session
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Preprocess data ########################################################### 
-        :end-before: ### Restrict to faces and houses ##############################################
+    :start-after: ### Preprocess data ########################################################### 
+    :end-before: ### Restrict to faces and houses ##############################################
 
 .. topic:: **Exercise**
    :class: green
@@ -82,28 +60,29 @@ Then we preprocess the data to make it handier:
 
      >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
 
-Here, we limit to face and house conditions:
+Here, we limit our analysis to the `face` and `house` conditions:
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Restrict to faces and houses ##############################################
-        :end-before: ### Prediction function #######################################################
+    :start-after: ### Restrict to faces and houses ##############################################
+    :end-before: ### Prediction function #######################################################
 
-Second step: decoding analysis
-================================
+Down to business: decoding analysis
+====================================
 
-In a decoding analysis we construct a model, so that one can predict
-a value of **y** given a set **X** of images.
+Prediction function: the estimator
+-----------------------------------
 
-Prediction function
--------------------
+To perform decoding we construct an estimtor, predicting a condition
+label **y** given a set **X** of images.
 
-We define here a simple Support Vector Classification (or SVC) with C=1,
-and a linear kernel. We first import the correct module from
-scikit-learn and we define the classifier:
+We define here a simple `Support Vector Classification
+<http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with C=1, and a
+linear kernel. We first import the correct module from scikit-learn and we
+define the classifier:
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Prediction function #######################################################
-        :end-before: ### Dimension reduction #######################################################
+    :start-after: ### Prediction function #######################################################
+    :end-before: ### Dimension reduction #######################################################
 
 Need some doc ?
 
@@ -124,7 +103,6 @@ Need some doc ?
 
 Or go to the `scikit-learn
 documentation <http://scikit-learn.org/modules/svm.html>`_
-
 We use a SVC here, but we can use
 `many other
 classifiers <http://scikit-learn.org/stable/supervised_learning.html>`_
@@ -133,8 +111,11 @@ classifiers <http://scikit-learn.org/stable/supervised_learning.html>`_
 Dimension reduction
 -------------------
 
-But a classification with few samples and many features is plagued by the
-*curse of dimensionality*. Let us add a feature selection procedure.
+As there are a very large number of voxels and not all are useful for
+face vs house prediction, we add a `feature selection
+<http://scikit-learn.org/stable/modules/feature_selection.html>`_
+procedure. The idea is to select the `k` voxels most correlated to the
+task.
 
 For this, we need to import the correct module and define a simple F-score
 based feature selection (a.k.a. 
@@ -144,49 +125,38 @@ based feature selection (a.k.a.
         :start-after: ### Dimension reduction #######################################################
         :end-before: ### Fit and predict ###########################################################
 
-We use a univariate feature selection, but we can use other dimension
-reduction such as `RFE
-<http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
-
-Third step: launch it on real data
-==================================
-
-Fit (train) and predict (test)
--------------------------------
+Launching it on real data: fit (train) and predict (test)
+----------------------------------------------------------
 
 In scikit-learn, the prediction function has a very simple API:
 
-  - a *fit* function that "learns" the parameters of the model from the data.
-    Thus, we need to give some training data to *fit*.
-  - a *predict* function that "predicts" a target from new data.
-    Here, we just have to give the new set of images (as the target should be
-    unknown):
+- a *fit* function that "learns" the parameters of the model from the data.
+  Thus, we need to give some training data to *fit*.
+- a *predict* function that "predicts" a target from new data.
+  Here, we just have to give the new set of images (as the target should be
+  unknown):
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Fit and predict ###########################################################
         :end-before: ### Visualisation #############################################################
 
-**Warning ! Do not do this at home:** the score that we obtain here is 
-heavily biased (see next paragraph). This is used here to check that 
-we have one predicted value per image.
+**Warning ! Do not do this at home:** the prediction that we obtain here
+is to good to be true (see next paragraph). Here we are just doing a
+sanity check.
 
 .. for doctests (smoke testing):
     >>> from sklearn.svm import LinearSVC, SVC
     >>> anova_svc = LinearSVC()
 
-Note that you could have done this in only 1 line::
-
-    >>> y_pred = anova_svc.fit(X, y).predict(X)
-
-Visualisation
--------------
+Visualising the results
+-------------------------
 
 We can visualize the result of our algorithm:
 
-  - we first get the support vectors of the SVC and revert the feature
-    selection mechanism
-  - we remove the mask
-  - then we overlay our previousely-computed, mean image with our support vectors
+- we first get the support vectors of the SVC and revert the feature
+  selection mechanism
+- we remove the mask
+- then we overlay our previousely-computed, mean image with our support vectors
 
 .. figure:: auto_examples/images/plot_haxby_decoding_1.png
    :target: auto_examples/plot_haxby_decoding.html
@@ -194,12 +164,12 @@ We can visualize the result of our algorithm:
    :scale: 60
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Visualisation #############################################################
-        :end-before: ### Cross validation ########################################################## 
+    :start-after: ### Visualisation #############################################################
+    :end-before: ### Cross validation ########################################################## 
 
 
-Cross-validation
-----------------
+Cross-validation: measuring prediction performance
+---------------------------------------------------
 
 However, the last analysis is *wrong*, as we have learned and tested on
 the same set of data. We need to use a cross-validation to split the data
@@ -231,11 +201,8 @@ under Windows)::
 
  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
-
-Prediction accuracy
--------------------
-
-We can take a look to the results of the *cross_val_score* function::
+**Prediction accuracy** We can take a look to the results of the
+*cross_val_score* function::
 
   >>> cv_scores # doctest: +SKIP
   array([ 1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
@@ -269,26 +236,16 @@ We can add a line to print the results:
 .. topic:: Final script
 
     The complete script can be found as 
-    :ref:`an example <example_tutorial_plot_haxby_decoding.py>`
-    Now, you just have to publish the results :)
+    :ref:`an example <example_tutorial_plot_haxby_decoding.py>`.
+    Now, all you have to do is to publish the results :)
 
 Going further with scikit-learn
 ===================================
 
-We have seen a very simple analysis with scikit-learn.
-
-
-`Other prediction functions for supervised learning: Linear models,
-Support vector machines, Nearest Neighbor, etc.
-<http://scikit-learn.org/stable/supervised_learning.html>`_
-
-`Unsupervised learning (e.g. clustering, PCA, ICA) with
-Scikit-learn <http://scikit-learn.org/modules/clustering.html>`_
-
-Example of the simplicity of scikit-learn
------------------------------------------
-
-One of the major assets of scikit-learn is the real simplicity of use.
+We have seen a very simple analysis with scikit-learn, but it may be
+interesting to explore the `wide variety of supervised learning
+algorithms in the scikit-learn
+<http://scikit-learn.org/stable/supervised_learning.html>`_.
 
 Changing the prediction function
 --------------------------------

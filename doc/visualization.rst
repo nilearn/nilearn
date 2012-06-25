@@ -115,6 +115,7 @@ can be easily extracted from the fMRI data using the
     :align: center
     :scale: 50
 
+.. _mask_4d_2_3d:
 
 From 4D to 2D arrays
 ----------------------
