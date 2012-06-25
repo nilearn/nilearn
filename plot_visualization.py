@@ -9,42 +9,55 @@ Simple example to show data manipulation and visualization.
 from nisl import datasets
 haxby = datasets.fetch_haxby()
 
-# Get the files relative to this dataset
+# Get the file names relative to this dataset
 files = haxby.files
 bold = files[1]
 
 # Load the NIfTI data
 import nibabel
 nifti_img = nibabel.load(bold)
-data = nifti_img.get_data()
+fmri_data = nifti_img.get_data()
 
 # Visualization #############################################################
 import numpy as np
 import pylab as pl
-pl.figure()
-pl.subplot(131)
-pl.axis('off')
-pl.title('Coronal')
-pl.imshow(np.rot90(data[:, 32, :, 100]), interpolation='nearest',
-          cmap=pl.cm.gray)
 
-pl.subplot(132)
+# Compute the mean EPI: we do the mean along the axis 3, which is time
+mean_img = np.mean(fmri_data, axis=3)
+
+# pl.figure() creates a new figure
+pl.figure()
+
+# First subplot: coronal view
+# subplot: 1 line, 3 columns and use the first subplot
+pl.subplot(1, 3, 1)
+# Turn off the axes, we don't need it
+pl.axis('off')
+# We use pl.imshow to display an image, and use a 'gray' colormap
+# we also use np.rot90 to rotate the image
+pl.imshow(np.rot90(mean_img[:, 32, :]), interpolation='nearest',
+          cmap=pl.cm.gray)
+pl.title('Coronal')
+
+# Second subplot: sagittal view
+pl.subplot(1, 3, 2)
 pl.axis('off')
 pl.title('Sagittal')
-pl.imshow(np.rot90(data[15, :, :, 100]), interpolation='nearest',
+pl.imshow(np.rot90(mean_img[15, :, :]), interpolation='nearest',
           cmap=pl.cm.gray)
 
-pl.subplot(133)
+# Third subplot: axial view
+pl.subplot(1, 3, 3)
 pl.axis('off')
 pl.title('Axial')
-pl.imshow(np.rot90(data[:, :, 32, 100]), interpolation='nearest',
+pl.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
           cmap=pl.cm.gray)
 
 # Extracting a brain mask ###################################################
 
 # Simple computation of a mask from the fMRI data
 from nisl.masking import compute_mask
-mask = compute_mask(data)
+mask = compute_mask(mean_img)
 
 # We create a new figure
 pl.figure()
@@ -55,7 +68,7 @@ pl.imshow(np.rot90(mask[:, :, 32]), interpolation='nearest')
 # Applying the mask #########################################################
 
 # Applying the mask is just a simple array manipulation
-masked_data = data[mask]
+masked_data = fmri_data[mask]
 
 # masked_data is now a voxel x time matrix. We can plot the first 10
 # lines: they correspond to time-series of 10 voxels on the side of the
