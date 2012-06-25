@@ -162,7 +162,7 @@ def generate_example_rst(app):
     }
     </style>
 
-All the examples
+Code examples
 =================
 
 .. _examples-index:
@@ -222,14 +222,14 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
                                                                fname[:-3]))
             else:
                 fhindex.write('   :target: ./%s.html\n\n' % link_name[:-3])
-            fhindex.write("""   :ref:`%s <example_%s>`
+            fhindex.write("""   :ref:`example_tutorial_%s`
 
 .. toctree::
    :hidden:
 
    %s/%s
 
-""" % (link_name[:-3], link_name, dir, fname[:-3]))
+""" % (link_name, dir, fname[:-3]))
     fhindex.write("""
 .. raw:: html
 

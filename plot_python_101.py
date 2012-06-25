@@ -1,4 +1,7 @@
-""" Very simply example of basic numerics and plotting with Python
+"""
+Basic numerics and plotting with Python
+========================================
+
 """
 
 # import numpy: the module providing numerical arrays

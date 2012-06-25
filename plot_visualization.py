@@ -1,4 +1,8 @@
-""" Simple example to show data manipulation and visualization.
+"""
+Simple NeuroImaging data visualization and manipulation
+========================================================
+
+Simple example to show data manipulation and visualization.
 """
 
 # Fetch data ################################################################
