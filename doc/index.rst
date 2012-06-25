@@ -106,7 +106,6 @@
     introduction.rst
     visualization.rst
     supervised_learning.rst
-    haxby_decoding.rst
     ward_clustering.rst
 
 

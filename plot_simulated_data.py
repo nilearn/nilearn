@@ -81,25 +81,24 @@ def plot_slices(data, title=None):
 
 ###############################################################################
 # Create data
-size = 12
-n_samples = 400
 X_train, X_test, y_train, y_test, snr, noise, coefs, size =\
-        create_simulation_data(snr=10, n_samples=n_samples, size=size)
+        create_simulation_data(snr=10, n_samples=400, size=12)
 
-
-###############################################################################
-# Compute the results and coef maps for different estimators
-classifiers = {
-    'bayesian_ridge': linear_model.BayesianRidge(normalize=True),
-    'svr': svm.SVR(kernel='linear', C=0.001),
-    'ridge_cv': linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5),
-    'enet_cv': linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05),
-}
 
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
 
-for name, classifier in sorted(classifiers.iteritems()):
+###############################################################################
+# Compute the results and estimated coef maps for different estimators
+classifiers = [
+  ('bayesian_ridge', linear_model.BayesianRidge(normalize=True)),
+  ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05)),
+  ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
+  ('svr', svm.SVR(kernel='linear', C=0.001)),
+]
+
+# Run the estimators
+for name, classifier in classifiers:
     t1 = time()
     classifier.fit(X_train, y_train)
     elapsed_time = time() - t1
@@ -111,6 +110,8 @@ for name, classifier in sorted(classifiers.iteritems()):
                 classifier.__class__.__name__, score,
                 elapsed_time)
 
+    # We use the plot_slices function provided in the example to
+    # plot the results
     plot_slices(coefs, title=title)
 
     print title

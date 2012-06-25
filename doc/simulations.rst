@@ -22,35 +22,91 @@ Decoding on simulated data
     2. Perform a state-of-the-art decoding analysis of fMRI data.
     3. Perform even more sophisticated analyzes of fMRI data.
 
-.. role:: input(strong)
-
 Simple NeuroImaging-like simulations
 =====================================
+
+We simulate data as in Michel et al 2012, `Total variation regularization
+for fMRI-based prediction of behaviour`, Trans Med Imag: a linear model
+with a random design matrix **X**:
+
+.. math::
+
+   \mathbf{y} = \mathbf{X} \mathbf{w} + \mathbf{e}
+
+* **w**: the weights of the linear model correspond to the predictive 
+  brain regions. Here, in the simulations, they form a 3D image with 4
+  regions in opposite corners. 
 
 .. figure:: auto_examples/images/plot_simulated_data_1.png
     :target: auto_examples/plot_simulated_data.html
     :align: center
     :scale: 90
 
+* **X**: the design matrix corresponds to the observed fMRI data. Here
+  we simulate random normal variables and smooth them as in Gaussian
+  fields.
 
-First step: looking at the data
-================================
+* **e** is random normal noise.
+
+We provide a black-box function to create the data in the 
+:ref:`example script <example_tutorial_plot_simulated_data.py>`:
+
+.. literalinclude:: ../plot_simulated_data.py
+    :start-after: # Create data
+    :end-before: # Compute the results and estimated coef maps for different estimators
 
 
-.. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Load Haxby dataset ########################################################
-        :end-before: ### Preprocess data ########################################################### 
+Running various estimators
+===========================
+
+We can now run different estimators and look at their prediction score,
+as well as the feature maps that they recover. Namely, we will use 
+
+* A support vector regression (`SVM
+  <http://scikit-learn.org/stable/modules/svm.html>`_) 
+
+* An `elastic-net
+  <http://scikit-learn.org/stable/modules/linear_model.html>`_
+
+* A *Bayesian* ridge estimator, i.e. a ridge estimator that sets its
+  parameter according to a metaprior
+
+* A ridge estimator that set its parameter by cross-validation
+
+We can create a list with all the estimators readily created with the
+parameters of our choice:
+
+.. literalinclude:: ../plot_simulated_data.py
+    :start-after: # Compute the results and estimated coef maps for different estimators
+    :end-before: # Run the estimators
+
+Note that the `RidgeCV` and the `ElasticNetCV` have names ending in `CV`
+that stands for `cross-validation`: in the list of possible `alpha`
+values that they are given, they choose the best by cross-validation.
+
+As the estimators expose a fairly consistent API, we can all fit them in
+a for loop: they all have a `fit` method for fitting the data, a `score`
+method to retrieve the prediction score, and because they are all linear
+models, a `coef_` attribute that stores the coefficients **w** estimated.
+
+.. note:: All parameters estimated from the data end with an underscore
+
+.. literalinclude:: ../plot_simulated_data.py
+    :start-after: # Run the estimators
+    :end-before:     print title
+
 
 .. topic:: **Exercise**
    :class: green
 
-   1. Extract the period of activity from the data (i.e. remove the remainder).
+   Use recursive feature elimination (RFE) with the SVM::
 
-.. topic:: Solution
+    >>> from sklearn.feature_selection import RFE
 
-    As 'y == 0' in rest, we want to keep only time points for which 
-    `y != 0`::
+   Read the object's documentation to find out how to use RFE.
 
-     >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
+   **Performance tip**: increase the `step` parameter, or it will be very
+   slow.
+
 
 

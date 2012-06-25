@@ -55,8 +55,8 @@ First, we load the data. Nisl provides an easy way to download and preprocess
 data. Simply call:
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Load Haxby dataset ########################################################
-        :end-before: ### Preprocess data ########################################################### 
+    :start-after: ### Load Haxby dataset ########################################################
+    :end-before: ### Preprocess data ########################################################### 
 
 Then we preprocess the data to make it handier:
 
