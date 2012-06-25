@@ -146,7 +146,7 @@ based feature selection (a.k.a.
 
 We use a univariate feature selection, but we can use other dimension
 reduction such as `RFE
-<http://scikit-learn.org/dev/modules/feature_selection.html#recursive-feature-elimination>`_
+<http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 
 Third step: launch it on real data
 ==================================
@@ -326,7 +326,7 @@ Changing the feature selection
 
 Let's say that you want a more sophisticated feature selection, for example a
 `Recursive Feature Elimination (RFE) 
-<http://scikit-learn.org/dev/modules/feature_selection.html#recursive-feature-elimination>`_
+<http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 
 Import the module::
 
