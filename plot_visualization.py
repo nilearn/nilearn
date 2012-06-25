@@ -15,7 +15,8 @@ bold = files[1]
 
 # Load the NIfTI data
 import nibabel
-data = nibabel.load(bold).get_data()
+nifti_img = nibabel.load(bold)
+data = nifti_img.get_data()
 
 # Visualization #############################################################
 import numpy as np

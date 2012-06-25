@@ -451,7 +451,7 @@ def fetch_star_plus(data_dir=None):
 
 
 def fetch_haxby(data_dir=None):
-    """Returns the haxby dataset
+    """Download and loads the haxby dataset
 
     Parameters
     ----------
@@ -583,7 +583,7 @@ def _fetch_kamitani(data_dir=None):
 
 
 def fetch_nyu_rest(n_subjects=None, data_dir=None):
-    """Returns the NYU Test Retest dataset
+    """Download and loads the NYU resting-state test-retest dataset
 
     Parameters
     ----------

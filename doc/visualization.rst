@@ -9,8 +9,16 @@ Downloading the tutorial data
 
 .. currentmodule:: nisl.datasets
 
-The ``nisl.datasets`` package embeds tools to fetch and load datasets. It comes
-with a set of several datasets that are not always formatted the same way.
+This tutorial package embeds tools to download and load datasets. They
+can be imported from ``nisl.datasets``::
+
+    >>> from nisl import datasets
+    >>> haxby_data = datasets.fetch_haxby()
+    >>> # The data is then already loaded as numpy arrays:
+    >>> haxby_data.keys() # doctest: +SKIP
+    ['files', 'session', 'target', 'target_strings', 'data', 'affine', 'mask']
+    >>> haxby_data.data.shape # 1491 time points and a spatial size of 40x49x41
+    (40, 49, 41, 1452)
 
 .. autosummary::
    :toctree: generated/
@@ -19,24 +27,29 @@ with a set of several datasets that are not always formatted the same way.
    fetch_haxby
    fetch_nyu_rest
 
-NIfTI and Analyse files
-=========================
-
-Specifications
----------------
-
-NIfTI files (or Analyze files) are the standard way of sharing data in
-neuroimaging. For our purposes, we may are interested in the following
-three main components:
-
-- *data*: raw scans bundled in a numpy array
-- *affine*: allows to switch between voxel index and spatial location
-- *header*: informations about the data (slice duration...)
+The data are downloaded only once and stored locally in the `nisl_data`
+folder.
 
 Loading Nifti or analyze files
 ===============================
 
-NIfTI data can be loaded simply thanks to nibabel_. Once the file is
+.. topic:: NIfTI and Analyse files
+
+    NIfTI files (or Analyze files) are the standard way of sharing data in
+    neuroimaging. We may be interested in the following
+    three main components:
+
+    :data: 
+        raw scans bundled in a numpy array: `data = img.get_data()`
+    :affine: 
+        gives the correspondance between voxel index and spatial location: 
+        `affine = img.get_affine()`
+    :header: 
+        informations about the data (slice duration...):
+        `header = img.get_header()`
+
+
+Neuroimaging data can be loaded simply thanks to nibabel_. Once the file is
 downloaded, a single line is needed to load it.
 
 .. literalinclude:: ../plot_visualization.py
