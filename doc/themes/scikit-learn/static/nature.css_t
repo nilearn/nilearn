@@ -586,5 +586,12 @@ table.docutils tr {
 /* ------- tighter layout in pre -------------------------- */
 pre {
     padding: 5px 10px 5px 10px;
-    marging: .5em 0 .5em 0;
+    margin: .1em 0 .5em 0;
 }
+
+div.body p {
+    margin-top: 1.2em;
+    margin-bottom: .1em;
+}
+
+
