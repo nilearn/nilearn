@@ -9,9 +9,10 @@ fMRI clustering
 Resting-state dataset
 ========================
 
-Here, we use a resting-state dataset from test-retest study performed at
-NYU. Details on the data can be found in the documentation for the
-downloading function :func:`fetch_nyu_rest`.
+Here, we use a `resting-state <http://www.nitrc.org/projects/nyu_trt/>`_ 
+dataset from test-retest study performed at NYU. Details on the data 
+can be found in the documentation for the downloading function 
+:func:`fetch_nyu_rest`.
 
 Preprocessing
 ==============
@@ -19,8 +20,8 @@ Preprocessing
 Loading
 -------
 
-Thanks to nisl dataset manager, fetching the dataset is rather easy. Do not
-forget to set your environment variable *NISL_DATA* is you want your dataset
+Thanks to *nisl* dataset manager, fetching the dataset is rather easy. Do not
+forget to set your environment variable *NISL_DATA* if you want your dataset
 to be stored in a specific path.
 
 .. literalinclude:: ../plot_rest_clustering.py
@@ -39,7 +40,7 @@ idea is to threshold values and eliminates voxels present in the "black peak"
         :start-after: ### Mask ######################################################################
         :end-before: ### Ward ######################################################################
 
-The result is a numpy array of boolean that is used to mask our original X.
+The result is a numpy array of boolean that is used to mask our original *X*.
 
 Applying Ward clustering
 ==========================
@@ -50,17 +51,18 @@ Compute connectivity map
 Before computing the ward itself, it is necessary to compute a connectivity
 map. Otherwise, the ward will consider each voxel independantly and this may
 lead to a wrong clustering (see
-http://www.scikit-learn.org/stable/auto_examples/cluster/plot_ward_structured_vs_unstructured.html)
+`here 
+<http://www.scikit-learn.org/stable/auto_examples/cluster/plot_ward_structured_vs_unstructured.html>`_)
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: # Compute connectivty map 
+        :start-after: # Compute connectivity matrix: which voxel is connected to which
         :end-before: # Computing the ward for the first time, this is long...
 
 Principle
 ---------
 
 The Ward algorithm computes a hierarchical tree of the picture components.
-Consequently, the root of the tree is the sum of all components (ie the whole
+Consequently, the root of the tree is the sum of all components (i.e. the whole
 picture) and there are as many leaves in the tree as components in the picture.
 
 Once that the tree is computed, the only step left to obtain the requested
@@ -73,7 +75,7 @@ Caching
 Joblib is a library made to put in cache some function calls to avoid
 unnecessary computation. If a function is called with joblib, the parameters
 and results are cached. If the same function is called using the same
-parameters, then joblib bypass the function call and returns the previously
+parameters, then joblib bypasses the function call and returns the previously
 computed result immediately.
 
 Scikit-learn integrates joblib in a user friendly way to cache results of some
@@ -132,15 +134,16 @@ thanks to a two step procedure :
   the masked picture shape
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: # Create a compressed picture
-        :end-before: ### Show result ###############################################################
+        :start-after: pl.title('Original')
+	:end-before: compressed_img = np.zeros(mask.shape)
+
 
 Visualisation
 =============
 
 Then we can visualize the clusters. One color from the spectrum will be
 attributed to each cluster for the labels visualisation and the compressed
-picture is show in the classical gray colormap.
+picture is shown in the classical gray colormap.
 
 .. literalinclude:: ../plot_rest_clustering.py
         :start-after: ### Show result ###############################################################
