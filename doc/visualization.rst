@@ -35,7 +35,8 @@ Loading Nifti or analyze files
 
 .. topic:: NIfTI and Analyse files
 
-    NIfTI files (or Analyze files) are the standard way of sharing data in
+    `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are 
+    the standard way of sharing data in
     neuroimaging. We may be interested in the following
     three main components:
 
@@ -61,16 +62,20 @@ downloaded, a single line is needed to load it.
     We can find two main representations for MRI scans:
 
     - a big 4D matrix representing 3D MRI along time, stored in a big 4D
-      Nifti file. FSL users tend to prefer this format.
+      NifTi file. 
+      `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to 
+      prefer this format.
     - several 3D matrices representing each volume (time point) of the 
-      session, stored in set of 3D Nifti or analyse files. SPM users tend
+      session, stored in set of 3D Nifti or analyse files. 
+      `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 
 Visualizing brain images
 ============================
 
 Once that NIfTI data is loaded, visualization is simply the display of the
-desired slice. For haxby, data is rotated so we have to turn each image
+desired slice (the first three dimensions) at a desired time point (fourth
+dimension). For *haxby*, data is rotated so we have to turn each image
 counter clockwise.
 
 .. literalinclude:: ../plot_visualization.py
@@ -118,7 +123,7 @@ FMRI data is naturally represented as a 4D block of data: 3 spatial
 dimensions and time. In practice, we are most often only interested in
 working only on the time-series of the voxels in the brain. It is
 convenient to apply a brain mask and go from a 4D array to a 2D array,
-`voxel x time`, as depicted below:
+`voxel` **x** `time`, as depicted below:
 
 .. only:: html
 
