@@ -1,6 +1,6 @@
 from matplotlib import pyplot
 from sklearn.cross_validation import KFold
-from sklearn.metrics import precision_score
+from sklearn.metrics import f1_score
 
 
 ### Load Haxby dataset ########################################################
@@ -18,7 +18,6 @@ import numpy as np
 
 # Change axis in order to have X under n_samples * x * y * z
 X = np.rollaxis(fmri_data, 3)
-
 # X.shape is (1452, 41, 40, 49)
 
 # Detrend data on each session independently
@@ -50,8 +49,12 @@ conditions = conditions[condition_mask]
 from nisl import searchlight
 
 # Make processing parallel
+# /!\ As each thread will print its progress, this could mess up a little
+#     information output.
 n_jobs = 2
-score_func = precision_score
+
+score_func = f1_score
+
 # A cross validation method is needed to measure precision of each voxel
 cv = KFold(y.size, k=4)
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
@@ -60,7 +63,7 @@ searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
 scores = searchlight.fit(X, y)
 
 ### Unmask the data and display it
-pyplot.imshow(scores.scores[..., 26], interpolation='nearest',
+pyplot.imshow(np.rot90(scores.scores[..., 26]), interpolation='nearest',
         cmap=pyplot.cm.spectral, vmin=0, vmax=1)
 pyplot.colorbar()
 pyplot.show()
