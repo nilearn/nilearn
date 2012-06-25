@@ -38,6 +38,8 @@ Python and the scikit-learn: a primer
     - Computationally efficient
     - Provide wide variety standard machine learning methods for non-experts
 
+.. XXX need to write the 10min intro to Python
+
 Installation of the materials useful for this tutorial
 --------------------------------------------------------
 
@@ -86,6 +88,81 @@ C compiler, you can add it to your scientific Python install using::
 
   $ easy_install -U --user scikit-learn
 
+Python for Science quickstart
+------------------------------
+
+For a full blown introduction to using Python for science, see the 
+`scipy lecture notes <http://scipy-lectures.github.com/>`_.
+
+**Don't panic. Python is easy.**
+
+We will be using `IPython <http://ipython.org>`_, in pylab mode, that
+provides an interactive scientific environment. Start it with::
+
+    $ ipython -pylab
+
+It's interactive::
+
+    Welcome to pylab, a matplotlib-based Python environment
+    For more information, type 'help(pylab)'.
+
+    In [1]: 1 + 2*3
+    Out[1]: 7
+
+.. note:: **Prompt**: Below we'll be using `>>>` to indicate input lines
+
+
+In Python, to get scientific features, you need to import the relevant
+libraries:
+
+:Numerical arrays:
+
+    >>> import numpy as np
+    >>> t = np.linspace(1, 10, 5000)  # 2000 points between 1 and 10
+    >>> t
+    array([  1.        ,   1.00450225,   1.0090045 , ...,   9.9909955 ,
+             9.99549775,  10.        ])
+    >>> t / 2
+    array([ 0.5       ,  0.50225113,  0.50450225, ...,  4.99549775,
+            4.99774887,  5.        ])
+    >>> np.cos(t) # Operations on arrays are defined in the numpy module
+    array([ 0.54030231,  0.53650833,  0.53270348, ..., -0.84393609,
+           -0.84151234, -0.83907153])
+
+:Plotting:
+
+ .. figure:: auto_examples/images/plot_python_101_1.png
+   :target: auto_examples/plot_python_101.html
+   :align: right
+   :scale: 30
+
+ :: 
+
+    >>> import pylab as pl
+    >>> pl.plot(t, np.cos(t))
+
+
+:Image processing:
+
+    >>> from scipy import ndimage
+    >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
+
+:Signal processing:
+
+    >>> from scipy import signal
+    >>> t_detrended = signal.detrend(t)
+
+:Much more:
+
+  .. hlist::
+
+     * Simple statistics::
+
+        >>> from scipy import stats
+
+     * Linear algebra::
+
+        >>> from scipy import linalg
 
 Finding help
 -------------
