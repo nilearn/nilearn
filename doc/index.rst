@@ -83,15 +83,30 @@
 
 .. include:: includes/big_toc_css.rst
 
-.. toctree::
-   :maxdepth: 2
-   :numbered:
+.. only:: html
 
-   introduction.rst
-   visualization.rst
-   haxby_decoding.rst
-   ward_clustering.rst
-   auto_examples/index
+  .. toctree::
+    :maxdepth: 2
+    :numbered:
+
+    introduction.rst
+    visualization.rst
+    haxby_decoding.rst
+    ward_clustering.rst
+    auto_examples/index
+
+.. in the pdf, we don't include the examples
+
+.. only:: latex
+
+  .. toctree::
+    :maxdepth: 2
+    :numbered:
+
+    introduction.rst
+    visualization.rst
+    haxby_decoding.rst
+    ward_clustering.rst
 
 
 
