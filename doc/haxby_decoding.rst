@@ -229,7 +229,7 @@ speed up the computation by using n_jobs=-1, which will spread the
 computation equally across all processors (this will probably not work
 under Windows)::
 
- >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10)
+ >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
 
 Prediction accuracy
