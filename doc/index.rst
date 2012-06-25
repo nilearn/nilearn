@@ -91,7 +91,7 @@
 
     introduction.rst
     visualization.rst
-    haxby_decoding.rst
+    supervised_learning.rst
     ward_clustering.rst
     auto_examples/index
 
@@ -105,6 +105,7 @@
 
     introduction.rst
     visualization.rst
+    supervised_learning.rst
     haxby_decoding.rst
     ward_clustering.rst
 
