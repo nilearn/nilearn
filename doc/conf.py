@@ -25,7 +25,12 @@ sys.path.insert(0, os.path.abspath('sphinxext'))
 # We also add the directory just above to enable local imports of nisl
 sys.path.insert(0, os.path.abspath('..'))
 
-shutil.copy('../AUTHORS.rst', '.')
+try:
+    shutil.copy('../AUTHORS.rst', '.')
+except IOError:
+    # When nose scans this file, it is not in the right working
+    # directory, and thus the line above fails
+    pass
 
 # -- General configuration ---------------------------------------------------
 

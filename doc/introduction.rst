@@ -118,7 +118,7 @@ libraries:
 :Numerical arrays:
 
     >>> import numpy as np
-    >>> t = np.linspace(1, 10, 5000)  # 2000 points between 1 and 10
+    >>> t = np.linspace(1, 10, 2000)  # 2000 points between 1 and 10
     >>> t
     array([  1.        ,   1.00450225,   1.0090045 , ...,   9.9909955 ,
              9.99549775,  10.        ])
@@ -139,7 +139,8 @@ libraries:
  :: 
 
     >>> import pylab as pl
-    >>> pl.plot(t, np.cos(t))
+    >>> pl.plot(t, np.cos(t))       # doctest: +ELLIPSIS
+    [<matplotlib.lines.Line2D object at ...>]
 
 
 :Image processing:
