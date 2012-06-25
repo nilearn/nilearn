@@ -110,6 +110,10 @@ It's interactive::
     Out[1]: 7
 
 .. note:: **Prompt**: Below we'll be using `>>>` to indicate input lines
+   If you wish to copy these input lines directly into your *IPython*
+   console without manually excluding each `>>>`, you can enable
+   `Doctest Mode` with the command ::
+   	    %doctest_mode
 
 Scientific computing
 .....................
