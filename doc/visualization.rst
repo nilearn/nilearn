@@ -4,23 +4,8 @@
 Basic dataset manipulation: loading and visualisation 
 ========================================================
 
-Dataset formatting
-==================
-
-Even though standard format exists, some people prefer to stick with custom
-data formatting. That is why special processing is sometimes required.
-
-We can find two main representations for MRI scans:
-
-- a big 4D matrix representing 3D MRI along time
-- several 3D matrices representing each volume (time point) of the session
-
-These scans can be grouped by sessions and by subjects.
-
-.. XXX: need to discuss masking
-
-Some downloading utilities
-===========================
+Downloading the tutorial data
+==============================
 
 .. currentmodule:: nisl.datasets
 
@@ -33,7 +18,6 @@ with a set of several datasets that are not always formatted the same way.
 
    fetch_haxby
    fetch_nyu_rest
-   fetch_star_plus
 
 NIfTI and Analyse files
 =========================
@@ -59,6 +43,15 @@ downloaded, a single line is needed to load it.
      :start-after: # Fetch data ################################################################
      :end-before: # Visualization #############################################################
 
+.. topic:: Dataset formatting: data shape
+
+    We can find two main representations for MRI scans:
+
+    - a big 4D matrix representing 3D MRI along time, stored in a big 4D
+      Nifti file. FSL users tend to prefer this format.
+    - several 3D matrices representing each volume (time point) of the 
+      session, stored in set of 3D Nifti or analyse files. SPM users tend
+      to prefer this format.
 
 Visualizing brain images
 ============================
