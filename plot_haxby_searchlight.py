@@ -1,53 +1,66 @@
-import numpy as np
-from scipy import signal
 from matplotlib import pyplot
-
 from sklearn.cross_validation import KFold
 from sklearn.metrics import precision_score
 
-from nisl import searchlight, datasets
 
-### Fetch the dataset
+### Load Haxby dataset ########################################################
+from nisl import datasets
 dataset = datasets.fetch_haxby()
-
-X = dataset.data
+fmri_data = dataset.data
+mask = dataset.mask
+affine = dataset.affine
 y = dataset.target
+conditions = dataset.target_strings
 session = dataset.session
 
-### Prepare the masks
+### Preprocess data ###########################################################
+import numpy as np
+
+# Change axis in order to have X under n_samples * x * y * z
+X = np.rollaxis(fmri_data, 3)
+
+# X.shape is (1452, 41, 40, 49)
+
+# Detrend data on each session independently
+from scipy import signal
+for s in np.unique(session):
+        X[session == s] = signal.detrend(X[session == s], axis=0)
+
+### Prepare the masksi ########################################################
 # Here we will use several masks :
 # * mask is the original mask
 # * process_mask is a subset of mask, it contains voxels that should be
-#   processed
+#   processed (we only keep the slice z = 26)
 mask = (dataset.mask != 0)
 process_mask = mask.copy()
-process_mask[..., 29:] = False
-process_mask[..., :23] = False
+process_mask[..., 27:] = False
+process_mask[..., :25] = False
 
-X = X[process_mask != 0].T
+### Restrict to faces and houses ##############################################
 
-print "detrending data"
-for s in np.unique(session):
-    X[session == s] = signal.detrend(X[session == s], axis=0)
+# Keep only data corresponding to face or houses
+condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+X = X[condition_mask]
+y = y[condition_mask]
+session = session[condition_mask]
+conditions = conditions[condition_mask]
 
-# Remove volumes corresponding to rest and keep only face and house scans
-X, y, session = X[y != 0], y[y != 0], session[y != 0]
-X, y, session = X[y < 3], y[y < 3], session[y < 3]
+### Searchlight ###############################################################
 
-### Instanciate the searchlight model
+from nisl import searchlight
+
 # Make processing parallel
 n_jobs = 2
 score_func = precision_score
 # A cross validation method is needed to measure precision of each voxel
 cv = KFold(y.size, k=4)
-searchlight = searchlight.SearchLight(process_mask, radius=2.,
+searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
         n_jobs=n_jobs, score_func=score_func, verbose=True, cv=cv)
 # scores.scores is an array containing per voxel precision
 scores = searchlight.fit(X, y)
 
 ### Unmask the data and display it
-S = np.zeros(mask.shape)
-S[process_mask] = scores.scores
-pyplot.imshow(np.rot90(S[..., 26]), interpolation='nearest',
-        cmap=pyplot.cm.spectral)
+pyplot.imshow(scores.scores[..., 26], interpolation='nearest',
+        cmap=pyplot.cm.spectral, vmin=0, vmax=1)
+pyplot.colorbar()
 pyplot.show()

@@ -75,10 +75,10 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
         search_light scores
     """
     scores = np.zeros(len(A.rows), dtype=float)
-    group_iter = GroupIterator(X.shape[1], n_jobs)
+    group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
               delayed(_group_iter_search_light)(list_i, A.rows[list_i],
-              estimator, X, y, score_func, cv, verbose)
+              estimator, X, y, A.shape[0], score_func, cv, verbose)
               for list_i in group_iter)
     return np.concatenate(scores)
 
@@ -115,8 +115,8 @@ class GroupIterator(object):
             yield list_i
 
 
-def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
-                            cv, verbose):
+def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
+                            score_func, cv, verbose):
     """
     Function for grouped iterations of search_light
 
@@ -136,6 +136,9 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
 
     y: array-like
         The target variable to try to predict.
+
+    total: integer
+        Total number of voxels
 
     score_func: callable, optional
         callable taking as arguments the fitted estimator, the
@@ -163,7 +166,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, score_func,
                 y, score_func, cv, n_jobs=1))
         if verbose:
             print "Processing voxel #%d on %d. Precision is %2.2f" %\
-                (list_i[i], X.shape[1], par_scores[i])
+                (list_i[i], total, par_scores[i])
     return par_scores
 
 
@@ -206,12 +209,18 @@ class SearchLight(BaseEstimator):
         The verbosity level. Defaut is False
     """
 
-    def __init__(self, mask, radius=2., estimator=LinearSVC(C=1), n_jobs=-1,
-                 score_func=None, cv=None, verbose=False):
+    def __init__(self, mask, process_mask=None, radius=2.,
+            estimator=LinearSVC(C=1), n_jobs=-1, score_func=None, cv=None,
+            verbose=False):
+        if process_mask is None:
+            process_mask = mask
         clf = neighbors.NearestNeighbors(radius=radius)
         mask_indices = np.asarray(np.where(mask != 0)).T
-        A = clf.fit(mask_indices).radius_neighbors_graph(mask_indices)
+        process_mask_indices = np.asarray(np.where(process_mask != 0)).T
+        A = clf.fit(mask_indices).radius_neighbors_graph(process_mask_indices)
         self.A = A.tolil()
+        self.mask = mask
+        self.process_mask = process_mask
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.score_func = score_func
@@ -233,6 +242,12 @@ class SearchLight(BaseEstimator):
         scores: array-like of shape (number of rows in A)
             search_light scores
         """
-        self.scores = search_light(X, y, self.estimator, self.A,
-              self.score_func, self.cv, self.n_jobs, self.verbose)
+        X_masked = X[:, self.mask]
+        # scores is an array of CV scores with same cardinality as process_mask
+        scores = search_light(X_masked, y, self.estimator, self.A,
+            self.score_func, self.cv, self.n_jobs, self.verbose)
+        scores_3D = np.zeros(self.process_mask.shape)
+        scores_3D[self.process_mask] = scores
+        self.scores = np.ma.array(scores_3D,
+            mask=np.logical_not(self.process_mask))
         return self
