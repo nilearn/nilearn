@@ -25,8 +25,8 @@ forget to set your environment variable *NISL_DATA* if you want your dataset
 to be stored in a specific path.
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: ### Load nyu_rest dataset #####################################################
-        :end-before: ### Mask ######################################################################
+    :start-after: ### Load nyu_rest dataset #####################################################
+    :end-before: ### Mask ######################################################################
 
 Masking
 -------
@@ -37,8 +37,8 @@ idea is to threshold values and eliminates voxels present in the "black peak"
 (peak in the histogram representing background dark voxels).
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: ### Mask ######################################################################
-        :end-before: ### Ward ######################################################################
+    :start-after: ### Mask ######################################################################
+    :end-before: ### Ward ######################################################################
 
 The result is a numpy array of boolean that is used to mask our original *X*.
 
@@ -55,8 +55,8 @@ lead to a wrong clustering (see
 <http://www.scikit-learn.org/stable/auto_examples/cluster/plot_ward_structured_vs_unstructured.html>`_)
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: # Compute connectivity matrix: which voxel is connected to which
-        :end-before: # Computing the ward for the first time, this is long...
+    :start-after: # Compute connectivity matrix: which voxel is connected to which
+    :end-before: # Computing the ward for the first time, this is long...
 
 Principle
 ---------
@@ -90,22 +90,22 @@ Apply the ward
 Here we simply launch the ward to find 500 clusters and we time it.
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: # Computing the ward for the first time, this is long...
-        :end-before: # Compute the ward with more clusters, should be faster
+    :start-after: # Computing the ward for the first time, this is long...
+    :end-before: # Compute the ward with more clusters, should be faster
 
 This runs in about 10 seconds (depending on your computer configuration). Now,
 we are not satisfied of the result and we want to cluster the picture in 1000
 elements.
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: # Compute the ward with more clusters, should be faster
-        :end-before: ### Spectral clustering #######################################################
+    :start-after: # Compute the ward with more clusters, should be faster
+    :end-before: ### Show result ############################################################### 
 
 Now that the component tree has been computed, computation is must faster. You
 should have the result in less than 1 second.
 
-Post-Processing
-===============
+Post-Processing and visualization
+===================================
 
 Unmasking
 ---------
@@ -113,20 +113,37 @@ Unmasking
 After applying the ward, we must unmask the data. This can be done simply :
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: # Unmask data
-        :end-before: # Create a compressed picture
+    :start-after: # Unmask data
+    :end-before: # Display the labels 
 
 You can see that masked data is filled with -1 values. This is done for the
 sake of visualisation. In fact, clusters are labelled with going from 0 to
 (n_clusters - 1). By putting every other values to -1, we assure that
 uninteresting values will not mess with the visualization.
 
+Label visualisation
+--------------------
+
+We can visualize the clusters. We assign random colors to each cluster
+for the labels visualisation.
+
+.. literalinclude:: ../plot_rest_clustering.py
+    :start-after: # Display the labels 
+    :end-before: # Display the original data
+
+
+.. figure:: auto_examples/images/plot_rest_clustering_1.png
+   :target: auto_examples/plot_rest_clustering.html
+   :align: center
+   :scale: 60
+
 Compressed picture
 ------------------
 
-A compressed picture is a picture in which the value of each voxel is the
-mean value of the cluster it belongs to. We can obtain this representation
-thanks to a two step procedure :
+By transforming a picture in a new one in which the value of each voxel
+is the mean value of the cluster it belongs to, we are creating a
+compressed version of the original picture. We can obtain this
+representation thanks to a two step procedure :
 
 - call *ward.transform* to obtain the mean value of each cluster (for each
   scan)
@@ -134,20 +151,18 @@ thanks to a two step procedure :
   the masked picture shape
 
 .. literalinclude:: ../plot_rest_clustering.py
-        :start-after: pl.title('Original')
-	:end-before: compressed_img = np.zeros(mask.shape)
+    :start-after: # Display the original data
 
-
-Visualisation
-=============
-
-Then we can visualize the clusters. One color from the spectrum will be
-attributed to each cluster for the labels visualisation and the compressed
-picture is shown in the classical gray colormap.
-
-.. literalinclude:: ../plot_rest_clustering.py
-        :start-after: ### Show result ###############################################################
-
-.. figure:: auto_examples/images/plot_rest_clustering_1.png
+.. |left_img| image:: auto_examples/images/plot_rest_clustering_2.png
    :target: auto_examples/plot_rest_clustering.html
-   :align: center
+   :width: 49%
+
+.. |right_img| image:: auto_examples/images/plot_rest_clustering_3.png
+   :target: auto_examples/plot_rest_clustering.html
+   :width: 49%
+
+|left_img| |right_img|
+
+We can see that using only 1000 parcels, we can approximate well the
+original image.
+

@@ -58,13 +58,13 @@ print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 
 ### Show result ###############################################################
 
-import pylab as pl
-
-# Display the labels
 # Unmask data
 import numpy as np
 labels = - np.ones(mask.shape)
 labels[mask] = ward.labels_
+
+# Display the labels
+import pylab as pl
 
 # Cut at z=20
 cut = labels[:, :, 20].astype(np.int)
@@ -79,10 +79,11 @@ pl.title('Ward parcellation')
 # Display the original data
 pl.figure()
 first_fmri_img = fmri_data[..., 0].copy()
-first_fmri_img[np.logical_not(mask)] = 0
+# Outside the mask: a uniform value, smaller than inside the mask
+first_fmri_img[np.logical_not(mask)] = 0.9*first_fmri_img[mask].min()
 vmax = first_fmri_img[..., 20].max()
-pl.imshow(np.rot90(first_fmri_img[..., 20]), interpolation='nearest',
-           cmap=pl.cm.spectral, vmax=vmax)
+pl.imshow(np.rot90(first_fmri_img[..., 20]),
+          interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
 pl.axis('off')
 pl.title('Original')
 
@@ -94,12 +95,12 @@ fmri_reduced = ward.transform(fmri_masked.T)
 
 # Display the corresponding data compressed using the parcellation
 fmri_compressed = ward.inverse_transform(fmri_reduced)
-compressed_img = np.zeros(mask.shape)
+compressed_img = first_fmri_img.copy()
 compressed_img[mask] = fmri_compressed[0]
 
 pl.figure()
-pl.imshow(np.rot90(compressed_img[:, :, 20]), interpolation='nearest',
-           cmap=pl.cm.spectral, vmax=vmax)
+pl.imshow(np.rot90(compressed_img[:, :, 20]),
+           interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
 pl.title('Compressed representation')
 pl.axis('off')
 pl.show()
