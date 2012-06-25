@@ -91,10 +91,10 @@ C compiler, you can add it to your scientific Python install using::
 Python for Science quickstart
 ------------------------------
 
+**Don't panic. Python is easy.**
 For a full blown introduction to using Python for science, see the 
 `scipy lecture notes <http://scipy-lectures.github.com/>`_.
 
-**Don't panic. Python is easy.**
 
 We will be using `IPython <http://ipython.org>`_, in pylab mode, that
 provides an interactive scientific environment. Start it with::
@@ -117,6 +117,8 @@ libraries:
 
 :Numerical arrays:
 
+  ::
+
     >>> import numpy as np
     >>> t = np.linspace(1, 10, 2000)  # 2000 points between 1 and 10
     >>> t
@@ -128,6 +130,9 @@ libraries:
     >>> np.cos(t) # Operations on arrays are defined in the numpy module
     array([ 0.54030231,  0.53650833,  0.53270348, ..., -0.84393609,
            -0.84151234, -0.83907153])
+
+  `More documentation...
+  <http://scipy-lectures.github.com/intro/numpy/index.html>`_
 
 :Plotting:
 
@@ -143,15 +148,26 @@ libraries:
     [<matplotlib.lines.Line2D object at ...>]
 
 
+ `More documentation...
+ <http://scipy-lectures.github.com/intro/matplotlib/matplotlib.html>`_
+
 :Image processing:
+
+ :: 
 
     >>> from scipy import ndimage
     >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
+
+ `More documentation...
+ <http://scipy-lectures.github.com/advanced/image_processing/index.html>`_
 
 :Signal processing:
 
     >>> from scipy import signal
     >>> t_detrended = signal.detrend(t)
+
+ `More documentation...
+ <http://scipy-lectures.github.com/intro/scipy.html#signal-processing-scipy-signal>`_
 
 :Much more:
 
@@ -164,6 +180,9 @@ libraries:
      * Linear algebra::
 
         >>> from scipy import linalg
+
+  `More documentation...
+  <http://scipy-lectures.github.com/intro/scipy.html>`_
 
 Finding help
 -------------
@@ -185,6 +204,7 @@ Finding help
 
     * You can find help with neuroimaging in Python (file I/O,
       neuroimaging-specific questions) on the nipy user group:
+
       https://groups.google.com/forum/?fromgroups#!forum/nipy-user
 
     * For machine-learning and scikit-learn question, expertise can be
