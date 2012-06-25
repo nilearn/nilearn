@@ -90,6 +90,9 @@ svc = feature_selection.inverse_transform(svc)
 # reverse masking
 act = np.zeros(mean_img.shape)
 act[mask != 0] = svc[0]
+
+# We use a masked array so that the voxels at '0' are displayed
+# transparently
 act = np.ma.masked_array(act, act == 0)
 
 ### Create the figure on z=23

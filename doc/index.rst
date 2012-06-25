@@ -92,7 +92,7 @@
     introduction.rst
     visualization.rst
     supervised_learning.rst
-    ward_clustering.rst
+    unsupervised_learning.rst
     auto_examples/index
 
 .. in the pdf, we don't include the examples
@@ -106,7 +106,8 @@
     introduction.rst
     visualization.rst
     supervised_learning.rst
-    ward_clustering.rst
+    unsupervised_learning.rst
+    
 
 
 

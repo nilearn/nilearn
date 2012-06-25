@@ -7,7 +7,7 @@ An example applying ICA to resting-state data.
 
 import numpy as np
 
-### Load nyu_trt dataset ######################################################
+### Load nyu_rest dataset #####################################################
 from nisl import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
@@ -21,8 +21,10 @@ fmri_data = np.concatenate(dataset.func, axis=3)
 # Apply a small amount of Gaussian smoothing
 from scipy import ndimage
 for image in fmri_data.T:
+    # This works efficiently because image is a view on fmri_data
     image[...] = ndimage.gaussian_filter(image, 1.5)
 
+# Take the mean along axis 3: the direction of time
 mean_img = np.mean(fmri_data, axis=3)
 
 # Mask non brain areas

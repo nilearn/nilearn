@@ -2,9 +2,9 @@
 Supervised learning
 ====================
 
-Supervised learning is focussed on predicting on output value. In fMRI it
-is often used in the context of *decoding*: predicting behavior from
-brain images. It may also be useful for diagnostic.
+Supervised learning is focussed on predicting on output value. In
+NeuroImaging it is often used in the context of *decoding*: predicting
+behavior from brain images. It may also be useful for diagnostic.
 
 ____
 
