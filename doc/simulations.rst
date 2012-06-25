@@ -16,11 +16,8 @@ Decoding on simulated data
 
 .. topic:: Objectives
 
-   At the end of this tutorial you will be able to:
-
-    1. Load fMRI volumes in Python.
-    2. Perform a state-of-the-art decoding analysis of fMRI data.
-    3. Perform even more sophisticated analyzes of fMRI data.
+    1. Understand linear estimators, (SVM, elastic net, ridge) 
+    2. Use the scikit-learn's linear models
 
 Simple NeuroImaging-like simulations
 =====================================
