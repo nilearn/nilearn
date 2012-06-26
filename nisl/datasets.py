@@ -315,8 +315,8 @@ def fetch_star_plus(data_dir=None):
         Dictionary-like object, the interest attributes are :
         'datas' : a list of 6 numpy arrays representing the data to learn
         'targets' : list
-                    targets of the datas
-        'masks' : the masks for the datas. If indices is true, returns the
+                    targets of the data
+        'masks' : the masks for the data. If indices is true, returns the
             coordinates of the voxels instead of a binary map to deal with
             sparse matrices.
 
@@ -358,9 +358,9 @@ def fetch_star_plus(data_dir=None):
 
         full_names = _fetch_dataset('starplus', urls, data_dir=data_dir)
 
-        for indice, full_name in enumerate(full_names):
+        for index, full_name in enumerate(full_names):
             # Converting data to a more readable format
-            print "Converting file %d on 6..." % (indice + 1)
+            print "Converting file %d on 6..." % (index + 1)
             # General information
             try:
                 data = io.loadmat(full_name, struct_as_record=True)
@@ -418,18 +418,18 @@ def fetch_star_plus(data_dir=None):
                 X = X.astype(np.float)
                 y = y.astype(np.float)
 
-                name = "data-starplus-%d-X.npy" % indice
+                name = "data-starplus-%d-X.npy" % index
                 name = os.path.join(dataset_dir, name)
                 np.save(name, X)
-                name = "data-starplus-%d-y.npy" % indice
+                name = "data-starplus-%d-y.npy" % index
                 name = os.path.join(dataset_dir, name)
                 np.save(name, y)
-                name = "data-starplus-%d-mask.npy" % indice
+                name = "data-starplus-%d-mask.npy" % index
                 name = os.path.join(dataset_dir, name)
                 mask = X[0, ...]
                 mask = mask.astype(np.bool)
                 np.save(name, mask)
-                name = "data-starplus-%d-mask_indices.npy" % indice
+                name = "data-starplus-%d-mask_indices.npy" % index
                 name = os.path.join(dataset_dir, name)
                 np.save(name, data['meta']['colToCoord'].flat[0])
                 print "...done."

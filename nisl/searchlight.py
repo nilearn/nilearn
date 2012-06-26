@@ -34,8 +34,7 @@ from sklearn import neighbors
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
                  verbose=True):
-    """
-    Function for computing a search_light
+    """Function for computing a search_light
 
     Parameters
     ----------
@@ -69,8 +68,8 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     verbose: boolean, optional
         The verbosity level. Defaut is False
 
-    Return
-    ------
+    Returns
+    -------
     scores: array-like of shape (number of rows in A)
         search_light scores
     """
@@ -90,35 +89,30 @@ class GroupIterator(object):
     that may be used with Parallel.
 
     Parameters
-    ===========
+    ----------
     n_features: int
         Total number of features
+
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'. Defaut is 1
     """
-
     def __init__(self, n_features, n_jobs=1):
         self.n_features = n_features
         if n_jobs == -1:
-            import multiprocessing
-            n_jobs = multiprocessing.cpu_count()
+            import joblib
+            n_jobs = joblib.cpu_count()
         self.n_jobs = n_jobs
 
     def __iter__(self):
-        frac = np.int(self.n_features / self.n_jobs)
-        for i in range(self.n_jobs):
-            if i != (self.n_jobs - 1):
-                list_i = range(i * frac, (i + 1) * frac)
-            else:
-                list_i = range(i * frac, self.n_features)
+        split = np.array_split(np.arange(self.n_features), self.n_jobs)
+        for list_i in split:
             yield list_i
 
 
 def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
                             score_func, cv, verbose):
-    """
-    Function for grouped iterations of search_light
+    """Function for grouped iterations of search_light
 
     Parameters
     -----------
@@ -153,8 +147,8 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
     verbose: boolean, optional
         The verbosity level. Defaut is False
 
-    Return
-    ------
+    Returns
+    -------
     par_scores: array of float
         precision of each voxel
     """
@@ -176,9 +170,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
 
 
 class SearchLight(BaseEstimator):
-    """
-    SearchLight class.
-    Class to perform a search_light using an arbitrary type of classifier.
+    """Class to perform a search_light using an arbitrary type of classifier.
 
     Parameters
     -----------
@@ -228,8 +220,7 @@ class SearchLight(BaseEstimator):
         self.verbose = verbose
 
     def fit(self, X, y):
-        """
-        Fit the search_light
+        """Fit the search_light
 
         X: array-like of shape at least 2D
             The data to fit.
@@ -239,7 +230,7 @@ class SearchLight(BaseEstimator):
 
         Attributes
         ----------
-        scores: array-like of shape (number of rows in A)
+        scores_: array-like of shape (number of rows in A)
             search_light scores
         """
         X_masked = X[:, self.mask]
@@ -248,6 +239,6 @@ class SearchLight(BaseEstimator):
             self.score_func, self.cv, self.n_jobs, self.verbose)
         scores_3D = np.zeros(self.process_mask.shape)
         scores_3D[self.process_mask] = scores
-        self.scores = np.ma.array(scores_3D,
+        self.scores_ = np.ma.array(scores_3D,
             mask=np.logical_not(self.process_mask))
         return self

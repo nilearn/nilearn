@@ -1,8 +1,3 @@
-from matplotlib import pyplot
-from sklearn.cross_validation import KFold
-from sklearn.metrics import f1_score
-
-
 ### Load Haxby dataset ########################################################
 from nisl import datasets
 dataset = datasets.fetch_haxby()
@@ -23,9 +18,9 @@ X = np.rollaxis(fmri_data, 3)
 # Detrend data on each session independently
 from scipy import signal
 for s in np.unique(session):
-        X[session == s] = signal.detrend(X[session == s], axis=0)
+    X[session == s] = signal.detrend(X[session == s], axis=0)
 
-### Prepare the masksi ########################################################
+### Prepare the masks #########################################################
 # Here we will use several masks :
 # * mask is the original mask
 # * process_mask is a subset of mask, it contains voxels that should be
@@ -47,6 +42,8 @@ conditions = conditions[condition_mask]
 ### Searchlight ###############################################################
 
 from nisl import searchlight
+from sklearn.metrics import f1_score
+from sklearn.cross_validation import KFold
 
 # Make processing parallel
 # /!\ As each thread will print its progress, this could mess up a little
@@ -59,11 +56,21 @@ score_func = f1_score
 cv = KFold(y.size, k=4)
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
         n_jobs=n_jobs, score_func=score_func, verbose=True, cv=cv)
-# scores.scores is an array containing per voxel precision
+# scores.scores is an array containing per voxel cross validation scores
 scores = searchlight.fit(X, y)
 
 ### Unmask the data and display it
-pyplot.imshow(np.rot90(scores.scores[..., 26]), interpolation='nearest',
-        cmap=pyplot.cm.spectral, vmin=0, vmax=1)
-pyplot.colorbar()
-pyplot.show()
+import pylab as pl
+pl.imshow(np.rot90(scores.scores_[..., 26]), interpolation='nearest',
+        cmap=pl.cm.spectral, vmin=0, vmax=1)
+pl.colorbar()
+pl.show()
+
+### Show the F_score
+from sklearn.feature_selection import f_classif
+f_values, p_values = f_classif(X, y)
+p_values[p_values < 1e-10] = 1e-10
+p_values = -np.log10(p_values)
+pl.imshow(np.rot90(p_values[..., 26]), interpolation='nearest', cmap=pl.cm.jet)
+pl.colorbar()
+pl.show()
