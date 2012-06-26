@@ -48,7 +48,7 @@ from sklearn.cross_validation import KFold
 # Make processing parallel
 # /!\ As each thread will print its progress, this could mess up a little
 #     information output.
-n_jobs = 2
+n_jobs = 1
 
 score_func = f1_score
 
