@@ -96,7 +96,7 @@ div.navbar ul li a:hover {
 }
 
 .gsc-input {
-    width: 180px;
+    width: 108px;
     float: right;
 }
 
