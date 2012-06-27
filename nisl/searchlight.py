@@ -23,7 +23,8 @@ vol. 103, no. 10, pages 3863-3868, March 2006
 #License: BSD 3 clause
 
 import numpy as np
-
+import time
+import sys
 from joblib.parallel import Parallel, delayed
 
 from sklearn.svm import LinearSVC
@@ -33,7 +34,7 @@ from sklearn import neighbors
 
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
-                 verbose=True):
+                 verbose=0):
     """Function for computing a search_light
 
     Parameters
@@ -65,8 +66,8 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose: boolean, optional
-        The verbosity level. Defaut is False
+    verbose: integer, optional
+        The verbosity level. Defaut is 0
 
     Returns
     -------
@@ -111,7 +112,7 @@ class GroupIterator(object):
 
 
 def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
-                            score_func, cv, verbose):
+                            score_func, cv, verbose=0):
     """Function for grouped iterations of search_light
 
     Parameters
@@ -144,8 +145,8 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-    verbose: boolean, optional
-        The verbosity level. Defaut is False
+    verbose: integer, optional
+        The verbosity level. Defaut is 0
 
     Returns
     -------
@@ -153,14 +154,31 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
         precision of each voxel
     """
     par_scores = np.zeros(len(list_rows))
+    id = (list_i[0] + 1) / len(list_i) + 1
+    t0 = time.time()
     for i, row in enumerate(list_rows):
         if list_i[i] not in row:
             row.append(list_i[i])
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
                 y, score_func, cv, n_jobs=1))
-        if verbose:
-            print "Processing voxel #%d on %d. Precision is %2.2f" %\
-                (list_i[i], total, par_scores[i])
+        if verbose > 0:
+            # One can't print less than each 100 iterations
+            step = 11 - min(verbose, 10)
+            if (i % step == 0):
+                # If there is only one job, progress information is fixed
+                if total == len(list_rows):
+                    crlf = "\r"
+                else:
+                    crlf = "\n"
+                percent = float(i) / len(list_rows)
+                percent = round(percent * 100, 2)
+                dt = time.time() - t0
+                # We use a max to avoid a division by zero
+                remaining = (100. - percent) / max(0.01, percent) * dt
+                sys.stderr.write(
+                    "Job #%d, processed %d/%d voxels"
+                    "(%0.2f%%, %i seconds remaining)%s"
+                    % (id, i, len(list_rows), percent, remaining, crlf))
     return par_scores
 
 
@@ -197,15 +215,13 @@ class SearchLight(BaseEstimator):
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-    verbose: boolean, optional
+    verbose: integer, optional
         The verbosity level. Defaut is False
     """
 
     def __init__(self, mask, process_mask=None, radius=2.,
             estimator=LinearSVC(C=1), n_jobs=-1, score_func=None, cv=None,
-            verbose=False):
-        if process_mask is None:
-            process_mask = mask
+            verbose=0):
         clf = neighbors.NearestNeighbors(radius=radius)
         mask_indices = np.asarray(np.where(mask != 0)).T
         process_mask_indices = np.asarray(np.where(process_mask != 0)).T
@@ -233,12 +249,15 @@ class SearchLight(BaseEstimator):
         scores_: array-like of shape (number of rows in A)
             search_light scores
         """
+        process_mask = self.process_mask
+        if process_mask is None:
+            process_mask = self.mask
         X_masked = X[:, self.mask]
         # scores is an array of CV scores with same cardinality as process_mask
         scores = search_light(X_masked, y, self.estimator, self.A,
             self.score_func, self.cv, self.n_jobs, self.verbose)
-        scores_3D = np.zeros(self.process_mask.shape)
-        scores_3D[self.process_mask] = scores
+        scores_3D = np.zeros(process_mask.shape)
+        scores_3D[process_mask] = scores
         self.scores_ = np.ma.array(scores_3D,
             mask=np.logical_not(self.process_mask))
         return self
