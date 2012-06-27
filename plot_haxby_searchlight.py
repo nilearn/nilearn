@@ -66,7 +66,7 @@ from nisl import searchlight
 n_jobs = 1
 
 ### Define the score function used to evaluate classifiers
-# Here we use precision which mesures proportion of true positives among
+# Here we use precision which maesures proportion of true positives among
 # all positives results for one class.
 from sklearn.metrics import precision_score
 score_func = precision_score
@@ -93,7 +93,7 @@ slice = np.ma.array(scores.scores_, mask=np.logical_not(process_mask))
 pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
         cmap=pl.cm.gray)
 pl.imshow(np.rot90(slice[..., 26]), interpolation='nearest',
-        cmap=pl.cm.spectral, vmin=0, vmax=1)
+        cmap=pl.cm.gnuplot2, vmin=0, vmax=1)
 pl.colorbar()
 pl.axis('off')
 pl.show()

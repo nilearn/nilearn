@@ -4,7 +4,7 @@
 Searchlight : finding voxels containing maximum information
 ===========================================================
 
-.. currentmodule:: nisl.datasets
+.. currentmodule:: nisl.searchlight
 
 Searchlight principle
 =====================
@@ -51,5 +51,60 @@ taken into account when iterating with the sphere.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
         :start-after:#   up computation)
-		:end-before:### Restrict to faces and houses ##############################################
+        :end-before:### Restrict to faces and houses ##############################################
 
+Third Step : Set up the cross validation
+========================================
+
+Searchlight will iterate on the volume and give a score to each voxel. This
+score is computed by running a classifier on selected voxels. In order to make
+this score as accurate as possible (and avoid overfitting), a cross validation
+is made.
+
+Classifier
+----------
+
+The classifier used by default by Searchlight is LinearSVC with C=1 but this
+can be customed easily by passing an estimator parameter to the cross
+validation.
+
+See scikit-learn documentation for
+`other classifiers <http://scikit-learn.org/supervised_learning.html>`_
+
+Score function
+--------------
+
+Let *face* and *house* be our two classes. The classifier will learn to guess
+which picture is presented just by looking at the fMRI. It will then be tested
+thanks to a testing set. There are several ways to compute a score out of the
+results. Here we have choosed the precision that measures proportion of true
+positives among all positives results for one class.
+
+Again, many others are available in 
+`scikit-learn documentation
+<http://scikit-learn.org/supervised_learning.html>`_
+
+Cross validation
+----------------
+
+Cross validation is a process through which a set of samples is divided in two
+sets, training and testing sets, to score a classifier. Several strategies can
+be adopted : here we use the *K*-Fold that randomly divides the sample set in
+*k* sets and makes *k* iterations so that a set is used as testing set and the
+other ones as training sets.
+
+Fourth Step : Running Searchlight
+=================================
+
+Running Searchlight is straightforward now that everything is set. The only
+parameter left is the radius of the ball that will run through the data.
+Kriegskorte uses a 4mm radius because it yielded the best detection
+performance in his simulation.
+
+Visualisation
+=============
+
+As the activation map is cropped, we use the mean image of all scans as a
+background. We can see here that voxels in the visual cortex contains
+information to distinguish pictures showed to the volunteer, which was the
+expected result.
