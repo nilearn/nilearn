@@ -82,8 +82,8 @@ cv = KFold(y.size, k=4)
 
 # The radius is the one of the Searchlight sphere that will scan the volume
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
-        n_jobs=n_jobs, score_func=score_func, verbose=True, cv=cv)
-		
+        n_jobs=n_jobs, score_func=score_func, verbose=1, cv=cv)
+
 # scores.scores_ is an array containing per voxel cross validation scores
 scores = searchlight.fit(X, y)
 
