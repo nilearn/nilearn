@@ -58,8 +58,6 @@ conditions = conditions[condition_mask]
 
 ### Searchlight ###############################################################
 
-from nisl import searchlight
-
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
@@ -80,6 +78,8 @@ cv = KFold(y.size, k=4)
 
 ### Fit #######################################################################
 
+from nisl import searchlight
+
 # The radius is the one of the Searchlight sphere that will scan the volume
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
         n_jobs=n_jobs, score_func=score_func, verbose=1, cv=cv)
@@ -89,23 +89,29 @@ scores = searchlight.fit(X, y)
 
 ### Visualization #############################################################
 import pylab as pl
-slice = np.ma.array(scores.scores_, mask=np.logical_not(process_mask))
+pl.figure(1)
+s_scores = np.ma.array(scores.scores_, mask=np.logical_not(process_mask))
 pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
         cmap=pl.cm.gray)
-pl.imshow(np.rot90(slice[..., 26]), interpolation='nearest',
+pl.imshow(np.rot90(s_scores[..., 26]), interpolation='nearest',
         cmap=pl.cm.gnuplot2, vmin=0, vmax=1)
-pl.colorbar()
 pl.axis('off')
 pl.show()
 
-"""
 ### Show the F_score
 from sklearn.feature_selection import f_classif
-f_values, p_values = f_classif(X, y)
-p_values[p_values < 1e-10] = 1e-10
+pl.figure(2)
+X_masked = X[:, mask]
+f_values, p_values = f_classif(X_masked, y)
 p_values = -np.log10(p_values)
-pl.imshow(np.rot90(p_values[..., 26]), interpolation='nearest', cmap=pl.cm.jet)
-pl.colorbar()
+p_values[np.isnan(p_values)] = 0
+p_values[p_values > 10] = 10
+p_unmasked = np.zeros(mask.shape)
+p_unmasked[mask] = p_values
+p_ma = np.ma.array(p_unmasked, mask=np.logical_not(mask))
+pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
+        cmap=pl.cm.gray)
+pl.imshow(np.rot90(p_ma[..., 26]), interpolation='nearest',
+        cmap=pl.cm.autumn)
 pl.axis('off')
 pl.show()
-"""
