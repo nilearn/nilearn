@@ -14,5 +14,6 @@ ____
 
    simulations.rst
    haxby_decoding.rst
+   haxby_searchlight.rst
 
 
