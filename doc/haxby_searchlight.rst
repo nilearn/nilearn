@@ -19,23 +19,38 @@ erosion or maximum for dilatation), we will run a classifier on the *floodlit*
 voxels and score them (using cross validation). This gives us an
 *information-based functional brain mapping*.
 
-First Step : loading Haxby dataset
-==================================
+Preprocessing
+=============
 
-Haxby dataset is a visual task dataset where several objects are show to the
-volunteer. We will keep only face and houses in order to speed up computing.
-For more details on Haxby, please see haxby_decoding.
+Loading
+-------
 
-Second Step : masking the data
-==============================
+As seen in previous tutorial, this is rather easy thanks to *nisl* dataset
+manager.
+
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: ### Load Haxby dataset ########################################################
+    :end-before: ### Preprocess data ###########################################################
+
+Preparing data
+--------------
+
+For this tutorial we need:
+
+- to put X in the form *n_samples* x *n_features*
+- compute a mean image for visualisation background
+- detrend the data
+
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: ### Preprocess data ###########################################################
+    :end-before: ### Prepare the masks #########################################################
+
+Masking
+-------
 
 One of the main element that distinguich Searchlight from other algorithms is
 this notion of structuring element that scan the entire volume. If this seems
 rather intuitive, it has in fact an impact on the masking procedure.
-
-Masking is a commonly used technique to restrain the computation area. For
-example, one may want to consider only some regions of interest or only the
-back of the brain, in the case of a visual task.
 
 Most of the time, fMRI data is masked and then given to the algorithm. This is
 not possible in the case of Searchlight because, to compute the score of
@@ -50,9 +65,18 @@ back of the brain. *mask* will ensure that no value outside of the brain is
 taken into account when iterating with the sphere.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
-        :start-after:#   up computation)
-        :end-before:### Restrict to faces and houses ##############################################
+        :start-after: #   up computation)
+        :end-before: ### Restrict to faces and houses ##############################################
 
+Restricting the dataset
+-----------------------
+
+Like *haxby_decoding* example, we limit our analysis to the `face` and `house` conditions:
+
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: ### Restrict to faces and houses ##############################################
+    :end-before: ### Searchlight ###############################################################
+	
 Third Step : Set up the cross validation
 ========================================
 
@@ -74,37 +98,76 @@ See scikit-learn documentation for
 Score function
 --------------
 
-Let *face* and *house* be our two classes. The classifier will learn to guess
-which picture is presented just by looking at the fMRI. It will then be tested
-thanks to a testing set. There are several ways to compute a score out of the
-results. Here we have choosed the precision that measures proportion of true
+Here we use precision as metrics to measures proportion of true
 positives among all positives results for one class.
 
-Again, many others are available in 
-`scikit-learn documentation
+Many others are available in `scikit-learn documentation
 <http://scikit-learn.org/supervised_learning.html>`_
+
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: # all positives results for one class.
+    :end-before: ### Define the cross-validation scheme used for validation.
 
 Cross validation
 ----------------
 
-Cross validation is a process through which a set of samples is divided in two
-sets, training and testing sets, to score a classifier. Several strategies can
-be adopted : here we use the *K*-Fold that randomly divides the sample set in
-*k* sets and makes *k* iterations so that a set is used as testing set and the
-other ones as training sets.
+As Searchlight is a little costly, we have chosen a cross validation method
+that do not take too much time. *K*-Fold along with *K* = 4 is a good compromise
+between running time and result.
 
-Fourth Step : Running Searchlight
-=================================
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: # set once and the others as learning sets
+    :end-before: ### Fit #######################################################################
+
+Running Searchlight
+===================
 
 Running Searchlight is straightforward now that everything is set. The only
 parameter left is the radius of the ball that will run through the data.
 Kriegskorte uses a 4mm radius because it yielded the best detection
 performance in his simulation.
 
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: ### Fit #######################################################################
+    :end-before: ### Visualization #############################################################
+	
 Visualisation
 =============
+
+Searchlight
+-----------
 
 As the activation map is cropped, we use the mean image of all scans as a
 background. We can see here that voxels in the visual cortex contains
 information to distinguish pictures showed to the volunteer, which was the
 expected result.
+
+.. figure:: auto_examples/images/plot_haxby_searchlight_1.png
+   :target: auto_examples/plot_haxby_searchlight.html
+   :align: center
+   :scale: 60
+
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: ### Visualization #############################################################
+    :end-before: ### Show the F_score
+
+F_score
+-------
+
+Another commonly used algorithm to find salient voxel is the ANOVA (analysis of
+variance). Here we use is to compute the *p_values* of the voxels. The
+*p_value* is the probability of getting the observed values assuming that
+nothing happens (i.e. the null hypothesis is true). Therefore, a small
+*p-value* indicates that there is a small chance of getting this data if no
+real difference existed, so the observed voxel must be significant.
+
+As the policy "the smaller, the better" is not very intuitive, we use the log
+and negate the result to obtain a more comprehensive map.
+
+.. figure:: auto_examples/images/plot_haxby_searchlight_2.png
+   :target: auto_examples/plot_haxby_searchlight.html
+   :align: center
+   :scale: 60
+
+.. literalinclude:: ../plot_haxby_searchlight.py
+    :start-after: ### Show the F_score
