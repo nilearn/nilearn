@@ -40,6 +40,10 @@
        :height: 140
        :target: auto_examples/plot_ica_resting_state.html
 
+    .. |banner5| image:: auto_examples/images/plot_haxby_searchlight_1.png
+       :height: 140
+       :target: auto_examples/plot_haxby_searchlight.html
+
 
     .. |center-div| raw:: html
 
@@ -70,7 +74,7 @@
         shuffle ($('#banner a.external'));
         </SCRIPT>
 
-    |center-div| |banner1| |banner2| |banner3| |banner4| |end-div|
+    |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
 
 .. topic:: Learn machine learning for fMRI
 
