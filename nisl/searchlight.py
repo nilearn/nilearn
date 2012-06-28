@@ -1,22 +1,3 @@
-"""
-Searchlight:
-The searchlight [Kriegeskorte 06] is a widely used approach for the study
-of the fine-grained patterns of information in fMRI analysis.
-Its principle is relatively simple: a small group of neighboring features
-is extracted from the data, and the prediction function is instantiated
-on these features only. The resulting prediction accuracy is thus associated
-with all the features within the group, or only with the feature on the center.
-This yields a map of local fine-grained information, that can be used for
-assessing hypothesis on the local spatial layout of the neural
-code under investigation.
-
-Nikolaus Kriegeskorte, Rainer Goebel & Peter Bandettini.
-Information-based functional brain mapping.
-Proceedings of the National Academy of Sciences
-of the United States of America,
-vol. 103, no. 10, pages 3863-3868, March 2006
-"""
-
 #Authors : Vincent Michel (vm.michel@gmail.com)
 #          Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #
@@ -217,6 +198,24 @@ class SearchLight(BaseEstimator):
 
     verbose: integer, optional
         The verbosity level. Defaut is False
+
+    Notes
+    ------
+    The searchlight [Kriegeskorte 06] is a widely used approach for the
+    study of the fine-grained patterns of information in fMRI analysis.
+    Its principle is relatively simple: a small group of neighboring
+    features is extracted from the data, and the prediction function is
+    instantiated on these features only. The resulting prediction
+    accuracy is thus associated with all the features within the group,
+    or only with the feature on the center. This yields a map of local
+    fine-grained information, that can be used for assessing hypothesis
+    on the local spatial layout of the neural code under investigation.
+
+    Nikolaus Kriegeskorte, Rainer Goebel & Peter Bandettini.
+    Information-based functional brain mapping.
+    Proceedings of the National Academy of Sciences
+    of the United States of America,
+    vol. 103, no. 10, pages 3863-3868, March 2006
     """
 
     def __init__(self, mask, process_mask=None, radius=2.,

@@ -94,24 +94,24 @@ s_scores = np.ma.array(scores.scores_, mask=np.logical_not(process_mask))
 pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
         cmap=pl.cm.gray)
 pl.imshow(np.rot90(s_scores[..., 26]), interpolation='nearest',
-        cmap=pl.cm.gnuplot2, vmin=0, vmax=1)
+        cmap=pl.cm.hot, vmax=1)
 pl.axis('off')
 pl.show()
 
 ### Show the F_score
 from sklearn.feature_selection import f_classif
 pl.figure(2)
-X_masked = X[:, mask]
+X_masked = X[:, process_mask]
 f_values, p_values = f_classif(X_masked, y)
 p_values = -np.log10(p_values)
 p_values[np.isnan(p_values)] = 0
 p_values[p_values > 10] = 10
 p_unmasked = np.zeros(mask.shape)
-p_unmasked[mask] = p_values
-p_ma = np.ma.array(p_unmasked, mask=np.logical_not(mask))
+p_unmasked[process_mask] = p_values
+p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
         cmap=pl.cm.gray)
 pl.imshow(np.rot90(p_ma[..., 26]), interpolation='nearest',
-        cmap=pl.cm.autumn)
+        cmap=pl.cm.hot)
 pl.axis('off')
 pl.show()
