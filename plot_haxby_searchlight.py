@@ -25,7 +25,7 @@ import numpy as np
 
 # Change axis in order to have X under n_samples * x * y * z
 X = np.rollaxis(fmri_data, 3)
-# X.shape is (1452, 41, 40, 49)
+# X.shape is (1452, 40, 64, 64)
 
 # Mean image: used as background in visualisation
 mean_img = np.mean(X, axis=0)
@@ -43,9 +43,9 @@ for s in np.unique(session):
 #   up computation)
 mask = (dataset.mask != 0)
 process_mask = mask.copy()
-process_mask[..., 27:] = False
-process_mask[..., :25] = False
-process_mask[:, 23:] = False
+process_mask[..., 38:] = False
+process_mask[..., :36] = False
+process_mask[:, 30:] = False
 
 ### Restrict to faces and houses ##############################################
 
@@ -91,9 +91,9 @@ scores = searchlight.fit(X, y)
 import pylab as pl
 pl.figure(1)
 s_scores = np.ma.array(scores.scores_, mask=np.logical_not(process_mask))
-pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
+pl.imshow(np.rot90(mean_img[..., 37]), interpolation='nearest',
         cmap=pl.cm.gray)
-pl.imshow(np.rot90(s_scores[..., 26]), interpolation='nearest',
+pl.imshow(np.rot90(s_scores[..., 37]), interpolation='nearest',
         cmap=pl.cm.hot, vmax=1)
 pl.axis('off')
 pl.show()
@@ -109,9 +109,9 @@ p_values[p_values > 10] = 10
 p_unmasked = np.zeros(mask.shape)
 p_unmasked[process_mask] = p_values
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
+pl.imshow(np.rot90(mean_img[..., 37]), interpolation='nearest',
         cmap=pl.cm.gray)
-pl.imshow(np.rot90(p_ma[..., 26]), interpolation='nearest',
+pl.imshow(np.rot90(p_ma[..., 37]), interpolation='nearest',
         cmap=pl.cm.hot)
 pl.axis('off')
 pl.show()

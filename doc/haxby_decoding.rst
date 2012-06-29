@@ -206,7 +206,7 @@ under Windows)::
 
   >>> cv_scores # doctest: +SKIP
   array([ 1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
-          1.        ,  1.        ,  0.83333333,  1.        ,  1.        ,
+          1.        ,  1.        ,  0.94444444,  1.        ,  1.        ,
           1.        ,  1.        ])
 
 This is simply the prediction score for each fold, i.e. the fraction of
@@ -222,7 +222,7 @@ correct predictions on the left-out data.
 
     >>> classification_accuracy = np.mean(cv_scores)
     >>> classification_accuracy # doctest: +SKIP
-    0.74421296296296291
+    0.99537037037037035
 
 We have a total prediction accuracy of 74% across the different folds.
 
@@ -272,10 +272,10 @@ Construct the new prediction function and use it in a pipeline::
 and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, verbose=1)
-    >>> classification_accuracy = np.sum(cv_scores) / float(n_samples)
+    >>> classification_accuracy = np.mean(cv_scores)
     >>> print "Classification accuracy: %f" % classification_accuracy, \
     ...     " / Chance level: %f" % (1. / n_conditions) # doctest: +SKIP
-    Classification accuracy: 0.728009   / Chance level: 0.125000
+    Classification accuracy: 1.000000   / Chance level: 0.500000
 
 
 Changing the feature selection
