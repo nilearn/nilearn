@@ -60,6 +60,10 @@ doc:
 doc-noplot:
 	make -C doc html-noplot
 
+.PHONY : pdf
+pdf:
+	make -C doc pdf
+
 install: 
 	cd doc && make install
  

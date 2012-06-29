@@ -123,7 +123,7 @@ pdf: latex
 	cp _build/latex/nisl-nup.pdf nisl.pdf
 	#cd _build/latex ; make all-pdf ; pdfnup nisl.pdf
 
-install: html
+install: html pdf
 	rm -rf _build/nisl.github.com
 	cd _build/ && \
         git clone git@github.com:nisl/nisl.github.com.git && \
