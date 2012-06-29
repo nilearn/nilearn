@@ -6,7 +6,7 @@
 import numpy as np
 import time
 import sys
-from joblib.parallel import Parallel, delayed
+from sklearn.externals.joblib.parallel import Parallel, delayed
 
 from sklearn.svm import LinearSVC
 from sklearn.cross_validation import cross_val_score
