@@ -201,7 +201,7 @@ def _fetch_file(url, data_dir):
             local_file = open(full_name, "wb")
             _chunk_read_(data, local_file, report_hook=True)
             dt = time.time() - t0
-            print '...done. (%i seconds, %i min)' % (dt, dt/60)
+            print '...done. (%i seconds, %i min)' % (dt, dt / 60)
         except urllib2.HTTPError, e:
             print "HTTP Error:", e, url
             return None
@@ -516,10 +516,9 @@ def fetch_haxby(data_dir=None):
     affine = bold_img.get_affine()
     mask = ni.load(files[2]).get_data().astype(np.bool)
 
-    # Crop a bit. We are copying to loose the reference to the original
-    # data
-    X = np.copy(X[:, 7:56, 11:52])
-    mask = np.copy(mask[:, 7:56, 11:52])
+    # We are copying to loose the reference to the original data
+    X = np.copy(X)
+    mask = np.copy(mask)
 
     # return the data
     return Bunch(data=X, target=y, mask=mask, session=session,
@@ -626,8 +625,8 @@ def fetch_nyu_rest(n_subjects=None, data_dir=None):
 
     - functional
 
-    For each participant, 3 resting-state scans of 197 continuous EPI functional
-    volumes were collected :
+    For each participant, 3 resting-state scans of 197 continuous EPI
+    functional volumes were collected :
 
     - 39 slices
     - matrix = 64 x 64

@@ -95,13 +95,13 @@ act[mask != 0] = svc[0]
 # transparently
 act = np.ma.masked_array(act, act == 0)
 
-### Create the figure on z=23
+### Create the figure
 import pylab as pl
 pl.axis('off')
 pl.title('SVM vectors')
-pl.imshow(np.rot90(mean_img[..., 16]), cmap=pl.cm.gray,
+pl.imshow(np.rot90(mean_img[..., 27]), cmap=pl.cm.gray,
           interpolation='nearest')
-pl.imshow(np.rot90(act[..., 16]), cmap=pl.cm.hot,
+pl.imshow(np.rot90(act[..., 27]), cmap=pl.cm.hot,
           interpolation='nearest')
 pl.show()
 
