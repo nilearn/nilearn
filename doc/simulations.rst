@@ -92,6 +92,23 @@ models, a `coef_` attribute that stores the coefficients **w** estimated.
     :start-after: # Run the estimators
     :end-before:     print title
 
+.. |estimator1| image:: auto_examples/images/plot_simulated_data_2.png
+    :target: auto_examples/plot_simulated_data.html
+    :scale: 60
+
+.. |estimator2| image:: auto_examples/images/plot_simulated_data_3.png
+    :target: auto_examples/plot_simulated_data.html
+    :scale: 60
+
+.. |estimator3| image:: auto_examples/images/plot_simulated_data_4.png
+    :target: auto_examples/plot_simulated_data.html
+    :scale: 60
+
+.. |estimator4| image:: auto_examples/images/plot_simulated_data_5.png
+    :target: auto_examples/plot_simulated_data.html
+    :scale: 60
+
+|estimator1| |estimator2| |estimator3| |estimator4|
 
 .. topic:: **Exercise**
    :class: green
