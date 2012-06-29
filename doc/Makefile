@@ -110,6 +110,19 @@ doctest:
 
 download-data:
 
+zip: html pdf
+	mkdir -p _build/nisl ;
+	cp -r _build/html _build/nisl ;
+	cp -r data _build/nisl ;
+	cp nisl.pdf _build/nisl;
+	zip -r _build/nisl.zip _build/nisl
+
+pdf: latex
+	cd _build/latex ; make all-pdf ; pdfnup nisl.pdf
+	cp _build/latex/nisl.pdf nisl-simple.pdf
+	cp _build/latex/nisl-nup.pdf nisl.pdf
+	#cd _build/latex ; make all-pdf ; pdfnup nisl.pdf
+
 install: html
 	rm -rf _build/nisl.github.com
 	cd _build/ && \

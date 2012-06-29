@@ -76,7 +76,9 @@
 
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
 
-.. topic:: Learn machine learning for fMRI
+.. only:: html
+
+ .. topic:: Learn machine learning for fMRI
 
    This document compiles examples and tutorials to learn to apply
    machine learning to fMRI using Python and the `scikit-learn

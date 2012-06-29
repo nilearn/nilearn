@@ -51,4 +51,4 @@ except:
 
 __all__ = ['datasets']
 
-__version__ = '2010'
+__version__ = 0.1

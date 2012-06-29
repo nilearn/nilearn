@@ -215,8 +215,8 @@ htmlhelp_basename = 'PythonScientic'
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'nisl user guide',
-   u'nisl developers', 'manual'),
+  ('index', 'nisl.tex', u'NeuroImaging with scikit-learn',
+   u'Gael Varoquaux and Alexandre Abraham', 'manual'),
 
 ]
 
@@ -229,14 +229,29 @@ latex_logo = "logos/scikit-learn-logo.png"
 #latex_use_parts = False
 
 # Additional stuff for the LaTeX preamble.
-latex_preamble = """
+latex_preamble = r"""
 \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
+\let\oldfootnote\footnote
+\def\footnote#1{\oldfootnote{\small #1}}
 """
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
+latex_elements = {
+  'classoptions': ',oneside',
+  'babel': '\\usepackage[english]{babel}',
+  # Get completely rid of index
+  'printindex': '',
+}
 
 # If false, no module index is generated.
-#latex_use_modindex = True
+latex_use_modindex = False
+latex_domain_indices = False
+
+# Show the page numbers in the references
+latex_show_pagerefs = True
+
+# Show URLs in footnotes
+latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
