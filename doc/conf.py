@@ -216,7 +216,9 @@ htmlhelp_basename = 'PythonScientic'
 # [howto/manual]).
 latex_documents = [
   ('index', 'nisl.tex', u'NeuroImaging with scikit-learn',
-   u'Gael Varoquaux and Alexandre Abraham', 'manual'),
+   ur"""Gaël Varoquaux and Alexandre Abraham"""
+   + r"\\\relax ~\\\relax http://nisl.github.com",
+   'manual'),
 
 ]
 
