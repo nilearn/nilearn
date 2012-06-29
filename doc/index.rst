@@ -78,6 +78,17 @@
 
 .. only:: html
 
+.. only:: html
+
+ .. sidebar:: Download 
+       
+    * `PDF, 2 pages per side <./_downloads/nisl.pdf>`_
+
+    * `HTML and example files <https://github.com/nisl/nisl.github.com/zipball/master>`_
+    
+    * `Source code (github) <https://github.com/nisl/tutorial>`_
+
+
  .. topic:: Learn machine learning for fMRI
 
    This document compiles examples and tutorials to learn to apply
@@ -115,5 +126,20 @@
     unsupervised_learning.rst
     
 
+..  
+ FIXME: I need the link below to make sure the banner gets copied to the
+ target directory.
 
+
+.. only:: html
+
+ .. raw:: html
+ 
+   <div style='visibility: hidden ; height=0'>
+
+ :download:`nisl.pdf`
+
+ .. raw:: html
+ 
+   </div>
 

@@ -12,12 +12,9 @@ Searchlight principle
 Searchlight was introduced in `Information-based functional brain mapping
 <http://www.pnas.org/content/103/10/3863>`_, Nikolaus Kriegeskorte,
 Rainer Goebel and Peter Bandettini (PNAS 2006) and consists in scanning the
-images volume with a *searchlight*. It can basically be related to mathematical
-morphology in the sense that a structuring element will be used to iterate over
-a 3D volume. But, instead of applying a mathematical operator (like minimum for
-erosion or maximum for dilatation), we will run a classifier on the *floodlit*
-voxels and score them (using cross validation). This gives us an
-*information-based functional brain mapping*.
+images volume with a *searchlight*. Briefly, a ball of given radius is
+scanned across the brain volume and the prediction accuracy of a
+classifier trained on the corresponding voxels is measured.
 
 Preprocessing
 =============

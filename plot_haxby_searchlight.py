@@ -1,13 +1,12 @@
 """
-The haxby dataset: face vs house in object recognition using Searchlight
-========================================================================
+Searchlight analysis of face vs house recognition
+==================================================
 
-A significant part of the running time of this example is actually spent
-in loading the data: we load all the data but only use the face and
-houses conditions.
+Searchlight analysis requires fitting a classifier a large amount of
+times. As a result, it is an intrinsically slow method. In order to speed
+up computing, in this example, Searchlight is run only on one slice on
+the fMRI (see the generated figures).
 
-Plus, in order to speed up computing, Searchlight is run only on one slice
-od the fMRI (see the generated figures).
 """
 
 ### Load Haxby dataset ########################################################
@@ -84,18 +83,19 @@ from nisl import searchlight
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
         n_jobs=n_jobs, score_func=score_func, verbose=1, cv=cv)
 
-# scores.scores_ is an array containing per voxel cross validation scores
-scores = searchlight.fit(X, y)
+searchlight.fit(X, y)
 
 ### Visualization #############################################################
 import pylab as pl
 pl.figure(1)
-s_scores = np.ma.array(scores.scores_, mask=np.logical_not(process_mask))
+# searchlight.scores_ contains per voxel cross validation scores
+s_scores = np.ma.array(searchlight.scores_, mask=np.logical_not(process_mask))
 pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
         cmap=pl.cm.gray)
 pl.imshow(np.rot90(s_scores[..., 26]), interpolation='nearest',
         cmap=pl.cm.hot, vmax=1)
 pl.axis('off')
+pl.title('Searchlight')
 pl.show()
 
 ### Show the F_score
@@ -113,5 +113,6 @@ pl.imshow(np.rot90(mean_img[..., 26]), interpolation='nearest',
         cmap=pl.cm.gray)
 pl.imshow(np.rot90(p_ma[..., 26]), interpolation='nearest',
         cmap=pl.cm.hot)
+pl.title('F-scores')
 pl.axis('off')
 pl.show()
