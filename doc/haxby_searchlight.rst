@@ -22,8 +22,8 @@ Preprocessing
 Loading
 -------
 
-As seen in previous tutorial, this is rather easy thanks to *nisl* dataset
-manager.
+As seen in :ref:`previous sections <downloading_data>`, fetching the data
+from internet and loading it can be done with the provided functions:
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Load Haxby dataset ########################################################
@@ -68,38 +68,31 @@ taken into account when iterating with the sphere.
 Restricting the dataset
 -----------------------
 
-Like *haxby_decoding* example, we limit our analysis to the `face` and `house` conditions:
+Like in the :ref:`decoding <fmri_decoding>` example, we limit our
+analysis to the `face` and `house` conditions:
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Restrict to faces and houses ##############################################
     :end-before: ### Searchlight ###############################################################
 	
-Third Step : Set up the cross validation
-========================================
-
-Searchlight will iterate on the volume and give a score to each voxel. This
-score is computed by running a classifier on selected voxels. In order to make
-this score as accurate as possible (and avoid overfitting), a cross validation
-is made.
+Third Step: Setting up the searchlight
+=======================================
 
 Classifier
 ----------
 
-The classifier used by default by Searchlight is LinearSVC with C=1 but this
-can be customed easily by passing an estimator parameter to the cross
-validation.
-
-See scikit-learn documentation for
-`other classifiers <http://scikit-learn.org/supervised_learning.html>`_
+The classifier used by default by Searchlight is LinearSVC with C=1 but
+this can be customed easily by passing an estimator parameter to the
+cross validation. See scikit-learn documentation for `other classifiers
+<http://scikit-learn.org/supervised_learning.html>`_.
 
 Score function
 --------------
 
-Here we use precision as metrics to measures proportion of true
-positives among all positives results for one class.
-
-Many others are available in `scikit-learn documentation
-<http://scikit-learn.org/supervised_learning.html>`_
+Here we use precision as metrics to measures proportion of true positives
+among all positives results for one class. Many others are available in
+`scikit-learn documentation
+<http://scikit-learn.org/supervised_learning.html>`_.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: # all positives results for one class.
@@ -108,9 +101,14 @@ Many others are available in `scikit-learn documentation
 Cross validation
 ----------------
 
-As Searchlight is a little costly, we have chosen a cross validation method
-that do not take too much time. *K*-Fold along with *K* = 4 is a good compromise
-between running time and result.
+Searchlight will iterate on the volume and give a score to each voxel. This
+score is computed by running a classifier on selected voxels. In order to make
+this score as accurate as possible (and avoid overfitting), a cross validation
+is made.
+
+As Searchlight is a little costly, we have chosen a cross validation
+method that do not take too much time. *K*-Fold along with *K* = 4 is a
+good compromise between running time and result.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: # set once and the others as learning sets
@@ -148,18 +146,13 @@ expected result.
     :start-after: ### Visualization #############################################################
     :end-before: ### Show the F_score
 
-F_score
--------
+Comparing to standard-analysis: F_score or SPM
+------------------------------------------------
 
-Another commonly used algorithm to find salient voxel is the ANOVA (analysis of
-variance). Here we use is to compute the *p_values* of the voxels. The
-*p_value* is the probability of getting the observed values assuming that
-nothing happens (i.e. the null hypothesis is true). Therefore, a small
-*p-value* indicates that there is a small chance of getting this data if no
-real difference existed, so the observed voxel must be significant.
-
-As the policy "the smaller, the better" is not very intuitive, we use the log
-and negate the result to obtain a more comprehensive map.
+The standard approach to brain mapping is performed using *statistical
+parametric mapping* (SPM), using ANOVA (analysis of variance), and F
+tests. Here we use is to compute the *p-values* of the voxels [1]_.
+To display the results, we use the negative log of the p-value.
 
 .. figure:: auto_examples/images/plot_haxby_searchlight_2.png
    :target: auto_examples/plot_haxby_searchlight.html
@@ -168,3 +161,11 @@ and negate the result to obtain a more comprehensive map.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Show the F_score
+
+.. [1]
+
+    The *p-value* is the probability of getting the observed values
+    assuming that nothing happens (i.e. under the null hypothesis).
+    Therefore, a small *p-value* indicates that there is a small chance
+    of getting this data if no real difference existed, so the observed
+    voxel must be significant.

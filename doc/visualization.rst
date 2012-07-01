@@ -4,6 +4,8 @@
 Basic dataset manipulation: loading and visualisation 
 ========================================================
 
+.. _downloading_data:
+
 Downloading the tutorial data
 ==============================
 
@@ -28,7 +30,8 @@ can be imported from ``nisl.datasets``::
    fetch_nyu_rest
 
 The data are downloaded only once and stored locally in the `nisl_data`
-folder.
+folder. Note that you can copy that folder across computers to avoid
+downloading.
 
 Loading Nifti or analyze files
 ===============================

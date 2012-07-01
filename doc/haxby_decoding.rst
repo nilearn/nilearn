@@ -9,6 +9,7 @@
     >>> session = np.ones_like(y)
     >>> n_samples = len(y)
 
+.. _fmri_decoding:
 
 ================================================================================
 fMRI decoding: predicting which objects a subject is viewing 
