@@ -5,26 +5,87 @@ Introduction
 Machine Learning in NeuroImaging: what and why
 ===============================================
 
+Machine learning problems and vocabulary
+-----------------------------------------
+
 Machine learning is interested in learning from data empirical rules to
 make **predictions**. Two kind of problems appear:
 
 :Supervised learning:
 
-    Supervised learning is interesting in predicting an *output
-    variable*, or *target* from data. It maybe be a **regression** problem
-    (predicting a continuous quantity) or a **classification** problem
-    (predicting to which class each observations belongs too).
+    :ref:`supervised_learning` is interested in predicting an **output
+    variable**, or **target**, `y` from **data** `X`. Typically, we start
+    from labeled data (the **training set**) for which we know the `y`
+    for each instance of `X` and train an model; this model is then
+    applied to new unlabeled data (the **test set**) to predict the
+    labels. It maybe be: 
+    
+    * a **regression** problem: predicting a continuous quantity such 
+      as age
+    
+    * a **classification** problem: predicting to which class each 
+      observations belongs too: patient or control
 
     In neuroimaging, supervised learning is typically used to relate
     brain images to behavioral or clinical observations.
 
 :Unsupervised learning:
 
-    Unsupervised learning studies the structure of a dataset, for
-    instance extracting latent factors, or **clustering**.
+    :ref:`unsupervised_learning` is concerned with data `X` without any
+    label. It studies the structure of a dataset, for instance
+    **clustering** or extracting latent factors such as independent
+    components.
 
     In neuroimaging, it is typically used to study resting state, or to
     find sub-populations in diseases.
+
+
+Why is machine learning relevant NeuroImaging: a few examples
+--------------------------------------------------------------
+
+:Diagnosis and prognosis:
+
+    Predicting a clinical score from brain imaging with :ref:`supervised
+    learning <Supervised_learning>` e.g. `[Mourao-Miranda 2012]
+    <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
+
+:Generalization scores:
+
+    * Information mapping: using the prediction accuracy of a classifier
+      to test links between brain images and stimuli. (e.g.
+      :ref:`searchlight <searchlight>`) `[ Kriegeskorte 2005]
+      <http://www.pnas.org/content/103/10/3863.short>`_
+
+    * Transfer learning: measuring how much an estimator trained on a
+      task generalizes to another task (e.g. discriminating left from
+      right eye movements also discriminates additions from subtractions
+      `[Knops 2009] <http://sciencemag.com>`_)
+
+.. XXX: need ref
+
+:Statistical estimation:
+
+    From a statistical point of view, machine learning implements
+    statistical estimation of models with a large number of parameters.
+    The tricks pulled in machine learning (e.g. regularization) can
+    enable this estimation with a small number of observations [Varoquaux
+    2012]. This usage of machine learning requires some understanding of
+    the models.
+
+.. XXX: need ref
+
+:Data mining:
+
+    Data-driven exploration of brain images. :ref:`unsupervised_learning`
+    extracts structure from the data, such as `clusters
+    <http://scikit-learn.org/stable/modules/clustering.html>`_ or
+    `multivariate decompositions
+    <http://scikit-learn.org/stable/modules/decomposition.html>`_
+    (*latent factors* such as ICA). This may be useful for implementing
+    some form of *density estimation*: learning a probabilistic model of
+    the data (e.g. in [Thirion 2009]).
+
+.. XXX: need ref
 
 Python and the scikit-learn: a primer
 =====================================

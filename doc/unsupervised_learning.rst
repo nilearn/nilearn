@@ -1,10 +1,13 @@
-====================
-Unsupervised learning
-====================
+.. _unsupervised_learning:
 
-Unsupervised learning is focussed on find structure in a given data. In
-NeuroImaging two common tasks are clustering and finding meaningful
-components (e.g. using ICA).
+=====================
+Unsupervised learning
+=====================
+
+`Unsupervised learning
+<http://en.wikipedia.org/wiki/Unsupervised_learning>`_ is focussed on
+finding structure in a given data. In NeuroImaging two common tasks are
+clustering and finding meaningful components (e.g. using ICA).
 
 ____
 
