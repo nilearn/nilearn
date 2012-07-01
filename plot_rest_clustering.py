@@ -68,8 +68,11 @@ import pylab as pl
 
 # Cut at z=20
 cut = labels[:, :, 20].astype(np.int)
-# Assign random colors to each cluster
+# Assign random colors to each cluster. For this we build a random
+# RGB look up table associating a color to each cluster, and apply it
+# below
 colors = np.random.random(size=(ward.n_clusters + 1, 3))
+# Cluster '-1' should be black (it's outside the brain)
 colors[-1] = 0
 pl.figure()
 pl.axis('off')

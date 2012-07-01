@@ -4,6 +4,15 @@
 ICA of resting-state fMRI datasets
 ==================================
 
+Independent Analysis of resting-state fMRI data is useful to extract
+brain networks in an unsupervised maner (data-driven):
+
+* Kiviniemi et al, *Independent component analysis of nondeterministic
+  fMRI signal sources*, Neuroimage 2009
+
+* Beckmann et al, *Investigations into resting-state connectivity using
+  independent component analysis*, Philos Trans R Soc Lond B 2005
+
 Preprocessing
 ==============
 
@@ -52,4 +61,9 @@ overlays.
 
 |left_img| |right_img|
 
+.. note::
 
+   Note that as the ICA components are not ordered, the two components
+   displayed on your computer might not match those of the tutorial. For
+   a fair representation, you should display all the components and
+   investigate which one resemble those displayed above.
