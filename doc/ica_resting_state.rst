@@ -10,9 +10,9 @@ Preprocessing
 Loading
 -------
 
-Thanks to *nisl* dataset manager, fetching the dataset is rather easy. Do not
-forget to set your environment variable *NISL_DATA* if you want your dataset
-to be stored in a specific path.
+As seen in :ref:`previous sections <downloading_data>`, we fetch the data from
+internet and load it with a provided function:
+
 
 .. literalinclude:: ../plot_ica_resting_state.py
     :start-after: ### Load nyu_rest dataset #####################################################

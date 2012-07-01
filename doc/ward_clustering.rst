@@ -20,9 +20,9 @@ Preprocessing
 Loading
 -------
 
-Thanks to *nisl* dataset manager, fetching the dataset is rather easy. Do not
-forget to set your environment variable *NISL_DATA* if you want your dataset
-to be stored in a specific path.
+As seen in :ref:`previous sections <downloading_data>`, we
+fetch the data
+from internet and load it with a provided function:
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: ### Load nyu_rest dataset #####################################################
@@ -31,10 +31,8 @@ to be stored in a specific path.
 Masking
 -------
 
-No mask is given with the data so we have to compute one ourselves. We use a
-simple heuristic proposed by T. Nichols based on the picture histogram. The
-idea is to threshold values and eliminates voxels present in the "black peak"
-(peak in the histogram representing background dark voxels).
+No mask is given with the data so we have to compute one ourselves, using
+the function :func:`nisl.masking.compute_mask`:
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: ### Mask ######################################################################
@@ -48,11 +46,10 @@ Applying Ward clustering
 Compute connectivity map
 ------------------------
 
-Before computing the ward itself, it is necessary to compute a connectivity
-map. Otherwise, the ward will consider each voxel independantly and this may
-lead to a wrong clustering (see
-`here 
-<http://www.scikit-learn.org/stable/auto_examples/cluster/plot_ward_structured_vs_unstructured.html>`_)
+Before computing the ward itself, we compute a connectivity map. This is
+useful to constrain clusters to form contiguous parcels (see `the
+scikit-learn documentation
+<http://www.scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: # Compute connectivity matrix: which voxel is connected to which
@@ -61,28 +58,23 @@ lead to a wrong clustering (see
 Principle
 ---------
 
-The Ward algorithm computes a hierarchical tree of the picture components.
-Consequently, the root of the tree is the sum of all components (i.e. the whole
-picture) and there are as many leaves in the tree as components in the picture.
-
-Once that the tree is computed, the only step left to obtain the requested
-number of components is cutting the tree at the right level. No matter how many
-clusters we want, we do not need to compute the tree again.
+The Ward algorithm is a hierarchical clustering algorithm: it
+successfully merges together voxels that have similar timecourses.
 
 Caching
 -------
 
-Joblib is a library made to put in cache some function calls to avoid
-unnecessary computation. If a function is called with joblib, the parameters
-and results are cached. If the same function is called using the same
-parameters, then joblib bypasses the function call and returns the previously
-computed result immediately.
+Note that in practice the scikit-learn implementation of the Ward
+clustering first computes a tree of possible merges, and then, the
+requested number of clusters breaks it apart the tree at the right level.
 
-Scikit-learn integrates joblib in a user friendly way to cache results of some
-function calls when it is possible. For example, in the ward clustering, the
-*memory* parameter allows the user to create a joblib cache to store the
-computed component tree. Either a *joblib.Memory* instance or a unique string
-identifier can be passed as a *memory* parameter.
+As no matter how many clusters we want, we do not need to compute the
+tree again, we can rely on caching to speed things up when varying the
+number of cluster. Scikit-learn integrates a transparent caching library
+(`joblib <http://packages.python.org/joblib/>`_). In the ward clustering,
+the *memory* parameter is used to cache the computed component tree. You
+can give it either a *joblib.Memory* instance or the name of directory
+used for caching.
 
 Apply the ward
 --------------
@@ -101,8 +93,8 @@ elements.
     :start-after: # Compute the ward with more clusters, should be faster
     :end-before: ### Show result ############################################################### 
 
-Now that the component tree has been computed, computation is must faster. You
-should have the result in less than 1 second.
+Now that the component tree has been computed, computation is must faster
+thanks to caching. You should have the result in less than 1 second.
 
 Post-Processing and visualization
 ===================================
@@ -117,15 +109,15 @@ After applying the ward, we must unmask the data. This can be done simply :
     :end-before: # Display the labels 
 
 You can see that masked data is filled with -1 values. This is done for the
-sake of visualisation. In fact, clusters are labelled with going from 0 to
+sake of visualization. In fact, clusters are labeled with going from 0 to
 (n_clusters - 1). By putting every other values to -1, we assure that
 uninteresting values will not mess with the visualization.
 
-Label visualisation
+Label visualization
 --------------------
 
 We can visualize the clusters. We assign random colors to each cluster
-for the labels visualisation.
+for the labels visualization.
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: # Display the labels 
