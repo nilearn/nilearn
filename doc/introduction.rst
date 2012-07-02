@@ -59,20 +59,17 @@ Why is machine learning relevant NeuroImaging: a few examples
     * Transfer learning: measuring how much an estimator trained on a
       task generalizes to another task (e.g. discriminating left from
       right eye movements also discriminates additions from subtractions
-      `[Knops 2009] <http://sciencemag.com>`_)
-
-.. XXX: need ref
+      `[Knops 2009]
+      <http://www.sciencemag.org/content/324/5934/1583.short>`_)
 
 :Statistical estimation:
 
     From a statistical point of view, machine learning implements
     statistical estimation of models with a large number of parameters.
     The tricks pulled in machine learning (e.g. regularization) can
-    enable this estimation with a small number of observations [Varoquaux
-    2012]. This usage of machine learning requires some understanding of
-    the models.
-
-.. XXX: need ref
+    enable this estimation with a small number of observations
+    `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
+    usage of machine learning requires some understanding of the models.
 
 :Data mining:
 
@@ -83,9 +80,8 @@ Why is machine learning relevant NeuroImaging: a few examples
     <http://scikit-learn.org/stable/modules/decomposition.html>`_
     (*latent factors* such as ICA). This may be useful for implementing
     some form of *density estimation*: learning a probabilistic model of
-    the data (e.g. in [Thirion 2009]).
-
-.. XXX: need ref
+    the data (e.g. in `[Thirion 2009
+    <http://www.springerlink.com/content/7377x70p5515v778/>]`_).
 
 Python and the scikit-learn: a primer
 =====================================
@@ -99,8 +95,6 @@ Python and the scikit-learn: a primer
     - Computationally efficient
     - Provide wide variety standard machine learning methods for non-experts
 
-.. XXX need to write the 10min intro to Python
-
 Installation of the materials useful for this tutorial
 --------------------------------------------------------
 
@@ -113,10 +107,13 @@ recommended. We recommend that you install a complete distribution:
 
 :Windows:
   EPD_ or `PythonXY <http://code.google.com/p/pythonxy/>`_: both of these
-  distributions come with the scikit-learn installed
+  distributions come with the scikit-learn installed (do make sure to
+  install the full, non-free, EPD and not EPD-free to get scikit-learn).
 
 :MacOSX:
-  EPD_ is the only full scientific Python distribution for Mac
+  EPD_ is the only full scientific Python distribution for Mac (once again
+  you need to install the full, non-free, EPD and not EPD-free to
+  get scikit-learn).
 
 :Linux:
   While EPD_ is available for Linux, most recent linux distributions come

@@ -41,7 +41,7 @@ for s in np.unique(session):
 ### Restrict to faces and houses ##############################################
 
 # Keep only data corresponding to face or houses
-condition_mask = np.array([item in ('face', 'house') for item in conditions])
+condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 X = X[condition_mask]
 y = y[condition_mask]
 session = session[condition_mask]
