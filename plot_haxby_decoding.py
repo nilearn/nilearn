@@ -9,20 +9,21 @@ houses conditions.
 
 ### Load Haxby dataset ########################################################
 from nisl import datasets
-dataset = datasets.fetch_haxby()
-fmri_data = dataset.data
-mask = dataset.mask
-affine = dataset.affine
-y = dataset.target
-conditions = dataset.target_strings
-session = dataset.session
+import numpy as np
+import nibabel
+dataset_files = datasets.fetch_haxby()
 
+# fmri_data and mask are copied to lose the reference to the original data
+bold_img = nibabel.load(dataset_files['data'])
+fmri_data = np.copy(bold_img.get_data())
+affine = bold_img.get_affine()
+y, session = np.loadtxt(dataset_files['session_target']).astype("int").T
+conditions = np.recfromtxt(dataset_files['conditions_target'])['f0']
+mask = np.copy(nibabel.load(dataset_files['mask']).get_data().astype(np.bool))
 # fmri_data.shape is (40, 64, 64, 1452)
 # and mask.shape is (40, 64, 64)
 
 ### Preprocess data ###########################################################
-import numpy as np
-
 # Build the mean image because we have no anatomic data
 mean_img = fmri_data.mean(axis=-1)
 

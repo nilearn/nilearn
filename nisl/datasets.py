@@ -508,21 +508,9 @@ def fetch_haxby(data_dir=None):
         _fetch_dataset('haxby2001', [url, ], data_dir=data_dir)
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
-    # preprocess data
-    y, session = np.loadtxt(files[0]).astype("int").T
-    y_strings = np.recfromtxt(files[-1])['f0']
-    bold_img = ni.load(files[1])
-    X = bold_img.get_data()
-    affine = bold_img.get_affine()
-    mask = ni.load(files[2]).get_data().astype(np.bool)
-
-    # We are copying to loose the reference to the original data
-    X = np.copy(X)
-    mask = np.copy(mask)
-
     # return the data
-    return Bunch(data=X, target=y, mask=mask, session=session,
-                 files=files, target_strings=y_strings, affine=affine)
+    return Bunch(data=files[1], session_target=files[0], mask=files[2],
+            conditions_target=files[3])
 
 
 def _fetch_kamitani(data_dir=None):
