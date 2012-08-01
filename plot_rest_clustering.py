@@ -20,8 +20,8 @@ from nisl import datasets
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 ### Mask ######################################################################
-
-fmri_data = dataset.func[0]
+import nibabel
+fmri_data = nibabel.load(dataset.func[1][0]).get_data()
 
 # Compute a brain mask
 from nisl import masking
