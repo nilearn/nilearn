@@ -39,7 +39,7 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
     def __init__(self, mask=None, smooth=False, confounds=None, detrend=False):
         # Mask is compulsory or computed
         # Must integrate memory, as in WardAgglomeration
-        self.mask = mask
+        self.mask_ = mask
         self.smooth = smooth
         self.confounds = confounds
         self.detrend = detrend
@@ -47,29 +47,57 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         """
         X: list of filenames or NiImages
+        If this is a list, the affine is the same for all
         """
+
+        # Loading
+        # =======
+        # If filenames are given, load them. Otherwise just take original
+        # data.
+
+        print "Loading"
+        if (isinstance(X, np.ndarray)):
+            data = []
+            affine = None
+            # Roll axis to index by scan
+            scans = np.roll_axis(X, -1)
+            for scan in scans:
+                img = check_niimg(scan)
+                if affine is None:
+                    affine = img.get_affine()
+                data.append(img.get_data())
+                del img
+            data = np.asarray(data)
+            np.rollaxis(data, 0, start=4)
+        else:
+            img = check_niimg(X)
+            affine = img.get_affine()
+            data = img.get_data()
+
         # Spatial
         # =======
         #
         # optional compute_mask (nipy.labs.mask.compute_mask_files)
 
-        mask = self.mask
-        if mask is None:
-            mask = masking.compute_mask(np.mean(X, axis=3))
+        print "Computing mask"
+        if self.mask_ is None:
+            self.mask_ = masking.compute_mask(np.mean(data, axis=-1))
 
         # resampling:
         # nipy.labs.datasets.volumes.VolumeImg.as_volume_img
         # affine is either 4x4, 3x3
 
-        resampled, affine = resampling.as_volume_img(X.get_data(),
-                affine=X.get_affine(), copy=False)
+        print "Resampling"
+        resampled, affine = resampling.as_volume_img(data,
+                affine=affine, copy=False)
 
         # Function that does that exposes interpolation order, but not
         # this object
         # optional extract series (apply mask: nipy.labs.mask.series_from_mask)
         #           -> smoothing
 
-        series, header = masking.series_from_mask(resampled,
+        print "Masking and smoothing"
+        series = masking.series_from_mask(resampled, affine,
                 mask, smooth=self.smooth)
 
         # Temporal
@@ -80,6 +108,7 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
         # Confounds (from csv file or numpy array)
         # Normalizing
 
+        print "Cleaning signal"
         signals = preprocessing.clean_signals(series, confounds=self.confounds,
                 detrend=self.detrend)
 

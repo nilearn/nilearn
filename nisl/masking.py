@@ -4,7 +4,6 @@ Utilities to compute a brain mask from EPI images
 
 import numpy as np
 from scipy import ndimage
-import nibabel
 
 ###############################################################################
 # Operating on connect component
@@ -100,7 +99,7 @@ def compute_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 ###############################################################################
 
 
-def series_from_mask(filenames, mask, dtype=np.float32,
+def series_from_mask(series, affine, mask, dtype=np.float32,
                      smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
@@ -129,53 +128,25 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         When using smoothing, ensure_finite should be True: as elsewhere non
         finite values will spread accross the image.
     """
-    assert len(filenames) != 0, (
-        'filenames should be a file name or a list of file names, '
-        '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
     if smooth:
         # Convert from a sigma to a FWHM:
         smooth /= np.sqrt(8 * np.log(2))
-    if isinstance(filenames, basestring):
-        # We have a 4D nifti file
-        data_file = nibabel.load(filenames)
-        header = data_file.get_header()
-        series = data_file.get_data()
-        if ensure_finite:
-            # SPM tends to put NaNs in the data outside the brain
-            series[np.logical_not(np.isfinite(series))] = 0
-        series = series.astype(dtype)
-        affine = data_file.get_affine()[:3, :3]
-        del data_file
-        if isinstance(series, np.memmap):
-            series = np.asarray(series).copy()
-        if smooth:
-            vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
-            smooth_sigma = smooth / vox_size
-            for this_volume in np.rollaxis(series, -1):
-                this_volume[...] = ndimage.gaussian_filter(this_volume,
-                                                        smooth_sigma)
-        series = series[mask]
-    else:
-        nb_time_points = len(list(filenames))
-        series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
-        for index, filename in enumerate(filenames):
-            data_file = nibabel.load(filename)
-            data = data_file.get_data()
-            if ensure_finite:
-                # SPM tends to put NaNs in the data outside the brain
-                data[np.logical_not(np.isfinite(data))] = 0
-            data = data.astype(dtype)
-            if smooth is not False:
-                affine = data_file.get_affine()[:3, :3]
-                vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
-                smooth_sigma = smooth / vox_size
-                data = ndimage.gaussian_filter(data, smooth_sigma)
 
-            series[:, index] = data[mask]
-            # Free memory early
-            del data
-            if index == 0:
-                header = data_file.get_header()
-
-    return series, header
+    # We have 4D data
+    if ensure_finite:
+        # SPM tends to put NaNs in the data outside the brain
+        series[np.logical_not(np.isfinite(series))] = 0
+    series = series.astype(dtype)
+    affine = affine[:3, :3]
+    # del data
+    if isinstance(series, np.memmap):
+        series = np.asarray(series).copy()
+    if smooth:
+        vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
+        smooth_sigma = smooth / vox_size
+        for this_volume in np.rollaxis(series, -1):
+            this_volume[...] = ndimage.gaussian_filter(this_volume,
+                                                    smooth_sigma)
+    series = series[mask]
+    return series
