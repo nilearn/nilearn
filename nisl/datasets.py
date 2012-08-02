@@ -12,6 +12,7 @@ import time
 
 from scipy import io
 from sklearn.datasets.base import Bunch
+import numpy as np
 
 
 def _chunk_report_(bytes_so_far, total_size, t0):
@@ -364,7 +365,7 @@ def fetch_haxby(data_dir=None):
     except IOError:
         # If the dataset does not exists, we download it
         url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-        _fetch_dataset('haxby2001', [url, ], data_dir=data_dir)
+        _fetch_dataset('haxby2001', [url], data_dir=data_dir)
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     # return the data
@@ -579,3 +580,31 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                 func[session].append(files[i + 2])
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func)
+
+
+def fetch_poldrack_mixed_gambles(data_dir=None):
+    """Download and loads the Poldrack Mixed Gambles dataset
+    For the moment, only bold images are loaded
+    """
+    # definition of dataset files
+    file_names = ["ds005/sub0%02i/BOLD/task001_run00%s/bold.nii.gz" % (s, r)
+            for s in range(1, 17)
+            for r in range(1, 4)]
+
+    # load the dataset
+    try:
+        # Try to load the dataset
+        files = _get_dataset("poldrack_mixed_gambles",
+                file_names, data_dir=data_dir)
+
+    except IOError:
+        # If the dataset does not exists, we download it
+        url = 'http://openfmri.org/system/files/ds005_raw.tgz'
+        _fetch_dataset('poldrack_mixed_gambles', [url], data_dir=data_dir)
+        files = _get_dataset("poldrack_mixed_gambles",
+                file_names, data_dir=data_dir)
+
+    files = np.asarray(np.split(np.asarray(files), 16))
+
+    # return the data
+    return Bunch(data=files)
