@@ -1,20 +1,24 @@
 """
-Transformer used to apply basic tranformations on MRI data.
+Transformer used to apply basic tranisformations on MRI data.
 """
 
+import types
+
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 
-# Note: every input here is either a filename or a NiImage
-
-# check_niimg: utility function that loads if given filename, else
-# check 'get_data', 'get_affine'
-
-import types
 import nibabel
-import masking
-import resampling
-import preprocessing
-import numpy as np
+
+from . import masking
+from . import resampling
+from . import preprocessing
+
+
+def _check_callable_method(object, method_name):
+    # get the attribute, raise an error if missing
+    attr = getattr(object, method_name)
+    if not callable(attr):
+        raise AttributeError(method_name + ' is not a valid method')
 
 
 def check_niimg(data):
@@ -23,26 +27,43 @@ def check_niimg(data):
         result = nibabel.load(data)
     else:
         # it is an object, it should have get_data and get_affine methods
-        # list the methods of the object
-        methods = [method for method in dir(data)
-                if callable(getattr(data, method))]
-        if not ('get_data' in methods and 'get_affine' in methods):
-            raise AttributeError('missing get_data or get_affine method')
+        _check_callable_method(data, 'get_data')
+        _check_callable_method(data, 'get_affine')
         result = data
     return result
 
 
 # Rmk: needs a similar object for ROIs or not
 
-class NiftiLoader(BaseEstimator, TransformerMixin):
+class MRILoader(BaseEstimator, TransformerMixin):
+    """MRI data loader with preprocessing
 
-    def __init__(self, mask=None, smooth=False, confounds=None, detrend=False):
+    Parameters
+    ----------
+    mask: 3D numpy matrix, optional
+        Mask of the data. If not given, a mask is computed in the fit step.
+
+    smooth: False or float, optional
+        If smooth is not False, it gives the size, in voxel of the
+        spatial smoothing to apply to the signal.
+
+    confounds: CSV file path or 2D matrix
+
+    detrend: boolean, optional
+
+    verbose: interger, optional
+        Indicate the level of verbosity. By default, nothing is printed
+    """
+
+    def __init__(self, mask=None, smooth=False, confounds=None, detrend=False,
+            verbose=0):
         # Mask is compulsory or computed
         # Must integrate memory, as in WardAgglomeration
         self.mask_ = mask
         self.smooth = smooth
         self.confounds = confounds
         self.detrend = detrend
+        self.verbose = verbose
 
     def fit(self, X, y=None):
         """
@@ -56,7 +77,8 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
         # data.
 
         print "Loading"
-        if (isinstance(X, np.ndarray)):
+        if (isinstance(X, types.StringTypes)):
+
             data = []
             affine = None
             # Roll axis to index by scan
@@ -83,6 +105,8 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
         if self.mask_ is None:
             self.mask_ = masking.compute_mask(np.mean(data, axis=-1))
 
+    def transform(self, data, affine):
+
         # resampling:
         # nipy.labs.datasets.volumes.VolumeImg.as_volume_img
         # affine is either 4x4, 3x3
@@ -98,7 +122,7 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
 
         print "Masking and smoothing"
         series = masking.series_from_mask(resampled, affine,
-                mask, smooth=self.smooth)
+                self.mask_, smooth=self.smooth)
 
         # Temporal
         # ========
@@ -119,3 +143,8 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
         # for later: some form of imputation
 
         return signals
+
+    def inverse_transform(self, X):
+        # From masked data to np.masked_array
+        # shape = self.mask_.shape + (X.shape[3],)
+        pass
