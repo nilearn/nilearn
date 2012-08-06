@@ -56,29 +56,33 @@ class MRItransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, mask=None, smooth=False, confounds=None, detrend=False,
-            verbose=0):
+            affine=None, low_pass=0.2, high_pass=None, t_r=2.5, verbose=0):
         # Mask is compulsory or computed
         # Must integrate memory, as in WardAgglomeration
         self.mask_ = mask
         self.smooth = smooth
         self.confounds = confounds
         self.detrend = detrend
+        self.affine = affine
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
         self.verbose = verbose
 
     def fit(self, X, y=None):
-        """
+        """Compute the mask corresponding to the data
+
+        Parameters
+        ----------
         X: list of filenames or NiImages
-        If this is a list, the affine is the same for all
+            Data on which the mask must be calculated. If this is a list,
+            the affine is considered the same for all.
         """
 
-        # Loading
-        # =======
-        # If filenames are given, load them. Otherwise just take original
-        # data.
-
-        print "Loading"
+        # Load data (if filenames are given, load them)
+        if self.verbose > 0:
+            print "[MRITransformer.fit] Loading data"
         if (isinstance(X, types.StringTypes)):
-
             data = []
             affine = None
             # Roll axis to index by scan
@@ -96,44 +100,66 @@ class MRItransformer(BaseEstimator, TransformerMixin):
             affine = img.get_affine()
             data = img.get_data()
 
-        # Spatial
-        # =======
-        #
-        # optional compute_mask (nipy.labs.mask.compute_mask_files)
+        # Compute the mask if not given by the user
 
-        print "Computing mask"
         if self.mask_ is None:
+            if self.verbose > 0:
+                print "[MRITransformer.fit] Computing the mask"
             self.mask_ = masking.compute_mask(np.mean(data, axis=-1))
 
-    def transform(self, data, affine):
+        return self
 
-        # resampling:
-        # nipy.labs.datasets.volumes.VolumeImg.as_volume_img
-        # affine is either 4x4, 3x3
+    def transform(self, X):
 
-        print "Resampling"
-        resampled, affine = resampling.as_volume_img(data,
-                affine=affine, copy=False)
+        # Load data (if filenames are given, load them)
+        # XXX This should be done once and for all, to in fit and transform...
+        if self.verbose > 0:
+            print "[MRITransformer.fit] Loading data"
+        if (isinstance(X, types.StringTypes)):
+            data = []
+            affine = None
+            # Roll axis to index by scan
+            scans = np.roll_axis(X, -1)
+            for scan in scans:
+                img = check_niimg(scan)
+                if affine is None:
+                    affine = img.get_affine()
+                data.append(img.get_data())
+                del img
+            data = np.asarray(data)
+            np.rollaxis(data, 0, start=4)
+        else:
+            img = check_niimg(X)
+            affine = img.get_affine()
+            data = img.get_data()
+
+        # Resampling: allows the user to change the affine, the shape or both
+        if self.verbose > 0:
+            print "[MRITransformer.transform] Resampling"
+        data, affine = resampling.as_volume_img(data, affine,
+                new_affine=self.affine, copy=False)
 
         # Function that does that exposes interpolation order, but not
         # this object
-        # optional extract series (apply mask: nipy.labs.mask.series_from_mask)
-        #           -> smoothing
+        # XXX -> ?
 
-        print "Masking and smoothing"
-        series = masking.series_from_mask(resampled, affine,
+        # Get series from data with optional smoothing
+        if self.verbose > 0:
+            print "[MRITransformer.transform] Masking and smoothing"
+        data = masking.series_from_mask(data, affine,
                 self.mask_, smooth=self.smooth)
 
         # Temporal
         # ========
-        # (parietal-python) parietal.time_series.preprocessing.clean_signals
         # Detrending (optional)
         # Filtering (grab TR from header)
         # Confounds (from csv file or numpy array)
         # Normalizing
 
-        print "Cleaning signal"
-        signals = preprocessing.clean_signals(series, confounds=self.confounds,
+        if self.verbose > 0:
+            print "[MRITransformer.transform] Cleaning signal"
+        data = preprocessing.clean_signals(data, confounds=self.confounds,
+                low_pass=self.low_pass, high_pass=self.high_pass, t_r=self.t_r,
                 detrend=self.detrend)
 
         # For _later_: missing value removal or imputing of missing data
@@ -142,7 +168,7 @@ class MRItransformer(BaseEstimator, TransformerMixin):
         # Optionally: 'doctor_nan', remove voxels with NaNs, other option
         # for later: some form of imputation
 
-        return signals
+        return (data, affine)
 
     def inverse_transform(self, X):
         # From masked data to np.masked_array
