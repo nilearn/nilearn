@@ -35,7 +35,7 @@ def check_niimg(data):
 
 # Rmk: needs a similar object for ROIs or not
 
-class MRILoader(BaseEstimator, TransformerMixin):
+class MRItransformer(BaseEstimator, TransformerMixin):
     """MRI data loader with preprocessing
 
     Parameters
