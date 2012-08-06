@@ -56,8 +56,8 @@ pl.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
 # Extracting a brain mask ###################################################
 
 # Simple computation of a mask from the fMRI data
-from nisl.masking import compute_mask
-mask = compute_mask(mean_img)
+from nisl.masking import compute_epi_mask
+mask = compute_epi_mask(mean_img)
 
 # We create a new figure
 pl.figure()

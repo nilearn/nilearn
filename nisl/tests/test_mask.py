@@ -9,7 +9,7 @@ from nose.tools import assert_true, assert_false
 import numpy as np
 
 from ..masking import _largest_connected_component, series_from_mask, \
-    compute_mask
+    compute_epi_mask
 
 
 def test_largest_cc():
@@ -27,18 +27,18 @@ def test_mask():
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
-    mask1 = compute_mask(mean_image)
-    mask2 = compute_mask(mean_image, exclude_zeros=True)
+    mask1 = compute_epi_mask(mean_image)
+    mask2 = compute_epi_mask(mean_image, exclude_zeros=True)
     # With an array with no zeros, exclude_zeros should not make
     # any difference
     yield np.testing.assert_array_equal, mask1, mask2
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30))
     mean_image2[:9, :9] = mean_image
-    mask3 = compute_mask(mean_image2, exclude_zeros=True)
+    mask3 = compute_epi_mask(mean_image2, exclude_zeros=True)
     yield np.testing.assert_array_equal, mask1, mask3[:9, :9]
     # However, without exclude_zeros, it does
-    mask3 = compute_mask(mean_image2)
+    mask3 = compute_epi_mask(mean_image2)
     yield assert_false, np.allclose(mask1, mask3[:9, :9])
 
 

@@ -99,7 +99,7 @@ Extracting a brain mask
 
 If we do not have a mask of the relevant regions available, a brain mask
 can be easily extracted from the fMRI data using the
-:func:`nisl.masking.compute_mask` function:
+:func:`nisl.masking.compute_epi_mask` function:
 
 .. currentmodule:: nisl.masking
 
@@ -107,7 +107,7 @@ can be easily extracted from the fMRI data using the
    :toctree: generated/
    :template: function.rst
 
-   compute_mask
+   compute_epi_mask
 
 .. literalinclude:: ../plot_visualization.py
      :start-after: # Extracting a brain mask ###################################################

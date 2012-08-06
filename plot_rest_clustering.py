@@ -25,7 +25,7 @@ fmri_data = nibabel.load(dataset.func[1][0]).get_data()
 
 # Compute a brain mask
 from nisl import masking
-mask = masking.compute_mask(fmri_data)
+mask = masking.compute_epi_mask(fmri_data)
 
 # Mask data: go from a 4D dataset to a 2D dataset with only the voxels
 # in the mask

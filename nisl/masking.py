@@ -42,7 +42,7 @@ def _largest_connected_component(mask):
 ###############################################################################
 
 
-def compute_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                  connected=True, exclude_zeros=False):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.

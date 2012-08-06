@@ -105,7 +105,7 @@ class MRItransformer(BaseEstimator, TransformerMixin):
         if self.mask_ is None:
             if self.verbose > 0:
                 print "[MRITransformer.fit] Computing the mask"
-            self.mask_ = masking.compute_mask(np.mean(data, axis=-1))
+            self.mask_ = masking.compute_epi_mask(np.mean(data, axis=-1))
 
         return self
 
