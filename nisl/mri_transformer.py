@@ -3,6 +3,7 @@ Transformer used to apply basic tranisformations on MRI data.
 """
 
 import types
+import collections
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -14,11 +15,13 @@ from . import resampling
 from . import preprocessing
 
 
-def _check_callable_method(object, method_name):
-    # get the attribute, raise an error if missing
-    attr = getattr(object, method_name)
-    if not callable(attr):
-        raise AttributeError(method_name + ' is not a valid method')
+def _check_nifti_methods(object):
+    try:
+        get_data = getattr(object, "get_data")
+        get_affine = getattr(object, "get_affine")
+        return callable(get_data) and callable(get_affine)
+    except Exception:
+        return False
 
 
 def check_niimg(data):
@@ -27,9 +30,49 @@ def check_niimg(data):
         result = nibabel.load(data)
     else:
         # it is an object, it should have get_data and get_affine methods
-        _check_callable_method(data, 'get_data')
-        _check_callable_method(data, 'get_affine')
+        # _check_callable_method(data, 'get_data')
+        # _check_callable_method(data, 'get_affine')
         result = data
+    return result
+
+
+def load_data(data):
+    """Check and load data.
+
+    Parameters
+    ----------
+    data: string, list of strings or iterable
+        If given filename(s), load it. If given data, check that it
+        is in the right format.
+    """
+    # If it is a string, it should a path to a Nifti file
+    if (isinstance(data, types.StringTypes)):
+        return nibabel.load(data)
+    # Check if it is a Nifti file
+    if _check_nifti_methods(data):
+        return data
+    # If it's not a string it must be iterable
+    if (not isinstance(data, collections.Iterable)):
+        raise ValueError("data must be a filename or iterable")
+    for index, item in enumerate(data):
+        if (isinstance(item, types.StringTypes)):
+            img = nibabel.load(item)
+        else:
+            # TODO: do we uncomment this part ? It would lead to data copy
+            # which may provoke memory issues...
+            #
+            # if _check_nifti_methods(data):
+            #     img = data
+            # else:
+                raise ValueError
+        if index == 0:
+            # Initialize the final array
+            result = np.empty(img.get_shape() + (len(data),))
+            affine = img.get_affine()
+        else:
+            if not np.array_equal(affine, img.get_affine()):
+                raise ValueError("Affine must the same in all images")
+        result[..., index] = img.get_data()
     return result
 
 
@@ -55,11 +98,17 @@ class MRItransformer(BaseEstimator, TransformerMixin):
         Indicate the level of verbosity. By default, nothing is printed
     """
 
-    def __init__(self, mask=None, smooth=False, confounds=None, detrend=False,
+    def __init__(self, mask=None, mask_connected=False, mask_opening=False,
+            mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+            smooth=False, confounds=None, detrend=False,
             affine=None, low_pass=0.2, high_pass=None, t_r=2.5, verbose=0):
         # Mask is compulsory or computed
         # Must integrate memory, as in WardAgglomeration
         self.mask_ = mask
+        self.mask_connected = mask_connected
+        self.mask_opening = mask_opening
+        self.mask_lower_cutoff = mask_lower_cutoff
+        self.mask_upper_cutoff = mask_upper_cutoff
         self.smooth = smooth
         self.confounds = confounds
         self.detrend = detrend
@@ -91,6 +140,10 @@ class MRItransformer(BaseEstimator, TransformerMixin):
                 img = check_niimg(scan)
                 if affine is None:
                     affine = img.get_affine()
+                else:
+                    if not np.array_equal(affine, img.get_affine()):
+                        raise ValueError("affine is not the same"
+                                "for all images")
                 data.append(img.get_data())
                 del img
             data = np.asarray(data)
@@ -101,18 +154,20 @@ class MRItransformer(BaseEstimator, TransformerMixin):
             data = img.get_data()
 
         # Compute the mask if not given by the user
-
         if self.mask_ is None:
             if self.verbose > 0:
                 print "[MRITransformer.fit] Computing the mask"
-            self.mask_ = masking.compute_epi_mask(np.mean(data, axis=-1))
+            self.mask_ = masking.compute_epi_mask(np.mean(data, axis=-1),
+                    connected=self.mask_connected, opening=self.mask_opening,
+                    lower_cutoff=self.mask_lower_cutoff,
+                    upper_cutoff=self.mask_upper_cutoff)
 
         return self
 
     def transform(self, X):
 
         # Load data (if filenames are given, load them)
-        # XXX This should be done once and for all, to in fit and transform...
+        # XXX This should be done once and for all, not in fit and transform...
         if self.verbose > 0:
             print "[MRITransformer.fit] Loading data"
         if (isinstance(X, types.StringTypes)):
@@ -124,6 +179,10 @@ class MRItransformer(BaseEstimator, TransformerMixin):
                 img = check_niimg(scan)
                 if affine is None:
                     affine = img.get_affine()
+                else:
+                    if not np.array_equal(affine, img.get_affine()):
+                        raise ValueError("affine is not the same"
+                                "for all images")
                 data.append(img.get_data())
                 del img
             data = np.asarray(data)

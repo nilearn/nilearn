@@ -43,7 +43,7 @@ def _largest_connected_component(mask):
 
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
-                 connected=True, exclude_zeros=False):
+                 connected=True, opening=True, exclude_zeros=False):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
@@ -63,6 +63,10 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         upper fraction of the histogram to be discarded.
     connected: boolean, optional
         if connected is True, only the largest connect component is kept.
+    opening: boolean, optional
+        if opening is True, an morphological opening is performed, to keep
+        only large structures. This step is useful to remove parts of
+        the skull that might have been included.
     exclude_zeros: boolean, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -91,7 +95,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     if connected:
         mask = _largest_connected_component(mask)
-
+    if opening:
+        mask = ndimage.binary_opening(mask.astype(np.int), iterations=2)
     return mask.astype(bool)
 
 ###############################################################################
