@@ -139,11 +139,16 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print "[MRITransformer.fit] Loading data"
-        if (isinstance(X, types.StringTypes)):
+        if isinstance(X, types.StringTypes) \
+                or _check_nifti_methods(X):
+            img = check_niimg(X)
+            affine = img.get_affine()
+            data = img.get_data()
+        else:
             data = []
             affine = None
             # Roll axis to index by scan
-            scans = np.roll_axis(X, -1)
+            scans = np.rollaxis(X, -1)
             for scan in scans:
                 img = check_niimg(scan)
                 if affine is None:
@@ -156,10 +161,6 @@ class MRITransformer(BaseEstimator, TransformerMixin):
                 del img
             data = np.asarray(data)
             np.rollaxis(data, 0, start=4)
-        else:
-            img = check_niimg(X)
-            affine = img.get_affine()
-            data = img.get_data()
 
         # Compute the mask if not given by the user
         if self.mask is None:
@@ -185,11 +186,16 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         # TODO paste of the code of fit, make a function
         if self.verbose > 0:
             print "[MRITransformer.fit] Loading data"
-        if (isinstance(X, types.StringTypes)):
+        if isinstance(X, types.StringTypes) \
+                or _check_nifti_methods(X):
+            img = check_niimg(X)
+            affine = img.get_affine()
+            data = img.get_data()
+        else:
             data = []
             affine = None
             # Roll axis to index by scan
-            scans = np.roll_axis(X, -1)
+            scans = np.rollaxis(X, -1)
             for scan in scans:
                 img = check_niimg(scan)
                 if affine is None:
@@ -202,10 +208,6 @@ class MRITransformer(BaseEstimator, TransformerMixin):
                 del img
             data = np.asarray(data)
             np.rollaxis(data, 0, start=4)
-        else:
-            img = check_niimg(X)
-            affine = img.get_affine()
-            data = img.get_data()
 
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
@@ -250,7 +252,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         return data
 
     def inverse_transform(self, X):
-        if len(X.shape) > self.mask_.shape:
+        if len(X.shape) > 1:
             shape = self.mask_.shape + (X.shape[-1],)
         else:
             shape = self.mask_.shape
