@@ -19,7 +19,7 @@ fmri_data = np.copy(bold_img.get_data())
 affine = bold_img.get_affine()
 y, session = np.loadtxt(dataset_files['session_target']).astype("int").T
 conditions = np.recfromtxt(dataset_files['conditions_target'])['f0']
-mask = np.copy(nibabel.load(dataset_files['mask']).get_data().astype(np.bool))
+mask = dataset_files['mask']
 # fmri_data.shape is (40, 64, 64, 1452)
 # and mask.shape is (40, 64, 64)
 
@@ -27,32 +27,23 @@ mask = np.copy(nibabel.load(dataset_files['mask']).get_data().astype(np.bool))
 # Build the mean image because we have no anatomic data
 mean_img = fmri_data.mean(axis=-1)
 
-# Process the data in order to have a two-dimensional design matrix X of
-# shape (n_samples, n_features).
-X = fmri_data[mask].T
-
-# X.shape is (n_samples, n_features): (1452, 39912)
-
-# Detrend data on each session independently
-from scipy import signal
-for s in np.unique(session):
-    X[session == s] = signal.detrend(X[session == s], axis=0)
-
-
 ### Restrict to faces and houses ##############################################
+from nisl.utils import ImageWrapper
 
 # Keep only data corresponding to face or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
-X = X[condition_mask]
+X = fmri_data[..., condition_mask]
 y = y[condition_mask]
 session = session[condition_mask]
 conditions = conditions[condition_mask]
 
-# We now have n_samples, n_features = X.shape = 864, 39912
-n_samples, n_features = X.shape
-
 # We have 2 conditions
 n_conditions = np.size(np.unique(y))
+
+### Loading step ##############################################################
+from nisl import mri_transformer
+# Detrending is disabled as we are not yet able to do it by session
+mri_loader = mri_transformer.MRITransformer(mask=mask, detrend=False)
 
 ### Prediction function #######################################################
 
@@ -74,12 +65,13 @@ feature_selection = SelectKBest(f_classif, k=1000)
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
-anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
+anova_svc = Pipeline([('load', mri_loader), ('anova', feature_selection),
+    ('svc', clf)])
 
 ### Fit and predict ###########################################################
 
-anova_svc.fit(X, y)
-y_pred = anova_svc.predict(X)
+anova_svc.fit(ImageWrapper(X, affine), y)
+y_pred = anova_svc.predict(ImageWrapper(X, affine))
 
 ### Visualisation #############################################################
 
@@ -89,8 +81,7 @@ svc = clf.support_vectors_
 # reverse feature selection
 svc = feature_selection.inverse_transform(svc)
 # reverse masking
-act = np.zeros(mean_img.shape)
-act[mask != 0] = svc[0]
+act = mri_loader.inverse_transform(svc[0])
 
 # We use a masked array so that the voxels at '0' are displayed
 # transparently
@@ -123,7 +114,8 @@ cv = LeaveOneLabelOut(session)
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
-    y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])
+    y_pred = anova_svc.fit(ImageWrapper(X[..., train], affine), y[train]) \
+        .predict(ImageWrapper(X[..., test], affine))
     cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
 
 ### Print results #############################################################

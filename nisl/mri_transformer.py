@@ -7,6 +7,7 @@ import collections
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.externals.joblib import Memory
 
 import nibabel
 
@@ -30,8 +31,9 @@ def check_niimg(data):
         result = nibabel.load(data)
     else:
         # it is an object, it should have get_data and get_affine methods
-        # _check_callable_method(data, 'get_data')
-        # _check_callable_method(data, 'get_affine')
+        if not _check_nifti_methods(data):
+            raise AttributeError("Given data does not expose"
+                "data of affine getter")
         result = data
     return result
 
@@ -78,7 +80,7 @@ def load_data(data):
 
 # Rmk: needs a similar object for ROIs or not
 
-class MRItransformer(BaseEstimator, TransformerMixin):
+class MRITransformer(BaseEstimator, TransformerMixin):
     """MRI data loader with preprocessing
 
     Parameters
@@ -101,10 +103,11 @@ class MRItransformer(BaseEstimator, TransformerMixin):
     def __init__(self, mask=None, mask_connected=False, mask_opening=False,
             mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
-            affine=None, low_pass=0.2, high_pass=None, t_r=2.5, verbose=0):
+            affine=None, low_pass=None, high_pass=None, t_r=None,
+            memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         # Must integrate memory, as in WardAgglomeration
-        self.mask_ = mask
+        self.mask = mask
         self.mask_connected = mask_connected
         self.mask_opening = mask_opening
         self.mask_lower_cutoff = mask_lower_cutoff
@@ -116,6 +119,7 @@ class MRItransformer(BaseEstimator, TransformerMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.memory = memory
         self.verbose = verbose
 
     def fit(self, X, y=None):
@@ -127,6 +131,10 @@ class MRItransformer(BaseEstimator, TransformerMixin):
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
+
+        memory = self.memory
+        if isinstance(memory, basestring):
+            memory = Memory(cachedir=memory)
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
@@ -154,20 +162,27 @@ class MRItransformer(BaseEstimator, TransformerMixin):
             data = img.get_data()
 
         # Compute the mask if not given by the user
-        if self.mask_ is None:
+        if self.mask is None:
             if self.verbose > 0:
                 print "[MRITransformer.fit] Computing the mask"
             self.mask_ = masking.compute_epi_mask(np.mean(data, axis=-1),
                     connected=self.mask_connected, opening=self.mask_opening,
                     lower_cutoff=self.mask_lower_cutoff,
                     upper_cutoff=self.mask_upper_cutoff)
+        else:
+            if isinstance(self.mask, types.StringTypes):
+                self.mask_ = nibabel.load(self.mask).get_data() \
+                    .astype(np.bool)
+            else:
+                self.mask_ = self.mask
 
         return self
 
     def transform(self, X):
+        memory = self.memory
 
         # Load data (if filenames are given, load them)
-        # XXX This should be done once and for all, not in fit and transform...
+        # TODO paste of the code of fit, make a function
         if self.verbose > 0:
             print "[MRITransformer.fit] Loading data"
         if (isinstance(X, types.StringTypes)):
@@ -195,7 +210,7 @@ class MRItransformer(BaseEstimator, TransformerMixin):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print "[MRITransformer.transform] Resampling"
-        data, affine = resampling.as_volume_img(data, affine,
+        data, affine = memory.cache(resampling.as_volume_img)(data, affine,
                 new_affine=self.affine, copy=False)
 
         # Function that does that exposes interpolation order, but not
@@ -217,9 +232,10 @@ class MRItransformer(BaseEstimator, TransformerMixin):
 
         if self.verbose > 0:
             print "[MRITransformer.transform] Cleaning signal"
-        data = preprocessing.clean_signals(data, confounds=self.confounds,
-                low_pass=self.low_pass, high_pass=self.high_pass, t_r=self.t_r,
-                detrend=self.detrend)
+        data = memory.cache(preprocessing.clean_signals)(data,
+                confounds=self.confounds, low_pass=self.low_pass,
+                high_pass=self.high_pass, t_r=self.t_r,
+                detrend=self.detrend, normalize=False)
 
         # For _later_: missing value removal or imputing of missing data
         # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -227,9 +243,18 @@ class MRItransformer(BaseEstimator, TransformerMixin):
         # Optionally: 'doctor_nan', remove voxels with NaNs, other option
         # for later: some form of imputation
 
-        return (data, affine)
+        # data is in format voxel x time_series. We inverse it
+        data = np.rollaxis(data, -1)
+
+        self.affine_ = affine
+        return data
 
     def inverse_transform(self, X):
-        # From masked data to np.masked_array
-        # shape = self.mask_.shape + (X.shape[3],)
-        pass
+        if len(X.shape) > self.mask_.shape:
+            shape = self.mask_.shape + (X.shape[-1],)
+        else:
+            shape = self.mask_.shape
+        data = np.ma.masked_all(shape)
+        # As values are assigned to voxel, they will be automatically unmasked
+        data[self.mask_] = np.rollaxis(X, -1)
+        return data
