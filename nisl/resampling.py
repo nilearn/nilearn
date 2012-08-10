@@ -90,7 +90,7 @@ def get_bounds(shape, affine):
 
 
 def as_volume_img(data, affine, new_affine=None, new_shape=None,
-                                    interpolation='coninuuous', copy=True):
+                                    interpolation='continuous', copy=True):
     if copy:
         import copy
         data = copy.copy(data)

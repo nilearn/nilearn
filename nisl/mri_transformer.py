@@ -4,6 +4,7 @@ Transformer used to apply basic tranisformations on MRI data.
 
 import types
 import collections
+import itertools
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -33,52 +34,41 @@ def check_niimg(data):
         # it is an object, it should have get_data and get_affine methods
         if not _check_nifti_methods(data):
             raise AttributeError("Given data does not expose"
-                "data of affine getter")
+                " get_data or get_affine methods")
         result = data
     return result
 
 
-def load_data(data):
-    """Check and load data.
+def collapse_niimg(imgs, generate_sessions=False):
+    data = []
+    if generate_sessions:
+        sessions = []
+    first_img = iter(imgs).next()
+    affine = first_img.get_affine()
+    for index, iter_img in enumerate(imgs):
+        img = check_niimg(iter_img)
+        if not np.array_equal(img.get_affine(), affine):
+            s_error = ""
+            if generate_sessions:
+                s_error = " of session #" + str(index)
+            if (isinstance(iter_img, types.StringTypes)):
+                i_error = "image " + iter_img
+            else:
+                i_error = "image #" + str(index)
 
-    Parameters
-    ----------
-    data: string, list of strings or iterable
-        If given filename(s), load it. If given data, check that it
-        is in the right format.
-    """
-    # If it is a string, it should a path to a Nifti file
-    if (isinstance(data, types.StringTypes)):
-        return nibabel.load(data)
-    # Check if it is a Nifti file
-    if _check_nifti_methods(data):
-        return data
-    # If it's not a string it must be iterable
-    if (not isinstance(data, collections.Iterable)):
-        raise ValueError("data must be a filename or iterable")
-    for index, item in enumerate(data):
-        if (isinstance(item, types.StringTypes)):
-            img = nibabel.load(item)
-        else:
-            # TODO: do we uncomment this part ? It would lead to data copy
-            # which may provoke memory issues...
-            #
-            # if _check_nifti_methods(data):
-            #     img = data
-            # else:
-                raise ValueError
-        if index == 0:
-            # Initialize the final array
-            result = np.empty(img.get_shape() + (len(data),))
-            affine = img.get_affine()
-        else:
-            if not np.array_equal(affine, img.get_affine()):
-                raise ValueError("Affine must the same in all images")
-        result[..., index] = img.get_data()
-    return result
+            raise ValueError("Affine of %s%s is different"
+                    " from reference affine"
+                    "\nReference affine:\n%s\n"
+                    "Wrong affine:\n%s"
+                    % i_error, s_error,
+                    repr(affine), repr(img.get_affine()))
+        data.append(img)
+        if generate_sessions:
+            sessions += list(itertools.repeat(index, img.get_data().shape[-1]))
+    if generate_sessions:
+        return data, affine, sessions
+    return data, affine
 
-
-# Rmk: needs a similar object for ROIs or not
 
 class MRITransformer(BaseEstimator, TransformerMixin):
     """MRI data loader with preprocessing
@@ -100,8 +90,8 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         Indicate the level of verbosity. By default, nothing is printed
     """
 
-    def __init__(self, mask=None, mask_connected=False, mask_opening=False,
-            mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+    def __init__(self, sessions=None, mask=None, mask_connected=False,
+            mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
             affine=None, low_pass=None, high_pass=None, t_r=None,
             memory=Memory(cachedir=None, verbose=0), verbose=0):
@@ -121,6 +111,57 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         self.t_r = t_r
         self.memory = memory
         self.verbose = verbose
+        self.sessions_ = sessions
+
+    def load_imgs(self, imgs):
+        # Initialization: we go through the data to get the depth and dimension
+        depth = 0
+        first_img = imgs
+        while isinstance(first_img, collections.Iterable) \
+                and not isinstance(first_img, types.StringTypes):
+            first_img = iter(first_img).next()
+            depth += 1
+
+        # First Image is supposed to be a path or a Nifti like element
+        first_img = check_niimg(first_img)
+
+        # Check dimension and depth
+        dim = len(first_img.get_data().shape)
+
+        if not dim in [3, 4]:
+            raise ValueError("[%s] Image must be a 3D or 4D array."
+                    " Given image is a %iD array"
+                    % self.__class__.__name__, dim)
+
+        # Contains lengths of sessions to generate if needed
+        if self.sessions_ is None and (dim + depth == 5):
+            # With 4D images, each image is a session, we collapse them
+            if dim == 4:
+                imgs, affine, self.sessions_ = collapse_niimg(imgs,
+                        generate_sessions=True)
+            else:
+                # We collapse the array and generate sessions
+                lengths = [[i] * len(array) for i, array in enumerate(imgs)]
+                self.sessions_ = list(itertools.chain.from_iterable(lengths))
+                imgs = list(itertools.chain.from_iterable(imgs))
+            # Remove the dimension corresponding to sessions
+            dim -= 1
+
+        if (dim + depth) != 4:
+            # This error message is poor but givin details about each case
+            # would be too complicated
+            raise ValueError("[%s] Cannot load your data due to a dimension"
+                    " problem." % self.__class__.__name__)
+
+        # Now, we that data is in a known format, load it
+        if dim == 4:
+            data = check_niimg(imgs)
+            affine = data.get_affine()
+            data = data.get_data()
+        else:
+            data, affine = collapse_niimg(imgs)
+        self.affine = affine
+        return data
 
     def fit(self, X, y=None):
         """Compute the mask corresponding to the data
@@ -139,28 +180,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print "[MRITransformer.fit] Loading data"
-        if isinstance(X, types.StringTypes) \
-                or _check_nifti_methods(X):
-            img = check_niimg(X)
-            affine = img.get_affine()
-            data = img.get_data()
-        else:
-            data = []
-            affine = None
-            # Roll axis to index by scan
-            scans = np.rollaxis(X, -1)
-            for scan in scans:
-                img = check_niimg(scan)
-                if affine is None:
-                    affine = img.get_affine()
-                else:
-                    if not np.array_equal(affine, img.get_affine()):
-                        raise ValueError("affine is not the same"
-                                "for all images")
-                data.append(img.get_data())
-                del img
-            data = np.asarray(data)
-            np.rollaxis(data, 0, start=4)
+        data = self.load_imgs(X)
 
         # Compute the mask if not given by the user
         if self.mask is None:
@@ -183,31 +203,10 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         memory = self.memory
 
         # Load data (if filenames are given, load them)
-        # TODO paste of the code of fit, make a function
         if self.verbose > 0:
             print "[MRITransformer.fit] Loading data"
-        if isinstance(X, types.StringTypes) \
-                or _check_nifti_methods(X):
-            img = check_niimg(X)
-            affine = img.get_affine()
-            data = img.get_data()
-        else:
-            data = []
-            affine = None
-            # Roll axis to index by scan
-            scans = np.rollaxis(X, -1)
-            for scan in scans:
-                img = check_niimg(scan)
-                if affine is None:
-                    affine = img.get_affine()
-                else:
-                    if not np.array_equal(affine, img.get_affine()):
-                        raise ValueError("affine is not the same"
-                                "for all images")
-                data.append(img.get_data())
-                del img
-            data = np.asarray(data)
-            np.rollaxis(data, 0, start=4)
+        data = self.load_imgs(X)
+        affine = self.affine
 
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
