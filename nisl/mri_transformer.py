@@ -232,7 +232,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         # Normalizing
 
         if self.verbose > 0:
-            print "[MRITransformer.transform] Cleaning signal"
+            print "[MRITransformer.transform] Clening signal"
         data = memory.cache(preprocessing.clean_signals)(data,
                 confounds=self.confounds, low_pass=self.low_pass,
                 high_pass=self.high_pass, t_r=self.t_r,
@@ -250,12 +250,12 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         self.affine_ = affine
         return data
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, X, null=-1):
         if len(X.shape) > 1:
             shape = self.mask_.shape + (X.shape[-1],)
         else:
             shape = self.mask_.shape
-        data = np.ma.masked_all(shape)
-        # As values are assigned to voxel, they will be automatically unmasked
+        data = np.empty(shape)
+        data.fill(null)
         data[self.mask_] = np.rollaxis(X, -1)
         return data

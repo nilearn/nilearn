@@ -51,9 +51,7 @@ print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 
 # Unmask data
 import numpy as np
-# labels = - np.ones(mask.shape)
-# labels[mask] = ward.labels_
-labels = mri.inverse_transform(ward.labels_)
+labels = mri.inverse_transform(ward.labels_, null=-1)
 
 # Display the labels
 import pylab as pl
@@ -74,6 +72,7 @@ pl.title('Ward parcellation')
 # Display the original data
 pl.figure()
 first_fmri_img = mri.inverse_transform(fmri_masked[0])
+first_fmri_img = np.ma.masked_array(first_fmri_img, first_fmri_img == 0)
 # Outside the mask: a uniform value, smaller than inside the mask
 first_fmri_img[np.logical_not(mask)] = 0.9 * first_fmri_img[mask].min()
 vmax = first_fmri_img[..., 20].max()
