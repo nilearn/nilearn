@@ -28,7 +28,7 @@ mask = dataset_files['mask']
 mean_img = fmri_data.mean(axis=-1)
 
 ### Restrict to faces and houses ##############################################
-from nisl.utils import ImageWrapper
+from nisl.utils import Niimg 
 
 # Keep only data corresponding to face or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
@@ -71,8 +71,8 @@ anova_svc = Pipeline([('load', mri_loader), ('anova', feature_selection),
 
 ### Fit and predict ###########################################################
 
-anova_svc.fit(ImageWrapper(X, affine), y)
-y_pred = anova_svc.predict(ImageWrapper(X, affine))
+anova_svc.fit(Niimg(X, affine), y)
+y_pred = anova_svc.predict(Niimg(X, affine))
 
 ### Visualisation #############################################################
 
@@ -82,11 +82,11 @@ svc = clf.support_vectors_
 # reverse feature selection
 svc = feature_selection.inverse_transform(svc)
 # reverse masking
-act = mri_loader.inverse_transform(svc[0])
+niimg = mri_loader.inverse_transform(svc[0])
 
-# We use a masked array so that the voxels at '0' are displayed
+# We use a masked array so that the voxels at '-1' are displayed
 # transparently
-act = np.ma.masked_array(act, act == 0)
+act = np.ma.masked_array(niimg.get_data(), niimg.get_data() <= 0)
 
 ### Create the figure
 import pylab as pl
@@ -115,8 +115,8 @@ cv = LeaveOneLabelOut(session)
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
-    y_pred = anova_svc.fit(ImageWrapper(X[..., train], affine), y[train]) \
-        .predict(ImageWrapper(X[..., test], affine))
+    y_pred = anova_svc.fit(Niimg(X[..., train], affine), y[train]) \
+        .predict(Niimg(X[..., test], affine))
     cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
 
 ### Print results #############################################################

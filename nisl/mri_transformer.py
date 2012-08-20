@@ -15,7 +15,7 @@ import nibabel
 from . import masking
 from . import resampling
 from . import preprocessing
-
+from . import utils
 
 def _check_nifti_methods(object):
     try:
@@ -272,4 +272,4 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         data = np.empty(shape)
         data.fill(null)
         data[self.mask_] = np.rollaxis(X, -1)
-        return data
+        return utils.Niimg(data, self.affine)
