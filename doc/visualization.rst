@@ -15,11 +15,13 @@ This tutorial package embeds tools to download and load datasets. They
 can be imported from ``nisl.datasets``::
 
     >>> from nisl import datasets
-    >>> haxby_data = datasets.fetch_haxby()
-    >>> # The data is then already loaded as numpy arrays:
-    >>> haxby_data.keys() # doctest: +SKIP
-    ['files', 'session', 'target', 'target_strings', 'data', 'affine', 'mask']
-    >>> haxby_data.data.shape # 1452 time points and a spatial size of 40x64x64
+    >>> haxby_files = datasets.fetch_haxby()
+    >>> # The structures contains paths to haxby dataset files:
+    >>> haxby_files.keys() # doctest: +SKIP
+    ['data', 'session_target', 'mask', 'conditions_target']
+    >>> import nibabel
+    >>> haxby_data = nibabel.load(haxby_files.data)
+    >>> haxby_data.get_data().shape # 1452 time points and a spatial size of 40x64x64
     (40, 64, 64, 1452)
 
 .. autosummary::

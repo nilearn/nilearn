@@ -104,7 +104,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 ###############################################################################
 
 
-def series_from_mask(series, affine, mask, dtype=np.float32,
+def extract_time_series(series, affine, mask, dtype=np.float32,
                      smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 

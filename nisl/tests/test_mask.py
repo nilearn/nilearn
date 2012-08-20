@@ -8,7 +8,7 @@ from nose.tools import assert_true, assert_false
 
 import numpy as np
 
-from ..masking import _largest_connected_component, series_from_mask, \
+from ..masking import _largest_connected_component, extract_time_series, \
     compute_epi_mask
 
 
@@ -42,7 +42,7 @@ def test_mask():
     yield assert_false, np.allclose(mask1, mask3[:9, :9])
 
 
-def test_series_from_mask():
+def test_extract_time_series():
     """ Test the smoothing of the timeseries extraction
     """
     # A delta in 3D
@@ -51,7 +51,7 @@ def test_series_from_mask():
     mask = np.ones((40, 40, 40), dtype=np.bool)
     for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
                     np.diag((.5, 1, .5, 1))):
-        series = series_from_mask(data, affine, mask, smooth=9)
+        series = extract_time_series(data, affine, mask, smooth=9)
         series = np.reshape(series[:, 0], (40, 40, 40))
         vmax = series.max()
         # We are expecting a full-width at half maximum of
@@ -65,7 +65,7 @@ def test_series_from_mask():
 
     # Check that NaNs in the data do not propagate
     data[10, 10, 10] = np.NaN
-    series = series_from_mask(data, affine, mask, smooth=9)
+    series = extract_time_series(data, affine, mask, smooth=9)
     assert_true(np.all(np.isfinite(series)))
 
 

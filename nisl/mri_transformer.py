@@ -223,7 +223,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Masking and smoothing" \
                 % self.__class__.__name__
-        data = masking.series_from_mask(data, affine,
+        data = masking.extract_time_series(data, affine,
                 self.mask_, smooth=self.smooth)
 
         # Temporal
