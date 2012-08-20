@@ -93,7 +93,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
     def __init__(self, sessions=None, mask=None, mask_connected=False,
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
-            affine=None, low_pass=None, high_pass=None, t_r=None,
+            affine=None, low_pass=None, high_pass=None, t_r=None, copy=False,
             memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         # Must integrate memory, as in WardAgglomeration
@@ -105,10 +105,11 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         self.smooth = smooth
         self.confounds = confounds
         self.detrend = detrend
-        self.affine = affine
+        self.new_affine = affine
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.copy = copy
         self.memory = memory
         self.verbose = verbose
         self.sessions_ = sessions
@@ -210,9 +211,9 @@ class MRITransformer(BaseEstimator, TransformerMixin):
 
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
-            print "[%s.transform] Resampling" % self.__class__.name
+            print "[%s.transform] Resampling" % self.__class__.__name__
         data, affine = memory.cache(resampling.as_volume_img)(data, affine,
-                new_affine=self.affine, copy=False)
+                new_affine=self.new_affine, copy=self.copy)
 
         # Function that does that exposes interpolation order, but not
         # this object

@@ -96,7 +96,7 @@ def as_volume_img(data, affine, new_affine=None, new_shape=None,
         data = copy.copy(data)
         affine = copy.copy(affine)
     if new_affine is None and new_shape is None:
-            return (data, affine)
+        return (data, affine)
     if new_affine is None:
         new_affine = np.eye(4)
     if new_shape is None:
