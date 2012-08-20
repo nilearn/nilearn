@@ -43,7 +43,8 @@ n_conditions = np.size(np.unique(y))
 ### Loading step ##############################################################
 from nisl import mri_transformer
 # Detrending is disabled as we are not yet able to do it by session
-mri_loader = mri_transformer.MRITransformer(mask=mask, detrend=False)
+mri_loader = mri_transformer.MRITransformer(mask=mask, detrend=True,
+        sessions=session, verbose=1)
 
 ### Prediction function #######################################################
 

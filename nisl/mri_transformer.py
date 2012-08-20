@@ -179,13 +179,13 @@ class MRITransformer(BaseEstimator, TransformerMixin):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[MRITransformer.fit] Loading data"
+            print "[%s.fit] Loading data" % self.__class__.__name__
         data = self.load_imgs(X)
 
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
-                print "[MRITransformer.fit] Computing the mask"
+                print "[%s.fit] Computing the mask" % self.__class__.__name__
             self.mask_ = masking.compute_epi_mask(np.mean(data, axis=-1),
                     connected=self.mask_connected, opening=self.mask_opening,
                     lower_cutoff=self.mask_lower_cutoff,
@@ -204,13 +204,13 @@ class MRITransformer(BaseEstimator, TransformerMixin):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[MRITransformer.fit] Loading data"
+            print "[%s.fit] Loading data" % self.__class__.__name__
         data = self.load_imgs(X)
         affine = self.affine
 
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
-            print "[MRITransformer.transform] Resampling"
+            print "[%s.transform] Resampling" % self.__class__.name
         data, affine = memory.cache(resampling.as_volume_img)(data, affine,
                 new_affine=self.affine, copy=False)
 
@@ -220,7 +220,8 @@ class MRITransformer(BaseEstimator, TransformerMixin):
 
         # Get series from data with optional smoothing
         if self.verbose > 0:
-            print "[MRITransformer.transform] Masking and smoothing"
+            print "[%s.transform] Masking and smoothing" \
+                % self.__class__.__name__
         data = masking.series_from_mask(data, affine,
                 self.mask_, smooth=self.smooth)
 
@@ -232,11 +233,23 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         # Normalizing
 
         if self.verbose > 0:
-            print "[MRITransformer.transform] Clening signal"
-        data = memory.cache(preprocessing.clean_signals)(data,
-                confounds=self.confounds, low_pass=self.low_pass,
-                high_pass=self.high_pass, t_r=self.t_r,
-                detrend=self.detrend, normalize=False)
+            print "[%s.transform] Cleaning signal" % self.__class__.__name__
+        if self.sessions_ is None:
+            data = memory.cache(preprocessing.clean_signals)(data,
+                    confounds=self.confounds, low_pass=self.low_pass,
+                    high_pass=self.high_pass, t_r=self.t_r,
+                    detrend=self.detrend, normalize=False)
+        else:
+            for s in np.unique(self.sessions_):
+                if self.confounds is not None:
+                    session_confounds = self.confounds[self.sessions_ == s]
+                    data[self.sessions_ == s] = \
+                        memory.cache(preprocessing.clean_signals)(
+                                data=data[self.sessions_ == s],
+                                confounds=session_confounds,
+                                low_pass=self.low_pass,
+                                high_pass=self.high_pass, t_r=self.t_r,
+                                detrend=self.detrend, normalize=False)
 
         # For _later_: missing value removal or imputing of missing data
         # (i.e. we want to get rid of NaNs, if smoothing must be done
