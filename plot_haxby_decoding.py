@@ -28,7 +28,7 @@ mask = dataset_files['mask']
 mean_img = fmri_data.mean(axis=-1)
 
 ### Restrict to faces and houses ##############################################
-from nisl.utils import Niimg 
+from nisl.utils import Niimg
 
 # Keep only data corresponding to face or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')

@@ -25,17 +25,25 @@ conditions = np.recfromtxt(dataset_files['conditions_target'])['f0']
 mask = np.copy(nibabel.load(dataset_files['mask']).get_data().astype(np.bool))
 
 ### Preprocess data ###########################################################
-# Change axis in order to have X under n_samples * x * y * z
-X = np.rollaxis(fmri_data, 3)
-# X.shape is (1452, 40, 64, 64)
+# Build the mean image because we have no anatomic data
+mean_img = fmri_data.mean(axis=-1)
 
-# Mean image: used as background in visualisation
-mean_img = np.mean(X, axis=0)
+### Restrict to faces and houses ##############################################
+condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+X = fmri_data[..., condition_mask]
+y = y[condition_mask]
+session = session[condition_mask]
+conditions = conditions[condition_mask]
 
-# Detrend data on each session independently
-from scipy import signal
-for s in np.unique(session):
-    X[session == s] = signal.detrend(X[session == s], axis=0)
+### Loading step ##############################################################
+from nisl import mri_transformer
+from nisl.utils import Niimg
+# Detrending is disabled as we are not yet able to do it by session
+mri_loader = mri_transformer.MRITransformer(mask=mask, detrend=True,
+        copy=False, sessions=session)
+niimg = Niimg(X, affine)
+X_masked = mri_loader.fit(niimg).transform(niimg)
+X_detrended = mri_loader.inverse_transform(X_masked).get_data()
 
 ### Prepare the masks #########################################################
 # Here we will use several masks :
@@ -47,15 +55,6 @@ process_mask = mask.copy()
 process_mask[..., 38:] = False
 process_mask[..., :36] = False
 process_mask[:, 30:] = False
-
-### Restrict to faces and houses ##############################################
-
-# Keep only data corresponding to face or houses
-condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
-X = X[condition_mask]
-y = y[condition_mask]
-session = session[condition_mask]
-conditions = conditions[condition_mask]
 
 ### Searchlight ###############################################################
 
@@ -85,7 +84,7 @@ from nisl import searchlight
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
         n_jobs=n_jobs, score_func=score_func, verbose=1, cv=cv)
 
-searchlight.fit(X, y)
+searchlight.fit(X_detrended, y)
 
 ### Visualization #############################################################
 import pylab as pl

@@ -2,6 +2,7 @@
 Transformer used to apply basic tranisformations on MRI data.
 """
 
+import sys
 import types
 import collections
 import itertools
@@ -16,6 +17,7 @@ from . import masking
 from . import resampling
 from . import preprocessing
 from . import utils
+
 
 def _check_nifti_methods(object):
     try:
@@ -134,8 +136,10 @@ class MRITransformer(BaseEstimator, TransformerMixin):
                     " Given image is a %iD array"
                     % self.__class__.__name__, dim)
 
-        # Contains lengths of sessions to generate if needed
         if self.sessions_ is None and (dim + depth == 5):
+            print >> sys.stderr, "Warning: an additional level has been" \
+                    "detected in the data and will be treated as sessions." \
+                    " A session array will be computed."
             # With 4D images, each image is a session, we collapse them
             if dim == 4:
                 imgs, affine, self.sessions_ = collapse_niimg(imgs,
@@ -266,10 +270,16 @@ class MRITransformer(BaseEstimator, TransformerMixin):
 
     def inverse_transform(self, X, null=-1):
         if len(X.shape) > 1:
-            shape = self.mask_.shape + (X.shape[-1],)
+            # we build the data iteratively to avoid MemoryError
+            data = []
+            for x in X:
+                img = np.empty(self.mask_.shape)
+                img.fill(null)
+                img[self.mask_] = x
+                data.append(img)
+            data = np.asarray(data)
         else:
-            shape = self.mask_.shape
-        data = np.empty(shape)
-        data.fill(null)
-        data[self.mask_] = np.rollaxis(X, -1)
+            data = np.empty(self.mask_.shape)
+            data.fill(null)
+            data[self.mask_] = X
         return utils.Niimg(data, self.affine)

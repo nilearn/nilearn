@@ -19,7 +19,7 @@ Pattern Recognition 2011.
 from nisl import datasets, mri_transformer
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
 mri = mri_transformer.MRITransformer()
-fmri_masked = mri.fit_transform(dataset.func[1][0])
+fmri_masked = mri.fit(dataset.func[1][0]).transform(dataset.func[1][0])
 mask = mri.mask_
 
 ### Ward ######################################################################
