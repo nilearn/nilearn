@@ -102,7 +102,7 @@ pl.show()
 ### Show the F_score
 from sklearn.feature_selection import f_classif
 pl.figure(2)
-X_masked = X[:, process_mask]
+X_masked = X_detrended[:, process_mask]
 f_values, p_values = f_classif(X_masked, y)
 p_values = -np.log10(p_values)
 p_values[np.isnan(p_values)] = 0
