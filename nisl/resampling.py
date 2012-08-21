@@ -1,4 +1,3 @@
-
 import numpy as np
 from scipy import ndimage
 
@@ -89,7 +88,7 @@ def get_bounds(shape, affine):
     return zip(box.min(axis=-1), box.max(axis=-1))
 
 
-def as_volume_img(data, affine, new_affine=None, new_shape=None,
+def resample(data, affine, new_affine=None, new_shape=None,
                                     interpolation='continuous', copy=True):
     if copy:
         import copy

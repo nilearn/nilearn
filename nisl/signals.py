@@ -72,7 +72,7 @@ def standardize(signals, copy=True, normalize=True):
     return signals
 
 
-def clean_signals(signals, confounds=None, low_pass=0.2, t_r=2.5,
+def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
                          high_pass=False, detrend=False,
                          normalize=True,
                          shift_confounds=False):

@@ -15,7 +15,7 @@ import nibabel
 
 from . import masking
 from . import resampling
-from . import preprocessing
+from . import signals
 from . import utils
 
 
@@ -28,7 +28,7 @@ def _check_nifti_methods(object):
         return False
 
 
-def check_niimg(data):
+def _check_niimg(data):
     if isinstance(data, types.StringTypes):
         # data is a filename, we load it
         result = nibabel.load(data)
@@ -45,10 +45,10 @@ def collapse_niimg(imgs, generate_sessions=False):
     data = []
     if generate_sessions:
         sessions = []
-    first_img = check_niimg(iter(imgs).next())
+    first_img = _check_niimg(iter(imgs).next())
     affine = first_img.get_affine()
     for index, iter_img in enumerate(imgs):
-        img = check_niimg(iter_img)
+        img = _check_niimg(iter_img)
         if not np.array_equal(img.get_affine(), affine):
             s_error = ""
             if generate_sessions:
@@ -126,7 +126,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
             depth += 1
 
         # First Image is supposed to be a path or a Nifti like element
-        first_img = check_niimg(first_img)
+        first_img = _check_niimg(first_img)
 
         # Check dimension and depth
         dim = len(first_img.get_data().shape)
@@ -160,7 +160,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
 
         # Now, we that data is in a known format, load it
         if dim == 4:
-            data = check_niimg(imgs)
+            data = _check_niimg(imgs)
             affine = data.get_affine()
             data = data.get_data()
         else:
@@ -216,7 +216,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print "[%s.transform] Resampling" % self.__class__.__name__
-        data, affine = memory.cache(resampling.as_volume_img)(data, affine,
+        data, affine = memory.cache(resampling.resample)(data, affine,
                 new_affine=self.new_affine, copy=self.copy)
 
         # Function that does that exposes interpolation order, but not
@@ -240,7 +240,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if self.sessions_ is None:
-            data = memory.cache(preprocessing.clean_signals)(data,
+            data = memory.cache(signals.clean)(data,
                     confounds=self.confounds, low_pass=self.low_pass,
                     high_pass=self.high_pass, t_r=self.t_r,
                     detrend=self.detrend, normalize=False)
@@ -249,7 +249,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
                 if self.confounds is not None:
                     session_confounds = self.confounds[self.sessions_ == s]
                     data[self.sessions_ == s] = \
-                        memory.cache(preprocessing.clean_signals)(
+                        memory.cache(signals.clean)(
                                 data=data[self.sessions_ == s],
                                 confounds=session_confounds,
                                 low_pass=self.low_pass,
