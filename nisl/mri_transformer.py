@@ -45,7 +45,7 @@ def collapse_niimg(imgs, generate_sessions=False):
     data = []
     if generate_sessions:
         sessions = []
-    first_img = iter(imgs).next()
+    first_img = check_niimg(iter(imgs).next())
     affine = first_img.get_affine()
     for index, iter_img in enumerate(imgs):
         img = check_niimg(iter_img)
@@ -61,9 +61,9 @@ def collapse_niimg(imgs, generate_sessions=False):
             raise ValueError("Affine of %s%s is different"
                     " from reference affine"
                     "\nReference affine:\n%s\n"
-                    "Wrong affine:\n%s"
-                    % i_error, s_error,
-                    repr(affine), repr(img.get_affine()))
+                    "Wrong affine: %s\n%s"
+                    % (i_error, s_error,
+                    repr(affine), i_error, repr(img.get_affine())))
         data.append(img)
         if generate_sessions:
             sessions += list(itertools.repeat(index, img.get_data().shape[-1]))
@@ -134,7 +134,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         if not dim in [3, 4]:
             raise ValueError("[%s] Image must be a 3D or 4D array."
                     " Given image is a %iD array"
-                    % self.__class__.__name__, dim)
+                    % (self.__class__.__name__, dim))
 
         if self.sessions_ is None and (dim + depth == 5):
             print >> sys.stderr, "Warning: an additional level has been" \

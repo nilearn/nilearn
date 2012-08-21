@@ -7,11 +7,10 @@ Simple example to show data manipulation and visualization.
 
 # Fetch data ################################################################
 from nisl import datasets
-haxby = datasets.fetch_haxby()
+haxby_files = datasets.fetch_haxby()
 
 # Get the file names relative to this dataset
-files = haxby.files
-bold = files[1]
+bold = haxby_files.data
 
 # Load the NIfTI data
 import nibabel
