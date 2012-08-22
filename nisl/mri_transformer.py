@@ -2,10 +2,8 @@
 Transformer used to apply basic tranisformations on MRI data.
 """
 
-import sys
 import types
 import collections
-import itertools
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -16,60 +14,7 @@ import nibabel
 from . import masking
 from . import resampling
 from . import signals
-from . import utils
-
-
-def _check_nifti_methods(object):
-    try:
-        get_data = getattr(object, "get_data")
-        get_affine = getattr(object, "get_affine")
-        return callable(get_data) and callable(get_affine)
-    except Exception:
-        return False
-
-
-def _check_niimg(data):
-    if isinstance(data, types.StringTypes):
-        # data is a filename, we load it
-        result = nibabel.load(data)
-    else:
-        # it is an object, it should have get_data and get_affine methods
-        if not _check_nifti_methods(data):
-            raise AttributeError("Given data does not expose"
-                " get_data or get_affine methods")
-        result = data
-    return result
-
-
-def collapse_niimg(imgs, generate_sessions=False):
-    data = []
-    if generate_sessions:
-        sessions = []
-    first_img = _check_niimg(iter(imgs).next())
-    affine = first_img.get_affine()
-    for index, iter_img in enumerate(imgs):
-        img = _check_niimg(iter_img)
-        if not np.array_equal(img.get_affine(), affine):
-            s_error = ""
-            if generate_sessions:
-                s_error = " of session #" + str(index)
-            if (isinstance(iter_img, types.StringTypes)):
-                i_error = "image " + iter_img
-            else:
-                i_error = "image #" + str(index)
-
-            raise ValueError("Affine of %s%s is different"
-                    " from reference affine"
-                    "\nReference affine:\n%s\n"
-                    "Wrong affine: %s\n%s"
-                    % (i_error, s_error,
-                    repr(affine), i_error, repr(img.get_affine())))
-        data.append(img)
-        if generate_sessions:
-            sessions += list(itertools.repeat(index, img.get_data().shape[-1]))
-    if generate_sessions:
-        return data, affine, sessions
-    return data, affine
+from . import niimg
 
 
 class MRITransformer(BaseEstimator, TransformerMixin):
@@ -95,8 +40,8 @@ class MRITransformer(BaseEstimator, TransformerMixin):
     def __init__(self, sessions=None, mask=None, mask_connected=False,
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
-            affine=None, low_pass=None, high_pass=None, t_r=None, copy=False,
-            memory=Memory(cachedir=None, verbose=0), verbose=0):
+            affine=None, shape=None, low_pass=None, high_pass=None, t_r=None,
+            copy=False, memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         # Must integrate memory, as in WardAgglomeration
         self.mask = mask
@@ -108,6 +53,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         self.confounds = confounds
         self.detrend = detrend
         self.new_affine = affine
+        self.new_shape = shape
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
@@ -126,7 +72,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
             depth += 1
 
         # First Image is supposed to be a path or a Nifti like element
-        first_img = _check_niimg(first_img)
+        first_img = niimg.check_niimg(first_img)
 
         # Check dimension and depth
         dim = len(first_img.get_data().shape)
@@ -136,35 +82,19 @@ class MRITransformer(BaseEstimator, TransformerMixin):
                     " Given image is a %iD array"
                     % (self.__class__.__name__, dim))
 
-        if self.sessions_ is None and (dim + depth == 5):
-            print >> sys.stderr, "Warning: an additional level has been" \
-                    "detected in the data and will be treated as sessions." \
-                    " A session array will be computed."
-            # With 4D images, each image is a session, we collapse them
-            if dim == 4:
-                imgs, affine, self.sessions_ = collapse_niimg(imgs,
-                        generate_sessions=True)
-            else:
-                # We collapse the array and generate sessions
-                lengths = [[i] * len(array) for i, array in enumerate(imgs)]
-                self.sessions_ = list(itertools.chain.from_iterable(lengths))
-                imgs = list(itertools.chain.from_iterable(imgs))
-            # Remove the dimension corresponding to sessions
-            dim -= 1
-
         if (dim + depth) != 4:
             # This error message is poor but givin details about each case
             # would be too complicated
-            raise ValueError("[%s] Cannot load your data due to a dimension"
-                    " problem." % self.__class__.__name__)
+            raise ValueError("[%s] Given data must be a 4D Niimg or list of 3D"
+                    " Niimg." % self.__class__.__name__)
 
         # Now, we that data is in a known format, load it
         if dim == 4:
-            data = _check_niimg(imgs)
+            data = niimg.check_niimg(imgs)
             affine = data.get_affine()
             data = data.get_data()
         else:
-            data, affine = collapse_niimg(imgs)
+            data, affine = niimg.collapse_niimg(imgs)
         self.affine = affine
         return data
 
@@ -202,6 +132,14 @@ class MRITransformer(BaseEstimator, TransformerMixin):
             else:
                 self.mask_ = self.mask
 
+        # If resampling is requested, resample also the mask
+        # Resampling: allows the user to change the affine, the shape or both
+        if self.verbose > 0:
+            print "[%s.transform] Resampling mask" % self.__class__.__name__
+        self.mask_, _ = memory.cache(resampling.resample)(self.mask_,
+                self.affine, new_affine=self.new_affine,
+                new_shape=self.new_shape)
+
         return self
 
     def transform(self, X):
@@ -217,7 +155,8 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Resampling" % self.__class__.__name__
         data, affine = memory.cache(resampling.resample)(data, affine,
-                new_affine=self.new_affine, copy=self.copy)
+                new_affine=self.new_affine, new_shape=self.new_shape,
+                copy=self.copy)
 
         # Function that does that exposes interpolation order, but not
         # this object
@@ -268,7 +207,8 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         self.affine_ = affine
         return data
 
-    def inverse_transform(self, X, null=-1):
+    def inverse_transform(self, X):
+        null = 0
         if len(X.shape) > 1:
             # we build the data iteratively to avoid MemoryError
             data = []
@@ -282,4 +222,4 @@ class MRITransformer(BaseEstimator, TransformerMixin):
             data = np.empty(self.mask_.shape)
             data.fill(null)
             data[self.mask_] = X
-        return utils.Niimg(data, self.affine)
+        return niimg.Niimg(data, self.affine)

@@ -86,7 +86,7 @@ niimg = mri_loader.inverse_transform(svc[0])
 
 # We use a masked array so that the voxels at '-1' are displayed
 # transparently
-act = np.ma.masked_array(niimg.get_data(), niimg.get_data() <= 0)
+act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
 
 ### Create the figure
 import pylab as pl

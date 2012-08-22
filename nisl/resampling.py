@@ -171,4 +171,4 @@ def resample(data, affine, new_affine=None, new_shape=None,
                                             offset=np.dot(A_inv, b),
                                             output_shape=new_shape,
                                             order=interpolation_order)
-    return (resampled_data, new_affine)
+    return resampled_data, new_affine
