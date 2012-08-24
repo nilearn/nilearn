@@ -124,7 +124,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
             self.mask_ = masking.compute_epi_mask(np.mean(data, axis=-1),
                     connected=self.mask_connected, opening=self.mask_opening,
                     lower_cutoff=self.mask_lower_cutoff,
-                    upper_cutoff=self.mask_upper_cutoff)
+                    upper_cutoff=self.mask_upper_cutoff, verbose=(verbose -1))
         else:
             if isinstance(self.mask, types.StringTypes):
                 self.mask_ = nibabel.load(self.mask).get_data() \

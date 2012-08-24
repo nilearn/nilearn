@@ -43,7 +43,7 @@ def _largest_connected_component(mask):
 
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
-                 connected=True, opening=True, exclude_zeros=False):
+                 connected=True, opening=True, exclude_zeros=False, verbose=0):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
@@ -71,12 +71,15 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
+    verbose: integer, optional
 
     Returns
     -------
     mask : 3D boolean ndarray
         The brain mask
     """
+    if verbose > 0:
+       print "EPI mask computation" 
     if len(epi_img.shape) == 4:
         epi_img = epi_img.mean(axis=-1)
     sorted_input = np.sort(np.ravel(epi_img))
