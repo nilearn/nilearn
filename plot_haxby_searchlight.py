@@ -37,11 +37,11 @@ conditions = conditions[condition_mask]
 
 ### Loading step ##############################################################
 from nisl import mri_transformer
-from nisl.utils import Niimg
+from nibabel import Nifti1Image
 # Detrending is disabled as we are not yet able to do it by session
 mri_loader = mri_transformer.MRITransformer(mask=mask, detrend=True,
         copy=False, sessions=session)
-niimg = Niimg(X, affine)
+niimg = Nifti1Image(X, affine)
 X_masked = mri_loader.fit(niimg).transform(niimg)
 X_detrended = mri_loader.inverse_transform(X_masked).get_data()
 

@@ -10,11 +10,12 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
 import nibabel
+from babel import Nifti1Image
 
 from . import masking
 from . import resampling
 from . import signals
-from . import niimg
+from . import utils
 
 
 class MRITransformer(BaseEstimator, TransformerMixin):
@@ -40,10 +41,10 @@ class MRITransformer(BaseEstimator, TransformerMixin):
     def __init__(self, sessions=None, mask=None, mask_connected=False,
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
-            affine=None, shape=None, low_pass=None, high_pass=None, t_r=None,
-            copy=False, memory=Memory(cachedir=None, verbose=0), verbose=0):
+            new_affine=None, new_shape=None, low_pass=None, high_pass=None, t_r=None,
+            copy=False, memory=Memory(cachedir=None, verbose=0),
+            transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
-        # Must integrate memory, as in WardAgglomeration
         self.mask = mask
         self.mask_connected = mask_connected
         self.mask_opening = mask_opening
@@ -52,18 +53,21 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         self.smooth = smooth
         self.confounds = confounds
         self.detrend = detrend
-        self.new_affine = affine
-        self.new_shape = shape
+        self.new_affine = new_affine
+        self.new_shape = new_shape
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
         self.copy = copy
         self.memory = memory
+        self.transform_memory = transform_memory
         self.verbose = verbose
         self.sessions_ = sessions
 
     def load_imgs(self, imgs):
-        # Initialization: we go through the data to get the depth and dimension
+        # Initialization: 
+        # If given data is a list, we count the number of levels to check
+        # dimensionality and make a consistent error message.
         depth = 0
         first_img = imgs
         while isinstance(first_img, collections.Iterable) \
@@ -72,29 +76,25 @@ class MRITransformer(BaseEstimator, TransformerMixin):
             depth += 1
 
         # First Image is supposed to be a path or a Nifti like element
-        first_img = niimg.check_niimg(first_img)
+        first_img = utils.check_nifti_image(first_img)
 
         # Check dimension and depth
         dim = len(first_img.get_data().shape)
 
-        if not dim in [3, 4]:
-            raise ValueError("[%s] Image must be a 3D or 4D array."
-                    " Given image is a %iD array"
-                    % (self.__class__.__name__, dim))
-
         if (dim + depth) != 4:
             # This error message is poor but givin details about each case
             # would be too complicated
-            raise ValueError("[%s] Given data must be a 4D Niimg or list of 3D"
-                    " Niimg." % self.__class__.__name__)
+            raise ValueError("[%s] Data must be either a 4D Nifti image or a"
+                    " list of 3D Nifti images. You provided a %s %dD image(s)."
+                    % (self.__class__.__name__, 'list of ' * depth, dim))
 
         # Now, we that data is in a known format, load it
         if dim == 4:
-            data = niimg.check_niimg(imgs)
+            data = utils.check_nifti_image(imgs)
             affine = data.get_affine()
             data = data.get_data()
         else:
-            data, affine = niimg.collapse_niimg(imgs)
+            data, affine = utils.collapse_nifti_images(imgs)
         self.affine = affine
         return data
 
@@ -121,10 +121,10 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            self.mask_ = masking.compute_epi_mask(np.mean(data, axis=-1),
+            self.mask_ = memory.cache(masking.compute_epi_mask)(np.mean(data, axis=-1),
                     connected=self.mask_connected, opening=self.mask_opening,
                     lower_cutoff=self.mask_lower_cutoff,
-                    upper_cutoff=self.mask_upper_cutoff, verbose=(verbose -1))
+                    upper_cutoff=self.mask_upper_cutoff, verbose=(self.verbose -1))
         else:
             if isinstance(self.mask, types.StringTypes):
                 self.mask_ = nibabel.load(self.mask).get_data() \
@@ -143,7 +143,9 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        memory = self.memory
+        memory = self.tranform_memory
+        if isinstance(memory, basestring):
+            memory = Memory(cachedir=memory)
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
@@ -157,10 +159,6 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         data, affine = memory.cache(resampling.resample)(data, affine,
                 new_affine=self.new_affine, new_shape=self.new_shape,
                 copy=self.copy)
-
-        # Function that does that exposes interpolation order, but not
-        # this object
-        # XXX -> ?
 
         # Get series from data with optional smoothing
         if self.verbose > 0:
@@ -222,4 +220,4 @@ class MRITransformer(BaseEstimator, TransformerMixin):
             data = np.empty(self.mask_.shape)
             data.fill(null)
             data[self.mask_] = X
-        return niimg.Niimg(data, self.affine)
+        return Nifti1Image(data, self.affine)
