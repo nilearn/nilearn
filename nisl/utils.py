@@ -49,8 +49,8 @@ def collapse_nifti_images(niimgs, compute_sessions=False):
                     " from reference affine"
                     "\nReference affine:\n%s\n"
                     "Wrong affine:\n%s"
-                    % i_error, s_error,
-                    repr(affine), repr(niimg.get_affine()))
+                    % (i_error, s_error,
+                    repr(affine), repr(niimg.get_affine())))
         data.append(niimg)
         if compute_sessions:
             sessions += list(itertools.repeat(index, niimg.get_data().shape[-1]))
