@@ -10,7 +10,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
 import nibabel
-from babel import Nifti1Image
+from nibabel import Nifti1Image
 
 from . import masking
 from . import resampling
@@ -143,7 +143,7 @@ class MRITransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        memory = self.tranform_memory
+        memory = self.transform_memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
 

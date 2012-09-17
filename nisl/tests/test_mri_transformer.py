@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from ..mri_transformer import MRITransformer
-from ..utils import Niimg
+from nibabel import Nifti1Image
 
 ###############################################################################
 # Image Loading                                                               #
@@ -19,7 +19,7 @@ def generate_image(dimension, depth, affine=None):
         affine = np.random.random(size=(4, 4))
     if depth == 0:
         shape = tuple(np.random.random_integers(10, size=dimension))
-        return Niimg(np.random.random(size=shape), affine)
+        return Nifti1Image(np.random.random(size=shape), affine)
     items = np.random.random_integers(10)
     array = []
     for i in range(items):
@@ -48,9 +48,7 @@ assert_equal(t.sessions_, None)
 # Expected: OK, generates session array
 t = MRITransformer()
 img = generate_image(3, 2)
-t.load_imgs(img)
-assert_true(not t.sessions_ is None)
-# assert_equal(np.ravel(img).shape[0], len(t.sessions_))
+assert_raises(ValueError, t.load_imgs, img)
 
 # No session array | 4D | Depth 0
 # Expected: OK, no session
@@ -63,9 +61,7 @@ assert_equal(t.sessions_, None)
 # Expected: OK, generates session array
 t = MRITransformer()
 img = generate_image(4, 1)
-t.load_imgs(img)
-assert_true(not t.sessions_ is None)
-# assert_equal(np.ravel(img).shape[0], len(t.sessions_))
+assert_raises(ValueError, t.load_imgs, img)
 
 # No session array | 4D | Depth 2
 # Expected: Error

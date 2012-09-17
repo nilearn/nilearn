@@ -28,7 +28,7 @@ mask = dataset_files['mask']
 mean_img = fmri_data.mean(axis=-1)
 
 ### Restrict to faces and houses ##############################################
-from nisl.utils import Niimg
+from nibabel import Nifti1Image
 
 # Keep only data corresponding to face or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
@@ -71,8 +71,8 @@ anova_svc = Pipeline([('load', mri_loader), ('anova', feature_selection),
 
 ### Fit and predict ###########################################################
 
-anova_svc.fit(Niimg(X, affine), y)
-y_pred = anova_svc.predict(Niimg(X, affine))
+anova_svc.fit(Nifti1Image(X, affine), y)
+y_pred = anova_svc.predict(Nifti1Image(X, affine))
 
 ### Visualisation #############################################################
 
@@ -115,8 +115,8 @@ cv = LeaveOneLabelOut(session)
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
-    y_pred = anova_svc.fit(Niimg(X[..., train], affine), y[train]) \
-        .predict(Niimg(X[..., test], affine))
+    y_pred = anova_svc.fit(Nifti1Image(X[..., train], affine), y[train]) \
+        .predict(Nifti1Image(X[..., test], affine))
     cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
 
 ### Print results #############################################################

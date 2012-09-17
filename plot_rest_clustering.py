@@ -51,7 +51,11 @@ print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 
 # Unmask data
 import numpy as np
-labels = mri.inverse_transform(ward.labels_, null=-1).get_data()
+# Avoid 0 label
+labels = ward.labels_ + 1
+labels = mri.inverse_transform(ward.labels_).get_data()
+# 0 is the background, putting it to -1
+labels = labels - 1
 
 # Display the labels
 import pylab as pl
