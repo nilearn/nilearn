@@ -32,7 +32,7 @@ def check_niimg(niimg):
     return result
 
 
-def collapse_niimgs(niimgs, compute_sessions=False):
+def concat_niimgs(niimgs, compute_sessions=False):
     data = []
     if compute_sessions:
         sessions = []
@@ -64,7 +64,7 @@ def collapse_niimgs(niimgs, compute_sessions=False):
 
 
 def check_niimgs(niimgs):
-    # Initialization: 
+    # Initialization:
     # If given data is a list, we count the number of levels to check
     # dimensionality and make a consistent error message.
     depth = 0
@@ -81,9 +81,9 @@ def check_niimgs(niimgs):
     dim = len(first_img.get_data().shape)
 
     if (dim + depth) != 4:
-        # Very detailed error message that tells exactly the user what 
+        # Very detailed error message that tells exactly the user what
         # was provided and what should have been provided.
-        raise ValueError("Data must be either a 4D Nifti image or a"
+        raise TypeError("Data must be either a 4D Nifti image or a"
                 " list of 3D Nifti images. You provided a %s%dD image(s)."
                 % ('list of ' * depth, dim))
 
@@ -91,5 +91,5 @@ def check_niimgs(niimgs):
     if dim == 4:
         niimg = check_niimg(niimgs)
     else:
-        niimg = collapse_niimgs(niimgs)
-    return niimg 
+        niimg = concat_niimgs(niimgs)
+    return niimg
