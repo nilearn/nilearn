@@ -63,12 +63,15 @@ def concat_niimgs(niimgs, compute_sessions=False):
     return data, affine
 
 
-def check_niimgs(niimgs):
+def check_niimgs(niimgs, accept_3d=False):
     # Initialization:
     # If given data is a list, we count the number of levels to check
     # dimensionality and make a consistent error message.
     depth = 0
     first_img = niimgs
+    if accept_3d and (isinstance(first_img, basestring)
+                      or not isinstance(first_img, collections.Iterable)):
+        return check_niimg(niimgs)
     while isinstance(first_img, collections.Iterable) \
             and not isinstance(first_img, basestring):
         first_img = iter(first_img).next()

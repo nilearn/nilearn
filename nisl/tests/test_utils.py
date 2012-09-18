@@ -20,8 +20,12 @@ def test_check_niimgs():
     niimg = Nifti1Image(np.ones((10, 10, 10)), affine)
 
     utils.check_niimgs([niimg, niimg])
+    # This should raise an error: a 3D niimg is given and we want a 4D
     nose.tools.assert_raises(TypeError, utils.check_niimgs,
                              niimg)
+    # This shouldn't raise an error
+    utils.check_niimgs(niimg, accept_3d=True)
+
 
 def test_concat_niimgs():
     affine = np.eye(4)

@@ -81,7 +81,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         The brain mask
     """
     if verbose > 0:
-       print "EPI mask computation" 
+       print "EPI mask computation"
     if len(mean_epi.shape) == 4:
         mean_epi = mean_epi.mean(axis=-1)
     sorted_input = np.sort(np.ravel(mean_epi))
