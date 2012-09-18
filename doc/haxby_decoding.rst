@@ -193,7 +193,7 @@ function, *cross_val_score* that computes for you the results for the
 different folds of cross-validation::
 
   >>> from sklearn.cross_validation import cross_val_score
-  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, verbose=10)
+  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv)
 
 If you are the happy owner of a multiple processors computer you can
 speed up the computation by using n_jobs=-1, which will spread the

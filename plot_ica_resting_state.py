@@ -31,7 +31,7 @@ mean_img = np.mean(fmri_data, axis=3)
 
 # Mask non brain areas
 from nisl import masking
-mask = masking.compute_mask(mean_img)
+mask = masking.compute_epi_mask(mean_img)
 data_masked = fmri_data[mask]
 
 
