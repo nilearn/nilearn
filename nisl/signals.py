@@ -5,58 +5,6 @@ from scipy import signal, linalg, fftpack
 import numpy as np
 
 
-def ledoit_wolf(x, return_factor=False):
-    """ Estimates the shrunk Ledoit-Wolf covariance matrix.
-
-        Parameters
-        ----------
-        x: 2D ndarray, shape (p, n)
-            The data matrix, with p features and n samples.
-        return_factor: boolean, optional
-            If return_factor is True, the regularisation_factor is
-            returned.
-
-        Returns
-        -------
-        regularised_cov: 2D ndarray
-            Regularized covariance
-        regularisation_factor: float
-            Regularisation factor
-
-        Notes
-        -----
-        The regularised covariance is::
-
-            (1 - regularisation_factor)*cov
-                    + regularisation_factor*np.identity(n_features)
-    """
-    n_features, n_samples = x.shape
-    if n_features == 1:
-        if return_factor:
-            return np.atleast_2d(x.std()), 0
-        return np.atleast_2d(x.std())
-    cov = np.dot(x, x.T) / n_samples
-    i = np.identity(n_features)
-    mu = np.trace(cov) / n_features
-    delta = ((cov - mu * i) ** 2).sum() / n_features
-    #beta_ = 1./(n_features*n_samples**2) * sum([
-    #        ((np.dot(this_x[:, np.newaxis],
-    #            this_x[np.newaxis, :]) - cov)**2).sum()
-    #        for this_x in x.T
-    #    ])
-    x2 = x ** 2
-    beta_ = 1. / (n_features * n_samples) * np.sum(
-                            np.dot(x2, x2.T) / n_samples - cov ** 2
-                )
-
-    beta = min(beta_, delta)
-    alpha = delta - beta
-    if not return_factor:
-        return beta / delta * mu * i + alpha / delta * cov
-    else:
-        return beta / delta * mu * i + alpha / delta * cov, beta / delta
-
-
 def standardize(signals, copy=True, normalize=True):
     """ Center and norm a given signal (sample = axis -1)
     """
