@@ -41,8 +41,8 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
     def __init__(self, sessions=None, mask=None, mask_connected=False,
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
-            new_affine=None, new_shape=None, low_pass=None, high_pass=None, t_r=None,
-            copy=False, memory=Memory(cachedir=None, verbose=0),
+            target_affine=None, target_shape=None, low_pass=None, high_pass=None,
+            t_r=None, copy=False, memory=Memory(cachedir=None, verbose=0),
             transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
@@ -53,8 +53,8 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
         self.smooth = smooth
         self.confounds = confounds
         self.detrend = detrend
-        self.new_affine = new_affine
-        self.new_shape = new_shape
+        self.target_affine = target_affine
+        self.target_shape = target_shape
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
@@ -137,8 +137,8 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
         self.mask_, _ = memory.cache(resampling.resample)(self.mask_,
-                self.affine, new_affine=self.new_affine,
-                new_shape=self.new_shape)
+                self.affine, target_affine=self.target_affine,
+                target_shape=self.target_shape)
 
         return self
 
@@ -157,8 +157,8 @@ class NiftiLoader(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Resampling" % self.__class__.__name__
         data, affine = memory.cache(resampling.resample)(data, affine,
-                new_affine=self.new_affine, new_shape=self.new_shape,
-                copy=self.copy)
+                target_affine=self.target_affine,
+                target_shape=self.target_shape, copy=self.copy)
 
         # Get series from data with optional smoothing
         if self.verbose > 0:

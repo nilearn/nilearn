@@ -544,15 +544,13 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
             ['1073/NYU_TRT_session2a.tar.gz', '1074/NYU_TRT_session2b.tar.gz'],
             ['1075/NYU_TRT_session3a.tar.gz', '1076/NYU_TRT_session3b.tar.gz']]
 
-    anat_anon = {}
-    anat_skull = {}
-    func = {}
+    anat_anon = [] 
+    anat_skull = []
+    func = []
+    session = []
     # Loading session by session
-    for session in sessions:
-        session_path = "session" + str(session)
-        anat_anon[session] = []
-        anat_skull[session] = []
-        func[session] = []
+    for session_id in sessions:
+        session_path = "session" + str(session_id)
         # Load subjects in two steps, as the files are splitted
         for part in range(0, n_subjects / len(subjects_a) + 1):
             if part == 0:
@@ -567,7 +565,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                 files = (_get_dataset("nyu_rest", paths, data_dir=data_dir))
             except IOError:
                 url = 'http://www.nitrc.org/frs/download.php/'
-                url += tars[session - 1][part]
+                url += tars[session_id - 1][part]
                 # Determine files to be downloaded
                 _fetch_dataset('nyu_rest', [url], data_dir=data_dir,
                         folder=session_path)
@@ -575,11 +573,13 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
             for i in range(len(subjects)):
                 # We are considering files 3 by 3
                 i *= 3
-                anat_anon[session].append(files[i])
-                anat_skull[session].append(files[i + 1])
-                func[session].append(files[i + 2])
+                anat_anon.append(files[i])
+                anat_skull.append(files[i + 1])
+                func.append(files[i + 2])
+                session.append(session_id)
 
-    return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func)
+    return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
+            session=session)
 
 
 def fetch_poldrack_mixed_gambles(data_dir=None):

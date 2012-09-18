@@ -20,8 +20,8 @@ from nisl import datasets
 from nisl.io import NiftiLoader
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
 nifti_loader = NiftiLoader()
-fmri_masked = nifti_loader.fit(dataset.func[1][0]) \
-        .transform(dataset.func[1][0])
+fmri_masked = nifti_loader.fit(dataset.func[0]) \
+        .transform(dataset.func[0])
 mask = nifti_loader.mask_
 
 ### Ward ######################################################################

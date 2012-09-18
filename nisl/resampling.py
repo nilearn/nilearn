@@ -88,24 +88,24 @@ def get_bounds(shape, affine):
     return zip(box.min(axis=-1), box.max(axis=-1))
 
 
-def resample(data, affine, new_affine=None, new_shape=None,
+def resample(data, affine, target_affine=None, target_shape=None,
                                     interpolation='continuous', copy=True):
     if copy:
         import copy
         data = copy.copy(data)
         affine = copy.copy(affine)
-    if new_affine is None and new_shape is None:
+    if target_affine is None and target_shape is None:
         return (data, affine)
-    if new_affine is None:
-        new_affine = np.eye(4)
-    if new_shape is None:
-        new_shape = data.shape[:3]
-    new_shape = list(new_shape)
-    if new_affine.shape[0] == 3:
+    if target_affine is None:
+        target_affine = np.eye(4)
+    if target_shape is None:
+        target_shape = data.shape[:3]
+    target_shape = list(target_shape)
+    if target_affine.shape[0] == 3:
         # We have a 3D affine, we need to find out the offset and
         # shape to keep the same bounding box in the new space
         affine4d = np.eye(4)
-        affine4d[:3, :3] = new_affine
+        affine4d[:3, :3] = target_affine
         transform_affine = np.dot(np.linalg.inv(affine4d),
                                     affine,
                                  )
@@ -116,15 +116,15 @@ def resample(data, affine, new_affine=None, new_shape=None,
                                                     )
 
         offset = np.array((xmin, ymin, zmin))
-        offset = np.dot(new_affine, offset)
-        new_affine = from_matrix_vector(new_affine, offset[:3])
-        new_shape = (np.ceil(xmax - xmin) + 1,
-                     np.ceil(ymax - ymin) + 1,
-                     np.ceil(zmax - zmin) + 1, )
-    if not len(new_shape) == 3:
+        offset = np.dot(target_affine, offset)
+        target_affine = from_matrix_vector(target_affine, offset[:3])
+        target_shape = (np.ceil(xmax - xmin) + 1,
+                        np.ceil(ymax - ymin) + 1,
+                        np.ceil(zmax - zmin) + 1, )
+    if not len(target_shape) == 3:
         raise ValueError('The shape specified should be the shape '
             'the 3D grid, and thus of length 3. %s was specified'
-            % new_shape)
+            % target_shape)
 
     # Determine interpolation order
     if interpolation == 'continuous':
@@ -135,11 +135,11 @@ def resample(data, affine, new_affine=None, new_shape=None,
         raise ValueError("interpolation must be either 'continuous' "
                          "or 'nearest'")
 
-    if np.all(new_affine == affine):
+    if np.all(target_affine == affine):
         # Small trick to be more numericaly stable
         transform_affine = np.eye(4)
     else:
-        transform_affine = np.dot(np.linalg.inv(affine), new_affine)
+        transform_affine = np.dot(np.linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
     A_inv = np.linalg.inv(A)
     # If A is diagonal, ndimage.affine_transform is clever-enough
@@ -158,17 +158,17 @@ def resample(data, affine, new_affine=None, new_shape=None,
         data = np.rollaxis(data, 3)
         resampled_data = [ndimage.affine_transform(slice, A,
                                             offset=np.dot(A_inv, b),
-                                            output_shape=new_shape,
+                                            output_shape=target_shape,
                                             order=interpolation_order)
                             for slice in data]
         resampled_data = np.concatenate([d[..., np.newaxis]
                                         for d in resampled_data],
                                         axis=3)
-        resampled_data = np.reshape(resampled_data, list(new_shape) +
+        resampled_data = np.reshape(resampled_data, list(target_shape) +
                                         list(data_shape[3:]))
     else:
         resampled_data = ndimage.affine_transform(data, A,
                                             offset=np.dot(A_inv, b),
-                                            output_shape=new_shape,
+                                            output_shape=target_shape,
                                             order=interpolation_order)
-    return resampled_data, new_affine
+    return resampled_data, target_affine

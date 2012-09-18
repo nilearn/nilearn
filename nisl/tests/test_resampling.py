@@ -32,11 +32,11 @@ def test_identity_resample():
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
-    rot_im_data, _ = resample(data, affine, new_affine=affine,
+    rot_im_data, _ = resample(data, affine, target_affine=affine,
             interpolation='nearest')
     yield np.testing.assert_almost_equal, data, rot_im_data
     # Test with a 3x3 affine
-    rot_im_data, _ = resample(data, affine, new_affine=affine[:3, :3],
+    rot_im_data, _ = resample(data, affine, target_affine=affine[:3, :3],
             interpolation='nearest')
     yield np.testing.assert_almost_equal, data, rot_im_data
 
@@ -62,7 +62,7 @@ def test_resampling_with_affine():
     data = prng.randint(4, size=(1, 4, 4))
     for angle in (0, np.pi, np.pi / 2, np.pi / 4, np.pi / 3):
         rot = rotation(0, angle)
-        rot_im_data, _ = resample(data, np.eye(4), new_affine=rot,
+        rot_im_data, _ = resample(data, np.eye(4), target_affine=rot,
             interpolation='nearest')
         yield np.testing.assert_almost_equal, np.max(data), \
             np.max(rot_im_data)
