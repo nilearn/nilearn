@@ -1,10 +1,12 @@
 """
-Test the VolumeImg object.
+Test the resampling code.
 """
 
 import numpy as np
 
-from ..resampling import resample
+from nibabel import Nifti1Image
+
+from ..resampling import resample_img
 
 
 ###############################################################################
@@ -32,13 +34,14 @@ def test_identity_resample():
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
-    rot_im_data, _ = resample(data, affine, target_affine=affine,
-            interpolation='nearest')
-    yield np.testing.assert_almost_equal, data, rot_im_data
+    rot_img = resample_img(Nifti1Image(data, affine),
+                           target_affine=affine, interpolation='nearest')
+    np.testing.assert_almost_equal(data, rot_img.get_data())
     # Test with a 3x3 affine
-    rot_im_data, _ = resample(data, affine, target_affine=affine[:3, :3],
-            interpolation='nearest')
-    yield np.testing.assert_almost_equal, data, rot_im_data
+    rot_img = resample_img(Nifti1Image(data, affine),
+                           target_affine=affine[:3, :3],
+                           interpolation='nearest')
+    np.testing.assert_almost_equal(data, rot_img.get_data())
 
 
 def test_downsample():
@@ -47,12 +50,12 @@ def test_downsample():
     shape = (6., 3., 6, 2.)
     data = np.random.random(shape)
     affine = np.eye(4)
-    rot_im_data, _ = resample(data, affine,
-            2 * affine, interpolation='nearest')
+    rot_img = resample_img(Nifti1Image(data, affine),
+                                  2 * affine, interpolation='nearest')
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
-                                   rot_im_data[:x, :y, :z, ...])
+                                   rot_img.get_data()[:x, :y, :z, ...])
 
 
 def test_resampling_with_affine():
@@ -62,7 +65,8 @@ def test_resampling_with_affine():
     data = prng.randint(4, size=(1, 4, 4))
     for angle in (0, np.pi, np.pi / 2, np.pi / 4, np.pi / 3):
         rot = rotation(0, angle)
-        rot_im_data, _ = resample(data, np.eye(4), target_affine=rot,
-            interpolation='nearest')
-        yield np.testing.assert_almost_equal, np.max(data), \
-            np.max(rot_im_data)
+        rot_img = resample_img(Nifti1Image(data, np.eye(4)),
+                               target_affine=rot,
+                               interpolation='nearest')
+        np.testing.assert_almost_equal(np.max(data),
+                                np.max(rot_img.get_data()))
