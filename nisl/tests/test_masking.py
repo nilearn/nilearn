@@ -2,11 +2,10 @@
 Test the mask-extracting utilities.
 """
 
-from __future__ import with_statement
-
 from nose.tools import assert_true, assert_false
 
 import numpy as np
+from nibabel import Nifti1Image
 
 from ..masking import _largest_connected_component, extract_time_series, \
     compute_epi_mask
@@ -48,10 +47,11 @@ def test_extract_time_series():
     # A delta in 3D
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
-    mask = np.ones((40, 40, 40), dtype=np.bool)
+    mask = np.ones((40, 40, 40))
     for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
                     np.diag((.5, 1, .5, 1))):
-        series = extract_time_series(data, affine, mask, smooth=9)
+        series = extract_time_series(Nifti1Image(data, affine),
+                                     Nifti1Image(mask, affine), smooth=9)
         series = np.reshape(series[:, 0], (40, 40, 40))
         vmax = series.max()
         # We are expecting a full-width at half maximum of
@@ -65,10 +65,7 @@ def test_extract_time_series():
 
     # Check that NaNs in the data do not propagate
     data[10, 10, 10] = np.NaN
-    series = extract_time_series(data, affine, mask, smooth=9)
+    series = extract_time_series(Nifti1Image(data, affine),
+                                 Nifti1Image(mask, affine), smooth=9)
     assert_true(np.all(np.isfinite(series)))
 
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])
