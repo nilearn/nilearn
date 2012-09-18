@@ -109,7 +109,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 ###############################################################################
 
 
-def extract_time_series(niimgs, mask_img, dtype=np.float32,
+def apply_mask(niimgs, mask_img, dtype=np.float32,
                      smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
@@ -163,4 +163,4 @@ def extract_time_series(niimgs, mask_img, dtype=np.float32,
             this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                     smooth_sigma)
     series = series[mask]
-    return series 
+    return series

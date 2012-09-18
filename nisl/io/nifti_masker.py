@@ -2,14 +2,10 @@
 Transformer used to apply basic tranisformations on MRI data.
 """
 
-import types
-import collections
-
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
-import nibabel
 from nibabel import Nifti1Image
 
 from .. import masking
@@ -125,8 +121,7 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Masking and smoothing" \
                 % self.__class__.__name__
-        data = masking.extract_time_series(niimgs,
-                self.mask_, smooth=self.smooth)
+        data = masking.apply_mask(niimgs, self.mask_, smooth=self.smooth)
 
         # Temporal
         # ========
