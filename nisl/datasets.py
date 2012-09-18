@@ -369,7 +369,7 @@ def fetch_haxby(data_dir=None):
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     # return the data
-    return Bunch(data=files[1], session_target=files[0], mask=files[2],
+    return Bunch(func=files[1], session_target=files[0], mask=files[2],
             conditions_target=files[3])
 
 

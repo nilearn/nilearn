@@ -17,12 +17,12 @@ import nibabel
 dataset_files = datasets.fetch_haxby()
 
 # fmri_data and mask are copied to lose the reference to the original data
-bold_img = nibabel.load(dataset_files['data'])
+bold_img = nibabel.load(dataset_files.func)
 fmri_data = np.copy(bold_img.get_data())
 affine = bold_img.get_affine()
-y, session = np.loadtxt(dataset_files['session_target']).astype("int").T
-conditions = np.recfromtxt(dataset_files['conditions_target'])['f0']
-mask = np.copy(nibabel.load(dataset_files['mask']).get_data().astype(np.bool))
+y, session = np.loadtxt(dataset_files.session_target).astype("int").T
+conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
+mask = np.copy(nibabel.load(dataset_files.mask).get_data().astype(np.bool))
 
 ### Preprocess data ###########################################################
 # Build the mean image because we have no anatomic data
