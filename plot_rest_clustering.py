@@ -17,19 +17,12 @@ Pattern Recognition 2011.
 ### Load nyu_rest dataset #####################################################
 
 from nisl import datasets
+from nisl.io import NiftiMasker
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
-
-### Mask ######################################################################
-
-fmri_data = dataset.func[0]
-
-# Compute a brain mask
-from nisl import masking
-mask = masking.compute_mask(fmri_data)
-
-# Mask data: go from a 4D dataset to a 2D dataset with only the voxels
-# in the mask
-fmri_masked = fmri_data[mask]
+nifti_masker = NiftiMasker()
+fmri_masked = nifti_masker.fit(dataset.func[0]) \
+        .transform(dataset.func[0])
+mask = nifti_masker.mask_
 
 ### Ward ######################################################################
 
@@ -45,7 +38,7 @@ import time
 start = time.time()
 ward = WardAgglomeration(n_clusters=500, connectivity=connectivity,
                          memory='nisl_cache')
-ward.fit(fmri_masked.T)
+ward.fit(fmri_masked)
 print "Ward agglomeration 500 clusters: %.2fs" % (time.time() - start)
 
 # Compute the ward with more clusters, should be faster as we are using
@@ -53,15 +46,18 @@ print "Ward agglomeration 500 clusters: %.2fs" % (time.time() - start)
 start = time.time()
 ward = WardAgglomeration(n_clusters=1000, connectivity=connectivity,
                          memory='nisl_cache')
-ward.fit(fmri_masked.T)
+ward.fit(fmri_masked)
 print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 
 ### Show result ###############################################################
 
 # Unmask data
 import numpy as np
-labels = - np.ones(mask.shape)
-labels[mask] = ward.labels_
+# Avoid 0 label
+labels = ward.labels_ + 1
+labels = nifti_masker.inverse_transform(ward.labels_).get_data()
+# 0 is the background, putting it to -1
+labels = labels - 1
 
 # Display the labels
 import pylab as pl
@@ -81,9 +77,10 @@ pl.title('Ward parcellation')
 
 # Display the original data
 pl.figure()
-first_fmri_img = fmri_data[..., 0].copy()
+first_fmri_img = nifti_masker.inverse_transform(fmri_masked[0]).get_data()
+first_fmri_img = np.ma.masked_array(first_fmri_img, first_fmri_img == 0)
 # Outside the mask: a uniform value, smaller than inside the mask
-first_fmri_img[np.logical_not(mask)] = 0.9*first_fmri_img[mask].min()
+first_fmri_img[np.logical_not(mask)] = 0.9 * first_fmri_img[mask].min()
 vmax = first_fmri_img[..., 20].max()
 pl.imshow(np.rot90(first_fmri_img[..., 20]),
           interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
@@ -94,7 +91,7 @@ pl.title('Original')
 # Note that, as many objects in the scikit-learn, the ward object exposes
 # a transform method that modifies input features. Here it reduces their
 # dimension
-fmri_reduced = ward.transform(fmri_masked.T)
+fmri_reduced = ward.transform(fmri_masked)
 
 # Display the corresponding data compressed using the parcellation
 fmri_compressed = ward.inverse_transform(fmri_reduced)

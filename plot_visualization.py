@@ -7,11 +7,10 @@ Simple example to show data manipulation and visualization.
 
 # Fetch data ################################################################
 from nisl import datasets
-haxby = datasets.fetch_haxby()
+haxby_files = datasets.fetch_haxby()
 
 # Get the file names relative to this dataset
-files = haxby.files
-bold = files[1]
+bold = haxby_files.data
 
 # Load the NIfTI data
 import nibabel
@@ -56,8 +55,8 @@ pl.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
 # Extracting a brain mask ###################################################
 
 # Simple computation of a mask from the fMRI data
-from nisl.masking import compute_mask
-mask = compute_mask(mean_img)
+from nisl.masking import compute_epi_mask
+mask = compute_epi_mask(mean_img)
 
 # We create a new figure
 pl.figure()

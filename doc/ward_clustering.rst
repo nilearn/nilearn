@@ -32,7 +32,7 @@ Masking
 -------
 
 No mask is given with the data so we have to compute one ourselves, using
-the function :func:`nisl.masking.compute_mask`:
+the function :func:`nisl.masking.compute_epi_mask`:
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: ### Mask ######################################################################

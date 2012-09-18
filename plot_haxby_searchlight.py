@@ -11,28 +11,39 @@ the fMRI (see the generated figures).
 
 ### Load Haxby dataset ########################################################
 from nisl import datasets
-dataset = datasets.fetch_haxby()
-fmri_data = dataset.data
-mask = dataset.mask
-affine = dataset.affine
-y = dataset.target
-conditions = dataset.target_strings
-session = dataset.session
+import numpy as np
+import nibabel
+
+dataset_files = datasets.fetch_haxby()
+
+# fmri_data and mask are copied to lose the reference to the original data
+bold_img = nibabel.load(dataset_files.func)
+fmri_data = np.copy(bold_img.get_data())
+affine = bold_img.get_affine()
+y, session = np.loadtxt(dataset_files.session_target).astype("int").T
+conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
+mask = np.copy(nibabel.load(dataset_files.mask).get_data().astype(np.bool))
 
 ### Preprocess data ###########################################################
-import numpy as np
+# Build the mean image because we have no anatomic data
+mean_img = fmri_data.mean(axis=-1)
 
-# Change axis in order to have X under n_samples * x * y * z
-X = np.rollaxis(fmri_data, 3)
-# X.shape is (1452, 40, 64, 64)
+### Restrict to faces and houses ##############################################
+condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+X = fmri_data[..., condition_mask]
+y = y[condition_mask]
+session = session[condition_mask]
+conditions = conditions[condition_mask]
 
-# Mean image: used as background in visualisation
-mean_img = np.mean(X, axis=0)
-
-# Detrend data on each session independently
-from scipy import signal
-for s in np.unique(session):
-    X[session == s] = signal.detrend(X[session == s], axis=0)
+### Loading step ##############################################################
+from nisl.io import NiftiMasker
+from nibabel import Nifti1Image
+# Detrending is disabled as we are not yet able to do it by session
+nifti_masker = NiftiMasker(mask=mask, detrend=True,
+        copy=False, sessions=session)
+niimg = Nifti1Image(X, affine)
+X_masked = nifti_masker.fit(niimg).transform(niimg)
+X_detrended = nifti_masker.inverse_transform(X_masked).get_data()
 
 ### Prepare the masks #########################################################
 # Here we will use several masks :
@@ -40,20 +51,10 @@ for s in np.unique(session):
 # * process_mask is a subset of mask, it contains voxels that should be
 #   processed (we only keep the slice z = 26 and the back of the brain to speed
 #   up computation)
-mask = (dataset.mask != 0)
 process_mask = mask.copy()
 process_mask[..., 38:] = False
 process_mask[..., :36] = False
 process_mask[:, 30:] = False
-
-### Restrict to faces and houses ##############################################
-
-# Keep only data corresponding to face or houses
-condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
-X = X[condition_mask]
-y = y[condition_mask]
-session = session[condition_mask]
-conditions = conditions[condition_mask]
 
 ### Searchlight ###############################################################
 
@@ -83,7 +84,7 @@ from nisl import searchlight
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
         n_jobs=n_jobs, score_func=score_func, verbose=1, cv=cv)
 
-searchlight.fit(X, y)
+searchlight.fit(X_detrended, y)
 
 ### Visualization #############################################################
 import pylab as pl
@@ -101,7 +102,7 @@ pl.show()
 ### Show the F_score
 from sklearn.feature_selection import f_classif
 pl.figure(2)
-X_masked = X[:, process_mask]
+X_masked = X_detrended[:, process_mask]
 f_values, p_values = f_classif(X_masked, y)
 p_values = -np.log10(p_values)
 p_values[np.isnan(p_values)] = 0

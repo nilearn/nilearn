@@ -15,11 +15,13 @@ This tutorial package embeds tools to download and load datasets. They
 can be imported from ``nisl.datasets``::
 
     >>> from nisl import datasets
-    >>> haxby_data = datasets.fetch_haxby()
-    >>> # The data is then already loaded as numpy arrays:
-    >>> haxby_data.keys() # doctest: +SKIP
-    ['files', 'session', 'target', 'target_strings', 'data', 'affine', 'mask']
-    >>> haxby_data.data.shape # 1452 time points and a spatial size of 40x64x64
+    >>> haxby_files = datasets.fetch_haxby()
+    >>> # The structures contains paths to haxby dataset files:
+    >>> haxby_files.keys() # doctest: +SKIP
+    ['data', 'session_target', 'mask', 'conditions_target']
+    >>> import nibabel
+    >>> haxby_data = nibabel.load(haxby_files.data)
+    >>> haxby_data.get_data().shape # 1452 time points and a spatial size of 40x64x64
     (40, 64, 64, 1452)
 
 .. autosummary::
@@ -99,7 +101,7 @@ Extracting a brain mask
 
 If we do not have a mask of the relevant regions available, a brain mask
 can be easily extracted from the fMRI data using the
-:func:`nisl.masking.compute_mask` function:
+:func:`nisl.masking.compute_epi_mask` function:
 
 .. currentmodule:: nisl.masking
 
@@ -107,7 +109,7 @@ can be easily extracted from the fMRI data using the
    :toctree: generated/
    :template: function.rst
 
-   compute_mask
+   compute_epi_mask
 
 .. literalinclude:: ../plot_visualization.py
      :start-after: # Extracting a brain mask ###################################################

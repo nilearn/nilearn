@@ -1,4 +1,5 @@
-""" Utilities to download NeuroImaging datasets
+"""
+Utilities to download NeuroImaging datasets
 """
 
 import os
@@ -9,11 +10,9 @@ import sys
 import shutil
 import time
 
-import numpy as np
 from scipy import io
 from sklearn.datasets.base import Bunch
-
-import nibabel as ni
+import numpy as np
 
 
 def _chunk_report_(bytes_so_far, total_size, t0):
@@ -160,20 +159,20 @@ def _uncompress_file(file, delete_archive=True):
         raise
 
 
-def _fetch_file(url, data_dir):
+def _fetch_file(url, data_dir, overwrite=False):
     """Load requested file, downloading it if needed or requested
 
     Parameters
     ----------
-    dataset_name: string
-        Unique dataset name
-
     urls: array of strings
         Contains the urls of files to be downloaded.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    overwrite: boolean, optional
+        If true and file already exists, delete it.
 
     Returns
     -------
@@ -191,29 +190,34 @@ def _fetch_file(url, data_dir):
 
     file_name = os.path.basename(url)
     full_name = os.path.join(data_dir, file_name)
-    if not os.path.exists(full_name):
-        t0 = time.time()
-        try:
-            # Download data
-            print 'Downloading data from %s ...' % url
-            req = urllib2.Request(url)
-            data = urllib2.urlopen(req)
-            local_file = open(full_name, "wb")
-            _chunk_read_(data, local_file, report_hook=True)
-            dt = time.time() - t0
-            print '...done. (%i seconds, %i min)' % (dt, dt / 60)
-        except urllib2.HTTPError, e:
-            print "HTTP Error:", e, url
-            return None
-        except urllib2.URLError, e:
-            print "URL Error:", e, url
-            return None
-        finally:
-            local_file.close()
+    if os.path.exists(full_name):
+        if overwrite:
+            os.remove(full_name)
+        else:
+            return full_name
+    t0 = time.time()
+    try:
+        # Download data
+        print 'Downloading data from %s ...' % url
+        req = urllib2.Request(url)
+        data = urllib2.urlopen(req)
+        local_file = open(full_name, "wb")
+        _chunk_read_(data, local_file, report_hook=True)
+        dt = time.time() - t0
+        print '...done. (%i seconds, %i min)' % (dt, dt / 60)
+    except urllib2.HTTPError, e:
+        print "HTTP Error:", e, url
+        return None
+    except urllib2.URLError, e:
+        print "URL Error:", e, url
+        return None
+    finally:
+        local_file.close()
     return full_name
 
 
-def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
+def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
+        folder=None):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -228,6 +232,9 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
+    folder: string, optional
+        folder in which the file must be fetched inside the dataset folder.
+
     Returns
     -------
     files: array of string
@@ -240,6 +247,8 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
     """
     # Determine data path
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    if not (folder is None):
+        data_dir = os.path.join(data_dir, folder)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -256,14 +265,14 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True):
                 # We are giving it a second try, but won't try a third
                 # time :)
                 print 'archive corrupted, trying to download it again'
-                _fetch_file(url, data_dir)
+                _fetch_file(url, data_dir, overwrite=True)
                 _uncompress_file(full_name)
         files.append(full_name)
 
     return files
 
 
-def _get_dataset(dataset_name, file_names, data_dir=None):
+def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     """Returns absolute paths of a dataset files if exist
 
     Parameters
@@ -278,6 +287,9 @@ def _get_dataset(dataset_name, file_names, data_dir=None):
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
+    folder: string, optional
+        folder in which the file must be fetched inside the dataset folder.
+
     Returns
     -------
     files: array of string
@@ -288,6 +300,8 @@ def _get_dataset(dataset_name, file_names, data_dir=None):
     If at least one file is missing, an IOError is raised.
     """
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    if not (folder is None):
+        data_dir = os.path.join(data_dir, folder)
     file_paths = []
     for file_name in file_names:
         full_name = os.path.join(data_dir, file_name)
@@ -300,161 +314,6 @@ def _get_dataset(dataset_name, file_names, data_dir=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_star_plus(data_dir=None):
-    """Function returning the starplus data, downloading them if needed
-
-    Parameters
-    ----------
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    Returns
-    -------
-    data : Bunch
-        Dictionary-like object, the interest attributes are :
-        'datas' : a list of 6 numpy arrays representing the data to learn
-        'targets' : list
-                    targets of the data
-        'masks' : the masks for the data. If indices is true, returns the
-            coordinates of the voxels instead of a binary map to deal with
-            sparse matrices.
-
-    Notes
-    -----
-    Each element will be of the form :
-    PATH/*.npy
-
-    The star plus datasets is composed of n_trials trials.
-    Each trial is composed of 13 time units.
-    We decided here to average on the time
-    /!\ y is not binarized !
-
-    References
-    ----------
-    Documentation :
-    http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/\
-            README-data-documentation.txt
-
-    Data :
-    http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/
-    """
-
-    dataset_files = ['data-starplus-%d-%s.npy' % (i, j) for i in range(0, 6)
-            for j in ['mask', 'X', 'y']]
-    dataset_dir = _get_dataset_dir("starplus", data_dir=data_dir)
-
-    try:
-        _get_dataset("starplus", dataset_files, data_dir=data_dir)
-    except IOError:
-        file_names = ['data-starplus-0%d-v7.mat' % i for i in
-                [4847, 4799, 5710, 4820, 5675, 5680]]
-        url1 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-81/www/'
-        url2 = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-83/www/'
-
-        url1_files = ["/".join([url1, i]) for i in file_names[0:3]]
-        url2_files = ["/".join([url2, i]) for i in file_names[3:6]]
-        urls = url1_files + url2_files
-
-        full_names = _fetch_dataset('starplus', urls, data_dir=data_dir)
-
-        for index, full_name in enumerate(full_names):
-            # Converting data to a more readable format
-            print "Converting file %d on 6..." % (index + 1)
-            # General information
-            try:
-                data = io.loadmat(full_name, struct_as_record=True)
-                n_voxels = data['meta']['nvoxels'].flat[0].squeeze()
-                n_trials = data['meta']['ntrials'].flat[0].squeeze()
-                dim_x = data['meta']['dimx'].flat[0].squeeze()
-                dim_y = data['meta']['dimy'].flat[0].squeeze()
-                dim_z = data['meta']['dimz'].flat[0].squeeze()
-
-                # Loading X
-                X_temp = data['data'][:, 0]
-
-                # Loading y
-                y = data['info']
-                y = y[0, :]
-
-                # y = np.array([y[i].flat[0]['actionRT'].flat[0]
-                y = np.array([y[i].flat[0]['cond'].flat[0]
-                              for i in range(n_trials)])
-
-                good_trials = np.where(y > 1)[0]
-                n_good_trials = len(good_trials)
-                n_times = 16  # 8 seconds
-
-                # sentences
-                XS = np.zeros((n_good_trials, dim_x, dim_y, dim_z))
-                # pictures
-                XP = np.zeros((n_good_trials, dim_x, dim_y, dim_z))
-                first_stim = data['info']['firstStimulus']
-
-                # Averaging on the time
-                for k, i_trial in enumerate(good_trials):
-                    i_first_stim = str(first_stim.flat[i_trial][0])
-                    XSk = XS[k]
-                    XPk = XP[k]
-                    for j in range(n_voxels):
-                        # Getting the right coords of the voxels
-                        x, y, z = data['meta']['colToCoord'].flat[0][j, :] - 1
-                        Xkxyz = X_temp[i_trial][:, j]
-                        # Xkxyz -= Xkxyz.mean()  # remove drifts
-                        if i_first_stim == 'S':  # sentence
-                            XSk[x, y, z] = Xkxyz[:n_times].mean()
-                            XPk[x, y, z] = Xkxyz[n_times:2 * n_times].mean()
-                        elif i_first_stim == 'P':  # picture
-                            XPk[x, y, z] = Xkxyz[:n_times].mean()
-                            XSk[x, y, z] = Xkxyz[n_times:2 * n_times].mean()
-                        else:
-                            raise ValueError('Uknown first_stim : %s'
-                                             % first_stim)
-
-                X = np.r_[XP, XS]
-                y = np.ones(2 * n_good_trials)
-                y[:n_good_trials] = 0
-
-                X = X.astype(np.float)
-                y = y.astype(np.float)
-
-                name = "data-starplus-%d-X.npy" % index
-                name = os.path.join(dataset_dir, name)
-                np.save(name, X)
-                name = "data-starplus-%d-y.npy" % index
-                name = os.path.join(dataset_dir, name)
-                np.save(name, y)
-                name = "data-starplus-%d-mask.npy" % index
-                name = os.path.join(dataset_dir, name)
-                mask = X[0, ...]
-                mask = mask.astype(np.bool)
-                np.save(name, mask)
-                name = "data-starplus-%d-mask_indices.npy" % index
-                name = os.path.join(dataset_dir, name)
-                np.save(name, data['meta']['colToCoord'].flat[0])
-                print "...done."
-
-                # Removing the unused data
-                os.remove(full_name)
-            except Exception, e:
-                print "Impossible to convert the file %s:\n %s " % (name, e)
-                shutil.rmtree(dataset_dir)
-                raise e
-
-    print "...done."
-
-    all_subject = []
-    for i in range(0, 6):
-        X = np.load(os.path.join(dataset_dir, 'data-starplus-%d-X.npy' % i))
-        y = np.load(os.path.join(dataset_dir, 'data-starplus-%d-y.npy' % i))
-        mask = np.load(os.path.join(dataset_dir,
-            'data-starplus-%d-mask.npy' % i))
-        all_subject.append(Bunch(data=X, target=y,
-                                 mask=mask.astype(np.bool)))
-
-    return all_subject
-
-
 def fetch_haxby(data_dir=None):
     """Download and loads the haxby dataset
 
@@ -466,13 +325,17 @@ def fetch_haxby(data_dir=None):
 
     Returns
     -------
-    data : Bunch
+    data: Bunch
         Dictionary-like object, the interest attributes are :
-        'data' : numpy array : the data to learn
-        'target' : numpy array
-                    target of the data
-        'mask' : the masks for the data
-        'session' : the labels for LeaveOneLabelOut cross validation
+        'func': string
+            Path to nifti file with bold data
+        'session_target': string
+            Path to text file containing session and target data
+        'mask': string
+            Path to nifti mask file
+        'session': string
+            Path to text file containing labels (can be used for LeaveOneLabelOut
+            cross validation for example)
 
     References
     ----------
@@ -505,24 +368,12 @@ def fetch_haxby(data_dir=None):
     except IOError:
         # If the dataset does not exists, we download it
         url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-        _fetch_dataset('haxby2001', [url, ], data_dir=data_dir)
+        _fetch_dataset('haxby2001', [url], data_dir=data_dir)
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
-    # preprocess data
-    y, session = np.loadtxt(files[0]).astype("int").T
-    y_strings = np.recfromtxt(files[-1])['f0']
-    bold_img = ni.load(files[1])
-    X = bold_img.get_data()
-    affine = bold_img.get_affine()
-    mask = ni.load(files[2]).get_data().astype(np.bool)
-
-    # We are copying to loose the reference to the original data
-    X = np.copy(X)
-    mask = np.copy(mask)
-
     # return the data
-    return Bunch(data=X, target=y, mask=mask, session=session,
-                 files=files, target_strings=y_strings, affine=affine)
+    return Bunch(func=files[1], session_target=files[0], mask=files[2],
+            conditions_target=files[3])
 
 
 def _fetch_kamitani(data_dir=None):
@@ -536,13 +387,16 @@ def _fetch_kamitani(data_dir=None):
 
     Returns
     -------
-    data : Bunch
+    data: Bunch
         Dictionary-like object, the interest attributes are :
-        'data' : numpy array : the data to learn
-        'target' : numpy array
-                    target of the data
-        'mask' : the masks for the data
-        'xyz' : index to 3D-coordinate array
+        'func': numpy array
+            Functional data
+        'target': numpy array
+            Target of the data
+        'mask':
+            Mask for the data
+        'xyz':
+            Index to 3D-coordinate array
 
     Notes
     -----
@@ -584,12 +438,12 @@ def _fetch_kamitani(data_dir=None):
     xyz = mat['D']['xyz'].flat[0]
     ijk = xyz / 3 - 0.5 + [[32], [32], [15]]
 
-    return Bunch(files=files, data_random=X_random, data_figure=X_figure,
+    return Bunch(func=files, data_random=X_random, data_figure=X_figure,
            target_random=y_random, target_figure=y_figure, roi_name=roi_name,
            roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
 
 
-def fetch_nyu_rest(n_subjects=None, data_dir=None):
+def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
     """Download and loads the NYU resting-state test-retest dataset
 
     Parameters
@@ -597,6 +451,9 @@ def fetch_nyu_rest(n_subjects=None, data_dir=None):
     n_subjects: integer optional
         The number of subjects to load. If None is given, all the
         subjects are used.
+
+    n_sessions: array of integers optional
+        The sessions to load. Load only the first session by default.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
@@ -606,11 +463,14 @@ def fetch_nyu_rest(n_subjects=None, data_dir=None):
     -------
     data : Bunch
         Dictionary-like object, the interest attributes are :
-        'data' : numpy array : the data to learn
-        'target' : numpy array
-                    target of the data
-        'mask' : the masks for the data
-        'xyz' : index to 3D-coordinate array
+        'func': numpy array
+            Functional images
+        'target': numpy array
+            Target data
+        'mask': string
+            Mask for the data
+        'xyz': numpy array
+            Index to 3D-coordinate array
 
     Notes
     ------
@@ -666,51 +526,94 @@ def fetch_nyu_rest(n_subjects=None, data_dir=None):
           F.X. Castellanos, M.P. Milham
 
     """
-
     file_names = [os.path.join('anat', 'mprage_anonymized.nii.gz'),
                   os.path.join('anat', 'mprage_skullstripped.nii.gz'),
                   os.path.join('func', 'lfo.nii.gz')]
 
-    # Warning : only Session 1 subs for the moment
-    sub_names = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
-            'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
-            'sub36678', 'sub38579', 'sub39529']
+    subjects_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
+                  'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
+                  'sub36678', 'sub38579', 'sub39529']
+    subjects_b = ['sub45463', 'sub47000', 'sub49401', 'sub52738', 'sub55441',
+                  'sub58949', 'sub60624', 'sub76987', 'sub84403', 'sub86146',
+                  'sub90179', 'sub94293']
 
-    file_names = [os.path.join(sub, f) for sub in sub_names
-                  for f in file_names]
+    max_subjects = len(subjects_a) + len(subjects_b)
+    # Check arguments
+    if n_subjects > max_subjects:
+        sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
+        n_subjects = 25
+    if n_subjects == None:
+        n_subjects = len(subjects_a) + len(subjects_b)
 
-    try:
-        files = _get_dataset("nyu_rest", file_names, data_dir=data_dir)
-    except IOError:
-        url = 'http://www.nitrc.org/frs/download.php'
-        tar_prefixes = ['1071']
-        tar_names = ['NYU_TRT_session1a.tar.gz']
-        """
-        tar_prefixes = ['1071', '1072', '1073', '1074', '1075', '1076']
-        tar_names = ['NYU_TRT_session1a.tar.gz',
-            'NYU_TRT_session1b.tar.gz', 'NYU_TRT_session2a.tar.gz',
-            'NYU_TRT_session2b.tar.gz', 'NYU_TRT_session3a.tar.gz',
-            'NYU_TRT_session3b.tar.gz']
-        """
-        tar_full_names = ["/".join([prefix, name])
-                          for prefix, name in zip(tar_prefixes, tar_names)]
-        urls = ["/".join([url, name]) for name in tar_full_names]
-        _fetch_dataset('nyu_rest', urls, data_dir=data_dir)
-        files = _get_dataset("nyu_rest", file_names, data_dir=data_dir)
+    for i in sessions:
+        if not (i in [1, 2, 3]):
+            raise ValueError('NYU dataset session id must be in [1, 2, 3]')
 
-    anat_anon = []
+    tars = [['1071/NYU_TRT_session1a.tar.gz', '1072/NYU_TRT_session1b.tar.gz'],
+            ['1073/NYU_TRT_session2a.tar.gz', '1074/NYU_TRT_session2b.tar.gz'],
+            ['1075/NYU_TRT_session3a.tar.gz', '1076/NYU_TRT_session3b.tar.gz']]
+
+    anat_anon = [] 
     anat_skull = []
     func = []
-
-    if n_subjects is None:
-        n_subjects = len(sub_names)
-
-    for i in range(n_subjects):
-        # We are considering files 3 by 3
-        i *= 3
-        anat_anon.append(ni.load(files[i]).get_data())
-        anat_skull.append(ni.load(files[i + 1]).get_data())
-        func.append(ni.load(files[i + 2]).get_data())
+    session = []
+    # Loading session by session
+    for session_id in sessions:
+        session_path = "session" + str(session_id)
+        # Load subjects in two steps, as the files are splitted
+        for part in range(0, n_subjects / len(subjects_a) + 1):
+            if part == 0:
+                subjects = subjects_a[:min(len(subjects_a), n_subjects)]
+            else:  # part == 1
+                subjects = subjects_b[:min(len(subjects_b),
+                    n_subjects - len(subjects_a))]
+            paths = [os.path.join(session_path, os.path.join(subject, file))
+                  for subject in subjects
+                  for file in file_names]
+            try:
+                files = (_get_dataset("nyu_rest", paths, data_dir=data_dir))
+            except IOError:
+                url = 'http://www.nitrc.org/frs/download.php/'
+                url += tars[session_id - 1][part]
+                # Determine files to be downloaded
+                _fetch_dataset('nyu_rest', [url], data_dir=data_dir,
+                        folder=session_path)
+                files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
+            for i in range(len(subjects)):
+                # We are considering files 3 by 3
+                i *= 3
+                anat_anon.append(files[i])
+                anat_skull.append(files[i + 1])
+                func.append(files[i + 2])
+                session.append(session_id)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
-                 files=files)
+            session=session)
+
+
+def fetch_poldrack_mixed_gambles(data_dir=None):
+    """Download and loads the Poldrack Mixed Gambles dataset
+    For the moment, only bold images are loaded
+    """
+    # definition of dataset files
+    file_names = ["ds005/sub0%02i/BOLD/task001_run00%s/bold.nii.gz" % (s, r)
+            for s in range(1, 17)
+            for r in range(1, 4)]
+
+    # load the dataset
+    try:
+        # Try to load the dataset
+        files = _get_dataset("poldrack_mixed_gambles",
+                file_names, data_dir=data_dir)
+
+    except IOError:
+        # If the dataset does not exists, we download it
+        url = 'http://openfmri.org/system/files/ds005_raw.tgz'
+        _fetch_dataset('poldrack_mixed_gambles', [url], data_dir=data_dir)
+        files = _get_dataset("poldrack_mixed_gambles",
+                file_names, data_dir=data_dir)
+
+    files = np.asarray(np.split(np.asarray(files), 16))
+
+    # return the data
+    return Bunch(data=files)

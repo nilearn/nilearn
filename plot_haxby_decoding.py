@@ -9,49 +9,43 @@ houses conditions.
 
 ### Load Haxby dataset ########################################################
 from nisl import datasets
-dataset = datasets.fetch_haxby()
-fmri_data = dataset.data
-mask = dataset.mask
-affine = dataset.affine
-y = dataset.target
-conditions = dataset.target_strings
-session = dataset.session
+import numpy as np
+import nibabel
+dataset_files = datasets.fetch_haxby()
 
+# fmri_data and mask are copied to lose the reference to the original data
+bold_img = nibabel.load(dataset_files.func)
+fmri_data = np.copy(bold_img.get_data())
+affine = bold_img.get_affine()
+y, session = np.loadtxt(dataset_files.session_target).astype("int").T
+conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
+mask = dataset_files.mask
 # fmri_data.shape is (40, 64, 64, 1452)
 # and mask.shape is (40, 64, 64)
 
 ### Preprocess data ###########################################################
-import numpy as np
-
 # Build the mean image because we have no anatomic data
 mean_img = fmri_data.mean(axis=-1)
-
-# Process the data in order to have a two-dimensional design matrix X of
-# shape (n_samples, n_features).
-X = fmri_data[mask].T
-
-# X.shape is (n_samples, n_features): (1452, 39912)
-
-# Detrend data on each session independently
-from scipy import signal
-for s in np.unique(session):
-    X[session == s] = signal.detrend(X[session == s], axis=0)
-
 
 ### Restrict to faces and houses ##############################################
 
 # Keep only data corresponding to face or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
-X = X[condition_mask]
+X = fmri_data[..., condition_mask]
 y = y[condition_mask]
 session = session[condition_mask]
 conditions = conditions[condition_mask]
 
-# We now have n_samples, n_features = X.shape = 864, 39912
-n_samples, n_features = X.shape
-
 # We have 2 conditions
 n_conditions = np.size(np.unique(y))
+
+### Loading step ##############################################################
+from nisl.io import NiftiMasker 
+from nibabel import Nifti1Image
+nifti_masker = NiftiMasker(mask=mask, detrend=True,
+        copy=False, sessions=session)
+niimg = Nifti1Image(X, affine)
+X = nifti_masker.fit(niimg).transform(niimg)
 
 ### Prediction function #######################################################
 
@@ -82,18 +76,16 @@ y_pred = anova_svc.predict(X)
 
 ### Visualisation #############################################################
 
-
 ### Look at the discriminating weights
 svc = clf.support_vectors_
 # reverse feature selection
 svc = feature_selection.inverse_transform(svc)
 # reverse masking
-act = np.zeros(mean_img.shape)
-act[mask != 0] = svc[0]
+niimg = nifti_masker.inverse_transform(svc[0])
 
-# We use a masked array so that the voxels at '0' are displayed
+# We use a masked array so that the voxels at '-1' are displayed
 # transparently
-act = np.ma.masked_array(act, act == 0)
+act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
 
 ### Create the figure
 import pylab as pl
@@ -122,7 +114,8 @@ cv = LeaveOneLabelOut(session)
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
-    y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])
+    y_pred = anova_svc.fit(X[train], y[train]) \
+        .predict(X[test])
     cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
 
 ### Print results #############################################################
