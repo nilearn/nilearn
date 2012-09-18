@@ -1,6 +1,9 @@
 """
 Preprocessing functions for time series.
 """
+# Authors: Alexandre Abraham, Gael Varoquaux
+# License: simplified BSD
+
 from scipy import signal, linalg, fftpack
 import numpy as np
 
@@ -8,8 +11,7 @@ import numpy as np
 def standardize(signals, copy=True, normalize=True):
     """ Center and norm a given signal (sample = axis -1)
     """
-    # FIXME: Should this be merged with canica.algorithms.center_and_norm
-    signals = np.array(signals, copy=copy)
+    signals = np.array(signals, copy=copy).astype(np.float)
     length = float(signals.shape[-1])
     buffer = signals.T
     buffer -= signals.mean(axis=-1)
