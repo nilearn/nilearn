@@ -40,12 +40,12 @@ conditions = conditions[condition_mask]
 n_conditions = np.size(np.unique(y))
 
 ### Loading step ##############################################################
-from nisl.io import NiftiLoader 
+from nisl.io import NiftiMasker 
 from nibabel import Nifti1Image
-nifti_loader = NiftiLoader(mask=mask, detrend=True,
+nifti_masker = NiftiMasker(mask=mask, detrend=True,
         copy=False, sessions=session)
 niimg = Nifti1Image(X, affine)
-X = nifti_loader.fit(niimg).transform(niimg)
+X = nifti_masker.fit(niimg).transform(niimg)
 
 ### Prediction function #######################################################
 
@@ -81,7 +81,7 @@ svc = clf.support_vectors_
 # reverse feature selection
 svc = feature_selection.inverse_transform(svc)
 # reverse masking
-niimg = nifti_loader.inverse_transform(svc[0])
+niimg = nifti_masker.inverse_transform(svc[0])
 
 # We use a masked array so that the voxels at '-1' are displayed
 # transparently

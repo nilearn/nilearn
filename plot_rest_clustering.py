@@ -17,12 +17,12 @@ Pattern Recognition 2011.
 ### Load nyu_rest dataset #####################################################
 
 from nisl import datasets
-from nisl.io import NiftiLoader
+from nisl.io import NiftiMasker
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
-nifti_loader = NiftiLoader()
-fmri_masked = nifti_loader.fit(dataset.func[0]) \
+nifti_masker = NiftiMasker()
+fmri_masked = nifti_masker.fit(dataset.func[0]) \
         .transform(dataset.func[0])
-mask = nifti_loader.mask_
+mask = nifti_masker.mask_
 
 ### Ward ######################################################################
 
@@ -55,7 +55,7 @@ print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 import numpy as np
 # Avoid 0 label
 labels = ward.labels_ + 1
-labels = nifti_loader.inverse_transform(ward.labels_).get_data()
+labels = nifti_masker.inverse_transform(ward.labels_).get_data()
 # 0 is the background, putting it to -1
 labels = labels - 1
 
@@ -77,7 +77,7 @@ pl.title('Ward parcellation')
 
 # Display the original data
 pl.figure()
-first_fmri_img = nifti_loader.inverse_transform(fmri_masked[0]).get_data()
+first_fmri_img = nifti_masker.inverse_transform(fmri_masked[0]).get_data()
 first_fmri_img = np.ma.masked_array(first_fmri_img, first_fmri_img == 0)
 # Outside the mask: a uniform value, smaller than inside the mask
 first_fmri_img[np.logical_not(mask)] = 0.9 * first_fmri_img[mask].min()
