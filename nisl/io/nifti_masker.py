@@ -114,8 +114,8 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Resampling" % self.__class__.__name__
         niimgs = memory.cache(resampling.resample_img)(niimgs,
-                target_affine=self.target_affine,
-                target_shape=self.target_shape, copy=self.copy)
+                    target_affine=self.target_affine,
+                    target_shape=self.target_shape, copy=self.copy)
 
         # Get series from data with optional smoothing
         if self.verbose > 0:

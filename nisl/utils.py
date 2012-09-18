@@ -1,6 +1,8 @@
-import collections
+"""
+Validation and conversion utilities.
+"""
 
-import types
+import collections
 import itertools
 
 import nibabel
@@ -18,13 +20,13 @@ def _check_niimg_methods(object):
 
 
 def check_niimg(niimg):
-    if isinstance(niimg, types.StringTypes):
+    if isinstance(niimg, basestring):
         # data is a filename, we load it
         result = nibabel.load(niimg)
     else:
         # it is an object, it should have get_data and get_affine methods
         if not _check_niimg_methods(niimg):
-            raise AttributeError("Given data does not expose"
+            raise TypeError("Given data does not expose"
                 " get_data or get_affine methods")
         result = niimg
     return result
@@ -42,7 +44,7 @@ def collapse_niimgs(niimgs, compute_sessions=False):
             s_error = ""
             if compute_sessions:
                 s_error = " of session #" + str(index)
-            if (isinstance(iter_niimg, types.StringTypes)):
+            if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
             else:
                 i_error = "image #" + str(index)
@@ -68,7 +70,7 @@ def check_niimgs(niimgs):
     depth = 0
     first_img = niimgs
     while isinstance(first_img, collections.Iterable) \
-            and not isinstance(first_img, types.StringTypes):
+            and not isinstance(first_img, basestring):
         first_img = iter(first_img).next()
         depth += 1
 
