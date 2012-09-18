@@ -5,6 +5,8 @@ Utilities to compute a brain mask from EPI images
 import numpy as np
 from scipy import ndimage
 
+from . import utils
+
 ###############################################################################
 # Operating on connect component
 ###############################################################################
@@ -42,7 +44,7 @@ def _largest_connected_component(mask):
 ###############################################################################
 
 
-def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                  connected=True, opening=True, exclude_zeros=False, verbose=0):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
@@ -55,7 +57,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    epi_img : 3D ndarray
+    mean_epi: 3D ndarray
         EPI image, used to compute the mask.
     lower_cutoff : float, optional
         lower fraction of the histogram to be discarded.
@@ -80,9 +82,9 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     """
     if verbose > 0:
        print "EPI mask computation" 
-    if len(epi_img.shape) == 4:
-        epi_img = epi_img.mean(axis=-1)
-    sorted_input = np.sort(np.ravel(epi_img))
+    if len(mean_epi.shape) == 4:
+        mean_epi = mean_epi.mean(axis=-1)
+    sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
     lower_cutoff = np.floor(lower_cutoff * len(sorted_input))
@@ -94,7 +96,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     threshold = 0.5 * (sorted_input[ia + lower_cutoff]
                         + sorted_input[ia + lower_cutoff + 1])
 
-    mask = (epi_img >= threshold)
+    mask = (mean_epi >= threshold)
 
     if connected:
         mask = _largest_connected_component(mask)
@@ -107,13 +109,13 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 ###############################################################################
 
 
-def extract_time_series(series, affine, mask, dtype=np.float32,
+def extract_time_series(niimgs, mask_img, dtype=np.float32,
                      smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
         -----------
-        filenames: list of 3D nifti file names, or 4D nifti filename.
+        niimgs: list of 3D nifti file names, or 4D nifti filename.
             Files are grouped by session.
         mask: 3d ndarray
             3D mask array: true where a voxel should be used.
@@ -136,11 +138,15 @@ def extract_time_series(series, affine, mask, dtype=np.float32,
         When using smoothing, ensure_finite should be True: as elsewhere non
         finite values will spread accross the image.
     """
-    mask = mask.astype(np.bool)
+    mask = utils.check_niimg(mask_img)
+    mask = mask_img.get_data().astype(np.bool)
     if smooth:
         # Convert from a sigma to a FWHM:
         smooth /= np.sqrt(8 * np.log(2))
 
+    niimgs = utils.check_niimgs(niimgs)
+    series = niimgs.get_data()
+    affine = niimgs.get_affine()
     # We have 4D data
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
@@ -157,4 +163,4 @@ def extract_time_series(series, affine, mask, dtype=np.float32,
             this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                     smooth_sigma)
     series = series[mask]
-    return series
+    return series 

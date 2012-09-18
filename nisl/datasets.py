@@ -325,14 +325,17 @@ def fetch_haxby(data_dir=None):
 
     Returns
     -------
-    data : Bunch
+    data: Bunch
         Dictionary-like object, the interest attributes are :
-        'data' : string : path to nifti file with bold data
-        'session_target' : string
-                path to text file containing session and target data
-        'mask' : path to nifti mask file
-        'session' : path to text file containint labels for LeaveOneLabelOut
-                cross validation
+        'func': string
+            Path to nifti file with bold data
+        'session_target': string
+            Path to text file containing session and target data
+        'mask': string
+            Path to nifti mask file
+        'session': string
+            Path to text file containing labels (can be used for LeaveOneLabelOut
+            cross validation for example)
 
     References
     ----------
@@ -384,13 +387,16 @@ def _fetch_kamitani(data_dir=None):
 
     Returns
     -------
-    data : Bunch
+    data: Bunch
         Dictionary-like object, the interest attributes are :
-        'data' : numpy array : the data to learn
-        'target' : numpy array
-                    target of the data
-        'mask' : the masks for the data
-        'xyz' : index to 3D-coordinate array
+        'func': numpy array
+            Functional data
+        'target': numpy array
+            Target of the data
+        'mask':
+            Mask for the data
+        'xyz':
+            Index to 3D-coordinate array
 
     Notes
     -----
@@ -432,7 +438,7 @@ def _fetch_kamitani(data_dir=None):
     xyz = mat['D']['xyz'].flat[0]
     ijk = xyz / 3 - 0.5 + [[32], [32], [15]]
 
-    return Bunch(files=files, data_random=X_random, data_figure=X_figure,
+    return Bunch(func=files, data_random=X_random, data_figure=X_figure,
            target_random=y_random, target_figure=y_figure, roi_name=roi_name,
            roi_volInd=roi_volInd, volInd=volInd, xyz=xyz, ijk=ijk)
 
@@ -457,11 +463,14 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
     -------
     data : Bunch
         Dictionary-like object, the interest attributes are :
-        'data' : numpy array : the data to learn
-        'target' : numpy array
-                    target of the data
-        'mask' : the masks for the data
-        'xyz' : index to 3D-coordinate array
+        'func': numpy array
+            Functional images
+        'target': numpy array
+            Target data
+        'mask': string
+            Mask for the data
+        'xyz': numpy array
+            Index to 3D-coordinate array
 
     Notes
     ------

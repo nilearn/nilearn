@@ -1,5 +1,8 @@
 import numpy as np
 from scipy import ndimage
+from nibabel import Nifti1Image
+
+from .utils import check_niimg
 
 
 def to_matrix_vector(transform):
@@ -88,14 +91,19 @@ def get_bounds(shape, affine):
     return zip(box.min(axis=-1), box.max(axis=-1))
 
 
-def resample(data, affine, target_affine=None, target_shape=None,
-                                    interpolation='continuous', copy=True):
+def resample_img(niimg, target_affine=None, target_shape=None,
+                 interpolation='continuous', copy=True):
+
+    niimg = check_niimg(niimg)
+    data = niimg.get_data()
+    affine = niimg.get_affine()
+    
     if copy:
         import copy
         data = copy.copy(data)
         affine = copy.copy(affine)
     if target_affine is None and target_shape is None:
-        return (data, affine)
+        return niimg 
     if target_affine is None:
         target_affine = np.eye(4)
     if target_shape is None:
@@ -171,4 +179,4 @@ def resample(data, affine, target_affine=None, target_shape=None,
                                             offset=np.dot(A_inv, b),
                                             output_shape=target_shape,
                                             order=interpolation_order)
-    return resampled_data, target_affine
+    return Nifti1Image(resampled_data, target_affine)
