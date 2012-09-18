@@ -36,14 +36,14 @@ session = session[condition_mask]
 conditions = conditions[condition_mask]
 
 ### Loading step ##############################################################
-from nisl import mri_transformer
+from nisl.io import NiftiLoader
 from nibabel import Nifti1Image
 # Detrending is disabled as we are not yet able to do it by session
-mri_loader = mri_transformer.MRITransformer(mask=mask, detrend=True,
+nifti_loader = NiftiLoader(mask=mask, detrend=True,
         copy=False, sessions=session)
 niimg = Nifti1Image(X, affine)
-X_masked = mri_loader.fit(niimg).transform(niimg)
-X_detrended = mri_loader.inverse_transform(X_masked).get_data()
+X_masked = nifti_loader.fit(niimg).transform(niimg)
+X_detrended = nifti_loader.inverse_transform(X_masked).get_data()
 
 ### Prepare the masks #########################################################
 # Here we will use several masks :

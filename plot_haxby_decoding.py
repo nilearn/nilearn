@@ -28,7 +28,6 @@ mask = dataset_files['mask']
 mean_img = fmri_data.mean(axis=-1)
 
 ### Restrict to faces and houses ##############################################
-from nibabel import Nifti1Image
 
 # Keep only data corresponding to face or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
@@ -41,10 +40,12 @@ conditions = conditions[condition_mask]
 n_conditions = np.size(np.unique(y))
 
 ### Loading step ##############################################################
-from nisl import mri_transformer
-# Detrending is disabled as we are not yet able to do it by session
-mri_loader = mri_transformer.MRITransformer(mask=mask, detrend=True,
+from nisl.io import NiftiLoader 
+from nibabel import Nifti1Image
+nifti_loader = NiftiLoader(mask=mask, detrend=True,
         copy=False, sessions=session)
+niimg = Nifti1Image(X, affine)
+X = nifti_loader.fit(niimg).transform(niimg)
 
 ### Prediction function #######################################################
 
@@ -66,23 +67,21 @@ feature_selection = SelectKBest(f_classif, k=1000)
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
-anova_svc = Pipeline([('load', mri_loader), ('anova', feature_selection),
-    ('svc', clf)])
+anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
 
 ### Fit and predict ###########################################################
 
-anova_svc.fit(Nifti1Image(X, affine), y)
-y_pred = anova_svc.predict(Nifti1Image(X, affine))
+anova_svc.fit(X, y)
+y_pred = anova_svc.predict(X)
 
 ### Visualisation #############################################################
-
 
 ### Look at the discriminating weights
 svc = clf.support_vectors_
 # reverse feature selection
 svc = feature_selection.inverse_transform(svc)
 # reverse masking
-niimg = mri_loader.inverse_transform(svc[0])
+niimg = nifti_loader.inverse_transform(svc[0])
 
 # We use a masked array so that the voxels at '-1' are displayed
 # transparently
@@ -115,8 +114,8 @@ cv = LeaveOneLabelOut(session)
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
-    y_pred = anova_svc.fit(Nifti1Image(X[..., train], affine), y[train]) \
-        .predict(Nifti1Image(X[..., test], affine))
+    y_pred = anova_svc.fit(X[train], y[train]) \
+        .predict(X[test])
     cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
 
 ### Print results #############################################################

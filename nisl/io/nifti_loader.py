@@ -12,14 +12,14 @@ from sklearn.externals.joblib import Memory
 import nibabel
 from nibabel import Nifti1Image
 
-from . import masking
-from . import resampling
-from . import signals
-from . import utils
+from .. import masking
+from .. import resampling
+from .. import signals
+from .. import utils
 
 
-class MRITransformer(BaseEstimator, TransformerMixin):
-    """MRI data loader with preprocessing
+class NiftiLoader(BaseEstimator, TransformerMixin):
+    """Nifti data loader with preprocessing
 
     Parameters
     ----------
