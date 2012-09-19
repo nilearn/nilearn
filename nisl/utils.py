@@ -91,7 +91,7 @@ def check_niimgs(niimgs, accept_3d=False):
     first_img = check_niimg(first_img)
 
     # Check dimension and depth
-    dim = len(_get_shape(niimg))
+    dim = len(_get_shape(first_img))
 
     if (dim + depth) != 4:
         # Very detailed error message that tells exactly the user what

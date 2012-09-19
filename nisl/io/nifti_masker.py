@@ -167,17 +167,18 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
 
     def inverse_transform(self, X):
         null = 0
+        mask = self.mask_.get_data().astype(np.bool)
         if len(X.shape) > 1:
             # we build the data iteratively to avoid MemoryError
             data = []
             for x in X:
-                img = np.empty(self.mask_.shape)
+                img = np.empty(mask.shape)
                 img.fill(null)
-                img[self.mask_] = x
-                data.append(img)
-            data = np.asarray(data)
+                img[mask] = x
+                data.append(img[..., np.newaxis])
+            data = np.concatenate(data, axis=-1)
         else:
-            data = np.empty(self.mask_.shape)
+            data = np.empty(mask.shape)
             data.fill(null)
-            data[self.mask_.get_data().astype(np.bool)] = X
+            data[mask] = X
         return Nifti1Image(data, self.affine_)
