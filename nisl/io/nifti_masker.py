@@ -37,8 +37,8 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
     def __init__(self, sessions=None, mask=None, mask_connected=True,
             mask_opening=True, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
-            target_affine=None, target_shape=None, low_pass=None, high_pass=None,
-            t_r=None, copy=False, memory=Memory(cachedir=None, verbose=0),
+            target_affine=None, target_shape=None, low_pass=None,
+            high_pass=None, t_r=None, memory=Memory(cachedir=None, verbose=0),
             transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
@@ -54,7 +54,6 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
-        self.copy = copy
         self.memory = memory
         self.transform_memory = transform_memory
         self.verbose = verbose
@@ -100,7 +99,9 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
             print "[%s.transform] Resampling mask" % self.__class__.__name__
         self.mask_ = memory.cache(resampling.resample_img)(self.mask_,
                 target_affine=self.target_affine,
-                target_shape=self.target_shape)
+                target_shape=self.target_shape,
+                copy=(self.target_affine is not None and
+                      self.target_shape is not None))
 
         return self
 
@@ -119,7 +120,7 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
             print "[%s.transform] Resampling" % self.__class__.__name__
         niimgs = memory.cache(resampling.resample_img)(niimgs,
                     target_affine=self.target_affine,
-                    target_shape=self.target_shape, copy=self.copy)
+                    target_shape=self.target_shape)
 
         # Get series from data with optional smoothing
         if self.verbose > 0:
@@ -166,19 +167,16 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         return data
 
     def inverse_transform(self, X):
-        null = 0
         mask = self.mask_.get_data().astype(np.bool)
         if len(X.shape) > 1:
             # we build the data iteratively to avoid MemoryError
             data = []
             for x in X:
-                img = np.empty(mask.shape)
-                img.fill(null)
+                img = np.zeros(mask.shape)
                 img[mask] = x
                 data.append(img[..., np.newaxis])
             data = np.concatenate(data, axis=-1)
         else:
-            data = np.empty(mask.shape)
-            data.fill(null)
+            data = np.zeros(mask.shape)
             data[mask] = X
         return Nifti1Image(data, self.affine_)

@@ -40,12 +40,11 @@ conditions = conditions[condition_mask]
 n_conditions = np.size(np.unique(y))
 
 ### Loading step ##############################################################
-from nisl.io import NiftiMasker 
+from nisl.io import NiftiMasker
 from nibabel import Nifti1Image
-nifti_masker = NiftiMasker(mask=mask, detrend=True,
-        copy=False, sessions=session)
+nifti_masker = NiftiMasker(mask=mask, detrend=True, sessions=session)
 niimg = Nifti1Image(X, affine)
-X = nifti_masker.fit(niimg).transform(niimg)
+X = nifti_masker.fit_transform(niimg)
 
 ### Prediction function #######################################################
 
