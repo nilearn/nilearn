@@ -76,12 +76,12 @@ pl.title('Ward parcellation')
 
 # Display the original data
 pl.figure()
-first_fmri_img = nifti_masker.inverse_transform(fmri_masked[0]).get_data()
-first_fmri_img = np.ma.masked_array(first_fmri_img, first_fmri_img == 0)
+first_epi = nifti_masker.inverse_transform(fmri_masked[0]).get_data()
+first_epi = np.ma.masked_array(first_epi, first_epi == 0)
 # Outside the mask: a uniform value, smaller than inside the mask
-first_fmri_img[np.logical_not(mask)] = 0.9 * first_fmri_img[mask].min()
-vmax = first_fmri_img[..., 20].max()
-pl.imshow(np.rot90(first_fmri_img[..., 20]),
+first_epi[np.logical_not(mask)] = 0.9 * first_epi[mask].min()
+vmax = first_epi[..., 20].max()
+pl.imshow(np.rot90(first_epi[..., 20]),
           interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
 pl.axis('off')
 pl.title('Original')
@@ -94,10 +94,13 @@ fmri_reduced = ward.transform(fmri_masked)
 
 # Display the corresponding data compressed using the parcellation
 fmri_compressed = ward.inverse_transform(fmri_reduced)
-compressed_img = nifti_masker.inverse_transform(fmri_compressed)
+compressed = nifti_masker.inverse_transform(fmri_compressed[0]
+                    ).get_data()
+compressed = np.ma.masked_equal(compressed, 0)
+
 
 pl.figure()
-pl.imshow(np.rot90(compressed_img[:, :, 20]),
+pl.imshow(np.rot90(compressed[:, :, 20]),
            interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
 pl.title('Compressed representation')
 pl.axis('off')
