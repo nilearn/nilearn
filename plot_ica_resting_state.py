@@ -11,28 +11,21 @@ import numpy as np
 from nisl import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
-dataset = datasets.fetch_nyu_rest(n_subjects=3)
+dataset = datasets.fetch_nyu_rest(n_subjects=1)
+# XXX: must get the code to run for more than 1 subject
 
 ### Preprocess ################################################################
+from nisl import io
+
+masker = io.NiftiMasker(smooth=1.5)
+data_masked = masker.fit_transform(dataset.func[0])
 
 # Concatenate all the subjects
-fmri_data = np.concatenate(dataset.func, axis=3)
-
-# Apply a small amount of Gaussian smoothing: in the case of ICA it is
-# important as it introduces a spatial model that ICA lacks and greatly
-# reduces the high-frequency signal
-from scipy import ndimage
-for image in fmri_data.T:
-    # This works efficiently because image is a view on fmri_data
-    image[...] = ndimage.gaussian_filter(image, 1.5)
+#fmri_data = np.concatenate(data_masked, axis=1)
+fmri_data = data_masked
 
 # Take the mean along axis 3: the direction of time
-mean_img = np.mean(fmri_data, axis=3)
-
-# Mask non brain areas
-from nisl import masking
-mask = masking.compute_epi_mask(mean_img)
-data_masked = fmri_data[mask]
+mean_img = masker.inverse_transform(fmri_data.mean(axis=-1))
 
 
 ### Apply ICA #################################################################
@@ -40,7 +33,7 @@ data_masked = fmri_data[mask]
 from sklearn.decomposition import FastICA
 n_components = 20
 ica = FastICA(n_components=n_components, random_state=42)
-components_masked = ica.fit(data_masked).transform(data_masked)
+components_masked = ica.fit_transform(data_masked)
 
 # We normalize the estimated components, for thresholding to make sens
 components_masked -= components_masked.mean(axis=0)
@@ -50,9 +43,8 @@ components_masked[np.abs(components_masked) < .5] = 0
 
 # Now we inverting the masking operation, to go back to a full 3D
 # representation
-(x, y, z) = mean_img.shape
-components = np.zeros((x, y, z, n_components))
-components[mask] = components_masked
+component_img = masker.inverse_transform(components_masked)
+components = component_img.get_data()
 
 # Using a masked array is important to have transparency in the figures
 components = np.ma.masked_equal(components, 0, copy=False)

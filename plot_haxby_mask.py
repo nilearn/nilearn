@@ -11,6 +11,6 @@ dataset_files = datasets.fetch_haxby()
 masker = io.NiftiMasker()
 masker.fit(dataset_files.func)
 
-pl.imshow(masker.mask_.get_data()[..., 20])
+pl.imshow(masker.mask_.get_data()[..., 30])
 pl.show()
 

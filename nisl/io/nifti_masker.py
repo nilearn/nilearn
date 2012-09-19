@@ -60,12 +60,12 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         self.verbose = verbose
         self.sessions_ = sessions
 
-    def fit(self, X, y=None):
+    def fit(self, niimgs, y=None):
         """Compute the mask corresponding to the data
 
         Parameters
         ----------
-        X: list of filenames or NiImages
+        niimgs: list of filenames or NiImages
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -77,7 +77,7 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print "[%s.fit] Loading data" % self.__class__.__name__
-        niimgs = utils.check_niimgs(X, accept_3d=True)
+        niimgs = utils.check_niimgs(niimgs, accept_3d=True)
 
         # Compute the mask if not given by the user
         if self.mask is None:
@@ -104,15 +104,15 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X):
+    def transform(self, niimgs):
         memory = self.transform_memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.fit] Loading data" % self.__class__.__name__
-        niimgs = utils.check_niimgs(X)
+            print "[%s.transform] Loading data" % self.__class__.__name__
+        niimgs = utils.check_niimgs(niimgs)
 
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:

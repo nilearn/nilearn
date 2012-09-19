@@ -3,7 +3,6 @@ Validation and conversion utilities.
 """
 
 import collections
-import itertools
 
 import nibabel
 import numpy as np
@@ -19,6 +18,16 @@ def _check_niimg_methods(object):
         return False
 
 
+def _get_shape(niimg):
+    # Use the fact that Nifti1Image has a shape attribute that is
+    # faster than loading the data from disk
+    if hasattr(niimg, 'shape'):
+        shape = niimg.shape
+    else:
+        shape = niimg.get_data().shape
+    return shape
+
+
 def check_niimg(niimg):
     if isinstance(niimg, basestring):
         # data is a filename, we load it
@@ -32,18 +41,14 @@ def check_niimg(niimg):
     return result
 
 
-def concat_niimgs(niimgs, compute_sessions=False):
+def concat_niimgs(niimgs):
     data = []
-    if compute_sessions:
-        sessions = []
     first_niimg = iter(niimgs).next()
     affine = first_niimg.get_affine()
     for index, iter_niimg in enumerate(niimgs):
         niimg = check_niimg(iter_niimg)
         if not np.array_equal(niimg.get_affine(), affine):
             s_error = ""
-            if compute_sessions:
-                s_error = " of session #" + str(index)
             if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
             else:
@@ -55,12 +60,12 @@ def concat_niimgs(niimgs, compute_sessions=False):
                     "Wrong affine:\n%s"
                     % (i_error, s_error,
                     repr(affine), repr(niimg.get_affine())))
-        data.append(niimg.get_data())
-        if compute_sessions:
-            sessions += list(itertools.repeat(index, niimg.get_data().shape[-1]))
-    if compute_sessions:
-        return data, affine, sessions
-    return data, affine
+        this_data = niimg.get_data()
+        if len(this_data.shape) == 3:
+            this_data = this_data[..., np.newaxis]
+        data.append(this_data)
+    data = np.concatenate(data, axis=-1)
+    return nibabel.Nifti1Image(data, affine)
 
 
 def check_niimgs(niimgs, accept_3d=False):
@@ -72,9 +77,11 @@ def check_niimgs(niimgs, accept_3d=False):
     if accept_3d and (isinstance(first_img, basestring)
                       or not isinstance(first_img, collections.Iterable)):
         niimg = check_niimg(niimgs)
-        niimg = nibabel.Nifti1Image(niimg.get_data()[..., np.newaxis],
-                                    niimg.get_affine())
+        if len(_get_shape(niimg)) == 3:
+            niimg = nibabel.Nifti1Image(niimg.get_data()[..., np.newaxis],
+                                        niimg.get_affine())
         return niimg
+
     while isinstance(first_img, collections.Iterable) \
             and not isinstance(first_img, basestring):
         first_img = iter(first_img).next()
@@ -84,7 +91,7 @@ def check_niimgs(niimgs, accept_3d=False):
     first_img = check_niimg(first_img)
 
     # Check dimension and depth
-    dim = len(first_img.get_data().shape)
+    dim = len(_get_shape(niimg))
 
     if (dim + depth) != 4:
         # Very detailed error message that tells exactly the user what
