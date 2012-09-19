@@ -71,7 +71,10 @@ def check_niimgs(niimgs, accept_3d=False):
     first_img = niimgs
     if accept_3d and (isinstance(first_img, basestring)
                       or not isinstance(first_img, collections.Iterable)):
-        return check_niimg(niimgs)
+        niimg = check_niimg(niimgs)
+        niimg = nibabel.Nifti1Image(niimg.get_data()[..., np.newaxis],
+                                    niimg.get_affine())
+        return niimg
     while isinstance(first_img, collections.Iterable) \
             and not isinstance(first_img, basestring):
         first_img = iter(first_img).next()
