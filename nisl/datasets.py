@@ -314,7 +314,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_haxby(data_dir=None):
+def fetch_haxby(data_dir=None, url=None):
     """Download and loads the haxby dataset
 
     Parameters
@@ -367,7 +367,8 @@ def fetch_haxby(data_dir=None):
 
     except IOError:
         # If the dataset does not exists, we download it
-        url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
+        if url is None:
+            url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
         _fetch_dataset('haxby2001', [url], data_dir=data_dir)
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 

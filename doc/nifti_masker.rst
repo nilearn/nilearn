@@ -20,12 +20,12 @@ fMRI loading: Loading and preprocessing MRI data
 Data loading
 ============
 
-The Nifti Loader accepts several data formats. You can use the
+The Nifti Masker accepts several data formats. You can use the
 dataset fetching functions provided by Nisl to directly obtain well formatted
 data but it is easy to use your own dataset.
 
-The Nifti Loader requires a 4-dimensional Nifti-like data (ie an object that
-owns a ``get_data()`` and a ``get_affine()`` methods). Accepted inputs :
+The Nifti Masker requires a 4-dimensional Nifti-like data (ie an object that
+owns a ``get_data()`` and a ``get_affine()`` methods). Accepted inputs are:
 
   * Path to a 4-dimensional Nifti image
   * List of paths to 3-dimensional Nifti images
@@ -38,13 +38,28 @@ owns a ``get_data()`` and a ``get_affine()`` methods). Accepted inputs :
    affine.
 
 
-
 .. _masking:
 
 Masking
 =======
 
-One
+The main functionality of the Nifti Masker is obviously masking. It can
+obviously apply a mask to your data, or generate one if you want but, above
+all, it allows you to do it simply and integrate it in your scikit-learn
+pipeline.
+
+Mask Computing
+--------------
+
+As said before, if a mask is not given, the Nifti Masker will try to compute
+one. It is *very important* to take a look at the generated mask, to see if it
+is suitable for your data and adjust parameters if it is not. See documentation
+for a complete list of mask computation parameters.
+
+We will now try to build a mask on a dataset form scratch. Haxby dataset will
+be used since it provides a mask that we can use as a reference.
+
+
 
 .. _resampling:
 

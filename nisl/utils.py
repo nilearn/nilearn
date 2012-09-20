@@ -43,7 +43,7 @@ def check_niimg(niimg):
 
 def concat_niimgs(niimgs):
     data = []
-    first_niimg = iter(niimgs).next()
+    first_niimg = check_niimg(iter(niimgs).next())
     affine = first_niimg.get_affine()
     for index, iter_niimg in enumerate(niimgs):
         niimg = check_niimg(iter_niimg)
