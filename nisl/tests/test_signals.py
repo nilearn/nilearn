@@ -6,7 +6,7 @@ Test the signals module
 
 import numpy as np
 
-from nose.tools import assert_true, assert_false
+from nose.tools import assert_true, assert_false, assert_raises
 
 from .. import signals
 from ..signals import clean
@@ -30,7 +30,11 @@ def test_clean_detrending():
 
 def test_clean_frequencies():
     sx = np.sin(np.linspace(0, 100, 2000))
-    assert_true(clean([sx], normalize=False, high_pass = 0.01).max() > 0.1)
-    assert_true(clean([sx], normalize=False, high_pass = 0.2).max() < 0.01)
+    assert_true(clean([sx], normalize=False, high_pass = 0.01, low_pass=False) \
+            .max() > 0.1)
+    assert_true(clean([sx], normalize=False, high_pass = 0.2, low_pass=False) \
+            .max() < 0.01)
     assert_true(clean([sx], normalize=False, low_pass = 0.01).max() > 0.9)
     assert_true(clean([sx], normalize=False, low_pass = 0.0005).max() < 0.01)
+    assert_raises(ValueError, clean, [sx], low_pass=0.4, high_pass=0.5)
+

@@ -51,6 +51,11 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         #y = y - np.dot(np.dot(confounds, y), confounds)
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
 
+    if low_pass and high_pass and high_pass >= low_pass:
+        raise ValueError("Your value for high pass filter (%f) is higher or"
+        " equal to the value for low pass filter (%f). This would result in a"
+        " blank signal" % (high_pass, low_pass))
+
     if low_pass or high_pass:
         n = signals.shape[-1]
         freq = fftpack.fftfreq(n, d=t_r)
