@@ -1,6 +1,9 @@
 """
 Validation and conversion utilities.
 """
+# Author: Gael Varoquaux, Alexandre Abraham
+# License: simplified BSD
+
 
 import collections
 

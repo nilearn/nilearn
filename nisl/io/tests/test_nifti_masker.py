@@ -1,6 +1,10 @@
 """
 Test the nifti_masker module
 """
+# Author: Gael Varoquaux
+# License: simplified BSD
+
+
 import numpy as np
 
 from nibabel import Nifti1Image

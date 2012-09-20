@@ -1,6 +1,8 @@
 """
 Utilities to compute a brain mask from EPI images
 """
+# Author: Gael Varoquaux
+# License: simplified BSD
 
 import numpy as np
 from scipy import ndimage

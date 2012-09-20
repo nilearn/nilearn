@@ -1,6 +1,9 @@
 """
 Test the utils module
 """
+# Author: Gael Varoquaux, Alexandre Abraham
+# License: simplified BSD
+
 
 import os
 import tempfile 
