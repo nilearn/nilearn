@@ -19,12 +19,12 @@ def test_fetch_haxby():
     testdir = mkdtemp()
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
     haxby = datasets.fetch_haxby(data_dir=testdir, url=local_url)
-    datasetdir = os.path.join(testdir, 'pymvpa-exampledata')
+    datasetdir = os.path.join(testdir, 'haxby2001', 'pymvpa-exampledata')
     for key, file in [
             ('session_target', 'attributes.txt'),
             ('func', 'bold.nii.gz'),
             ('mask', 'mask.nii.gz'),
             ('conditions_target', 'attributes_literal.txt')]:
         assert_true(haxby[key] == os.path.join(datasetdir, file))
-        assert_true(os.exists(os.path.join(datasetdir, file)))
+        assert_true(os.path.exists(os.path.join(datasetdir, file)))
     shutil.rmtree(testdir)

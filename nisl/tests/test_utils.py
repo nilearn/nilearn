@@ -3,6 +3,7 @@ Test the utils module
 """
 
 import os
+import tempfile 
 
 import nose
 
@@ -12,8 +13,6 @@ import nibabel
 from nibabel import Nifti1Image
 
 from .. import utils
-
-currdir = os.path.dirname(os.path.abspath(__file__))
 
 
 class PhonyNiimage:
@@ -64,11 +63,9 @@ def test_concat_niimgs():
     nose.tools.assert_raises(ValueError, utils.concat_niimgs,
                             [niimg1, niimg2])
 
-    tmpimg1 = os.path.join(currdir, "tmp1.nii")
-    tmpimg2 = os.path.join(currdir, "tmp2.nii")
+    _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
+    _, tmpimg2 = tempfile.mkstemp(suffix='.nii')
     try:
-        _remove_if_exists(tmpimg1)
-        _remove_if_exists(tmpimg2)
         nibabel.save(niimg1, tmpimg1)
         nibabel.save(niimg2, tmpimg2)
         nose.tools.assert_raises(ValueError, utils.concat_niimgs,
