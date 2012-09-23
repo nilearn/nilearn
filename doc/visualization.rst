@@ -20,7 +20,7 @@ can be imported from ``nisl.datasets``::
     >>> haxby_files.keys() # doctest: +SKIP
     ['data', 'session_target', 'mask', 'conditions_target']
     >>> import nibabel
-    >>> haxby_data = nibabel.load(haxby_files.data)
+    >>> haxby_data = nibabel.load(haxby_files.func)
     >>> haxby_data.get_data().shape # 1452 time points and a spatial size of 40x64x64
     (40, 64, 64, 1452)
 
