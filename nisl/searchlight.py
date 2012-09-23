@@ -257,6 +257,5 @@ class SearchLight(BaseEstimator):
             self.score_func, self.cv, self.n_jobs, self.verbose)
         scores_3D = np.zeros(process_mask.shape)
         scores_3D[process_mask] = scores
-        self.scores_ = np.ma.array(scores_3D,
-            mask=np.logical_not(self.process_mask))
+        self.scores_ = scores_3D
         return self
