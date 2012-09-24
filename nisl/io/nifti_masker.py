@@ -85,7 +85,7 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, sessions=None, mask=None, mask_connected=True,
-            mask_opening=True, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+            mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
             target_affine=None, target_shape=None, low_pass=None,
             high_pass=None, t_r=None, memory=Memory(cachedir=None, verbose=0),
