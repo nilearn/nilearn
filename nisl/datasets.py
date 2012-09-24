@@ -1,6 +1,8 @@
 """
 Utilities to download NeuroImaging datasets
 """
+# Author: Alexandre Abraham                                                                                                                                         
+# License: simplified BSD 
 
 import os
 import urllib2
@@ -232,8 +234,12 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
+    uncompress: boolean, optional
+        Ask for uncompression of the dataset. The type of the archive is
+        determined automatically.
+
     folder: string, optional
-        folder in which the file must be fetched inside the dataset folder.
+        Folder in which the file must be fetched inside the dataset folder.
 
     Returns
     -------
@@ -464,14 +470,14 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
     -------
     data : Bunch
         Dictionary-like object, the interest attributes are :
-        'func': numpy array
-            Functional images
-        'target': numpy array
-            Target data
-        'mask': string
-            Mask for the data
-        'xyz': numpy array
-            Index to 3D-coordinate array
+        'func': string list
+            Paths to functional images
+        'anat_anon': string list
+            Paths to anatomic images
+        'anat_skull': string
+            Paths to skull-stripped images
+        'session': numpy array
+            List of ids corresponding to images sessions
 
     Notes
     ------
@@ -595,6 +601,12 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
 def fetch_poldrack_mixed_gambles(data_dir=None):
     """Download and loads the Poldrack Mixed Gambles dataset
     For the moment, only bold images are loaded
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
     """
     # definition of dataset files
     file_names = ["ds005/sub0%02i/BOLD/task001_run00%s/bold.nii.gz" % (s, r)

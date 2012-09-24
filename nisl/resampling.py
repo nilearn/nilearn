@@ -100,6 +100,26 @@ def get_bounds(shape, affine):
 
 def resample_img(niimg, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True):
+    """ Resample a Nifti Image
+
+    Parameters
+    ----------
+    niimg: nisl nifti image
+        Path to a nifti file or nifti-like object
+
+    target_affine: numpy matrix, optional
+        If specified, the image is resampled corresponding to this new affine.
+        target_affine can be a 3x3 or a 4x4 matrix
+
+    target_shape: 3-tuple, optional
+        If specified, the image will be resized to match this new shape.
+
+    interpolation: string, optional
+        Can be continuous' (default) or 'nearest'. Indicate the resample method
+
+    copy: boolean, optional
+        If true, copy source data to avoid side-effects.
+    """
 
     niimg = check_niimg(niimg)
     data = niimg.get_data()
