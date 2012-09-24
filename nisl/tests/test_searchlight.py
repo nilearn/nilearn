@@ -4,29 +4,23 @@ Test the searchlight module
 # Author: Alexandre Abraham
 # License: simplified BSD
 
+from nose.tools import assert_equal
 import numpy as np
-
-from nose.tools import assert_equal, assert_true
 
 # Create a toy dataset to run searchlight on
 
-# Initialize with 10x10x10 scans of random values on 30 frames
+# Initialize with 4x4x4 scans of random values on 30 frames
 rand = np.random.RandomState(0)
 frames = 30
-data = rand.rand(frames, 10, 10, 10)
+data = rand.rand(frames, 5, 5, 5)
+mask = np.ones((5, 5, 5), np.bool)
 
 # Create a condition array
 cond = np.array([int(i > (frames / 2)) for i in range(frames)])
 
-# Create some activation pixels. Points are not connected.
-mask = np.zeros((10, 10, 10), np.bool)
-for i in [2, 4, 6]:
-    for j in [3, 5, 7]:
-        for k in [5, 7, 9]:
-            mask[i, j, k] = True
-
-# Apply a fake activation when condition is 1 (consider 0 as resting state)
-data[cond][mask] = data[cond][mask] + 3
+# Create an activation pixel.
+data[:, 2, 2, 2] = 0
+data.T[2, 2, 2][cond.astype(np.bool)] = 2 
 
 # Define score function
 from sklearn.metrics import precision_score
@@ -39,24 +33,31 @@ cv = KFold(cond.size, k=4)
 from nisl import searchlight
 n_jobs = 1
 
-# The radius is the one of the Searchlight sphere that will scan the volume
-# Small radius
-sl = searchlight.SearchLight(mask, mask, radius=1.5,
+# Run Searchlight with different radii
+# Small radius : only one pixel is selected
+sl = searchlight.SearchLight(mask, mask, radius=0.5,
                 n_jobs=n_jobs, score_func=score_func, cv=cv)
 sl.fit(data, cond)
-assert_equal(np.nonzero(sl.scores_)[0].size, 6)
+assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
+assert_equal(sl.scores_[2, 2, 2], 1.)
 
-# Medium radius : Searchlight start to grab some points
-sl = searchlight.SearchLight(mask, mask, radius=2.5,
+# Medium radius : little ball selected
+
+sl = searchlight.SearchLight(mask, mask, radius=1,
                 n_jobs=n_jobs, score_func=score_func, cv=cv)
 sl.fit(data, cond)
-assert_equal(np.nonzero(sl.scores_)[0].size, 22)
+assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
+assert_equal(sl.scores_[2, 2, 2], 1.)
+assert_equal(sl.scores_[1, 2, 2], 1.)
+assert_equal(sl.scores_[2, 1, 2], 1.)
+assert_equal(sl.scores_[2, 2, 1], 1.)
+assert_equal(sl.scores_[3, 2, 2], 1.)
+assert_equal(sl.scores_[2, 3, 2], 1.)
+assert_equal(sl.scores_[2, 2, 3], 1.)
 
-# Big radius (> sqrt(2) * 2), we get all activation points
-sl = searchlight.SearchLight(mask, mask, radius=3,
+# Big radius : big ball selected
+sl = searchlight.SearchLight(mask, mask, radius=2,
                 n_jobs=n_jobs, score_func=score_func, cv=cv)
 sl.fit(data, cond)
-assert_equal(np.nonzero(sl.scores_)[0].size, 27)
-
-assert_true(sl.scores_[mask].all() > 0.1)
-assert_true(sl.scores_[-mask].all() == 0)
+assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
+assert_equal(sl.scores_[2, 2, 2], 1.)
