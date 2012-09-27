@@ -2,6 +2,7 @@
 Test the resampling code.
 """
 
+import nose
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -70,3 +71,14 @@ def test_resampling_with_affine():
                                interpolation='nearest')
         np.testing.assert_almost_equal(np.max(data),
                                 np.max(rot_img.get_data()))
+
+def test_missing_parameter():
+    """ Test Error when shape provided without affine.
+    """
+    shape = (3., 2., 5., 2.)
+    target_shape = (5., 3., 2., 2.)
+    affine = np.eye(4)
+    data = np.random.randint(0, 10, shape)
+    nose.tools.assert_raises(ValueError, resample_img,
+            Nifti1Image(data, affine),
+            target_shape=target_shape, interpolation='nearest')
