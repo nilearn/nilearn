@@ -577,7 +577,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                   for subject in subjects
                   for file in file_names]
             try:
-                files = (_get_dataset("nyu_rest", paths, data_dir=data_dir))
+                files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
             except IOError:
                 url = 'http://www.nitrc.org/frs/download.php/'
                 url += tars[session_id - 1][part]
