@@ -201,8 +201,7 @@ def _fetch_file(url, data_dir, overwrite=False):
     try:
         # Download data
         print 'Downloading data from %s ...' % url
-        req = urllib2.Request(url)
-        data = urllib2.urlopen(req)
+        data = urllib2.urlopen(url)
         local_file = open(full_name, "wb")
         _chunk_read_(data, local_file, report_hook=True)
         dt = time.time() - t0
@@ -546,11 +545,11 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
 
     max_subjects = len(subjects_a) + len(subjects_b)
     # Check arguments
+    if n_subjects == None:
+        n_subjects = len(subjects_a) + len(subjects_b)
     if n_subjects > max_subjects:
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
         n_subjects = 25
-    if n_subjects == None:
-        n_subjects = len(subjects_a) + len(subjects_b)
 
     for i in sessions:
         if not (i in [1, 2, 3]):
