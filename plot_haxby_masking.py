@@ -12,18 +12,18 @@ from nisl import datasets, io, utils
 haxby = datasets.fetch_haxby()
 haxby_img = utils.check_niimg(haxby.func)
 # Restrict haxby to 150 frames to speed up computation
-haxby_func = np.rot90(haxby_img.get_data()[..., :150])
+haxby_func = haxby_img.get_data()[..., :150]
 haxby_img = Nifti1Image(haxby_func, haxby_img.get_affine()) 
 # Load mask provided by Haxby
-haxby_mask = np.rot90(utils.check_niimg(haxby.mask).get_data().astype(np.bool))
+haxby_mask = utils.check_niimg(haxby.mask).get_data().astype(np.bool)
 
 # Display helper
 background = np.mean(haxby_func, axis=-1)[..., 27]
 def display_mask(background, mask, title):
     pl.axis('off')
-    pl.imshow(background, interpolation='nearest', cmap=pl.cm.gray)
+    pl.imshow(np.rot90(background), interpolation='nearest', cmap=pl.cm.gray)
     ma = np.ma.masked_equal(mask, False)
-    pl.imshow(ma, interpolation='nearest', cmap=pl.cm.autumn, alpha=0.5)
+    pl.imshow(np.rot90(ma), interpolation='nearest', cmap=pl.cm.autumn, alpha=0.5)
     pl.title(title)
 
 # Generate mask with default parameters
@@ -56,3 +56,14 @@ pl.subplot(1, 2, 2)
 display_mask(background, cutoff_mask[..., 27], 'Mask with cutoff')
 pl.subplots_adjust(top=0.8)
 pl.show()
+
+# trended vs detrended
+trended = io.NiftiMasker(mask=haxby.mask)
+detrended = io.NiftiMasker(mask=haxby.mask, detrend=True)
+trended_data = trended.fit_transform(haxby_img)
+detrended_data = detrended.fit_transform(haxby_img)
+ 
+print "Trended: mean %.2f, std %.2f" % (np.mean(trended_data), np.std(trended_data))
+print "Detrended: mean %.2f, std %.2f" % (np.mean(detrended_data), np.std(detrended_data))
+
+  
