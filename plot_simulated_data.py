@@ -22,6 +22,7 @@ from sklearn import linear_model, svm
 from sklearn.utils import check_random_state
 from sklearn.metrics import r2_score
 from sklearn.cross_validation import KFold
+from sklearn.feature_selection import f_regression
 from nisl import searchlight
 
 ###############################################################################
@@ -105,7 +106,6 @@ classifiers = [
       mask=mask, process_mask=process_mask,
       masked_data=True,
       radius=4.,
-      n_jobs = -1,
       score_func=r2_score,
       cv=KFold(y_train.size, k=4)))
 ]
@@ -135,5 +135,12 @@ for name, classifier in classifiers:
     plot_slices(coefs, title=title)
 
     print title
+
+f_values, p_values = f_regression(X_train, y_train)
+p_values = np.reshape(p_values, (size, size, size))
+p_values = -np.log10(p_values) 
+p_values[np.isnan(p_values)] = 0 
+p_values[p_values > 10] = 10 
+plot_slices(p_values, title="f_regress")
 
 pl.show()
