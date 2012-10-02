@@ -48,6 +48,10 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
     target_shape: 3-tuple of integers, optional
         This parameter is passed to resampling.resample_img. Please see the
         related documentation for details.
+
+    transpose: boolean, optional
+        If true, data are transposed after filtering and inverse_transform
+        considered input data as transpose too.
         
     smooth: False or float, optional
         If smooth is not False, it gives the size, in voxel of the
@@ -88,7 +92,8 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
             target_affine=None, target_shape=None, low_pass=None,
-            high_pass=None, t_r=None, memory=Memory(cachedir=None, verbose=0),
+            high_pass=None, t_r=None, transpose=False,
+            memory=Memory(cachedir=None, verbose=0),
             transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
@@ -108,6 +113,7 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         self.transform_memory = transform_memory
         self.verbose = verbose
         self.sessions_ = sessions
+        self.transpose = transpose
 
     def fit(self, niimgs, y=None):
         """Compute the mask corresponding to the data
@@ -214,9 +220,13 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         data = np.rollaxis(data, -1)
 
         self.affine_ = niimgs.get_affine()
+        if self.transpose:
+            data = data.T
         return data
 
     def inverse_transform(self, X):
+        if self.transpose:
+            X = X.T
         mask = self.mask_.get_data().astype(np.bool)
         if len(X.shape) > 1:
             # we build the data iteratively to avoid MemoryError
