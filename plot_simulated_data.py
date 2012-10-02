@@ -20,7 +20,9 @@ from scipy import linalg, ndimage
 
 from sklearn import linear_model, svm
 from sklearn.utils import check_random_state
-
+from sklearn.metrics import r2_score
+from sklearn.cross_validation import KFold
+from nisl import searchlight
 
 ###############################################################################
 # Fonction to generate data
@@ -83,7 +85,11 @@ def plot_slices(data, title=None):
 # Create data
 X_train, X_test, y_train, y_test, snr, noise, coefs, size =\
         create_simulation_data(snr=10, n_samples=400, size=12)
-
+mask = np.ones((size, size, size), np.bool)
+process_mask = np.zeros((size, size, size), np.bool)
+process_mask[:, :, 0] = True
+process_mask[:, :, 6] = True
+process_mask[:, :, 11] = True
 
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
@@ -95,6 +101,13 @@ classifiers = [
   ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05)),
   ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
   ('svr', svm.SVR(kernel='linear', C=0.001)),
+  ('searchlight', searchlight.SearchLight(
+      mask=mask, process_mask=process_mask,
+      masked_data=True,
+      radius=4.,
+      n_jobs = -1,
+      score_func=r2_score,
+      cv=KFold(y_train.size, k=4)))
 ]
 
 # Run the estimators
@@ -102,12 +115,19 @@ for name, classifier in classifiers:
     t1 = time()
     classifier.fit(X_train, y_train)
     elapsed_time = time() - t1
-    coefs = classifier.coef_
-    coefs = np.reshape(coefs, [size, size, size])
-    score = classifier.score(X_test, y_test)
 
-    title = '%s: prediction score %.3f, training time: %.2fs' % (
+    if name != 'searchlight':
+        coefs = classifier.coef_
+        coefs = np.reshape(coefs, [size, size, size])
+        score = classifier.score(X_test, y_test)
+        title = '%s: prediction score %.3f, training time: %.2fs' % (
                 classifier.__class__.__name__, score,
+                elapsed_time)
+
+    else: # Searchlight
+        coefs = classifier.scores_
+        title = '%s: training time: %.2fs' % (
+                classifier.__class__.__name__,
                 elapsed_time)
 
     # We use the plot_slices function provided in the example to
