@@ -47,7 +47,8 @@ def _largest_connected_component(mask):
 
 
 def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
-                 connected=True, opening=True, exclude_zeros=False, verbose=0):
+                 connected=True, opening=True, exclude_zeros=False,
+                 ensure_finite=True, verbose=0):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
@@ -71,6 +72,9 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         if opening is True, an morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
+    ensure_finite: boolean
+        If ensure_finite is True, the non-finite values (NaNs and infs)
+        found in the images will be replaced by zeros
     exclude_zeros: boolean, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -86,6 +90,9 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
        print "EPI mask computation"
     if len(mean_epi.shape) == 4:
         mean_epi = mean_epi.mean(axis=-1)
+    if ensure_finite:
+        # SPM tends to put NaNs in the data outside the brain
+        mean_epi[np.logical_not(np.isfinite(mean_epi))] = 0
     sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
