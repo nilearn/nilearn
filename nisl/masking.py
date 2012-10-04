@@ -41,6 +41,40 @@ def _largest_connected_component(mask):
     return labels == label_count.argmax()
 
 
+def extrapolate_out_mask(data, mask, iterations=1):
+    """ Extrapolate values outside of the mask.
+    """
+    if iterations > 1:
+        data, mask = extrapolate_out_mask(data, mask,
+                                          iterations=iterations - 1)
+    new_mask = ndimage.binary_dilation(mask)
+    larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=np.bool)
+    larger_mask[1:-1, 1:-1, 1:-1] = mask
+    # Use nans as missing value: ugly
+    masked_data = np.zeros(larger_mask.shape)
+    masked_data[1:-1, 1:-1, 1:-1] = data.copy()
+    masked_data[np.logical_not(larger_mask)] = np.nan
+    outer_shell = larger_mask.copy()
+    outer_shell[1:-1, 1:-1, 1:-1] = new_mask - mask
+    outer_shell_x, outer_shell_y, outer_shell_z = np.where(outer_shell)
+    extrapolation = list()
+    for i, j, k in [(0, 1, 0), (0, -1, 0), (1, 0, 0), (-1, 0, 0),
+                    (1, 0, 0), (-1, 0, 0)]:
+        this_x = outer_shell_x + i
+        this_y = outer_shell_y + j
+        this_z = outer_shell_z + k
+        extrapolation.append(masked_data[this_x, this_y, this_z])
+        
+    extrapolation = np.array(extrapolation)
+    extrapolation = (np.nansum(extrapolation, axis=0)
+                       / np.sum(np.isfinite(extrapolation), axis=0))
+    extrapolation[np.logical_not(np.isfinite(extrapolation))] = 0
+    new_data = np.zeros_like(masked_data)
+    new_data[outer_shell] = extrapolation
+    new_data[larger_mask] = masked_data[larger_mask]
+    return new_data[1:-1, 1:-1, 1:-1], new_mask
+
+
 ###############################################################################
 # Utilities to compute masks
 ###############################################################################
@@ -112,6 +146,129 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     if opening:
         mask = ndimage.binary_opening(mask.astype(np.int), iterations=2)
     return mask.astype(bool)
+
+
+
+def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
+            connected=True, opening=True, threshold=0.5, exclude_zeros=False,
+            return_mean=False):
+    """ Compute a common mask for several sessions of fMRI data.
+
+    Uses the mask-finding algorithmes to extract masks for each
+    session, and then keep only the main connected component of the
+    a given fraction of the intersection of all the masks.
+
+
+    Parameters
+    ----------
+    session_files: list of list of strings
+        A list of list of nifti filenames. Each inner list
+        represents a session.
+
+    threshold: float, optional
+        the inter-session threshold: the fraction of the
+        total number of session in for which a voxel must be in the
+        mask to be kept in the common mask.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
+
+    lower_cutoff: float, optional
+        lower fraction of the histogram to be discarded.
+
+    upper_cutoff: float, optional
+        upper fraction of the histogram to be discarded.
+
+    connected: boolean, optional
+        if connected is True, only the largest connect component is kept.
+
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
+
+    Returns
+    -------
+    mask : 3D boolean ndarray
+        The brain mask
+
+    mean : 3D float array
+        The mean image
+    """
+    mask = None
+    for index, session in enumerate(session_epi):
+        this_mask = compute_epi_mask(session,
+                lower_cutoff=lower_cutoff, upper_cutoff=upper_cutoff,
+                connected=connected, exclude_zeros=exclude_zeros)
+        this_mask = this_mask.astype(np.int8)
+        if mask is None:
+            mask = this_mask
+        else:
+            mask += this_mask
+        # Free memory early
+        del this_mask
+
+    # Take the "half-intersection", i.e. all the voxels that fall within
+    # 50% of the individual masks.
+    mask = (mask > threshold * len(list(session_epi)))
+
+    if connected:
+        # Select the largest connected component (each mask is
+        # connect, but the half-interesection may not be):
+        mask = _largest_connected_component(mask)
+    mask = mask.astype(np.bool)
+
+    return mask
+
+
+def intersect_masks(input_masks, output_filename=None, threshold=0.5, connected=True):
+    """
+        Given a list of input mask images, generate the output image which
+        is the the threshold-level intersection of the inputs
+
+        Parameters
+        ----------
+        input_masks: list of strings or ndarrays
+            paths of the input images nsubj set as len(input_mask_files), or
+            individual masks.
+
+        output_filename, string:
+            Path of the output image, if None no file is saved.
+
+        threshold: float within [0, 1[, optional
+            gives the level of the intersection.
+            threshold=1 corresponds to keeping the intersection of all
+            masks, whereas threshold=0 is the union of all masks.
+            
+        connected: bool, optional
+            If true, extract the main connected component
+
+        Returns
+        -------
+            grp_mask, boolean array of shape the image shape
+    """
+    grp_mask = None
+    if threshold > 1:
+        raise ValueError('The threshold should be < 1')
+    if threshold <0:
+        raise ValueError('The threshold should be > 0')
+    threshold = min(threshold, 1 - 1.e-7)
+
+    for this_mask in input_masks:
+        if grp_mask is None:
+            grp_mask = this_mask.copy().astype(np.int)
+        else:
+            # If this_mask is floating point and grp_mask is integer, numpy 2
+            # casting rules raise an error for in-place addition. Hence we do it
+            # long-hand. XXX should the masks be coerced to int before addition?
+            grp_mask = grp_mask + this_mask
+    
+    grp_mask = grp_mask > (threshold * len(list(input_masks)))
+    
+    if np.any(grp_mask > 0) and connected:
+        grp_mask = _largest_connected_component(grp_mask)
+    
+    return grp_mask > 0
+
 
 ###############################################################################
 # Time series extraction
