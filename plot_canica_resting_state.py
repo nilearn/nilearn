@@ -24,7 +24,7 @@ data_masked = masker.fit_transform(dataset.func)
 #fmri_data = np.concatenate(data_masked, axis=1)
 fmri_data = data_masked
 
-# mean_img = masker.inverse_transform(fmri_data[0].mean(axis=0))
+mean_epi = masker.inverse_transform([fmri_data[0].mean(axis=0)])[0].get_data()
 
 ### Apply ICA #################################################################
 
@@ -54,16 +54,16 @@ import pylab as pl
 pl.figure()
 pl.axis('off')
 vmax = np.max(np.abs(components[:, :, 20, 16]))
-#pl.imshow(np.rot90(mean_epi[:, :, 20]), interpolation='nearest',
-#          cmap=pl.cm.gray)
+pl.imshow(np.rot90(mean_epi[:, :, 20]), interpolation='nearest',
+          cmap=pl.cm.gray)
 pl.imshow(np.rot90(components[:, :, 20, 16]), interpolation='nearest',
           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 
 pl.figure()
 pl.axis('off')
 vmax = np.max(np.abs(components[:, :, 25, 19]))
-#pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
-#          cmap=pl.cm.gray)
+pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
+          cmap=pl.cm.gray)
 pl.imshow(np.rot90(components[:, :, 25, 19]), interpolation='nearest',
            cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 pl.show()
