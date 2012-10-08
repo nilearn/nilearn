@@ -15,9 +15,8 @@ from .. import resampling
 from .. import utils
 from .base_masker import BaseMasker
 
-
-class NiftiMasker(BaseMasker):
-    """Nifti data loader with preprocessing
+class NiftiMultiMasker(BaseMasker):
+    """Nifti data loader with preprocessing for multiple subjects
 
     Parameters
     ----------
@@ -47,10 +46,6 @@ class NiftiMasker(BaseMasker):
     target_shape: 3-tuple of integers, optional
         This parameter is passed to resampling.resample_img. Please see the
         related documentation for details.
-
-    transpose: boolean, optional
-        If true, data are transposed after filtering and inverse_transform
-        considered input data as transpose too.
         
     smooth: False or float, optional
         If smooth is not False, it gives the size, in voxel of the
@@ -87,12 +82,12 @@ class NiftiMasker(BaseMasker):
     signals.clean
     """
 
-    def __init__(self, sessions=None, mask=None, mask_connected=True,
+    def __init__(self, sessions=None, subjects=None,
+            mask=None, mask_connected=True,
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
             target_affine=None, target_shape=None, low_pass=None,
-            high_pass=None, t_r=None, transpose=False,
-            memory=Memory(cachedir=None, verbose=0),
+            high_pass=None, t_r=None, memory=Memory(cachedir=None, verbose=0),
             transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
@@ -111,8 +106,8 @@ class NiftiMasker(BaseMasker):
         self.memory = memory
         self.transform_memory = transform_memory
         self.verbose = verbose
-        self.sessions_ = sessions
-        self.transpose = transpose
+        self.sessions = sessions
+        self.subjects = subjects
 
     def fit(self, niimgs, y=None):
         """Compute the mask corresponding to the data
@@ -131,20 +126,22 @@ class NiftiMasker(BaseMasker):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print "[%s.fit] Loading data" % self.__class__.__name__
-        niimgs = utils.check_niimgs(niimgs, accept_3d=True)
+        data = []
+        for niimg in niimgs:
+            data.append(utils.check_niimgs(niimg, accept_3d=True))
 
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            mask = memory.cache(masking.compute_epi_mask)(
-                                niimgs.get_data(),
+            mask = memory.cache(masking.compute_session_epi_mask)(
+                                data,
                                 connected=self.mask_connected,
                                 opening=self.mask_opening,
                                 lower_cutoff=self.mask_lower_cutoff,
                                 upper_cutoff=self.mask_upper_cutoff,
                                 verbose=(self.verbose -1))
-            self.mask_ = Nifti1Image(mask.astype(np.int), niimgs.get_affine())
+            self.mask_ = Nifti1Image(mask.astype(np.int), data[0].get_affine())
         else:
 			self.mask_ = utils.check_niimg(self.mask)
 
@@ -161,7 +158,17 @@ class NiftiMasker(BaseMasker):
         return self
 
     def transform(self, niimgs):
-        return self.preprocess_niimgs(niimgs, self.confounds, self.sessions) 
+        data = []
+        for index, niimg in enumerate(niimgs):
+            if self.confounds is not None:
+                data.append(self.preprocess_niimgs(niimg,
+                    confounds=self.confounds[index]))
+            else:
+                data.append(self.preprocess_niimgs(niimg))
+        return data
 
     def inverse_transform(self, X):
-        return self.unmask(X)
+        data = []
+        for x in X:
+            data.append(self.unmask(x))
+        return data

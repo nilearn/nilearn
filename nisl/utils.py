@@ -11,7 +11,7 @@ import nibabel
 import numpy as np
 
 
-def _check_niimg_methods(object):
+def is_a_niimg(object):
     """ Check for get_data and get_affine method in an object
 
     Parameters
@@ -73,7 +73,7 @@ def check_niimg(niimg):
         result = nibabel.load(niimg)
     else:
         # it is an object, it should have get_data and get_affine methods
-        if not _check_niimg_methods(niimg):
+        if not is_a_niimg(niimg):
             raise TypeError("Given data does not expose"
                 " get_data or get_affine methods")
         result = niimg

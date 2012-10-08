@@ -151,7 +151,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
 def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
             connected=True, opening=True, threshold=0.5, exclude_zeros=False,
-            return_mean=False):
+            return_mean=False, verbose=0):
     """ Compute a common mask for several sessions of fMRI data.
 
     Uses the mask-finding algorithmes to extract masks for each
@@ -196,6 +196,8 @@ def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     """
     mask = None
     for index, session in enumerate(session_epi):
+        if utils.is_a_niimg(session):
+            session = session.get_data()
         this_mask = compute_epi_mask(session,
                 lower_cutoff=lower_cutoff, upper_cutoff=upper_cutoff,
                 connected=connected, exclude_zeros=exclude_zeros)

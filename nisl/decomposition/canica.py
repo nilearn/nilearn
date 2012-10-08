@@ -84,7 +84,7 @@ class CanICA(BaseModel, TransformerMixin):
        self.random_state = random_state
 
     
-    def fit(self, data, y):
+    def fit(self, data, Y=None):
         
         random_state = check_random_state(self.random_state)
 
