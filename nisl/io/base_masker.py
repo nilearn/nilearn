@@ -4,17 +4,22 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
-
 from nibabel import Nifti1Image
 
 from .. import masking
 from .. import resampling
 from .. import signals
 from .. import utils
+
+def _to_nifti(X, affine):
+    if isinstance(X, np.ndarray):
+        return Nifti1Image(X, affine)
+    for index, x in enumerate(X):
+        X[index] = _to_nifti(x, affine)
+    return X 
 
 
 class BaseMasker(BaseEstimator, TransformerMixin):
@@ -171,17 +176,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         self.affine_ = niimgs.get_affine()
         return data
 
-    def unmask(self, X):
-        mask = self.mask_.get_data().astype(np.bool)
-        if len(X.shape) > 1:
-            # we build the data iteratively to avoid MemoryError
-            data = []
-            for x in X:
-                img = np.zeros(mask.shape)
-                img[mask] = x
-                data.append(img[..., np.newaxis])
-            data = np.concatenate(data, axis=-1)
-        else:
-            data = np.zeros(mask.shape)
-            data[mask] = X
-        return Nifti1Image(data, self.affine_)
+    def inverse_transform(self, X):
+        mask = utils.check_niimg(self.mask_)
+        unmasked = masking.unmask(X, mask.get_data().astype(np.bool))
+        return _to_nifti(unmasked, mask.get_affine())

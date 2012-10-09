@@ -24,7 +24,7 @@ data_masked = masker.fit_transform(dataset.func)
 #fmri_data = np.concatenate(data_masked, axis=1)
 fmri_data = data_masked
 
-mean_epi = masker.inverse_transform([fmri_data[0].mean(axis=0)])[0].get_data()
+mean_epi = masker.inverse_transform(fmri_data[0].mean(axis=0)).get_data()
 
 ### Apply ICA #################################################################
 
@@ -41,8 +41,8 @@ components_masked = ica.fit(data_masked).maps_
 
 # Now we inverting the masking operation, to go back to a full 3D
 # representation
-components_img = masker.inverse_transform([components_masked])
-components = components_img[0].get_data()
+components_img = masker.inverse_transform(components_masked)
+components = components_img.get_data()
 
 # Using a masked array is important to have transparency in the figures
 components = np.ma.masked_equal(components, 0, copy=False)

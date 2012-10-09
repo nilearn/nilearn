@@ -167,10 +167,3 @@ class NiftiMultiMasker(BaseMasker):
                 data.append(self.preprocess_niimgs(niimg))
         return data
 
-    def inverse_transform(self, X):
-        data = []
-        for x in X:
-            if len(x.shape) < 1:
-                raise ValueError("Masked data should have at least 2 dimensions")
-            data.append(self.unmask(x))
-        return data

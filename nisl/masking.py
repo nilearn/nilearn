@@ -3,6 +3,7 @@ Utilities to compute a brain mask from EPI images
 """
 # Author: Gael Varoquaux
 # License: simplified BSD
+import warnings
 
 import numpy as np
 from scipy import ndimage
@@ -332,3 +333,45 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
                                                     smooth_sigma)
     series = series[mask]
     return series
+
+
+def unmask(X, mask):
+    """ Take masked data and bring them back into 3D
+
+    This function is intelligent and will process data of any dimensions.
+    It iterates until data has only one dimension and then it tries to
+    unmask it. An error is raised if masked data has not the right number
+    of voxels.
+
+    Parameters
+    ----------
+   
+    X: (list of)* numpy array
+        Masked data. You can provide data of any dimension so if you want to
+        unmask several images at one time, it is possible to give a list of
+        images.
+    mask: numpy array of boolean values
+        Mask of the data
+    """
+    if mask.dtype != np.bool:
+        warnings.warn('[unmask] Given mask had dtype %s.It has been converted'
+            ' to bool.' % mask.dtype.__name__)
+        mask = mask.astype(np.bool)
+
+    if isinstance(X, np.ndarray) and len(X.shape) == 1:
+        if X.shape[0] != mask.sum():
+            raise ValueError('[unmask] Masked data  and mask has not the same'
+                'number of voxels')
+        img = np.zeros(mask.shape)
+        img[mask] = X
+        return img
+
+    data = []
+    for x in X:
+        img = unmask(x, mask)
+        data.append(img[..., np.newaxis])
+    # if input is a numpy array, we return a numpy array to conserve data
+    # integrity
+    if isinstance(X, np.ndarray):
+        data = np.concatenate(data, axis=-1)
+    return data
