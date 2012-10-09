@@ -15,10 +15,10 @@ from sklearn.externals.joblib import Memory
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 
-from ..base_model import BaseModel
+from .decomposition_model import DecompositionModel
 
 
-class CanICA(BaseModel, TransformerMixin):
+class CanICA(DecompositionModel, TransformerMixin):
     """Perform Canonical Independent Component Analysis.
 
     Parameters

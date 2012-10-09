@@ -72,7 +72,7 @@ def learn_time_series(maps, subject_data):
 
 ###############################################################################
 # Base model
-class BaseModel(BaseEstimator):
+class DecompositionModel(BaseEstimator):
 
     def score(self, test_series):
         # XXX: might need to relearn maps
