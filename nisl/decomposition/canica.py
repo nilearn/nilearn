@@ -7,7 +7,7 @@ CanICA
 import copy
 
 import numpy as np
-from scipy import linalg, stats, ndimage
+from scipy import linalg, stats
 
 from sklearn.base import TransformerMixin
 from sklearn.decomposition import fastica
@@ -15,24 +15,7 @@ from sklearn.externals.joblib import Memory
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 
-from ..masking import extrapolate_out_mask
 from ..base_model import BaseModel
-
-def smooth_from_mask(data, mask, voxels, copy=True):
-    """ Given a dataset n_voxels x n_sample, and a mask (n_x, n_y,
-        n_z), smooth the dataset is real space.
-    """
-    if copy:
-        data = data.copy()
-    map3d = np.zeros(mask.shape)
-    for this_map in data:
-        map3d[mask] = this_map
-        map3d, _ = extrapolate_out_mask(map3d, mask,
-                                        iterations=np.ceil(voxels)+2)
-        map3d = ndimage.gaussian_filter(map3d, voxels)
-        this_map[:] = map3d[mask]
-    return data
-
 
 
 class CanICA(BaseModel, TransformerMixin):
@@ -47,13 +30,6 @@ class CanICA(BaseModel, TransformerMixin):
 
     n_components: int
         Number of components to extract
-
-    mask: boolean array, optional
-        Mask of the data.
-
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
-        spatial smoothing to apply to the signal.
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -70,15 +46,12 @@ class CanICA(BaseModel, TransformerMixin):
 
     def __init__(self, n_components, threshold=1,
                 memory=Memory(cachedir=None),
-                mask=None, smooth=None,
                 kurtosis_thr=False,
                 maps_only=False,
                 random_state=None):
        self.n_components = n_components
        self.threshold = threshold
        self.memory = memory
-       self.mask = mask
-       self.smooth = smooth
        self.kurtosis_thr = kurtosis_thr
        self.maps_only = maps_only
        self.random_state = random_state
@@ -98,13 +71,6 @@ class CanICA(BaseModel, TransformerMixin):
         # Do PCAs and CCAs
         for subject_data in data:
             subject_data -= subject_data.mean(axis=0)
-            if self.smooth:
-                assert self.mask is not None
-                subject_data = self.memory.cache(smooth_from_mask)(subject_data,
-                                    self.mask, self.smooth, copy=False)
-                # Make the array writeable
-                subject_data = np.asarray(subject_data).copy()
-                subject_data -= subject_data.mean(axis=0)
             # PCA
             std = subject_data.std(axis=0)
             std[std==0] = 1
