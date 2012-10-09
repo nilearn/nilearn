@@ -44,13 +44,12 @@ class CanICA(DecompositionModel, TransformerMixin):
 
     """
 
-    def __init__(self, n_components, threshold=1,
+    def __init__(self, n_components,
                 memory=Memory(cachedir=None),
                 kurtosis_thr=False,
                 maps_only=False,
                 random_state=None):
        self.n_components = n_components
-       self.threshold = threshold
        self.memory = memory
        self.kurtosis_thr = kurtosis_thr
        self.maps_only = maps_only
@@ -109,11 +108,6 @@ class CanICA(DecompositionModel, TransformerMixin):
             raise ValueError('Could not find components with high-enough'
             ' kurtosis')
         del pcas
-        if not ica_maps.flags.writeable:
-            ica_maps = np.asarray(ica_maps).copy()
-        # Threshold
-        ica_maps[np.abs(ica_maps) <
-                 self.threshold/np.sqrt(ica_maps.shape[1])] = 0
         self.maps_ = ica_maps
         if not self.maps_only:
             # Relearn the time series

@@ -34,10 +34,10 @@ ica = CanICA(n_components=n_components, random_state=42)
 components_masked = ica.fit(data_masked).maps_
 
 # We normalize the estimated components, for thresholding to make sens
-# components_masked -= components_masked.mean(axis=0)
-# components_masked /= components_masked.std(axis=0)
+components_masked -= components_masked.mean(axis=0)
+components_masked /= components_masked.std(axis=0)
 # Threshold
-# components_masked[np.abs(components_masked) < .5] = 0
+components_masked[np.abs(components_masked) < .6] = 0
 
 # Now we inverting the masking operation, to go back to a full 3D
 # representation
@@ -53,17 +53,10 @@ components = np.ma.masked_equal(components, 0, copy=False)
 import pylab as pl
 pl.figure()
 pl.axis('off')
-vmax = np.max(np.abs(components[:, :, 20, 16]))
+vmax = np.max(np.abs(components[:, :, 20, 1]))
 pl.imshow(np.rot90(mean_epi[:, :, 20]), interpolation='nearest',
           cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 20, 16]), interpolation='nearest',
+pl.imshow(np.rot90(components[:, :, 20, 1]), interpolation='nearest',
           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
-
-pl.figure()
-pl.axis('off')
-vmax = np.max(np.abs(components[:, :, 25, 19]))
-pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 25, 19]), interpolation='nearest',
-           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 pl.show()
+
