@@ -355,7 +355,7 @@ def unmask(X, mask):
     """
     if mask.dtype != np.bool:
         warnings.warn('[unmask] Given mask had dtype %s.It has been converted'
-            ' to bool.' % mask.dtype.__name__)
+            ' to bool.' % mask.dtype.name)
         mask = mask.astype(np.bool)
 
     if isinstance(X, np.ndarray) and len(X.shape) == 1:
@@ -367,11 +367,13 @@ def unmask(X, mask):
         return img
 
     data = []
-    for x in X:
-        img = unmask(x, mask)
-        data.append(img[..., np.newaxis])
-    # if input is a numpy array, we return a numpy array to conserve data
-    # integrity
     if isinstance(X, np.ndarray):
-        data = np.concatenate(data, axis=-1)
+        for x in X:
+            img = unmask(x, mask)
+            data.append(img[np.newaxis, ...])
+        data = np.concatenate(data, axis=0)
+    else:
+        for x in X:
+            img = unmask(x, mask)
+            data.append(img)
     return data
