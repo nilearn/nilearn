@@ -10,7 +10,7 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 ### Compute the mask ##########################################################
 
-nifti_masker = NiftiMasker(transpose=True)
+nifti_masker = NiftiMasker(transpose=True, smooth=8)
 nifti_masker.fit(dataset.func[0])
 mask = nifti_masker.mask_.get_data()
 
