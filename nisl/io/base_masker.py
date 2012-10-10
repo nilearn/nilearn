@@ -89,31 +89,6 @@ class BaseMasker(BaseEstimator, TransformerMixin):
     signals.clean
     """
 
-    def __init__(self, sessions=None, mask=None, mask_connected=True,
-            mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
-            smooth=False, confounds=None, detrend=False,
-            target_affine=None, target_shape=None, low_pass=None,
-            high_pass=None, t_r=None, memory=Memory(cachedir=None, verbose=0),
-            transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
-        # Mask is compulsory or computed
-        self.mask = mask
-        self.mask_connected = mask_connected
-        self.mask_opening = mask_opening
-        self.mask_lower_cutoff = mask_lower_cutoff
-        self.mask_upper_cutoff = mask_upper_cutoff
-        self.smooth = smooth
-        self.confounds = confounds
-        self.detrend = detrend
-        self.target_affine = target_affine
-        self.target_shape = target_shape
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.memory = memory
-        self.transform_memory = transform_memory
-        self.verbose = verbose
-        self.sessions_ = sessions
-
 
     def preprocess_niimgs(self, niimgs, sessions=None, confounds=None):
         memory = self.transform_memory
@@ -174,9 +149,13 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         data = np.rollaxis(data, -1)
 
         self.affine_ = niimgs.get_affine()
+        if self.transpose:
+            data = data.T
         return data
 
     def inverse_transform(self, X):
         mask = utils.check_niimg(self.mask_)
-        unmasked = masking.unmask(X, mask.get_data().astype(np.bool))
+        unmasked = masking.unmask(X, mask.get_data().astype(np.bool),
+                transpose=not self.transpose)
+        
         return _to_nifti(unmasked, mask.get_affine())

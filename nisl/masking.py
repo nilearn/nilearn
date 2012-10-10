@@ -279,7 +279,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, connected=
 
 
 def apply_mask(niimgs, mask_img, dtype=np.float32,
-                     smooth=False, ensure_finite=True):
+                     smooth=False, ensure_finite=True, transpose=False):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
@@ -332,10 +332,12 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
             this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                     smooth_sigma)
     series = series[mask]
+    if transpose:
+        series = series.T
     return series
 
 
-def unmask(X, mask):
+def unmask(X, mask, transpose=False):
     """ Take masked data and bring them back into 3D
 
     This function is intelligent and will process data of any dimensions.
@@ -360,8 +362,8 @@ def unmask(X, mask):
 
     if isinstance(X, np.ndarray) and len(X.shape) == 1:
         if X.shape[0] != mask.sum():
-            raise ValueError('[unmask] Masked data  and mask has not the same'
-                'number of voxels')
+            raise ValueError('[unmask] Masked data and mask has not the same'
+                ' number of voxels')
         img = np.zeros(mask.shape)
         img[mask] = X
         return img
@@ -370,8 +372,14 @@ def unmask(X, mask):
     if isinstance(X, np.ndarray):
         for x in X:
             img = unmask(x, mask)
-            data.append(img[np.newaxis, ...])
-        data = np.concatenate(data, axis=0)
+            if transpose:
+                data.append(img[..., np.newaxis])
+            else:
+                data.append(img[np.newaxis, ...])
+        if transpose:
+            data = np.concatenate(data, axis=-1)
+        else:
+            data = np.concatenate(data, axis=0)
     else:
         for x in X:
             img = unmask(x, mask)

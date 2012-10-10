@@ -82,12 +82,12 @@ class NiftiMultiMasker(BaseMasker):
     signals.clean
     """
 
-    def __init__(self, sessions=None, subjects=None,
-            mask=None, mask_connected=True,
+    def __init__(self, sessions=None, mask=None, mask_connected=True,
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
             target_affine=None, target_shape=None, low_pass=None,
-            high_pass=None, t_r=None, memory=Memory(cachedir=None, verbose=0),
+            high_pass=None, t_r=None, transpose=False,
+            memory=Memory(cachedir=None, verbose=0),
             transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
@@ -107,7 +107,7 @@ class NiftiMultiMasker(BaseMasker):
         self.transform_memory = transform_memory
         self.verbose = verbose
         self.sessions = sessions
-        self.subjects = subjects
+        self.transpose = transpose
 
     def fit(self, niimgs, y=None):
         """Compute the mask corresponding to the data

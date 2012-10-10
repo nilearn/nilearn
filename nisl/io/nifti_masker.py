@@ -111,7 +111,7 @@ class NiftiMasker(BaseMasker):
         self.memory = memory
         self.transform_memory = transform_memory
         self.verbose = verbose
-        self.sessions_ = sessions
+        self.sessions = sessions
         self.transpose = transpose
 
     def fit(self, niimgs, y=None):
@@ -161,7 +161,4 @@ class NiftiMasker(BaseMasker):
         return self
 
     def transform(self, niimgs):
-        return self.preprocess_niimgs(niimgs, self.confounds, self.sessions) 
-
-    def inverse_transform(self, X):
-        return self.unmask(X)
+        return self.preprocess_niimgs(niimgs, self.confounds, self.sessions)
