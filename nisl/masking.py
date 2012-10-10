@@ -148,82 +148,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         mask = ndimage.binary_opening(mask.astype(np.int), iterations=2)
     return mask.astype(bool)
 
-
-
-def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
-            connected=True, opening=True, threshold=0.5, exclude_zeros=False,
-            return_mean=False, verbose=0):
-    """ Compute a common mask for several sessions of fMRI data.
-
-    Uses the mask-finding algorithmes to extract masks for each
-    session, and then keep only the main connected component of the
-    a given fraction of the intersection of all the masks.
-
-
-    Parameters
-    ----------
-    session_files: list of list of strings
-        A list of list of nifti filenames. Each inner list
-        represents a session.
-
-    threshold: float, optional
-        the inter-session threshold: the fraction of the
-        total number of session in for which a voxel must be in the
-        mask to be kept in the common mask.
-        threshold=1 corresponds to keeping the intersection of all
-        masks, whereas threshold=0 is the union of all masks.
-
-    lower_cutoff: float, optional
-        lower fraction of the histogram to be discarded.
-
-    upper_cutoff: float, optional
-        upper fraction of the histogram to be discarded.
-
-    connected: boolean, optional
-        if connected is True, only the largest connect component is kept.
-
-    exclude_zeros: boolean, optional
-        Consider zeros as missing values for the computation of the
-        threshold. This option is useful if the images have been
-        resliced with a large padding of zeros.
-
-    Returns
-    -------
-    mask : 3D boolean ndarray
-        The brain mask
-
-    mean : 3D float array
-        The mean image
-    """
-    mask = None
-    for index, session in enumerate(session_epi):
-        if utils.is_a_niimg(session):
-            session = session.get_data()
-        this_mask = compute_epi_mask(session,
-                lower_cutoff=lower_cutoff, upper_cutoff=upper_cutoff,
-                connected=connected, exclude_zeros=exclude_zeros)
-        this_mask = this_mask.astype(np.int8)
-        if mask is None:
-            mask = this_mask
-        else:
-            mask += this_mask
-        # Free memory early
-        del this_mask
-
-    # Take the "half-intersection", i.e. all the voxels that fall within
-    # 50% of the individual masks.
-    mask = (mask > threshold * len(list(session_epi)))
-
-    if connected:
-        # Select the largest connected component (each mask is
-        # connect, but the half-interesection may not be):
-        mask = _largest_connected_component(mask)
-    mask = mask.astype(np.bool)
-
-    return mask
-
-
-def intersect_masks(input_masks, output_filename=None, threshold=0.5, connected=True):
+def intersect_masks(input_masks, threshold=0.5, connected=True):
     """
         Given a list of input mask images, generate the output image which
         is the the threshold-level intersection of the inputs
@@ -271,6 +196,67 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, connected=
         grp_mask = _largest_connected_component(grp_mask)
     
     return grp_mask > 0
+
+
+def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
+            connected=True, opening=True, threshold=0.5, exclude_zeros=False,
+            return_mean=False, verbose=0):
+    """ Compute a common mask for several sessions of fMRI data.
+
+    Uses the mask-finding algorithmes to extract masks for each
+    session, and then keep only the main connected component of the
+    a given fraction of the intersection of all the masks.
+
+
+    Parameters
+    ----------
+    session_files: list of list of strings
+        A list of list of nifti filenames. Each inner list
+        represents a session.
+
+    threshold: float, optional
+        the inter-session threshold: the fraction of the
+        total number of session in for which a voxel must be in the
+        mask to be kept in the common mask.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
+
+    lower_cutoff: float, optional
+        lower fraction of the histogram to be discarded.
+
+    upper_cutoff: float, optional
+        upper fraction of the histogram to be discarded.
+
+    connected: boolean, optional
+        if connected is True, only the largest connect component is kept.
+
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
+
+    Returns
+    -------
+    mask : 3D boolean ndarray
+        The brain mask
+
+    mean : 3D float array
+        The mean image
+    """
+    masks = []
+    for index, session in enumerate(session_epi):
+        if utils.is_a_niimg(session):
+            session = session.get_data()
+        this_mask = compute_epi_mask(session,
+                lower_cutoff=lower_cutoff, upper_cutoff=upper_cutoff,
+                connected=connected, exclude_zeros=exclude_zeros)
+        masks.append(this_mask.astype(np.int8))
+
+    mask = intersect_masks(masks, connected=connected)
+
+    return mask
+
+
 
 
 ###############################################################################
