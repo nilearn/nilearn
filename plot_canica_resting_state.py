@@ -11,7 +11,7 @@ import numpy as np
 from nisl import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
-dataset = datasets.fetch_nyu_rest(n_subjects=3)
+dataset = datasets.fetch_nyu_rest(n_subjects=12)
 # XXX: must get the code to run for more than 1 subject
 
 ### Preprocess ################################################################
@@ -51,12 +51,22 @@ components = np.ma.masked_equal(components, 0, copy=False)
 # Show some interesting components
 # mean_epi = mean_img.get_data()
 import pylab as pl
-pl.figure()
-pl.axis('off')
-vmax = np.max(np.abs(components[:, :, 20, 1]))
-pl.imshow(np.rot90(mean_epi[:, :, 20]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 20, 1]), interpolation='nearest',
-          cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
-pl.show()
+#pl.figure()
+#pl.axis('off')
+#vmax = np.max(np.abs(components[:, :, 20, 1]))
+#pl.imshow(np.rot90(mean_epi[:, :, 20]), interpolation='nearest',
+#          cmap=pl.cm.gray)
+#pl.imshow(np.rot90(components[:, :, 20, 1]), interpolation='nearest',
+#          cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
+#pl.show()
+
+for i in range(20):
+    pl.figure()
+    pl.axis('off')
+    vmax = np.max(np.abs(components[:, :, 20, i]))
+    pl.imshow(np.rot90(mean_epi[:, :, 20]), interpolation='nearest',
+              cmap=pl.cm.gray)
+    pl.imshow(np.rot90(components[:, :, 20, i]), interpolation='nearest',
+              cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
+    pl.show()
 

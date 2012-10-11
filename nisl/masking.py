@@ -1,7 +1,7 @@
 """
 Utilities to compute a brain mask from EPI images
 """
-# Author: Gael Varoquaux
+# Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 import warnings
 
