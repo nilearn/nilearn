@@ -180,7 +180,7 @@ def _uncompress_file(file, delete_archive=True):
         raise
 
 
-def _fetch_file(url, data_dir, resume=True, overwrite=False):
+def _fetch_file(url, data_dir, resume=False, overwrite=False):
     """Load requested file, downloading it if needed or requested
 
     Parameters
@@ -230,7 +230,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False):
     try:
         # Download data
         print 'Downloading data from %s ...' % url
-        if os.path.exists(temp_full_name):
+        if resume and os.path.exists(temp_full_name):
             urlOpener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
@@ -260,7 +260,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False):
 
 
 def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
-        folder=None):
+        resume=False, folder=None):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -278,6 +278,9 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     uncompress: boolean, optional
         Ask for uncompression of the dataset. The type of the archive is
         determined automatically.
+
+    resume: boolean, optional
+        If true, try resuming download if possible
 
     folder: string, optional
         Folder in which the file must be fetched inside the dataset folder.
@@ -301,7 +304,7 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
 
     files = []
     for url in urls:
-        full_name = _fetch_file(url, data_dir)
+        full_name = _fetch_file(url, data_dir, resume=resume)
         if not full_name:
             print 'An error occured, abort fetching'
             shutil.rmtree(data_dir)
@@ -572,7 +575,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
             session=session)
 
 
-def fetch_adhd(n_subjects=None, data_dir=None, url=None):
+def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
     """Download and loads the ADHD resting-state dataset
 
     Parameters
@@ -638,7 +641,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None):
         if url is None:
             url = 'ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/'
         url += tars[0]
-        _fetch_dataset('adhd', [url], data_dir=data_dir)
+        _fetch_dataset('adhd', [url], data_dir=data_dir, resume=resume)
         files = _get_dataset("adhd", paths, data_dir=data_dir)
     for i in range(len(subjects)):
         # We are considering files 2 by 2
