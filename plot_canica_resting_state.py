@@ -11,8 +11,7 @@ import numpy as np
 from nisl import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
-dataset = datasets.fetch_nyu_rest(n_subjects=12)
-# XXX: must get the code to run for more than 1 subject
+dataset = datasets.fetch_adhd(n_subjects=10)
 
 ### Preprocess ################################################################
 from nisl import io

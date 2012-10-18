@@ -5,6 +5,7 @@ Utilities to download NeuroImaging datasets
 # License: simplified BSD 
 
 import os
+import urllib
 import urllib2
 import tarfile
 import zipfile
@@ -15,6 +16,20 @@ import time
 from scipy import io
 from sklearn.datasets.base import Bunch
 import numpy as np
+
+
+class ResumeURLOpener(urllib.FancyURLopener):
+    """Create sub-class in order to overide error 206.  This error means a
+       partial file is being sent,
+       which is ok in this case.  Do nothing with this error.
+
+       Note
+       ----
+       This was adapted from:
+       http://code.activestate.com/recipes/83208-resuming-download-of-a-file/
+    """
+    def http_error_206(self, url, fp, errcode, errmsg, headers, data=None):
+        pass
 
 
 def _chunk_report_(bytes_so_far, total_size, t0):
@@ -45,7 +60,8 @@ def _chunk_report_(bytes_so_far, total_size, t0):
         sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
 
-def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None):
+def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
+        initial_size=0):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -62,6 +78,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None):
     report_hook: boolean
         Whether or not to show downloading advancement. Default: None
 
+    initial_size: int, optional
+        If resuming, indicate the initial size of the file
+
     Returns
     -------
     data: string
@@ -74,7 +93,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None):
     except Exception, e:
         print "Total size could not be determined. Error: ", e
         total_size = None
-    bytes_so_far = 0
+    bytes_so_far = initial_size 
 
     t0 = time.time()
     while 1:
@@ -161,7 +180,7 @@ def _uncompress_file(file, delete_archive=True):
         raise
 
 
-def _fetch_file(url, data_dir, overwrite=False):
+def _fetch_file(url, data_dir, resume=True, overwrite=False):
     """Load requested file, downloading it if needed or requested
 
     Parameters
@@ -172,6 +191,9 @@ def _fetch_file(url, data_dir, overwrite=False):
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    resume: boolean, optional
+        If true, try to resume partially downloaded files
 
     overwrite: boolean, optional
         If true and file already exists, delete it.
@@ -191,19 +213,38 @@ def _fetch_file(url, data_dir, overwrite=False):
         os.makedirs(data_dir)
 
     file_name = os.path.basename(url)
+    temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
+    temp_full_name = os.path.join(data_dir, temp_file_name)
     if os.path.exists(full_name):
         if overwrite:
             os.remove(full_name)
         else:
             return full_name
+    if os.path.exists(temp_full_name):
+        if overwrite:
+            os.remove(temp_full_name)
     t0 = time.time()
+    local_file = None
+    initial_size = 0
     try:
         # Download data
         print 'Downloading data from %s ...' % url
-        data = urllib2.urlopen(url)
-        local_file = open(full_name, "wb")
-        _chunk_read_(data, local_file, report_hook=True)
+        if os.path.exists(temp_full_name):
+            urlOpener = ResumeURLOpener()
+            # Download has been interrupted, we try to resume it.
+            local_file_size = os.path.getsize(temp_full_name)
+            # If the file exists, then only download the remainder
+            urlOpener.addheader("Range","bytes=%s-" % (local_file_size))
+            data = urlOpener.open(url)
+            local_file = open(temp_full_name,"ab")
+            initial_size = local_file_size
+        else:
+            data = urllib2.urlopen(url)
+            local_file = open(temp_full_name, "wb")
+        _chunk_read_(data, local_file, report_hook=True,
+                initial_size=initial_size)
+        shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         print '...done. (%i seconds, %i min)' % (dt, dt / 60)
     except urllib2.HTTPError, e:
@@ -213,7 +254,8 @@ def _fetch_file(url, data_dir, overwrite=False):
         print "URL Error:", e, url
         return None
     finally:
-        local_file.close()
+        if local_file is not None:
+            local_file.close()
     return full_name
 
 
@@ -528,3 +570,80 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
             session=session)
+
+
+def fetch_adhd(n_subjects=None, data_dir=None, url=None):
+    """Download and loads the ADHD resting-state dataset
+
+    Parameters
+    ----------
+    n_subjects: integer optional
+        The number of subjects to load. If None is given, all the
+        40 subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    Returns
+    -------
+    data : Bunch
+        Dictionary-like object, the interest attributes are :
+        'func': string list
+            Paths to functional images
+        'parameters': string list
+            Parameters of preprocessing steps
+
+    References
+    ----------
+    :Download:
+       ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/ADHD200_40sub_preprocessed.tgz
+
+    """
+    file_names = ['%s_regressors.csv', '%s_rest_tshift_RPI_voreg_mni.nii.gz']
+
+    subjects = ['0010042', '0010128', '0023008', '0027011', '0027034',
+            '1019436', '1418396', '1552181', '1679142', '2497695', '3007585',
+            '3205761', '3624598', '3884955', '3994098', '4046678', '4164316',
+            '6115230', '8409791', '9744150', '0010064', '0021019', '0023012',
+            '0027018', '0027037', '1206380', '1517058', '1562298', '2014113',
+            '2950754', '3154996', '3520880', '3699991', '3902469', '4016887',
+            '4134561', '4275075', '7774305', '8697774', '9750701']
+                     
+    max_subjects = len(subjects)
+    # Check arguments
+    if n_subjects == None:
+        n_subjects = max_subjects
+    if n_subjects > max_subjects:
+        sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
+        n_subjects = max_subjects
+
+    tars = ['ADHD200_40sub_preprocessed.tgz']
+    
+    path = os.path.join('ADHD200_40sub_preprocessed', 'data')
+    func = []
+    regressor = []
+    subjects = subjects[:n_subjects]
+
+    paths = [os.path.join(path, os.path.join(subject, file % subject))
+              for subject in subjects
+              for file in file_names]
+    try:
+        files = _get_dataset("adhd", paths, data_dir=data_dir)
+    except IOError:
+        if url is None:
+            url = 'ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/'
+        url += tars[0]
+        _fetch_dataset('adhd', [url], data_dir=data_dir)
+        files = _get_dataset("adhd", paths, data_dir=data_dir)
+    for i in range(len(subjects)):
+        # We are considering files 2 by 2
+        i *= 2
+        func.append(files[i + 1])
+        regressor.append(files[i])
+
+    return Bunch(func=func, regressor=regressor)
