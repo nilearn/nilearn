@@ -22,7 +22,7 @@ fmri_data = np.copy(bold_img.get_data())
 affine = bold_img.get_affine()
 y, session = np.loadtxt(dataset_files.session_target).astype("int").T
 conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
-mask = np.copy(nibabel.load(dataset_files.mask).get_data().astype(np.bool))
+mask = dataset_files.mask
 
 ### Preprocess data ###########################################################
 # Build the mean image because we have no anatomic data
@@ -39,11 +39,12 @@ conditions = conditions[condition_mask]
 from nisl.io import NiftiMasker
 from nibabel import Nifti1Image
 # Detrending is disabled as we are not yet able to do it by session
-nifti_masker = NiftiMasker(mask=mask, detrend=True,
-        copy=False, sessions=session)
+nifti_masker = NiftiMasker(mask=mask, detrend=True, sessions=session)
 niimg = Nifti1Image(X, affine)
 X_masked = nifti_masker.fit(niimg).transform(niimg)
 X_detrended = nifti_masker.inverse_transform(X_masked).get_data()
+X_detrended = np.rollaxis(X_detrended, axis=-1)
+mask = nifti_masker.mask_.get_data().astype(np.bool)
 
 ### Prepare the masks #########################################################
 # Here we will use several masks :

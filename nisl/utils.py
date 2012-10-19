@@ -1,6 +1,9 @@
 """
 Validation and conversion utilities.
 """
+# Author: Gael Varoquaux, Alexandre Abraham
+# License: simplified BSD
+
 
 import collections
 
@@ -9,6 +12,19 @@ import numpy as np
 
 
 def _check_niimg_methods(object):
+    """ Check for get_data and get_affine method in an object
+
+    Parameters
+    ----------
+    object: unknown object
+        Tested object
+
+    Returns
+    -------
+    True if get_data and get_affine methods are present and callable,
+    False otherwise.
+    """
+
     # We use a try/except here because this is the way hasattr works
     try:
         get_data = getattr(object, "get_data")
@@ -29,6 +45,29 @@ def _get_shape(niimg):
 
 
 def check_niimg(niimg):
+    """ Check that an object is a niimg and load it if necessary
+
+    Parameters
+    ----------
+
+    niimg: string or object
+        If niimg is a string, consider it as a path to Nifti image and
+        call nibabel.load on it. If it is an object, check if get_data
+        and get_affine methods are present, raise an Exception otherwise.
+
+    Returns
+    -------
+    A nifti-like object (for the moment, nibabel.Nifti1Image)
+
+    Notes
+    -----
+    In Nisl, special care has been taken to make image manipulation easy. This
+    method is a kind of pre-requisite for any data processing method in Nisl as
+    it check if data has the right format and load it if necessary.
+
+    Its application is idempotenti.
+    """
+
     if isinstance(niimg, basestring):
         # data is a filename, we load it
         result = nibabel.load(niimg)
@@ -42,8 +81,21 @@ def check_niimg(niimg):
 
 
 def concat_niimgs(niimgs):
+    """ Concatenate a list of niimgs
+
+    Parameters
+    ----------
+    niimgs: array of niimgs
+        List of niimgs to concatenate. Can be paths to Nifti files or numpy
+        matrices.
+
+    Returns
+    -------
+    A single niimg
+    """
+
     data = []
-    first_niimg = iter(niimgs).next()
+    first_niimg = check_niimg(iter(niimgs).next())
     affine = first_niimg.get_affine()
     for index, iter_niimg in enumerate(niimgs):
         niimg = check_niimg(iter_niimg)

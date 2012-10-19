@@ -1,6 +1,9 @@
 """
-Transformer used to apply basic tranisformations on MRI data.
+Transformer used to apply basic transformations on MRI data.
 """
+# Author: Gael Varoquaux, Alexandre Abraham
+# License: simplified BSD
+
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -22,23 +25,75 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
     mask: 3D numpy matrix, optional
         Mask of the data. If not given, a mask is computed in the fit step.
 
+    mask_connected: boolean, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_opening: boolean, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_lower_cutoff: float, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_upper_cutoff: float, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    transpose: boolean, optional
+        If true, data are transposed after filtering and inverse_transform
+        considered input data as transpose too.
+        
     smooth: False or float, optional
         If smooth is not False, it gives the size, in voxel of the
         spatial smoothing to apply to the signal.
 
     confounds: CSV file path or 2D matrix
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
 
     detrend: boolean, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
 
+    low_pass: False or float, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
+
+    high_pass: False or float, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
+
+    t_r: float, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
+        
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
+
+    See also
+    --------
+    nisl.masking.compute_epi_mask
+    resampling.resample_img
+    masking.apply_mask
+    signals.clean
     """
 
     def __init__(self, sessions=None, mask=None, mask_connected=True,
-            mask_opening=True, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+            mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
             target_affine=None, target_shape=None, low_pass=None,
-            high_pass=None, t_r=None, memory=Memory(cachedir=None, verbose=0),
+            high_pass=None, t_r=None, transpose=False,
+            memory=Memory(cachedir=None, verbose=0),
             transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
@@ -58,6 +113,7 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         self.transform_memory = transform_memory
         self.verbose = verbose
         self.sessions_ = sessions
+        self.transpose = transpose
 
     def fit(self, niimgs, y=None):
         """Compute the mask corresponding to the data
@@ -164,9 +220,13 @@ class NiftiMasker(BaseEstimator, TransformerMixin):
         data = np.rollaxis(data, -1)
 
         self.affine_ = niimgs.get_affine()
+        if self.transpose:
+            data = data.T
         return data
 
     def inverse_transform(self, X):
+        if self.transpose:
+            X = X.T
         mask = self.mask_.get_data().astype(np.bool)
         if len(X.shape) > 1:
             # we build the data iteratively to avoid MemoryError

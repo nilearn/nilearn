@@ -10,7 +10,7 @@ from nisl import datasets
 haxby_files = datasets.fetch_haxby()
 
 # Get the file names relative to this dataset
-bold = haxby_files.data
+bold = haxby_files.func
 
 # Load the NIfTI data
 import nibabel

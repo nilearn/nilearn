@@ -1,6 +1,8 @@
 """
 Utilities to download NeuroImaging datasets
 """
+# Author: Alexandre Abraham                                                                                                                                         
+# License: simplified BSD 
 
 import os
 import urllib2
@@ -199,8 +201,7 @@ def _fetch_file(url, data_dir, overwrite=False):
     try:
         # Download data
         print 'Downloading data from %s ...' % url
-        req = urllib2.Request(url)
-        data = urllib2.urlopen(req)
+        data = urllib2.urlopen(url)
         local_file = open(full_name, "wb")
         _chunk_read_(data, local_file, report_hook=True)
         dt = time.time() - t0
@@ -232,8 +233,12 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
+    uncompress: boolean, optional
+        Ask for uncompression of the dataset. The type of the archive is
+        determined automatically.
+
     folder: string, optional
-        folder in which the file must be fetched inside the dataset folder.
+        Folder in which the file must be fetched inside the dataset folder.
 
     Returns
     -------
@@ -314,7 +319,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_haxby(data_dir=None):
+def fetch_haxby(data_dir=None, url=None):
     """Download and loads the haxby dataset
 
     Parameters
@@ -367,7 +372,8 @@ def fetch_haxby(data_dir=None):
 
     except IOError:
         # If the dataset does not exists, we download it
-        url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
+        if url is None:
+            url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
         _fetch_dataset('haxby2001', [url], data_dir=data_dir)
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
@@ -463,14 +469,14 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
     -------
     data : Bunch
         Dictionary-like object, the interest attributes are :
-        'func': numpy array
-            Functional images
-        'target': numpy array
-            Target data
-        'mask': string
-            Mask for the data
-        'xyz': numpy array
-            Index to 3D-coordinate array
+        'func': string list
+            Paths to functional images
+        'anat_anon': string list
+            Paths to anatomic images
+        'anat_skull': string
+            Paths to skull-stripped images
+        'session': numpy array
+            List of ids corresponding to images sessions
 
     Notes
     ------
@@ -539,11 +545,11 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
 
     max_subjects = len(subjects_a) + len(subjects_b)
     # Check arguments
+    if n_subjects == None:
+        n_subjects = len(subjects_a) + len(subjects_b)
     if n_subjects > max_subjects:
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
         n_subjects = 25
-    if n_subjects == None:
-        n_subjects = len(subjects_a) + len(subjects_b)
 
     for i in sessions:
         if not (i in [1, 2, 3]):
@@ -571,7 +577,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                   for subject in subjects
                   for file in file_names]
             try:
-                files = (_get_dataset("nyu_rest", paths, data_dir=data_dir))
+                files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
             except IOError:
                 url = 'http://www.nitrc.org/frs/download.php/'
                 url += tars[session_id - 1][part]
@@ -594,6 +600,12 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
 def fetch_poldrack_mixed_gambles(data_dir=None):
     """Download and loads the Poldrack Mixed Gambles dataset
     For the moment, only bold images are loaded
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
     """
     # definition of dataset files
     file_names = ["ds005/sub0%02i/BOLD/task001_run00%s/bold.nii.gz" % (s, r)
