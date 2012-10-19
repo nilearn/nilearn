@@ -19,9 +19,7 @@ from .decomposition_model import DecompositionModel
 
 
 def subject_pca(subject_data, n_components, mem):
-    subject_data = np.asarray(subject_data).copy()
     subject_data -= subject_data.mean(axis=0)
-    # PCA
     std = subject_data.std(axis=0)
     std[std==0] = 1
     subject_data /= std
@@ -69,7 +67,7 @@ class CanICA(DecompositionModel, TransformerMixin):
 
     def __init__(self, n_components,
                 memory=Memory(cachedir=None),
-                kurtosis_thr=False,
+                kurtosis_thr=None,
                 maps_only=False,
                 random_state=None,
                 n_jobs=1, verbose=0):
@@ -96,6 +94,7 @@ class CanICA(DecompositionModel, TransformerMixin):
                     pcas, n_components)[0]
             group_maps = group_maps[:, :n_components]
 
+            
             ica_maps = self.memory.cache(fastica)(group_maps, whiten=False,
                     fun='cube', random_state=random_state)[2]
             ica_maps = ica_maps.T
@@ -125,17 +124,16 @@ class CanICA(DecompositionModel, TransformerMixin):
 
         pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(subject_pca)(subject_data,
-                    n_components=self.n_components, mem=self.mem)
+                    n_components=self.n_components, mem=self.memory)
                 for subject_data in data)
         pcas = np.concatenate(pcas, axis=1)
 
         if self.kurtosis_thr is None:
-        # Do PCAs and CCAs
             group_maps = self.memory.cache(randomized_svd)(
                     pcas, self.n_components)[0]
             group_maps = group_maps[:, :self.n_components]
             ica_maps = self.memory.cache(fastica)(group_maps, whiten=False,
-                    fun='cube', random_state=self.random_state)[2]
+                    random_state=self.random_state)[2]
             ica_maps = ica_maps.T
         else:
             ica_maps = self._find_high_kurtosis(pcas)
