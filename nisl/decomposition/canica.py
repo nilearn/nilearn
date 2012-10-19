@@ -11,7 +11,7 @@ from scipy import linalg, stats
 
 from sklearn.base import TransformerMixin
 from sklearn.decomposition import fastica
-from sklearn.externals.joblib import Memory
+from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 
