@@ -18,6 +18,22 @@ from sklearn.utils.extmath import randomized_svd
 from .decomposition_model import DecompositionModel
 
 
+def subject_pca(subject_data, n_components, mem):
+    subject_data = np.asarray(subject_data).copy()
+    subject_data -= subject_data.mean(axis=0)
+    # PCA
+    std = subject_data.std(axis=0)
+    std[std==0] = 1
+    subject_data /= std
+    subject_data = subject_data.T
+    subject_data = mem.cache(linalg.svd)(subject_data,
+                                                full_matrices=False)[0]
+    # We copy here to avoid keeping a reference on the big array
+    subject_data = subject_data[:, :2*n_components].copy()
+    return subject_data
+
+
+
 class CanICA(DecompositionModel, TransformerMixin):
     """Perform Canonical Independent Component Analysis.
 
@@ -55,12 +71,16 @@ class CanICA(DecompositionModel, TransformerMixin):
                 memory=Memory(cachedir=None),
                 kurtosis_thr=False,
                 maps_only=False,
-                random_state=None):
+                random_state=None,
+                n_jobs=1, verbose=0):
        self.n_components = n_components
        self.memory = memory
        self.kurtosis_thr = kurtosis_thr
        self.maps_only = maps_only
        self.random_state = random_state
+       self.n_jobs = n_jobs
+       self.verbose = verbose
+
 
     def _find_high_kurtosis(self, pcas):
         random_state = check_random_state(self.random_state)
@@ -73,7 +93,7 @@ class CanICA(DecompositionModel, TransformerMixin):
 
         while n_components < 3 * self.n_components:
             group_maps = self.memory.cache(randomized_svd)(
-                    np.concatenate(pcas, axis=1), n_components)[0]
+                    pcas, n_components)[0]
             group_maps = group_maps[:, :n_components]
 
             ica_maps = self.memory.cache(fastica)(group_maps, whiten=False,
@@ -102,24 +122,17 @@ class CanICA(DecompositionModel, TransformerMixin):
         else:
             # Probably a list
             data = copy.deepcopy(data)
-        pcas = list()
-        # Do PCAs and CCAs
-        for subject_data in data:
-            subject_data -= subject_data.mean(axis=0)
-            # PCA
-            std = subject_data.std(axis=0)
-            std[std==0] = 1
-            subject_data /= std
-            subject_data = subject_data.T
-            subject_data = self.memory.cache(linalg.svd)(subject_data,
-                    full_matrices=False)[0]
-            subject_data = subject_data[:, :2 * self.n_components]
-            pcas.append(subject_data)
-            del subject_data
+
+        pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                delayed(subject_pca)(subject_data,
+                    n_components=self.n_components, mem=self.mem)
+                for subject_data in data)
+        pcas = np.concatenate(pcas, axis=1)
 
         if self.kurtosis_thr is None:
+        # Do PCAs and CCAs
             group_maps = self.memory.cache(randomized_svd)(
-                    np.concatenate(pcas, axis=1), self.n_components)[0]
+                    pcas, self.n_components)[0]
             group_maps = group_maps[:, :self.n_components]
             ica_maps = self.memory.cache(fastica)(group_maps, whiten=False,
                     fun='cube', random_state=self.random_state)[2]
