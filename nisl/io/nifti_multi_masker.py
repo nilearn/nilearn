@@ -159,11 +159,22 @@ class NiftiMultiMasker(BaseMasker):
 
     def transform(self, niimgs):
         data = []
+	affine = None
         for index, niimg in enumerate(niimgs):
+            imgs = utils.check_niimgs(niimg)
+            
             if self.confounds is not None:
                 data.append(self.preprocess_niimgs(niimg,
                     confounds=self.confounds[index]))
             else:
                 data.append(self.preprocess_niimgs(niimg))
+            if affine is None:
+                affine = self.affine_
+            else:
+                if not np.all(affine == self.affine_):
+		    raise ValueError("Affine of subject %d is different"
+			    " from reference affine"
+			    "\nReference affine:\n%s\n"
+			    "Wrong affine:\n%s"
+			    % (i_error, repr(affine), repr(self.affine_)))
         return data
-
