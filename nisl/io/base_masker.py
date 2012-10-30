@@ -124,7 +124,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
             data = memory.cache(signals.clean)(data,
-                    confounds=self.confounds, low_pass=self.low_pass,
+                    confounds=confounds, low_pass=self.low_pass,
                     high_pass=self.high_pass, t_r=self.t_r,
                     detrend=self.detrend, normalize=False)
         else:
