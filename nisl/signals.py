@@ -38,6 +38,13 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
     signals = standardize(signals, normalize=normalize)
 
     if confounds is not None:
+        if isinstance(confounds, basestring):
+            filename = confounds
+            confounds = np.genfromtxt(filename)
+            if np.isnan(confounds.flat[0]):
+                # There may be a header
+                del confounds
+                confounds = np.genfromtxt(filename, skip_header=1)
         # Restrict the signal to the orthogonal of the confounds
         confounds = np.atleast_2d(confounds)
         if shift_confounds:
@@ -47,7 +54,7 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
             signals = signals[..., 1:-1]
         confounds = standardize(confounds, normalize=True)
         #confounds = linalg.svd(confounds, full_matrices=False)[-1]
-        confounds = linalg.qr(confounds.T, econ=True)[0].T
+        confounds = linalg.qr(confounds, mode='economic')[0].T
         #y = y - np.dot(np.dot(confounds, y), confounds)
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
 
