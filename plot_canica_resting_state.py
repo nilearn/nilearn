@@ -14,10 +14,11 @@ from nisl import datasets
 # results, simply increase this number
 dataset = datasets.fetch_adhd()
 func = [dataset.func[i] for i in [0, 16, -1]]
+cfds = [dataset.regressor[i] for i in [0, 16, -1]]
 ### Preprocess ################################################################
 from nisl import io
 
-masker = io.NiftiMultiMasker(smooth=8, detrend=True)
+masker = io.NiftiMultiMasker(smooth=8, detrend=True, confounds=cfds)
 data_masked = masker.fit_transform(func)
 
 # Concatenate all the subjects
@@ -30,7 +31,7 @@ mean_epi = masker.inverse_transform(fmri_data[0].mean(axis=0)).get_data()
 
 from nisl.decomposition.canica import CanICA
 n_components = 40
-ica = CanICA(n_components=n_components, random_state=42)
+ica = CanICA(n_components=n_components, random_state=42, memory="canica", maps_only=True)
 components_masked = ica.fit(data_masked).maps_
 
 # We normalize the estimated components, for thresholding to make sens
