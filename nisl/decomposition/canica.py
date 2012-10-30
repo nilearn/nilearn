@@ -17,7 +17,6 @@ from sklearn.utils.extmath import randomized_svd
 
 from .decomposition_model import DecompositionModel
 
-
 def subject_pca(subject_data, n_components, mem):
     subject_data -= subject_data.mean(axis=0)
     std = subject_data.std(axis=0)
@@ -80,7 +79,7 @@ class CanICA(DecompositionModel, TransformerMixin):
        self.verbose = verbose
 
 
-    def _find_high_kurtosis(self, pcas):
+    def _find_high_kurtosis(self, pcas, memory):
         random_state = check_random_state(self.random_state)
 
         if self.kurtosis_thr is False:
@@ -90,12 +89,12 @@ class CanICA(DecompositionModel, TransformerMixin):
         n_components = self.n_components
 
         while n_components < 3 * self.n_components:
-            group_maps = self.memory.cache(randomized_svd)(
+            group_maps = memory.cache(randomized_svd)(
                     pcas, n_components)[0]
             group_maps = group_maps[:, :n_components]
 
             
-            ica_maps = self.memory.cache(fastica)(group_maps, whiten=False,
+            ica_maps = memory.cache(fastica)(group_maps, whiten=False,
                     fun='cube', random_state=random_state)[2]
             ica_maps = ica_maps.T
             kurtosis  = stats.kurtosis(ica_maps, axis=1)
@@ -122,21 +121,25 @@ class CanICA(DecompositionModel, TransformerMixin):
             # Probably a list
             data = copy.deepcopy(data)
 
+        memory = self.memory
+        if isinstance(memory, basestring):
+            memory = Memory(cachedir=memory)
+
         pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(subject_pca)(subject_data,
-                    n_components=self.n_components, mem=self.memory)
+                    n_components=self.n_components, mem=memory)
                 for subject_data in data)
         pcas = np.concatenate(pcas, axis=1)
 
         if self.kurtosis_thr is None:
-            group_maps = self.memory.cache(randomized_svd)(
+            group_maps = memory.cache(randomized_svd)(
                     pcas, self.n_components)[0]
             group_maps = group_maps[:, :self.n_components]
-            ica_maps = self.memory.cache(fastica)(group_maps, whiten=False,
-                    random_state=self.random_state)[2]
+            ica_maps = memory.cache(fastica)(group_maps, whiten=False,
+                    fun='cube', random_state=self.random_state)[2]
             ica_maps = ica_maps.T
         else:
-            ica_maps = self._find_high_kurtosis(pcas)
+            ica_maps = self._find_high_kurtosis(pcas, memory)
         
         del pcas
         self.maps_ = ica_maps
