@@ -37,6 +37,9 @@ def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
     w[-roi_size:, -roi_size:, 0:roi_size] = 0.5
     w[0:roi_size, -roi_size:, -roi_size:] = -0.6
     w[-roi_size:, 0:roi_size:, -roi_size:] = 0.5
+    w[(size-roi_size)/2:(size+roi_size)/2, 
+            (size-roi_size)/2:(size+roi_size)/2,
+            (size-roi_size)/2:(size+roi_size)/2] = 0.5
     w = w.ravel()
     ### Images
     XX = generator.randn(n_samples, size, size, size)
