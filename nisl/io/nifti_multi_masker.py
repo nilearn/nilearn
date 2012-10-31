@@ -15,6 +15,7 @@ from .. import resampling
 from .. import utils
 from .base_masker import BaseMasker
 
+
 class NiftiMultiMasker(BaseMasker):
     """Nifti data loader with preprocessing for multiple subjects
 
@@ -22,31 +23,9 @@ class NiftiMultiMasker(BaseMasker):
     ----------
     mask: 3D numpy matrix, optional
         Mask of the data. If not given, a mask is computed in the fit step.
-
-    mask_connected: boolean, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_opening: boolean, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_lower_cutoff: float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_upper_cutoff: float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to resampling.resample_img. Please see the
-        related documentation for details.
-
-    target_shape: 3-tuple of integers, optional
-        This parameter is passed to resampling.resample_img. Please see the
-        related documentation for details.
-        
+        Optional parameters detailed below (mask_connected...) can be set to
+        fine tune the mask extraction.
+       
     smooth: False or float, optional
         If smooth is not False, it gives the size, in voxel of the
         spatial smoothing to apply to the signal.
@@ -74,12 +53,36 @@ class NiftiMultiMasker(BaseMasker):
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
 
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    mask_connected: boolean, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_opening: boolean, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_lower_cutoff: float, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_upper_cutoff: float, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
     See also
     --------
     nisl.masking.compute_epi_mask
-    resampling.resample_img
-    masking.apply_mask
-    signals.clean
+    nisl.resampling.resample_img
+    nisl.masking.apply_mask
+    nisl.signals.clean
     """
 
     def __init__(self, sessions=None, mask=None, mask_connected=True,

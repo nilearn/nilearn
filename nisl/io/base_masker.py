@@ -14,6 +14,7 @@ from .. import resampling
 from .. import signals
 from .. import utils
 
+
 def _to_nifti(X, affine):
     if isinstance(X, np.ndarray):
         return Nifti1Image(X, affine)
