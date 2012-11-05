@@ -167,10 +167,10 @@ class NiftiMultiMasker(BaseMasker):
             imgs = utils.check_niimgs(niimg)
             
             if self.confounds is not None:
-                data.append(self.preprocess_niimgs(niimg,
+                data.append(self.transform_single_niimgs(niimg,
                     confounds=self.confounds[index]))
             else:
-                data.append(self.preprocess_niimgs(niimg))
+                data.append(self.transform_single_niimgs(niimg))
             if affine is None:
                 affine = self.affine_
             else:

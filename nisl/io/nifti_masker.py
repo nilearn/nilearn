@@ -161,4 +161,4 @@ class NiftiMasker(BaseMasker):
         return self
 
     def transform(self, niimgs):
-        return self.preprocess_niimgs(niimgs, self.confounds, self.sessions)
+        return self.transform_single_niimgs(niimgs, self.sessions, self.confounds)

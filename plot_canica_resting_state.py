@@ -66,7 +66,7 @@ import pylab as pl
 #          cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 #pl.show()
 
-for i in range(40):
+for i in range(n_components):
     pl.figure()
     pl.axis('off')
     vmax = np.max(np.abs(components[:, :, 50, i]))
@@ -75,4 +75,3 @@ for i in range(40):
     pl.imshow(np.rot90(components[:, :, 50, i]), interpolation='nearest',
               cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
     pl.show()
-

@@ -91,7 +91,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
     """
 
 
-    def preprocess_niimgs(self, niimgs, sessions=None, confounds=None):
+    def transform_single_niimgs(self, niimgs, sessions=None, confounds=None):
         memory = self.transform_memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
@@ -132,9 +132,9 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[self.sessions_ == s] = \
+                data[sessions == s] = \
                     memory.cache(signals.clean)(
-                            data=data[self.sessions_ == s],
+                            data[sessions == s],
                             confounds=confounds,
                             low_pass=self.low_pass,
                             high_pass=self.high_pass, t_r=self.t_r,

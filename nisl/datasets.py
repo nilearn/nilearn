@@ -12,10 +12,11 @@ import zipfile
 import sys
 import shutil
 import time
+import httplib
+from cookielib import CookieJar
+from lxml import etree
 
-from scipy import io
 from sklearn.datasets.base import Bunch
-import numpy as np
 
 
 class ResumeURLOpener(urllib.FancyURLopener):
@@ -61,7 +62,7 @@ def _chunk_report_(bytes_so_far, total_size, t0):
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
-        initial_size=0):
+        initial_size=0, total_size=None):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -87,7 +88,8 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         The downloaded file.
 
     """
-    total_size = response.info().getheader('Content-Length').strip()
+    if total_size is None:
+        total_size = response.info().getheader('Content-Length').strip()
     try:
         total_size = int(total_size)
     except Exception, e:
@@ -650,3 +652,122 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
         regressor.append(files[i])
 
     return Bunch(func=func, regressor=regressor)
+
+def fetch_kamitani(data_dir=None, url=None, resume=False):
+    """Download and loads the kamitani dataset
+    """
+
+
+
+    # definition of dataset files
+    file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz',
+                  'attributes_literal.txt']
+    file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
+
+    # load the dataset
+    try:
+        # Try to load the dataset
+        files = _get_dataset("kamitani", file_names, data_dir=data_dir)
+
+    except IOError:
+        # If the dataset does not exists, we download it
+        if url is None:
+            url = "http://brainliner.jp/data/brainliner-admin/Reconstruct"
+        
+        # Avoid chunk related error
+        vsn = httplib.HTTPConnection._http_vsn
+        vsn_str = httplib.HTTPConnection._http_vsn_str
+        httplib.HTTPConnection._http_vsn = 10
+        httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
+
+        cj = CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+
+        response1 = opener.open(url)
+
+        s = response1.read()
+        html = etree.HTML(s)
+        formid = html.xpath('//div[text()="Data_Reconst_Code_public.zip"]/ancestor::form/@id')[0]
+        viewState = html.xpath('//div[text()="Data_Reconst_Code_public.zip"]/ancestor::form//input[@name="javax.faces.ViewState"]/@value')[0]
+        response1.close()
+
+        jsessionid = response1.headers['set-cookie'].split(';')[0].split('=')[1] 
+
+        values = {}
+
+        values['javax.faces.partial.ajax'] = "true"
+        values['javax.faces.source'] = "j_idt87:j_idt181"
+        values['javax.faces.partial.execute'] = "@all"
+        values['j_idt87:j_idt181'] = "j_idt87:j_idt181"
+        values['sfID'] = "175"
+        values['j_idt87:j_idt180'] = "j_idt87:j_idt180"
+        values['javax.faces.ViewState'] = viewState
+
+        data = urllib.urlencode(values)
+        response2 = opener.open(url, data)
+
+        httplib.HTTPConnection._http_vsn = vsn
+        httplib.HTTPConnection._http_vsn_str = vsn_str
+
+        s = response2.read()
+        xml = etree.fromstring(s)
+        viewState = xml.xpath('//update[@id="javax.faces.ViewState"]/text()')[0]
+        response2.close()
+
+        url = url + ";jsessionid=" + jsessionid
+
+        values = {}
+        values[formid] = formid
+        values['j_idt87:j_idt182:0:j_idt196:downloader'] = ""
+        values['javax.faces.ViewState'] = viewState
+
+        data = urllib.urlencode(values)
+        response3 = opener.open(url, data)
+
+        data_dir = _get_dataset_dir("kamitani", data_dir=data_dir)
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+
+        file_name = "Data_Reconst_Code_public.zip"
+        local_file = None
+        t0 = time.time()
+        try:
+            # Download data
+            print 'Downloading data from %s ...' % url
+            full_name = os.path.join(data_dir, file_name)
+            local_file = open(full_name, "wb")
+            _chunk_read_(response3, local_file, report_hook=True,
+                    initial_size=0)
+            dt = time.time() - t0
+            print '...done. (%i seconds, %i min)' % (dt, dt / 60)
+        except urllib2.HTTPError, e:
+            print "HTTP Error:", e, url
+            return None
+        except urllib2.URLError, e:
+            print "URL Error:", e, url
+            return None
+        finally:
+            if local_file is not None:
+                local_file.close()
+
+
+        full_name = _fetch_file(url, data_dir, resume=resume)
+        if not full_name:
+            print 'An error occured, abort fetching'
+            shutil.rmtree(data_dir)
+        try:
+            _uncompress_file(full_name)
+        except Exception:
+            # We are giving it a second try, but won't try a third
+            # time :)
+            print 'archive corrupted, trying to download it again'
+            _fetch_file(url, data_dir, overwrite=True)
+            _uncompress_file(full_name)
+
+        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
+
+    # return the data
+    return Bunch(func=files[1], session_target=files[0], mask=files[2],
+            conditions_target=files[3])
+
+
