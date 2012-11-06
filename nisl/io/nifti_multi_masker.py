@@ -50,7 +50,17 @@ class NiftiMultiMasker(BaseMasker):
     t_r: float, optional
         This parameter is passed to signals.clean. Please see the related
         documentation for details
-        
+
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    transform_memory: instance of joblib.Memory or string
+        Used to cache the perprocessing step.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
 
@@ -77,6 +87,9 @@ class NiftiMultiMasker(BaseMasker):
     mask_upper_cutoff: float, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
+
+    transpose: boolean, optional
+        If True, data is transposed after preprocessing step.
 
     See also
     --------
@@ -166,7 +179,7 @@ class NiftiMultiMasker(BaseMasker):
         for index, niimg in enumerate(niimgs):
             niimg = utils.check_niimgs(niimg)
             
-            if affine and np.all(niimg.get_affine() != affine):
+            if affine is not None and np.all(niimg.get_affine() != affine):
                 warnings.warn('Affine is different across subjects.'
                         ' Realignement on first subject affine is forced')
                 self.target_affine = affine

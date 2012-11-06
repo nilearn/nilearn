@@ -54,6 +54,16 @@ class NiftiMasker(BaseMasker):
         This parameter is passed to signals.clean. Please see the related
         documentation for details
         
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    transform_memory: instance of joblib.Memory or string
+        Used to cache the perprocessing step.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+    
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
 
