@@ -156,7 +156,11 @@ class BaseMasker(BaseEstimator, TransformerMixin):
 
     def inverse_transform(self, X):
         mask = utils.check_niimg(self.mask_)
-        unmasked = masking.unmask(X, mask.get_data().astype(np.bool),
-                transpose=not self.transpose)
+        if not self.transpose:
+            data = X
+        else:
+            data = X.T
+        unmasked = masking.unmask(data, mask.get_data().astype(np.bool),
+                transpose=True)
         
         return _to_nifti(unmasked, mask.get_affine())
