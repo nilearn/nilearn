@@ -348,7 +348,7 @@ def unmask(X, mask, transpose=False):
 
     if isinstance(X, np.ndarray) and len(X.shape) == 1:
         if X.shape[0] != mask.sum():
-            raise ValueError('[unmask] Masked data and mask has not the same'
+            raise ValueError('[unmask] Masked data and mask have not the same'
                 ' number of voxels')
         img = np.zeros(mask.shape)
         img[mask] = X
