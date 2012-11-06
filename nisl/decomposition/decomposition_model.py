@@ -7,7 +7,7 @@ from scipy import linalg
 from sklearn.base import BaseEstimator
 from sklearn.utils.extmath import fast_logdet
 
-###############################################################################
+
 def log_likelihood(test_series, cov, maps, residues):
     """ Return the log likelihood of test_series under the model
         described by cov, maps, and residues.
@@ -38,8 +38,6 @@ def log_likelihood(test_series, cov, maps, residues):
             - det - 2*np.sum(np.log(residues)))
     #except linalg.LinAlgError:
     #    return -np.inf
-
-
 
 
 def log_likelihood_full(test_series, full_cov):
