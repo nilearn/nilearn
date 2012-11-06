@@ -23,35 +23,13 @@ class NiftiMasker(BaseMasker):
     ----------
     mask: 3D numpy matrix, optional
         Mask of the data. If not given, a mask is computed in the fit step.
+        Optional parameters detailed below (mask_connected...) can be set to
+        fine tune the mask extraction.
 
-    mask_connected: boolean, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
+    sessions: numpy array, optional
+        Add a session level to the preprocessing. Each session will be
+        detrended independently. Must be a 1D array of n_samples elements.
 
-    mask_opening: boolean, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_lower_cutoff: float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_upper_cutoff: float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to resampling.resample_img. Please see the
-        related documentation for details.
-
-    target_shape: 3-tuple of integers, optional
-        This parameter is passed to resampling.resample_img. Please see the
-        related documentation for details.
-
-    transpose: boolean, optional
-        If true, data are transposed after filtering and inverse_transform
-        considered input data as transpose too.
-        
     smooth: False or float, optional
         If smooth is not False, it gives the size, in voxel of the
         spatial smoothing to apply to the signal.
@@ -78,6 +56,33 @@ class NiftiMasker(BaseMasker):
         
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
+
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    mask_connected: boolean, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_opening: boolean, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_lower_cutoff: float, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    mask_upper_cutoff: float, optional
+        If mask is None, this parameter is passed to masking.compute_epi_mask
+        for mask computation. Please see the related documentation for details.
+
+    transpose: boolean, optional
+        If True, data is transposed after preprocessing step.
 
     See also
     --------
