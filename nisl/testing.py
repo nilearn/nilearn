@@ -16,6 +16,9 @@ class mock_urllib2(object):
     class HTTPError(urllib2.URLError):
         code = 404
 
+    class URLError(urllib2.URLError):
+        pass
+
     def urlopen(self, url):
         print 'uuu'
         self.urls.append(url)
@@ -25,7 +28,7 @@ class mock_urllib2(object):
         self.urls = []
 
 
-def mock_chunk_read_(response, local_file, chunk_size=8192, report_hook=None):
+def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192, report_hook=None):
     return
 
 def mock_uncompress_file(file, delete_archive=True):
