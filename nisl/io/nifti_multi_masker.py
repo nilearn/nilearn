@@ -4,6 +4,7 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
+import warnings
 
 import numpy as np
 from sklearn.externals.joblib import Memory
@@ -85,7 +86,7 @@ class NiftiMultiMasker(BaseMasker):
     nisl.signals.clean
     """
 
-    def __init__(self, sessions=None, mask=None, mask_connected=True,
+    def __init__(self, mask=None, mask_connected=True,
             mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
             smooth=False, confounds=None, detrend=False,
             target_affine=None, target_shape=None, low_pass=None,
@@ -109,7 +110,6 @@ class NiftiMultiMasker(BaseMasker):
         self.memory = memory
         self.transform_memory = transform_memory
         self.verbose = verbose
-        self.sessions = sessions
         self.transpose = transpose
 
     def fit(self, niimgs, y=None):
@@ -164,8 +164,12 @@ class NiftiMultiMasker(BaseMasker):
         data = []
 	affine = None
         for index, niimg in enumerate(niimgs):
-            imgs = utils.check_niimgs(niimg)
+            niimg = utils.check_niimgs(niimg)
             
+            if affine and np.all(niimg.get_affine() != affine):
+                warnings.warn('Affine is different across subjects.'
+                        ' Realignement on first subject affine is forced')
+                self.target_affine = affine
             if self.confounds is not None:
                 data.append(self.transform_single_niimgs(niimg,
                     confounds=self.confounds[index]))
@@ -173,11 +177,4 @@ class NiftiMultiMasker(BaseMasker):
                 data.append(self.transform_single_niimgs(niimg))
             if affine is None:
                 affine = self.affine_
-            else:
-                if not np.all(affine == self.affine_):
-		    raise ValueError("Affine of subject %d is different"
-			    " from reference affine"
-			    "\nReference affine:\n%s\n"
-			    "Wrong affine:\n%s"
-			    % (i_error, repr(affine), repr(self.affine_)))
         return data
