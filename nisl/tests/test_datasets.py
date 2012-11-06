@@ -79,6 +79,4 @@ def test_fetch_nyu_rest():
     assert_true(np.all(s[12:24] == 2))
     assert_true(np.all(s[24:] == 3))
     teardown_tmpdata()
-    
-
     return
