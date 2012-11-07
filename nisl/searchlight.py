@@ -58,9 +58,10 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     scores = np.zeros(len(A.rows), dtype=float)
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
-              delayed(_group_iter_search_light)(list_i, A.rows[list_i],
-              estimator, X, y, A.shape[0], score_func, cv, verbose)
-              for list_i in group_iter)
+        delayed(_group_iter_search_light)(
+            list_i, A.rows[list_i],
+            estimator, X, y, A.shape[0], score_func, cv, verbose)
+        for list_i in group_iter)
     return np.concatenate(scores)
 
 
@@ -92,7 +93,7 @@ class GroupIterator(object):
 
 
 def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
-                            score_func, cv, verbose=0):
+                             score_func, cv, verbose=0):
     """Function for grouped iterations of search_light
 
     Parameters
@@ -140,7 +141,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
         if list_i[i] not in row:
             row.append(list_i[i])
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                y, score_func, cv, n_jobs=1))
+                                                y, score_func, cv, n_jobs=1))
         if verbose > 0:
             # One can't print less than each 100 iterations
             step = 11 - min(verbose, 10)
@@ -224,8 +225,8 @@ class SearchLight(BaseEstimator):
     """
 
     def __init__(self, mask, process_mask=None, masked_data=False, radius=2.,
-            estimator=LinearSVC(C=1), n_jobs=1, score_func=None, cv=None,
-            verbose=0):
+                 estimator=LinearSVC(C=1), n_jobs=1, score_func=None, cv=None,
+                 verbose=0):
         self.mask = mask
         self.process_mask = process_mask
         self.masked_data = masked_data
@@ -266,7 +267,8 @@ class SearchLight(BaseEstimator):
             X_masked = X[:, mask]
         # scores is an array of CV scores with same cardinality as process_mask
         scores = search_light(X_masked, y, self.estimator, A,
-            self.score_func, self.cv, self.n_jobs, self.verbose)
+                              self.score_func, self.cv, self.n_jobs,
+                              self.verbose)
         scores_3D = np.zeros(process_mask.shape)
         scores_3D[process_mask] = scores
         self.scores_ = scores_3D

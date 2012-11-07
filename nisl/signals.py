@@ -23,9 +23,9 @@ def standardize(signals, copy=True, normalize=True):
 
 
 def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
-                         high_pass=False, detrend=False,
-                         normalize=True,
-                         shift_confounds=False):
+          high_pass=False, detrend=False,
+          normalize=True,
+          shift_confounds=False):
     """ Normalize the signal, and if any confounds are given, project in
         the orthogonal space.
 
@@ -60,8 +60,9 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
 
     if low_pass and high_pass and high_pass >= low_pass:
         raise ValueError("Your value for high pass filter (%f) is higher or"
-        " equal to the value for low pass filter (%f). This would result in a"
-        " blank signal" % (high_pass, low_pass))
+                         " equal to the value for low pass filter (%f). This"
+                         " would result in a blank signal"
+                         % (high_pass, low_pass))
 
     if low_pass or high_pass:
         n = signals.shape[-1]

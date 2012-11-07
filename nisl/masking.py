@@ -65,10 +65,10 @@ def extrapolate_out_mask(data, mask, iterations=1):
         this_y = outer_shell_y + j
         this_z = outer_shell_z + k
         extrapolation.append(masked_data[this_x, this_y, this_z])
-        
+
     extrapolation = np.array(extrapolation)
     extrapolation = (np.nansum(extrapolation, axis=0)
-                       / np.sum(np.isfinite(extrapolation), axis=0))
+                     / np.sum(np.isfinite(extrapolation), axis=0))
     extrapolation[np.logical_not(np.isfinite(extrapolation))] = 0
     new_data = np.zeros_like(masked_data)
     new_data[outer_shell] = extrapolation
@@ -82,8 +82,8 @@ def extrapolate_out_mask(data, mask, iterations=1):
 
 
 def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
-                 connected=True, opening=True, exclude_zeros=False,
-                 ensure_finite=True, verbose=0):
+                     connected=True, opening=True, exclude_zeros=False,
+                     ensure_finite=True, verbose=0):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
@@ -122,7 +122,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         The brain mask
     """
     if verbose > 0:
-       print "EPI mask computation"
+        print "EPI mask computation"
     if len(mean_epi.shape) == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
@@ -135,10 +135,10 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     upper_cutoff = np.floor(upper_cutoff * len(sorted_input))
 
     delta = sorted_input[lower_cutoff + 1:upper_cutoff + 1] \
-            - sorted_input[lower_cutoff:upper_cutoff]
+        - sorted_input[lower_cutoff:upper_cutoff]
     ia = delta.argmax()
     threshold = 0.5 * (sorted_input[ia + lower_cutoff]
-                        + sorted_input[ia + lower_cutoff + 1])
+                       + sorted_input[ia + lower_cutoff + 1])
 
     mask = (mean_epi >= threshold)
 
@@ -147,6 +147,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     if opening:
         mask = ndimage.binary_opening(mask.astype(np.int), iterations=2)
     return mask.astype(bool)
+
 
 def intersect_masks(input_masks, threshold=0.5, connected=True):
     """
@@ -166,7 +167,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
             gives the level of the intersection.
             threshold=1 corresponds to keeping the intersection of all
             masks, whereas threshold=0 is the union of all masks.
-            
+
         connected: bool, optional
             If true, extract the main connected component
 
@@ -177,7 +178,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
     grp_mask = None
     if threshold > 1:
         raise ValueError('The threshold should be < 1')
-    if threshold <0:
+    if threshold < 0:
         raise ValueError('The threshold should be > 0')
     threshold = min(threshold, 1 - 1.e-7)
 
@@ -186,21 +187,23 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
             grp_mask = this_mask.copy().astype(np.int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
-            # casting rules raise an error for in-place addition. Hence we do it
-            # long-hand. XXX should the masks be coerced to int before addition?
+            # casting rules raise an error for in-place addition. Hence we do
+            # it long-hand.
+            # XXX should the masks be coerced to int before addition?
             grp_mask = grp_mask + this_mask
-    
+
     grp_mask = grp_mask > (threshold * len(list(input_masks)))
-    
+
     if np.any(grp_mask > 0) and connected:
         grp_mask = _largest_connected_component(grp_mask)
-    
+
     return grp_mask > 0
 
 
 def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
-            connected=True, opening=True, threshold=0.5, exclude_zeros=False,
-            return_mean=False, verbose=0):
+                             connected=True, opening=True, threshold=0.5,
+                             exclude_zeros=False, return_mean=False,
+                             verbose=0):
     """ Compute a common mask for several sessions of fMRI data.
 
     Uses the mask-finding algorithmes to extract masks for each
@@ -248,15 +251,15 @@ def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         if utils.is_a_niimg(session):
             session = session.get_data()
         this_mask = compute_epi_mask(session,
-                lower_cutoff=lower_cutoff, upper_cutoff=upper_cutoff,
-                connected=connected, exclude_zeros=exclude_zeros)
+                                     lower_cutoff=lower_cutoff,
+                                     upper_cutoff=upper_cutoff,
+                                     connected=connected,
+                                     exclude_zeros=exclude_zeros)
         masks.append(this_mask.astype(np.int8))
 
     mask = intersect_masks(masks, connected=connected)
 
     return mask
-
-
 
 
 ###############################################################################
@@ -265,7 +268,7 @@ def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
 
 def apply_mask(niimgs, mask_img, dtype=np.float32,
-                     smooth=False, ensure_finite=True, transpose=False):
+               smooth=False, ensure_finite=True, transpose=False):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
@@ -316,7 +319,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
         smooth_sigma = smooth / vox_size
         for this_volume in np.rollaxis(series, -1):
             this_volume[...] = ndimage.gaussian_filter(this_volume,
-                                                    smooth_sigma)
+                                                       smooth_sigma)
     series = series[mask]
     if transpose:
         series = series.T
@@ -333,7 +336,7 @@ def unmask(X, mask, transpose=False):
 
     Parameters
     ----------
-   
+
     X: (list of)* numpy array
         Masked data. You can provide data of any dimension so if you want to
         unmask several images at one time, it is possible to give a list of
@@ -343,13 +346,13 @@ def unmask(X, mask, transpose=False):
     """
     if mask.dtype != np.bool:
         warnings.warn('[unmask] Given mask had dtype %s.It has been converted'
-            ' to bool.' % mask.dtype.name)
+                      ' to bool.' % mask.dtype.name)
         mask = mask.astype(np.bool)
 
     if isinstance(X, np.ndarray) and len(X.shape) == 1:
         if X.shape[0] != mask.sum():
             raise ValueError('[unmask] Masked data and mask have not the same'
-                ' number of voxels')
+                             ' number of voxels')
         img = np.zeros(mask.shape)
         img[mask] = X
         return img

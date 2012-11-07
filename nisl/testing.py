@@ -3,6 +3,7 @@ import urllib2
 
 from . import datasets
 
+
 class mock_urllib2(object):
 
     def __init__(self):
@@ -28,11 +29,14 @@ class mock_urllib2(object):
         self.urls = []
 
 
-def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192, report_hook=None):
+def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
+                     report_hook=None):
     return
+
 
 def mock_uncompress_file(file, delete_archive=True):
     return
+
 
 def mock_get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     """ Mock the original _get_dataset function
@@ -57,9 +61,8 @@ def mock_get_dataset(dataset_name, file_names, data_dir=None, folder=None):
             dirname = os.path.dirname(full_name)
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
-            open(full_name, 'w').close() 
+            open(full_name, 'w').close()
         file_paths.append(full_name)
     if error is not None:
         raise error
     return file_paths
-

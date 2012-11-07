@@ -26,7 +26,7 @@ class NiftiMultiMasker(BaseMasker):
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters detailed below (mask_connected...) can be set to
         fine tune the mask extraction.
-       
+
     smooth: False or float, optional
         If smooth is not False, it gives the size, in voxel of the
         spatial smoothing to apply to the signal.
@@ -100,12 +100,13 @@ class NiftiMultiMasker(BaseMasker):
     """
 
     def __init__(self, mask=None, mask_connected=True,
-            mask_opening=False, mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
-            smooth=False, confounds=None, detrend=False,
-            target_affine=None, target_shape=None, low_pass=None,
-            high_pass=None, t_r=None, transpose=False,
-            memory=Memory(cachedir=None, verbose=0),
-            transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
+                 mask_opening=False, mask_lower_cutoff=0.2,
+                 mask_upper_cutoff=0.9,
+                 smooth=False, confounds=None, detrend=False,
+                 target_affine=None, target_shape=None, low_pass=None,
+                 high_pass=None, t_r=None, transpose=False,
+                 memory=Memory(cachedir=None, verbose=0),
+                 transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
         self.mask_connected = mask_connected
@@ -151,41 +152,42 @@ class NiftiMultiMasker(BaseMasker):
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
             mask = memory.cache(masking.compute_session_epi_mask)(
-                                data,
-                                connected=self.mask_connected,
-                                opening=self.mask_opening,
-                                lower_cutoff=self.mask_lower_cutoff,
-                                upper_cutoff=self.mask_upper_cutoff,
-                                verbose=(self.verbose -1))
+                data,
+                connected=self.mask_connected,
+                opening=self.mask_opening,
+                lower_cutoff=self.mask_lower_cutoff,
+                upper_cutoff=self.mask_upper_cutoff,
+                verbose=(self.verbose - 1))
             self.mask_ = Nifti1Image(mask.astype(np.int), data[0].get_affine())
         else:
-			self.mask_ = utils.check_niimg(self.mask)
+            self.mask_ = utils.check_niimg(self.mask)
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
-        self.mask_ = memory.cache(resampling.resample_img)(self.mask_,
-                target_affine=self.target_affine,
-                target_shape=self.target_shape,
-                copy=(self.target_affine is not None and
-                      self.target_shape is not None))
+        self.mask_ = memory.cache(resampling.resample_img)(
+            self.mask_,
+            target_affine=self.target_affine,
+            target_shape=self.target_shape,
+            copy=(self.target_affine is not None and
+                  self.target_shape is not None))
 
         return self
 
     def transform(self, niimgs):
         data = []
-	affine = None
+        affine = None
         for index, niimg in enumerate(niimgs):
             niimg = utils.check_niimgs(niimg)
-            
+
             if affine is not None and np.all(niimg.get_affine() != affine):
                 warnings.warn('Affine is different across subjects.'
-                        ' Realignement on first subject affine is forced')
+                              ' Realignement on first subject affine forced')
                 self.target_affine = affine
             if self.confounds is not None:
-                data.append(self.transform_single_niimgs(niimg,
-                    confounds=self.confounds[index]))
+                data.append(self.transform_single_niimgs(
+                    niimg, confounds=self.confounds[index]))
             else:
                 data.append(self.transform_single_niimgs(niimg))
             if affine is None:

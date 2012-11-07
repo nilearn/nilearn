@@ -14,11 +14,12 @@ from nose.tools import assert_true, assert_equal
 
 from .. import datasets
 from ..testing import mock_urllib2, mock_chunk_read_, mock_uncompress_file, \
-        mock_get_dataset
+    mock_get_dataset
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 tmpdir = None
+
 
 def setup_tmpdata():
     # create temporary dir
@@ -54,7 +55,7 @@ def test_fetch_nyu_rest():
     datasets._chunk_read_ = mock_chunk_read_
     datasets._uncompress_file = mock_uncompress_file
     datasets._get_dataset = mock_get_dataset
-    
+
     # First session, all subjects
     setup_tmpdata()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
@@ -69,7 +70,7 @@ def test_fetch_nyu_rest():
     setup_tmpdata()
     mock.reset()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
-            n_subjects=12)
+                                  n_subjects=12)
     assert_equal(len(mock.urls), 3)
     assert_equal(len(nyu.func), 36)
     assert_equal(len(nyu.anat_anon), 36)

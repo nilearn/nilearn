@@ -51,7 +51,7 @@ def test_apply_mask():
     data[20, 20, 20] = 1
     mask = np.ones((40, 40, 40))
     for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
-                    np.diag((.5, 1, .5, 1))):
+                   np.diag((.5, 1, .5, 1))):
         series = apply_mask(Nifti1Image(data, affine),
                             Nifti1Image(mask, affine), smooth=9)
         series = np.reshape(series[:, 0], (40, 40, 40))
@@ -61,15 +61,16 @@ def test_apply_mask():
         above_half_max = series > .5 * vmax
         for axis in (0, 1, 2):
             proj = np.any(np.any(np.rollaxis(above_half_max,
-                            axis=axis), axis=-1), axis=-1)
+                          axis=axis), axis=-1), axis=-1)
             np.testing.assert_equal(proj.sum(),
-                    9 / np.abs(affine[axis, axis]))
+                                    9 / np.abs(affine[axis, axis]))
 
     # Check that NaNs in the data do not propagate
     data[10, 10, 10] = np.NaN
     series = apply_mask(Nifti1Image(data, affine),
                         Nifti1Image(mask, affine), smooth=9)
     assert_true(np.all(np.isfinite(series)))
+
 
 def test_unmask():
     """ Test the unmasking function
@@ -81,13 +82,13 @@ def test_unmask():
     mask = generator.randint(2, size=(20, 30, 40))
     boolmask = mask.astype(np.bool)
     masked4D = data4D[:, boolmask]
-    unmasked4D = data4D.copy() 
+    unmasked4D = data4D.copy()
     unmasked4D[:, -boolmask] = 0
     masked3D = data3D[boolmask]
-    unmasked3D = data3D.copy() 
+    unmasked3D = data3D.copy()
     unmasked3D[-boolmask] = 0
-    dummy = generator.rand(500) 
-    
+    dummy = generator.rand(500)
+
     # 4D Test
     t = unmask(masked4D, mask)
     assert_equal(len(t.shape), 4)

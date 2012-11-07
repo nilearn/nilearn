@@ -20,7 +20,7 @@ def _to_nifti(X, affine):
         return Nifti1Image(X, affine)
     for index, x in enumerate(X):
         X[index] = _to_nifti(x, affine)
-    return X 
+    return X
 
 
 class BaseMasker(BaseEstimator, TransformerMixin):
@@ -54,7 +54,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
     target_shape: 3-tuple of integers, optional
         This parameter is passed to resampling.resample_img. Please see the
         related documentation for details.
-        
+
     smooth: False or float, optional
         If smooth is not False, it gives the size, in voxel of the
         spatial smoothing to apply to the signal.
@@ -78,7 +78,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
     t_r: float, optional
         This parameter is passed to signals.clean. Please see the related
         documentation for details
-        
+
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
 
@@ -89,7 +89,6 @@ class BaseMasker(BaseEstimator, TransformerMixin):
     masking.apply_mask
     signals.clean
     """
-
 
     def transform_single_niimgs(self, niimgs, sessions=None, confounds=None):
         memory = self.transform_memory
@@ -104,9 +103,10 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print "[%s.transform] Resampling" % self.__class__.__name__
-        niimgs = memory.cache(resampling.resample_img)(niimgs,
-                    target_affine=self.target_affine,
-                    target_shape=self.target_shape)
+        niimgs = memory.cache(resampling.resample_img)(
+            niimgs,
+            target_affine=self.target_affine,
+            target_shape=self.target_shape)
 
         # Get series from data with optional smoothing
         if self.verbose > 0:
@@ -124,21 +124,22 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 0:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
-            data = memory.cache(signals.clean)(data,
-                    confounds=confounds, low_pass=self.low_pass,
-                    high_pass=self.high_pass, t_r=self.t_r,
-                    detrend=self.detrend, normalize=False)
+            data = memory.cache(signals.clean)(
+                data,
+                confounds=confounds, low_pass=self.low_pass,
+                high_pass=self.high_pass, t_r=self.t_r,
+                detrend=self.detrend, normalize=False)
         else:
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
                 data[sessions == s] = \
                     memory.cache(signals.clean)(
-                            data[sessions == s],
-                            confounds=confounds,
-                            low_pass=self.low_pass,
-                            high_pass=self.high_pass, t_r=self.t_r,
-                            detrend=self.detrend, normalize=False)
+                        data[sessions == s],
+                        confounds=confounds,
+                        low_pass=self.low_pass,
+                        high_pass=self.high_pass, t_r=self.t_r,
+                        detrend=self.detrend, normalize=False)
 
         # For _later_: missing value removal or imputing of missing data
         # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -161,6 +162,6 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         else:
             data = X.T
         unmasked = masking.unmask(data, mask.get_data().astype(np.bool),
-                transpose=True)
-        
+                                  transpose=True)
+
         return _to_nifti(unmasked, mask.get_affine())

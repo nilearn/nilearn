@@ -20,7 +20,7 @@ cond = np.array([int(i > (frames / 2)) for i in range(frames)])
 
 # Create an activation pixel.
 data[:, 2, 2, 2] = 0
-data.T[2, 2, 2][cond.astype(np.bool)] = 2 
+data.T[2, 2, 2][cond.astype(np.bool)] = 2
 
 # Define score function
 from sklearn.metrics import precision_score
@@ -36,7 +36,7 @@ n_jobs = 1
 # Run Searchlight with different radii
 # Small radius : only one pixel is selected
 sl = searchlight.SearchLight(mask, mask, radius=0.5,
-                n_jobs=n_jobs, score_func=score_func, cv=cv)
+                             n_jobs=n_jobs, score_func=score_func, cv=cv)
 sl.fit(data, cond)
 assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
 assert_equal(sl.scores_[2, 2, 2], 1.)
@@ -44,7 +44,7 @@ assert_equal(sl.scores_[2, 2, 2], 1.)
 # Medium radius : little ball selected
 
 sl = searchlight.SearchLight(mask, mask, radius=1,
-                n_jobs=n_jobs, score_func=score_func, cv=cv)
+                             n_jobs=n_jobs, score_func=score_func, cv=cv)
 sl.fit(data, cond)
 assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
 assert_equal(sl.scores_[2, 2, 2], 1.)
@@ -57,7 +57,7 @@ assert_equal(sl.scores_[2, 2, 3], 1.)
 
 # Big radius : big ball selected
 sl = searchlight.SearchLight(mask, mask, radius=2,
-                n_jobs=n_jobs, score_func=score_func, cv=cv)
+                             n_jobs=n_jobs, score_func=score_func, cv=cv)
 sl.fit(data, cond)
 assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
 assert_equal(sl.scores_[2, 2, 2], 1.)

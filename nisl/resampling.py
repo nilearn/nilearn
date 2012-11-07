@@ -124,7 +124,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     niimg = check_niimg(niimg)
     data = niimg.get_data()
     affine = niimg.get_affine()
-    
+
     if copy:
         import copy
         data = copy.copy(data)
@@ -133,7 +133,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         return niimg
     if target_affine is None and target_shape is not None:
         raise ValueError("If target_shape is specified, target_affine should"
-                " be specified too.")
+                         " be specified too.")
     if target_affine is None:
         target_affine = np.eye(4)
     if target_shape is None:
@@ -144,14 +144,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         # shape to keep the same bounding box in the new space
         affine4d = np.eye(4)
         affine4d[:3, :3] = target_affine
-        transform_affine = np.dot(np.linalg.inv(affine4d),
-                                    affine,
-                                 )
+        transform_affine = np.dot(np.linalg.inv(affine4d), affine)
         # The bounding box in the new world, if no offset is given
-        (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
-                                                    data.shape[:3],
-                                                    transform_affine,
-                                                    )
+        (xmin, xmax), (ymin, ymax), (zmin, zmax) = \
+            get_bounds(data.shape[:3], transform_affine)
 
         offset = np.array((xmin, ymin, zmin))
         offset = np.dot(target_affine, offset)
@@ -161,8 +157,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                         np.ceil(zmax - zmin) + 1, )
     if not len(target_shape) == 3:
         raise ValueError('The shape specified should be the shape '
-            'the 3D grid, and thus of length 3. %s was specified'
-            % target_shape)
+                         'the 3D grid, and thus of length 3. %s was specified'
+                         % target_shape)
 
     # Determine interpolation order
     if interpolation == 'continuous':
@@ -195,18 +191,18 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         data = np.reshape(data, data_shape[:3] + [-1])
         data = np.rollaxis(data, 3)
         resampled_data = [ndimage.affine_transform(slice, A,
-                                            offset=np.dot(A_inv, b),
-                                            output_shape=target_shape,
-                                            order=interpolation_order)
-                            for slice in data]
+                                                   offset=np.dot(A_inv, b),
+                                                   output_shape=target_shape,
+                                                   order=interpolation_order)
+                          for slice in data]
         resampled_data = np.concatenate([d[..., np.newaxis]
                                         for d in resampled_data],
                                         axis=3)
         resampled_data = np.reshape(resampled_data, list(target_shape) +
-                                        list(data_shape[3:]))
+                                    list(data_shape[3:]))
     else:
         resampled_data = ndimage.affine_transform(data, A,
-                                            offset=np.dot(A_inv, b),
-                                            output_shape=target_shape,
-                                            order=interpolation_order)
+                                                  offset=np.dot(A_inv, b),
+                                                  output_shape=target_shape,
+                                                  order=interpolation_order)
     return Nifti1Image(resampled_data, target_affine)

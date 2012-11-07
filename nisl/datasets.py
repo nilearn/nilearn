@@ -1,8 +1,8 @@
 """
 Utilities to download NeuroImaging datasets
 """
-# Author: Alexandre Abraham                                                                                                                                         
-# License: simplified BSD 
+# Author: Alexandre Abraham
+# License: simplified BSD
 
 import os
 import urllib
@@ -62,7 +62,7 @@ def _chunk_report_(bytes_so_far, total_size, t0):
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
-        initial_size=0, total_size=None):
+                 initial_size=0, total_size=None):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -95,7 +95,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     except Exception, e:
         print "Total size could not be determined. Error: ", e
         total_size = None
-    bytes_so_far = initial_size 
+    bytes_so_far = initial_size
 
     t0 = time.time()
     while 1:
@@ -141,7 +141,7 @@ def _get_dataset_dir(dataset_name, data_dir=None):
     """
     if not data_dir:
         data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(),
-            'nisl_data'))
+                             'nisl_data'))
     data_dir = os.path.join(data_dir, dataset_name)
     return data_dir
 
@@ -237,15 +237,15 @@ def _fetch_file(url, data_dir, resume=False, overwrite=False):
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            urlOpener.addheader("Range","bytes=%s-" % (local_file_size))
+            urlOpener.addheader("Range", "bytes=%s-" % (local_file_size))
             data = urlOpener.open(url)
-            local_file = open(temp_full_name,"ab")
+            local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
             data = urllib2.urlopen(url)
             local_file = open(temp_full_name, "wb")
         _chunk_read_(data, local_file, report_hook=True,
-                initial_size=initial_size)
+                     initial_size=initial_size)
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         print '...done. (%i seconds, %i min)' % (dt, dt / 60)
@@ -262,7 +262,7 @@ def _fetch_file(url, data_dir, resume=False, overwrite=False):
 
 
 def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
-        resume=False, folder=None):
+                   resume=False, folder=None):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -386,8 +386,8 @@ def fetch_haxby(data_dir=None, url=None, resume=False):
         'mask': string
             Path to nifti mask file
         'session': string
-            Path to text file containing labels (can be used for LeaveOneLabelOut
-            cross validation for example)
+            Path to text file containing labels (can be used for
+            LeaveOneLabelOut cross validation for example)
 
     References
     ----------
@@ -426,7 +426,7 @@ def fetch_haxby(data_dir=None, url=None, resume=False):
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
-            conditions_target=files[3])
+                 conditions_target=files[3])
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
@@ -525,7 +525,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
 
     max_subjects = len(subjects_a) + len(subjects_b)
     # Check arguments
-    if n_subjects == None:
+    if n_subjects is None:
         n_subjects = len(subjects_a) + len(subjects_b)
     if n_subjects > max_subjects:
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
@@ -539,7 +539,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
             ['1073/NYU_TRT_session2a.tar.gz', '1074/NYU_TRT_session2b.tar.gz'],
             ['1075/NYU_TRT_session3a.tar.gz', '1076/NYU_TRT_session3b.tar.gz']]
 
-    anat_anon = [] 
+    anat_anon = []
     anat_skull = []
     func = []
     session = []
@@ -552,10 +552,10 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                 subjects = subjects_a[:min(len(subjects_a), n_subjects)]
             else:  # part == 1
                 subjects = subjects_b[:min(len(subjects_b),
-                    n_subjects - len(subjects_a))]
+                                      n_subjects - len(subjects_a))]
             paths = [os.path.join(session_path, os.path.join(subject, file))
-                  for subject in subjects
-                  for file in file_names]
+                     for subject in subjects
+                     for file in file_names]
             try:
                 files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
             except IOError:
@@ -563,7 +563,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                 url += tars[session_id - 1][part]
                 # Determine files to be downloaded
                 _fetch_dataset('nyu_rest', [url], data_dir=data_dir,
-                        folder=session_path)
+                               folder=session_path)
                 files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
             for i in range(len(subjects)):
                 # We are considering files 3 by 3
@@ -574,7 +574,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                 session.append(session_id)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
-            session=session)
+                 session=session)
 
 
 def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
@@ -612,31 +612,32 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
     file_names = ['%s_regressors.csv', '%s_rest_tshift_RPI_voreg_mni.nii.gz']
 
     subjects = ['0010042', '0010128', '0023008', '0027011', '0027034',
-            '1019436', '1418396', '1552181', '1679142', '2497695', '3007585',
-            '3205761', '3624598', '3884955', '3994098', '4046678', '4164316',
-            '6115230', '8409791', '9744150', '0010064', '0021019', '0023012',
-            '0027018', '0027037', '1206380', '1517058', '1562298', '2014113',
-            '2950754', '3154996', '3520880', '3699991', '3902469', '4016887',
-            '4134561', '4275075', '7774305', '8697774', '9750701']
-                     
+                '1019436', '1418396', '1552181', '1679142', '2497695',
+                '3007585', '3205761', '3624598', '3884955', '3994098',
+                '4046678', '4164316', '6115230', '8409791', '9744150',
+                '0010064', '0021019', '0023012', '0027018', '0027037',
+                '1206380', '1517058', '1562298', '2014113', '2950754',
+                '3154996', '3520880', '3699991', '3902469', '4016887',
+                '4134561', '4275075', '7774305', '8697774', '9750701']
+
     max_subjects = len(subjects)
     # Check arguments
-    if n_subjects == None:
+    if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
     tars = ['ADHD200_40sub_preprocessed.tgz']
-    
+
     path = os.path.join('ADHD200_40sub_preprocessed', 'data')
     func = []
     regressor = []
     subjects = subjects[:n_subjects]
 
     paths = [os.path.join(path, os.path.join(subject, file % subject))
-              for subject in subjects
-              for file in file_names]
+             for subject in subjects
+             for file in file_names]
     try:
         files = _get_dataset("adhd", paths, data_dir=data_dir)
     except IOError:
@@ -653,11 +654,10 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
 
     return Bunch(func=func, regressor=regressor)
 
+
 def fetch_kamitani(data_dir=None, url=None, resume=False):
     """Download and loads the kamitani dataset
     """
-
-
 
     # definition of dataset files
     file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz',
@@ -673,7 +673,7 @@ def fetch_kamitani(data_dir=None, url=None, resume=False):
         # If the dataset does not exists, we download it
         if url is None:
             url = "http://brainliner.jp/data/brainliner-admin/Reconstruct"
-        
+
         # Avoid chunk related error
         vsn = httplib.HTTPConnection._http_vsn
         vsn_str = httplib.HTTPConnection._http_vsn_str
@@ -687,11 +687,14 @@ def fetch_kamitani(data_dir=None, url=None, resume=False):
 
         s = response1.read()
         html = etree.HTML(s)
-        formid = html.xpath('//div[text()="Data_Reconst_Code_public.zip"]/ancestor::form/@id')[0]
-        viewState = html.xpath('//div[text()="Data_Reconst_Code_public.zip"]/ancestor::form//input[@name="javax.faces.ViewState"]/@value')[0]
+        formid = html.xpath('//div[text()="Data_Reconst_Code_public.zip"]'
+                            '/ancestor::form/@id')[0]
+        viewState = html.xpath('//div[text()="Data_Reconst_Code_public.zip"]'
+                               '/ancestor::form//input'
+                               '[@name="javax.faces.ViewState"]/@value')[0]
         response1.close()
 
-        jsessionid = response1.headers['set-cookie'].split(';')[0].split('=')[1] 
+        sessionid = response1.headers['set-cookie'].split(';')[0].split('=')[1]
 
         values = {}
 
@@ -711,10 +714,11 @@ def fetch_kamitani(data_dir=None, url=None, resume=False):
 
         s = response2.read()
         xml = etree.fromstring(s)
-        viewState = xml.xpath('//update[@id="javax.faces.ViewState"]/text()')[0]
+        viewState = xml.xpath('//update[@id="javax.faces.ViewState"]/text()')
+        viewState = viewState[0]
         response2.close()
 
-        url = url + ";jsessionid=" + jsessionid
+        url = url + ";jsessionid=" + sessionid
 
         values = {}
         values[formid] = formid
@@ -737,7 +741,7 @@ def fetch_kamitani(data_dir=None, url=None, resume=False):
             full_name = os.path.join(data_dir, file_name)
             local_file = open(full_name, "wb")
             _chunk_read_(response3, local_file, report_hook=True,
-                    initial_size=0)
+                         initial_size=0)
             dt = time.time() - t0
             print '...done. (%i seconds, %i min)' % (dt, dt / 60)
         except urllib2.HTTPError, e:
@@ -749,7 +753,6 @@ def fetch_kamitani(data_dir=None, url=None, resume=False):
         finally:
             if local_file is not None:
                 local_file.close()
-
 
         full_name = _fetch_file(url, data_dir, resume=resume)
         if not full_name:
@@ -768,6 +771,4 @@ def fetch_kamitani(data_dir=None, url=None, resume=False):
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
-            conditions_target=files[3])
-
-
+                 conditions_target=files[3])

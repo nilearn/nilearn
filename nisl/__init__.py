@@ -23,6 +23,7 @@ except ImportError:
 try:
     import sklearn
 except ImportError:
-    print 'Scikit-learn could not be found, please install it properly to use nisl.'
+    print ('Scikit-learn could not be found,'
+           ' please install it properly to use nisl.')
 
 __version__ = 0.1

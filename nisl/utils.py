@@ -75,7 +75,7 @@ def check_niimg(niimg):
         # it is an object, it should have get_data and get_affine methods
         if not is_a_niimg(niimg):
             raise TypeError("Given data does not expose"
-                " get_data or get_affine methods")
+                            " get_data or get_affine methods")
         result = niimg
     return result
 
@@ -107,11 +107,11 @@ def concat_niimgs(niimgs):
                 i_error = "image #" + str(index)
 
             raise ValueError("Affine of %s%s is different"
-                    " from reference affine"
-                    "\nReference affine:\n%s\n"
-                    "Wrong affine:\n%s"
-                    % (i_error, s_error,
-                    repr(affine), repr(niimg.get_affine())))
+                             " from reference affine"
+                             "\nReference affine:\n%s\n"
+                             "Wrong affine:\n%s"
+                             % (i_error, s_error,
+                             repr(affine), repr(niimg.get_affine())))
         this_data = niimg.get_data()
         if len(this_data.shape) == 3:
             this_data = this_data[..., np.newaxis]
@@ -149,8 +149,8 @@ def check_niimgs(niimgs, accept_3d=False):
         # Very detailed error message that tells exactly the user what
         # was provided and what should have been provided.
         raise TypeError("Data must be either a 4D Nifti image or a"
-                " list of 3D Nifti images. You provided a %s%dD image(s)."
-                % ('list of ' * depth, dim))
+                        " list of 3D Nifti images. You provided a %s%dD"
+                        " image(s)." % ('list of ' * depth, dim))
 
     # Now, we load data as we know its format
     if dim == 4:

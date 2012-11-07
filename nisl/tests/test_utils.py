@@ -6,7 +6,7 @@ Test the utils module
 
 
 import os
-import tempfile 
+import tempfile
 
 import nose
 
@@ -46,7 +46,7 @@ def test_check_niimgs():
                              niimg)
     # This shouldn't raise an error
     utils.check_niimgs(niimg, accept_3d=True)
-    
+
     # Test a Niimage that does not hold a shape attribute
     phony_niimg = PhonyNiimage()
     utils.check_niimgs(phony_niimg)
@@ -57,14 +57,13 @@ def _remove_if_exists(file):
         os.remove(file)
 
 
-
 def test_concat_niimgs():
     affine = np.eye(4)
     niimg1 = Nifti1Image(np.ones((10, 10, 10)), affine)
-    niimg2 = Nifti1Image(np.ones((10, 10, 10)), 2*affine)
+    niimg2 = Nifti1Image(np.ones((10, 10, 10)), 2 * affine)
 
     nose.tools.assert_raises(ValueError, utils.concat_niimgs,
-                            [niimg1, niimg2])
+                             [niimg1, niimg2])
 
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     _, tmpimg2 = tempfile.mkstemp(suffix='.nii')
@@ -72,7 +71,7 @@ def test_concat_niimgs():
         nibabel.save(niimg1, tmpimg1)
         nibabel.save(niimg2, tmpimg2)
         nose.tools.assert_raises(ValueError, utils.concat_niimgs,
-                                [tmpimg1, tmpimg2])
+                                 [tmpimg1, tmpimg2])
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
