@@ -108,7 +108,7 @@
 	     bar, we will need to use the following ugly hack to avoid it
 	     rellinks[1:]|reverse
 	    -->
-	{%- for rellink in rellinks|reverse %}
+	{%- for rellink in rellinks[1:]|reverse %}
 	<div class="rellink">
 	<a href="{{ pathto(rellink[0]) }}" title="{{ rellink[1]|striptags|e }}"
 	    {{ accesskey(rellink[2]) }}>{{ rellink[3]|capitalize }}
@@ -242,7 +242,13 @@
                $(this).css('background-color', '#A7D6E2');
            }
        );
-     </script>
+       var bodywrapper = $('.bodywrapper');
+       var sidebarbutton = $('#sidebarbutton');
+       sidebarbutton.css({
+           'height': '900px'
+       });
+  
+    </script>
 {%- endblock %}
 
 

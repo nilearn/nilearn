@@ -1,7 +1,7 @@
 .. _mri_transformer:
 
 ================================================================================
-fMRI loading: Loading and preprocessing MRI data (advanced)
+Advanced fMRI loading: Loading and preprocessing MRI data
 ================================================================================
 
 In this tutorial, we will give some details and show how to custom data loading
@@ -43,7 +43,7 @@ is no need to save your data in a file to pass it to Nifti masker.
 Simply use your Niimg !
 
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: from nisl import datasets, io, utils  
     :end-before: # Display helper
 
@@ -65,7 +65,7 @@ masks. This function will display a background (compose of a mean of epi scans)
 and the mask as a red layer over this background.
 
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: haxby_img = Nifti1Image(haxby_func, haxby_img.get_affine()) 
     :end-before: # Generate mask with default parameters 
 
@@ -85,12 +85,12 @@ The first the step of the generation is to generate a mask with default
 parameters and take a look at it. As an indicator, we can, for example, compare
 the mask to original data.
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: # Generate mask with default parameters
     :end-before: # Generate mask with opening
 
-.. figure:: auto_examples/images/plot_nifti_advanced_1.png
-    :target: auto_examples/plot_nifti_advanced.html
+.. figure:: ../auto_examples/images/plot_nifti_advanced_1.png
+    :target: ../auto_examples/plot_nifti_advanced.html
     :align: center
     :scale: 50%
 
@@ -100,12 +100,12 @@ not very smooth. As we want to enlarge the mask a little bit and make it
 smoother, we try to apply opening (*mask_opening=true*).
 
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: # Generate mask with opening 
     :end-before: # Generate mask with upper cutoff
 
-.. figure:: auto_examples/images/plot_nifti_advanced_2.png
-    :target: auto_examples/plot_nifti_advanced.html
+.. figure:: ../auto_examples/images/plot_nifti_advanced_2.png
+    :target: ../auto_examples/plot_nifti_advanced.html
     :align: center
     :scale: 50%
 
@@ -118,11 +118,11 @@ to ignore high values by lowering *upper cutoff*. Default value is 0.9, so we
 try 0.8.
 
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: # Generate mask with upper cutoff 
 
-.. figure:: auto_examples/images/plot_nifti_advanced_3.png
-    :target: auto_examples/plot_nifti_advanced.html
+.. figure:: ../auto_examples/images/plot_nifti_advanced_3.png
+    :target: ../auto_examples/plot_nifti_advanced.html
     :align: center
     :scale: 50%
 
@@ -176,6 +176,6 @@ to visualize it. This step is present in almost all the examples provided in
 Nisl.
 
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: svc = feature_selection.inverse_transform(svc)
     :end-before: # We use a masked array so that the voxels at '-1' are displayed

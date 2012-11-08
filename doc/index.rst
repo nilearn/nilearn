@@ -100,31 +100,21 @@
 
 .. include:: includes/big_toc_css.rst
 
+User Guide
+==========
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+
+   introduction.rst
+   visualization.rst
+   nifti_masker.rst
+   supervised_learning.rst
+   unsupervised_learning.rst
 .. only:: html
+   auto_examples/index
 
-  .. toctree::
-    :maxdepth: 2
-    :numbered:
-
-    introduction.rst
-    visualization.rst
-    supervised_learning.rst
-    unsupervised_learning.rst
-    auto_examples/index
-
-.. in the pdf, we don't include the examples
-
-.. only:: latex
-
-  .. toctree::
-    :maxdepth: 2
-    :numbered:
-
-    introduction.rst
-    visualization.rst
-    supervised_learning.rst
-    unsupervised_learning.rst
-    
 
 ..  
  FIXME: I need the link below to make sure the banner gets copied to the

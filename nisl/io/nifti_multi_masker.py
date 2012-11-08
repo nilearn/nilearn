@@ -1,5 +1,5 @@
 """
-Transformer used to apply basic transformations on MRI data.
+Transformer used to apply basic transformations on multi subject MRI data.
 """
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
