@@ -21,7 +21,7 @@ class NiftiMasker(BaseMasker):
 
     Parameters
     ----------
-    mask: 3D numpy matrix, optional
+    mask: filename or NiImage, optional
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters detailed below (mask_connected...) can be set to
         fine tune the mask extraction.
@@ -93,6 +93,15 @@ class NiftiMasker(BaseMasker):
 
     transpose: boolean, optional
         If True, data is transposed after preprocessing step.
+
+    Attributes
+    ----------
+    `mask_`: NiImage
+        The mask of the data. If no mask was given at masker creation, contains
+        the automatically computed mask.
+
+    `affine_`: 4x4 numpy array
+        Affine of the transformed NiImages.
 
     See also
     --------
