@@ -112,6 +112,7 @@ User Guide
    nifti_masker.rst
    supervised_learning.rst
    unsupervised_learning.rst
+   Reference <modules/classes.rst>
 .. only:: html
    auto_examples/index
 

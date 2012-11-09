@@ -6,7 +6,6 @@ An example applying ICA to resting-state data.
 """
 
 import numpy as np
-from scipy import stats
 
 ### Load nyu_rest dataset #####################################################
 from nisl import datasets
@@ -31,7 +30,8 @@ mean_epi = masker.inverse_transform(fmri_data[0].mean(axis=0)).get_data()
 
 from nisl.decomposition.canica import CanICA
 n_components = 40
-ica = CanICA(n_components=n_components, random_state=42, memory="canica", maps_only=True)
+ica = CanICA(n_components=n_components, random_state=42, memory="canica",
+             maps_only=True)
 components_masked = ica.fit(data_masked).maps_
 
 # We normalize the estimated components, for thresholding to make sens
@@ -40,15 +40,13 @@ components_masked /= components_masked.std(axis=0)
 # Threshold
 #threshold = (stats.norm.isf(0.5*threshold_p_value)
 #                                 /np.sqrt(components_masked.shape[0]))
-threshold=.8
+threshold = .8
 components_masked[np.abs(components_masked) < threshold] = 0
 
 # Now we inverting the masking operation, to go back to a full 3D
 # representation
 components_img = masker.inverse_transform(components_masked)
 components = components_img.get_data()
-
-
 
 # Using a masked array is important to have transparency in the figures
 components = np.ma.masked_equal(components, 0, copy=False)

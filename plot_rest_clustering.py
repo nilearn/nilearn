@@ -94,14 +94,14 @@ fmri_reduced = ward.transform(fmri_masked)
 
 # Display the corresponding data compressed using the parcellation
 fmri_compressed = ward.inverse_transform(fmri_reduced)
-compressed = nifti_masker.inverse_transform(fmri_compressed[0]
-                    ).get_data()
+compressed = nifti_masker.inverse_transform(
+    fmri_compressed[0]).get_data()
 compressed = np.ma.masked_equal(compressed, 0)
 
 
 pl.figure()
 pl.imshow(np.rot90(compressed[:, :, 20]),
-           interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
+          interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
 pl.title('Compressed representation')
 pl.axis('off')
 pl.show()

@@ -1,5 +1,11 @@
 """
-Example of automatic mask computation
+Automatic mask computation with parameter tweaking
+==================================================
+
+In this example, the Nifti masker is used to automatically compute a mask.
+Using some visualization, one can see that the default parameters of the
+nifti masker are not suited for this dataset. They are consequently tweaked
+to obtained a decent mask.
 """
 
 import pylab as pl
@@ -13,17 +19,20 @@ haxby = datasets.fetch_haxby()
 haxby_img = utils.check_niimg(haxby.func)
 # Restrict haxby to 150 frames to speed up computation
 haxby_func = haxby_img.get_data()[..., :150]
-haxby_img = Nifti1Image(haxby_func, haxby_img.get_affine()) 
+haxby_img = Nifti1Image(haxby_func, haxby_img.get_affine())
 # Load mask provided by Haxby
 haxby_mask = utils.check_niimg(haxby.mask).get_data().astype(np.bool)
 
 # Display helper
 background = np.mean(haxby_func, axis=-1)[..., 27]
+
+
 def display_mask(background, mask, title):
     pl.axis('off')
     pl.imshow(np.rot90(background), interpolation='nearest', cmap=pl.cm.gray)
     ma = np.ma.masked_equal(mask, False)
-    pl.imshow(np.rot90(ma), interpolation='nearest', cmap=pl.cm.autumn, alpha=0.5)
+    pl.imshow(np.rot90(ma), interpolation='nearest',
+              cmap=pl.cm.autumn, alpha=0.5)
     pl.title(title)
 
 # Generate mask with default parameters
@@ -62,8 +71,8 @@ trended = io.NiftiMasker(mask=haxby.mask)
 detrended = io.NiftiMasker(mask=haxby.mask, detrend=True)
 trended_data = trended.fit_transform(haxby_img)
 detrended_data = detrended.fit_transform(haxby_img)
- 
-print "Trended: mean %.2f, std %.2f" % (np.mean(trended_data), np.std(trended_data))
-print "Detrended: mean %.2f, std %.2f" % (np.mean(detrended_data), np.std(detrended_data))
 
-  
+print "Trended: mean %.2f, std %.2f" % \
+    (np.mean(trended_data), np.std(trended_data))
+print "Detrended: mean %.2f, std %.2f" % \
+    (np.mean(detrended_data), np.std(detrended_data))

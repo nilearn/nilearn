@@ -1,7 +1,7 @@
 .. _mri_transformer:
 
 ================================================================================
-Advanced fMRI loading: Loading and preprocessing MRI data
+Advanced Loading and Preprocessing of fMRI data
 ================================================================================
 
 In this tutorial, we will give some details and show how to custom data loading

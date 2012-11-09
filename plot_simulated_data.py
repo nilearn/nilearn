@@ -25,6 +25,7 @@ from sklearn.cross_validation import KFold
 from sklearn.feature_selection import f_regression
 from nisl import searchlight
 
+
 ###############################################################################
 # Fonction to generate data
 def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
@@ -37,9 +38,9 @@ def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
     w[-roi_size:, -roi_size:, 0:roi_size] = 0.5
     w[0:roi_size, -roi_size:, -roi_size:] = -0.6
     w[-roi_size:, 0:roi_size:, -roi_size:] = 0.5
-    w[(size-roi_size)/2:(size+roi_size)/2, 
-            (size-roi_size)/2:(size+roi_size)/2,
-            (size-roi_size)/2:(size+roi_size)/2] = 0.5
+    w[(size - roi_size) / 2:(size + roi_size) / 2,
+      (size - roi_size) / 2:(size + roi_size) / 2,
+      (size - roi_size) / 2:(size + roi_size) / 2] = 0.5
     w = w.ravel()
     ### Images
     XX = generator.randn(n_samples, size, size, size)
@@ -77,7 +78,7 @@ def plot_slices(data, title=None):
     for i in (0, 6, 11):
         pl.subplot(1, 3, i / 5 + 1)
         pl.imshow(data[:, :, i], vmin=-vmax, vmax=vmax,
-                interpolation="nearest", cmap=pl.cm.RdBu_r)
+                  interpolation="nearest", cmap=pl.cm.RdBu_r)
         pl.xticks(())
         pl.yticks(())
     pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97)
@@ -87,8 +88,8 @@ def plot_slices(data, title=None):
 
 ###############################################################################
 # Create data
-X_train, X_test, y_train, y_test, snr, noise, coefs, size =\
-        create_simulation_data(snr=10, n_samples=400, size=12)
+X_train, X_test, y_train, y_test, snr, noise, coefs, size = \
+    create_simulation_data(snr=10, n_samples=400, size=12)
 mask = np.ones((size, size, size), np.bool)
 process_mask = np.zeros((size, size, size), np.bool)
 process_mask[:, :, 0] = True
@@ -101,16 +102,16 @@ plot_slices(coefs, title="Ground truth")
 ###############################################################################
 # Compute the results and estimated coef maps for different estimators
 classifiers = [
-  ('bayesian_ridge', linear_model.BayesianRidge(normalize=True)),
-  ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05)),
-  ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
-  ('svr', svm.SVR(kernel='linear', C=0.001)),
-  ('searchlight', searchlight.SearchLight(
-      mask=mask, process_mask=process_mask,
-      masked_data=True,
-      radius=4.,
-      score_func=r2_score,
-      cv=KFold(y_train.size, k=4)))
+    ('bayesian_ridge', linear_model.BayesianRidge(normalize=True)),
+    ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05)),
+    ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
+    ('svr', svm.SVR(kernel='linear', C=0.001)),
+    ('searchlight', searchlight.SearchLight(
+        mask=mask, process_mask=process_mask,
+        masked_data=True,
+        radius=4.,
+        score_func=r2_score,
+        cv=KFold(y_train.size, k=4)))
 ]
 
 # Run the estimators
@@ -127,7 +128,7 @@ for name, classifier in classifiers:
                 classifier.__class__.__name__, score,
                 elapsed_time)
 
-    else: # Searchlight
+    else:  # Searchlight
         coefs = classifier.scores_
         title = '%s: training time: %.2fs' % (
                 classifier.__class__.__name__,
@@ -141,9 +142,9 @@ for name, classifier in classifiers:
 
 f_values, p_values = f_regression(X_train, y_train)
 p_values = np.reshape(p_values, (size, size, size))
-p_values = -np.log10(p_values) 
-p_values[np.isnan(p_values)] = 0 
-p_values[p_values > 10] = 10 
+p_values = -np.log10(p_values)
+p_values[np.isnan(p_values)] = 0
+p_values[p_values > 10] = 10
 plot_slices(p_values, title="f_regress")
 
 pl.show()

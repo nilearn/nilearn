@@ -67,5 +67,5 @@ vmax = np.max(np.abs(components[:, :, 25, 19]))
 pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
           cmap=pl.cm.gray)
 pl.imshow(np.rot90(components[:, :, 25, 19]), interpolation='nearest',
-           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
+          cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 pl.show()
