@@ -133,13 +133,13 @@ convenient to apply a brain mask and go from a 4D array to a 2D array,
 
 .. only:: html
 
-    .. image:: masking.jpg
+    .. image:: masking.png
         :align: center
         :width: 100%
 
 .. only:: latex
 
-    .. image:: masking.jpg
+    .. image:: masking.png
         :align: center
 
 .. literalinclude:: ../plot_visualization.py
