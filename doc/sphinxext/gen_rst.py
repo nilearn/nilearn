@@ -59,14 +59,14 @@ plot_rst_template = """
 
 %(image_list)s
 
+%(stdout)s
+
 **Python source code:** :download:`%(fname)s <%(fname)s>`
 
 .. literalinclude:: %(fname)s
     :lines: %(end_row)s-
 
-%(stdout)s
-
-**Total running time of the example:** %(time_elapsed) 4i seconds
+**Total running time of the example:** %(time_elapsed) .2f seconds
     """
 
 # The following strings are used when we have several pictures: we use
@@ -101,7 +101,7 @@ def extract_docstring(filename):
 
     docstring = ''
     first_par = ''
-    tokens = tokenize.generate_tokens(lines.__iter__().next)
+    tokens = tokenize.generate_tokens(iter(lines).next)
     for tok_type, tok_content, _, (erow, _), _ in tokens:
         tok_type = token.tok_name[tok_type]
         if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
@@ -166,8 +166,8 @@ def generate_example_rst(app):
     }
     </style>
 
-Code examples
-=================
+Examples
+========
 
 .. _examples-index:
 """)

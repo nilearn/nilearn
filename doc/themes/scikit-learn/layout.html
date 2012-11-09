@@ -104,10 +104,8 @@
 	   {% else %}
 	   <div class="rel rellarge">
 	     {% endif %}
-	<!-- XXX: when we have a 'module index' that appears in the link
-	     bar, we will need to use the following ugly hack to avoid it
-	     rellinks[1:]|reverse
-	    -->
+	<!-- rellinks[1:] is an ugly hack to avoid link to module
+	    index  -->
 	{%- for rellink in rellinks[1:]|reverse %}
 	<div class="rellink">
 	<a href="{{ pathto(rellink[0]) }}" title="{{ rellink[1]|striptags|e }}"
@@ -204,7 +202,7 @@
       {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
     {%- endif %}
     {%- if show_sphinx %}
-      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}{% endtrans %}. Design by <a href="http://webylimonada.com">Web y Limonada</a>.
+      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}{% endtrans %}. Design by <a href="http://desgrana.es">Desgrana</a>.
     {%- endif %}
     {%- if show_source and has_source and sourcename %}
     <span style="padding-left: 5ex;">
@@ -220,15 +218,11 @@
     {% else %}
      <div class="rel rellarge">
     {% endif %}
-	<!-- XXX: when we have a 'module index' that appears in the link
-	     bar, we will need to use the following ugly hack to avoid it
-	rellinks[1:]|reverse
-	-->
-    {%- for rellink in rellinks|reverse %}
+    {%- for rellink in rellinks[1:]|reverse %}
     <div class="{{ loop.cycle('buttonPrevious', 'buttonNext') }}">
       <a href="{{ pathto(rellink[0]) }}">
         {{loop.cycle('Previous', 'Next')}}
-      </a>  
+      </a>
     </div>
     {%- endfor %}
     {% endif %}
@@ -243,12 +237,11 @@
            }
        );
        var bodywrapper = $('.bodywrapper');
-       var sidebarbutton = $('#sidebarbutton');
+   	   var sidebarbutton = $('#sidebarbutton');
        sidebarbutton.css({
-           'height': '900px'
+	    'height': '900px'
        });
-  
-    </script>
+     </script>
 {%- endblock %}
 
 

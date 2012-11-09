@@ -1,4 +1,4 @@
-.. _mri_transformer:
+.. _nifti_masker_advanced:
 
 ================================================================================
 Advanced Loading and Preprocessing of fMRI data

@@ -72,11 +72,28 @@
                                               // with the new, randomized divs
         }
         shuffle ($('#banner a.external'));
+
+
+        // Collapsible toc tree
+	$(function () {
+            $('ul li ul li:has(ul)')
+                .click(function(event){
+                    if (this == event.target) {
+                        $(this).css('list-style-image',
+                            (!$(this).children('ul').is(':hidden')) ? 'url(_static/plusBox.png)' : 'url(_static/minBox.png)');
+                                  $(this).children('ul').slideToggle('slow');
+                        }
+                        return true;
+                        })
+			.mousedown(function(event){ return false; })
+                        .css({cursor:'pointer', 'list-style-image':'url(_static/plusBox.png)'})
+                        .children('ul').hide();
+                $('ul li ul li:not(:has(ul))').css({cursor:'default', 'list-style-image':'none'});
+		});
+
         </SCRIPT>
 
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
-
-.. only:: html
 
 .. only:: html
 

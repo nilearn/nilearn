@@ -4,7 +4,7 @@
     >>> dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 
-.. _mri_transformer:
+.. _getting_started:
 
 ================================================================================
 Getting started
