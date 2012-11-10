@@ -61,9 +61,7 @@
           <div class="navbar">
           <ul>
           
-	    <li><a href="{{pathto('visualization')}}">Data Manipulation</a></li>
-            <li><a href="{{pathto('supervised_learning')}}">Supervised Learning</a></li>
-            <li><a href="{{pathto('unsupervised_learning')}}">Unsupervised Learning</a></li>
+	    <li><a href="{{pathto('index')}}">User Guide</a></li>
             <li><a href="{{pathto('auto_examples/index')}}">Examples</a></li>
             <li><a href="{{pathto('modules/classes')}}">Reference</a></li>
 	  
@@ -170,6 +168,10 @@
     <p>Please consider <a href="{{pathto('AUTHORS')}}#citing">citing the 
     scikit-learn</a> if you use it.</p>
 
+    {%- if (pagename != 'index') %}
+    <h3>{{ _('This page') }}</h3>
+	{{ toc }}
+    {% endif %}
     </div>
 	  </div>
 
