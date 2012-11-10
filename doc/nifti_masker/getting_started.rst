@@ -10,6 +10,8 @@
 Getting started
 ================================================================================
 
+.. currentmodule:: nisl.io.nifti_masker
+
 .. topic:: Steps
 
    Nisl provides a scikit-learn compliant transformer that helps loading Nifti
@@ -28,8 +30,9 @@ Data loading
 The typical way to load data is to use a fetching function provided by Nisl
 which will download a dataset and return a bunch of paths to the dataset
 files. Each returned object is dataset specific. In fact there is no generic
-dataset type in Nisl: each dataset singularities are conserved. The functional
-files of the fetched dataset can then be passed directly to the Nifti masker.
+dataset type in nisl: each dataset singularities are conserved. The functional
+files of the fetched dataset can then be passed directly to the
+:class:`NiftiMasker`.
 For example :
 
 .. literalinclude:: ../../plot_nifti_simple.py
@@ -52,8 +55,8 @@ a session array, this is explained in the advanced tutorial.
 .. note:: Custom data
 
    Please note that there are several ways to pass data to the Nifti Masker.
-   You are not limited to the datasets proposed by Nisl. Please take a look
-   at the advanced tutorial to see how to use your own datasets or modify
+   You are not limited to the datasets proposed by nisl. Please take a look
+   at :ref:`nifti_masker_advanced` to see how to use your own datasets or modify
    proposed dataset prior to passing them to the masker. 
 
 .. _masking:
@@ -80,7 +83,7 @@ mask can be accessed via the `mask_` member and visualized.
    
    You may notice that we initialized the masker with parameter
    `transpose=True`. This is because we will process our data with ICA that
-   processes temporal series. Please see the ica example dedicated page to
+   processes temporal series. Please see :ref:`ica_rest` page to
    understand what is done here. Understanding that is not required for this
    example.
 
@@ -167,4 +170,4 @@ and tweak the parameters to get the best result !
 ICA
 ---
 
-Seduced by the ICA algorithm ? A full example is available here.
+Seduced by the ICA algorithm ? See the full example: :ref:`ica_rest`.

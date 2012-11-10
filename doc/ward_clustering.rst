@@ -14,11 +14,8 @@ dataset from test-retest study performed at NYU. Details on the data
 can be found in the documentation for the downloading function 
 :func:`fetch_nyu_rest`.
 
-Preprocessing
-==============
-
-Loading
--------
+Preprocessing: loading and masking
+==================================
 
 As seen in :ref:`previous sections <downloading_data>`, we
 fetch the data
@@ -26,19 +23,11 @@ from internet and load it with a provided function:
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: ### Load nyu_rest dataset #####################################################
-    :end-before: ### Mask ######################################################################
-
-Masking
--------
-
-No mask is given with the data so we have to compute one ourselves, using
-the function :func:`nisl.masking.compute_epi_mask`:
-
-.. literalinclude:: ../plot_rest_clustering.py
-    :start-after: ### Mask ######################################################################
     :end-before: ### Ward ######################################################################
 
-The result is a numpy array of boolean that is used to mask our original *X*.
+No mask is given with the data so we let the masker compute one.
+The result is a niimg from which we extract a numpy array that is
+used to mask our original *X*.
 
 Applying Ward clustering
 ==========================

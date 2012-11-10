@@ -1,10 +1,10 @@
 .. _nifti_masker:
 
-==========================
-Neuroimaging Preprocessing
-==========================
+======================================
+Neuroimaging Loading and Preprocessing
+======================================
 
-The :mod:`nifti_masker` module provides preprocessing steps specially
+The :mod:`nisl.io` module provides preprocessing steps specially
 designed for neuroimaging data.
 
 ____

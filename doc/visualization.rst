@@ -12,7 +12,7 @@ Downloading the tutorial data
 .. currentmodule:: nisl.datasets
 
 This tutorial package embeds tools to download and load datasets. They
-can be imported from ``nisl.datasets``::
+can be imported from :mod:`nisl.datasets`::
 
     >>> from nisl import datasets
     >>> haxby_files = datasets.fetch_haxby()
@@ -76,7 +76,7 @@ downloaded, a single line is needed to load it.
       to prefer this format.
 
 Visualizing brain images
-============================
+========================
 
 Once that NIfTI data is loaded, visualization is simply the display of the
 desired slice (the first three dimensions) at a desired time point (fourth
@@ -123,7 +123,7 @@ can be easily extracted from the fMRI data using the
 .. _mask_4d_2_3d:
 
 From 4D to 2D arrays
-----------------------
+--------------------
 
 FMRI data is naturally represented as a 4D block of data: 3 spatial
 dimensions and time. In practice, we are most often only interested in
