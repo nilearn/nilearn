@@ -51,9 +51,12 @@ def _chunk_report_(bytes_so_far, total_size, t0):
         dt = time.time() - t0
         # We use a max to avoid a division by zero
         remaining = (100. - percent) / max(0.01, percent) * dt
+        # Trailing whitespace is too erase extra char when message length
+        # varies
         sys.stderr.write(
-            "Downloaded %d of %d bytes (%0.2f%%, %i seconds remaining)\r"
-            % (bytes_so_far, total_size, percent, remaining))
+            "Downloaded %d of %d bytes (%0.2f%%, %isec/%.2fmin remaining)  \r"
+            % (bytes_so_far, total_size, percent, remaining,
+               remaining / 60.))
     else:
         sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
