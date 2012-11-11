@@ -1,5 +1,6 @@
+=========================================
 NISL: neuroimaging with the scikit-learn
------------------------------------------
+=========================================
 
 This repository contains code and documentation to use the scikit-learn
 ( http://scikit-learn.org ) for neuroimaging data analysis. The only
@@ -8,3 +9,9 @@ well as their dependencies (numpy, scipy and matplotlib).
 
 The code comes with fully-runnable examples that download the data
 required from Internet.
+
+License
+--------
+
+As indicated in the COPYING file, all the code and documentation is
+BSD-licensed.
