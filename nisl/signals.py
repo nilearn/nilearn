@@ -77,8 +77,7 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         regressor -= regressor.mean()
         regressor /= np.sqrt(((regressor)**2).sum())
 
-        for s in signals:
-            s -= np.dot(regressor, s) * regressor
+        signals -= np.dot(signals, regressor)[:, np.newaxis] * regressor
 
     signals = standardize(signals, normalize=normalize)
     return signals
