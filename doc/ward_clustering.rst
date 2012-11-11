@@ -68,14 +68,14 @@ used for caching.
 Apply the ward
 --------------
 
-Here we simply launch the ward to find 500 clusters and we time it.
+Here we simply launch the ward to find 1000 clusters and we time it.
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: # Computing the ward for the first time, this is long...
     :end-before: # Compute the ward with more clusters, should be faster
 
 This runs in about 10 seconds (depending on your computer configuration). Now,
-we are not satisfied of the result and we want to cluster the picture in 1000
+we are not satisfied of the result and we want to cluster the picture in 2000
 elements.
 
 .. literalinclude:: ../plot_rest_clustering.py
@@ -144,6 +144,6 @@ representation thanks to a two step procedure :
 
 |left_img| |right_img|
 
-We can see that using only 1000 parcels, we can approximate well the
+We can see that using only 2000 parcels, we can approximate well the
 original image.
 
