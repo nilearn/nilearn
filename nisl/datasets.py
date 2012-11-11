@@ -16,6 +16,13 @@ import time
 from sklearn.datasets.base import Bunch
 
 
+def _format_time(t):
+    if t > 60:
+        return "%4.1fmin" % (t / 60.)
+    else:
+        return " %5.1fs" % (t)
+
+
 class ResumeURLOpener(urllib.FancyURLopener):
     """Create sub-class in order to overide error 206.  This error means a
        partial file is being sent,
@@ -54,9 +61,9 @@ def _chunk_report_(bytes_so_far, total_size, t0):
         # Trailing whitespace is too erase extra char when message length
         # varies
         sys.stderr.write(
-            "Downloaded %d of %d bytes (%0.2f%%, %isec/%.2fmin remaining)  \r"
-            % (bytes_so_far, total_size, percent, remaining,
-               remaining / 60.))
+            "Downloaded %d of %d bytes (%0.2f%%, %s remaining)  \r"
+            % (bytes_so_far, total_size, percent,
+               _format_time(remaining)))
     else:
         sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
