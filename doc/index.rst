@@ -25,23 +25,23 @@
 .. only:: html
 
     .. |banner1| image:: auto_examples/images/plot_haxby_decoding_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_haxby_decoding.html
 
     .. |banner2| image:: auto_examples/images/plot_simulated_data_3.png
-       :height: 90
+       :height: 80
        :target: auto_examples/plot_simulated_data.html
 
     .. |banner3| image:: auto_examples/images/plot_rest_clustering_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_rest_clustering.html
 
     .. |banner4| image:: auto_examples/images/plot_ica_resting_state_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_ica_resting_state.html
 
     .. |banner5| image:: auto_examples/images/plot_haxby_searchlight_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_haxby_searchlight.html
 
 
