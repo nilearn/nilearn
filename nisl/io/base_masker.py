@@ -103,15 +103,15 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         niimgs = utils.check_niimgs(niimgs)
 
         # Resampling: allows the user to change the affine, the shape or both
-        if self.verbose > 0:
+        if self.verbose > 1:
             print "[%s.transform] Resampling" % self.__class__.__name__
         niimgs = memory.cache(resampling.resample_img)(
-            niimgs,
-            target_affine=self.target_affine,
-            target_shape=self.target_shape)
+                            niimgs,
+                            target_affine=self.target_affine,
+                            target_shape=self.target_shape)
 
         # Get series from data with optional smoothing
-        if self.verbose > 0:
+        if self.verbose > 1:
             print "[%s.transform] Masking and smoothing" \
                 % self.__class__.__name__
         data = masking.apply_mask(niimgs, self.mask_, smooth=self.smooth)
@@ -123,7 +123,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         # Confounds (from csv file or numpy array)
         # Normalizing
 
-        if self.verbose > 0:
+        if self.verbose > 1:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
             data = memory.cache(signals.clean)(
