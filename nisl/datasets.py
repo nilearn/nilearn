@@ -12,9 +12,6 @@ import zipfile
 import sys
 import shutil
 import time
-import httplib
-from cookielib import CookieJar
-from lxml import etree
 
 from sklearn.datasets.base import Bunch
 
