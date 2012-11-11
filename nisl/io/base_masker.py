@@ -47,6 +47,10 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
+    normalize: booelan, optional
+        If normalize is True, the time-series are normalized: their
+        variance is put to 1.
+
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to resampling.resample_img. Please see the
         related documentation for details.
@@ -134,22 +138,21 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 1:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
-            data = memory.cache(signals.clean)(
-                data,
+            data = signals.clean(data,
                 confounds=confounds, low_pass=self.low_pass,
                 high_pass=self.high_pass, t_r=self.t_r,
-                detrend=self.detrend, normalize=False)
+                detrend=self.detrend, normalize=self.normalize)
         else:
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[sessions == s] = \
-                    memory.cache(signals.clean)(
+                data[sessions == s] = signals.clean(
                         data[sessions == s],
                         confounds=confounds,
                         low_pass=self.low_pass,
                         high_pass=self.high_pass, t_r=self.t_r,
-                        detrend=self.detrend, normalize=False)
+                        detrend=self.detrend,
+                        normalize=self.normalize)
 
         # For _later_: missing value removal or imputing of missing data
         # (i.e. we want to get rid of NaNs, if smoothing must be done

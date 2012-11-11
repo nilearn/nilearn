@@ -35,6 +35,10 @@ class NiftiMultiMasker(BaseMasker):
         This parameter is passed to signals.clean. Please see the related
         documentation for details
 
+    normalize: booelan, optional
+        If normalize is True, the time-series are normalized: their
+        variance is put to 1.
+
     detrend: boolean, optional
         This parameter is passed to signals.clean. Please see the related
         documentation for details
@@ -113,7 +117,8 @@ class NiftiMultiMasker(BaseMasker):
     def __init__(self, mask=None, mask_connected=True,
                  mask_opening=False, mask_lower_cutoff=0.2,
                  mask_upper_cutoff=0.9,
-                 smooth=False, confounds=None, detrend=False,
+                 smooth=False, confounds=None,
+                 normalize=False, detrend=False,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, transpose=False,
                  memory=Memory(cachedir=None, verbose=0),
@@ -126,6 +131,7 @@ class NiftiMultiMasker(BaseMasker):
         self.mask_upper_cutoff = mask_upper_cutoff
         self.smooth = smooth
         self.confounds = confounds
+        self.normalize = normalize
         self.detrend = detrend
         self.target_affine = target_affine
         self.target_shape = target_shape
