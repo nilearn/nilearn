@@ -193,6 +193,9 @@ class NiftiMultiMasker(BaseMasker):
         data = []
         affine = None
         for index, niimg in enumerate(niimgs):
+            # If we have a string (filename), we won't need to copy, as
+            # there will be no side effect
+            copy = not isinstance(niimg, basestring)
             niimg = utils.check_niimgs(niimg)
 
             if affine is not None and np.all(niimg.get_affine() != affine):
@@ -201,9 +204,11 @@ class NiftiMultiMasker(BaseMasker):
                 self.target_affine = affine
             if self.confounds is not None:
                 data.append(self.transform_single_niimgs(
-                    niimg, confounds=self.confounds[index]))
+                        niimg, confounds=self.confounds[index],
+                        copy=copy))
             else:
-                data.append(self.transform_single_niimgs(niimg))
+                data.append(self.transform_single_niimgs(niimg,
+                        copy=copy))
             if affine is None:
                 affine = self.affine_
         return data

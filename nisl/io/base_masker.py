@@ -90,7 +90,8 @@ class BaseMasker(BaseEstimator, TransformerMixin):
     signals.clean
     """
 
-    def transform_single_niimgs(self, niimgs, sessions=None, confounds=None):
+    def transform_single_niimgs(self, niimgs, sessions=None,
+                                confounds=None, copy=True):
         memory = self.transform_memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
@@ -100,6 +101,12 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             print "[%s.transform] Loading data from %s" % (
                         self.__class__.__name__,
                         utils._repr_niimgs(niimgs)[:200])
+
+        # If we have a string (filename), we won't need to copy, as
+        # there will be no side effect
+        if isinstance(niimgs, basestring):
+            copy = False
+
         niimgs = utils.check_niimgs(niimgs)
 
         # Resampling: allows the user to change the affine, the shape or both
@@ -108,7 +115,8 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         niimgs = memory.cache(resampling.resample_img)(
                             niimgs,
                             target_affine=self.target_affine,
-                            target_shape=self.target_shape)
+                            target_shape=self.target_shape,
+                            copy=copy)
 
         # Get series from data with optional smoothing
         if self.verbose > 1:
