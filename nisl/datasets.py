@@ -93,12 +93,12 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     try:
         total_size = int(total_size)
     except Exception, e:
-        print "Total size could not be determined. Error: ", e
+        print "Total size could not be determined. Error: %s" % e
         total_size = None
     bytes_so_far = initial_size
 
     t0 = time.time()
-    while 1:
+    while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
 
