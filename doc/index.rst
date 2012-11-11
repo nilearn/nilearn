@@ -151,7 +151,7 @@ User Guide
    :numbered:
 
    introduction.rst
-   visualization.rst
+   dataset_manipulation.rst
    nifti_masker.rst
    supervised_learning.rst
    unsupervised_learning.rst
