@@ -153,7 +153,9 @@ class NiftiMultiMasker(BaseMasker):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.fit] Loading data" % self.__class__.__name__
+            print "[%s.fit] Loading data from %s" % (
+                        self.__class__.__name__,
+                        utils._repr_niimgs(niimgs)[:200])
         data = []
         for niimg in niimgs:
             data.append(utils.check_niimgs(niimg, accept_3d=True))
@@ -162,13 +164,14 @@ class NiftiMultiMasker(BaseMasker):
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            mask = memory.cache(masking.compute_session_epi_mask)(
-                data,
-                connected=self.mask_connected,
-                opening=self.mask_opening,
-                lower_cutoff=self.mask_lower_cutoff,
-                upper_cutoff=self.mask_upper_cutoff,
-                verbose=(self.verbose - 1))
+            mask = memory.cache(masking.compute_session_epi_mask,
+                            ignore=['verbose'])(
+                                        data,
+                                        connected=self.mask_connected,
+                                        opening=self.mask_opening,
+                                        lower_cutoff=self.mask_lower_cutoff,
+                                        upper_cutoff=self.mask_upper_cutoff,
+                                        verbose=(self.verbose - 1))
             self.mask_ = Nifti1Image(mask.astype(np.int), data[0].get_affine())
         else:
             self.mask_ = utils.check_niimg(self.mask)

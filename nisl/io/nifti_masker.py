@@ -155,14 +155,16 @@ class NiftiMasker(BaseMasker):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.fit] Loading data" % self.__class__.__name__
+            print "[%s.fit] Loading data from %s" % (
+                            self.__class__.__name__,
+                            utils._repr_niimgs(niimgs)[:200])
         niimgs = utils.check_niimgs(niimgs, accept_3d=True)
 
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            mask = memory.cache(masking.compute_epi_mask)(
+            mask = memory.cache(masking.compute_epi_mask, ignore=['verbose'])(
                 niimgs.get_data(),
                 connected=self.mask_connected,
                 opening=self.mask_opening,
