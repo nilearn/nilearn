@@ -44,6 +44,22 @@ def _get_shape(niimg):
     return shape
 
 
+def _repr_niimgs(niimgs):
+    """ Pretty printing of niimg or niimgs.
+    """
+    if isinstance(niimgs, basestring):
+        return niimgs
+    if isinstance(niimgs, collections.Iterable):
+        return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
+    # Nibabel objects have a 'get_filename'
+    try:
+        return "%s('%s')" % (niimgs.__class__.__name__,
+                            niimgs.get_filename())
+    except:
+        pass
+    return repr(niimgs)
+
+
 def check_niimg(niimg):
     """ Check that an object is a niimg and load it if necessary
 

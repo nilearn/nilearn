@@ -97,7 +97,9 @@ class BaseMasker(BaseEstimator, TransformerMixin):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.transform] Loading data" % self.__class__.__name__
+            print "[%s.transform] Loading data from %s" % (
+                        self.__class__.__name__,
+                        utils._repr_niimgs(niimgs)[:200])
         niimgs = utils.check_niimgs(niimgs)
 
         # Resampling: allows the user to change the affine, the shape or both
