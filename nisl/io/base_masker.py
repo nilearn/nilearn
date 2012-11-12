@@ -47,9 +47,9 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
-    normalize: booelan, optional
-        If normalize is True, the time-series are normalized: their
-        variance is put to 1.
+    standardize: boolean, optional
+        If standardize is True, the time-series are centered and normed:
+        their mean is put to 0 and their variance to 1.
 
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to resampling.resample_img. Please see the
@@ -141,7 +141,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             data = signals.clean(data,
                 confounds=confounds, low_pass=self.low_pass,
                 high_pass=self.high_pass, t_r=self.t_r,
-                detrend=self.detrend, normalize=self.normalize)
+                detrend=self.detrend, standardize=self.standardize)
         else:
             for s in np.unique(sessions):
                 if confounds is not None:
@@ -152,7 +152,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
                         low_pass=self.low_pass,
                         high_pass=self.high_pass, t_r=self.t_r,
                         detrend=self.detrend,
-                        normalize=self.normalize)
+                        standardize=self.standardize)
 
         # For _later_: missing value removal or imputing of missing data
         # (i.e. we want to get rid of NaNs, if smoothing must be done
