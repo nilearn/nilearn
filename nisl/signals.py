@@ -46,7 +46,10 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
             confounds = np.genfromtxt(filename)
             if np.isnan(confounds.flat[0]):
                 # There may be a header
-                confounds = np.genfromtxt(filename, skip_header=1)
+		if np.version.short_version >= '1.4.0':
+                    confounds = np.genfromtxt(filename, skip_header=1)
+                else:
+                    confounds = np.genfromtxt(filename, skiprows=1)
         # Restrict the signal to the orthogonal of the confounds
         confounds = np.atleast_2d(confounds)
         if shift_confounds:
