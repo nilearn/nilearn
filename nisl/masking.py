@@ -242,14 +242,12 @@ def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     -------
     mask : 3D boolean ndarray
         The brain mask
-
-    mean : 3D float array
-        The mean image
     """
     masks = []
-    for index, session in enumerate(session_epi):
-        if utils.is_a_niimg(session):
-            session = session.get_data()
+    for session in session_epi:
+        session = utils.check_niimgs(session, accept_3d=True).get_data()
+        if session.ndim == 4:
+            session = session.mean(axis=-1)
         this_mask = compute_epi_mask(session,
                                      lower_cutoff=lower_cutoff,
                                      upper_cutoff=upper_cutoff,

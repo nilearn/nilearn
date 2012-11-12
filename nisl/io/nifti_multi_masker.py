@@ -164,6 +164,7 @@ class NiftiMultiMasker(BaseMasker):
                         utils._repr_niimgs(niimgs)[:200])
         data = []
         for niimg in niimgs:
+            # Note that data is not loaded into memory at this stage
             data.append(utils.check_niimgs(niimg, accept_3d=True))
 
         # Compute the mask if not given by the user
@@ -172,7 +173,7 @@ class NiftiMultiMasker(BaseMasker):
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
             mask = memory.cache(masking.compute_session_epi_mask,
                             ignore=['verbose'])(
-                                        data,
+                                        niimgs,
                                         connected=self.mask_connected,
                                         opening=self.mask_opening,
                                         lower_cutoff=self.mask_lower_cutoff,
