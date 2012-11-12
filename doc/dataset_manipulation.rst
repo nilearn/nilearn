@@ -6,7 +6,7 @@ Basic dataset manipulation: loading and visualisation
 
 .. _downloading_data:
 
-Downloading the tutorial data
+Downloading example datasets
 ==============================
 
 .. currentmodule:: nisl.datasets
@@ -35,15 +35,14 @@ The data are downloaded only once and stored locally in the `nisl_data`
 folder. Note that you can copy that folder across computers to avoid
 downloading.
 
-Loading Nifti or analyze files
-===============================
+MRI data: Nifti or analyze files
+==================================
 
-.. topic:: NIfTI and Analyse files
+.. topic:: NIfTI and Analyse file structures
 
-    `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are 
-    the standard way of sharing data in
-    neuroimaging. We may be interested in the following
-    three main components:
+    `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are
+    the standard way of sharing data in neuroimaging. We may be
+    interested in the following three main components:
 
     :data: 
         raw scans bundled in a numpy array: `data = img.get_data()`
