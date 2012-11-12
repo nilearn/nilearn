@@ -38,6 +38,7 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         signals = _standardize(signals, normalize=True)
     elif detrend:
         signals = _standardize(signals, normalize=False)
+    signals = np.asarray(signals)
 
     if confounds is not None:
         if isinstance(confounds, basestring):
