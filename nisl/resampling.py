@@ -36,7 +36,6 @@ def to_matrix_vector(transform):
     See Also
     --------
     from_matrix_vector
-
     """
 
     ndimin = transform.shape[0] - 1
@@ -56,6 +55,7 @@ def from_matrix_vector(matrix, vector):
     ----------
     matrix : ndarray
         An NxN array representing the rotation matrix.
+
     vector : ndarray
         A 1xN array representing the translation.
 
@@ -67,7 +67,6 @@ def from_matrix_vector(matrix, vector):
     See Also
     --------
     to_matrix_vector
-
     """
 
     nin, nout = matrix.shape

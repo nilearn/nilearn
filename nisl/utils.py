@@ -11,6 +11,40 @@ import nibabel
 import numpy as np
 
 
+###############################################################################
+# Operating on connect component
+###############################################################################
+
+def largest_connected_component(volume):
+    """Return the largest connected component of a 3D array.
+
+    Parameters
+    -----------
+    volume: 3D boolean array
+        3D array indicating a volume.
+
+    Returns
+    --------
+    volume: 3D boolean array
+        3D array with only one connected component.
+    """
+    # We use asarray to be able to work with masked arrays.
+    volume = np.asarray(volume)
+    labels, label_nb = np.ndimage.label(volume)
+    if not label_nb:
+        raise ValueError('No non-zero values: no connected components')
+    if label_nb == 1:
+        return volume.astype(np.bool)
+    label_count = np.bincount(labels.ravel())
+    # discard 0 the 0 label
+    label_count[0] = 0
+    return labels == label_count.argmax()
+
+
+###############################################################################
+# Niimg related operations
+###############################################################################
+
 def is_a_niimg(object):
     """ Check for get_data and get_affine method in an object
 
@@ -49,7 +83,6 @@ def check_niimg(niimg):
 
     Parameters
     ----------
-
     niimg: string or object
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
@@ -65,7 +98,7 @@ def check_niimg(niimg):
     method is a kind of pre-requisite for any data processing method in Nisl as
     it check if data has the right format and load it if necessary.
 
-    Its application is idempotenti.
+    Its application is idempotent.
     """
 
     if isinstance(niimg, basestring):
@@ -121,6 +154,28 @@ def concat_niimgs(niimgs):
 
 
 def check_niimgs(niimgs, accept_3d=False):
+    """ Check that an object is a list of niimg and load it if necessary
+
+    Parameters
+    ----------
+    niimgs: (list of)* string or object
+        If niimgs is a list, checks if data is really 4D. Then, considering
+        that it is a list of 
+        If niimg is a string, consider it as a path to Nifti image and
+        call nibabel.load on it. If it is an object, check if get_data
+        and get_affine methods are present, raise an Exception otherwise.
+
+    Returns
+    -------
+    A list of nifti-like object (for the moment, nibabel.Nifti1Image)
+
+    Notes
+    -----
+    This application is the pendant of check_niimg for niimages with a session
+    level.
+
+    Its application is idempotent.
+    """
     # Initialization:
     # If given data is a list, we count the number of levels to check
     # dimensionality and make a consistent error message.
@@ -146,7 +201,7 @@ def check_niimgs(niimgs, accept_3d=False):
     dim = len(_get_shape(first_img))
 
     if (dim + depth) != 4:
-        # Very detailed error message that tells exactly the user what
+        # Detailed error message that tells exactly the user what
         # was provided and what should have been provided.
         raise TypeError("Data must be either a 4D Nifti image or a"
                         " list of 3D Nifti images. You provided a %s%dD"
