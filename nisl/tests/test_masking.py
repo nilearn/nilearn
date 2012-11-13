@@ -9,19 +9,7 @@ import numpy as np
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
-from ..masking import _largest_connected_component, apply_mask, \
-    compute_epi_mask, unmask
-
-
-def test_largest_cc():
-    """ Check the extraction of the largest connected component.
-    """
-    a = np.zeros((6, 6, 6))
-    a[1:3, 1:3, 1:3] = 1
-    yield np.testing.assert_equal, a, _largest_connected_component(a)
-    b = a.copy()
-    b[5, 5, 5] = 1
-    yield np.testing.assert_equal, a, _largest_connected_component(a)
+from ..masking import apply_mask, compute_epi_mask, unmask
 
 
 def test_mask():

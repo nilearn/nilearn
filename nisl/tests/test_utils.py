@@ -31,6 +31,17 @@ class PhonyNiimage:
         return self.affine
 
 
+def test_largest_cc():
+    """ Check the extraction of the largest connected component.
+    """
+    a = np.zeros((6, 6, 6))
+    a[1:3, 1:3, 1:3] = 1
+    yield np.testing.assert_equal, a, utils.largest_connected_component(a)
+    b = a.copy()
+    b[5, 5, 5] = 1
+    yield np.testing.assert_equal, a, utils.largest_connected_component(a)
+
+
 def test_check_niimg():
     nose.tools.assert_raises(TypeError, utils.check_niimg, 0)
 
