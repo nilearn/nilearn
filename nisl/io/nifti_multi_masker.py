@@ -221,9 +221,9 @@ class NiftiMultiMasker(BaseMasker):
                 warnings.warn('Affine is different across subjects.'
                               ' Realignement on first subject affine forced')
                 self.target_affine = affine
-            if self.confounds is not None:
+            if confounds is not None:
                 data.append(self.transform_single_niimgs(
-                    niimg, confounds=self.confounds[index],
+                    niimg, confounds=confounds[index],
                     copy=copy))
             else:
                 data.append(self.transform_single_niimgs(niimg,
