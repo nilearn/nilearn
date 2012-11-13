@@ -639,7 +639,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
 
     path = os.path.join('ADHD200_40sub_preprocessed', 'data')
     func = []
-    regressor = []
+    confounds = []
     subjects = subjects[:n_subjects]
 
     paths = [os.path.join(path, os.path.join(subject, file % subject))
@@ -657,6 +657,6 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
         # We are considering files 2 by 2
         i *= 2
         func.append(files[i + 1])
-        regressor.append(files[i])
+        confounds.append(files[i])
 
-    return Bunch(func=func, regressor=regressor)
+    return Bunch(func=func, confounds=confounds)
