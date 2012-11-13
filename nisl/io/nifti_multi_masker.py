@@ -165,6 +165,7 @@ class NiftiMultiMasker(BaseMasker):
         data = []
         for niimg in niimgs:
             # Note that data is not loaded into memory at this stage
+            # if niimg is a string
             data.append(utils.check_niimgs(niimg, accept_3d=True))
 
         # Compute the mask if not given by the user
