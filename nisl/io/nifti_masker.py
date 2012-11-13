@@ -34,10 +34,6 @@ class NiftiMasker(BaseMasker):
         If smooth is not False, it gives the size, in voxel of the
         spatial smoothing to apply to the signal.
 
-    confounds: CSV file path or 2D matrix
-        This parameter is passed to signals.clean. Please see the related
-        documentation for details
-
     standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1.
@@ -193,5 +189,16 @@ class NiftiMasker(BaseMasker):
         return self
 
     def transform(self, niimgs, confounds=None):
+        """ Apply mask, spatial and temporal preprocessing
+
+        Parameters
+        ----------
+        niimgs: nifti like images
+            Data to be preprocessed
+
+        confounds: CSV file path or 2D matrix
+            This parameter is passed to signals.clean. Please see the related
+            documentation for details
+        """
         return self.transform_single_niimgs(
             niimgs, self.sessions, confounds)

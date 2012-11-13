@@ -31,10 +31,6 @@ class NiftiMultiMasker(BaseMasker):
         If smooth is not False, it gives the size, in voxel of the
         spatial smoothing to apply to the signal.
 
-    confounds: CSV file path or 2D matrix
-        This parameter is passed to signals.clean. Please see the related
-        documentation for details
-
     standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1.
@@ -121,8 +117,7 @@ class NiftiMultiMasker(BaseMasker):
     def __init__(self, mask=None, mask_connected=True,
                  mask_opening=False, mask_lower_cutoff=0.2,
                  mask_upper_cutoff=0.9,
-                 smooth=False, confounds=None,
-                 standardize=False, detrend=False,
+                 smooth=False, standardize=False, detrend=False,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, transpose=False, n_jobs=1,
                  memory=Memory(cachedir=None, verbose=0),
@@ -134,7 +129,6 @@ class NiftiMultiMasker(BaseMasker):
         self.mask_lower_cutoff = mask_lower_cutoff
         self.mask_upper_cutoff = mask_upper_cutoff
         self.smooth = smooth
-        self.confounds = confounds
         self.standardize = standardize
         self.detrend = detrend
         self.target_affine = target_affine
@@ -203,7 +197,18 @@ class NiftiMultiMasker(BaseMasker):
 
         return self
 
-    def transform(self, niimgs):
+    def transform(self, niimgs, confounds=None):
+        """ Apply mask, spatial and temporal preprocessing
+
+        Parameters
+        ----------
+        niimgs: nifti like images
+            Data to be preprocessed
+
+        confounds: CSV file path or 2D matrix
+            This parameter is passed to signals.clean. Please see the related
+            documentation for details
+        """
         data = []
         affine = None
         for index, niimg in enumerate(niimgs):
