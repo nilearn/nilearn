@@ -65,6 +65,10 @@ class NiftiMultiMasker(BaseMasker):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
 
@@ -120,7 +124,7 @@ class NiftiMultiMasker(BaseMasker):
                  smooth=False, confounds=None,
                  standardize=False, detrend=False,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, transpose=False,
+                 high_pass=None, t_r=None, transpose=False, n_jobs=1,
                  memory=Memory(cachedir=None, verbose=0),
                  transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
         # Mask is compulsory or computed
@@ -140,6 +144,7 @@ class NiftiMultiMasker(BaseMasker):
         self.t_r = t_r
         self.memory = memory
         self.transform_memory = transform_memory
+        self.n_jobs = n_jobs
         self.verbose = verbose
         self.transpose = transpose
 
@@ -160,8 +165,8 @@ class NiftiMultiMasker(BaseMasker):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print "[%s.fit] Loading data from %s" % (
-                        self.__class__.__name__,
-                        utils._repr_niimgs(niimgs)[:200])
+                self.__class__.__name__,
+                utils._repr_niimgs(niimgs)[:200])
         data = []
         for niimg in niimgs:
             # Note that data is not loaded into memory at this stage
@@ -172,14 +177,15 @@ class NiftiMultiMasker(BaseMasker):
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            mask = memory.cache(masking.compute_session_epi_mask,
-                            ignore=['verbose'])(
-                                        niimgs,
-                                        connected=self.mask_connected,
-                                        opening=self.mask_opening,
-                                        lower_cutoff=self.mask_lower_cutoff,
-                                        upper_cutoff=self.mask_upper_cutoff,
-                                        verbose=(self.verbose - 1))
+            mask = memory.cache(masking.compute_multi_epi_mask,
+                                ignore=['verbose'])(
+                                    niimgs,
+                                    connected=self.mask_connected,
+                                    opening=self.mask_opening,
+                                    lower_cutoff=self.mask_lower_cutoff,
+                                    upper_cutoff=self.mask_upper_cutoff,
+                                    n_jobs=self.n_jobs,
+                                    verbose=(self.verbose - 1))
             self.mask_ = Nifti1Image(mask.astype(np.int), data[0].get_affine())
         else:
             self.mask_ = utils.check_niimg(self.mask)
@@ -212,11 +218,11 @@ class NiftiMultiMasker(BaseMasker):
                 self.target_affine = affine
             if self.confounds is not None:
                 data.append(self.transform_single_niimgs(
-                        niimg, confounds=self.confounds[index],
-                        copy=copy))
+                    niimg, confounds=self.confounds[index],
+                    copy=copy))
             else:
                 data.append(self.transform_single_niimgs(niimg,
-                        copy=copy))
+                                                         copy=copy))
             if affine is None:
                 affine = self.affine_
         return data

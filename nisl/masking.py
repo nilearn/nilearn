@@ -7,6 +7,7 @@ import warnings
 
 import numpy as np
 from scipy import ndimage
+from sklearn.externals.joblib.parallel import Parallel, delayed
 
 from . import utils
 
@@ -99,7 +100,11 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     """
     if verbose > 0:
         print "EPI mask computation"
-    if len(mean_epi.shape) == 4:
+    if not isinstance(mean_epi, np.ndarray):
+        # We suppose that it is a niimg
+        # XXX make a is_a_niimgs function ?
+        mean_epi = utils.check_niimgs(mean_epi, accept_3d=True).get_data()
+    if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
@@ -175,7 +180,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
 
 def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                            connected=True, opening=True, threshold=0.5,
-                           exclude_zeros=False, verbose=0):
+                           exclude_zeros=False, n_jobs=1, verbose=0):
     """ Compute a common mask for several sessions or subjects of fMRI data.
 
     Uses the mask-finding algorithms to extract masks for each session
@@ -209,25 +214,24 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
 
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
     Returns
     -------
     mask : 3D boolean ndarray
         The brain mask
     """
-    masks = []
-    for session in session_epi:
-        session = utils.check_niimgs(session, accept_3d=True).get_data()
-        if session.ndim == 4:
-            session = session.mean(axis=-1)
-        this_mask = compute_epi_mask(session,
-                                     lower_cutoff=lower_cutoff,
-                                     upper_cutoff=upper_cutoff,
-                                     connected=connected,
-                                     exclude_zeros=exclude_zeros)
-        masks.append(this_mask.astype(np.int8))
+    masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
+        delayed(compute_epi_mask)(session,
+                                  lower_cutoff=lower_cutoff,
+                                  upper_cutoff=upper_cutoff,
+                                  connected=connected,
+                                  exclude_zeros=exclude_zeros)
+        for session in session_epi)
 
     mask = intersect_masks(masks, connected=connected)
-
     return mask
 
 

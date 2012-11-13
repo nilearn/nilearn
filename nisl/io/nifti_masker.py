@@ -118,8 +118,7 @@ class NiftiMasker(BaseMasker):
     def __init__(self, sessions=None, mask=None, mask_connected=True,
                  mask_opening=False, mask_lower_cutoff=0.2,
                  mask_upper_cutoff=0.9,
-                 smooth=False, confounds=None,
-                 standardize=False, detrend=False,
+                 smooth=False, standardize=False, detrend=False,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, transpose=False,
                  memory=Memory(cachedir=None, verbose=0),
@@ -131,7 +130,6 @@ class NiftiMasker(BaseMasker):
         self.mask_lower_cutoff = mask_lower_cutoff
         self.mask_upper_cutoff = mask_upper_cutoff
         self.smooth = smooth
-        self.confounds = confounds
         self.standardize = standardize
         self.detrend = detrend
         self.target_affine = target_affine
@@ -194,6 +192,6 @@ class NiftiMasker(BaseMasker):
 
         return self
 
-    def transform(self, niimgs):
+    def transform(self, niimgs, confounds=None):
         return self.transform_single_niimgs(
-            niimgs, self.sessions, self.confounds)
+            niimgs, self.sessions, confounds)
