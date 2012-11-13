@@ -21,7 +21,6 @@ class mock_urllib2(object):
         pass
 
     def urlopen(self, url):
-        print 'uuu'
         self.urls.append(url)
         return url
 
