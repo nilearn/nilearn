@@ -9,6 +9,7 @@ import collections
 
 import nibabel
 import numpy as np
+from scipy import ndimage
 
 
 ###############################################################################
@@ -30,7 +31,7 @@ def largest_connected_component(volume):
     """
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
-    labels, label_nb = np.ndimage.label(volume)
+    labels, label_nb = ndimage.label(volume)
     if not label_nb:
         raise ValueError('No non-zero values: no connected components')
     if label_nb == 1:
@@ -88,7 +89,7 @@ def _repr_niimgs(niimgs):
     # Nibabel objects have a 'get_filename'
     try:
         return "%s('%s')" % (niimgs.__class__.__name__,
-                            niimgs.get_filename())
+                             niimgs.get_filename())
     except:
         pass
     return repr(niimgs)
@@ -176,7 +177,7 @@ def check_niimgs(niimgs, accept_3d=False):
     ----------
     niimgs: (list of)* string or object
         If niimgs is a list, checks if data is really 4D. Then, considering
-        that it is a list of 
+        that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
