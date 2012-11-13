@@ -10,37 +10,6 @@ from scipy import ndimage
 
 from . import utils
 
-###############################################################################
-# Operating on connect component
-###############################################################################
-
-
-def _largest_connected_component(mask):
-    """
-    Return the largest connected component of a 3D mask array.
-
-    Parameters
-    -----------
-    mask: 3D boolean array
-        3D array indicating a mask.
-
-    Returns
-    --------
-    mask: 3D boolean array
-        3D array indicating a mask, with only one connected component.
-    """
-    # We use asarray to be able to work with masked arrays.
-    mask = np.asarray(mask)
-    labels, label_nb = ndimage.label(mask)
-    if not label_nb:
-        raise ValueError('No non-zero values: no connected components')
-    if label_nb == 1:
-        return mask.astype(np.bool)
-    label_count = np.bincount(labels.ravel())
-    # discard 0 the 0 label
-    label_count[0] = 0
-    return labels == label_count.argmax()
-
 
 def extrapolate_out_mask(data, mask, iterations=1):
     """ Extrapolate values outside of the mask.
@@ -95,25 +64,32 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: 3D ndarray
+    mean_epi: 3Di or 4D ndarray
         EPI image, used to compute the mask.
+
     lower_cutoff : float, optional
         lower fraction of the histogram to be discarded.
+
     upper_cutoff: float, optional
         upper fraction of the histogram to be discarded.
+
     connected: boolean, optional
         if connected is True, only the largest connect component is kept.
+
     opening: boolean, optional
         if opening is True, an morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
+
     ensure_finite: boolean
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
+
     exclude_zeros: boolean, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
+
     verbose: integer, optional
 
     Returns
@@ -143,37 +119,34 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     mask = (mean_epi >= threshold)
 
     if connected:
-        mask = _largest_connected_component(mask)
+        mask = utils.largest_connected_component(mask)
     if opening:
         mask = ndimage.binary_opening(mask.astype(np.int), iterations=2)
     return mask.astype(bool)
 
 
 def intersect_masks(input_masks, threshold=0.5, connected=True):
-    """
-        Given a list of input mask images, generate the output image which
-        is the the threshold-level intersection of the inputs
+    """ Compute intersection of several masks
 
-        Parameters
-        ----------
-        input_masks: list of strings or ndarrays
-            paths of the input images nsubj set as len(input_mask_files), or
-            individual masks.
+    Given a list of input mask images, generate the output image which
+    is the the threshold-level intersection of the inputs
 
-        output_filename, string:
-            Path of the output image, if None no file is saved.
+    Parameters
+    ----------
+    input_masks: list of ndarrays
+        3D individual masks
 
-        threshold: float within [0, 1[, optional
-            gives the level of the intersection.
-            threshold=1 corresponds to keeping the intersection of all
-            masks, whereas threshold=0 is the union of all masks.
+    threshold: float within [0, 1[, optional
+        gives the level of the intersection.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
 
-        connected: bool, optional
-            If true, extract the main connected component
+    connected: bool, optional
+        If true, extract the main connected component
 
-        Returns
-        -------
-            grp_mask, boolean array of shape the image shape
+    Returns
+    -------
+        grp_mask, boolean array of shape the image shape
     """
     grp_mask = None
     if threshold > 1:
@@ -195,27 +168,25 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
     grp_mask = grp_mask > (threshold * len(list(input_masks)))
 
     if np.any(grp_mask > 0) and connected:
-        grp_mask = _largest_connected_component(grp_mask)
+        grp_mask = utils.largest_connected_component(grp_mask)
 
     return grp_mask > 0
 
 
-def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
-                             connected=True, opening=True, threshold=0.5,
-                             exclude_zeros=False, return_mean=False,
-                             verbose=0):
-    """ Compute a common mask for several sessions of fMRI data.
+def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
+                           connected=True, opening=True, threshold=0.5,
+                           exclude_zeros=False, verbose=0):
+    """ Compute a common mask for several sessions or subjects of fMRI data.
 
-    Uses the mask-finding algorithmes to extract masks for each
-    session, and then keep only the main connected component of the
+    Uses the mask-finding algorithms to extract masks for each session
+    or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
 
     Parameters
     ----------
-    session_files: list of list of strings
-        A list of list of nifti filenames. Each inner list
-        represents a session.
+    session_files: list 3D or 4D array
+        A list arrays, each item is a subject or a session.
 
     threshold: float, optional
         the inter-session threshold: the fraction of the
@@ -242,9 +213,6 @@ def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     -------
     mask : 3D boolean ndarray
         The brain mask
-
-    mean : 3D float array
-        The mean image
     """
     masks = []
     for index, session in enumerate(session_epi):
@@ -269,32 +237,39 @@ def compute_session_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
 def apply_mask(niimgs, mask_img, dtype=np.float32,
                smooth=False, ensure_finite=True, transpose=False):
-    """ Read the time series from the given sessions filenames, using the mask.
+    """ Extract time series using specified mask
 
-        Parameters
-        -----------
-        niimgs: list of 3D nifti file names, or 4D nifti filename.
-            Files are grouped by session.
-        mask: 3d ndarray
-            3D mask array: true where a voxel should be used.
-        smooth: False or float, optional
-            If smooth is not False, it gives the size, in voxel of the
-            spatial smoothing to apply to the signal.
-        ensure_finite: boolean
-            If ensure_finite is True, the non-finite values (NaNs and infs)
-            found in the images will be replaced by zeros
+    Read the time series from the given nifti images or filepaths,
+    using the mask.
 
-        Returns
-        --------
-        session_series: ndarray
-            3D array of time course: (session, voxel, time)
-        header: header object
-            The header of the first file.
+    Parameters
+    -----------
+    niimgs: list 4D (ot list of 3D)  nifti images (or filenames)
+        Images to be masked.
 
-        Notes
-        -----
-        When using smoothing, ensure_finite should be True: as elsewhere non
-        finite values will spread accross the image.
+    mask: 3d ndarray
+        3D mask array: true where a voxel should be used.
+
+    smooth: False or float, optional
+        If smooth is not False, it gives the size, in voxel of the
+        spatial smoothing to apply to the signal.
+
+    ensure_finite: boolean
+        If ensure_finite is True, the non-finite values (NaNs and infs)
+        found in the images will be replaced by zeros
+
+    transpose: boolean, optional
+        Indicate if data must be transposed after masking.
+
+    Returns
+    --------
+    session_series: ndarray
+        2D array of time series (voxel, time)
+
+    Notes
+    -----
+    When using smoothing, ensure_finite should be True: as elsewhere non
+    finite values will spread accross the image.
     """
     mask = utils.check_niimg(mask_img)
     mask = mask_img.get_data().astype(np.bool)
@@ -305,7 +280,6 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     niimgs = utils.check_niimgs(niimgs)
     series = niimgs.get_data()
     affine = niimgs.get_affine()
-    # We have 4D data
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         series[np.logical_not(np.isfinite(series))] = 0
@@ -336,13 +310,22 @@ def unmask(X, mask, transpose=False):
 
     Parameters
     ----------
-
     X: (list of)* numpy array
         Masked data. You can provide data of any dimension so if you want to
         unmask several images at one time, it is possible to give a list of
         images.
+
     mask: numpy array of boolean values
         Mask of the data
+
+    transpose: boolean, optional
+        Indicates if data must be transposed after unmasking.
+
+    Returns
+    -------
+    data: (list of)* 3D numpy array
+        Unmasked data: 1D or 2D arrays are converted into 3D or 4D arrays
+        resp. The number of dimensions is respected wrt input data.
     """
     if mask.dtype != np.bool:
         warnings.warn('[unmask] Given mask had dtype %s.It has been converted'
