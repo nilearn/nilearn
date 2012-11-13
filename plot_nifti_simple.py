@@ -58,5 +58,5 @@ pl.show()
 ### The same with a pipeline ##################################################
 from sklearn.pipeline import Pipeline
 mask_ica = Pipeline([('masking', nifti_masker), ('ica', ica)])
-components = mask_ica.inverse_transform(
+components = nifti_masker.inverse_transform(
     mask_ica.fit_transform(dataset.func[0]))

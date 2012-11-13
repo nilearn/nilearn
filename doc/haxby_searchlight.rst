@@ -1,7 +1,7 @@
 .. _searchlight:
 
 ===========================================================
-Searchlight : finding voxels containing maximum information
+Searchlight : finding voxels containing information
 ===========================================================
 
 .. currentmodule:: nisl.searchlight

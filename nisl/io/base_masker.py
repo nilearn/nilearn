@@ -47,6 +47,10 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
+    standardize: boolean, optional
+        If standardize is True, the time-series are centered and normed:
+        their mean is put to 0 and their variance to 1.
+
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to resampling.resample_img. Please see the
         related documentation for details.
@@ -90,26 +94,36 @@ class BaseMasker(BaseEstimator, TransformerMixin):
     signals.clean
     """
 
-    def transform_single_niimgs(self, niimgs, sessions=None, confounds=None):
+    def transform_single_niimgs(self, niimgs, sessions=None,
+                                confounds=None, copy=True):
         memory = self.transform_memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.transform] Loading data" % self.__class__.__name__
+            print "[%s.transform] Loading data from %s" % (
+                        self.__class__.__name__,
+                        utils._repr_niimgs(niimgs)[:200])
+
+        # If we have a string (filename), we won't need to copy, as
+        # there will be no side effect
+        if isinstance(niimgs, basestring):
+            copy = False
+
         niimgs = utils.check_niimgs(niimgs)
 
         # Resampling: allows the user to change the affine, the shape or both
-        if self.verbose > 0:
+        if self.verbose > 1:
             print "[%s.transform] Resampling" % self.__class__.__name__
         niimgs = memory.cache(resampling.resample_img)(
-            niimgs,
-            target_affine=self.target_affine,
-            target_shape=self.target_shape)
+                            niimgs,
+                            target_affine=self.target_affine,
+                            target_shape=self.target_shape,
+                            copy=copy)
 
         # Get series from data with optional smoothing
-        if self.verbose > 0:
+        if self.verbose > 1:
             print "[%s.transform] Masking and smoothing" \
                 % self.__class__.__name__
         data = masking.apply_mask(niimgs, self.mask_, smooth=self.smooth)
@@ -121,25 +135,24 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         # Confounds (from csv file or numpy array)
         # Normalizing
 
-        if self.verbose > 0:
+        if self.verbose > 1:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
-            data = memory.cache(signals.clean)(
-                data,
+            data = signals.clean(data,
                 confounds=confounds, low_pass=self.low_pass,
                 high_pass=self.high_pass, t_r=self.t_r,
-                detrend=self.detrend, normalize=False)
+                detrend=self.detrend, standardize=self.standardize)
         else:
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[sessions == s] = \
-                    memory.cache(signals.clean)(
+                data[sessions == s] = signals.clean(
                         data[sessions == s],
                         confounds=confounds,
                         low_pass=self.low_pass,
                         high_pass=self.high_pass, t_r=self.t_r,
-                        detrend=self.detrend, normalize=False)
+                        detrend=self.detrend,
+                        standardize=self.standardize)
 
         # For _later_: missing value removal or imputing of missing data
         # (i.e. we want to get rid of NaNs, if smoothing must be done

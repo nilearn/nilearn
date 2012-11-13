@@ -4,11 +4,11 @@ Preprocessing functions for time series.
 # Authors: Alexandre Abraham, Gael Varoquaux
 # License: simplified BSD
 
-from scipy import signal, linalg, fftpack
+from scipy import linalg, fftpack
 import numpy as np
 
 
-def standardize(signals, copy=True, normalize=True):
+def _standardize(signals, copy=True, normalize=True):
     """ Center and norm a given signal (sample = axis -1)
     """
     signals = np.array(signals, copy=copy).astype(np.float)
@@ -23,8 +23,7 @@ def standardize(signals, copy=True, normalize=True):
 
 
 def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
-          high_pass=False, detrend=False,
-          normalize=True,
+          high_pass=False, detrend=False, standardize=True,
           shift_confounds=False):
     """ Normalize the signal, and if any confounds are given, project in
         the orthogonal space.
@@ -35,7 +34,11 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         High pass filter should be kepts small, so as not to kill
         sensitivity
     """
-    signals = standardize(signals, normalize=normalize)
+    if standardize:
+        signals = _standardize(signals, normalize=True)
+    elif detrend:
+        signals = _standardize(signals, normalize=False)
+    signals = np.asarray(signals)
 
     if confounds is not None:
         if isinstance(confounds, basestring):
@@ -43,8 +46,10 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
             confounds = np.genfromtxt(filename)
             if np.isnan(confounds.flat[0]):
                 # There may be a header
-                del confounds
-                confounds = np.genfromtxt(filename, skip_header=1)
+		if np.version.short_version >= '1.4.0':
+                    confounds = np.genfromtxt(filename, skip_header=1)
+                else:
+                    confounds = np.genfromtxt(filename, skiprows=1)
         # Restrict the signal to the orthogonal of the confounds
         confounds = np.atleast_2d(confounds)
         if shift_confounds:
@@ -52,10 +57,8 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
                               confounds[..., 2:],
                               confounds[..., :-2]]
             signals = signals[..., 1:-1]
-        confounds = standardize(confounds, normalize=True)
-        #confounds = linalg.svd(confounds, full_matrices=False)[-1]
+        confounds = _standardize(confounds, normalize=True)
         confounds = linalg.qr(confounds, mode='economic')[0].T
-        #y = y - np.dot(np.dot(confounds, y), confounds)
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
 
     if low_pass and high_pass and high_pass >= low_pass:
@@ -76,8 +79,15 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
             s[:] = fftpack.ifft(fft)
 
     if detrend:
-        for s in signals:
-            s[:] = signal.detrend(s)
+        # This is faster than scipy.detrend and equivalent
+        regressor = np.arange(signals.shape[1]).astype(np.float)
+        regressor -= regressor.mean()
+        regressor /= np.sqrt(((regressor)**2).sum())
 
-    signals = standardize(signals, normalize=normalize)
+        signals -= np.dot(signals, regressor)[:, np.newaxis] * regressor
+
+    if standardize:
+        signals = _standardize(signals, normalize=True)
+    elif detrend:
+        signals = _standardize(signals, normalize=False)
     return signals

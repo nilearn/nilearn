@@ -12,11 +12,15 @@ import zipfile
 import sys
 import shutil
 import time
-import httplib
-from cookielib import CookieJar
-from lxml import etree
 
 from sklearn.datasets.base import Bunch
+
+
+def _format_time(t):
+    if t > 60:
+        return "%4.1fmin" % (t / 60.)
+    else:
+        return " %5.1fs" % (t)
 
 
 class ResumeURLOpener(urllib.FancyURLopener):
@@ -54,9 +58,12 @@ def _chunk_report_(bytes_so_far, total_size, t0):
         dt = time.time() - t0
         # We use a max to avoid a division by zero
         remaining = (100. - percent) / max(0.01, percent) * dt
+        # Trailing whitespace is too erase extra char when message length
+        # varies
         sys.stderr.write(
-            "Downloaded %d of %d bytes (%0.2f%%, %i seconds remaining)\r"
-            % (bytes_so_far, total_size, percent, remaining))
+            "Downloaded %d of %d bytes (%0.2f%%, %s remaining)  \r"
+            % (bytes_so_far, total_size, percent,
+               _format_time(remaining)))
     else:
         sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
 
@@ -93,12 +100,12 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     try:
         total_size = int(total_size)
     except Exception, e:
-        print "Total size could not be determined. Error: ", e
+        print "Total size could not be determined. Error: %s" % e
         total_size = None
     bytes_so_far = initial_size
 
     t0 = time.time()
-    while 1:
+    while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
 

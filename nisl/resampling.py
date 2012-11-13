@@ -130,6 +130,9 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         affine = copy.copy(affine)
     if target_affine is None and target_shape is None:
         return niimg
+    if (np.all(np.array(target_shape) == data.shape) and
+                    np.all(target_affine == affine)):
+        return niimg
     if target_affine is None and target_shape is not None:
         raise ValueError("If target_shape is specified, target_affine should"
                          " be specified too.")

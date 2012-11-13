@@ -35,6 +35,10 @@ class NiftiMultiMasker(BaseMasker):
         This parameter is passed to signals.clean. Please see the related
         documentation for details
 
+    standardize: boolean, optional
+        If standardize is True, the time-series are centered and normed:
+        their mean is put to 0 and their variance to 1.
+
     detrend: boolean, optional
         This parameter is passed to signals.clean. Please see the related
         documentation for details
@@ -113,7 +117,8 @@ class NiftiMultiMasker(BaseMasker):
     def __init__(self, mask=None, mask_connected=True,
                  mask_opening=False, mask_lower_cutoff=0.2,
                  mask_upper_cutoff=0.9,
-                 smooth=False, confounds=None, detrend=False,
+                 smooth=False, confounds=None,
+                 standardize=False, detrend=False,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, transpose=False,
                  memory=Memory(cachedir=None, verbose=0),
@@ -126,6 +131,7 @@ class NiftiMultiMasker(BaseMasker):
         self.mask_upper_cutoff = mask_upper_cutoff
         self.smooth = smooth
         self.confounds = confounds
+        self.standardize = standardize
         self.detrend = detrend
         self.target_affine = target_affine
         self.target_shape = target_shape
@@ -153,22 +159,27 @@ class NiftiMultiMasker(BaseMasker):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.fit] Loading data" % self.__class__.__name__
+            print "[%s.fit] Loading data from %s" % (
+                        self.__class__.__name__,
+                        utils._repr_niimgs(niimgs)[:200])
         data = []
         for niimg in niimgs:
+            # Note that data is not loaded into memory at this stage
+            # if niimg is a string
             data.append(utils.check_niimgs(niimg, accept_3d=True))
 
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            mask = memory.cache(masking.compute_session_epi_mask)(
-                data,
-                connected=self.mask_connected,
-                opening=self.mask_opening,
-                lower_cutoff=self.mask_lower_cutoff,
-                upper_cutoff=self.mask_upper_cutoff,
-                verbose=(self.verbose - 1))
+            mask = memory.cache(masking.compute_session_epi_mask,
+                            ignore=['verbose'])(
+                                        niimgs,
+                                        connected=self.mask_connected,
+                                        opening=self.mask_opening,
+                                        lower_cutoff=self.mask_lower_cutoff,
+                                        upper_cutoff=self.mask_upper_cutoff,
+                                        verbose=(self.verbose - 1))
             self.mask_ = Nifti1Image(mask.astype(np.int), data[0].get_affine())
         else:
             self.mask_ = utils.check_niimg(self.mask)
@@ -190,6 +201,9 @@ class NiftiMultiMasker(BaseMasker):
         data = []
         affine = None
         for index, niimg in enumerate(niimgs):
+            # If we have a string (filename), we won't need to copy, as
+            # there will be no side effect
+            copy = not isinstance(niimg, basestring)
             niimg = utils.check_niimgs(niimg)
 
             if affine is not None and np.all(niimg.get_affine() != affine):
@@ -198,9 +212,11 @@ class NiftiMultiMasker(BaseMasker):
                 self.target_affine = affine
             if self.confounds is not None:
                 data.append(self.transform_single_niimgs(
-                    niimg, confounds=self.confounds[index]))
+                        niimg, confounds=self.confounds[index],
+                        copy=copy))
             else:
-                data.append(self.transform_single_niimgs(niimg))
+                data.append(self.transform_single_niimgs(niimg,
+                        copy=copy))
             if affine is None:
                 affine = self.affine_
         return data

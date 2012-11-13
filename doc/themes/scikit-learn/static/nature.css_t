@@ -600,3 +600,36 @@ div.body p {
     margin-bottom: .1em;
 }
 
+/* ------- tag cloud on the front page -------------------- */
+
+div.tags {
+    font-weight: bold;
+    font-size: 110%;
+    padding: 5px;
+    margin: 17px 7px 3px 7px;
+    background-color: #FFC588;
+    border-radius: 15px;
+    moz-border-radius: 15px;
+}
+
+div.tags ul {
+    display: inline;
+    width: 100%;
+}
+
+div.tags li {
+    margin-left: auto;
+    margin-right: auto;
+    display: inline-block;
+    min-width: 5em;
+    text-align: center;
+    vertical-align: middle;
+}
+
+div.tags a {
+    color: #333;
+}
+
+div.tags a:hover {
+    color: #000;
+}

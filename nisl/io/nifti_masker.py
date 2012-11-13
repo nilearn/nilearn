@@ -38,6 +38,10 @@ class NiftiMasker(BaseMasker):
         This parameter is passed to signals.clean. Please see the related
         documentation for details
 
+    standardize: boolean, optional
+        If standardize is True, the time-series are centered and normed:
+        their mean is put to 0 and their variance to 1.
+
     detrend: boolean, optional
         This parameter is passed to signals.clean. Please see the related
         documentation for details
@@ -114,7 +118,8 @@ class NiftiMasker(BaseMasker):
     def __init__(self, sessions=None, mask=None, mask_connected=True,
                  mask_opening=False, mask_lower_cutoff=0.2,
                  mask_upper_cutoff=0.9,
-                 smooth=False, confounds=None, detrend=False,
+                 smooth=False, confounds=None,
+                 standardize=False, detrend=False,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, transpose=False,
                  memory=Memory(cachedir=None, verbose=0),
@@ -127,6 +132,7 @@ class NiftiMasker(BaseMasker):
         self.mask_upper_cutoff = mask_upper_cutoff
         self.smooth = smooth
         self.confounds = confounds
+        self.standardize = standardize
         self.detrend = detrend
         self.target_affine = target_affine
         self.target_shape = target_shape
@@ -155,14 +161,16 @@ class NiftiMasker(BaseMasker):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.fit] Loading data" % self.__class__.__name__
+            print "[%s.fit] Loading data from %s" % (
+                            self.__class__.__name__,
+                            utils._repr_niimgs(niimgs)[:200])
         niimgs = utils.check_niimgs(niimgs, accept_3d=True)
 
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            mask = memory.cache(masking.compute_epi_mask)(
+            mask = memory.cache(masking.compute_epi_mask, ignore=['verbose'])(
                 niimgs.get_data(),
                 connected=self.mask_connected,
                 opening=self.mask_opening,
