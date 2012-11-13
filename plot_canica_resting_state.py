@@ -26,25 +26,21 @@ from nisl import datasets
 # Here we use only 5 subjects to get faster-running code. For better
 # results, simply increase this number
 dataset = datasets.fetch_adhd()
-func_files = dataset.func[:5]
-confounds_files = dataset.regressor[:5]
+func_files = dataset.func[:20]
 
 ### Preprocess ################################################################
 from nisl import io
 
 # This is a multi-subject method, thus we need to use the
 # NiftiMultiMasker, rather than the NiftiMasker
-masker = io.NiftiMultiMasker(smooth=8, detrend=False,
-                             memory="canica",
-                             transform_memory="canica",
-                             confounds=confounds_files, verbose=10)
+# We specify the target_affine to downsample to 3mm isotropic
+# resolution
+masker = io.NiftiMultiMasker(smooth=6, target_affine=np.diag((3, 3, 3)),
+                             memory="canica", transform_memory="canica",
+                             verbose=True)
 data_masked = masker.fit_transform(func_files)
 
-# Concatenate all the subjects
-#fmri_data = np.concatenate(data_masked, axis=1)
-fmri_data = data_masked
-
-mean_epi = masker.inverse_transform(fmri_data[0].mean(axis=0)).get_data()
+mean_epi = masker.inverse_transform(data_masked[0].mean(axis=0)).get_data()
 
 ### Apply CanICA ##############################################################
 
@@ -61,7 +57,7 @@ components_masked /= components_masked.std(axis=1)[:, np.newaxis]
 # Threshold
 #threshold = (stats.norm.isf(0.5*threshold_p_value)
 #                                 /np.sqrt(components_masked.shape[0]))
-threshold = .8
+threshold = .9
 components_masked[np.abs(components_masked) < threshold] = 0
 
 # Now we inverting the masking operation, to go back to a full 3D
