@@ -32,7 +32,6 @@ Functions
    datasets.fetch_haxby
    datasets.fetch_nyu_rest
    datasets.fetch_adhd
-   datasets.fetch_kamitani
 
 .. _utils_ref:
 
@@ -78,7 +77,7 @@ Functions
    :template: function.rst
 
    masking.compute_epi_mask
-   masking.compute_session_epi_mask
+   masking.compute_multi_epi_mask
    masking.intersect_masks
    masking.apply_mask
    masking.unmask
@@ -127,7 +126,6 @@ Functions
    :template: function.rst
 
    signals.clean
-   signals.standardize
 
 .. _io_ref:
 
