@@ -44,7 +44,7 @@ niimg = Nifti1Image(X, affine)
 X_masked = nifti_masker.fit(niimg).transform(niimg)
 X_detrended = nifti_masker.inverse_transform(X_masked).get_data()
 X_detrended = np.rollaxis(X_detrended, axis=-1)
-mask = nifti_masker.mask_.get_data().astype(np.bool)
+mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
 ### Prepare the masks #########################################################
 # Here we will use several masks :

@@ -16,7 +16,7 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 nifti_masker = NiftiMasker(transpose=True)
 nifti_masker.fit(dataset.func[0])
-mask = nifti_masker.mask_.get_data()
+mask = nifti_masker.mask_img_.get_data()
 
 ### Visualize the mask ########################################################
 import pylab as pl

@@ -38,7 +38,7 @@ def display_mask(background, mask, title):
 # Generate mask with default parameters
 masker = io.NiftiMasker()
 masker.fit(haxby_img)
-default_mask = masker.mask_.get_data().astype(np.bool)
+default_mask = masker.mask_img_.get_data().astype(np.bool)
 pl.figure()
 display_mask(background, default_mask[..., 27], 'Default mask')
 pl.show()
@@ -46,7 +46,7 @@ pl.show()
 # Generate mask with opening
 masker = io.NiftiMasker(mask_opening=True)
 masker.fit(haxby_img)
-opening_mask = masker.mask_.get_data().astype(np.bool)
+opening_mask = masker.mask_img_.get_data().astype(np.bool)
 pl.figure()
 display_mask(background, opening_mask[..., 27], 'Mask with opening')
 pl.show()
@@ -54,7 +54,7 @@ pl.show()
 # Generate mask with upper cutoff
 masker = io.NiftiMasker(mask_opening=True, mask_upper_cutoff=0.8)
 masker.fit(haxby_img)
-cutoff_mask = masker.mask_.get_data().astype(np.bool)
+cutoff_mask = masker.mask_img_.get_data().astype(np.bool)
 
 # Plot the mask and compare it to original
 pl.figure()

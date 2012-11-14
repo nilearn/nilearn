@@ -32,7 +32,7 @@ def test_nan():
     img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker()
     masker.fit(img)
-    mask = masker.mask_.get_data()
+    mask = masker.mask_img_.get_data()
     assert_true(mask[1:-1, 1:-1, 1:-1].all())
     assert_false(mask[0].any())
     assert_false(mask[:, 0].any())

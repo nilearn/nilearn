@@ -20,7 +20,7 @@ from nisl import datasets, io
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
 nifti_masker = io.NiftiMasker()
 fmri_masked = nifti_masker.fit_transform(dataset.func[0])
-mask = nifti_masker.mask_.get_data()
+mask = nifti_masker.mask_img_.get_data()
 
 ### Ward ######################################################################
 

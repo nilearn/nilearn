@@ -96,7 +96,7 @@ class NiftiMasker(BaseMasker):
 
     Attributes
     ----------
-    `mask_`: NiImage
+    `mask_img_`: Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -171,16 +171,16 @@ class NiftiMasker(BaseMasker):
                 lower_cutoff=self.mask_lower_cutoff,
                 upper_cutoff=self.mask_upper_cutoff,
                 verbose=(self.verbose - 1))
-            self.mask_ = Nifti1Image(mask.astype(np.int), niimgs.get_affine())
+            self.mask_img_ = Nifti1Image(mask.astype(np.int), niimgs.get_affine())
         else:
-            self.mask_ = utils.check_niimg(self.mask)
+            self.mask_img_ = utils.check_niimg(self.mask)
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
-        self.mask_ = memory.cache(resampling.resample_img)(
-            self.mask_,
+        self.mask_img_ = memory.cache(resampling.resample_img)(
+            self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             copy=(self.target_affine is not None and

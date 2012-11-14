@@ -126,7 +126,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 1:
             print "[%s.transform] Masking and smoothing" \
                 % self.__class__.__name__
-        data = masking.apply_mask(niimgs, self.mask_, smooth=self.smooth)
+        data = masking.apply_mask(niimgs, self.mask_img_, smooth=self.smooth)
 
         # Temporal
         # ========
@@ -169,7 +169,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         return data
 
     def inverse_transform(self, X):
-        mask = utils.check_niimg(self.mask_)
+        mask = utils.check_niimg(self.mask_img_)
         if not self.transpose:
             data = X
         else:
