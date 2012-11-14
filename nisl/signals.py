@@ -58,7 +58,10 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
                               confounds[..., :-2]]
             signals = signals[..., 1:-1]
         confounds = _standardize(confounds, normalize=True)
-        confounds = linalg.qr(confounds, mode='economic')[0].T
+        if scipy.version.short_version >= '0.8':
+            confounds = linalg.qr(confounds, mode='economic')[0].T
+        else:
+            confounds = linalg.qr(confounds, econ=True)[0].T
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
 
     if low_pass and high_pass and high_pass >= low_pass:
