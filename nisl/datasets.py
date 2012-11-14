@@ -98,7 +98,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     if total_size is None:
         total_size = response.info().getheader('Content-Length').strip()
     try:
-        total_size = int(total_size)
+        total_size = int(total_size) + initial_size
     except Exception, e:
         print "Total size could not be determined. Error: %s" % e
         total_size = None
@@ -189,7 +189,7 @@ def _uncompress_file(file, delete_archive=True):
         raise
 
 
-def _fetch_file(url, data_dir, resume=False, overwrite=False):
+def _fetch_file(url, data_dir, resume=True, overwrite=False):
     """Load requested file, downloading it if needed or requested
 
     Parameters
@@ -245,7 +245,13 @@ def _fetch_file(url, data_dir, resume=False, overwrite=False):
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
             urlOpener.addheader("Range", "bytes=%s-" % (local_file_size))
-            data = urlOpener.open(url)
+            try:
+                data = urlOpener.open(url)
+            except urllib2.HTTPError:
+                # There is a problem that may be due to resuming. Switch back
+                # to complete download method
+                return _fetch_file(url, data_dir, resume=False,
+                                   overwrite=False)
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
@@ -269,7 +275,7 @@ def _fetch_file(url, data_dir, resume=False, overwrite=False):
 
 
 def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
-                   resume=False, folder=None):
+                   resume=True, folder=None):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -373,7 +379,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_haxby(data_dir=None, url=None, resume=False):
+def fetch_haxby(data_dir=None, url=None, resume=True):
     """Download and loads the haxby dataset
 
     Parameters
@@ -584,7 +590,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                  session=session)
 
 
-def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=False):
+def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True):
     """Download and loads the ADHD resting-state dataset
 
     Parameters
