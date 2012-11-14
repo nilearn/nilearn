@@ -65,7 +65,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: 3Di or 4D ndarray
+    mean_epi: 3D or 4D array or nifti like image 
         EPI image, used to compute the mask.
 
     lower_cutoff : float, optional
