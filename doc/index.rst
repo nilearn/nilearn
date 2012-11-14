@@ -73,7 +73,6 @@
         }
         shuffle ($('#banner a.external'));
 
-
 	//Function to make the index toctree collapsible
 	$(function () {
             $('.toctree-l2')
@@ -92,10 +91,6 @@
                 .children('ul').hide();
             $('ul li ul li:not(:has(ul))').css({cursor:'default', 'list-style-image':'url(_static/noneBox.png)'});
 	    $('.toctree-l3').css({cursor:'default', 'list-style-image':'url(_static/noneBox.png)'});
-            var sidebarbutton = $('#sidebarbutton');
-            sidebarbutton.css({
-	        'display': 'none'
-            });
 
 	    $('.toctree-l2').hover(
 	        function () {
@@ -116,8 +111,13 @@
 		    }
                 }
             );
-	});
 
+            var bodywrapper = $('.bodywrapper');
+            var sidebarbutton = $('#sidebarbutton');
+            sidebarbutton.height(bodywrapper.height());
+
+	});
+        
         </SCRIPT>
 
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|

@@ -30,6 +30,7 @@ can be imported from :mod:`nisl.datasets`::
 
    fetch_haxby
    fetch_nyu_rest
+   fetch_adhd
 
 The data are downloaded only once and stored locally in the `nisl_data`
 folder. Note that you can copy that folder across computers to avoid
