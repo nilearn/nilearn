@@ -83,6 +83,9 @@
                             (!$(this).children('ul').is(':hidden')) ? 'url(_static/plusBoxHighlight.png)' : 'url(_static/minBoxHighlight.png)');
                             $(this).children('ul').toggle();
                         }
+                        var bodywrapper = $('.bodywrapper');
+                        var sidebarbutton = $('#sidebarbutton');
+                        sidebarbutton.height(bodywrapper.height());
                         return true; //Makes links clickable
                     }
 		})
