@@ -14,7 +14,7 @@ from nisl import datasets
 import numpy as np
 import nibabel
 
-dataset_files = datasets.fetch_haxby()
+dataset_files = datasets.fetch_haxby_simple()
 
 # fmri_data and mask are copied to lose the reference to the original data
 bold_img = nibabel.load(dataset_files.func)

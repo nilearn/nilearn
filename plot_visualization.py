@@ -7,7 +7,7 @@ Simple example to show data manipulation and visualization.
 
 # Fetch data ################################################################
 from nisl import datasets
-haxby_files = datasets.fetch_haxby()
+haxby_files = datasets.fetch_haxby_simple()
 
 # Get the file names relative to this dataset
 bold = haxby_files.func

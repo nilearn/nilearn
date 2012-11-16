@@ -103,8 +103,8 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print "[%s.transform] Loading data from %s" % (
-                        self.__class__.__name__,
-                        utils._repr_niimgs(niimgs)[:200])
+                self.__class__.__name__,
+                utils._repr_niimgs(niimgs)[:200])
 
         # If we have a string (filename), we won't need to copy, as
         # there will be no side effect
@@ -147,8 +147,8 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[sessions == s] = signals.clean(
-                    data[sessions == s],
+                data[:, sessions == s] = signals.clean(
+                    data[:, sessions == s],
                     confounds=confounds,
                     low_pass=self.low_pass,
                     high_pass=self.high_pass, t_r=self.t_r,

@@ -15,7 +15,7 @@ from nibabel import Nifti1Image
 from nisl import datasets, io, utils
 
 # Load Haxby dataset
-haxby = datasets.fetch_haxby()
+haxby = datasets.fetch_haxby_simple()
 haxby_img = utils.check_niimg(haxby.func)
 # Restrict haxby to 150 frames to speed up computation
 haxby_func = haxby_img.get_data()[..., :150]

@@ -12,6 +12,7 @@ import zipfile
 import sys
 import shutil
 import time
+import hashlib
 
 from sklearn.datasets.base import Bunch
 
@@ -21,6 +22,33 @@ def _format_time(t):
         return "%4.1fmin" % (t / 60.)
     else:
         return " %5.1fs" % (t)
+
+
+def _md5_sum_file(path):
+    """ Calculates the MD5 sum of a file
+    """
+    f = open(path, 'rb')
+    m = hashlib.md5()
+    while True:
+        data = f.read(8192)
+        if not data:
+            break
+        m.update(data)
+    return m.hexdigest()
+
+
+def _read_md5_sum_file(path):
+    """ Reads a MD5 checksum file and returns hashes as a dictionnary
+    """
+    f = open(path, "r")
+    hashes = {}
+    while True:
+        line = f.readline()
+        if not line:
+            break
+        h, name = line.rstrip().split('  ', 1)
+        hashes[name] = h
+    return hashes
 
 
 class ResumeURLOpener(urllib.FancyURLopener):
@@ -189,7 +217,7 @@ def _uncompress_file(file, delete_archive=True):
         raise
 
 
-def _fetch_file(url, data_dir, resume=True, overwrite=False):
+def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None):
     """Load requested file, downloading it if needed or requested
 
     Parameters
@@ -206,6 +234,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False):
 
     overwrite: boolean, optional
         If true and file already exists, delete it.
+
+    md5sum: string, optional
+        MD5 sum of the file. Checked if download of the file is required
 
     Returns
     -------
@@ -271,11 +302,15 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False):
     finally:
         if local_file is not None:
             local_file.close()
+    if md5sum is not None:
+        if (_md5_sum_file(full_name) != md5sum):
+            raise ValueError(
+                "File %s checksum verification has failed." % local_file)
     return full_name
 
 
 def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
-                   resume=True, folder=None):
+                   resume=True, folder=None, md5sums=None):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -300,6 +335,9 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     folder: string, optional
         Folder in which the file must be fetched inside the dataset folder.
 
+    md5sums: dictionary, optional
+        Dictionary of MD5 sums of files to download
+
     Returns
     -------
     files: array of string
@@ -319,7 +357,11 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
 
     files = []
     for url in urls:
-        full_name = _fetch_file(url, data_dir, resume=resume)
+        md5sum = None
+        file_name = os.path.basename(url)
+        if file_name in md5sums:
+            md5sum = md5sums[file_name]
+        full_name = _fetch_file(url, data_dir, resume=resume, md5sum=md5sum)
         if not full_name:
             print 'An error occured, abort fetching'
             shutil.rmtree(data_dir)
@@ -379,8 +421,8 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_haxby(data_dir=None, url=None, resume=True):
-    """Download and loads the haxby dataset
+def fetch_haxby_simple(data_dir=None, url=None, resume=True):
+    """Download and loads an example haxby dataset
 
     Parameters
     ----------
@@ -428,18 +470,136 @@ def fetch_haxby(data_dir=None, url=None, resume=True):
     # load the dataset
     try:
         # Try to load the dataset
-        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
+        files = _get_dataset("haxby2001_simple", file_names, data_dir=data_dir)
 
     except IOError:
         # If the dataset does not exists, we download it
         if url is None:
             url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-        _fetch_dataset('haxby2001', [url], data_dir=data_dir, resume=resume)
-        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
+        _fetch_dataset('haxby2001_simple', [url], data_dir=data_dir,
+                       resume=resume)
+        files = _get_dataset("haxby2001_simple", file_names, data_dir=data_dir)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
                  conditions_target=files[3])
+
+
+def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True):
+    """Download and loads complete haxby dataset
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    n_subjects: integer, optional
+        Number of subjects, from 1 to 5.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'anat': string list
+            Paths to anatomic images
+        'func': string list
+            Paths to nifti file with bold data
+        'session_target': string list
+            Paths to text file containing session and target data
+        'mask_vt': string list
+            Paths to nifti ventral temporal mask file
+        'mask_face': string list
+            Paths to nifti ventral temporal mask file
+        'mask_house': string list
+            Paths to nifti ventral temporal mask file
+        'mask_face_little': string list
+            Paths to nifti ventral temporal mask file
+        'mask_house_little': string list
+            Paths to nifti ventral temporal mask file
+
+    References
+    ----------
+    `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
+    and Pietrini, P. (2001). Distributed and overlapping representations of
+    faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
+
+    Notes
+    -----
+    PyMVPA provides a tutorial using this dataset :
+    http://www.pymvpa.org/tutorial.html
+
+    More informations about its structure :
+    http://dev.pymvpa.org/datadb/haxby2001.html
+
+    See `additional information
+    <http://www.sciencemag.org/content/293/5539/2425>`_
+    """
+
+    # definition of dataset files
+    file_names = ['anat.nii.gz', 'bold.nii.gz', 'labels.txt',
+                  'mask4_vt.nii.gz', 'mask8b_face_vt.nii.gz',
+                  'mask8b_house_vt.nii.gz', 'mask8_face_vt.nii.gz',
+                  'mask8_house_vt.nii.gz']
+
+    if n_subjects > 5:
+        sys.stderr.write('Warning: there is only 5 subjects')
+        n_subjects = 5
+
+    file_names = [os.path.join('subj%d' % i, name)
+                  for i in range(1, n_subjects + 1)
+                  for name in file_names]
+
+    # load the dataset
+    try:
+        # Try to load the dataset
+        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
+    except IOError:
+        # If the dataset does not exists, we download it
+        if url is None:
+            url = 'http://data.pymvpa.org/datasets/haxby2001/'
+        # Get the MD5sums file
+        md5sums = _fetch_file(url + 'MD5SUMS',
+                              data_dir=_get_dataset_dir("haxby2001", data_dir))
+        if md5sums:
+            md5sums = _read_md5_sum_file(md5sums)
+        urls = ["%ssubj%d-2010.01.14.tar.gz" % (url, i)
+                for i in range(1, n_subjects + 1)]
+        _fetch_dataset('haxby2001', urls, data_dir=data_dir,
+                       resume=resume, md5sums=md5sums)
+        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
+
+    anat = []
+    func = []
+    session_target = []
+    mask_vt = []
+    mask_face = []
+    mask_house = []
+    mask_face_little = []
+    mask_house_little = []
+
+    for i in range(n_subjects):
+        # We are considering files 8 by 8
+        i *= 8
+        anat.append(files[i])
+        func.append(files[i + 1])
+        session_target.append(files[i + 2])
+        mask_vt.append(files[i + 3])
+        mask_face.append(files[i + 4])
+        mask_house.append(files[i + 5])
+        mask_face_little.append(files[i + 6])
+        mask_house_little.append(files[i + 7])
+
+    # return the data
+    return Bunch(
+        anat=anat,
+        func=func,
+        session_target=session_target,
+        mask_vt=mask_vt,
+        mask_face=mask_face,
+        mask_house=mask_house,
+        mask_face_little=mask_face_little,
+        mask_house_little=mask_house_little)
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):

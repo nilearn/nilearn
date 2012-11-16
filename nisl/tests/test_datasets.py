@@ -34,9 +34,9 @@ def teardown_tmpdata():
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_haxby():
+def test_fetch_haxby_simple():
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
-    haxby = datasets.fetch_haxby(data_dir=tmpdir, url=local_url)
+    haxby = datasets.fetch_haxby_simple(data_dir=tmpdir, url=local_url)
     datasetdir = os.path.join(tmpdir, 'haxby2001', 'pymvpa-exampledata')
     for key, file in [
             ('session_target', 'attributes.txt'),
