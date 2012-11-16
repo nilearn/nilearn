@@ -117,10 +117,10 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 1:
             print "[%s.transform] Resampling" % self.__class__.__name__
         niimgs = memory.cache(resampling.resample_img)(
-                            niimgs,
-                            target_affine=self.target_affine,
-                            target_shape=self.target_shape,
-                            copy=copy)
+            niimgs,
+            target_affine=self.target_affine,
+            target_shape=self.target_shape,
+            copy=copy)
 
         # Get series from data with optional smoothing
         if self.verbose > 1:
@@ -139,20 +139,21 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
             data = signals.clean(data,
-                confounds=confounds, low_pass=self.low_pass,
-                high_pass=self.high_pass, t_r=self.t_r,
-                detrend=self.detrend, standardize=self.standardize)
+                                 confounds=confounds, low_pass=self.low_pass,
+                                 high_pass=self.high_pass, t_r=self.t_r,
+                                 detrend=self.detrend,
+                                 standardize=self.standardize)
         else:
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
                 data[sessions == s] = signals.clean(
-                        data[sessions == s],
-                        confounds=confounds,
-                        low_pass=self.low_pass,
-                        high_pass=self.high_pass, t_r=self.t_r,
-                        detrend=self.detrend,
-                        standardize=self.standardize)
+                    data[sessions == s],
+                    confounds=confounds,
+                    low_pass=self.low_pass,
+                    high_pass=self.high_pass, t_r=self.t_r,
+                    detrend=self.detrend,
+                    standardize=self.standardize)
 
         # For _later_: missing value removal or imputing of missing data
         # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -167,6 +168,36 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         if self.transpose:
             data = data.T
         return data
+
+    def fit_transform(self, X, y=None, confounds=None, **fit_params):
+        """Fit to data, then transform it
+
+        Fits transformer to X and y with optional parameters fit_params
+        and returns a transformed version of X.
+
+        Parameters
+        ----------
+        X : numpy array of shape [n_samples, n_features]
+            Training set.
+
+        y : numpy array of shape [n_samples]
+            Target values.
+
+        Returns
+        -------
+        X_new : numpy array of shape [n_samples, n_features_new]
+            Transformed array.
+
+        """
+        # non-optimized default implementation; override when a better
+        # method is possible for a given clustering algorithm
+        if y is None:
+            # fit method of arity 1 (unsupervised transformation)
+            return self.fit(X, **fit_params).transform(X, confounds=confounds)
+        else:
+            # fit method of arity 2 (supervised transformation)
+            return self.fit(X, y, **fit_params) \
+                .transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
         mask = utils.check_niimg(self.mask_img_)

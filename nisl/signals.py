@@ -4,8 +4,9 @@ Preprocessing functions for time series.
 # Authors: Alexandre Abraham, Gael Varoquaux
 # License: simplified BSD
 
-from scipy import linalg, fftpack
+from scipy import fftpack
 import numpy as np
+from sklearn.utils.fixes import qr_economic
 
 
 def _standardize(signals, copy=True, normalize=True):
@@ -46,7 +47,7 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
             confounds = np.genfromtxt(filename)
             if np.isnan(confounds.flat[0]):
                 # There may be a header
-		if np.version.short_version >= '1.4.0':
+                if np.version.short_version >= '1.4.0':
                     confounds = np.genfromtxt(filename, skip_header=1)
                 else:
                     confounds = np.genfromtxt(filename, skiprows=1)
@@ -58,10 +59,7 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
                               confounds[..., :-2]]
             signals = signals[..., 1:-1]
         confounds = _standardize(confounds, normalize=True)
-        if scipy.version.short_version >= '0.8':
-            confounds = linalg.qr(confounds, mode='economic')[0].T
-        else:
-            confounds = linalg.qr(confounds, econ=True)[0].T
+        confounds = qr_economic(confounds)[0].T
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
 
     if low_pass and high_pass and high_pass >= low_pass:
@@ -85,7 +83,7 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         # This is faster than scipy.detrend and equivalent
         regressor = np.arange(signals.shape[1]).astype(np.float)
         regressor -= regressor.mean()
-        regressor /= np.sqrt(((regressor)**2).sum())
+        regressor /= np.sqrt((regressor ** 2).sum())
 
         signals -= np.dot(signals, regressor)[:, np.newaxis] * regressor
 
