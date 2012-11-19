@@ -29,8 +29,14 @@ class mock_urllib2(object):
 
 
 def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
-                     report_hook=None):
+                     report_hook=None, verbose=0):
     return
+
+
+def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
+                                 chunk_size=8192, report_hook=None,
+                                 verbose=0):
+    raise urllib2.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
 def mock_uncompress_file(file, delete_archive=True):
