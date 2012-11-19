@@ -359,7 +359,7 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     for url in urls:
         md5sum = None
         file_name = os.path.basename(url)
-        if file_name in md5sums:
+        if md5sums is not None and file_name in md5sums:
             md5sum = md5sums[file_name]
         full_name = _fetch_file(url, data_dir, resume=resume, md5sum=md5sum)
         if not full_name:
