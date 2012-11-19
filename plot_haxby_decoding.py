@@ -110,7 +110,6 @@ from sklearn.cross_validation import LeaveOneLabelOut
 # Here we use a LeaveOneLabelOut cross-validation on the session label
 # divided by 2, which corresponds to a leave-two-session-out
 cv = LeaveOneLabelOut(session // 2)
-stop
 
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
