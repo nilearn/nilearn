@@ -97,7 +97,7 @@ def _chunk_report_(bytes_so_far, total_size, t0):
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
-                 initial_size=0, total_size=None):
+                 initial_size=0, total_size=None, verbose=0):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -128,7 +128,10 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     try:
         total_size = int(total_size) + initial_size
     except Exception, e:
-        print "Total size could not be determined. Error: %s" % e
+        if verbose > 0:
+            print "Warning: total size could not be determined."
+            if verbose > 1:
+                print "Full stack trace: %s" % e
         total_size = None
     bytes_so_far = initial_size
 
@@ -150,7 +153,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
 
 def _get_dataset_dir(dataset_name, data_dir=None):
-    """Returns data directory of given dataset
+    """ Create if necessary and returns data directory of given dataset.
 
     Parameters
     ----------
@@ -178,6 +181,8 @@ def _get_dataset_dir(dataset_name, data_dir=None):
         data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(),
                              'nisl_data'))
     data_dir = os.path.join(data_dir, dataset_name)
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
     return data_dir
 
 
@@ -201,23 +206,27 @@ def _uncompress_file(file, delete_archive=True):
     data_dir = os.path.dirname(file)
     # We first try to see if it is a zip file
     try:
-        if file.endswith('.zip'):
+        ext = os.path.splitext(file)[1]
+        if ext == '.zip':
             z = zipfile.Zipfile(file)
             z.extractall(data_dir)
             z.close()
-        else:
+        elif ext in ['.tar', '.tgz', '.gz', '.bz2']:
             tar = tarfile.open(file, "r")
             tar.extractall(path=data_dir)
             tar.close()
+        else:
+            raise IOError("Uncompress: unknown file extesion: %s" % ext)
         if delete_archive:
             os.remove(file)
         print '   ...done.'
     except Exception as e:
-        print 'error: ', e
+        print 'Error uncompressing file: %s' % e
         raise
 
 
-def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None):
+def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None,
+                verbose=0):
     """Load requested file, downloading it if needed or requested
 
     Parameters
@@ -237,6 +246,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None):
 
     md5sum: string, optional
         MD5 sum of the file. Checked if download of the file is required
+
+    verbose: integer, optional
+        Defines the level of verbosity of the output
 
     Returns
     -------
@@ -289,28 +301,34 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None):
             data = urllib2.urlopen(url)
             local_file = open(temp_full_name, "wb")
         _chunk_read_(data, local_file, report_hook=True,
-                     initial_size=initial_size)
+                     initial_size=initial_size, verbose=verbose)
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         print '...done. (%i seconds, %i min)' % (dt, dt / 60)
     except urllib2.HTTPError, e:
-        print "HTTP Error:", e, url
-        return None
+        print 'Error while fetching file %s.' \
+            ' Dataset fetching aborted.' % file_name
+        if verbose > 0:
+            print "HTTP Error:", e, url
+        raise
     except urllib2.URLError, e:
-        print "URL Error:", e, url
-        return None
+        print 'Error while fetching file %s.' \
+            ' Dataset fetching aborted.' % file_name
+        if verbose > 0:
+            print "URL Error:", e, url
+        raise
     finally:
         if local_file is not None:
             local_file.close()
     if md5sum is not None:
         if (_md5_sum_file(full_name) != md5sum):
-            raise ValueError(
-                "File %s checksum verification has failed." % local_file)
+            raise ValueError("File %s checksum verification has failed."
+                             " Dataset fetching aborted." % local_file)
     return full_name
 
 
 def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
-                   resume=True, folder=None, md5sums=None):
+                   resume=True, folder=None, md5sums=None, verbose=0):
     """Load requested dataset, downloading it if needed or requested
 
     Parameters
@@ -332,9 +350,6 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     resume: boolean, optional
         If true, try resuming download if possible
 
-    folder: string, optional
-        Folder in which the file must be fetched inside the dataset folder.
-
     md5sums: dictionary, optional
         Dictionary of MD5 sums of files to download
 
@@ -350,32 +365,24 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     """
     # Determine data path
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    if not (folder is None):
-        data_dir = os.path.join(data_dir, folder)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
 
     files = []
     for url in urls:
-        md5sum = None
-        file_name = os.path.basename(url)
-        if md5sums is not None and file_name in md5sums:
-            md5sum = md5sums[file_name]
-        full_name = _fetch_file(url, data_dir, resume=resume, md5sum=md5sum)
-        if not full_name:
-            print 'An error occured, abort fetching'
+        try:
+            md5sum = None
+            file_name = os.path.basename(url)
+            if md5sums is not None and file_name in md5sums:
+                md5sum = md5sums[file_name]
+            full_name = _fetch_file(url, data_dir, resume=resume,
+                                    md5sum=md5sum, verbose=verbose)
+            if uncompress:
+                _uncompress_file(full_name)
+            files.append(full_name)
+        except Exception:
+            print 'An error occured, abort fetching.' \
+                ' Please see the full log above.'
             shutil.rmtree(data_dir)
-        if uncompress:
-            try:
-                _uncompress_file(full_name)
-            except Exception:
-                # We are giving it a second try, but won't try a third
-                # time :)
-                print 'archive corrupted, trying to download it again'
-                _fetch_file(url, data_dir, overwrite=True)
-                _uncompress_file(full_name)
-        files.append(full_name)
-
+            raise 
     return files
 
 
@@ -394,9 +401,6 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    folder: string, optional
-        folder in which the file must be fetched inside the dataset folder.
-
     Returns
     -------
     files: array of string
@@ -407,8 +411,6 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     If at least one file is missing, an IOError is raised.
     """
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    if not (folder is None):
-        data_dir = os.path.join(data_dir, folder)
     file_paths = []
     for file_name in file_names:
         full_name = os.path.join(data_dir, file_name)
@@ -421,7 +423,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_haxby_simple(data_dir=None, url=None, resume=True):
+def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
     """Download and loads an example haxby dataset
 
     Parameters
@@ -476,16 +478,17 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True):
         # If the dataset does not exists, we download it
         if url is None:
             url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-        _fetch_dataset('haxby2001_simple', [url], data_dir=data_dir,
-                       resume=resume)
-        files = _get_dataset("haxby2001_simple", file_names, data_dir=data_dir)
+        f = _fetch_dataset('haxby2001_simple', [url], data_dir=data_dir,
+                           resume=resume, verbose=verbose)
+        files = _get_dataset("haxby2001_simple", file_names,
+                             data_dir=data_dir)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
                  conditions_target=files[3])
 
 
-def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True):
+def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -566,7 +569,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True):
         urls = ["%ssubj%d-2010.01.14.tar.gz" % (url, i)
                 for i in range(1, n_subjects + 1)]
         _fetch_dataset('haxby2001', urls, data_dir=data_dir,
-                       resume=resume, md5sums=md5sums)
+                       resume=resume, md5sums=md5sums, verbose=verbose)
         files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
 
     anat = []
@@ -602,7 +605,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True):
         mask_house_little=mask_house_little)
 
 
-def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
+def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
     """Download and loads the NYU resting-state test-retest dataset
 
     Parameters
@@ -736,7 +739,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                 url += tars[session_id - 1][part]
                 # Determine files to be downloaded
                 _fetch_dataset('nyu_rest', [url], data_dir=data_dir,
-                               folder=session_path)
+                               folder=session_path, verbose=verbose)
                 files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
             for i in range(len(subjects)):
                 # We are considering files 3 by 3
@@ -750,7 +753,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None):
                  session=session)
 
 
-def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True):
+def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
+               verbose=0):
     """Download and loads the ADHD resting-state dataset
 
     Parameters
@@ -779,7 +783,8 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True):
     References
     ----------
     :Download:
-       ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/ADHD200_40sub_preprocessed.tgz
+        ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/
+            ADHD200_40sub_preprocessed.tgz
 
     """
     file_names = ['%s_regressors.csv', '%s_rest_tshift_RPI_voreg_mni.nii.gz']
@@ -817,7 +822,8 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True):
         if url is None:
             url = 'ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/'
         url += tars[0]
-        _fetch_dataset('adhd', [url], data_dir=data_dir, resume=resume)
+        _fetch_dataset('adhd', [url], data_dir=data_dir, resume=resume,
+                       verbose=verbose)
         files = _get_dataset("adhd", paths, data_dir=data_dir)
     for i in range(len(subjects)):
         # We are considering files 2 by 2

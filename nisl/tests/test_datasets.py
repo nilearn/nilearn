@@ -37,13 +37,13 @@ def teardown_tmpdata():
 def test_fetch_haxby_simple():
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
     haxby = datasets.fetch_haxby_simple(data_dir=tmpdir, url=local_url)
-    datasetdir = os.path.join(tmpdir, 'haxby2001', 'pymvpa-exampledata')
+    datasetdir = os.path.join(tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
     for key, file in [
             ('session_target', 'attributes.txt'),
             ('func', 'bold.nii.gz'),
             ('mask', 'mask.nii.gz'),
             ('conditions_target', 'attributes_literal.txt')]:
-        assert_true(haxby[key] == os.path.join(datasetdir, file))
+        assert_equal(haxby[key], os.path.join(datasetdir, file))
         assert_true(os.path.exists(os.path.join(datasetdir, file)))
 
 
