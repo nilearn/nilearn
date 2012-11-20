@@ -31,7 +31,7 @@ We launch ipython::
   $ ipython -pylab
 
 First, we load the data using the tutorial's data downloader,
-:func:`nisl.datasets.fetch_haxby`:
+:func:`nisl.datasets.fetch_haxby_simple`:
 
 .. literalinclude:: ../plot_haxby_decoding.py
     :start-after: ### Load Haxby dataset ########################################################

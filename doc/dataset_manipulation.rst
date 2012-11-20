@@ -7,7 +7,7 @@ Basic dataset manipulation: loading and visualisation
 .. _downloading_data:
 
 Downloading example datasets
-==============================
+============================
 
 .. currentmodule:: nisl.datasets
 
@@ -15,7 +15,7 @@ This tutorial package embeds tools to download and load datasets. They
 can be imported from :mod:`nisl.datasets`::
 
     >>> from nisl import datasets
-    >>> haxby_files = datasets.fetch_haxby()
+    >>> haxby_files = datasets.fetch_haxby_simple()
     >>> # The structures contains paths to haxby dataset files:
     >>> haxby_files.keys() # doctest: +SKIP
     ['data', 'session_target', 'mask', 'conditions_target']
@@ -29,12 +29,18 @@ can be imported from :mod:`nisl.datasets`::
    :template: function.rst
 
    fetch_haxby
+   fetch_haxby_simple
    fetch_nyu_rest
    fetch_adhd
 
-The data are downloaded only once and stored locally in the `nisl_data`
-folder. Note that you can copy that folder across computers to avoid
-downloading.
+The data are downloaded only once and stored locally, in order:
+
+  * the folder specified by `data_dir` parameter in the fetching function
+    if it is specified
+  * the environment variable `NISL_DATA` if it exists
+  * the `nisl_data` folder in the current directory
+   
+Note that you can copy that folder across computers to avoid downloading.
 
 MRI data: Nifti or analyze files
 ==================================

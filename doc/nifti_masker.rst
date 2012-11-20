@@ -1,8 +1,8 @@
 .. _nifti_masker:
 
-======================================
-Neuroimaging Loading and Preprocessing
-======================================
+==================================
+Using Nisl Automated Preprocessing
+==================================
 
 The :mod:`nisl.io` module provides preprocessing steps specially
 designed for neuroimaging data.
@@ -13,7 +13,7 @@ ____
 
 .. toctree::
 
-   nifti_masker/getting_started.rst
+   nifti_masker/nifti_masker_simple.rst
    nifti_masker/nifti_masker_advanced.rst
 
 

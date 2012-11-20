@@ -30,6 +30,7 @@ Functions
    :template: function.rst
 
    datasets.fetch_haxby
+   datasets.fetch_haxby_simple
    datasets.fetch_nyu_rest
    datasets.fetch_adhd
 
