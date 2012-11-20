@@ -164,7 +164,7 @@ default in the Nifti Masker but it is almost essential.
 .. note:: Exercise
 
    You can, more as a training than as an exercise, try to play with the
-   parameters in Nisl examples. Try to disable detrending in haxby decoding
+   parameters in Nisl examples. Try to enable detrending in haxby decoding
    and run it: does it have a big impact on the results ?
 
 

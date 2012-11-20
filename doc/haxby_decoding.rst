@@ -43,7 +43,6 @@ Then we preprocess the data to make:
 - mask the data X and transpose the matrix, so that its shape becomes
   (n_samples, n_features) (see :ref:`mask_4d_2_3d` for a discussion on using 
   masks)
-- finally detrend the data for each session
 
 .. literalinclude:: ../plot_haxby_decoding.py
     :start-after: ### Preprocess data ########################################################### 

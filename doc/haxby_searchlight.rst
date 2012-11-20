@@ -36,7 +36,6 @@ For this tutorial we need:
 
 - to put X in the form *n_samples* x *n_features*
 - compute a mean image for visualisation background
-- detrend the data
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Preprocess data ###########################################################
