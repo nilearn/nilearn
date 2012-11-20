@@ -38,12 +38,12 @@ conditions = conditions[condition_mask]
 ### Loading step ##############################################################
 from nisl.io import NiftiMasker
 from nibabel import Nifti1Image
-# Detrending is disabled as we are not yet able to do it by session
-nifti_masker = NiftiMasker(mask=mask, detrend=True, sessions=session)
+
+nifti_masker = NiftiMasker(mask=mask, sessions=session)
 niimg = Nifti1Image(X, affine)
 X_masked = nifti_masker.fit(niimg).transform(niimg)
-X_detrended = nifti_masker.inverse_transform(X_masked).get_data()
-X_detrended = np.rollaxis(X_detrended, axis=-1)
+X_preprocessed = nifti_masker.inverse_transform(X_masked).get_data()
+X_preprocessed = np.rollaxis(X_preprocessed, axis=-1)
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
 ### Prepare the masks #########################################################
@@ -85,7 +85,7 @@ from nisl import searchlight
 searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
         n_jobs=n_jobs, score_func=score_func, verbose=1, cv=cv)
 
-searchlight.fit(X_detrended, y)
+searchlight.fit(X_preprocessed, y)
 
 ### Visualization #############################################################
 import pylab as pl
@@ -103,7 +103,7 @@ pl.show()
 ### Show the F_score
 from sklearn.feature_selection import f_classif
 pl.figure(2)
-X_masked = X_detrended[:, process_mask]
+X_masked = X_preprocessed[:, process_mask]
 f_values, p_values = f_classif(X_masked, y)
 p_values = -np.log10(p_values)
 p_values[np.isnan(p_values)] = 0
