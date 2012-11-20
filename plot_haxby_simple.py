@@ -16,22 +16,19 @@ dataset = datasets.fetch_haxby()
 
 import numpy as np
 
-# XXX is there a better way to separate data ?
-session_target = zip(*np.genfromtxt(dataset.session_target[0], dtype=None,
-                                    skiprows=1))
-labels = np.asarray(session_target[0])
+# Load target information as string and give a numerical identifier to each
+labels = np.loadtxt(dataset.session_target[0], dtype=np.str, skiprows=1,
+                    usecols=(0,))
 index, target = np.unique(labels, return_inverse=True)
-session = np.asarray(session_target[1])
 
-nifti_masker = NiftiMasker(mask=dataset.mask_vt[0], sessions=session,
-                           detrend=True)
+nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
 nifti_masker.fit(dataset.func[0])
 fmri_masked = nifti_masker.transform(dataset.func[0])
 
+# Remove resting state condition
 no_rest_indices = (labels != 'rest')
 target = target[no_rest_indices]
 fmri_masked = fmri_masked[no_rest_indices]
-session = session[no_rest_indices]
 
 ### Prediction function #######################################################
 
@@ -58,37 +55,6 @@ act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
 import pylab as pl
 pl.axis('off')
 pl.title('SVM vectors')
-#pl.imshow(np.rot90(mean_img[..., 27]), cmap=pl.cm.gray,
-#          interpolation='nearest')
 pl.imshow(np.rot90(act[..., 27]), cmap=pl.cm.hot,
           interpolation='nearest')
 pl.show()
-
-### Cross validation ##########################################################
-
-from sklearn.cross_validation import LeaveOneLabelOut
-
-### Define the cross-validation scheme used for validation.
-# Here we use a LeaveOneLabelOut cross-validation on the session, which
-# corresponds to a leave-one-session-out
-cv = LeaveOneLabelOut(session)
-
-### Compute the prediction accuracy for the different folds (i.e. session)
-
-cv_scores = []
-for train, test in cv:
-    y_pred = svc.fit(fmri_masked[train], target[train]) \
-        .predict(fmri_masked[test])
-    cv_scores.append(
-        np.sum(y_pred == target[test]) / float(np.size(target[test])))
-
-### Print results #############################################################
-
-### Return the corresponding mean prediction accuracy
-classification_accuracy = np.mean(cv_scores)
-
-### Printing the results
-print "=== ANOVA ==="
-print "Classification accuracy: %f" % classification_accuracy, \
-    " / Chance level: %f" % (1. / np.unique(target).size)
-# Classification accuracy: 0.986111  / Chance level: 0.500000
