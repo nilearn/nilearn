@@ -16,11 +16,12 @@ Pattern Recognition 2011.
 
 ### Load nyu_rest dataset #####################################################
 
+import numpy as np
 from nisl import datasets, io
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
 nifti_masker = io.NiftiMasker()
 fmri_masked = nifti_masker.fit_transform(dataset.func[0])
-mask = nifti_masker.mask_img_.get_data()
+mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
 ### Ward ######################################################################
 
@@ -80,8 +81,9 @@ first_epi = np.ma.masked_array(first_epi, first_epi == 0)
 # Outside the mask: a uniform value, smaller than inside the mask
 first_epi[np.logical_not(mask)] = 0.9 * first_epi[mask].min()
 vmax = first_epi[..., 20].max()
+vmin = first_epi[..., 20].min()
 pl.imshow(np.rot90(first_epi[..., 20]),
-          interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
+          interpolation='nearest', cmap=pl.cm.spectral, vmin=vmin, vmax=vmax)
 pl.axis('off')
 pl.title('Original (%i voxels)' % fmri_masked.shape[1])
 
@@ -100,7 +102,7 @@ compressed = np.ma.masked_equal(compressed, 0)
 
 pl.figure()
 pl.imshow(np.rot90(compressed[:, :, 20]),
-          interpolation='nearest', cmap=pl.cm.spectral, vmax=vmax)
+          interpolation='nearest', cmap=pl.cm.spectral, vmin=vmin, vmax=vmax)
 pl.title('Compressed representation (2000 parcels)')
 pl.axis('off')
 pl.show()
