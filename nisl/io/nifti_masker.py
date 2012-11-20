@@ -106,9 +106,9 @@ class NiftiMasker(BaseMasker):
     See also
     --------
     nisl.masking.compute_epi_mask
-    resampling.resample_img
-    masking.apply_mask
-    signals.clean
+    nisl.resampling.resample_img
+    nisl.masking.apply_mask
+    nisl.signals.clean
     """
 
     def __init__(self, sessions=None, mask=None, mask_connected=True,
