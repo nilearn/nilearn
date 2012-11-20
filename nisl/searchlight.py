@@ -6,7 +6,7 @@
 import numpy as np
 import time
 import sys
-from sklearn.externals.joblib.parallel import Parallel, delayed
+from sklearn.externals.joblib.parallel import Parallel, delayed, cpu_count
 
 from sklearn.svm import LinearSVC
 from sklearn.cross_validation import cross_val_score
@@ -58,9 +58,10 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     scores = np.zeros(len(A.rows), dtype=float)
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
-              delayed(_group_iter_search_light)(list_i, A.rows[list_i],
-              estimator, X, y, A.shape[0], score_func, cv, verbose)
-              for list_i in group_iter)
+        delayed(_group_iter_search_light)(
+            list_i, A.rows[list_i],
+            estimator, X, y, A.shape[0], score_func, cv, verbose)
+        for list_i in group_iter)
     return np.concatenate(scores)
 
 
@@ -82,8 +83,7 @@ class GroupIterator(object):
     def __init__(self, n_features, n_jobs=1):
         self.n_features = n_features
         if n_jobs == -1:
-            import joblib
-            n_jobs = joblib.cpu_count()
+            n_jobs = cpu_count()
         self.n_jobs = n_jobs
 
     def __iter__(self):
@@ -93,7 +93,7 @@ class GroupIterator(object):
 
 
 def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
-                            score_func, cv, verbose=0):
+                             score_func, cv, verbose=0):
     """Function for grouped iterations of search_light
 
     Parameters
@@ -141,7 +141,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
         if list_i[i] not in row:
             row.append(list_i[i])
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                y, score_func, cv, n_jobs=1))
+                                                y, score_func, cv, n_jobs=1))
         if verbose > 0:
             # One can't print less than each 100 iterations
             step = 11 - min(verbose, 10)
@@ -173,8 +173,14 @@ class SearchLight(BaseEstimator):
 
     Parameters
     -----------
-    mask : boolean matrix.
+    mask: boolean matrix.
         data mask
+
+    process_mask: boolean matrix, optional
+        mask of the data that will be processed by searchlight
+
+    masked_data: boolean, optional
+        if True, data passed to the fit method are considered already masked
 
     radius: float, optional
         radius of the searchlight sphere
@@ -218,16 +224,13 @@ class SearchLight(BaseEstimator):
     vol. 103, no. 10, pages 3863-3868, March 2006
     """
 
-    def __init__(self, mask, process_mask=None, radius=2.,
-            estimator=LinearSVC(C=1), n_jobs=-1, score_func=None, cv=None,
-            verbose=0):
-        clf = neighbors.NearestNeighbors(radius=radius)
-        mask_indices = np.asarray(np.where(mask != 0)).T
-        process_mask_indices = np.asarray(np.where(process_mask != 0)).T
-        A = clf.fit(mask_indices).radius_neighbors_graph(process_mask_indices)
-        self.A = A.tolil()
+    def __init__(self, mask, process_mask=None, masked_data=False, radius=2.,
+                 estimator=LinearSVC(C=1), n_jobs=1, score_func=None, cv=None,
+                 verbose=0):
         self.mask = mask
         self.process_mask = process_mask
+        self.masked_data = masked_data
+        self.radius = radius
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.score_func = score_func
@@ -248,15 +251,25 @@ class SearchLight(BaseEstimator):
         scores_: array-like of shape (number of rows in A)
             search_light scores
         """
+        mask = self.mask
         process_mask = self.process_mask
         if process_mask is None:
-            process_mask = self.mask
-        X_masked = X[:, self.mask]
+            process_mask = mask
+        mask_indices = np.asarray(np.where(mask != 0)).T
+        process_mask_indices = np.asarray(np.where(process_mask != 0)).T
+        clf = neighbors.NearestNeighbors(radius=self.radius)
+        A = clf.fit(mask_indices).radius_neighbors_graph(process_mask_indices)
+        A = A.tolil()
+
+        if self.masked_data:
+            X_masked = X
+        else:
+            X_masked = X[:, mask]
         # scores is an array of CV scores with same cardinality as process_mask
-        scores = search_light(X_masked, y, self.estimator, self.A,
-            self.score_func, self.cv, self.n_jobs, self.verbose)
+        scores = search_light(X_masked, y, self.estimator, A,
+                              self.score_func, self.cv, self.n_jobs,
+                              self.verbose)
         scores_3D = np.zeros(process_mask.shape)
         scores_3D[process_mask] = scores
-        self.scores_ = np.ma.array(scores_3D,
-            mask=np.logical_not(self.process_mask))
+        self.scores_ = scores_3D
         return self

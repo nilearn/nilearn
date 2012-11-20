@@ -6,21 +6,21 @@ Basic dataset manipulation: loading and visualisation
 
 .. _downloading_data:
 
-Downloading the tutorial data
-==============================
+Downloading example datasets
+============================
 
 .. currentmodule:: nisl.datasets
 
 This tutorial package embeds tools to download and load datasets. They
-can be imported from ``nisl.datasets``::
+can be imported from :mod:`nisl.datasets`::
 
     >>> from nisl import datasets
-    >>> haxby_files = datasets.fetch_haxby()
+    >>> haxby_files = datasets.fetch_haxby_simple()
     >>> # The structures contains paths to haxby dataset files:
     >>> haxby_files.keys() # doctest: +SKIP
     ['data', 'session_target', 'mask', 'conditions_target']
     >>> import nibabel
-    >>> haxby_data = nibabel.load(haxby_files.data)
+    >>> haxby_data = nibabel.load(haxby_files.func)
     >>> haxby_data.get_data().shape # 1452 time points and a spatial size of 40x64x64
     (40, 64, 64, 1452)
 
@@ -29,21 +29,27 @@ can be imported from ``nisl.datasets``::
    :template: function.rst
 
    fetch_haxby
+   fetch_haxby_simple
    fetch_nyu_rest
+   fetch_adhd
 
-The data are downloaded only once and stored locally in the `nisl_data`
-folder. Note that you can copy that folder across computers to avoid
-downloading.
+The data are downloaded only once and stored locally, in order:
 
-Loading Nifti or analyze files
-===============================
+  * the folder specified by `data_dir` parameter in the fetching function
+    if it is specified
+  * the environment variable `NISL_DATA` if it exists
+  * the `nisl_data` folder in the current directory
+   
+Note that you can copy that folder across computers to avoid downloading.
 
-.. topic:: NIfTI and Analyse files
+MRI data: Nifti or analyze files
+==================================
 
-    `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are 
-    the standard way of sharing data in
-    neuroimaging. We may be interested in the following
-    three main components:
+.. topic:: NIfTI and Analyse file structures
+
+    `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are
+    the standard way of sharing data in neuroimaging. We may be
+    interested in the following three main components:
 
     :data: 
         raw scans bundled in a numpy array: `data = img.get_data()`
@@ -76,7 +82,7 @@ downloaded, a single line is needed to load it.
       to prefer this format.
 
 Visualizing brain images
-============================
+========================
 
 Once that NIfTI data is loaded, visualization is simply the display of the
 desired slice (the first three dimensions) at a desired time point (fourth
@@ -123,7 +129,7 @@ can be easily extracted from the fMRI data using the
 .. _mask_4d_2_3d:
 
 From 4D to 2D arrays
-----------------------
+--------------------
 
 FMRI data is naturally represented as a 4D block of data: 3 spatial
 dimensions and time. In practice, we are most often only interested in
@@ -133,13 +139,13 @@ convenient to apply a brain mask and go from a 4D array to a 2D array,
 
 .. only:: html
 
-    .. image:: masking.jpg
+    .. image:: images/masking.jpg
         :align: center
         :width: 100%
 
 .. only:: latex
 
-    .. image:: masking.jpg
+    .. image:: images/masking.jpg
         :align: center
 
 .. literalinclude:: ../plot_visualization.py

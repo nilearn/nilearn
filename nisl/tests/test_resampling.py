@@ -2,6 +2,7 @@
 Test the resampling code.
 """
 
+import nose
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -17,11 +18,11 @@ def rotation(theta, phi):
     cos = np.cos
     sin = np.sin
     a1 = np.array([[cos(theta), -sin(theta), 0],
-                [sin(theta),  cos(theta), 0],
-                [0, 0, 1]])
+                  [sin(theta),  cos(theta), 0],
+                  [0, 0, 1]])
     a2 = np.array([[1, 0, 0],
-                [0, cos(phi), -sin(phi)],
-                [0, sin(phi),  cos(phi)]])
+                  [0, cos(phi), -sin(phi)],
+                  [0, sin(phi),  cos(phi)]])
     return np.dot(a1, a2)
 
 
@@ -51,7 +52,7 @@ def test_downsample():
     data = np.random.random(shape)
     affine = np.eye(4)
     rot_img = resample_img(Nifti1Image(data, affine),
-                                  2 * affine, interpolation='nearest')
+                           2 * affine, interpolation='nearest')
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
@@ -69,4 +70,17 @@ def test_resampling_with_affine():
                                target_affine=rot,
                                interpolation='nearest')
         np.testing.assert_almost_equal(np.max(data),
-                                np.max(rot_img.get_data()))
+                                       np.max(rot_img.get_data()))
+
+
+def test_missing_parameter():
+    """ Test Error when shape provided without affine.
+    """
+    shape = (3., 2., 5., 2.)
+    target_shape = (5., 3., 2., 2.)
+    affine = np.eye(4)
+    data = np.random.randint(0, 10, shape)
+    nose.tools.assert_raises(ValueError, resample_img,
+                             Nifti1Image(data, affine),
+                             target_shape=target_shape,
+                             interpolation='nearest')

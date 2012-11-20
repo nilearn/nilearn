@@ -1,6 +1,6 @@
-==============
+============
 Introduction
-==============
+============
 
 Machine Learning in NeuroImaging: what and why
 ===============================================
@@ -80,8 +80,8 @@ Why is machine learning relevant NeuroImaging: a few examples
     <http://scikit-learn.org/stable/modules/decomposition.html>`_
     (*latent factors* such as ICA). This may be useful for implementing
     some form of *density estimation*: learning a probabilistic model of
-    the data (e.g. in `[Thirion 2009
-    <http://www.springerlink.com/content/7377x70p5515v778/>]`_).
+    the data (e.g. in `[Thirion 2009]
+    <http://www.springerlink.com/content/7377x70p5515v778/>`_).
 
 Python and the scikit-learn: a primer
 =====================================
@@ -120,6 +120,7 @@ recommended. We recommend that you install a complete distribution:
   with the package that are needed for this tutorial. Ask your system
   administrator to install, using the distribution package manager, the
   following packages:
+
     - scikit-learn (sometimes called `sklearn`)
     - matplotlib
     - ipython
@@ -171,7 +172,8 @@ It's interactive::
    If you wish to copy these input lines directly into your *IPython*
    console without manually excluding each `>>>`, you can enable
    `Doctest Mode` with the command ::
-   	    %doctest_mode
+   
+        %doctest_mode
 
 Scientific computing
 .....................

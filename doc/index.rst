@@ -25,23 +25,23 @@
 .. only:: html
 
     .. |banner1| image:: auto_examples/images/plot_haxby_decoding_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_haxby_decoding.html
 
     .. |banner2| image:: auto_examples/images/plot_simulated_data_3.png
-       :height: 90
+       :height: 80
        :target: auto_examples/plot_simulated_data.html
 
     .. |banner3| image:: auto_examples/images/plot_rest_clustering_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_rest_clustering.html
 
     .. |banner4| image:: auto_examples/images/plot_ica_resting_state_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_ica_resting_state.html
 
     .. |banner5| image:: auto_examples/images/plot_haxby_searchlight_1.png
-       :height: 140
+       :height: 130
        :target: auto_examples/plot_haxby_searchlight.html
 
 
@@ -72,11 +72,58 @@
                                               // with the new, randomized divs
         }
         shuffle ($('#banner a.external'));
+
+	//Function to make the index toctree collapsible
+	$(function () {
+            $('.toctree-l2')
+                .click(function(event){
+                    if (event.target.tagName.toLowerCase() != "a") {
+		        if ($(this).children('ul').length > 0) {
+                            $(this).css('list-style-image',
+                            (!$(this).children('ul').is(':hidden')) ? 'url(_static/plusBoxHighlight.png)' : 'url(_static/minBoxHighlight.png)');
+                            $(this).children('ul').toggle();
+                        }
+                        var bodywrapper = $('.bodywrapper');
+                        var sidebarbutton = $('#sidebarbutton');
+                        sidebarbutton.height(bodywrapper.height());
+                        return true; //Makes links clickable
+                    }
+		})
+		.mousedown(function(event){ return false; }) //Firefox highlighting fix
+                .css({cursor:'pointer', 'list-style-image':'url(_static/plusBox.png)'})
+                .children('ul').hide();
+            $('ul li ul li:not(:has(ul))').css({cursor:'default', 'list-style-image':'url(_static/noneBox.png)'});
+	    $('.toctree-l3').css({cursor:'default', 'list-style-image':'url(_static/noneBox.png)'});
+
+	    $('.toctree-l2').hover(
+	        function () {
+		    if ($(this).children('ul').length > 0) {
+		        $(this).css('background-color', '#D0D0D0').children('ul').css('background-color', '#F0F0F0');
+		        $(this).css('list-style-image',
+                            (!$(this).children('ul').is(':hidden')) ? 'url(_static/minBoxHighlight.png)' : 'url(_static/plusBoxHighlight.png)');
+		    }
+		    else {
+		        $(this).css('background-color', '#F9F9F9');
+		    }
+                },
+                function () {
+                    $(this).css('background-color', 'white').children('ul').css('background-color', 'white');
+		    if ($(this).children('ul').length > 0) {
+		        $(this).css('list-style-image',
+                            (!$(this).children('ul').is(':hidden')) ? 'url(_static/minBox.png)' : 'url(_static/plusBox.png)');
+		    }
+                }
+            );
+
+            var bodywrapper = $('.bodywrapper');
+            var sidebarbutton = $('#sidebarbutton');
+            sidebarbutton.height(bodywrapper.height());
+
+	});
+        
         </SCRIPT>
 
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
-
-.. only:: html
 
 .. only:: html
 
@@ -100,31 +147,21 @@
 
 .. include:: includes/big_toc_css.rst
 
+User Guide
+==========
+
+.. toctree::
+   :numbered:
+
+   introduction.rst
+   nifti_masker.rst
+   dataset_manipulation.rst
+   supervised_learning.rst
+   unsupervised_learning.rst
+   Reference <modules/classes.rst>
 .. only:: html
+   auto_examples/index
 
-  .. toctree::
-    :maxdepth: 2
-    :numbered:
-
-    introduction.rst
-    visualization.rst
-    supervised_learning.rst
-    unsupervised_learning.rst
-    auto_examples/index
-
-.. in the pdf, we don't include the examples
-
-.. only:: latex
-
-  .. toctree::
-    :maxdepth: 2
-    :numbered:
-
-    introduction.rst
-    visualization.rst
-    supervised_learning.rst
-    unsupervised_learning.rst
-    
 
 ..  
  FIXME: I need the link below to make sure the banner gets copied to the

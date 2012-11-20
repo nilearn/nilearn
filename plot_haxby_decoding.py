@@ -11,7 +11,7 @@ houses conditions.
 from nisl import datasets
 import numpy as np
 import nibabel
-dataset_files = datasets.fetch_haxby()
+dataset_files = datasets.fetch_haxby_simple()
 
 # fmri_data and mask are copied to lose the reference to the original data
 bold_img = nibabel.load(dataset_files.func)
@@ -42,7 +42,7 @@ n_conditions = np.size(np.unique(y))
 ### Loading step ##############################################################
 from nisl.io import NiftiMasker
 from nibabel import Nifti1Image
-nifti_masker = NiftiMasker(mask=mask, detrend=True, sessions=session)
+nifti_masker = NiftiMasker(mask=mask, sessions=session, smooth=4)
 niimg = Nifti1Image(X, affine)
 X = nifti_masker.fit_transform(niimg)
 
@@ -60,7 +60,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 ### Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 1000
-feature_selection = SelectKBest(f_classif, k=1000)
+feature_selection = SelectKBest(f_classif, k=500)
 
 # We have our classifier (SVC), our feature selection (SelectKBest), and now,
 # we can plug them together in a *pipeline* that performs the two operations
@@ -106,9 +106,9 @@ nibabel.save(img, 'haxby_face_vs_house.nii')
 from sklearn.cross_validation import LeaveOneLabelOut
 
 ### Define the cross-validation scheme used for validation.
-# Here we use a LeaveOneLabelOut cross-validation on the session, which
-# corresponds to a leave-one-session-out
-cv = LeaveOneLabelOut(session)
+# Here we use a LeaveOneLabelOut cross-validation on the session label
+# divided by 2, which corresponds to a leave-two-session-out
+cv = LeaveOneLabelOut(session // 2)
 
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
