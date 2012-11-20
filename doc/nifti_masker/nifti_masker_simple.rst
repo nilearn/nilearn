@@ -12,6 +12,9 @@ Nifti Masker: getting started
 
 .. currentmodule:: nisl.io.nifti_masker
 
+Nisl is a package that aim to simplify the use of scikit-learn when dealing
+with neuroimaging data.
+
 The :class:`NiftiMasker` is a *magic tool* that allows one to load data
 easily, to automatically preprocess it and then to send it directly into
 a scikit-learn pipeline.
@@ -19,11 +22,6 @@ a scikit-learn pipeline.
 The :class:`NiftiMasker` is a scikit-learn compliant transformer that helps loading Nifti
 files and provides some necessary preprocessing.
 
-
-
-
-
-:
 
     1. :ref:`data_loading` : load Nifti files and check consistency of data
     2. :ref:`masking` : if a mask is not provided, computes one
