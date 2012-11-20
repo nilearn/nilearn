@@ -96,6 +96,10 @@ class BaseMasker(BaseEstimator, TransformerMixin):
 
     def transform_single_niimgs(self, niimgs, sessions=None,
                                 confounds=None, copy=True):
+        if not hasattr(self, 'mask_img_'):
+            raise ValueError('It seems that %s has not been fit. '
+                "You should call 'fit' before calling 'transform'."
+                % self.__class__.__name__)
         memory = self.transform_memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
