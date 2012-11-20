@@ -154,10 +154,10 @@ User Guide
    :numbered:
 
    introduction.rst
-   nifti_masker.rst
-   dataset_manipulation.rst
+   getting_started.rst
    supervised_learning.rst
    unsupervised_learning.rst
+   dataset_manipulation.rst
    Reference <modules/classes.rst>
 .. only:: html
    auto_examples/index
