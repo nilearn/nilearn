@@ -12,16 +12,16 @@ import pylab as pl
 import numpy as np
 
 import nibabel
-from nisl import datasets, io
+from nisl import datasets
 
 # Load Haxby dataset
 haxby = datasets.fetch_haxby_simple()
 haxby_img = nibabel.load(haxby.func)
 # Restrict haxby to 150 frames to speed up computation
 haxby_func = haxby_img.get_data()[..., :150]
+
+# haxby_func is a 4D-array, we want to make a Niimg out of it:
 haxby_img = nibabel.Nifti1Image(haxby_func, haxby_img.get_affine())
-# Load mask provided by Haxby
-haxby_mask = nibabel.load(haxby.mask).get_data().astype(np.bool)
 
 # Display helper
 background = np.mean(haxby_func, axis=-1)[..., 27]
@@ -36,6 +36,7 @@ def display_mask(background, mask, title):
     pl.title(title)
 
 # Generate mask with default parameters
+from nisl import io
 masker = io.NiftiMasker()
 masker.fit(haxby_img)
 default_mask = masker.mask_img_.get_data().astype(np.bool)
@@ -55,6 +56,10 @@ masker.fit(haxby_img)
 cutoff_mask = masker.mask_img_.get_data().astype(np.bool)
 
 # Plot the mask and compare it to original
+
+# Load mask provided by Haxby
+haxby_mask = nibabel.load(haxby.mask).get_data().astype(np.bool)
+
 pl.figure(figsize=(6, 5))
 pl.subplot(1, 2, 1)
 display_mask(background, haxby_mask[..., 27], 'Haxby mask')

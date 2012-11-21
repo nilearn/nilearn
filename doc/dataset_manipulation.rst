@@ -42,8 +42,11 @@ The data are downloaded only once and stored locally, in order:
    
 Note that you can copy that folder across computers to avoid downloading.
 
-Understanding MRI data: Nifti or analyze files
-==============================================
+Understanding MRI data 
+=======================
+
+Nifti or analyze files
+-----------------------
 
 .. topic:: NIfTI and Analyse file structures
 
@@ -80,6 +83,32 @@ downloaded, a single line is needed to load it.
       session, stored in set of 3D Nifti or analyse files. 
       `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
+
+.. _niimg:
+
+Niimg-like objects
+-------------------
+
+**Niimg:** Niimg (pronounce ni-image) is a common term used in Nisl. A
+Niimg-like object can either be:
+
+  * a file path to a Nifti or Analyse image
+  * any object exposing ``get_data()`` and ``get_affine()`` methods, for
+    instance a ``Nifti1Image`` from nibabel_.
+
+**Niimg-4D:** Similarly, some functions require 4-dimensional Nifti-like
+data, which we call Niimgs, or Niimg-4D. Accepted inputs are then:
+
+  * A path to a 4-dimensional Nifti image
+  * List of paths to 3-dimensional Nifti images
+  * 4-dimensional Nifti-like object
+  * List of 3-dimensional Nifti-like objects
+
+.. note:: **Image affines**
+
+   If you provide a sequence of Nifti images, all of them must have the same
+   affine.
+
 
 Visualizing brain images
 ========================
@@ -122,31 +151,6 @@ In addition, the :class:`NiftiMasker` is a scikit-learn compliant
 transformer so that you can directly plug it into a scikit-learn
 pipeline. This feature can be seen in :ref:`nifti_masker_advanced`.
 
-.. _niimg:
-
-Niimg
-------
-
-Niimg (pronounce ni-image) is a common term used in Nisl. It can either
-represents:
-
-  * a file path to a Nifti image
-  * any object exposing ``get_data()`` and ``get_affine()`` methods (it is
-    obviously intended to handle nibabel's Nifti1Image but also user custom
-    types if needed).
-
-The Nifti Masker requires a 4-dimensional Nifti-like data. Accepted inputs are:
-
-  * Path to a 4-dimensional Nifti image
-  * List of paths to 3-dimensional Nifti images
-  * 4-dimensional Nifti-like object
-  * List of 3-dimensional Nifti-like objects
-
-.. note:: **Image affines**
-
-   If you provide a sequence of Nifti images, all of them must have the same
-   affine.
-
 Custom data loading
 --------------------
 
@@ -155,11 +159,11 @@ In this example, we will restrict Haxby dataset to 150 frames to speed up
 computation. To do that, we load the dataset, restrain it to 150 frames and
 build a brand new Nifti like object to give it to the Nifti masker. There
 is no need to save your data in a file to pass it to Nifti masker.
-Simply use your Niimg !
+Simply use nibabel_ to create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../plot_nifti_advanced.py
-    :start-after: from nisl import datasets, io
+    :start-after: from nisl import datasets
     :end-before: # Display helper
 
 .. _masking:
@@ -232,13 +236,14 @@ high values by lowering *upper cutoff*. Default value is 0.9, so we try
 0.8 to lower a bit the threshold and get a large mask.
 
 
-.. figure:: auto_examples/images/plot_nifti_advanced_3.png
-    :target: auto_examples/plot_nifti_advanced.html
-    :align: right
-    :scale: 50%
-
 .. literalinclude:: ../plot_nifti_advanced.py
     :start-after: # Generate mask with upper cutoff 
+    :end-before: # trended vs detrended
+
+.. figure:: auto_examples/images/plot_nifti_advanced_3.png
+    :target: auto_examples/plot_nifti_advanced.html
+    :align: center
+    :scale: 50%
 
 The resulting mask seems correct. If we compare it to the original one, they
 are very close.
