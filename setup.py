@@ -30,8 +30,10 @@ def configuration(parent_package='', top_path=None):
     config = Configuration(None, parent_package, top_path)
 
     config.add_subpackage('nisl')
-    
+    config.add_subpackage('nisl/io')
+    config.add_subpackage('nisl/decomposition')
     return config
+
 
 if __name__ == "__main__":
 
