@@ -350,6 +350,9 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     resume: boolean, optional
         If true, try resuming download if possible
 
+    folder: string, optional
+        Folder in which the file must be fetched inside the dataset folder.
+
     md5sums: dictionary, optional
         Dictionary of MD5 sums of files to download
 
@@ -365,6 +368,10 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     """
     # Determine data path
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    if not (folder is None):
+        data_dir = os.path.join(data_dir, folder)
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
 
     files = []
     for url in urls:
@@ -382,7 +389,7 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
             print 'An error occured, abort fetching.' \
                 ' Please see the full log above.'
             shutil.rmtree(data_dir)
-            raise 
+            raise
     return files
 
 
@@ -396,6 +403,9 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 
     file_names: array of strings
         File that compose the dataset to be retrieved on the disk.
+
+    folder: string, optional
+        Folder in which the file must be fetched inside the dataset folder.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
@@ -411,6 +421,9 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     If at least one file is missing, an IOError is raised.
     """
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    if not (folder is None):
+        data_dir = os.path.join(data_dir, folder)
+
     file_paths = []
     for file_name in file_names:
         full_name = os.path.join(data_dir, file_name)
@@ -478,7 +491,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
         # If the dataset does not exists, we download it
         if url is None:
             url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-        f = _fetch_dataset('haxby2001_simple', [url], data_dir=data_dir,
+        _fetch_dataset('haxby2001_simple', [url], data_dir=data_dir,
                            resume=resume, verbose=verbose)
         files = _get_dataset("haxby2001_simple", file_names,
                              data_dir=data_dir)
