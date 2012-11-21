@@ -142,7 +142,7 @@ The Nifti Masker requires a 4-dimensional Nifti-like data. Accepted inputs are:
   * 4-dimensional Nifti-like object
   * List of 3-dimensional Nifti-like objects
 
-.. note:: Image affines
+.. note:: **Image affines**
 
    If you provide a sequence of Nifti images, all of them must have the same
    affine.
@@ -159,7 +159,7 @@ Simply use your Niimg !
 
 
 .. literalinclude:: ../plot_nifti_advanced.py
-    :start-after: from nisl import datasets, io, utils  
+    :start-after: from nisl import datasets, io
     :end-before: # Display helper
 
 .. _masking:
@@ -181,7 +181,7 @@ and the mask as a red layer over this background.
 
 
 .. literalinclude:: ../plot_nifti_advanced.py
-    :start-after: haxby_img = Nifti1Image(haxby_func, haxby_img.get_affine()) 
+    :start-after: haxby_img = nibabel.Nifti1Image(haxby_func, haxby_img.get_affine()) 
     :end-before: # Generate mask with default parameters 
 
 

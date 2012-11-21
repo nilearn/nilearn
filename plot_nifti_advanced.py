@@ -10,18 +10,18 @@ to obtained a decent mask.
 
 import pylab as pl
 import numpy as np
-from nibabel import Nifti1Image
 
-from nisl import datasets, io, utils
+import nibabel
+from nisl import datasets, io
 
 # Load Haxby dataset
 haxby = datasets.fetch_haxby_simple()
-haxby_img = utils.check_niimg(haxby.func)
+haxby_img = nibabel.load(haxby.func)
 # Restrict haxby to 150 frames to speed up computation
 haxby_func = haxby_img.get_data()[..., :150]
-haxby_img = Nifti1Image(haxby_func, haxby_img.get_affine())
+haxby_img = nibabel.Nifti1Image(haxby_func, haxby_img.get_affine())
 # Load mask provided by Haxby
-haxby_mask = utils.check_niimg(haxby.mask).get_data().astype(np.bool)
+haxby_mask = nibabel.load(haxby.mask).get_data().astype(np.bool)
 
 # Display helper
 background = np.mean(haxby_func, axis=-1)[..., 27]
