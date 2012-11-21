@@ -158,7 +158,7 @@ is no need to save your data in a file to pass it to Nifti masker.
 Simply use your Niimg !
 
 
-.. literalinclude:: ../../plot_nifti_advanced.py
+.. literalinclude:: ../plot_nifti_advanced.py
     :start-after: from nisl import datasets, io, utils  
     :end-before: # Display helper
 
@@ -180,7 +180,7 @@ masks. This function will display a background (compose of a mean of epi scans)
 and the mask as a red layer over this background.
 
 
-.. literalinclude:: ../../plot_nifti_advanced.py
+.. literalinclude:: ../plot_nifti_advanced.py
     :start-after: haxby_img = Nifti1Image(haxby_func, haxby_img.get_affine()) 
     :end-before: # Generate mask with default parameters 
 
@@ -188,59 +188,57 @@ and the mask as a red layer over this background.
 Computing the mask
 ...................
 
-As said before, if a mask is not given, the Nifti Masker will try to compute
+.. currentmodule:: nisl.io
+
+If a mask is not given, the :class:`NiftiMasker` will try to compute
 one. It is *very important* to take a look at the generated mask, to see if it
-is suitable for your data and adjust parameters if it is not. See documentation
-for a complete list of mask computation parameters.
+is suitable for your data and adjust parameters if it is not. See the 
+:class:`NiftiMasker` documentation for a complete list of mask computation
+parameters.
 
 As an example, we will now try to build a mask on a dataset form scratch. Haxby
 dataset will be used since it provides a mask that we can use as a reference.
+
+.. figure:: auto_examples/images/plot_nifti_advanced_1.png
+    :target: auto_examples/plot_nifti_advanced.html
+    :align: right
+    :scale: 50%
 
 The first the step of the generation is to generate a mask with default
 parameters and take a look at it. As an indicator, we can, for example, compare
 the mask to original data.
 
-.. literalinclude:: ../../plot_nifti_advanced.py
+.. literalinclude:: ../plot_nifti_advanced.py
     :start-after: # Generate mask with default parameters
     :end-before: # Generate mask with opening
 
-.. figure:: ../auto_examples/images/plot_nifti_advanced_1.png
-    :target: ../auto_examples/plot_nifti_advanced.html
-    :align: center
+With naked eyes, we can see that the outline of the mask is not very
+smooth. To make it smoother, we try to apply opening
+(*mask_opening=true*).
+
+.. figure:: auto_examples/images/plot_nifti_advanced_2.png
+    :target: auto_examples/plot_nifti_advanced.html
+    :align: right
     :scale: 50%
 
-With naked eyes, we can see that there is a problem with this mask. In fact,
-it does not cover a part of the brain and the outline of the mask is
-not very smooth. As we want to enlarge the mask a little bit and make it
-smoother, we try to apply opening (*mask_opening=true*).
-
-
-.. literalinclude:: ../../plot_nifti_advanced.py
+.. literalinclude:: ../plot_nifti_advanced.py
     :start-after: # Generate mask with opening 
     :end-before: # Generate mask with upper cutoff
 
-.. figure:: ../auto_examples/images/plot_nifti_advanced_2.png
-    :target: ../auto_examples/plot_nifti_advanced.html
-    :align: center
+If we look at the :class:`NiftiMasker` object, we
+see two interesting parameters: *lower_cutoff* and *upper_cutoff*. The
+algorithm ignores dark (low) values. We can tell the algorithm to ignore
+high values by lowering *upper cutoff*. Default value is 0.9, so we try
+0.8 to lower a bit the threshold and get a large mask.
+
+
+.. figure:: auto_examples/images/plot_nifti_advanced_3.png
+    :target: auto_examples/plot_nifti_advanced.html
+    :align: right
     :scale: 50%
 
-This is not very effective. If we look at 
-:class:`nisl.masking.compute_epi_mask` documentation, we spot two interesting
-parameters: *lower_cutoff* and *upper_cutoff*. The algorithm seems to ignore
-dark (low) values. Without getting into the details of the algorithm, this
-means that the threshold is chosen into high values. We can tell the algorithm
-to ignore high values by lowering *upper cutoff*. Default value is 0.9, so we
-try 0.8.
-
-
-.. literalinclude:: ../../plot_nifti_advanced.py
+.. literalinclude:: ../plot_nifti_advanced.py
     :start-after: # Generate mask with upper cutoff 
-
-.. figure:: ../auto_examples/images/plot_nifti_advanced_3.png
-    :target: ../auto_examples/plot_nifti_advanced.html
-    :align: center
-    :scale: 50%
-
 
 The resulting mask seems correct. If we compare it to the original one, they
 are very close.
@@ -277,7 +275,8 @@ Low pass and High pass filters allows one to remove artefacts.
 Detrending removes linear trend along axis from data. It is not activated by
 default in the Nifti Masker but it is almost essential.
 
-.. note:: Exercise
+.. note:: **Exercise**
+   :class: green
 
    You can, more as a training than as an exercise, try to play with the
    parameters in Nisl examples. Try to enable detrending in haxby decoding
@@ -292,7 +291,7 @@ to visualize it. This step is present in almost all the examples provided in
 Nisl.
 
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../plot_haxby_decoding.py
     :start-after: svc = feature_selection.inverse_transform(svc)
     :end-before: # We use a masked array so that the voxels at '-1' are displayed
 

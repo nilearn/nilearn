@@ -167,7 +167,7 @@ data of dimension 1D (resp. 2D) to convert it back to 3D (resp. 4D).
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualization #############################################################
 
-Here we want to see the disciminating weights of some voxels.
+Here we want to see the discriminating weights of some voxels.
 
 Visualizing results
 ===================
