@@ -161,14 +161,25 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in input_masks:
+        this_mask = this_mask.copy().astype(np.int)
+        # Convert the mask in [0, 1] values
+        if not len(np.unique(this_mask)) == 2:
+            raise ValueError('This mask is made of more than 2 value: %s'
+                             '. Cannot interpret as true or false'
+                             % np.unique(this_mask)
+                            )
+        this_mask -= this_mask.min()
+        this_mask = this_mask != 0
+        this_mask = this_mask.astype(np.int)
+
         if grp_mask is None:
-            grp_mask = this_mask.copy().astype(np.int)
+            grp_mask = this_mask
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
             # casting rules raise an error for in-place addition. Hence we do
             # it long-hand.
             # XXX should the masks be coerced to int before addition?
-            grp_mask = grp_mask + this_mask
+            grp_mask += this_mask
 
     grp_mask = grp_mask > (threshold * len(list(input_masks)))
 
