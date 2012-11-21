@@ -363,6 +363,23 @@ convenient to apply a brain mask and go from a 4D array to a 2D array,
 Preprocessing functions
 ========================
 
-TODO
+.. currentmodule:: nisl.io.nifti_masker
+
+The :class:`NiftiMasker` automatically calls some preprocessing
+functions that are obviously available if you want to set up your
+own preprocessing procedure:
+
+.. currentmodule:: nisl
+
+* Resampling: :func:`nisl.resampling.resample_img`
+* Masking:
+
+  * compute: :func:`nisl.masking.compute_epi_mask`
+  * compute for multiple sessions/subjects: :func:`nisl.masking.compute_multi_epi_mask`
+  * apply: :func:`nisl.masking.apply_mask`
+  * intersect several masks (useful for multi sessions/subjects): :func:`nisl.masking.intersect_masks`
+  * unmasking: :func:`nisl.masking.unmask`
+
+* Cleaning signals: :func:`nisl.signals.clean`
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
