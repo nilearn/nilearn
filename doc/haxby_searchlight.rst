@@ -39,7 +39,7 @@ For this tutorial we need:
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Preprocess data ###########################################################
-    :end-before: ### Prepare the masks #########################################################
+    :end-before: ### Restrict to faces and houses ##############################################
 
 Masking
 -------
@@ -62,7 +62,7 @@ taken into account when iterating with the sphere.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
         :start-after: #   up computation)
-        :end-before: ### Restrict to faces and houses ##############################################
+        :end-before: ### Searchlight ############################################################### 
 
 Restricting the dataset
 -----------------------
@@ -72,7 +72,7 @@ analysis to the `face` and `house` conditions:
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Restrict to faces and houses ##############################################
-    :end-before: ### Searchlight ###############################################################
+    :end-before: ### Loading step ############################################################## 
 	
 Third Step: Setting up the searchlight
 =======================================
