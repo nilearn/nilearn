@@ -246,6 +246,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                                   lower_cutoff=lower_cutoff,
                                   upper_cutoff=upper_cutoff,
                                   connected=connected,
+                                  opening=opening,
                                   exclude_zeros=exclude_zeros)
         for session in session_epi)
 
