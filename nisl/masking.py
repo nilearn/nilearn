@@ -52,7 +52,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 
 
 def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
-                     connected=True, opening=True, exclude_zeros=False,
+                     connected=True, opening=2, exclude_zeros=False,
                      ensure_finite=True, verbose=0):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
@@ -65,7 +65,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: 3D or 4D array or nifti like image 
+    mean_epi: 3D or 4D array or nifti like image
         EPI image, used to compute the mask.
 
     lower_cutoff : float, optional
@@ -77,10 +77,12 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     connected: boolean, optional
         if connected is True, only the largest connect component is kept.
 
-    opening: boolean, optional
+    opening: boolean or integer, optional
         if opening is True, an morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
+        If opening is an integer 'n', it is performed via 'n' erosion
+        followed by 'n' dilations.
 
     ensure_finite: boolean
         If ensure_finite is True, the non-finite values (NaNs and infs)
@@ -123,10 +125,15 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     mask = (mean_epi >= threshold)
 
+    if opening:
+        opening = int(opening)
+        mask = ndimage.binary_erosion(mask.astype(np.int),
+                                      iterations=opening)
     if connected:
         mask = utils.largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_opening(mask.astype(np.int), iterations=2)
+        mask = ndimage.binary_dilation(mask.astype(np.int),
+                                      iterations=opening)
     return mask.astype(bool)
 
 
@@ -190,7 +197,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
 
 
 def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
-                           connected=True, opening=True, threshold=0.5,
+                           connected=True, opening=2, threshold=0.5,
                            exclude_zeros=False, n_jobs=1, verbose=0):
     """ Compute a common mask for several sessions or subjects of fMRI data.
 
@@ -239,6 +246,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                                   lower_cutoff=lower_cutoff,
                                   upper_cutoff=upper_cutoff,
                                   connected=connected,
+                                  opening=opening,
                                   exclude_zeros=exclude_zeros)
         for session in session_epi)
 
