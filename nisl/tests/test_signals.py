@@ -33,7 +33,7 @@ def test_clean_detrending():
 
 def test_clean_frequencies():
     sx = np.sin(np.linspace(0, 100, 2000))
-    assert_true(clean([sx], standardize=False, high_pass=0.01, low_pass=False)
+    assert_true(clean([sx], standardize=False, high_pass=0.001, low_pass=False)
                 .max() > 0.1)
     assert_true(clean([sx], standardize=False, high_pass=0.2, low_pass=False)
                 .max() < 0.01)
