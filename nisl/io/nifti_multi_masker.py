@@ -56,6 +56,10 @@ class NiftiMultiMasker(BaseMasker):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
+    memory_level: integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
@@ -109,25 +113,20 @@ class NiftiMultiMasker(BaseMasker):
     nisl.signals.clean
     """
 
-    def __init__(self, mask=None, mask_connected=True,
-                 mask_opening=False, mask_lower_cutoff=0.2,
-                 mask_upper_cutoff=0.9,
-                 smooth=False, standardize=False, detrend=False,
-                 target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, transpose=False, n_jobs=1,
-                 memory=Memory(cachedir=None, verbose=0),
-                 memory_level=0, verbose=0):
+    def __init__(self, mask=None, smooth=False,
+                 standardize=False, detrend=False,
+                 low_pass=None, high_pass=None, t_r=None,
+                 memory=Memory(cachedir=None, verbose=0), memory_level=0,
+                 n_jobs=1, verbose=0,
+                 target_affine=None, target_shape=None,
+                 mask_connected=True, mask_opening=False,
+                 mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+                 transpose=False):
         # Mask is compulsory or computed
         self.mask = mask
-        self.mask_connected = mask_connected
-        self.mask_opening = mask_opening
-        self.mask_lower_cutoff = mask_lower_cutoff
-        self.mask_upper_cutoff = mask_upper_cutoff
         self.smooth = smooth
         self.standardize = standardize
         self.detrend = detrend
-        self.target_affine = target_affine
-        self.target_shape = target_shape
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
@@ -135,6 +134,12 @@ class NiftiMultiMasker(BaseMasker):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+        self.target_affine = target_affine
+        self.target_shape = target_shape
+        self.mask_connected = mask_connected
+        self.mask_opening = mask_opening
+        self.mask_lower_cutoff = mask_lower_cutoff
+        self.mask_upper_cutoff = mask_upper_cutoff
         self.transpose = transpose
 
     def fit(self, niimgs, y=None):

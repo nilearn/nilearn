@@ -23,74 +23,7 @@ def _to_nifti(X, affine):
 
 
 class BaseMasker(BaseEstimator, TransformerMixin):
-    """Nifti data loader with preprocessing
-
-    Parameters
-    ----------
-    mask: 3D numpy matrix, optional
-        Mask of the data. If not given, a mask is computed in the fit step.
-
-    mask_connected: boolean, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_opening: boolean, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_lower_cutoff: float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_upper_cutoff: float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    standardize: boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1.
-
-    target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to resampling.resample_img. Please see the
-        related documentation for details.
-
-    target_shape: 3-tuple of integers, optional
-        This parameter is passed to resampling.resample_img. Please see the
-        related documentation for details.
-
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
-        spatial smoothing to apply to the signal.
-
-    confounds: CSV file path or 2D matrix
-        This parameter is passed to signals.clean. Please see the related
-        documentation for details
-
-    detrend: boolean, optional
-        This parameter is passed to signals.clean. Please see the related
-        documentation for details
-
-    low_pass: False or float, optional
-        This parameter is passed to signals.clean. Please see the related
-        documentation for details
-
-    high_pass: False or float, optional
-        This parameter is passed to signals.clean. Please see the related
-        documentation for details
-
-    t_r: float, optional
-        This parameter is passed to signals.clean. Please see the related
-        documentation for details
-
-    verbose: interger, optional
-        Indicate the level of verbosity. By default, nothing is printed
-
-    See also
-    --------
-    nisl.masking.compute_epi_mask
-    resampling.resample_img
-    masking.apply_mask
-    signals.clean
+    """Base class for NiftiMaskers
     """
 
     def transform_single_niimgs(self, niimgs, sessions=None,
