@@ -59,10 +59,9 @@ class NiftiMasker(BaseMasker):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    transform_memory: instance of joblib.Memory or string
-        Used to cache the perprocessing step.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+    memory_level: integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
 
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
@@ -118,7 +117,7 @@ class NiftiMasker(BaseMasker):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, transpose=False,
                  memory=Memory(cachedir=None, verbose=0),
-                 transform_memory=Memory(cachedir=None, verbose=0), verbose=0):
+                 memory_level=0, verbose=0):
         # Mask is compulsory or computed
         self.mask = mask
         self.mask_connected = mask_connected
@@ -134,7 +133,7 @@ class NiftiMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.memory = memory
-        self.transform_memory = transform_memory
+        self.memory_level = memory_level
         self.verbose = verbose
         self.sessions = sessions
         self.transpose = transpose
@@ -149,10 +148,6 @@ class NiftiMasker(BaseMasker):
             the affine is considered the same for all.
         """
 
-        memory = self.memory
-        if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory)
-
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print "[%s.fit] Loading data from %s" % (
@@ -164,14 +159,16 @@ class NiftiMasker(BaseMasker):
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            mask = memory.cache(masking.compute_epi_mask, ignore=['verbose'])(
+            mask = utils.cache(self, masking.compute_epi_mask, 1,
+                               ignore=['verbose'])(
                 niimgs.get_data(),
                 connected=self.mask_connected,
                 opening=self.mask_opening,
                 lower_cutoff=self.mask_lower_cutoff,
                 upper_cutoff=self.mask_upper_cutoff,
                 verbose=(self.verbose - 1))
-            self.mask_img_ = Nifti1Image(mask.astype(np.int), niimgs.get_affine())
+            self.mask_img_ = Nifti1Image(mask.astype(np.int),
+                    niimgs.get_affine())
         else:
             self.mask_img_ = utils.check_niimg(self.mask)
 
@@ -179,7 +176,7 @@ class NiftiMasker(BaseMasker):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
-        self.mask_img_ = memory.cache(resampling.resample_img)(
+        self.mask_img_ = utils.cache(self, resampling.resample_img, 1)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,

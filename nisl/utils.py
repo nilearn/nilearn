@@ -6,10 +6,12 @@ Validation and conversion utilities.
 
 
 import collections
+import warnings
 
 import nibabel
 import numpy as np
 from scipy import ndimage
+from sklearn.externals.joblib import Memory
 
 
 ###############################################################################
@@ -37,7 +39,7 @@ def largest_connected_component(volume):
     if label_nb == 1:
         return volume.astype(np.bool)
     label_count = np.bincount(labels.ravel())
-    # discard 0 the 0 label
+    # discard the 0 label
     label_count[0] = 0
     return labels == label_count.argmax()
 
@@ -230,3 +232,59 @@ def check_niimgs(niimgs, accept_3d=False):
     else:
         niimg = concat_niimgs(niimgs)
     return niimg
+
+###############################################################################
+### Caching
+###############################################################################
+
+
+def cache(self, func, func_memory_level, **kwargs):
+    """ Return a joblib.Memory object if necessary (depends on memory_level)
+
+    The memory_level is a rough estimator of the amount of memory necessary
+    to cache a function call. By specifying a numeric value for this level,
+    the user will be able to control more or less the memory used on his
+    computer. This function will cache the function call or not depending
+    on the memory level. This is an helper to avoid code pasting.
+
+    Parameters
+    ----------
+
+    self: python object
+        The object containing information about caching. It must have a
+        memory attribute (used if caching is necessary) and an integer
+        memory_level attribute to determine if the function must be cached
+        or not.
+
+    func: python function
+        The function that may be cached
+
+    func_memory_level: integer
+        The memory_level from which caching must be enabled.
+
+    Returns
+    -------
+
+    Either the original function (if there is no need to cache it) or a
+    joblib.Memory object that will be used to cache the function call.
+    """
+    # if memory level is 0 but a memory object is provided, put memory_level
+    # to 1 with a warning
+    if self.memory_level == 0:
+        if self.memory is not None and (isinstance(self.memory, basestring)
+                                   or self.memory.cachedir is not None):
+            warnings.warn("memory_level is set to 0 but a Memory object has"
+                    " been provided. Setting memory_level to 1.")
+            self.memory_level = 1
+    if self.memory_level < func_memory_level:
+        return func
+    else:
+        memory = self.memory
+        if isinstance(memory, basestring):
+            memory = Memory(cachedir=memory, **kwargs)
+        if memory.cachedir is None:
+            warnings.warn("Caching has been enabled (memory_level = %d) but no"
+                          " Memory object or path has been provided (parameter"
+                          " memory). Caching canceled for function %s." %
+                          (self.memory_level, func.func_name))
+        return memory.cache(func)

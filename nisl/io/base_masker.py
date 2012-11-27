@@ -6,7 +6,6 @@ Transformer used to apply basic transformations on MRI data.
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.externals.joblib import Memory
 from nibabel import Nifti1Image
 
 from .. import masking
@@ -100,9 +99,6 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             raise ValueError('It seems that %s has not been fit. '
                 "You should call 'fit' before calling 'transform'."
                 % self.__class__.__name__)
-        memory = self.transform_memory
-        if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory)
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
@@ -120,7 +116,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 1:
             print "[%s.transform] Resampling" % self.__class__.__name__
-        niimgs = memory.cache(resampling.resample_img)(
+        niimgs = utils.cache(self, resampling.resample_img, 2)(
             niimgs,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
@@ -142,16 +138,17 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 1:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
-            data = signals.clean(data,
-                                 confounds=confounds, low_pass=self.low_pass,
-                                 high_pass=self.high_pass, t_r=self.t_r,
-                                 detrend=self.detrend,
-                                 standardize=self.standardize)
+            data = utils.cache(self, signals.clean, 2)(
+                data,
+                confounds=confounds, low_pass=self.low_pass,
+                high_pass=self.high_pass, t_r=self.t_r,
+                detrend=self.detrend,
+                standardize=self.standardize)
         else:
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[:, sessions == s] = signals.clean(
+                data[:, sessions == s] = utils.cache(self, signals.clean, 2)(
                     data[:, sessions == s],
                     confounds=confounds,
                     low_pass=self.low_pass,
