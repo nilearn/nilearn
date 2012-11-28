@@ -148,7 +148,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
     input_masks: list of ndarrays
         3D individual masks
 
-    threshold: float within [0, 1[, optional
+    threshold: float within [0, 1], optional
         gives the level of the intersection.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.

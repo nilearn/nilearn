@@ -9,7 +9,7 @@ import numpy as np
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
-from ..masking import apply_mask, compute_epi_mask, unmask
+from ..masking import apply_mask, compute_epi_mask, unmask, intersect_masks
 
 
 def test_mask():
@@ -100,3 +100,72 @@ def test_unmask():
     # Error test
     assert_raises(ValueError, unmask, dummy, mask)
     assert_raises(ValueError, unmask, [dummy], mask)
+
+
+def test_intersect_masks():
+    """ Test the intersect_masks function
+    """
+
+    # Create dummy masks
+    mask_a = np.zeros((4, 4), dtype=np.bool)
+    mask_a[2:4, 2:4] = 1
+
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   |   | X | X |
+    # +---+---+---+---+
+    # |   |   | X | X |
+    # +---+---+---+---+
+
+    mask_b = np.zeros((4, 4), dtype=np.bool)
+    mask_b[1:3, 1:3] = 1
+
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   | X | X |   |
+    # +---+---+---+---+
+    # |   | X | X |   |
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+
+    mask_c = np.zeros((4, 4), dtype=np.bool)
+    mask_c[:, 2] = 1
+    mask_c[0, 0] = 1
+
+    # +---+---+---+---+
+    # | X |   | X |   |
+    # +---+---+---+---+
+    # |   |   | X |   |
+    # +---+---+---+---+
+    # |   |   | X |   |
+    # +---+---+---+---+
+    # |   |   | X |   |
+    # +---+---+---+---+
+
+    mask_ab = np.zeros((4, 4), dtype=np.bool)
+    mask_ab[2, 2] = 1
+    mask_ab_ = intersect_masks([mask_a, mask_b], threshold=1.)
+    assert_array_equal(mask_ab, mask_ab_)
+
+    mask_abc = mask_a + mask_b + mask_c
+    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c], threshold=0.,
+                                connected=False)
+    assert_array_equal(mask_abc, mask_abc_)
+
+    mask_abc[0, 0] = 0
+    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c], threshold=0.)
+    assert_array_equal(mask_abc, mask_abc_)
+
+    mask_abc = mask_ab
+    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c], threshold=1.)
+    assert_array_equal(mask_abc, mask_abc_)
+
+    mask_abc[1, 2] = 1
+    mask_abc[3, 2] = 1
+    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c])
+    assert_array_equal(mask_abc, mask_abc_)
