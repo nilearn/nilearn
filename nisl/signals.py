@@ -4,7 +4,7 @@ Preprocessing functions for time series.
 # Authors: Alexandre Abraham, Gael Varoquaux
 # License: simplified BSD
 
-from scipy import fftpack
+from scipy import signal
 import numpy as np
 from sklearn.utils.fixes import qr_economic
 
@@ -23,8 +23,64 @@ def _standardize(signals, copy=True, normalize=True):
     return signals
 
 
+def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
+                order=5):
+    """ Apply a low pass, high pass or band pass butterworth filter
+
+    Apply a filter to remove signal below the `low` frequency and above the
+    `high`frequency.
+
+    Parameters
+    ----------
+    signals: numpy array
+        Signals to be filtered
+
+    sampling_rate: float
+        Number of samples per time unit (sample frequency)
+
+    low_pass: float, optional
+        If specified, signals above this frequency will be filtered (low pass)
+
+    high: float, optional
+        If specified, signals below this frequency will be filtered (high pass)
+
+    order: integer, optional
+        Order of the butterworth filter. When filtering signals, the
+        butterworth filter has a decay to avoid ringing. Increase the order
+        sharpens the decay.
+
+    Returns
+    -------
+    filtered_signals: numpy array
+        Signals filtered according to the parameters
+    """
+    nyq = sampling_rate * 0.5
+
+    if low_pass is None and high_pass is None:
+        return signal
+
+    wn = None
+    if low_pass is not None:
+        lf = low_pass / nyq
+        btype = 'low'
+        wn = lf
+
+    if high_pass is not None:
+        hf = high_pass / nyq
+        btype = 'high'
+        wn = hf
+
+    if low_pass is not None and high_pass is not None:
+        btype = 'band'
+        wn = [hf, lf]
+
+    b, a = signal.butter(order, wn, btype=btype)
+    filtered_signals = signal.lfilter(b, a, signals)
+    return filtered_signals
+
+
 def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
-          high_pass=False, detrend=False, standardize=True,
+          high_pass=None, detrend=False, standardize=True,
           shift_confounds=False):
     """ Normalize the signal, and if any confounds are given, project in
         the orthogonal space.
@@ -62,22 +118,17 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         confounds = qr_economic(confounds)[0].T
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
 
-    if low_pass and high_pass and high_pass >= low_pass:
+    if low_pass is not None and high_pass is not None \
+                            and high_pass >= low_pass:
         raise ValueError("Your value for high pass filter (%f) is higher or"
                          " equal to the value for low pass filter (%f). This"
                          " would result in a blank signal"
                          % (high_pass, low_pass))
 
-    if low_pass or high_pass:
-        n = signals.shape[-1]
-        freq = fftpack.fftfreq(n, d=t_r)
+    if low_pass is not None or high_pass is not None:
         for s in signals:
-            fft = fftpack.fft(s)
-            if low_pass:
-                fft[np.abs(freq) > low_pass] = 0
-            if high_pass:
-                fft[np.abs(freq) < high_pass] = 0
-            s[:] = fftpack.ifft(fft)
+            s[:] = butterworth(s, sampling_rate=1. / t_r,
+                               low_pass=low_pass, high_pass=high_pass)
 
     if detrend:
         # This is faster than scipy.detrend and equivalent
