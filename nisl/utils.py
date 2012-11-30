@@ -271,7 +271,8 @@ def cache(self, func, func_memory_level, **kwargs):
     # if memory level is 0 but a memory object is provided, put memory_level
     # to 1 with a warning
     if self.memory_level == 0:
-        if self.memory is not None and (isinstance(self.memory, basestring)
+        if hasattr(self, 'memory') and self.memory is not None \
+                                   and (isinstance(self.memory, basestring)
                                    or self.memory.cachedir is not None):
             warnings.warn("memory_level is set to 0 but a Memory object has"
                     " been provided. Setting memory_level to 1.")
