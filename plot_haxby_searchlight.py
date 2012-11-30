@@ -39,7 +39,8 @@ conditions = conditions[condition_mask]
 from nisl.io import NiftiMasker
 from nibabel import Nifti1Image
 
-nifti_masker = NiftiMasker(mask=mask, sessions=session)
+nifti_masker = NiftiMasker(mask=mask, sessions=session,
+                           memory='nisl_cache', memory_level=1)
 niimg = Nifti1Image(X, affine)
 X_masked = nifti_masker.fit(niimg).transform(niimg)
 X_preprocessed = nifti_masker.inverse_transform(X_masked).get_data()
