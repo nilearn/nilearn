@@ -74,7 +74,6 @@ def test_fetch_haxby_simple():
 
 def test_fetch_nyu_rest():
     # Mock urllib2 of the dataset fetcher
-    # _urllib2_ref = datasets.mldata.urllib2
     mock = mock_urllib2()
     datasets.urllib2 = mock
     datasets._chunk_read_ = mock_chunk_read_
@@ -106,3 +105,43 @@ def test_fetch_nyu_rest():
     assert_true(np.all(s[24:] == 3))
     teardown_tmpdata()
     return
+
+
+def test_fetch_haxby():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._get_dataset = mock_get_dataset
+
+    for i in range(1, 6):
+        setup_tmpdata()
+        haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)
+        assert_equal(len(mock.urls), i + 1)  # i subjects + md5
+        assert_equal(len(haxby.func), i)
+        assert_equal(len(haxby.anat), i)
+        assert_equal(len(haxby.session_target), i)
+        assert_equal(len(haxby.mask_vt), i)
+        assert_equal(len(haxby.mask_face), i)
+        assert_equal(len(haxby.mask_house), i)
+        assert_equal(len(haxby.mask_face_little), i)
+        assert_equal(len(haxby.mask_house_little), i)
+        teardown_tmpdata()
+        mock.reset()
+
+
+def test_fetch_adhd():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._get_dataset = mock_get_dataset
+
+    setup_tmpdata()
+    adhd = datasets.fetch_adhd(data_dir=tmpdir, n_subjects=12)
+    assert_equal(len(adhd.func), 12)
+    assert_equal(len(adhd.confounds), 12)
+    assert_equal(len(mock.urls), 1)
+    teardown_tmpdata()

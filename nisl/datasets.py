@@ -181,7 +181,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None):
     3. "nisl_data" directory into the current working directory
     """
     if not data_dir:
-        data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(),
+        data_dir = os.getenv("NISL_DATA", os.path.join(os.getcwd(),
                              'nisl_data'))
     data_dir = os.path.join(data_dir, dataset_name)
     if folder is not None:
@@ -221,7 +221,7 @@ def _uncompress_file(file, delete_archive=True):
             tar.extractall(path=data_dir)
             tar.close()
         else:
-            raise IOError("Uncompress: unknown file extesion: %s" % ext)
+            raise IOError("Uncompress: unknown file extension: %s" % ext)
         if delete_archive:
             os.remove(file)
         print '   ...done.'
