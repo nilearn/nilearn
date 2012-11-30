@@ -6,7 +6,7 @@ Test the datasets module
 
 import os
 import shutil
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mktemp
 import numpy as np
 
 from nose import with_setup
@@ -31,6 +31,16 @@ def teardown_tmpdata():
     # remove temporary dir
     if tmpdir is not None:
         shutil.rmtree(tmpdir)
+
+
+def test_md5_sum_file():
+    # Create dummy temporary file
+    f = mktemp()
+    out = open(f, 'w')
+    out.write('abcfeg')
+    out.close()
+    assert_equal(datasets._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
+    os.remove(f)
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
