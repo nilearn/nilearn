@@ -59,6 +59,13 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     if low_pass is None and high_pass is None:
         return signal
 
+    if low_pass is not None and high_pass is not None \
+                            and high_pass >= low_pass:
+        raise ValueError("Your value for high pass filter (%f) is higher or"
+                         " equal to the value for low pass filter (%f). This"
+                         " would result in a blank signal"
+                         % (high_pass, low_pass))
+
     wn = None
     if low_pass is not None:
         lf = low_pass / nyq
@@ -117,13 +124,6 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         confounds = _standardize(confounds, normalize=True)
         confounds = qr_economic(confounds)[0].T
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
-
-    if low_pass is not None and high_pass is not None \
-                            and high_pass >= low_pass:
-        raise ValueError("Your value for high pass filter (%f) is higher or"
-                         " equal to the value for low pass filter (%f). This"
-                         " would result in a blank signal"
-                         % (high_pass, low_pass))
 
     if low_pass is not None or high_pass is not None:
         for s in signals:
