@@ -152,7 +152,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None):
+def _get_dataset_dir(dataset_name, data_dir=None, folder=None):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -160,9 +160,12 @@ def _get_dataset_dir(dataset_name, data_dir=None):
     dataset_name: string
         The unique name of the dataset.
 
-    data_dir: string
+    data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    folder: string, optional
+        Folder in which the file must be fetched inside the dataset folder.
 
     Returns
     -------
@@ -181,6 +184,8 @@ def _get_dataset_dir(dataset_name, data_dir=None):
         data_dir = os.getenv("NISL_DATA",  os.path.join(os.getcwd(),
                              'nisl_data'))
     data_dir = os.path.join(data_dir, dataset_name)
+    if folder is not None:
+        data_dir = os.path.join(data_dir, folder)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     return data_dir
@@ -367,11 +372,7 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     cleaned.
     """
     # Determine data path
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    if not (folder is None):
-        data_dir = os.path.join(data_dir, folder)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
 
     files = []
     for url in urls:
@@ -420,9 +421,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     -----
     If at least one file is missing, an IOError is raised.
     """
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    if not (folder is None):
-        data_dir = os.path.join(data_dir, folder)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
 
     file_paths = []
     for file_name in file_names:
