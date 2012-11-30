@@ -282,10 +282,10 @@ def cache(self, func, func_memory_level, **kwargs):
     else:
         memory = self.memory
         if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory, **kwargs)
+            memory = Memory(cachedir=memory)
         if memory.cachedir is None:
             warnings.warn("Caching has been enabled (memory_level = %d) but no"
                           " Memory object or path has been provided (parameter"
                           " memory). Caching canceled for function %s." %
                           (self.memory_level, func.func_name))
-        return memory.cache(func)
+        return memory.cache(func, **kwargs)
