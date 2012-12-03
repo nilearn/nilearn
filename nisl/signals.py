@@ -24,7 +24,7 @@ def _standardize(signals, copy=True, normalize=True):
 
 
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
-                order=5):
+                order=5, copy=False):
     """ Apply a low pass, high pass or band pass butterworth filter
 
     Apply a filter to remove signal below the `low` frequency and above the
@@ -32,7 +32,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 
     Parameters
     ----------
-    signals: numpy array
+    signals: numpy array (1D sequence or n_sources x time_series)
         Signals to be filtered
 
     sampling_rate: float
@@ -41,13 +41,16 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     low_pass: float, optional
         If specified, signals above this frequency will be filtered (low pass)
 
-    high: float, optional
+    high_pass: float, optional
         If specified, signals below this frequency will be filtered (high pass)
 
     order: integer, optional
         Order of the butterworth filter. When filtering signals, the
         butterworth filter has a decay to avoid ringing. Increase the order
         sharpens the decay.
+
+    copy: boolean, optional
+        If false, apply filter inplace.
 
     Returns
     -------
@@ -82,11 +85,24 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         wn = [hf, lf]
 
     b, a = signal.butter(order, wn, btype=btype)
-    filtered_signals = signal.lfilter(b, a, signals)
-    return filtered_signals
+    if len(signals.shape) == 1:
+        # 1D case
+        if copy:
+            signals = signals.copy()
+        signals[:] = signal.lfilter(b, a, signals)
+    else:
+        if copy:
+            # copy by chunks to avoid huge memory allocation
+            signals_copy = []
+            for i in range(signals.shape[0]):
+                signals_copy.append(np.zeros(signals.shape[1:]))
+            signals = np.asarray(signals_copy)
+        for s in signals:
+            s[:] = signal.lfilter(b, a, s)
+    return signals
 
 
-def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
+def clean(signals, confounds=None, t_r=2.5, low_pass=None,
           high_pass=None, detrend=False, standardize=True,
           shift_confounds=False):
     """ Normalize the signal, and if any confounds are given, project in
@@ -126,9 +142,8 @@ def clean(signals, confounds=None, low_pass=0.2, t_r=2.5,
         signals -= np.dot(np.dot(signals, confounds.T), confounds)
 
     if low_pass is not None or high_pass is not None:
-        for s in signals:
-            s[:] = butterworth(s, sampling_rate=1. / t_r,
-                               low_pass=low_pass, high_pass=high_pass)
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
 
     if detrend:
         # This is faster than scipy.detrend and equivalent
