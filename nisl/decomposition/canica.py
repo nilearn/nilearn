@@ -18,7 +18,9 @@ from sklearn.utils.extmath import randomized_svd
 from .decomposition_model import DecompositionModel
 
 
-def subject_pca(subject_data, n_components, mem):
+def _subject_pca(subject_data, n_components, mem):
+    """ Warning: modifies subject_data inplace
+    """
     subject_data -= subject_data.mean(axis=0)
     std = subject_data.std(axis=0)
     std[std == 0] = 1
@@ -51,15 +53,12 @@ class CanICA(DecompositionModel, TransformerMixin):
         If float, the kurtosis will additionally be thresholded by the
         given value.
 
+    maps_only: boolean, optional
+        If maps_only is true, the time-series corresponding to the
+        spatial maps are not learned.
+
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
-
-    Returns
-    -------
-
-
-    Notes
-    -----
 
 
     """
@@ -67,7 +66,7 @@ class CanICA(DecompositionModel, TransformerMixin):
     def __init__(self, n_components,
                  memory=Memory(cachedir=None),
                  kurtosis_thr=None,
-                 maps_only=False,
+                 maps_only=True,
                  random_state=None,
                  n_jobs=1, verbose=0):
         self.n_components = n_components
@@ -81,7 +80,7 @@ class CanICA(DecompositionModel, TransformerMixin):
     def _find_high_kurtosis(self, pcas, memory):
         random_state = check_random_state(self.random_state)
 
-        if self.kurtosis_thr is False:
+        if not self.kurtosis_thr:
             kurtosis_thr = -np.inf
         else:
             kurtosis_thr = self.kurtosis_thr
@@ -124,21 +123,12 @@ class CanICA(DecompositionModel, TransformerMixin):
             memory = Memory(cachedir=memory)
 
         pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-            delayed(subject_pca)(subject_data,
+            delayed(_subject_pca)(subject_data,
                                  n_components=self.n_components, mem=memory)
             for subject_data in data)
         pcas = np.concatenate(pcas, axis=1)
 
-        if self.kurtosis_thr is None:
-            group_maps = memory.cache(randomized_svd)(
-                pcas, self.n_components)[0]
-            group_maps = group_maps[:, :self.n_components]
-            ica_maps = memory.cache(fastica)(group_maps, whiten=False,
-                                             fun='cube',
-                                             random_state=self.random_state)[2]
-            ica_maps = ica_maps.T
-        else:
-            ica_maps = self._find_high_kurtosis(pcas, memory)
+        ica_maps = self._find_high_kurtosis(pcas, memory)
 
         del pcas
         self.maps_ = ica_maps
