@@ -7,7 +7,7 @@ import warnings
 
 import numpy as np
 from scipy import ndimage
-from sklearn.externals.joblib.parallel import Parallel, delayed
+from sklearn.externals.joblib import Parallel, delayed
 
 from . import utils
 
