@@ -5,6 +5,7 @@ Transformer used to apply basic transformations on multi subject MRI data.
 # License: simplified BSD
 
 import warnings
+import collections
 
 import numpy as np
 from sklearn.externals.joblib import Memory
@@ -158,6 +159,11 @@ class NiftiMultiMasker(BaseMasker):
                 self.__class__.__name__,
                 utils._repr_niimgs(niimgs)[:200])
         data = []
+        if not isinstance(niimgs, collections.Iterable) \
+                or isinstance(niimgs, basestring):
+            raise ValueError("[%s.fit] For multiple processing, you should"
+                             " provide a list of data."
+                             % self.__class__.__name__)
         for niimg in niimgs:
             # Note that data is not loaded into memory at this stage
             # if niimg is a string

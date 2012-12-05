@@ -171,7 +171,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
         this_mask = this_mask.copy().astype(np.int)
         # Convert the mask in [0, 1] values
         if not len(np.unique(this_mask)) == 2:
-            raise ValueError('This mask is made of more than 2 value: %s'
+            raise ValueError('This mask is not made of 2 values: %s'
                              '. Cannot interpret as true or false'
                              % np.unique(this_mask)
                             )
