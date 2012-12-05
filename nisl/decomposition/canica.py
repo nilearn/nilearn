@@ -29,7 +29,7 @@ def _subject_pca(subject_data, n_components, mem):
     subject_data = mem.cache(linalg.svd)(subject_data,
                                          full_matrices=False)[0]
     # We copy here to avoid keeping a reference on the big array
-    subject_data = subject_data[:, :2 * n_components].copy()
+    subject_data = subject_data[:, :n_components].copy()
     return subject_data
 
 

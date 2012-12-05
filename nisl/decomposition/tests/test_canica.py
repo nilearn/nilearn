@@ -2,26 +2,49 @@
 Test CanICA
 """
 import numpy as np
+from numpy.testing import assert_array_equal
 from nisl.decomposition import CanICA
 
 #def test_canica_square_img():
 if 1:
     rng = np.random.RandomState(0)
+
     # Create two images with an "activated regions"
     component1 = np.zeros((100, 100))
-    component1[2:10, 2:10] = 1
+    component1[:25, :50] = 1
+    component1[25:50, :50] = -1
 
     component2 = np.zeros((100, 100))
-    component2[-10:-2, -10:-2] = 1
-    components = np.vstack((component1.ravel(), component2.ravel()))
+    component2[:25, -50:] = 1
+    component2[25:50, -50:] = -1
 
-    data = []
+    component3 = np.zeros((100, 100))
+    component3[-25:, -50:] = 1
+    component3[-50:-25, -50:] = -1
+
+    component4 = np.zeros((100, 100))
+    component4[-25:, :50] = 1
+    component4[-50:-25, :50] = -1
+
+    components = np.vstack((component1.ravel(), component2.ravel(),
+                            component3.ravel(), component4.ravel()))
+
     # Create a "multi-subject" dataset
-    for i in range(3):
-        this_data = np.dot(rng.normal((10, 2)), components)
-        this_data += .1 * rng.normal(size=this_data.shape)
+    data = []
+    for i in range(8):
+        this_data = np.dot(rng.normal(size=(40, 4)), components)
+        this_data += .01 * rng.normal(size=this_data.shape)
         data.append(this_data)
 
-    canica = CanICA(n_components=2)
+    canica = CanICA(n_components=4, random_state=rng)
     canica.fit(data)
+    maps = canica.maps_
 
+    assert_array_equal(np.abs(maps[0]) > np.abs(maps[0]).max() * 0.95,
+                       component2.ravel() != 0)
+    assert_array_equal(np.abs(maps[2]) > np.abs(maps[2]).max() * 0.95,
+                       component3.ravel() != 0)
+    assert_array_equal(np.abs(maps[1]) > np.abs(maps[1]).max() * 0.95,
+                       component1.ravel() != 0)
+    assert_array_equal(np.abs(maps[3]) > np.abs(maps[3]).max() * 0.95,
+                       component4.ravel() != 0)
