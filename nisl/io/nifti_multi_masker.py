@@ -143,7 +143,7 @@ class NiftiMultiMasker(BaseMasker):
         self.mask_upper_cutoff = mask_upper_cutoff
         self.transpose = transpose
 
-    def fit(self, niimgs, y=None):
+    def fit(self, niimgs=None, y=None):
         """Compute the mask corresponding to the data
 
         Parameters
@@ -158,21 +158,21 @@ class NiftiMultiMasker(BaseMasker):
             print "[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
                 utils._repr_niimgs(niimgs)[:200])
-        data = []
-        if not isinstance(niimgs, collections.Iterable) \
-                or isinstance(niimgs, basestring):
-            raise ValueError("[%s.fit] For multiple processing, you should"
-                             " provide a list of data."
-                             % self.__class__.__name__)
-        for niimg in niimgs:
-            # Note that data is not loaded into memory at this stage
-            # if niimg is a string
-            data.append(utils.check_niimgs(niimg, accept_3d=True))
-
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
+            data = []
+            if not isinstance(niimgs, collections.Iterable) \
+                    or isinstance(niimgs, basestring):
+                raise ValueError("[%s.fit] For multiple processing, you should"
+                                 " provide a list of data."
+                                 % self.__class__.__name__)
+            for niimg in niimgs:
+                # Note that data is not loaded into memory at this stage
+                # if niimg is a string
+                data.append(utils.check_niimgs(niimg, accept_3d=True))
+
             mask = utils.cache(self, masking.compute_multi_epi_mask, 1,
                                 ignore=['verbose'])(
                                     niimgs,
@@ -185,6 +185,11 @@ class NiftiMultiMasker(BaseMasker):
             self.mask_img_ = Nifti1Image(mask.astype(np.int),
                     data[0].get_affine())
         else:
+            if niimgs is not None:
+                warnings.warn('[%s.fit] Generation of a mask has been'
+                             ' requested (niimgs != None) while a mask has'
+                             ' been provided at masker creation. Given mask'
+                             ' wille be used.' % self.__class__.__name__)
             self.mask_img_ = utils.check_niimg(self.mask)
 
         # If resampling is requested, resample also the mask

@@ -4,7 +4,7 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-
+import warnings
 import numpy as np
 from sklearn.externals.joblib import Memory
 
@@ -139,7 +139,7 @@ class NiftiMasker(BaseMasker):
         self.mask_upper_cutoff = mask_upper_cutoff
         self.transpose = transpose
 
-    def fit(self, niimgs, y=None):
+    def fit(self, niimgs=None, y=None):
         """Compute the mask corresponding to the data
 
         Parameters
@@ -154,12 +154,12 @@ class NiftiMasker(BaseMasker):
             print "[%s.fit] Loading data from %s" % (
                             self.__class__.__name__,
                             utils._repr_niimgs(niimgs)[:200])
-        niimgs = utils.check_niimgs(niimgs, accept_3d=True)
 
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
+            niimgs = utils.check_niimgs(niimgs, accept_3d=True)
             mask = utils.cache(self, masking.compute_epi_mask, 1,
                                ignore=['verbose'])(
                 niimgs.get_data(),
@@ -171,6 +171,11 @@ class NiftiMasker(BaseMasker):
             self.mask_img_ = Nifti1Image(mask.astype(np.int),
                     niimgs.get_affine())
         else:
+            if niimgs is not None:
+                warnings.warn('[%s.fit] Generation of a mask has been'
+                             ' requested (niimgs != None) while a mask has'
+                             ' been provided at masker creation. Given mask'
+                             ' wille be used.' % self.__class__.__name__)
             self.mask_img_ = utils.check_niimg(self.mask)
 
         # If resampling is requested, resample also the mask
