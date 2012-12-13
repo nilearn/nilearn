@@ -590,8 +590,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
                 md5sums = _fetch_file(url + 'MD5SUMS',
                                       data_dir=_get_dataset_dir("haxby2001",
                                                                 data_dir))
-            if md5sums:
-                md5sums = _read_md5_sum_file(md5sums)
+                if md5sums:
+                    md5sums = _read_md5_sum_file(md5sums)
 
             _fetch_dataset('haxby2001',
                            ["%ssubj%d-2010.01.14.tar.gz" % (url, i)],
