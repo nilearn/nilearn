@@ -211,15 +211,25 @@ def _uncompress_file(file, delete_archive=True):
     data_dir = os.path.dirname(file)
     # We first try to see if it is a zip file
     try:
-        ext = os.path.splitext(file)[1]
+        filename, ext = os.path.splitext(file)
         if ext == '.zip':
             z = zipfile.Zipfile(file)
             z.extractall(data_dir)
             z.close()
-        elif ext in ['.tar', '.tgz', '.gz', '.bz2']:
+        elif ext == '.gz':
+            import gzip
+            gz = gzip.open(file)
+            out = open(filename, 'wb')
+            shutil.copyfileobj(gz, out, 8192)
+            gz.close()
+            out.close()
+            # If file is .tar.gz, this will be handle in the next case
+            filename, ext = os.path.splitext(file)
+        if ext in ['.tar', '.tgz']:
             tar = tarfile.open(file, "r")
             tar.extractall(path=data_dir)
             tar.close()
+
         else:
             raise IOError("Uncompress: unknown file extension: %s" % ext)
         if delete_archive:
