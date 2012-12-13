@@ -558,32 +558,10 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
                   'mask8_house_vt.nii.gz']
 
     if n_subjects > 5:
-        sys.stderr.write('Warning: there is only 5 subjects')
+        sys.stderr.write('Warning: there are only 5 subjects')
         n_subjects = 5
 
-    file_names = [os.path.join('subj%d' % i, name)
-                  for i in range(1, n_subjects + 1)
-                  for name in file_names]
-
     # load the dataset
-    try:
-        # Try to load the dataset
-        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
-    except IOError:
-        # If the dataset does not exists, we download it
-        if url is None:
-            url = 'http://data.pymvpa.org/datasets/haxby2001/'
-        # Get the MD5sums file
-        md5sums = _fetch_file(url + 'MD5SUMS',
-                              data_dir=_get_dataset_dir("haxby2001", data_dir))
-        if md5sums:
-            md5sums = _read_md5_sum_file(md5sums)
-        urls = ["%ssubj%d-2010.01.14.tar.gz" % (url, i)
-                for i in range(1, n_subjects + 1)]
-        _fetch_dataset('haxby2001', urls, data_dir=data_dir,
-                       resume=resume, md5sums=md5sums, verbose=verbose)
-        files = _get_dataset("haxby2001", file_names, data_dir=data_dir)
-
     anat = []
     func = []
     session_target = []
@@ -593,17 +571,42 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
     mask_face_little = []
     mask_house_little = []
 
-    for i in range(n_subjects):
-        # We are considering files 8 by 8
-        i *= 8
-        anat.append(files[i])
-        func.append(files[i + 1])
-        session_target.append(files[i + 2])
-        mask_vt.append(files[i + 3])
-        mask_face.append(files[i + 4])
-        mask_house.append(files[i + 5])
-        mask_face_little.append(files[i + 6])
-        mask_house_little.append(files[i + 7])
+    md5sums = None
+
+    for i in range(1, n_subjects + 1):
+        file_paths = [os.path.join('subj%d' % i, name)
+                      for name in file_names]
+
+        try:
+            # Try to load the dataset
+            sub_files = _get_dataset("haxby2001", file_paths,
+                                     data_dir=data_dir)
+        except IOError:
+            # If the dataset does not exists, we download it
+            if url is None:
+                url = 'http://data.pymvpa.org/datasets/haxby2001/'
+            # Get the MD5sums file
+            if md5sums is None:
+                md5sums = _fetch_file(url + 'MD5SUMS',
+                                      data_dir=_get_dataset_dir("haxby2001",
+                                                                data_dir))
+            if md5sums:
+                md5sums = _read_md5_sum_file(md5sums)
+
+            _fetch_dataset('haxby2001',
+                           ["%ssubj%d-2010.01.14.tar.gz" % (url, i)],
+                           data_dir=data_dir, resume=resume, verbose=verbose)
+            sub_files = _get_dataset("haxby2001", file_paths,
+                                     data_dir=data_dir)
+
+        anat.append(sub_files[0])
+        func.append(sub_files[1])
+        session_target.append(sub_files[2])
+        mask_vt.append(sub_files[3])
+        mask_face.append(sub_files[4])
+        mask_house.append(sub_files[5])
+        mask_face_little.append(sub_files[6])
+        mask_house_little.append(sub_files[7])
 
     # return the data
     return Bunch(
