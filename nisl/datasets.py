@@ -228,7 +228,7 @@ def _uncompress_file(file, delete_archive=True):
             # If file is .tar.gz, this will be handle in the next case
             filename, ext = os.path.splitext(file)
             processed = True
-        if ext in ['.tar', '.tgz']:
+        if ext in ['.tar', '.tgz', '.bz2']:
             tar = tarfile.open(file, "r")
             tar.extractall(path=data_dir)
             tar.close()
