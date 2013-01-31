@@ -174,7 +174,7 @@ class NiftiMultiMasker(BaseMasker):
                 data.append(utils.check_niimgs(niimg, accept_3d=True))
 
             mask = utils.cache(self, masking.compute_multi_epi_mask, 1,
-                                ignore=[n_jobs, 'verbose'])(
+                                ignore=['n_jobs', 'verbose'])(
                                     niimgs,
                                     connected=self.mask_connected,
                                     opening=self.mask_opening,
