@@ -320,6 +320,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None,
             local_file = open(temp_full_name, "wb")
         _chunk_read_(data, local_file, report_hook=True,
                      initial_size=initial_size, verbose=verbose)
+        # temp file must be closed prior to the move
+        if not local_file.closed:
+            local_file.close()
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         print '...done. (%i seconds, %i min)' % (dt, dt / 60)
@@ -337,7 +340,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None,
         raise
     finally:
         if local_file is not None:
-            local_file.close()
+            if not local_file.closed:
+                local_file.close()
     if md5sum is not None:
         if (_md5_sum_file(full_name) != md5sum):
             raise ValueError("File %s checksum verification has failed."
