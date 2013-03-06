@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Utilities to download NeuroImaging datasets
 """
@@ -214,7 +215,7 @@ def _uncompress_file(file, delete_archive=True):
         filename, ext = os.path.splitext(file)
         processed = False
         if ext == '.zip':
-            z = zipfile.Zipfile(file)
+            z = zipfile.ZipFile(file)
             z.extractall(data_dir)
             z.close()
             processed = True
@@ -385,7 +386,7 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
 
     Notes
     -----
-    If, for any reason, the download procedure fails, all downloaded data are
+    If, for any reason, the download procedure fails, all downloaded data is
     cleaned.
     """
     # Determine data path
@@ -404,8 +405,8 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
                 _uncompress_file(full_name)
             files.append(full_name)
         except Exception:
-            print 'An error occured, abort fetching.' \
-                ' Please see the full log above.'
+            print ('An error occured, fetching aborted.' +
+                   ' Please see the full log above.')
             shutil.rmtree(data_dir)
             raise
     return files
@@ -452,8 +453,84 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
+def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
+    """Download and load the ICBM152 template (dated 2009)
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Use to forec data storage in a non-
+        standard location. Default: None (meaning: default)
+    url: string, optional
+        Download URL of the dataset. Overwrite the default URL.
+
+    Return
+    ------
+    data: Bunch
+        dictionary-like object, interest keys are:
+        "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
+            given modality (resp. T1, T2, T2 relaxometry and proton
+            density weighted). Values are file paths.
+        "gm", "wm", "csf": segmented images, giving resp. gray matter,
+            white matter and cerebrospinal fluid. Values are file paths.
+        "eye_mask", "face_mask", "mask": use these images to mask out
+            parts of mri images. Values are file paths.
+
+    References
+    ----------
+    VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
+    and BDCG, "Unbiased average age-appropriate atlases for pediatric studies",
+    NeuroImage,Volume 54, Issue 1, January 2011
+
+    VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
+    "Unbiased nonlinear average age-appropriate brain templates from birth
+    to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
+    Organization for Human Brain Mapping 2009 Annual Meeting.
+
+    DL Collins, AP Zijdenbos, WFC Baaré and AC Evans,
+    "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
+    IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210–223
+
+    Notes
+    -----
+    For more information about this dataset's structure:
+    http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+    """
+
+    keys = ("csf", "gm", "wm",
+            "pd", "t1", "t2", "t2_relax",
+            "eye_mask", "face_mask", "mask")
+    filenames = [os.path.join("mni_icbm152_nlin_sym_09a", name)
+                 for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
+                              "mni_icbm152_gm_tal_nlin_sym_09a.nii",
+                              "mni_icbm152_wm_tal_nlin_sym_09a.nii",
+
+                              "mni_icbm152_pd_tal_nlin_sym_09a.nii",
+                              "mni_icbm152_t1_tal_nlin_sym_09a.nii",
+                              "mni_icbm152_t2_tal_nlin_sym_09a.nii",
+                              "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii",
+
+                              "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii",
+                              "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
+                              "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
+
+
+    try:
+        sub_files = _get_dataset("icbm152_2009", filenames, data_dir=data_dir)
+    except IOError:
+        if url is None:
+            url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip"
+            _fetch_dataset("icbm152_2009", [url], data_dir=data_dir,
+                           resume=resume, verbose=verbose)
+            sub_files = _get_dataset("icbm152_2009",
+                                     filenames, data_dir=data_dir)
+
+    params = dict(zip(keys, sub_files))
+    return Bunch(**params)
+
+
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
-    """Download and loads an example haxby dataset
+    """Download and load an example haxby dataset
 
     Parameters
     ----------
@@ -464,7 +541,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
     Returns
     -------
     data: Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, interest attributes are:
         'func': string
             Path to nifti file with bold data
         'session_target': string
@@ -565,7 +642,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
     http://dev.pymvpa.org/datadb/haxby2001.html
 
     See `additional information
-    <http://www.sciencemag.org/content/293/5539/2425>`_
+    <http://www.sciencemag.org/content/293/5539/2425>`
     """
 
     # definition of dataset files
