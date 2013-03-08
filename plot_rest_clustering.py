@@ -53,7 +53,7 @@ print "Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start)
 # Unmask data
 # Avoid 0 label
 labels = ward.labels_ + 1
-labels = nifti_masker.inverse_transform(ward.labels_).get_data()
+labels = nifti_masker.inverse_transform(labels).get_data()
 # 0 is the background, putting it to -1
 labels = labels - 1
 
