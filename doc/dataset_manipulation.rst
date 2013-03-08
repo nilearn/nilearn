@@ -33,14 +33,16 @@ can be imported from :mod:`nisl.datasets`::
    fetch_nyu_rest
    fetch_adhd
 
-The data are downloaded only once and stored locally, in order:
+The data are downloaded only once and stored locally, in one of the
+following directories (in order of priority):
 
   * the folder specified by `data_dir` parameter in the fetching function
     if it is specified
   * the environment variable `NISL_DATA` if it exists
   * the `nisl_data` folder in the current directory
    
-Note that you can copy that folder across computers to avoid downloading.
+Note that you can copy that folder across computers to avoid
+downloading the data twice.
 
 Understanding MRI data 
 =======================
@@ -113,10 +115,10 @@ data, which we call Niimgs, or Niimg-4D. Accepted inputs are then:
 Visualizing brain images
 ========================
 
-Once that NIfTI data is loaded, visualization is simply the display of the
+Once that NIfTI data are loaded, visualization is simply the display of the
 desired slice (the first three dimensions) at a desired time point (fourth
 dimension). For *haxby*, data is rotated so we have to turn each image
-counter clockwise.
+counter-clockwise.
 
 .. literalinclude:: ../plot_visualization.py
      :start-after: # Visualization #############################################################
@@ -173,14 +175,14 @@ Custom Masking
 
 In the basic tutorial, we showed how the masker could compute a mask
 automatically: the result was quite impressive. But, on some datasets, the
-default algorithm may perform poorly. That is why it is very important to
-*always look at what your data looks like*.
+default algorithm performs poorly. That is why it is very important to
+*always look at how your data look like*.
 
 Mask Visualization
 ...................
 
-Before exploring the subject, we define an helper function to display the
-masks. This function will display a background (compose of a mean of epi scans)
+Before exploring the subject, we define a helper function to display the
+masks. This function will display a background (composed of a mean of epi scans)
 and the mask as a red layer over this background.
 
 
@@ -200,8 +202,9 @@ is suitable for your data and adjust parameters if it is not. See the
 :class:`NiftiMasker` documentation for a complete list of mask computation
 parameters.
 
-As an example, we will now try to build a mask on a dataset form scratch. Haxby
-dataset will be used since it provides a mask that we can use as a reference.
+As an example, we will now try to build a mask based on a dataset from
+scratch. The Haxby dataset will be used since it provides a mask that we
+can use as a reference.
 
 .. figure:: auto_examples/images/plot_nifti_advanced_1.png
     :target: auto_examples/plot_nifti_advanced.html
@@ -233,7 +236,7 @@ If we look at the :class:`NiftiMasker` object, we
 see two interesting parameters: *lower_cutoff* and *upper_cutoff*. The
 algorithm ignores dark (low) values. We can tell the algorithm to ignore
 high values by lowering *upper cutoff*. Default value is 0.9, so we try
-0.8 to lower a bit the threshold and get a large mask.
+0.8 to lower a bit the threshold and get a larger mask.
 
 
 .. literalinclude:: ../plot_nifti_advanced.py
@@ -245,8 +248,8 @@ high values by lowering *upper cutoff*. Default value is 0.9, so we try
     :align: center
     :scale: 50%
 
-The resulting mask seems correct. If we compare it to the original one, they
-are very close.
+The resulting mask seems to be correct. If we compare it to the
+original one, they are very close.
 
 
 Preprocessings
@@ -257,10 +260,10 @@ Preprocessings
 Resampling
 ...........
 
-Nifti Masker offers two ways to resample images:
+:class:`NiftiMasker` offers two ways to resample images:
 
   * *target_affine*: resample (resize, rotate...) images by providing a new affine
-  * *target_shape*: resize images by providing directly a new shape
+  * *target_shape*: resize images by directly providing a new shape
 
 Resampling can be used for example to reduce processing time of an algorithm by
 lowering image resolution.
@@ -275,10 +278,11 @@ masker also proposes some filters.
 
 By default, the signal will be normalized. If the dataset provides a confounds
 file, it can be applied by providing the path to the file to the masker.
-Low pass and High pass filters allows one to remove artefacts.
+Low-pass and high-pass filters allow one to remove artifacts.
 
-Detrending removes linear trend along axis from data. It is not activated by
-default in the Nifti Masker but it is almost essential.
+Detrending removes any linear trend along specified axis from data. It
+is not activated by default in the Nifti Masker but is almost
+essential.
 
 .. note:: **Exercise**
    :class: green
@@ -291,7 +295,7 @@ default in the Nifti Masker but it is almost essential.
 Inverse transform: unmasking data
 ----------------------------------
 
-Once that your computation is finished, you want to unmask your data to be able
+Once your computation is finished, you want to unmask your data to be able
 to visualize it. This step is present in almost all the examples provided in
 Nisl.
 
@@ -332,11 +336,11 @@ can be easily extracted from the fMRI data using the
 From 4D to 2D arrays
 --------------------
 
-FMRI data is naturally represented as a 4D block of data: 3 spatial
-dimensions and time. In practice, we are most often only interested in
-working only on the time-series of the voxels in the brain. It is
-convenient to apply a brain mask and go from a 4D array to a 2D array,
-`voxel` **x** `time`, as depicted below:
+fMRI data is usually represented as a 4D block of data: 3 spatial
+dimensions and one of time. In practice, we are most often only
+interested in working only on the time-series of the voxels in the
+brain. It is thus convenient to apply a brain mask and go from a 4D
+array to a 2D array, `voxel` **x** `time`, as depicted below:
 
 .. only:: html
 
@@ -366,8 +370,8 @@ Preprocessing functions
 .. currentmodule:: nisl.io.nifti_masker
 
 The :class:`NiftiMasker` automatically calls some preprocessing
-functions that are obviously available if you want to set up your
-own preprocessing procedure:
+functions that are available if you want to set up your own
+preprocessing procedure:
 
 .. currentmodule:: nisl
 
