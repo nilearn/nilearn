@@ -27,7 +27,7 @@ from internet and load it with a provided function:
 
 No mask is given with the data so we let the masker compute one.
 The result is a niimg from which we extract a numpy array that is
-used to mask our original *X*.
+used to mask our original images.
 
 Applying Ward clustering
 ==========================
@@ -48,21 +48,21 @@ Principle
 ---------
 
 The Ward algorithm is a hierarchical clustering algorithm: it
-successfully merges together voxels that have similar timecourses.
+merges together voxels that have similar timecourses.
 
 Caching
 -------
 
 Note that in practice the scikit-learn implementation of the Ward
-clustering first computes a tree of possible merges, and then, the
-requested number of clusters breaks it apart the tree at the right level.
+clustering first computes a tree of possible merges, and then, given a
+requested number of clusters, breaks apart the tree at the right level.
 
 As no matter how many clusters we want, we do not need to compute the
 tree again, we can rely on caching to speed things up when varying the
-number of cluster. Scikit-learn integrates a transparent caching library
+number of clusters. Scikit-learn integrates a transparent caching library
 (`joblib <http://packages.python.org/joblib/>`_). In the ward clustering,
 the *memory* parameter is used to cache the computed component tree. You
-can give it either a *joblib.Memory* instance or the name of directory
+can give it either a *joblib.Memory* instance or the name of a directory
 used for caching.
 
 Apply the ward
@@ -98,14 +98,14 @@ After applying the ward, we must unmask the data. This can be done simply :
     :end-before: # Display the labels 
 
 You can see that masked data is filled with -1 values. This is done for the
-sake of visualization. In fact, clusters are labeled with going from 0 to
-(n_clusters - 1). By putting every other values to -1, we assure that
-uninteresting values will not mess with the visualization.
+sake of visualization. In fact, clusters are labeled from 0 to
+(n_clusters - 1). By putting every background value to -1, we assure that
+they will not mess with the visualization.
 
 Label visualization
 --------------------
 
-We can visualize the clusters. We assign random colors to each cluster
+To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
 
 .. literalinclude:: ../plot_rest_clustering.py
@@ -124,7 +124,7 @@ Compressed picture
 By transforming a picture in a new one in which the value of each voxel
 is the mean value of the cluster it belongs to, we are creating a
 compressed version of the original picture. We can obtain this
-representation thanks to a two step procedure :
+representation thanks to a two-step procedure :
 
 - call *ward.transform* to obtain the mean value of each cluster (for each
   scan)
@@ -144,6 +144,6 @@ representation thanks to a two step procedure :
 
 |left_img| |right_img|
 
-We can see that using only 2000 parcels, we can approximate well the
-original image.
+We can see that using only 2000 parcels, the original image is well
+approximated.
 

@@ -12,9 +12,9 @@ Before using a machine learning tool, we may need to apply the following
 steps:
 
     1. :ref:`data_loading` : load Nifti files and check consistency of data
-    2. :ref:`Masking the data <masking>` : if a mask is not provided, one is
-       computes automatically
-    3. :ref:`resampling`: optionally we could resampling our data to a
+    2. :ref:`masking data <masking>` : if a mask is not provided, one is
+       computed automatically
+    3. :ref:`resampling`: optionally data could be resampled to a
        different resolution
     4. :ref:`temporal_filtering`: detrending, regressing out confounds,
        normalization
@@ -27,16 +27,17 @@ Data loading and preprocessing
 Downloading the data
 ----------------------
 
-To run demos, the data is retrieved using a function provided by Nisl
-which will download a dataset and return a bunch of paths to the dataset
+To run demos, data are retrieved using a function provided by Nisl
+which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in :ref:`downloading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
-example, we can download the data from the Haxby 2001 paper::
+example, we can download the data from the
+`Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ ::
 
     >>> from nisl import datasets
     >>> dataset = datasets.fetch_haxby()
 
-`datasets` contains filenames referring to dataset files on the disk::
+`dataset.func` contains filenames referring to dataset files on the disk::
 
   >>> dataset.keys()
   ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
@@ -48,7 +49,7 @@ Loading non image data: experiment description
 -----------------------------------------------
 
 An experiment may need additional information about subjects, sessions or
-experiments. In the Haxby experiment, fMRI data is acquired while
+experiments. In the Haxby experiment, fMRI data are acquired while
 presenting different category of pictures to the subject (face, house...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
@@ -70,8 +71,8 @@ This can be done as follows:
 .. note::
 
     If you are not comfortable with this kind of data processing, do not
-    worry: there are plenty of example in Nisl that allows you to easily
-    load data from provided dataset. Do not hesitate to copy/paste the
+    worry: there are plenty of examples in Nisl that allows you to easily
+    load data from provided datasets. Do not hesitate to copy/paste the
     code and adapt it to your own data format if needed. More information
     can be found in the :ref:`data manipulation <data_manipulation>`
     section.
@@ -83,7 +84,7 @@ Masking the data: from 4D image to 2D array
 
 While the neuroimaging data is made of 4D images, positioned in a
 coordinate space (which we will call :ref:`Niimgs <niimg>`). For use with
-the scikit-learn, they need to be converted into, i.e. 2D arrays of
+the scikit-learn, they need to be converted into 2D arrays of
 samples and features.
 
 .. |niimgs| image:: images/niimgs.jpg
@@ -100,8 +101,8 @@ samples and features.
 
 .. currentmodule:: nisl.io
 
-We use masking to convert 4D data (e.g. 3D volume over time) into 2D data
-(e.g. voxels over time). For this purpose, we use the
+We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
+(i.e. voxels over time). For this purpose, we use the
 :class:`NiftiMasker` object, a very powerful data loading tool.
 
 Applying a mask
@@ -129,7 +130,7 @@ Note that you can call `nifti_masker.transform(dataset.func[1])` on new
 data to mask it in a similar way as the data that was used during the
 fit.
 
-Computing automatically a mask
+Automatically computing a mask
 ...............................
 
 If your dataset does not provide a mask, the Nifti masker will compute
@@ -158,10 +159,12 @@ We will not detail it here since there is a very good documentation about it in 
 Unmasking (inverse_transform)
 =============================
 
-Unmasking data is as easy as masking it! This can be done by using method `inverse_transform`
-on your processed data. As you may want to unmask several kind of data (not only the data that
-you previously masked but also the results of an algorithm), the masker is clever and can take
-data of dimension 1D (resp. 2D) to convert it back to 3D (resp. 4D).
+Unmasking data is as easy as masking it! This can be done by using
+method `inverse_transform` on your processed data. As you may want to
+unmask several kinds of data (not only the data that you previously
+masked but also the results of an algorithm), the masker is clever and
+can take data of dimension 1D (resp. 2D) to convert it back to 3D
+(resp. 4D).
 
 .. literalinclude:: ../plot_haxby_simple.py
     :start-after: ### Unmasking #################################################################
@@ -172,8 +175,9 @@ Here we want to see the discriminating weights of some voxels.
 Visualizing results
 ===================
 
-Again the visualization code is simple. We can an fMRI slice as a background
-and plot the weight. Brighter points have a higher discriminating weight.
+Again the visualization code is simple. We can use an fMRI slice as a
+background and plot the weights. Brighter points have a higher
+discriminating weight.
 
 .. literalinclude:: ../plot_haxby_simple.py
     :start-after: ### Visualization #############################################################
@@ -190,7 +194,7 @@ Going further
 .. currentmodule:: nisl.io
 
 The :class:`NiftiMasker` is a very powerful object and we have only
-scratched the surface of its possibilities. It is described more in
+scratched the surface of its possibilities. It is described in more
 details in the section :ref:`nifti_masker`. Also, simple functions that
 can be used to perform elementary operations such as masking or filtering
 are described in :ref:`preprocessing_functions`.

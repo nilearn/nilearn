@@ -12,7 +12,7 @@
 .. _fmri_decoding:
 
 ================================================================================
-fMRI decoding: predicting which objects a subject is viewing 
+fMRI decoding: predicting which object a subject is viewing
 ================================================================================
 
 .. topic:: Objectives
@@ -21,26 +21,26 @@ fMRI decoding: predicting which objects a subject is viewing
 
     1. Load fMRI volumes in Python.
     2. Perform a state-of-the-art decoding analysis of fMRI data.
-    3. Perform even more sophisticated analyzes of fMRI data.
+    3. Perform even more sophisticated analyses of fMRI data.
 
 Data loading and preprocessing
 ================================
 
-We launch ipython::
+Launch ipython::
 
   $ ipython -pylab
 
-First, we load the data using the tutorial's data downloader,
+First, load the data using the tutorial's data downloader,
 :func:`nisl.datasets.fetch_haxby_simple`:
 
 .. literalinclude:: ../plot_haxby_decoding.py
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Preprocess data ########################################################### 
 
-Then we preprocess the data to make:
+Then preprocess the data:
 
 - compute the mean of the image to replace anatomic data
-- mask the data X and transpose the matrix, so that its shape becomes
+- mask data X and transpose the matrix, so that its shape becomes
   (n_samples, n_features) (see :ref:`mask_4d_2_3d` for a discussion on using 
   masks)
 
@@ -72,7 +72,7 @@ Down to business: decoding analysis
 Prediction function: the estimator
 -----------------------------------
 
-To perform decoding we construct an estimtor, predicting a condition
+To perform decoding we construct an estimator, predicting a condition
 label **y** given a set **X** of images.
 
 We define here a simple `Support Vector Classification
@@ -156,7 +156,7 @@ We can visualize the result of our algorithm:
 - we first get the support vectors of the SVC and revert the feature
   selection mechanism
 - we remove the mask
-- then we overlay our previousely-computed, mean image with our support vectors
+- then we overlay our previously-computed, mean image with our support vectors
 
 .. figure:: auto_examples/images/plot_haxby_decoding_1.png
    :target: auto_examples/plot_haxby_decoding.html
@@ -176,8 +176,8 @@ the same set of data. We need to use a cross-validation to split the data
 into different sets.
 
 In scikit-learn, a cross-validation is simply a function that generates
-the index of the folds within a loop.
-So, now, we can apply the previously defined *pipeline* with the
+the indices of the folds within a loop.
+Now, we can apply the previously defined *pipeline* with the
 cross-validation:
 
 .. literalinclude:: ../plot_haxby_decoding.py
@@ -194,14 +194,14 @@ different folds of cross-validation::
   >>> from sklearn.cross_validation import cross_val_score
   >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv)
 
-If you are the happy owner of a multiple processors computer you can
+If you are the happy owner of a multiple-processor computer you can
 speed up the computation by using n_jobs=-1, which will spread the
-computation equally across all processors (this will probably not work
+computation equally across all processors (but will probably not work
 under Windows)::
 
  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
-**Prediction accuracy** We can take a look to the results of the
+**Prediction accuracy** We can take a look at the results of the
 *cross_val_score* function::
 
   >>> cv_scores # doctest: +SKIP
@@ -237,7 +237,7 @@ We can add a line to print the results:
 
     The complete script can be found as 
     :ref:`an example <example_tutorial_plot_haxby_decoding.py>`.
-    Now, all you have to do is to publish the results :)
+    Now, all you have to do is publish the results :)
 
 Going further with scikit-learn
 ===================================

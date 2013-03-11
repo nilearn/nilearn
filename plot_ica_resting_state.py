@@ -35,13 +35,13 @@ n_components = 20
 ica = FastICA(n_components=n_components, random_state=42)
 components_masked = ica.fit_transform(data_masked.T).T
 
-# We normalize the estimated components, for thresholding to make sens
+# Normalize estimated components, for thresholding to make sense
 components_masked -= components_masked.mean(axis=0)
 components_masked /= components_masked.std(axis=0)
 # Threshold
 components_masked[np.abs(components_masked) < 1.3] = 0
 
-# Now we inverting the masking operation, to go back to a full 3D
+# Now invert the masking operation, going back to a full 3D
 # representation
 component_img = masker.inverse_transform(components_masked)
 components = component_img.get_data()

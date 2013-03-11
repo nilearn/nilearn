@@ -44,8 +44,8 @@ For this tutorial we need:
 Masking
 -------
 
-One of the main element that distinguich Searchlight from other algorithms is
-this notion of structuring element that scan the entire volume. If this seems
+One of the main elements that distinguish Searchlight from other algorithms is
+the notion of structuring element that scans the entire volume. If this seems
 rather intuitive, it has in fact an impact on the masking procedure.
 
 Most of the time, fMRI data is masked and then given to the algorithm. This is
@@ -57,7 +57,7 @@ be used here :
 - *process_mask* is a subset of mask and contains voxels to be processed.
 
 *process_mask* will then be used to restrain computation to one slice, in the
-back of the brain. *mask* will ensure that no value outside of the brain is
+back of the brain. *mask* will ensure that no value outside the brain is
 taken into account when iterating with the sphere.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
@@ -83,15 +83,16 @@ Classifier
 The classifier used by default by Searchlight is LinearSVC with C=1 but
 this can be customed easily by passing an estimator parameter to the
 cross validation. See scikit-learn documentation for `other classifiers
-<http://scikit-learn.org/supervised_learning.html>`_.
+<http://scikit-learn.org/stable/supervised_learning.html>`_.
 
 Score function
 --------------
 
-Here we use precision as metrics to measures proportion of true positives
-among all positives results for one class. Many others are available in
+Here we use precision as metrics to measure the proportion of true
+positives among all positive results for one class. Many others are
+available in
 `scikit-learn documentation
-<http://scikit-learn.org/supervised_learning.html>`_.
+<http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics>`_.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: # all positives results for one class.
@@ -105,9 +106,9 @@ score is computed by running a classifier on selected voxels. In order to make
 this score as accurate as possible (and avoid overfitting), a cross validation
 is made.
 
-As Searchlight is a little costly, we have chosen a cross validation
-method that do not take too much time. *K*-Fold along with *K* = 4 is a
-good compromise between running time and result.
+As Searchlight is costly, we have chosen a cross validation
+method that does not take too much time. *K*-Fold along with *K* = 4 is a
+good compromise between running time and quality.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: # set once and the others as learning sets
@@ -133,7 +134,7 @@ Searchlight
 
 As the activation map is cropped, we use the mean image of all scans as a
 background. We can see here that voxels in the visual cortex contains
-information to distinguish pictures showed to the volunteer, which was the
+information to distinguish pictures showed to the volunteers, which was the
 expected result.
 
 .. figure:: auto_examples/images/plot_haxby_searchlight_1.png
@@ -148,9 +149,9 @@ expected result.
 Comparing to standard-analysis: F_score or SPM
 ------------------------------------------------
 
-The standard approach to brain mapping is performed using *statistical
-parametric mapping* (SPM), using ANOVA (analysis of variance), and F
-tests. Here we use is to compute the *p-values* of the voxels [1]_.
+The standard approach to brain mapping is performed using *Statistical
+Parametric Mapping* (SPM), using ANOVA (analysis of variance), and
+F-tests. Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
 
 .. figure:: auto_examples/images/plot_haxby_searchlight_2.png

@@ -189,7 +189,7 @@ class NiftiMultiMasker(BaseMasker):
                 warnings.warn('[%s.fit] Generation of a mask has been'
                              ' requested (niimgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
-                             ' wille be used.' % self.__class__.__name__)
+                             ' will be used.' % self.__class__.__name__)
             self.mask_img_ = utils.check_niimg(self.mask)
 
         # If resampling is requested, resample also the mask

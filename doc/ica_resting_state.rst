@@ -7,11 +7,12 @@ ICA of resting-state fMRI datasets
 Independent Analysis of resting-state fMRI data is useful to extract
 brain networks in an unsupervised maner (data-driven):
 
-* Kiviniemi et al, *Independent component analysis of nondeterministic
-  fMRI signal sources*, Neuroimage 2009
+* `Kiviniemi et al, *Independent component analysis of nondeterministic
+  fMRI signal sources*, Neuroimage 2009 <http://dx.doi.org/10.1016/S1053-8119(03)00097-1>`_
 
-* Beckmann et al, *Investigations into resting-state connectivity using
+* `Beckmann et al, *Investigations into resting-state connectivity using
   independent component analysis*, Philos Trans R Soc Lond B 2005
+  <http://dx.doi.org/10.1098/rstb.2005.1634>`_
 
 Preprocessing
 ==============
@@ -19,15 +20,15 @@ Preprocessing
 Loading
 -------
 
-As seen in :ref:`previous sections <downloading_data>`, we fetch the data from
-internet and load it with a provided function:
+As seen in :ref:`previous sections <downloading_data>`, we fetch data from
+internet and load them with a provided function:
 
 
 .. literalinclude:: ../plot_ica_resting_state.py
     :start-after: ### Load nyu_rest dataset #####################################################
     :end-before: ### Preprocess ################################################################
 
-Conctenating, smoothing and masking
+Concatenating, smoothing and masking
 ------------------------------------
 
 .. literalinclude:: ../plot_ica_resting_state.py
@@ -65,5 +66,5 @@ overlays.
 
    Note that as the ICA components are not ordered, the two components
    displayed on your computer might not match those of the tutorial. For
-   a fair representation, you should display all the components and
+   a fair representation, you should display all components and
    investigate which one resemble those displayed above.

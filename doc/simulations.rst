@@ -16,15 +16,15 @@ Decoding on simulated data
 
 .. topic:: Objectives
 
-    1. Understand linear estimators, (SVM, elastic net, ridge) 
+    1. Understand linear estimators (SVM, elastic net, ridge)
     2. Use the scikit-learn's linear models
 
 Simple NeuroImaging-like simulations
 =====================================
 
-We simulate data as in Michel et al 2012, `Total variation regularization
-for fMRI-based prediction of behaviour`, Trans Med Imag: a linear model
-with a random design matrix **X**:
+We simulate data as in
+`Michel et al. 2012 <http://dx.doi.org/10.1109/TMI.2011.2113378>`_ :
+a linear model with a random design matrix **X**:
 
 .. math::
 

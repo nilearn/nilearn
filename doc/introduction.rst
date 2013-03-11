@@ -9,22 +9,22 @@ Machine learning problems and vocabulary
 -----------------------------------------
 
 Machine learning is interested in learning from data empirical rules to
-make **predictions**. Two kind of problems appear:
+make **predictions**. Two kinds of problems appear:
 
 :Supervised learning:
 
     :ref:`supervised_learning` is interested in predicting an **output
     variable**, or **target**, `y` from **data** `X`. Typically, we start
     from labeled data (the **training set**) for which we know the `y`
-    for each instance of `X` and train an model; this model is then
+    for each instance of `X` and train a model; this model is then
     applied to new unlabeled data (the **test set**) to predict the
-    labels. It maybe be: 
+    labels. It may be:
     
     * a **regression** problem: predicting a continuous quantity such 
       as age
     
     * a **classification** problem: predicting to which class each 
-      observations belongs too: patient or control
+      observation belongs too: patient or control
 
     In neuroimaging, supervised learning is typically used to relate
     brain images to behavioral or clinical observations.
@@ -98,8 +98,8 @@ Python and the scikit-learn: a primer
 Installation of the materials useful for this tutorial
 --------------------------------------------------------
 
-Installing scientific Python
-..............................
+Installing scientific packages for Python
+.........................................
 
 The scientific Python tool stack is rich. Installing the different
 packages needed one after the other takes a lot of time and is not
@@ -117,7 +117,7 @@ recommended. We recommend that you install a complete distribution:
 
 :Linux:
   While EPD_ is available for Linux, most recent linux distributions come
-  with the package that are needed for this tutorial. Ask your system
+  with the packages that are needed for this tutorial. Ask your system
   administrator to install, using the distribution package manager, the
   following packages:
 
@@ -133,7 +133,7 @@ Nibabel
 
 `Nibabel <http://nipy.sourceforge.net/nibabel/>`_ is an easy to use
 reader of NeuroImaging data files. It is not included in scientific
-Python distributions but is required for all the parts of the tutorial.
+Python distributions but is required for all parts of this tutorial.
 You can install it with the following command::
 
   $ easy_install -U --user nibabel
@@ -159,6 +159,9 @@ We will be using `IPython <http://ipython.org>`_, in pylab mode, that
 provides an interactive scientific environment. Start it with::
 
     $ ipython -pylab
+
+(depending on your ipython version, you may need to use the ``--pylab``
+flag instead).
 
 It's interactive::
 
@@ -281,7 +284,7 @@ the object: in IPython you can do::
     ...
 
 Once the object is created, you can fit it on data, for instance here we
-use a hand-written digits datasets, that comes with the scikit-learn::
+use a hand-written digits dataset, that comes with the scikit-learn::
 
     >>> from sklearn import datasets
     >>> digits = datasets.load_digits()

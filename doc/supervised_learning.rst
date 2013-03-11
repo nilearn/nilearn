@@ -5,7 +5,7 @@ Supervised learning
 ====================
 
 `Supervised learning <http://en.wikipedia.org/wiki/Supervised_learning>`_
-is focussed on predicting on output value. In NeuroImaging it is often
+is focused on predicting an output value. In NeuroImaging it is often
 used in the context of *decoding*: predicting behavior from brain images.
 It may also be useful for diagnostic.
 
