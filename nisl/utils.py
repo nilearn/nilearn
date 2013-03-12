@@ -208,7 +208,9 @@ def check_niimgs(niimgs, accept_3d=False):
                                         niimg.get_affine())
         return niimg
 
-    while isinstance(first_img, collections.Iterable) \
+    # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
+    # See http://bugs.python.org/issue7624
+    while hasattr(first_img, "__iter__") \
             and not isinstance(first_img, basestring):
         first_img = iter(first_img).next()
         depth += 1

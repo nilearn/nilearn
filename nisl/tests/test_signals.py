@@ -5,7 +5,6 @@ Test the signals module
 # License: simplified BSD
 
 import numpy as np
-
 from nose.tools import assert_true, assert_false, assert_raises
 
 from .. import signals
@@ -15,7 +14,7 @@ from ..signals import clean
 def test_standardize():
     a = np.random.random((10, 10))
     b = signals._standardize(a)
-    np.testing.assert_allclose((b ** 2).sum(axis=-1), np.ones(10))
+    np.testing.assert_almost_equal((b ** 2).sum(axis=-1), np.ones(10))
 
 
 # The test is inspired from scipy docstring of detrend function

@@ -20,6 +20,8 @@ The required dependencies to sue the software are Python >= 2.6,
 setuptools, Numpy >= 1.3, SciPy >= 0.7, Scikit-learn >= 0.10
 This configuration matches the Ubuntu 10.04 LTS release from April 2010.
 
+If you want to run the tests, you need recents python-coverage and python-nose.
+(resp. 3.6 and 1.2.1).
 
 Install
 =======

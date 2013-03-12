@@ -1,12 +1,10 @@
-"""
-Test CanICA
-"""
+"""Test CanICA"""
 import numpy as np
 from numpy.testing import assert_array_equal
 from nisl.decomposition import CanICA
 
-#def test_canica_square_img():
-if 1:
+
+def test_canica_square_img():
     rng = np.random.RandomState(0)
 
     # Create two images with an "activated regions"
@@ -40,6 +38,8 @@ if 1:
     canica.fit(data)
     maps = canica.maps_
 
+    # FIXME: even with a fixed random state, the ordering of components
+    # can change from computer to computer, and break the test.
     assert_array_equal(np.abs(maps[0]) > np.abs(maps[0]).max() * 0.95,
                        component2.ravel() != 0)
     assert_array_equal(np.abs(maps[2]) > np.abs(maps[2]).max() * 0.95,
@@ -48,3 +48,7 @@ if 1:
                        component1.ravel() != 0)
     assert_array_equal(np.abs(maps[3]) > np.abs(maps[3]).max() * 0.95,
                        component4.ravel() != 0)
+
+
+if __name__ == "__main__":
+    test_canica_square_img()
