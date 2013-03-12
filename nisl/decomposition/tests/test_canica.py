@@ -38,17 +38,19 @@ def test_canica_square_img():
     canica.fit(data)
     maps = canica.maps_
 
-    # FIXME: even with a fixed random state, the ordering of components
-    # can change from computer to computer, and break the test.
-    assert_array_equal(np.abs(maps[0]) > np.abs(maps[0]).max() * 0.95,
-                       component2.ravel() != 0)
-    assert_array_equal(np.abs(maps[2]) > np.abs(maps[2]).max() * 0.95,
-                       component3.ravel() != 0)
-    assert_array_equal(np.abs(maps[1]) > np.abs(maps[1]).max() * 0.95,
-                       component1.ravel() != 0)
-    assert_array_equal(np.abs(maps[3]) > np.abs(maps[3]).max() * 0.95,
-                       component4.ravel() != 0)
+    # FIXME: This could be done more efficiently, e.g. thanks to hungarian
+    # Find pairs of matching components
+    indices = range(4)
 
+    for i in range(4):
+        map = np.abs(maps[i]) > np.abs(maps[i]).max() * 0.95
+        for j in indices:
+            ref_map = components[j].ravel() != 0
+            if np.all(map == ref_map):
+                indices.remove(j)
+                break;
+        else:
+            assert False, "Non matching component"
 
 if __name__ == "__main__":
     test_canica_square_img()
