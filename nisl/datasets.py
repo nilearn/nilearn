@@ -153,7 +153,8 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, folder=None):
+def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
+                     create_dir=True):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -167,6 +168,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None):
 
     folder: string, optional
         Folder in which the file must be fetched inside the dataset folder.
+
+    create_dir: boolean, optional
+        If the directory does not exist, determine whether or not it is created
 
     Returns
     -------
@@ -187,7 +191,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None):
     data_dir = os.path.join(data_dir, dataset_name)
     if folder is not None:
         data_dir = os.path.join(data_dir, folder)
-    if not os.path.exists(data_dir):
+    if not os.path.exists(data_dir) and create_dir:
         os.makedirs(data_dir)
     return data_dir
 
@@ -513,7 +517,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
                               "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii",
                               "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
-
 
     try:
         sub_files = _get_dataset("icbm152_2009", filenames, data_dir=data_dir)
