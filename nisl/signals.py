@@ -111,7 +111,7 @@ def clean(signals, confounds=None, t_r=2.5, low_pass=None,
         Low pass filter improves specificity (more interesting arrows
         selected)
 
-        High pass filter should be kepts small, so as not to kill
+        High pass filter should be kept small, so as not to kill
         sensitivity
     """
     if standardize:
