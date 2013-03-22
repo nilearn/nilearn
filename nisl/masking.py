@@ -324,6 +324,98 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     return series
 
 
+
+def unmask_3D(X, mask):
+    """Take masked data and bring them back to 3D (space only).
+
+    Parameters
+    ==========
+    X: numpy array
+        Masked data. shape: (samples,)
+    mask: numpy array (boolean)
+        Mask. mask.ndim must be equal to 3.
+    """
+
+    if mask.dtype != np.bool:
+        raise ValueError("mask must be a boolean array")
+    if X.ndim != 1:
+        raise ValueError("X must be a 1-dimensional array")
+
+    data = np.zeros(
+        (mask.shape[0], mask.shape[1], mask.shape[2]),
+        dtype=X.dtype)
+    data[mask] = X
+    return data
+
+
+def unmask_4D(X, mask):
+    """Take masked data and bring them back to 4D (space and time)
+
+    Parameters
+    ==========
+    X: numpy array
+        Masked data. shape: (samples, features)
+    mask: numpy array (boolean)
+        Mask. mask.ndim must be equal to 3.
+
+    Return
+    ======
+    data: 4D numpy array
+        Unmasked data.
+        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+    """
+
+    # Much faster than nisl unmask, and uses three times less memory !
+    if mask.dtype != np.bool:
+        raise ValueError("mask must be a boolean array")
+    if X.ndim != 2:
+        raise ValueError("X must be a 2-dimensional array")
+
+    data = np.zeros(
+        (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0]),
+        dtype=X.dtype)
+    data[mask, :] = X.T
+    return data
+
+
+def unmask_optimized(X, mask):
+    """Take masked data and bring them back into 3D
+    Function signature is that of unmask() with transpose=True, except
+    that only the 3D and 4D cases are handled.
+
+    Usually faster than unmask(), uses three times less memory.
+
+    Parameters
+    ==========
+    X: numpy array (or list of)
+        Masked data. shape: (samples #, features #).
+        If X is one-dimensional, it is assumed that samples# == 1.
+    mask: numpy array (boolean)
+        Mask. mask.ndim must be equal to 3, in all cases..
+
+    Return
+    ======
+    data: numpy array (or list of)
+        Unmasked data. Depending on the shape of X, data can have
+        different shapes:
+        - X.ndim = 2:
+        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+        - X.ndim == 1:
+        Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
+    """
+
+    if isinstance(X, list):
+        ret = []
+        for x in X:
+            ret.append(unmask_optimized(x, mask))  # 1-level recursion
+        return ret
+
+    if X.ndim == 2:
+        return unmask_4D(X, mask)
+    elif X.ndim == 1:
+        return unmask_3D(X, mask)
+
+
 def unmask(X, mask, transpose=False):
     """ Take masked data and bring them back into 3D
 

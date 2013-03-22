@@ -10,6 +10,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from ..masking import apply_mask, compute_epi_mask, unmask, intersect_masks
+from ..masking import unmask_optimized
 
 
 def test_mask():
@@ -69,14 +70,13 @@ def test_unmask():
     generator = np.random.RandomState(42)
     data4D = generator.rand(10, 20, 30, 40)
     data3D = data4D[0]
-    mask = generator.randint(2, size=(20, 30, 40))
-    boolmask = mask.astype(np.bool)
-    masked4D = data4D[:, boolmask]
+    mask = generator.randint(2, size=(20, 30, 40)).astype(np.bool)
+    masked4D = data4D[:, mask]
     unmasked4D = data4D.copy()
-    unmasked4D[:, -boolmask] = 0
-    masked3D = data3D[boolmask]
+    unmasked4D[:, -mask] = 0
+    masked3D = data3D[mask]
     unmasked3D = data3D.copy()
-    unmasked3D[-boolmask] = 0
+    unmasked3D[-mask] = 0
     dummy = generator.rand(500)
 
     # 4D Test
@@ -100,6 +100,47 @@ def test_unmask():
     # Error test
     assert_raises(ValueError, unmask, dummy, mask)
     assert_raises(ValueError, unmask, [dummy], mask)
+
+
+def test_unmask_optimized():
+    """ Test the unmask_optimized function
+    """
+    # A delta in 3D
+    shape = (10, 20, 30, 40)
+    generator = np.random.RandomState(42)
+    data4D = generator.rand(*shape)
+    data3D = data4D[..., 0]
+    mask = generator.randint(2, size=shape[:3]).astype(np.bool)
+
+    masked4D = data4D[mask, :].T
+    unmasked4D = data4D.copy()
+    unmasked4D[-mask, :] = 0
+    masked3D = data3D[mask]
+    unmasked3D = data3D.copy()
+    unmasked3D[-mask] = 0
+
+    # 4D Test
+    t = unmask_optimized(masked4D, mask)
+    assert_equal(t.ndim, 4)
+    assert_array_equal(t, unmasked4D)
+    t = unmask_optimized([masked4D], mask)
+    assert_true(isinstance(t, types.ListType))
+    assert_equal(t[0].ndim, 4)
+    assert_array_equal(t[0], unmasked4D)
+
+    # 3D Test
+    t = unmask_optimized(masked3D, mask)
+    assert_equal(t.ndim, 3)
+    assert_array_equal(t, unmasked3D)
+    t = unmask_optimized([masked3D], mask)
+    assert_true(isinstance(t, types.ListType))
+    assert_equal(t[0].ndim, 3)
+    assert_array_equal(t[0], unmasked3D)
+
+    # Error test
+    dummy = generator.rand(500)
+    assert_raises(ValueError, unmask_optimized, dummy, mask)
+    assert_raises(ValueError, unmask_optimized, [dummy], mask)
 
 
 def test_intersect_masks():
