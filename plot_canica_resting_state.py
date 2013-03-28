@@ -50,7 +50,7 @@ ica = CanICA(n_components=n_components, random_state=42, memory="canica",
              maps_only=True)
 components_masked = ica.fit(data_masked).maps_
 
-# We normalize the estimated components, for thresholding to make sens
+# We normalize the estimated components, for thresholding to make sense
 # XXX: this should probably be integrated in the CanICA object
 components_masked -= components_masked.mean(axis=1)[:, np.newaxis]
 components_masked /= components_masked.std(axis=1)[:, np.newaxis]

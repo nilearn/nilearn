@@ -143,7 +143,7 @@ class NiftiMultiMasker(BaseMasker):
         self.mask_upper_cutoff = mask_upper_cutoff
         self.transpose = transpose
 
-    def fit(self, niimgs=None, y=None):
+    def fit(self, niimgs=None):
         """Compute the mask corresponding to the data
 
         Parameters
@@ -192,8 +192,8 @@ class NiftiMultiMasker(BaseMasker):
                              ' will be used.' % self.__class__.__name__)
             self.mask_img_ = utils.check_niimg(self.mask)
 
-        # If resampling is requested, resample also the mask
-        # Resampling: allows the user to change the affine, the shape or both
+        # If resampling is requested, resample the mask as well.
+        # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
         self.mask_img_ = utils.cache(self, resampling.resample_img, 1)(
@@ -210,12 +210,17 @@ class NiftiMultiMasker(BaseMasker):
 
         Parameters
         ----------
-        niimgs: nifti like images
+        niimgs: nifti-like images
             Data to be preprocessed
 
         confounds: CSV file path or 2D matrix
-            This parameter is passed to signals.clean. Please see the related
-            documentation for details
+            This parameter is passed to signals.clean. Please see the
+            corresponding documentation for details.
+
+        Returns
+        -------
+        data: {list of numpy arrays}
+            preprocessed images
         """
         data = []
         affine = None

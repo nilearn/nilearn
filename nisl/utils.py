@@ -67,7 +67,7 @@ def is_a_niimg(object):
         get_data = getattr(object, "get_data")
         get_affine = getattr(object, "get_affine")
         return callable(get_data) and callable(get_affine)
-    except Exception:
+    except AttributeError:
         return False
 
 
@@ -115,7 +115,7 @@ def check_niimg(niimg):
     -----
     In Nisl, special care has been taken to make image manipulation easy. This
     method is a kind of pre-requisite for any data processing method in Nisl as
-    it check if data has the right format and load it if necessary.
+    it checks if data has the right format and loads it if necessary.
 
     Its application is idempotent.
     """
@@ -215,7 +215,7 @@ def check_niimgs(niimgs, accept_3d=False):
         first_img = iter(first_img).next()
         depth += 1
 
-    # First Image is supposed to be a path or a Nifti like element
+    # First image is supposed to be a path or a Nifti-like element
     first_img = check_niimg(first_img)
 
     # Check dimension and depth
@@ -235,10 +235,10 @@ def check_niimgs(niimgs, accept_3d=False):
         niimg = concat_niimgs(niimgs)
     return niimg
 
+
 ###############################################################################
 ### Caching
 ###############################################################################
-
 
 def cache(self, func, func_memory_level, **kwargs):
     """ Return a joblib.Memory object if necessary (depends on memory_level)
@@ -247,7 +247,7 @@ def cache(self, func, func_memory_level, **kwargs):
     to cache a function call. By specifying a numeric value for this level,
     the user will be able to control more or less the memory used on his
     computer. This function will cache the function call or not depending
-    on the memory level. This is an helper to avoid code pasting.
+    on the memory level. This is an helper to avoid pasting code.
 
     Parameters
     ----------
