@@ -14,11 +14,16 @@ dataset = datasets.fetch_haxby()
 ### Load Target labels ########################################################
 
 import numpy as np
-
+import sklearn.utils.fixes
 # Load target information as string and give a numerical identifier to each
 labels = np.loadtxt(dataset.session_target[0], dtype=np.str, skiprows=1,
                     usecols=(0,))
-index, target = np.unique(labels, return_inverse=True)
+
+# For compatibility with numpy 1.3 and scikit-learn 0.12
+# "return_inverse" option appeared in numpy 1.4, scikit-learn >= 0.14 supports
+# text labels.
+# With scikit-learn >= 0.14, replace this line by: target = labels
+_, target = sklearn.utils.fixes.unique(labels, return_inverse=True)
 
 ### Remove resting state condition ############################################
 
