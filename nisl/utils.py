@@ -240,54 +240,72 @@ def check_niimgs(niimgs, accept_3d=False):
 ### Caching
 ###############################################################################
 
-def cache(self, func, func_memory_level, **kwargs):
-    """ Return a joblib.Memory object if necessary (depends on memory_level)
+class CacheMixin(object):
+    """Mixin to add caching to a class.
 
-    The memory_level is a rough estimator of the amount of memory necessary
-    to cache a function call. By specifying a numeric value for this level,
-    the user will be able to control more or less the memory used on his
-    computer. This function will cache the function call or not depending
-    on the memory level. This is an helper to avoid pasting code.
+    This class is a thin layer on top of joblib.Memory, that mainly adds a
+    "caching level", similar to a "log level".
 
-    Parameters
-    ----------
-
-    self: python object
-        The object containing information about caching. It must have a
-        memory attribute (used if caching is necessary) and an integer
-        memory_level attribute to determine if the function must be cached
-        or not.
-
-    func: python function
-        The function that may be cached
-
-    func_memory_level: integer
-        The memory_level from which caching must be enabled.
-
-    Returns
-    -------
-
-    Either the original function (if there is no need to cache it) or a
-    joblib.Memory object that will be used to cache the function call.
+    Usage: to cache the results of a method, wrap it in self.cache()
+    defined by this class. Caching is performed only if the user-specified
+    cache level (self._memory_level) is greater than the value given as a
+    parameter to self.cache(). See cache() documentation for details.
     """
-    # if memory level is 0 but a memory object is provided, put memory_level
-    # to 1 with a warning
-    if self.memory_level == 0:
-        if hasattr(self, 'memory') and self.memory is not None \
-                                   and (isinstance(self.memory, basestring)
-                                   or self.memory.cachedir is not None):
-            warnings.warn("memory_level is set to 0 but a Memory object has"
-                    " been provided. Setting memory_level to 1.")
-            self.memory_level = 1
-    if self.memory_level < func_memory_level:
-        return func
-    else:
-        memory = self.memory
-        if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory)
-        if memory.cachedir is None:
-            warnings.warn("Caching has been enabled (memory_level = %d) but no"
-                          " Memory object or path has been provided (parameter"
-                          " memory). Caching canceled for function %s." %
-                          (self.memory_level, func.func_name))
-        return memory.cache(func, **kwargs)
+
+    def cache(self, func, memory_level=1, **kwargs):
+        """ Return a joblib.Memory object if necessary (depends on memory_level)
+
+        The memory_level determines the level above which the wrapped
+        function output is cached. By specifying a numeric value for
+        this level, the user can to control the amount of cache memory
+        used. This function will cache the function call or not
+        depending on the cache level.
+
+        Parameters
+        ----------
+        func: python function
+            The function which output is to be cached.
+
+        memory_level: integer
+            The memory_level from which caching must be enabled for the wrapped
+            function.
+
+        Returns
+        -------
+        Either the original function, if there is no need to cache it (because
+        the requested level is lower than the value given to cache()) or a
+        joblib.Memory object that wraps the function func.
+        """
+
+        # Creates attributes if they don't exist
+        # This is to make creating them in __init__() optional.
+        if not hasattr(self, "memory_level"):
+            self.memory_level = 0
+        if not hasattr(self, "memory"):
+            self.memory = None
+
+        # If cache level is 0 but a memory object has been provided, put memory_level
+        # to 1 with a warning.
+        if self.memory_level == 0:
+            if self.memory is not None \
+                   and (isinstance(self.memory, basestring)
+                        or self.memory.cachedir is not None):
+                warnings.warn("memory_level is currently set to 0 but a Memory object has"
+                              " been provided. Setting memory_level to 1.")
+                self.memory_level = 1
+
+        if self.memory_level < memory_level:
+            return func
+        else:
+            memory = self.memory
+            if isinstance(memory, basestring):
+                memory = Memory(cachedir=memory)
+            if not isinstance(memory, Memory):
+                raise TypeError("'memory' argument must be a string or a "
+                                "joblib.Memory object.")
+            if memory.cachedir is None:
+                warnings.warn("Caching has been enabled (memory_level = %d) but no"
+                              " Memory object or path has been provided (parameter"
+                              " memory). Caching deactivated for function %s." %
+                              (self.memory_level, func.func_name))
+            return memory.cache(func, **kwargs)
