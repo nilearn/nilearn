@@ -161,7 +161,7 @@ class NiftiMultiMasker(BaseMasker):
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
-                print "[%s.fit] Computing the mask" % self.__class__.__name__
+                print "[%s.fit] Computing mask" % self.__class__.__name__
             data = []
             if not isinstance(niimgs, collections.Iterable) \
                     or isinstance(niimgs, basestring):

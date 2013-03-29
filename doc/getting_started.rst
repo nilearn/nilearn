@@ -12,7 +12,7 @@ Before using a machine learning tool, we may need to apply the following
 steps:
 
     1. :ref:`data_loading` : load Nifti files and check consistency of data
-    2. :ref:`masking data <masking>` : if a mask is not provided, one is
+    2. :ref:`Masking data <masking>` : if a mask is not provided, one is
        computed automatically
     3. :ref:`resampling`: optionally data could be resampled to a
        different resolution
