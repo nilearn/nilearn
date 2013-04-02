@@ -324,7 +324,6 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     return series
 
 
-
 def unmask_3D(X, mask):
     """Take masked data and bring them back to 3D (space only).
 
@@ -348,8 +347,8 @@ def unmask_3D(X, mask):
     return data
 
 
-def unmask_4D(X, mask):
-    """Take masked data and bring them back to 4D (space and time)
+def unmask_nD(X, mask):
+    """Take masked data and bring them back to n-dimension
 
     Parameters
     ==========
@@ -371,14 +370,12 @@ def unmask_4D(X, mask):
     if X.ndim != 2:
         raise ValueError("X must be a 2-dimensional array")
 
-    data = np.zeros(
-        (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0]),
-        dtype=X.dtype)
+    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype)
     data[mask, :] = X.T
     return data
 
 
-def unmask_optimized(X, mask):
+def unmask(X, mask):
     """Take masked data and bring them back into 3D
     Function signature is that of unmask() with transpose=True, except
     that only the 3D and 4D cases are handled.
@@ -407,69 +404,10 @@ def unmask_optimized(X, mask):
     if isinstance(X, list):
         ret = []
         for x in X:
-            ret.append(unmask_optimized(x, mask))  # 1-level recursion
+            ret.append(unmask(x, mask))  # 1-level recursion
         return ret
 
     if X.ndim == 2:
-        return unmask_4D(X, mask)
+        return unmask_nD(X, mask)
     elif X.ndim == 1:
         return unmask_3D(X, mask)
-
-
-def unmask(X, mask, transpose=False):
-    """ Take masked data and bring them back into 3D
-
-    This function is intelligent and will process data of any dimensions.
-    It iterates until data has only one dimension and then it tries to
-    unmask it. An error is raised if masked data has not the right number
-    of voxels.
-
-    Parameters
-    ----------
-    X: (list of)* numpy array
-        Masked data. You can provide data of any dimension so if you want to
-        unmask several images at one time, it is possible to give a list of
-        images.
-
-    mask: numpy array of boolean values
-        Mask of the data
-
-    transpose: boolean, optional
-        Indicates if data must be transposed after unmasking.
-
-    Returns
-    -------
-    data: (list of)* 3D numpy array
-        Unmasked data: 1D or 2D arrays are converted into 3D or 4D arrays
-        resp. The number of dimensions is respected wrt input data.
-    """
-    if mask.dtype != np.bool:
-        warnings.warn('[unmask] Given mask had dtype %s.It has been converted'
-                      ' to bool.' % mask.dtype.name)
-        mask = mask.astype(np.bool)
-
-    if isinstance(X, np.ndarray) and len(X.shape) == 1:
-        if X.shape[0] != mask.sum():
-            raise ValueError('[unmask] Masked data and mask have not the same'
-                             ' number of voxels')
-        img = np.zeros(mask.shape)
-        img[mask] = X
-        return img
-
-    data = []
-    if isinstance(X, np.ndarray):
-        for x in X:
-            img = unmask(x, mask)
-            if transpose:
-                data.append(img[..., np.newaxis])
-            else:
-                data.append(img[np.newaxis, ...])
-        if transpose:
-            data = np.concatenate(data, axis=-1)
-        else:
-            data = np.concatenate(data, axis=0)
-    else:
-        for x in X:
-            img = unmask(x, mask)
-            data.append(img)
-    return data
