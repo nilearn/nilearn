@@ -299,7 +299,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         if os.path.exists(time_path):
             time_elapsed = float(open(time_path).read())
         else:
-            time_elapsed = None
+            time_elapsed = -1
 
         if (not os.path.exists(first_image_file) or
                 os.stat(first_image_file).st_mtime <=
@@ -369,7 +369,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                 os.chdir(cwd)
                 sys.stdout = orig_stdout
 
-            if time_elapsed is not None:
+            if time_elapsed >= 0:
                 print(" - time elapsed : %.2g sec" % time_elapsed)
 
         else:
