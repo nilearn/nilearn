@@ -9,17 +9,18 @@ import numpy as np
 from sklearn.utils.fixes import qr_economic
 
 
-def _standardize(signals, copy=True, normalize=True):
+def _standardize(signals, normalize=True):
     """ Center and norm a given signal (sample = axis -1)
     """
-    signals = np.array(signals, copy=copy).astype(np.float)
-    length = float(signals.shape[-1])
-    buffer = signals.T
-    buffer -= signals.mean(axis=-1)
+    signals = np.array(signals).astype(np.float)
+    buf = signals.T
+    buf -= signals.mean(axis=-1)
+
     if normalize:
+        length = float(signals.shape[-1])
         std = np.sqrt(length) * signals.std(axis=-1).T
         std[std == 0] = 1
-        buffer /= std
+        buf /= std
     return signals
 
 
@@ -105,21 +106,69 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 def clean(signals, confounds=None, t_r=2.5, low_pass=None,
           high_pass=None, detrend=False, standardize=True,
           shift_confounds=False):
-    """ Normalize the signal, and if any confounds are given, project in
-        the orthogonal space.
+    """Improve SNR on masked fMRI signals.
 
-        Low pass filter improves specificity (more interesting arrows
-        selected)
+       This function can do several things on the input signals:
+       - detrend
+       - standardize
+       - remove confounds
+       - low- and high-pass filter
 
-        High pass filter should be kept small, so as not to kill
-        sensitivity
+       Low-pass filtering improves specificity.
+
+       High-pass filtering should be kept small, to keep some
+       sensitivity.
+
+       Filtering are only meaningful on evenly-sampled timeseries.
+
+       Parameters
+       ==========
+       signals (numpy array)
+           Timeseries. Must have shape (time, features).
+
+       confounds (numpy array or file name)
+           Confounds timeseries. Shape muse be (time, confounds). The
+           number of time instants in signals and confounds must be
+           identical (i.e. signals.shape[0] == confounds.shape[0])
+
+       t_r (float)
+           Repetition time, in second.
+
+       low_pass, high_pass (float)
+           Respectively low and high cutoff frequencies, in Hertz.
+
+       detrend (boolean)
+           If detrending should be applied on timeseries
+
+       standardize (boolean)
+           If variances should be set to one for all timeseries
+
+       shift_confounds (boolean)
+           ???
+
+       Returns
+       =======
+       cleaned_signals (numpy array)
+           Input signals, cleaned. Same shape as `signals`.
+
+       Notes
+       =====
+       Confounds removal is based on a projection on the orthogonal
+       of the signal space. See `Friston, K. J., A. P. Holmes,
+       K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
+       "Statistical Parametric Maps in Functional Imaging: A General
+       Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
+       <http://dx.doi.org/10.1002/hbm.460020402>`_
     """
+
+    # Standardize / detrend
     if standardize:
         signals = _standardize(signals, normalize=True)
     elif detrend:
         signals = _standardize(signals, normalize=False)
     signals = np.asarray(signals)
 
+    # Remove confounds
     if confounds is not None:
         if isinstance(confounds, basestring):
             filename = confounds
