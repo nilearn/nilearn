@@ -260,7 +260,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
 
 def apply_mask(niimgs, mask_img, dtype=np.float32,
-               smooth=False, ensure_finite=True, transpose=False):
+               smooth=None, ensure_finite=True):
     """ Extract time series using specified mask
 
     Read the time series from the given nifti images or filepaths,
@@ -268,36 +268,33 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     Parameters
     -----------
-    niimgs: list 4D (ot list of 3D)  nifti images (or filenames)
+    niimgs (list 4D (ot list of 3D) nifti images)
         Images to be masked.
 
-    mask: 3d ndarray
+    mask (3d boolean numpy array)
         3D mask array: true where a voxel should be used.
 
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
-        spatial smoothing to apply to the signal.
+    smooth (float)
+        (optional) Gives the size of the spatial smoothing to apply to
+        the signal, in voxels.
 
-    ensure_finite: boolean
-        If ensure_finite is True, the non-finite values (NaNs and infs)
-        found in the images will be replaced by zeros
-
-    transpose: boolean, optional
-        Indicate if data must be transposed after masking.
+    ensure_finite (boolean)
+        If ensure_finite is True (default), the non-finite values (NaNs and
+        infs) found in the images will be replaced by zeros.
 
     Returns
     --------
-    session_series: ndarray
-        2D array of time series (voxel, time)
+    session_series (ndarray)
+        2D array of timeseries with shape (time, voxel)
 
     Notes
     -----
-    When using smoothing, ensure_finite should be True: as elsewhere non
-    finite values will spread accross the image.
+    When using smoothing, ensure_finite should be True, as non finite
+    values will spread accross the image.
     """
     mask = utils.check_niimg(mask_img)
     mask = mask_img.get_data().astype(np.bool)
-    if smooth:
+    if smooth is not None:
         # Convert from a sigma to a FWHM:
         smooth /= np.sqrt(8 * np.log(2))
 
@@ -312,16 +309,13 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     # del data
     if isinstance(series, np.memmap):
         series = np.asarray(series).copy()
-    if smooth:
+    if smooth is not None:
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         smooth_sigma = smooth / vox_size
         for this_volume in np.rollaxis(series, -1):
             this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                        smooth_sigma)
-    series = series[mask]
-    if transpose:
-        series = series.T
-    return series
+    return series[mask].T
 
 
 def unmask_3D(X, mask):
