@@ -35,17 +35,18 @@ n_jobs = 1
 
 # Run Searchlight with different radii
 # Small radius : only one pixel is selected
-sl = searchlight.SearchLight(mask, mask, radius=0.5,
+sl = searchlight.SearchLight(mask=mask, process_mask=mask, radius=0.5,
                              n_jobs=n_jobs, score_func=score_func, cv=cv)
-sl.fit(data, cond)
+data_masked = data[:, mask]
+sl.fit(data_masked, cond)
 assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
 assert_equal(sl.scores_[2, 2, 2], 1.)
 
 # Medium radius : little ball selected
 
-sl = searchlight.SearchLight(mask, mask, radius=1,
+sl = searchlight.SearchLight(mask=mask, process_mask=mask, radius=1,
                              n_jobs=n_jobs, score_func=score_func, cv=cv)
-sl.fit(data, cond)
+sl.fit(data_masked, cond)
 assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
 assert_equal(sl.scores_[2, 2, 2], 1.)
 assert_equal(sl.scores_[1, 2, 2], 1.)
@@ -56,8 +57,8 @@ assert_equal(sl.scores_[2, 3, 2], 1.)
 assert_equal(sl.scores_[2, 2, 3], 1.)
 
 # Big radius : big ball selected
-sl = searchlight.SearchLight(mask, mask, radius=2,
+sl = searchlight.SearchLight(mask=mask, process_mask=mask, radius=2,
                              n_jobs=n_jobs, score_func=score_func, cv=cv)
-sl.fit(data, cond)
+sl.fit(data_masked, cond)
 assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
 assert_equal(sl.scores_[2, 2, 2], 1.)
