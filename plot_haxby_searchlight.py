@@ -43,8 +43,8 @@ nifti_masker = NiftiMasker(mask=mask, sessions=session,
                            memory='nisl_cache', memory_level=1)
 niimg = Nifti1Image(X, affine)
 X_masked = nifti_masker.fit(niimg).transform(niimg)
-X_preprocessed = nifti_masker.inverse_transform(X_masked).get_data()
-X_preprocessed = np.rollaxis(X_preprocessed, axis=-1)
+#X_preprocessed = nifti_masker.inverse_transform(X_masked).get_data()
+#X_preprocessed = np.rollaxis(X_preprocessed, axis=-1)
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
 ### Prepare the masks #########################################################
@@ -83,10 +83,11 @@ cv = KFold(y.size, k=4)
 from nisl import searchlight
 
 # The radius is the one of the Searchlight sphere that will scan the volume
-searchlight = searchlight.SearchLight(mask, process_mask, radius=1.5,
-        n_jobs=n_jobs, score_func=score_func, verbose=1, cv=cv)
+searchlight = searchlight.SearchLight(mask=mask, process_mask=process_mask,
+                                      radius=1.5, n_jobs=n_jobs,
+                                      score_func=score_func, verbose=1, cv=cv)
 
-searchlight.fit(X_preprocessed, y)
+searchlight.fit(X_masked, y)
 
 ### Visualization #############################################################
 import pylab as pl
@@ -94,9 +95,9 @@ pl.figure(1)
 # searchlight.scores_ contains per voxel cross validation scores
 s_scores = np.ma.array(searchlight.scores_, mask=np.logical_not(process_mask))
 pl.imshow(np.rot90(mean_img[..., 37]), interpolation='nearest',
-        cmap=pl.cm.gray)
+          cmap=pl.cm.gray)
 pl.imshow(np.rot90(s_scores[..., 37]), interpolation='nearest',
-        cmap=pl.cm.hot, vmax=1)
+          cmap=pl.cm.hot, vmax=1)
 pl.axis('off')
 pl.title('Searchlight')
 pl.show()
@@ -104,18 +105,16 @@ pl.show()
 ### Show the F_score
 from sklearn.feature_selection import f_classif
 pl.figure(2)
-X_masked = X_preprocessed[:, process_mask]
 f_values, p_values = f_classif(X_masked, y)
 p_values = -np.log10(p_values)
 p_values[np.isnan(p_values)] = 0
 p_values[p_values > 10] = 10
-p_unmasked = np.zeros(mask.shape)
-p_unmasked[process_mask] = p_values
+p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 pl.imshow(np.rot90(mean_img[..., 37]), interpolation='nearest',
-        cmap=pl.cm.gray)
+          cmap=pl.cm.gray)
 pl.imshow(np.rot90(p_ma[..., 37]), interpolation='nearest',
-        cmap=pl.cm.hot)
+          cmap=pl.cm.hot)
 pl.title('F-scores')
 pl.axis('off')
 pl.show()
