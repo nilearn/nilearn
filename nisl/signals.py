@@ -9,8 +9,19 @@ import numpy as np
 from sklearn.utils.fixes import qr_economic
 
 
-def _standardize(signals, normalize=True):
-    """ Center and norm a given signal (samples on last axis)
+def _standardize(signals, detrend=False, normalize=True):
+    """ Center and norm a given signal (time is along last axis)
+
+    Parameters
+    ==========
+    signals (numpy.ndarray)
+        Timeseries to standardize
+
+    detrend (boolean)
+        if detrending of timeseries is requested
+
+    normalize (boolean)
+        if True, scale timeseries to unit variance.
 
     Returns
     =======
@@ -27,14 +38,39 @@ def _standardize(signals, normalize=True):
         buf /= std
     return signals
 
-#def detrend(inplace=True):
-    ## FIXME: test this detrend implementation, improve, benchmark.
-    ## if detrend:
-    ##     # This is faster than scipy.detrend and equivalent
-    ##     regressor = np.arange(signals.shape[1]).astype(np.float)
-    ##     regressor -= regressor.mean()
-    ##     regressor /= np.sqrt((regressor ** 2).sum())
-    ##     signals -= np.dot(signals, regressor)[:, np.newaxis] * regressor
+
+def _detrend(signals, inplace=False, type="linear"):
+    """Detrend timeseries in signals.
+
+    Timeseries are supposed to be columns of `signals`.
+    This function is significantly faster than scipy.signal.detrend.
+
+    Parameters
+    ==========
+    signals (2D numpy array)
+        timeseries to detrend. A timeseries is a column.
+
+    inplace (boolean)
+        tells if the computation must be made inplace or not (default
+        False).
+
+    type (string)
+        detrending type ("linear" or "constant").
+        See also scipy.signal.detrend.
+
+    Returns
+    =======
+    detrended_signals (2D numpy array)
+        detrended timeseries.
+    """
+    if not inplace:
+        signals = signals.copy()
+    regressor = np.arange(signals.shape[0]).astype(np.float)
+    regressor -= regressor.mean()
+    regressor /= np.sqrt((regressor ** 2).sum())
+    signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
+
+    return signals
 
 
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
@@ -204,7 +240,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         signals -= np.dot(Q, np.dot(Q.T, signals))
 
     if low_pass is not None or high_pass is not None:
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
+        signals = butterworth(signals.T, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass).T
 
     return signals
