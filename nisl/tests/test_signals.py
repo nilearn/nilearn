@@ -61,10 +61,16 @@ def test_standardize():
     a += np.linspace(0, 2., n_features)
 
     # transpose array to fit _standardize input.
-    a = a.T
-    b = nisignals._standardize(a)
-    np.testing.assert_almost_equal((b ** 2).sum(axis=-1), np.ones(n_features))
-    np.testing.assert_almost_equal(b.sum(axis=-1), np.zeros(n_features))
+    # Without trend removal
+    b = nisignals._standardize(a, normalize=True)
+    energies = (b ** 2).sum(axis=0)
+    np.testing.assert_almost_equal(energies, np.ones(n_features))
+    np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
+
+    # With trend removal
+    a = np.atleast_2d(np.linspace(0, 2., n_features)).T
+    b = nisignals._standardize(a, detrend=True, normalize=False)
+    np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
 
 def test_detrend():
@@ -74,7 +80,7 @@ def test_detrend():
     signals, _, _ = generate_signals(feature_number=features,
                                      length=point_number)
     trends = generate_trends(feature_number=features, length=point_number)
-    x = signals + trends
+    x = signals + trends + 1
     original = x.copy()
 
     # out-of-place detrending. Use scipy as a reference implementation
@@ -83,14 +89,14 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert(abs(detrended.mean(axis=0)).max() < np.finfo(np.float).eps)
+    assert(abs(detrended.mean(axis=0)).max() < 7. * np.finfo(np.float).eps)
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
     nisignals._detrend(x, inplace=True)
-    assert(abs(x.mean(axis=0)).max() < np.finfo(np.float).eps)
+    assert(abs(x.mean(axis=0)).max() < 7. * np.finfo(np.float).eps)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
@@ -99,15 +105,19 @@ def test_detrend():
 # This test is inspired from scipy docstring of detrend function
 def test_clean_detrending():
     point_number = 1000
-    signals, noises, _ = generate_signals(feature_number=1,
-                                          length=point_number)
-    trend = np.atleast_2d(np.linspace(0, 2., point_number)).T
-    x = signals + trend
+    feature_number = 1
+    signals, _, _ = generate_signals(feature_number=feature_number,
+                                     length=point_number)
+    trends = generate_trends(feature_number=feature_number,
+                             length=point_number)
+    x = signals + trends
+
+    # This should remove trends
     x_detrended = nisignals.clean(x, standardize=False, detrend=True,
                                   low_pass=None, high_pass=None)
-#    print (abs(x_detrended - signals).max())
-    assert_true(abs(x_detrended - signals).max() < 0.06)
+    np.testing.assert_almost_equal(x_detrended, signals, decimal=13)
 
+    # This should does nothing
     x_undetrended = nisignals.clean(x, standardize=False, detrend=False,
                                     low_pass=None, high_pass=None)
     assert_false(abs(x_undetrended - signals).max() < 0.06)

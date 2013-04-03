@@ -10,7 +10,7 @@ from sklearn.utils.fixes import qr_economic
 
 
 def _standardize(signals, detrend=False, normalize=True):
-    """ Center and norm a given signal (time is along last axis)
+    """ Center and norm a given signal (time is along first axis)
 
     Parameters
     ==========
@@ -21,21 +21,26 @@ def _standardize(signals, detrend=False, normalize=True):
         if detrending of timeseries is requested
 
     normalize (boolean)
-        if True, scale timeseries to unit variance.
+        if True, shift timeseries to zero mean value and scale
+        to unit energy (sum of squares).
 
     Returns
     =======
     std_signals: copy of signals, normalized.
     """
-    signals = np.array(signals).astype(np.float)
-    buf = signals.T
-    buf -= signals.mean(axis=-1)
+    if detrend:
+        signals = _detrend(signals, inplace=False)
+    else:
+        signals = signals.copy()
 
     if normalize:
-        length = float(signals.shape[-1])
-        std = np.sqrt(length) * signals.std(axis=-1).T
-        std[std < np.finfo(np.float).eps] = 1
-        buf /= std
+        # remove mean if not already detrended
+        if not detrend:
+            signals -= signals.mean(axis=0)
+
+        std = np.sqrt((signals ** 2).sum(axis=0))
+        std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
+        signals /= std
     return signals
 
 
@@ -69,7 +74,7 @@ def _detrend(signals, inplace=False, type="linear"):
     regressor -= regressor.mean()
     regressor /= np.sqrt((regressor ** 2).sum())
     signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
-
+    signals -= np.mean(signals, axis=0)
     return signals
 
 
@@ -196,9 +201,6 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
            If variances should be set to one and mean to zero for
            all timeseries (before confound removal)
 
-       shift_confounds (boolean)
-           ???
-
        Returns
        =======
        cleaned_signals (numpy array)
@@ -215,12 +217,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
     """
 
     # Standardize / detrend
-    if detrend:
-        signals = _standardize(signals.T, normalize=False).T
-    if standardize:
-        signals = _standardize(signals.T, normalize=True).T
-    if not detrend and not standardize:
-        signals = signals.astype(np.float)
+    signals = _standardize(signals, normalize=standardize, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
@@ -235,7 +232,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                     confounds = np.genfromtxt(filename, skiprows=1)
         # Restrict the signal to the orthogonal of the confounds
         confounds = np.atleast_2d(confounds)
-        confounds = _standardize(confounds.T, normalize=True).T
+        confounds = _standardize(confounds, normalize=True)
         Q = qr_economic(confounds)[0]
         signals -= np.dot(Q, np.dot(Q.T, signals))
 
