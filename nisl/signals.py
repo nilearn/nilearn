@@ -10,7 +10,11 @@ from sklearn.utils.fixes import qr_economic
 
 
 def _standardize(signals, normalize=True):
-    """ Center and norm a given signal (sample = axis -1)
+    """ Center and norm a given signal (samples on last axis)
+
+    Returns
+    =======
+    std_signals: copy of signals, normalized.
     """
     signals = np.array(signals).astype(np.float)
     buf = signals.T
@@ -19,9 +23,18 @@ def _standardize(signals, normalize=True):
     if normalize:
         length = float(signals.shape[-1])
         std = np.sqrt(length) * signals.std(axis=-1).T
-        std[std == 0] = 1
+        std[std < np.finfo(np.float).eps] = 1
         buf /= std
     return signals
+
+#def detrend(inplace=True):
+    ## FIXME: test this detrend implementation, improve, benchmark.
+    ## if detrend:
+    ##     # This is faster than scipy.detrend and equivalent
+    ##     regressor = np.arange(signals.shape[1]).astype(np.float)
+    ##     regressor -= regressor.mean()
+    ##     regressor /= np.sqrt((regressor ** 2).sum())
+    ##     signals -= np.dot(signals, regressor)[:, np.newaxis] * regressor
 
 
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
@@ -103,12 +116,12 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     return signals
 
 
-def clean(signals, confounds=None, t_r=2.5, low_pass=None,
-          high_pass=None, detrend=False, standardize=True,
-          shift_confounds=False):
+def clean(signals, detrend=True, standardize=True, confounds=None,
+          low_pass=None, high_pass=None, t_r=2.5):
     """Improve SNR on masked fMRI signals.
 
-       This function can do several things on the input signals:
+       This function can do several things on the input signals, in
+       the following order:
        - detrend
        - standardize
        - remove confounds
@@ -119,29 +132,33 @@ def clean(signals, confounds=None, t_r=2.5, low_pass=None,
        High-pass filtering should be kept small, to keep some
        sensitivity.
 
-       Filtering are only meaningful on evenly-sampled timeseries.
+       Filtering is only meaningful on evenly-sampled timeseries.
 
        Parameters
        ==========
        signals (numpy array)
-           Timeseries. Must have shape (time, features).
+           Timeseries. Must have shape (instant number, features number).
+           This array is not modified.
 
        confounds (numpy array or file name)
-           Confounds timeseries. Shape muse be (time, confounds). The
-           number of time instants in signals and confounds must be
-           identical (i.e. signals.shape[0] == confounds.shape[0])
+           Confounds timeseries. Shape muse be
+           (instant number, confound number). The number of time
+           instants in signals and confounds must be identical
+           (i.e. signals.shape[0] == confounds.shape[0])
 
        t_r (float)
-           Repetition time, in second.
+           Repetition time, in second (sampling period).
 
        low_pass, high_pass (float)
            Respectively low and high cutoff frequencies, in Hertz.
 
        detrend (boolean)
-           If detrending should be applied on timeseries
+           If detrending should be applied on timeseries (before
+           confound removal)
 
        standardize (boolean)
-           If variances should be set to one for all timeseries
+           If variances should be set to one and mean to zero for
+           all timeseries (before confound removal)
 
        shift_confounds (boolean)
            ???
@@ -162,11 +179,12 @@ def clean(signals, confounds=None, t_r=2.5, low_pass=None,
     """
 
     # Standardize / detrend
+    if detrend:
+        signals = _standardize(signals.T, normalize=False).T
     if standardize:
-        signals = _standardize(signals, normalize=True)
-    elif detrend:
-        signals = _standardize(signals, normalize=False)
-    signals = np.asarray(signals)
+        signals = _standardize(signals.T, normalize=True).T
+    if not detrend and not standardize:
+        signals = signals.astype(np.float)
 
     # Remove confounds
     if confounds is not None:
@@ -181,29 +199,12 @@ def clean(signals, confounds=None, t_r=2.5, low_pass=None,
                     confounds = np.genfromtxt(filename, skiprows=1)
         # Restrict the signal to the orthogonal of the confounds
         confounds = np.atleast_2d(confounds)
-        if shift_confounds:
-            confounds = np.r_[confounds[..., 1:-1],
-                              confounds[..., 2:],
-                              confounds[..., :-2]]
-            signals = signals[..., 1:-1]
-        confounds = _standardize(confounds, normalize=True)
-        confounds = qr_economic(confounds)[0].T
-        signals -= np.dot(np.dot(signals, confounds.T), confounds)
+        confounds = _standardize(confounds.T, normalize=True).T
+        Q = qr_economic(confounds)[0]
+        signals -= np.dot(Q, np.dot(Q.T, signals))
 
     if low_pass is not None or high_pass is not None:
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
 
-    if detrend:
-        # This is faster than scipy.detrend and equivalent
-        regressor = np.arange(signals.shape[1]).astype(np.float)
-        regressor -= regressor.mean()
-        regressor /= np.sqrt((regressor ** 2).sum())
-
-        signals -= np.dot(signals, regressor)[:, np.newaxis] * regressor
-
-    if standardize:
-        signals = _standardize(signals, normalize=True)
-    elif detrend:
-        signals = _standardize(signals, normalize=False)
     return signals
