@@ -70,11 +70,13 @@ def _detrend(signals, inplace=False, type="linear"):
     """
     if not inplace:
         signals = signals.copy()
-    regressor = np.arange(signals.shape[0]).astype(np.float)
-    regressor -= regressor.mean()
-    regressor /= np.sqrt((regressor ** 2).sum())
-    signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
+
     signals -= np.mean(signals, axis=0)
+    if type == "linear":
+        regressor = np.arange(signals.shape[0]).astype(np.float)
+        regressor -= regressor.mean()
+        regressor /= np.sqrt((regressor ** 2).sum())
+        signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
     return signals
 
 

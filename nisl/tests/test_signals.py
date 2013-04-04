@@ -83,6 +83,10 @@ def test_detrend():
     x = signals + trends + 1
     original = x.copy()
 
+    # Mean removal only (out-of-place)
+    detrended = nisignals._detrend(x, inplace=False, type="constant")
+    assert(abs(detrended.mean(axis=0)).max() < 7. * np.finfo(np.float).eps)
+
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignals._detrend(x, inplace=False)
     detrended_scipy = scipy.signal.detrend(x, axis=0)
