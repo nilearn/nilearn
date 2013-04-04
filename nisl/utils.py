@@ -109,13 +109,15 @@ def check_niimg(niimg):
 
     Returns
     -------
-    A nifti-like object (for the moment, nibabel.Nifti1Image)
+    result: nifti-like
+       result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+       that the returned object has get_data() and get_affine() methods.
 
     Notes
     -----
     In Nisl, special care has been taken to make image manipulation easy. This
     method is a kind of pre-requisite for any data processing method in Nisl as
-    it check if data has the right format and load it if necessary.
+    it checks if data has a correct format and loads it if necessary.
 
     Its application is idempotent.
     """

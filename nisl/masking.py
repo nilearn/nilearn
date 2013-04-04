@@ -308,6 +308,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     affine = affine[:3, :3]
     # del data
     if isinstance(series, np.memmap):
+        # TODO: is copy() really needed ?
         series = np.asarray(series).copy()
     if smooth is not None:
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))

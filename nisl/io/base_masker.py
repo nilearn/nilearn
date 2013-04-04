@@ -30,7 +30,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
                                 confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fit. '
-                "You should call 'fit' before calling 'transform'."
+                "You must call fit() before calling transform()."
                 % self.__class__.__name__)
 
         # Load data (if filenames are given, load them)
