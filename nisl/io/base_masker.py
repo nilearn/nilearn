@@ -139,7 +139,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             data = X
         else:
             data = X.T
-        unmasked = masking.unmask(data, mask.get_data().astype(np.bool),
-                                  transpose=True)
+
+        unmasked = masking.unmask(data, mask.get_data().astype(np.bool))
 
         return _to_nifti(unmasked, mask.get_affine())

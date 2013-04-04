@@ -11,7 +11,6 @@ from numpy.testing import assert_array_equal
 
 from ..masking import apply_mask, compute_epi_mask, unmask, intersect_masks
 
-
 def test_mask():
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
@@ -34,7 +33,7 @@ def test_mask():
 
 
 def test_apply_mask():
-    """ Test the smoothing of the timeseries extraction
+    """ Test smoothing of timeseries extraction
     """
     # A delta in 3D
     data = np.zeros((40, 40, 40, 2))
@@ -63,41 +62,59 @@ def test_apply_mask():
 
 
 def test_unmask():
-    """ Test the unmasking function
+    """ Test the unmask_optimized function
     """
     # A delta in 3D
+    shape = (10, 20, 30, 40)
     generator = np.random.RandomState(42)
-    data4D = generator.rand(10, 20, 30, 40)
-    data3D = data4D[0]
-    mask = generator.randint(2, size=(20, 30, 40))
-    boolmask = mask.astype(np.bool)
-    masked4D = data4D[:, boolmask]
+    data4D = generator.rand(*shape)
+    data3D = data4D[..., 0]
+    mask = generator.randint(2, size=shape[:3]).astype(np.bool)
+
+    masked4D = data4D[mask, :].T
     unmasked4D = data4D.copy()
-    unmasked4D[:, -boolmask] = 0
-    masked3D = data3D[boolmask]
+    unmasked4D[-mask, :] = 0
+    masked3D = data3D[mask]
     unmasked3D = data3D.copy()
-    unmasked3D[-boolmask] = 0
-    dummy = generator.rand(500)
+    unmasked3D[-mask] = 0
 
     # 4D Test
     t = unmask(masked4D, mask)
-    assert_equal(len(t.shape), 4)
+    assert_equal(t.ndim, 4)
     assert_array_equal(t, unmasked4D)
     t = unmask([masked4D], mask)
     assert_true(isinstance(t, types.ListType))
-    assert_equal(len(t[0].shape), 4)
+    assert_equal(t[0].ndim, 4)
     assert_array_equal(t[0], unmasked4D)
 
     # 3D Test
     t = unmask(masked3D, mask)
-    assert_equal(len(t.shape), 3)
+    assert_equal(t.ndim, 3)
     assert_array_equal(t, unmasked3D)
     t = unmask([masked3D], mask)
     assert_true(isinstance(t, types.ListType))
-    assert_equal(len(t[0].shape), 3)
+    assert_equal(t[0].ndim, 3)
     assert_array_equal(t[0], unmasked3D)
 
+    # 5D test
+    shape5D = (10, 20, 30, 40, 41)
+    data5D = generator.rand(*shape5D)
+    mask = generator.randint(2, size=shape5D[:-1]).astype(np.bool)
+
+    masked5D = data5D[mask, :].T
+    unmasked5D = data5D.copy()
+    unmasked5D[-mask, :] = 0
+
+    t = unmask(masked5D, mask)
+    assert_equal(t.ndim, len(shape5D))
+    assert_array_equal(t, unmasked5D)
+    t = unmask([masked5D], mask)
+    assert_true(isinstance(t, types.ListType))
+    assert_equal(t[0].ndim, len(shape5D))
+    assert_array_equal(t[0], unmasked5D)
+
     # Error test
+    dummy = generator.rand(500)
     assert_raises(ValueError, unmask, dummy, mask)
     assert_raises(ValueError, unmask, [dummy], mask)
 
