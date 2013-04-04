@@ -81,7 +81,7 @@ def _detrend(signals, inplace=False, type="linear"):
 
 
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
-                order=5, copy=False):
+                order=5, copy=False, save_memory=False):
     """ Apply a low pass, high pass or band pass butterworth filter
 
     Apply a filter to remove signal below the `low` frequency and above the
@@ -89,42 +89,51 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 
     Parameters
     ----------
-    signals: numpy array (1D sequence or n_sources x time_series)
-        Signals to be filtered
+    signals: numpy array (1D sequence or n_samples x n_sources)
+        Timeseries to be filtered. A timeseries is assumed to be a
+        column of `signals`.
 
     sampling_rate: float
         Number of samples per time unit (sample frequency)
 
     low_pass: float, optional
-        If specified, signals above this frequency will be filtered (low pass)
+        If specified, signals above this frequency will be filtered out
+        (low pass). This is -3dB cutoff frequency.
 
     high_pass: float, optional
-        If specified, signals below this frequency will be filtered (high pass)
+        If specified, signals below this frequency will be filtered out
+        (high pass). This is -3dB cutoff frequency.
 
     order: integer, optional
-        Order of the butterworth filter. When filtering signals, the
-        butterworth filter has a decay to avoid ringing. Increase the order
-        sharpens the decay.
+        Order of the Butterworth filter. When filtering signals, the
+        filter has a decay to avoid ringing. Increasing the order
+        sharpens this decay. Be aware that very high orders could lead
+        to numerical instability.
 
     copy: boolean, optional
-        If false, apply filter inplace.
+        If False, `signals` is modified inplace, and memory consumption is
+        lower than for copy=True, though computation time is higher.
 
     Returns
     -------
     filtered_signals: numpy array
         Signals filtered according to the parameters
     """
-    nyq = sampling_rate * 0.5
-
     if low_pass is None and high_pass is None:
-        return signal
+        if copy:
+            return signal.copy()
+        else:
+            return signal
 
     if low_pass is not None and high_pass is not None \
                             and high_pass >= low_pass:
-        raise ValueError("Your value for high pass filter (%f) is higher or"
-                         " equal to the value for low pass filter (%f). This"
-                         " would result in a blank signal"
-                         % (high_pass, low_pass))
+        raise ValueError(
+            "High pass cutoff frequency (%f) is greater or equal"
+            "to low pass filter frequency (%f). This case is not handled "
+            "by this function."
+            % (high_pass, low_pass))
+
+    nyq = sampling_rate * 0.5
 
     wn = None
     if low_pass is not None:
@@ -142,20 +151,23 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         wn = [hf, lf]
 
     b, a = signal.butter(order, wn, btype=btype)
-    if len(signals.shape) == 1:
+    if signals.ndim == 1:
         # 1D case
-        if copy:
-            signals = signals.copy()
-        signals[:] = signal.lfilter(b, a, signals)
+        output = signal.lfilter(b, a, signals)
+        if copy:  # lfilter does a copy in all cases.
+            signals = output
+        else:
+            signals[...] = output
     else:
+        # lfilter() leaks memory in scipy 0.7.0.
         if copy:
-            # copy by chunks to avoid huge memory allocation
-            signals_copy = []
-            for i in range(signals.shape[0]):
-                signals_copy.append(np.zeros(signals.shape[1:]))
-            signals = np.asarray(signals_copy)
-        for s in signals:
-            s[:] = signal.lfilter(b, a, s)
+            # No way to save memory when a copy has been requested,
+            # because lfilter does out-of-place processing
+            signals = signal.lfilter(b, a, signals, axis=0)
+        else:
+            # Lesser memory consumption, slower.
+            for timeseries in signals.T:
+                timeseries[:] = signal.lfilter(b, a, timeseries)
     return signals
 
 
@@ -239,7 +251,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         signals -= np.dot(Q, np.dot(Q.T, signals))
 
     if low_pass is not None or high_pass is not None:
-        signals = butterworth(signals.T, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass).T
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
 
     return signals

@@ -51,6 +51,46 @@ def generate_trends(feature_number=17, length=41):
     return trends * factors
 
 
+def test_butterworth():
+    randgen = np.random.RandomState(0)
+    n_features = 20000
+    n_samples = 100
+
+    sampling = 100
+    low_pass = 30
+    high_pass = 10
+
+    # Compare output for different options.
+    # single timeseries
+    data = randgen.randn(n_samples)
+    data_original = data.copy()
+
+    out_single = nisignals.butterworth(data, sampling,
+                                       low_pass=low_pass, high_pass=high_pass,
+                                       copy=True)
+    np.testing.assert_almost_equal(data, data_original)
+    nisignals.butterworth(data, sampling,
+                          low_pass=low_pass, high_pass=high_pass,
+                          copy=False, save_memory=True)
+    np.testing.assert_almost_equal(out_single, data)
+
+    # multiple timeseries
+    data = randgen.randn(n_samples, n_features)
+    data[:, 0] = data_original  # set first timeseries to previous data
+    data_original = data.copy()
+
+    out1 = nisignals.butterworth(data, sampling,
+                                 low_pass=low_pass, high_pass=high_pass,
+                                 copy=True)
+    np.testing.assert_almost_equal(data, data_original)
+    # check that multiple- and single-timeseries filtering do the same thing.
+    np.testing.assert_almost_equal(out1[:, 0], out_single)
+    nisignals.butterworth(data, sampling,
+                          low_pass=low_pass, high_pass=high_pass,
+                          copy=False)
+    np.testing.assert_almost_equal(out1, data)
+
+
 def test_standardize():
     randgen = np.random.RandomState(0)
     n_features = 10
@@ -136,7 +176,6 @@ def test_clean_frequencies():
     assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None)
                 .max() < 0.01)
     assert_true(clean(sx, standardize=False, low_pass=0.01).max() > 0.9)
-    assert_true(clean(sx, standardize=False, low_pass=0.0005).max() < 0.01)
     assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5)
 
 
