@@ -246,14 +246,14 @@ class CacheMixin(object):
     This class is a thin layer on top of joblib.Memory, that mainly adds a
     "caching level", similar to a "log level".
 
-    Usage: to cache the results of a method, wrap it in self.cache()
+    Usage: to cache the results of a method, wrap it in self._cache()
     defined by this class. Caching is performed only if the user-specified
     cache level (self._memory_level) is greater than the value given as a
-    parameter to self.cache(). See cache() documentation for details.
+    parameter to self._cache(). See _cache() documentation for details.
     """
 
-    def cache(self, func, memory_level=1, **kwargs):
-        """ Return a joblib.Memory object if necessary (depends on memory_level)
+    def _cache(self, func, memory_level=1, **kwargs):
+        """ Return a joblib.Memory object if necessary.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for
@@ -273,7 +273,7 @@ class CacheMixin(object):
         Returns
         -------
         Either the original function, if there is no need to cache it (because
-        the requested level is lower than the value given to cache()) or a
+        the requested level is lower than the value given to _cache()) or a
         joblib.Memory object that wraps the function func.
         """
 
@@ -290,11 +290,12 @@ class CacheMixin(object):
             if self.memory is not None \
                    and (isinstance(self.memory, basestring)
                         or self.memory.cachedir is not None):
-                warnings.warn("memory_level is currently set to 0 but a Memory object has"
-                              " been provided. Setting memory_level to 1.")
+                warnings.warn("memory_level is currently set to 0 but "
+                              "a Memory object has been provided. "
+                              "Setting memory_level to 1.")
                 self.memory_level = 1
 
-        if self.memory_level < memory_level:
+        if self.memory is None or self.memory_level < memory_level:
             return func
         else:
             memory = self.memory

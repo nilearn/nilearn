@@ -176,16 +176,16 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                 # if niimg is a string
                 data.append(utils.check_niimgs(niimg, accept_3d=True))
 
-            mask = self.cache(masking.compute_multi_epi_mask,
-                              memory_level=1,
-                                ignore=['n_jobs', 'verbose'])(
-                                    niimgs,
-                                    connected=self.mask_connected,
-                                    opening=self.mask_opening,
-                                    lower_cutoff=self.mask_lower_cutoff,
-                                    upper_cutoff=self.mask_upper_cutoff,
-                                    n_jobs=self.n_jobs,
-                                    verbose=(self.verbose - 1))
+            mask = self._cache(masking.compute_multi_epi_mask,
+                               memory_level=1,
+                               ignore=['n_jobs', 'verbose'])(
+                                   niimgs,
+                                   connected=self.mask_connected,
+                                   opening=self.mask_opening,
+                                   lower_cutoff=self.mask_lower_cutoff,
+                                   upper_cutoff=self.mask_upper_cutoff,
+                                   n_jobs=self.n_jobs,
+                                   verbose=(self.verbose - 1))
             self.mask_img_ = Nifti1Image(mask.astype(np.int),
                     data[0].get_affine())
         else:
@@ -200,7 +200,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
-        self.mask_img_ = self.cache(resampling.resample_img,
+        self.mask_img_ = self._cache(resampling.resample_img,
                                     memory_level=1)(
             self.mask_img_,
             target_affine=self.target_affine,

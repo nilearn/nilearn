@@ -50,7 +50,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 1:
             print "[%s.transform] Resampling" % self.__class__.__name__
-        niimgs = self.cache(resampling.resample_img, memory_level=2)(
+        niimgs = self._cache(resampling.resample_img, memory_level=2)(
             niimgs,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
@@ -72,7 +72,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.verbose > 1:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
-            data = self.cache(signals.clean, memory_level=2)(
+            data = self._cache(signals.clean, memory_level=2)(
                 data,
                 confounds=confounds, low_pass=self.low_pass,
                 high_pass=self.high_pass, t_r=self.t_r,
@@ -82,7 +82,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[:, sessions == s] = self.cache(signals.clean,
+                data[:, sessions == s] = self._cache(signals.clean,
                                                     memory_level=2)(
                     data[:, sessions == s],
                     confounds=confounds,
