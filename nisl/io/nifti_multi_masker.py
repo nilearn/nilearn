@@ -91,7 +91,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
 
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
     verbose: interger, optional
         Indicate the level of verbosity. By default, nothing is printed
