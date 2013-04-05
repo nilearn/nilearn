@@ -10,7 +10,7 @@ import scipy.linalg as splinalg
 #from . import utils
 
 
-def apply_roi(timeseries, regions):
+def apply_roi(timeseries, regions, normalize_regions=False):
     """Compute timeseries for regions of interest.
 
     This function takes timeseries as parameters (masked data).
@@ -32,6 +32,12 @@ def apply_roi(timeseries, regions):
         Region definitions. One column of this array defines one
         region, given by its weight on each voxel. Voxel numbering
         must match that of `timeseries`.
+    normalize_regions (boolean)
+        If True, normalize output by
+        (regions ** 2).sum(axis=0) / regions.sum(axis=0)
+        This factor ensures that if all input timeseries are identical
+        in a region, then the corresponding roi-timeseries is exactly the
+        same, independent of the region weighting.
 
     Returns
     =======
@@ -39,7 +45,11 @@ def apply_roi(timeseries, regions):
         Computed timeseries for each region.
         shape: (instant number, region number)
     """
-    return splinalg.lstsq(regions, timeseries.T)[0].T
+
+    roi_timeseries = splinalg.lstsq(regions, timeseries.T)[0].T
+    if normalize_regions:
+        roi_timeseries /= regions.sum(axis=0) / (regions ** 2).sum(axis=0)
+    return roi_timeseries
 
 
 def unapply_roi(timeseries_roi, regions):
