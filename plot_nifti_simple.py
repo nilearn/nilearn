@@ -1,5 +1,5 @@
 """
-Simple example of Nifti Masker use
+Simple example of NiftiMasker use
 ==================================
 
 Here is a simple example of automatic mask computation using the nifti masker.
@@ -14,7 +14,8 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 ### Compute the mask ##########################################################
 
-nifti_masker = NiftiMasker(transpose=True)
+nifti_masker = NiftiMasker(transpose=True,
+                           memory="nisl_cache", memory_level=2)
 nifti_masker.fit(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data()
 
@@ -30,7 +31,6 @@ ma = np.ma.masked_equal(mask, False)
 pl.imshow(np.rot90(ma[..., 20]), interpolation='nearest', cmap=pl.cm.autumn,
           alpha=0.5)
 pl.title("Mask")
-pl.show()
 
 ### Preprocess data ###########################################################
 nifti_masker.fit(dataset.func[0])
@@ -53,10 +53,11 @@ pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
           interpolation='nearest', cmap=pl.cm.gray)
 pl.imshow(np.rot90(components[..., 20, 16]), interpolation='nearest',
           cmap=pl.cm.hot)
-pl.show()
 
 ### The same with a pipeline ##################################################
 from sklearn.pipeline import Pipeline
 mask_ica = Pipeline([('masking', nifti_masker), ('ica', ica)])
 components = nifti_masker.inverse_transform(
     mask_ica.fit_transform(dataset.func[0]))
+
+pl.show()

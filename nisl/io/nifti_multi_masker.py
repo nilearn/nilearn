@@ -15,10 +15,11 @@ from nibabel import Nifti1Image
 from .. import masking
 from .. import resampling
 from .. import utils
+from ..utils import CacheMixin
 from .base_masker import BaseMasker
 
 
-class NiftiMultiMasker(BaseMasker):
+class NiftiMultiMasker(BaseMasker, CacheMixin):
     """Nifti data loader with preprocessing for multiple subjects
 
     Parameters
@@ -52,22 +53,6 @@ class NiftiMultiMasker(BaseMasker):
         This parameter is passed to signals.clean. Please see the related
         documentation for details
 
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    n_jobs: integer, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose: interger, optional
-        Indicate the level of verbosity. By default, nothing is printed
-
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to resampling.resample_img. Please see the
         related documentation for details.
@@ -95,6 +80,22 @@ class NiftiMultiMasker(BaseMasker):
     transpose: boolean, optional
         If True, data is transposed after preprocessing step.
 
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    memory_level: integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs', -2 'all CPUs but one', and so on.
+
+    verbose: interger, optional
+        Indicate the level of verbosity. By default, nothing is printed
+
     Attributes
     ----------
     `mask_img_`: Nifti like image
@@ -117,13 +118,14 @@ class NiftiMultiMasker(BaseMasker):
     def __init__(self, mask=None, smooth=False,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
-                 memory=Memory(cachedir=None, verbose=0), memory_level=0,
-                 n_jobs=1, verbose=0,
                  target_affine=None, target_shape=None,
                  mask_connected=True, mask_opening=False,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
-                 transpose=False):
-        # Mask is compulsory or computed
+                 transpose=False,
+                 memory=Memory(cachedir=None), memory_level=0,
+                 n_jobs=1, verbose=0
+                 ):
+        # Mask is provided or computed
         self.mask = mask
         self.smooth = smooth
         self.standardize = standardize
@@ -131,10 +133,6 @@ class NiftiMultiMasker(BaseMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.n_jobs = n_jobs
-        self.verbose = verbose
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_connected = mask_connected
@@ -142,6 +140,11 @@ class NiftiMultiMasker(BaseMasker):
         self.mask_lower_cutoff = mask_lower_cutoff
         self.mask_upper_cutoff = mask_upper_cutoff
         self.transpose = transpose
+
+        self.memory = memory
+        self.memory_level = memory_level
+        self.n_jobs = n_jobs
+        self.verbose = verbose
 
     def fit(self, niimgs=None, y=None):
         """Compute the mask corresponding to the data
@@ -173,15 +176,16 @@ class NiftiMultiMasker(BaseMasker):
                 # if niimg is a string
                 data.append(utils.check_niimgs(niimg, accept_3d=True))
 
-            mask = utils.cache(self, masking.compute_multi_epi_mask, 1,
-                                ignore=['n_jobs', 'verbose'])(
-                                    niimgs,
-                                    connected=self.mask_connected,
-                                    opening=self.mask_opening,
-                                    lower_cutoff=self.mask_lower_cutoff,
-                                    upper_cutoff=self.mask_upper_cutoff,
-                                    n_jobs=self.n_jobs,
-                                    verbose=(self.verbose - 1))
+            mask = self._cache(masking.compute_multi_epi_mask,
+                               memory_level=1,
+                               ignore=['n_jobs', 'verbose'])(
+                                   niimgs,
+                                   connected=self.mask_connected,
+                                   opening=self.mask_opening,
+                                   lower_cutoff=self.mask_lower_cutoff,
+                                   upper_cutoff=self.mask_upper_cutoff,
+                                   n_jobs=self.n_jobs,
+                                   verbose=(self.verbose - 1))
             self.mask_img_ = Nifti1Image(mask.astype(np.int),
                     data[0].get_affine())
         else:
@@ -192,11 +196,12 @@ class NiftiMultiMasker(BaseMasker):
                              ' will be used.' % self.__class__.__name__)
             self.mask_img_ = utils.check_niimg(self.mask)
 
-        # If resampling is requested, resample also the mask
-        # Resampling: allows the user to change the affine, the shape or both
+        # If resampling is requested, resample the mask as well.
+        # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
-        self.mask_img_ = utils.cache(self, resampling.resample_img, 1)(
+        self.mask_img_ = self._cache(resampling.resample_img,
+                                    memory_level=1)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
@@ -210,12 +215,17 @@ class NiftiMultiMasker(BaseMasker):
 
         Parameters
         ----------
-        niimgs: nifti like images
+        niimgs: nifti-like images
             Data to be preprocessed
 
         confounds: CSV file path or 2D matrix
-            This parameter is passed to signals.clean. Please see the related
-            documentation for details
+            This parameter is passed to signals.clean. Please see the
+            corresponding documentation for details.
+
+        Returns
+        -------
+        data: {list of numpy arrays}
+            preprocessed images
         """
         data = []
         affine = None
