@@ -117,7 +117,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  mask_connected=True, mask_opening=False,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
                  transpose=False,
-                 memory_level=0, memory=None,
+                 memory_level=0, memory=Memory(cachedir=None),
                  verbose=0
                  ):
         # Mask is compulsory or computed
