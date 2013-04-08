@@ -12,11 +12,12 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from .. import resampling
+from ..utils import CacheMixin
 from .. import utils
 from .base_masker import BaseMasker
 
 
-class NiftiMasker(BaseMasker):
+class NiftiMasker(BaseMasker, CacheMixin):
     """Nifti data loader with preprocessing
 
     Parameters
@@ -54,18 +55,6 @@ class NiftiMasker(BaseMasker):
         This parameter is passed to signals.clean. Please see the related
         documentation for details
 
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    verbose: interger, optional
-        Indicate the level of verbosity. By default, nothing is printed
-
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to resampling.resample_img. Please see the
         related documentation for details.
@@ -93,6 +82,18 @@ class NiftiMasker(BaseMasker):
     transpose: boolean, optional
         If True, data is transposed after preprocessing step.
 
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    memory_level: integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    verbose: interger, optional
+        Indicate the level of verbosity. By default, nothing is printed
+
     Attributes
     ----------
     `mask_img_`: Nifti like image
@@ -109,16 +110,16 @@ class NiftiMasker(BaseMasker):
     nisl.masking.apply_mask
     nisl.signals.clean
     """
-
     def __init__(self, mask=None, sessions=None, smooth=False,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
-                 memory=Memory(cachedir=None, verbose=0), memory_level=0,
-                 verbose=0,
                  target_affine=None, target_shape=None,
                  mask_connected=True, mask_opening=False,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
-                 transpose=False):
+                 transpose=False,
+                 memory_level=0, memory=Memory(cachedir=None),
+                 verbose=0
+                 ):
         # Mask is compulsory or computed
         self.mask = mask
         self.sessions = sessions
@@ -128,9 +129,6 @@ class NiftiMasker(BaseMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.verbose = verbose
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_connected = mask_connected
@@ -138,6 +136,10 @@ class NiftiMasker(BaseMasker):
         self.mask_lower_cutoff = mask_lower_cutoff
         self.mask_upper_cutoff = mask_upper_cutoff
         self.transpose = transpose
+
+        self.memory = memory
+        self.memory_level = memory_level
+        self.verbose = verbose
 
     def fit(self, niimgs=None, y=None):
         """Compute the mask corresponding to the data
@@ -148,6 +150,7 @@ class NiftiMasker(BaseMasker):
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
+        # y=None is for scikit-learn compatibility (unused here).
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
@@ -160,8 +163,8 @@ class NiftiMasker(BaseMasker):
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
             niimgs = utils.check_niimgs(niimgs, accept_3d=True)
-            mask = utils.cache(self, masking.compute_epi_mask, 1,
-                               ignore=['verbose'])(
+            mask = self._cache(masking.compute_epi_mask, memory_level=1,
+                              ignore=['verbose'])(
                 niimgs.get_data(),
                 connected=self.mask_connected,
                 opening=self.mask_opening,
@@ -182,7 +185,7 @@ class NiftiMasker(BaseMasker):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
-        self.mask_img_ = utils.cache(self, resampling.resample_img, 1)(
+        self.mask_img_ = self._cache(resampling.resample_img, memory_level=1)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,

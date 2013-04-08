@@ -65,7 +65,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: 3D or 4D array or nifti like image
+    mean_epi: 3D or 4D array or nifti-like image
         EPI image, used to compute the mask.
 
     lower_cutoff : float, optional
@@ -208,8 +208,8 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    session_files: list 3D or 4D array
-        A list arrays, each item is a subject or a session.
+    session_files: list 3D or 4D array or Niimgs
+        A list of arrays, each item being a subject or a session.
 
     threshold: float, optional
         the inter-session threshold: the fraction of the
