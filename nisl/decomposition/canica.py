@@ -110,7 +110,7 @@ class CanICA(DecompositionModel, TransformerMixin):
         self.n_components_ = n_components
         return ica_maps
 
-    def fit(self, data, Y=None):
+    def fit(self, data, y=None):
         if hasattr(data, 'copy'):
             # It's an array
             data = data.copy()

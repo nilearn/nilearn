@@ -12,6 +12,7 @@ from .. import masking
 from .. import resampling
 from .. import signals
 from .. import utils
+from ..utils import CacheMixin
 
 
 def _to_nifti(X, affine):
@@ -22,7 +23,7 @@ def _to_nifti(X, affine):
     return X
 
 
-class BaseMasker(BaseEstimator, TransformerMixin):
+class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
 
@@ -49,7 +50,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 1:
             print "[%s.transform] Resampling" % self.__class__.__name__
-        niimgs = utils.cache(self, resampling.resample_img, 2)(
+        niimgs = self._cache(resampling.resample_img, memory_level=2)(
             niimgs,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
@@ -71,7 +72,7 @@ class BaseMasker(BaseEstimator, TransformerMixin):
         if self.verbose > 1:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
-            data = utils.cache(self, signals.clean, 2)(
+            data = self._cache(signals.clean, memory_level=2)(
                 data,
                 confounds=confounds, low_pass=self.low_pass,
                 high_pass=self.high_pass, t_r=self.t_r,
@@ -81,7 +82,8 @@ class BaseMasker(BaseEstimator, TransformerMixin):
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[:, sessions == s] = utils.cache(self, signals.clean, 2)(
+                data[:, sessions == s] = self._cache(signals.clean,
+                                                    memory_level=2)(
                     data[:, sessions == s],
                     confounds=confounds,
                     low_pass=self.low_pass,
