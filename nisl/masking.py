@@ -1,10 +1,8 @@
 """
 Utilities to compute a brain mask from EPI images
 """
-# Author: Gael Varoquaux, Alexandre Abraham
+# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
-import warnings
-
 import numpy as np
 from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
@@ -305,11 +303,11 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     affine = affine[:3, :3]
     # del data
     if isinstance(series, np.memmap):
-        # TODO: is copy() really needed ?
         series = np.asarray(series).copy()
     if smooth is not None:
         # Convert from a sigma to a FWHM:
-        smooth /= np.sqrt(8 * np.log(2))
+        # Do not use /=, smooth may be a numpy scalar
+        smooth = smooth / np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         smooth_sigma = smooth / vox_size
         for this_volume in np.rollaxis(series, -1):
