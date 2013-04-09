@@ -294,9 +294,6 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     """
     mask = utils.check_niimg(mask_img)
     mask = mask_img.get_data().astype(np.bool)
-    if smooth is not None:
-        # Convert from a sigma to a FWHM:
-        smooth /= np.sqrt(8 * np.log(2))
 
     niimgs = utils.check_niimgs(niimgs)
     series = niimgs.get_data()
@@ -308,9 +305,11 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     affine = affine[:3, :3]
     # del data
     if isinstance(series, np.memmap):
-        # TODO: is copy() really needed ?
+        # TODO: is copy() really needed ?
         series = np.asarray(series).copy()
     if smooth is not None:
+        # Convert from a sigma to a FWHM:
+        smooth /= np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         smooth_sigma = smooth / vox_size
         for this_volume in np.rollaxis(series, -1):
@@ -371,11 +370,7 @@ def unmask_nD(X, mask):
 
 
 def unmask(X, mask):
-    """Take masked data and bring them back into 3D
-    Function signature is that of unmask() with transpose=True, except
-    that only the 3D and 4D cases are handled.
-
-    Usually faster than unmask(), uses three times less memory.
+    """Take masked data and bring them back into 3D/4D
 
     Parameters
     ==========

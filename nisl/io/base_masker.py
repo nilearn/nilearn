@@ -60,7 +60,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.verbose > 1:
             print "[%s.transform] Masking and smoothing" \
                 % self.__class__.__name__
-        data = masking.apply_mask(niimgs, self.mask_img_, smooth=self.smooth).T
+        data = masking.apply_mask(niimgs, self.mask_img_, smooth=self.smooth)
 
         # Temporal
         # ========
@@ -97,12 +97,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # Optionally: 'doctor_nan', remove voxels with NaNs, other option
         # for later: some form of imputation
 
-        # data is in format voxel x time_series. We inverse it
-        data = np.rollaxis(data, -1)
-
         self.affine_ = niimgs.get_affine()
-        if self.transpose:
-            data = data.T
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
@@ -137,10 +132,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def inverse_transform(self, X):
         mask = utils.check_niimg(self.mask_img_)
-        if not self.transpose:
-            data = X
-        else:
-            data = X.T
+        data = X
 
         unmasked = masking.unmask(data, mask.get_data().astype(np.bool))
 
