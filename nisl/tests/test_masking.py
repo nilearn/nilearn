@@ -43,7 +43,7 @@ def test_apply_mask():
                    np.diag((.5, 1, .5, 1))):
         series = apply_mask(Nifti1Image(data, affine),
                             Nifti1Image(mask, affine), smooth=9)
-        series = np.reshape(series[:, 0], (40, 40, 40))
+        series = np.reshape(series[0, :], (40, 40, 40))
         vmax = series.max()
         # We are expecting a full-width at half maximum of
         # 9mm/voxel_size:

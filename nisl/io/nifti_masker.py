@@ -79,9 +79,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
-    transpose: boolean, optional
-        If True, data is transposed after preprocessing step.
-
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -116,7 +113,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  target_affine=None, target_shape=None,
                  mask_connected=True, mask_opening=False,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
-                 transpose=False,
                  memory_level=0, memory=Memory(cachedir=None),
                  verbose=0
                  ):
@@ -135,7 +131,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.mask_opening = mask_opening
         self.mask_lower_cutoff = mask_lower_cutoff
         self.mask_upper_cutoff = mask_upper_cutoff
-        self.transpose = transpose
 
         self.memory = memory
         self.memory_level = memory_level
