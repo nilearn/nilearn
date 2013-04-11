@@ -256,9 +256,8 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 # Time series extraction
 ###############################################################################
 
-
 def apply_mask(niimgs, mask_img, dtype=np.float32,
-               smooth=None, ensure_finite=True):
+               smooth=None, ensure_finite=True, order=None):
     """ Extract time series using specified mask
 
     Read the time series from the given nifti images or filepaths,
@@ -274,11 +273,16 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     smooth (float)
         (optional) Gives the size of the spatial smoothing to apply to
-        the signal, in voxels.
+        the signal, in voxels. Implies ensure_finite=True
 
     ensure_finite (boolean)
         If ensure_finite is True (default), the non-finite values (NaNs and
         infs) found in the images will be replaced by zeros.
+
+    order (str)
+        Order of the output array ("C" or "F"). This has an influence on the
+        execution time of this function. Default is None, which means "auto".
+        See below for details.
 
     Returns
     --------
@@ -287,22 +291,43 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     Notes
     -----
-    When using smoothing, ensure_finite should be True, as non finite
+    When using smoothing, ensure_finite is set to True, as non finite
     values will spread accross the image.
+
+    Time spent in this function depends on the order of data in the
+    niimgs array (Fortran or C). By default, a heuristic is used to
+    select the most appropriate order, depending on the value of all
+    the keyword arguments. Therefore, the order or the returned array
+    may be C or F. It is possible to force the order using the appropriate
+    option, but it may impact performance.
     """
+    if smooth is not None:
+        ensure_finite = True
+
     mask = utils.check_niimg(mask_img)
     mask = mask.get_data().astype(np.bool)
 
     niimgs = utils.check_niimgs(niimgs)
-    affine = niimgs.get_affine()
-    ## series = profile(utils.as_ndarray)(niimgs.get_data(), dtype=dtype)
-    series = profile(utils.as_ndarray)(profile(niimgs.get_data)(), dtype=dtype)
-    del niimgs  # frees a lot of memory
+    affine = niimgs.get_affine()[:3, :3]
+
+    data = niimgs.get_data()
+
+    # C order makes masking/nan elimination go faster than with F order.
+    # F order makes filtering go faster than with C order.
+    # order is imposed only for the memmap, because a copy is always
+    # made in this case.
+    if order is None and isinstance(data, np.memmap):
+        if smooth is not None:
+            order = "F"
+        else:
+            order = "C"
+
+    series = utils.as_ndarray(data, dtype=dtype, order=order)
+    del data, niimgs  # frees a lot of memory
 
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         series[np.logical_not(np.isfinite(series))] = 0
-    affine = affine[:3, :3]
 
     if smooth is not None:
         # Convert from a sigma to a FWHM:

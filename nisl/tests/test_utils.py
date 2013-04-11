@@ -193,6 +193,21 @@ def test_as_ndarray():
     assert(arr2.dtype == np.float32)
     assert(not are_arrays_identical(arr1, arr2))
 
+    # same dtype, order provided: copy.
+    arr1 = np.ones((10, 10), dtype=np.int32, order="C")
+    arr2 = utils.as_ndarray(arr1, order="F")
+    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
+    assert(arr2.dtype == arr1.dtype)
+    assert(not are_arrays_identical(arr1[0], arr2[0]))
+
+    # same dtype, order unchanged but provided: no copy.
+    arr1 = np.ones((10, 10), dtype=np.int32, order="F")
+    arr2 = utils.as_ndarray(arr1, order="F")
+    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
+    assert(arr2.dtype == arr1.dtype)
+    assert(are_arrays_identical(arr1[0], arr2[0]))
+
+
     ## memmap
     filename = osp.join(osp.dirname(__file__), "data", "mmap.dat")
 
@@ -218,6 +233,30 @@ def test_as_ndarray():
     assert(arr2.dtype == np.float32)
     assert(not are_arrays_identical(arr1, arr2))
 
+    # same dtype, order provided
+    arr1 = np.memmap(filename, dtype='float32', mode='w+', shape=(10, 10))
+    arr2 = utils.as_ndarray(arr1, order="F")
+    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
+    assert(arr2.dtype == arr1.dtype)
+    assert(not are_arrays_identical(arr1[0], arr2[0]))
+
+    # same dtype, order unchanged but provided
+    arr1 = np.memmap(filename, dtype='float32', mode='w+',
+                     shape=(10, 10), order="F")
+    arr2 = utils.as_ndarray(arr1, order="F")
+    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
+    assert(arr2.dtype == arr1.dtype)
+    assert(not are_arrays_identical(arr1[0], arr2[0]))
+
+    # dtype and order specified
+    arr1 = np.memmap(filename, dtype='float32', mode='w+',
+                     shape=(10, 10), order="F")
+    arr2 = utils.as_ndarray(arr1, order="F", dtype=np.int32)
+    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
+    assert(arr2.dtype == np.int32)
+    assert(not are_arrays_identical(arr1[0], arr2[0]))
+
+
     ## list
     # same dtype, no copy requested
     arr1 = [0, 1, 2, 3]
@@ -235,5 +274,13 @@ def test_as_ndarray():
     assert(arr2.dtype == np.float)
     assert(not are_arrays_identical(arr1, arr2))
 
+    # order specified
+    arr1 = [[0, 1, 2, 3], [0, 1, 2, 3]]
+    arr2 = utils.as_ndarray(arr1, dtype=np.float, order="F")
+    assert(arr2.dtype == np.float)
+    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
+    assert(not are_arrays_identical(arr1[0], arr2[0]))
+
     ## Unhandled case
     assert_raises(ValueError, utils.as_ndarray, "test string")
+

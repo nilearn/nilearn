@@ -314,7 +314,22 @@ class CacheMixin(object):
             return memory.cache(func, **kwargs)
 
 
-def as_ndarray(arr, copy=False, dtype=None):
+def _asarray(arr, dtype=None, order=None):
+    # np.asarray does not take "K" and "A" orders in version 1.3.0
+    # changed_order is True when array order has changed (implying a copy)
+    changed_order = False
+    if order in ("K", "A"):
+        ret = np.asarray(arr, dtype=dtype)
+    else:
+        ret = np.asarray(arr, dtype=dtype, order=order)
+        if not ((arr.flags["C_CONTIGUOUS"] and order == "C")
+                or (arr.flags["F_CONTIGUOUS"] and order == "F")):
+            changed_order = True
+
+    return ret, changed_order
+
+
+def as_ndarray(arr, copy=False, dtype=None, order='K'):
     """Starting with an arbitrary array, convert to numpy.ndarray.
 
     In the case of a memmap array, a copy is automatically made to break the
@@ -334,6 +349,10 @@ def as_ndarray(arr, copy=False, dtype=None):
     dtype (any numpy dtype)
         dtype of the returned array. Performing copy and type conversion at the
         same time can in some cases avoid an additional copy.
+    order (str)
+        gives the order of the returned array.
+        Valid values are: "C", "F", "A", "K".
+        default is "K". See ndarray.copy() for more information.
 
     Returns
     =======
@@ -341,30 +360,44 @@ def as_ndarray(arr, copy=False, dtype=None):
         Numpy array exactly like arr, but of class numpy.ndarray, and with no
         link to any underlying file.
     """
+    # This function should work on numpy 1.3
+    # in this version, astype() and copy() have no "order" keyword.
+    # and asarray() does not accept the "K" and "A" values for order.
 
     # numpy.asarray never copies a subclass of numpy.ndarray (even for
     #     memmaps) when dtype is unchanged.
-    # .as_type() always copies
+    # .astype() always copies
 
     if isinstance(arr, np.memmap):
         if dtype is None:
-            ret = np.asarray(arr).copy()
-        elif np.issubdtype(arr.dtype, dtype):
-        ## ret = np.asarray(arr, dtype=dtype).copy() # incredibly inefficient on uncompressed nii files
-            ret = np.asarray(arr).astype(dtype)  # always copy
+            if order in ("K", "A"):
+                ret = np.array(np.asarray(arr), copy=True)
+            else:
+                ret = np.array(np.asarray(arr), copy=True, order=order)
         else:
-            ret = np.asarray(arr, dtype=dtype)
+            if order in ("K", "A"):
+                # always copy (even when dtype does not change)
+                ret = np.asarray(arr).astype(dtype)
+            else:
+                # First load data from disk without changing order
+                # Changing order while reading through a memmap is incredibly
+                # inefficient.
+                ret = np.array(arr, copy=True)
+                ret = np.array(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
         if dtype is None:
-            ret = np.asarray(arr)
-            if copy:
+            ret, changed_order = _asarray(arr, order=order)
+            if copy and not changed_order:
                 ret = ret.copy()
         else:
-            ret = np.asarray(arr, dtype=dtype)
+            ret, _ = _asarray(arr, dtype=dtype, order=order)
 
     elif isinstance(arr, (list, tuple)):
-        ret = np.asarray(arr, dtype=dtype)
+        if order in ("A", "K"):
+            ret = np.asarray(arr, dtype=dtype)
+        else:
+            ret = np.asarray(arr, dtype=dtype, order=order)
 
     else:
         raise ValueError("Type not handled: %s" % arr.__class__)
