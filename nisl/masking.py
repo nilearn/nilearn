@@ -291,7 +291,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     values will spread accross the image.
     """
     mask = utils.check_niimg(mask_img)
-    mask = mask_img.get_data().astype(np.bool)
+    mask = mask.get_data().astype(np.bool)
 
     niimgs = utils.check_niimgs(niimgs)
     series = niimgs.get_data()

@@ -312,3 +312,58 @@ class CacheMixin(object):
                               " memory). Caching deactivated for function %s." %
                               (self.memory_level, func.func_name))
             return memory.cache(func, **kwargs)
+
+
+def as_ndarray(arr, copy=False, dtype=None):
+    """Starting with an arbitrary array, convert to numpy.ndarray.
+
+    In the case of a memmap array, a copy is automatically made to break the
+    link with the underlying file (whatever the value of the "value" keyword).
+
+    The purpose of this function is mainly to get rid of memmap objects, but
+    it can be used for other purposes. In particular, combining copying and
+    casting can lead to performance improvements in some cases, by avoiding
+    unnecessary copies.
+
+    Parameters
+    ==========
+    arr (any value accepted by numpy.asarray)
+        input array
+    copy (boolean)
+        if True, force a copy of the array. Alway True when arr is a memmap.
+    dtype (any numpy dtype)
+        dtype of the returned array. Performing copy and type conversion at the
+        same time can in some cases avoid an additional copy.
+
+    Returns
+    =======
+    nd_arr (numpy.ndarray)
+        Numpy array exactly like arr, but of class numpy.ndarray, and with no
+        link to any underlying file.
+    """
+
+    # numpy.asarray never copies a subclass of numpy.ndarray (even for
+    #     memmaps) when dtype is unchanged.
+    # .as_type() always copies
+
+    if isinstance(arr, np.memmap):
+        if dtype is None:
+            ret = np.asarray(arr).copy()
+        else:
+            ret = np.asarray(arr, dtype=dtype)
+
+    elif isinstance(arr, np.ndarray):
+        if dtype is None:
+            ret = np.asarray(arr)
+            if copy:
+                ret = ret.copy()
+        else:
+            ret = np.asarray(arr, dtype=dtype)
+
+    elif isinstance(arr, (list, tuple)):
+        ret = np.asarray(arr, dtype=dtype)
+
+    else:
+        raise ValueError("Type not handled: %s" % arr.__class__)
+
+    return ret
