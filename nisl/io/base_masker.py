@@ -31,7 +31,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                 confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fit. '
-                "You should call 'fit' before calling 'transform'."
+                "You must call fit() before calling transform()."
                 % self.__class__.__name__)
 
         # Load data (if filenames are given, load them)
@@ -97,12 +97,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # Optionally: 'doctor_nan', remove voxels with NaNs, other option
         # for later: some form of imputation
 
-        # data is in format voxel x time_series. We inverse it
-        data = np.rollaxis(data, -1)
-
         self.affine_ = niimgs.get_affine()
-        if self.transpose:
-            data = data.T
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
@@ -137,10 +132,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def inverse_transform(self, X):
         mask = utils.check_niimg(self.mask_img_)
-        if not self.transpose:
-            data = X
-        else:
-            data = X.T
+        data = X
 
         unmasked = masking.unmask(data, mask.get_data().astype(np.bool))
 
