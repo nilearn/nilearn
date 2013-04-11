@@ -294,16 +294,16 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     mask = mask.get_data().astype(np.bool)
 
     niimgs = utils.check_niimgs(niimgs)
-    series = niimgs.get_data()
     affine = niimgs.get_affine()
+    ## series = profile(utils.as_ndarray)(niimgs.get_data(), dtype=dtype)
+    series = profile(utils.as_ndarray)(profile(niimgs.get_data)(), dtype=dtype)
+    del niimgs  # frees a lot of memory
+
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         series[np.logical_not(np.isfinite(series))] = 0
-    series = series.astype(dtype)
     affine = affine[:3, :3]
-    # del data
-    if isinstance(series, np.memmap):
-        series = np.asarray(series).copy()
+
     if smooth is not None:
         # Convert from a sigma to a FWHM:
         # Do not use /=, smooth may be a numpy scalar

@@ -212,6 +212,12 @@ def test_as_ndarray():
     assert(arr2.dtype == np.int)
     assert(not are_arrays_identical(arr1, arr2))
 
+    # same dtype, explicitly provided: must copy
+    arr1 = np.memmap(filename, dtype='float32', mode='w+', shape=(5,))
+    arr2 = utils.as_ndarray(arr1, dtype=np.float32)
+    assert(arr2.dtype == np.float32)
+    assert(not are_arrays_identical(arr1, arr2))
+
     ## list
     # same dtype, no copy requested
     arr1 = [0, 1, 2, 3]

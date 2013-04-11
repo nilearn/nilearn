@@ -349,6 +349,9 @@ def as_ndarray(arr, copy=False, dtype=None):
     if isinstance(arr, np.memmap):
         if dtype is None:
             ret = np.asarray(arr).copy()
+        elif np.issubdtype(arr.dtype, dtype):
+        ## ret = np.asarray(arr, dtype=dtype).copy() # incredibly inefficient on uncompressed nii files
+            ret = np.asarray(arr).astype(dtype)  # always copy
         else:
             ret = np.asarray(arr, dtype=dtype)
 
