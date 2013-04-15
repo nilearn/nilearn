@@ -87,9 +87,16 @@ def _remove_if_exists(file):
 
 
 def test_concat_niimgs():
+    shape = (10, 11, 12)
     affine = np.eye(4)
-    niimg1 = Nifti1Image(np.ones((10, 10, 10)), affine)
-    niimg2 = Nifti1Image(np.ones((10, 10, 10)), 2 * affine)
+    niimg1 = Nifti1Image(np.ones(shape), affine)
+    niimg2 = Nifti1Image(np.ones(shape), 2 * affine)
+    niimg3 = Nifti1Image(np.zeros(shape), affine)
+
+    concatenated = utils.concat_niimgs((niimg1, niimg3, niimg1))
+    concatenate_true = np.ones(shape + (3,))
+    concatenate_true[..., 1] = 0
+    np.testing.assert_almost_equal(concatenated.get_data(), concatenate_true)
 
     assert_raises(ValueError, utils.concat_niimgs, [niimg1, niimg2])
 
