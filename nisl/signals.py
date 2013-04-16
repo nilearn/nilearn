@@ -4,9 +4,9 @@ Preprocessing functions for time series.
 # Authors: Alexandre Abraham, Gael Varoquaux
 # License: simplified BSD
 
-from scipy import signal
 import numpy as np
 from sklearn.utils.fixes import qr_economic
+from scipy import signal, stats, linalg
 
 
 def _standardize(signals, detrend=False, normalize=True):
@@ -169,6 +169,56 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             for timeseries in signals.T:
                 timeseries[:] = signal.lfilter(b, a, timeseries)
     return signals
+
+
+def high_variance_confounds(series, confound_number=10, percentile=1.):
+    """ Return confounds time series extracted from series with highest
+        variance.
+
+        Parameters
+        ==========
+        series (numpy.ndarray)
+            Timeseries. A timeseries is a column in the "series" array.
+            shape (sample number, feature number)
+
+        confound_number (int)
+            Number of confounds to return
+
+        percentile (float)
+            Highest-variance series percentile to keep before computing the
+            singular value decomposition.
+            series.shape[0] * percentile must be greater than confound_number.
+
+        Returns
+        =======
+        v: highest variance confounds. Shape: (samples, confound_number)
+
+        Notes
+        ======
+        This method is related to what has been published in the literature
+        as 'CompCor' (Behzadi NeuroImage 2007).
+
+        The implemented algorithm does the following:
+        - compute variance for each time series
+        - keep a given percentile of series with highest variances (percentile)
+        - compute an svd of the extracted series
+        - return a given number (confound_number) of series from the svd with
+          highest singular values.
+    """
+    # Retrieve the voxels|features with highest variance
+    if series.flags["F_CONTIGUOUS"]:
+        # Faster because numpy always computes **2 in C order.
+        # Adding a transposition gives F order computation.
+        var = np.mean((series.T ** 2).T, axis=0)
+    else:
+        var = np.mean(series ** 2, axis=0)
+
+    var_thr = stats.scoreatpercentile(var, 100. - percentile)
+    series = series[:, var > var_thr]  # extract columns (i.e. features)
+    # Return the most energetic singular vectors
+    u, _, _ = linalg.svd(series, full_matrices=False)
+    u = u[:, :confound_number].copy()
+    return u
 
 
 def clean(signals, detrend=True, standardize=True, confounds=None,
