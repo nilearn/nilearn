@@ -299,7 +299,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     affine = niimgs_img.get_affine()[:3, :3]
 
     data = niimgs_img.get_data()
-    # All the following has been optimized for C order.
+    # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
     series = utils.as_ndarray(data, dtype=dtype, order="C")
