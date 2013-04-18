@@ -12,7 +12,7 @@ from ..signals import clean
 import scipy.signal
 
 
-def generate_signals(feature_number=17, confound_number=5, length=41,
+def generate_signals(feature_number=17, n_confounds=5, length=41,
                      same_variance=True, order="C"):
     """Generate test signals.
 
@@ -21,13 +21,13 @@ def generate_signals(feature_number=17, confound_number=5, length=41,
     randgen = np.random.RandomState(0)
 
     # Generate random confounds
-    confounds_shape = (length, confound_number)
+    confounds_shape = (length, n_confounds)
     confounds = np.ndarray(confounds_shape, order=order)
     confounds[...] = randgen.randn(*confounds_shape)
     confounds[...] = scipy.signal.detrend(confounds, axis=0)
 
     # Compute noise based on confounds, with random factors
-    factors = randgen.randn(confound_number, feature_number)
+    factors = randgen.randn(n_confounds, feature_number)
     noises_shape = (length, feature_number)
     noises = np.ndarray(noises_shape, order=order)
     noises[...] = np.dot(confounds, factors)
@@ -192,7 +192,7 @@ def test_clean_frequencies():
 
 def test_clean_confounds():
     signals, noises, confounds = generate_signals(feature_number=41,
-                                                  confound_number=5, length=45)
+                                                  n_confounds=5, length=45)
     # No signal: output must be zero.
     eps = np.finfo(np.float).eps
     noises1 = noises.copy()
@@ -217,7 +217,7 @@ def test_high_variance_confounds():
     # result is identical.
     feature_number = 1001
     length = 20
-    confound_number = 5
+    n_confounds = 5
     seriesC, _, _ = generate_signals(feature_number=feature_number,
                                      length=length, order="C")
     seriesF, _, _ = generate_signals(feature_number=feature_number,
@@ -225,29 +225,29 @@ def test_high_variance_confounds():
 
     np.testing.assert_almost_equal(seriesC, seriesF, decimal=13)
     outC = nisignals.high_variance_confounds(seriesC,
-                                             confound_number=confound_number)
+                                             n_confounds=n_confounds)
     outF = nisignals.high_variance_confounds(seriesF,
-                                             confound_number=confound_number)
+                                             n_confounds=n_confounds)
     np.testing.assert_almost_equal(outC, outF, decimal=13)
 
     # Result must not be influenced by global scaling
     seriesG = 2 * seriesC
     outG = nisignals.high_variance_confounds(seriesG,
-                                             confound_number=confound_number)
+                                             n_confounds=n_confounds)
     np.testing.assert_almost_equal(outC, outG, decimal=13)
-    assert(outG.shape == (length, confound_number))
+    assert(outG.shape == (length, n_confounds))
 
     # Changing percentile changes the result
     seriesG = seriesC
     outG = nisignals.high_variance_confounds(seriesG, percentile=2.,
-                                             confound_number=confound_number)
+                                             n_confounds=n_confounds)
     assert_raises(AssertionError, np.testing.assert_almost_equal,
                   outC, outG, decimal=13)
-    assert(outG.shape == (length, confound_number))
+    assert(outG.shape == (length, n_confounds))
 
     # Check shape of output
     out = nisignals.high_variance_confounds(seriesG,
-                                            confound_number=7)
+                                            n_confounds=7)
     assert(out.shape == (length, 7))
 
     # TODO: any other ideas?

@@ -5,8 +5,8 @@ Preprocessing functions for time series.
 # License: simplified BSD
 
 import numpy as np
-from sklearn.utils.fixes import qr_economic
 from scipy import signal, stats, linalg
+from sklearn.utils.fixes import qr_economic
 
 
 def _standardize(signals, detrend=False, normalize=True):
@@ -171,7 +171,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     return signals
 
 
-def high_variance_confounds(series, confound_number=10, percentile=1.):
+def high_variance_confounds(series, n_confounds=10, percentile=1.):
     """ Return confounds time series extracted from series with highest
         variance.
 
@@ -181,17 +181,18 @@ def high_variance_confounds(series, confound_number=10, percentile=1.):
             Timeseries. A timeseries is a column in the "series" array.
             shape (sample number, feature number)
 
-        confound_number (int)
+        n_confounds (int)
             Number of confounds to return
 
         percentile (float)
             Highest-variance series percentile to keep before computing the
             singular value decomposition.
-            series.shape[0] * percentile must be greater than confound_number.
+            series.shape[0] * percentile must be greater than n_confounds.
 
         Returns
         =======
-        v: highest variance confounds. Shape: (samples, confound_number)
+        v (numpy.ndarray)
+            highest variance confounds. Shape: (samples, n_confounds)
 
         Notes
         ======
@@ -202,7 +203,7 @@ def high_variance_confounds(series, confound_number=10, percentile=1.):
         - compute variance for each time series
         - keep a given percentile of series with highest variances (percentile)
         - compute an svd of the extracted series
-        - return a given number (confound_number) of series from the svd with
+        - return a given number (n_confounds) of series from the svd with
           highest singular values.
     """
     # Retrieve the voxels|features with highest variance
@@ -215,9 +216,9 @@ def high_variance_confounds(series, confound_number=10, percentile=1.):
 
     var_thr = stats.scoreatpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)
-    # Return the most energetic singular vectors
+    # Return the singular vectors with largest singular values
     u, _, _ = linalg.svd(series, full_matrices=False)
-    u = u[:, :confound_number].copy()
+    u = u[:, :n_confounds].copy()
     return u
 
 
