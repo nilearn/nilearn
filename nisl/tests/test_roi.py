@@ -5,9 +5,12 @@ Test for roi module.
 
 import numpy as np
 import scipy.signal as spsignal
+from nose.tools import assert_raises
+
+import nibabel
+
 from .. import roi
 from .. import masking
-from nose.tools import assert_raises
 
 
 def generate_timeseries(n_instants, n_features,
@@ -63,10 +66,27 @@ def generate_regions_ts(n_features, n_regions,
         win /= win.mean()  # unity mean
         regions[start:end, n] = win
 
-    ## # Check that no regions overlap
-    ## np.testing.assert_array_less((regions > 0).sum(axis=-1) - 0.1,
-    ##                              np.ones(regions.shape[0]))
     return regions
+
+
+def test_generate_regions_ts():
+    """Minimal testing of generate_regions_ts()"""
+
+    # Check that no regions overlap
+    regions = generate_regions_ts(50, 10, overlap=0)
+    np.testing.assert_array_less((regions > 0).sum(axis=-1) - 0.1,
+                                 np.ones(regions.shape[0]))
+
+    regions = generate_regions_ts(50, 10, overlap=0, window="hamming")
+    np.testing.assert_array_less((regions > 0).sum(axis=-1) - 0.1,
+                                 np.ones(regions.shape[0]))
+
+    # Check that some regions overlap
+    regions = generate_regions_ts(50, 10, overlap=1)
+    assert(np.any((regions > 0).sum(axis=-1) > 1.9))
+
+    regions = generate_regions_ts(50, 10, overlap=1, window="hamming")
+    assert(np.any((regions > 0).sum(axis=-1) > 1.9))
 
 
 def generate_labeled_regions(shape, n_regions, randgen=None):
@@ -252,9 +272,41 @@ def test_regions_are_overlapping():
                   np.zeros((2, 2, 2, 2, 2)))
 
 
-
     # TODO:
     # - check with / without labels
     # - check overlapping / not overlapping
     # - check with / without holes
     # - check length consistency assertion
+
+
+def test_mask_regions():
+    """Test masking of regions.
+    The procedure is slightly different from that for masking fMRI signals.
+    """
+    shape = (4, 5, 6)
+    n_voxels = shape[0] * shape[1] * shape[2]
+    n_regions = 11
+
+    # Generate data
+    affine = np.eye(4)
+    mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
+    regions_ts = generate_regions_ts(n_voxels, n_regions,
+                                  overlap=2, window="hamming")
+
+    # 4D volume with weights
+    region_array = roi.unapply_mask_regions(regions_ts, mask_img)
+    assert(region_array.shape == shape + (n_regions,))
+    regions_ts_recovered = roi.apply_mask_regions(region_array, mask_img)
+    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
+
+    # list of 3D volumes
+    region_list = roi.unapply_mask_regions(regions_ts, mask_img)
+    assert(region_list.shape == shape + (n_regions,))
+    regions_ts_recovered = roi.apply_mask_regions(region_list, mask_img)
+    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
+
+    # array with labels
+    region_labels = roi.unapply_mask_regions(regions_ts, mask_img)
+    assert(region_labels.shape == shape + (n_regions,))
+    regions_ts_recovered = roi.apply_mask_regions(region_labels, mask_img)
+    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)

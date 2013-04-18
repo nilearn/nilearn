@@ -179,21 +179,27 @@ def check_niimgs(niimgs, accept_3d=False):
 
     Parameters
     ----------
-    niimgs: (list of)* string or object
+    niimgs (list of)* string or object
         If niimgs is a list, checks if data is really 4D. Then, considering
         that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
+   accept_3d (boolean)
+       If True, consider a 3D image as a 4D one with last dimension equals
+       to 1.
+
     Returns
     -------
-    A list of nifti-like object (for the moment, nibabel.Nifti1Image)
+    niimg (nibabel.Nifti1Image)
+        One 4D image. If 3D images were provided as input, this is the
+        concatenation of all of them.
 
     Notes
     -----
-    This application is the pendant of check_niimg for niimages with a session
-    level.
+    This function is the equivalent of check_niimg() for niimages with a
+    session level.
 
     Its application is idempotent.
     """

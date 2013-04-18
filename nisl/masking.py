@@ -172,7 +172,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
             raise ValueError('This mask is not made of 2 values: %s'
                              '. Cannot interpret as true or false'
                              % np.unique(this_mask)
-                            )
+                             )
         this_mask -= this_mask.min()
         this_mask = this_mask != 0
         this_mask = this_mask.astype(np.int)
@@ -269,8 +269,8 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     niimgs (list 4D (ot list of 3D) nifti images)
         Images to be masked.
 
-    mask (3d boolean numpy array)
-        3D mask array: true where a voxel should be used.
+    mask_img (niimg)
+        3D mask array: True where a voxel should be used.
 
     smooth (float)
         (optional) Gives the size of the spatial smoothing to apply to
@@ -282,7 +282,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     Returns
     --------
-    session_series (ndarray)
+    session_series (numpy.ndarray)
         2D array of timeseries with shape (time, voxel)
 
     Notes
@@ -370,17 +370,19 @@ def unmask_nD(X, mask):
 def unmask(X, mask):
     """Take masked data and bring them back into 3D/4D
 
+    This function can be applied to a list of masked data.
+
     Parameters
     ==========
-    X: numpy array (or list of)
-        Masked data. shape: (samples #, features #).
-        If X is one-dimensional, it is assumed that samples# == 1.
-    mask: numpy array (boolean)
+    X (numpy array, or list of)
+        Masked data. shape: (samples number, voxels number).
+        If X is one-dimensional, it is assumed that samples number equals one.
+    mask  (array-like with boolean values)
         Mask. mask.ndim must be equal to 3, in all cases..
 
     Return
     ======
-    data: numpy array (or list of)
+    data (numpy array, or list of)
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
         - X.ndim = 2:
