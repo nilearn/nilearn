@@ -6,7 +6,6 @@ Utilities to compute a brain mask from EPI images
 import numpy as np
 from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
-
 from . import utils
 
 
@@ -256,7 +255,6 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 # Time series extraction
 ###############################################################################
 
-
 def apply_mask(niimgs, mask_img, dtype=np.float32,
                smooth=None, ensure_finite=True):
     """ Extract time series using specified mask
@@ -274,7 +272,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     smooth (float)
         (optional) Gives the size of the spatial smoothing to apply to
-        the signal, in voxels.
+        the signal, in voxels. Implies ensure_finite=True
 
     ensure_finite (boolean)
         If ensure_finite is True (default), the non-finite values (NaNs and
@@ -287,32 +285,39 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     Notes
     -----
-    When using smoothing, ensure_finite should be True, as non finite
+    When using smoothing, ensure_finite is set to True, as non finite
     values will spread accross the image.
-    """
-    mask = utils.check_niimg(mask_img)
-    mask = mask_img.get_data().astype(np.bool)
 
-    niimgs = utils.check_niimgs(niimgs)
-    series = niimgs.get_data()
-    affine = niimgs.get_affine()
+    """
+    if smooth is not None:
+        ensure_finite = True
+
+    mask = utils.check_niimg(mask_img)
+    mask = mask.get_data().astype(np.bool)
+
+    niimgs_img = utils.check_niimgs(niimgs)
+    affine = niimgs_img.get_affine()[:3, :3]
+
+    data = niimgs_img.get_data()
+    # All the following has been optimized for C order.
+    # Time that may be lost in conversion here is regained multiple times
+    # afterward, especially if smoothing is applied.
+    series = utils.as_ndarray(data, dtype=dtype, order="C")
+    del data, niimgs_img  # frees a lot of memory
+
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         series[np.logical_not(np.isfinite(series))] = 0
-    series = series.astype(dtype)
-    affine = affine[:3, :3]
-    # del data
-    if isinstance(series, np.memmap):
-        series = np.asarray(series).copy()
+
     if smooth is not None:
         # Convert from a sigma to a FWHM:
         # Do not use /=, smooth may be a numpy scalar
         smooth = smooth / np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         smooth_sigma = smooth / vox_size
-        for this_volume in np.rollaxis(series, -1):
-            this_volume[...] = ndimage.gaussian_filter(this_volume,
-                                                       smooth_sigma)
+        for n, s in enumerate(smooth_sigma):
+            ndimage.gaussian_filter1d(series, s, output=series, axis=n)
+
     return series[mask].T
 
 
