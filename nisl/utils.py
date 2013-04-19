@@ -48,24 +48,24 @@ def largest_connected_component(volume):
 # Niimg related operations
 ###############################################################################
 
-def is_a_niimg(object):
+def is_a_niimg(obj):
     """ Check for get_data and get_affine method in an object
 
     Parameters
     ----------
-    object: unknown object
+    obj (any object)
         Tested object
 
     Returns
     -------
     True if get_data and get_affine methods are present and callable,
-    False otherwise.
+        False otherwise.
     """
 
     # We use a try/except here because this is the way hasattr works
     try:
-        get_data = getattr(object, "get_data")
-        get_affine = getattr(object, "get_affine")
+        get_data = getattr(obj, "get_data")
+        get_affine = getattr(obj, "get_affine")
         return callable(get_data) and callable(get_affine)
     except AttributeError:
         return False
@@ -98,7 +98,7 @@ def _repr_niimgs(niimgs):
 
 
 def check_niimg(niimg):
-    """ Check that an object is a niimg and load it if necessary
+    """Check that an object is a niimg or a string, ensure that data are loaded
 
     Parameters
     ----------
@@ -134,43 +134,55 @@ def check_niimg(niimg):
     return result
 
 
-def concat_niimgs(niimgs):
+def concat_niimgs(niimgs, dtype=np.float32):
     """ Concatenate a list of niimgs
 
     Parameters
     ----------
     niimgs: array of niimgs
-        List of niimgs to concatenate. Can be paths to Nifti files or numpy
-        matrices.
+        List of niimgs to concatenate.
 
     Returns
     -------
     A single niimg
     """
 
-    data = []
     first_niimg = check_niimg(iter(niimgs).next())
     affine = first_niimg.get_affine()
+    first_data = first_niimg.get_data()
+    first_data_shape = first_data.shape
+    # Using fortran order makes concatenation much faster than with C order,
+    # because the voxels for a given image are grouped together in memory.
+    data = np.ndarray(first_data_shape + (len(niimgs),),
+                      order="F", dtype=dtype)
+    data[..., 0] = first_data
+    del first_data, first_niimg
+
     for index, iter_niimg in enumerate(niimgs):
+        if index == 0:
+            continue
         niimg = check_niimg(iter_niimg)
         if not np.array_equal(niimg.get_affine(), affine):
-            s_error = ""
             if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
             else:
                 i_error = "image #" + str(index)
 
-            raise ValueError("Affine of %s%s is different"
+            raise ValueError("Affine of %s is different"
                              " from reference affine"
                              "\nReference affine:\n%s\n"
                              "Wrong affine:\n%s"
-                             % (i_error, s_error,
+                             % (i_error,
                              repr(affine), repr(niimg.get_affine())))
         this_data = niimg.get_data()
-        if len(this_data.shape) == 3:
-            this_data = this_data[..., np.newaxis]
-        data.append(this_data)
-    data = np.concatenate(data, axis=-1)
+        if this_data.shape != first_data_shape:
+            if (isinstance(iter_niimg, basestring)):
+                i_error = "image " + iter_niimg
+            else:
+                i_error = "image #" + str(index)
+            raise ValueError("Shape of %s is different from first image shape."
+                             % i_error)
+        data[..., index] = this_data
     return nibabel.Nifti1Image(data, affine)
 
 
