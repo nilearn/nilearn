@@ -457,12 +457,118 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
+def fetch_craddock_2011(data_dir=None, url=None, resume=True, verbose=0):
+    """Download and return file names for the Craddock 2011 parcellation
+
+    The provided images are in MNI152 space.
+
+    Return
+    ------
+    data (Bunch)
+        dictionary-like object, keys are:
+        scorr_mean, tcorr_mean,
+        scorr_2level, tcorr_2level,
+        random
+
+    References
+    ----------
+    Licence: Creative Commons Attribution Non-commercial Share Alike
+    http://creativecommons.org/licenses/by-nc-sa/2.5/
+
+    Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
+    and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
+    Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
+    1914–1928. doi:10.1002/hbm.21333.
+
+    See http://www.nitrc.org/projects/cluster_roi/ for more information
+    on this parcellation.
+    """
+    dataset_name = "craddock_2011"
+    keys = ("scorr_mean", "tcorr_mean",
+            "scorr_2level", "tcorr_2level",
+            "random")
+    filenames = ["scorr05_mean_all.nii.gz", "tcorr05_mean_all.nii.gz",
+                 "scorr05_2level_all.nii.gz", "tcorr05_2level_all.nii.gz",
+                 "random_all.nii.gz"]
+
+    try:
+        sub_files = _get_dataset(dataset_name, filenames, data_dir=data_dir)
+    except IOError:
+        if url is None:
+            url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs"\
+                  + "/Parcellations/craddock_2011_parcellations.tar.gz"
+            _fetch_dataset(dataset_name, [url], data_dir=data_dir,
+                           resume=resume, verbose=verbose)
+            sub_files = _get_dataset(dataset_name,
+                                     filenames, data_dir=data_dir)
+
+    params = dict(zip(keys, sub_files))
+    return Bunch(**params)
+
+
+def fetch_yeo_2011(data_dir=None, url=None, resume=True, verbose=0):
+    """Download and return file names for the Yeo 2011 parcellation.
+
+    The provided images are in MNI152 space.
+
+    Return
+    ------
+    data (Bunch)
+        dictionary-like object, keys are:
+        - "tight_7", "liberal_7": 7-region parcellations, resp. tightly
+            fitted to cortex shape, and liberally fitted.
+        - "tight_17", "liberal_17": 17-region parcellations.
+        - "colors_7", "colors_17": colormaps (text files) for 7- and 17-region
+            parcellation respectively.
+        - "anat": anatomy image.
+
+    Notes
+    -----
+    For more information on this dataset's structure, see
+    http://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
+
+    Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
+    Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
+    Buckner RL. The organization of the human cerebral cortex estimated by
+    intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
+
+    Licence: unknown.
+    """
+    dataset_name = "yeo_2011"
+    keys = ("tight_7", "liberal_7",
+            "tight_17", "liberal_17",
+            "colors_7", "colors_17", "anat")
+    filenames = [os.path.join("Yeo_JNeurophysiol11_MNI152", f) for f in (
+        "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
+        "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
+        "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
+        "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
+        "Yeo2011_7Networks_ColorLUT.txt",
+        "Yeo2011_17Networks_ColorLUT.txt",
+        "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
+                 ]
+
+    try:
+        sub_files = _get_dataset(dataset_name, filenames, data_dir=data_dir)
+    except IOError:
+        if url is None:
+            url = "ftp://surfer.nmr.mgh.harvard.edu/pub/data/"\
+                  "Yeo_JNeurophysiol11_MNI152.zip"
+            _fetch_dataset(dataset_name, [url], data_dir=data_dir,
+                           resume=resume, verbose=verbose)
+            sub_files = _get_dataset(dataset_name,
+                                     filenames, data_dir=data_dir)
+
+    params = dict(zip(keys, sub_files))
+    return Bunch(**params)
+
+
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
     """Download and load the ICBM152 template (dated 2009)
 
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir (string, optional)
         Path of the data directory. Use to forec data storage in a non-
         standard location. Default: None (meaning: default)
     url: string, optional
@@ -470,7 +576,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
 
     Return
     ------
-    data: Bunch
+    data (Bunch)
         dictionary-like object, interest keys are:
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
             given modality (resp. T1, T2, T2 relaxometry and proton
@@ -522,7 +628,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
         sub_files = _get_dataset("icbm152_2009", filenames, data_dir=data_dir)
     except IOError:
         if url is None:
-            url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip"
+            url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/"\
+                  "mni_icbm152_nlin_sym_09a_nifti.zip"
             _fetch_dataset("icbm152_2009", [url], data_dir=data_dir,
                            resume=resume, verbose=verbose)
             sub_files = _get_dataset("icbm152_2009",
