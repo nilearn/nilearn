@@ -200,19 +200,20 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.):
         as 'CompCor' (Behzadi NeuroImage 2007).
 
         The implemented algorithm does the following:
-        - compute variance for each time series
+        - compute sum of squares for each time series (no mean removal)
         - keep a given percentile of series with highest variances (percentile)
         - compute an svd of the extracted series
         - return a given number (n_confounds) of series from the svd with
           highest singular values.
     """
     # Retrieve the voxels|features with highest variance
-    if series.flags["F_CONTIGUOUS"]:
-        # Faster because numpy always computes **2 in C order.
-        # Adding a transposition gives F order computation.
-        var = np.mean((series.T ** 2).T, axis=0)
-    else:
-        var = np.mean(series ** 2, axis=0)
+
+    # Compute variance without mean removal.
+    # The execution speed of these three lines is independent of array
+    # ordering (C or F)
+    var = np.copy(series)
+    var **= 2
+    var = var.mean(axis=0)
 
     var_thr = stats.scoreatpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)

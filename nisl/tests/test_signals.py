@@ -136,7 +136,7 @@ def test_detrend():
 
     # Mean removal only (out-of-place)
     detrended = nisignals._detrend(x, inplace=False, type="constant")
-    assert(abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignals._detrend(x, inplace=False)
@@ -144,14 +144,15 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert(abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max() <
+                15. * np.finfo(np.float).eps)
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
     nisignals._detrend(x, inplace=True)
-    assert(abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
+    assert_true(abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
@@ -198,7 +199,6 @@ def test_clean_confounds():
     noises1 = noises.copy()
     cleaned_signals = nisignals.clean(noises, confounds=confounds,
                                       detrend=True, standardize=True)
-    print(abs(cleaned_signals).max())
     assert(abs(cleaned_signals).max() < 15. * eps)
 
     np.testing.assert_almost_equal(noises, noises1, decimal=12)
@@ -206,7 +206,6 @@ def test_clean_confounds():
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
                                       detrend=True, standardize=True)
-    print(abs(np.dot(confounds.T, cleaned_signals)).max())
     assert(abs(np.dot(confounds.T, cleaned_signals)).max() < 15. * eps)
 
     # TODO: Test with confounds read from a file
