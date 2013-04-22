@@ -4,8 +4,8 @@ Preprocessing functions for time series.
 # Authors: Alexandre Abraham, Gael Varoquaux
 # License: simplified BSD
 
-from scipy import signal
 import numpy as np
+from scipy import signal, stats, linalg
 from sklearn.utils.fixes import qr_economic
 
 
@@ -169,6 +169,58 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             for timeseries in signals.T:
                 timeseries[:] = signal.lfilter(b, a, timeseries)
     return signals
+
+
+def high_variance_confounds(series, n_confounds=10, percentile=1.):
+    """ Return confounds time series extracted from series with highest
+        variance.
+
+        Parameters
+        ==========
+        series (numpy.ndarray)
+            Timeseries. A timeseries is a column in the "series" array.
+            shape (sample number, feature number)
+
+        n_confounds (int)
+            Number of confounds to return
+
+        percentile (float)
+            Highest-variance series percentile to keep before computing the
+            singular value decomposition.
+            series.shape[0] * percentile must be greater than n_confounds.
+
+        Returns
+        =======
+        v (numpy.ndarray)
+            highest variance confounds. Shape: (samples, n_confounds)
+
+        Notes
+        ======
+        This method is related to what has been published in the literature
+        as 'CompCor' (Behzadi NeuroImage 2007).
+
+        The implemented algorithm does the following:
+        - compute sum of squares for each time series (no mean removal)
+        - keep a given percentile of series with highest variances (percentile)
+        - compute an svd of the extracted series
+        - return a given number (n_confounds) of series from the svd with
+          highest singular values.
+    """
+    # Retrieve the voxels|features with highest variance
+
+    # Compute variance without mean removal.
+    # The execution speed of these three lines is independent of array
+    # ordering (C or F)
+    var = np.copy(series)
+    var **= 2
+    var = var.mean(axis=0)
+
+    var_thr = stats.scoreatpercentile(var, 100. - percentile)
+    series = series[:, var > var_thr]  # extract columns (i.e. features)
+    # Return the singular vectors with largest singular values
+    u, _, _ = linalg.svd(series, full_matrices=False)
+    u = u[:, :n_confounds].copy()
+    return u
 
 
 def clean(signals, detrend=True, standardize=True, confounds=None,
