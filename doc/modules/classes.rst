@@ -83,6 +83,35 @@ Functions
    masking.apply_mask
    masking.unmask
 
+.. _region_ref:
+
+:mod:`nisl.region`: Regions Handling Utilities
+==============================================
+
+.. automodule:: nisl.region
+   :no-members:
+   :no-inherited-members:
+
+Functions
+---------
+.. currentmodule:: nisl
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   region.apply_regions
+   region.unapply_regions
+   region.apply_mask_to_regions
+   region.unapply_mask_to_regions
+   region.regions_are_overlapping
+   region.regions_labels_to_array
+   region.regions_array_to_labels
+   region.regions_array_to_list
+   region.regions_list_to_array
+   region.regions_list_to_labels
+   region.regions_labels_to_list
+
 .. _resampling_ref:
 
 :mod:`nisl.resampling`: Data Resampling Utilities

@@ -257,7 +257,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
 def apply_mask(niimgs, mask_img, dtype=np.float32,
                smooth=None, ensure_finite=True):
-    """ Extract time series using specified mask
+    """Extract time series using specified mask
 
     Read the time series from the given nifti images or filepaths,
     using the mask.

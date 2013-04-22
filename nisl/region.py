@@ -19,17 +19,17 @@ from . import utils
 from . import masking
 
 
-def apply_roi(timeseries, regions, normalize_regions=False):
+def apply_regions(timeseries, regions, normalize_regions=False):
     """Compute timeseries for regions of interest.
 
     This function takes timeseries as parameters (masked data).
 
     This function solves the inverse problem of finding the
-    matrix timeseries_roi such that:
+    matrix timeseries_regions such that:
 
-    timeseries = np.dot(timeseries_roi, regions.T)
+    timeseries = np.dot(timeseries_regions, regions.T)
 
-    The direct problem is handled by unapply_roi().
+    The direct problem is handled by unapply_regions().
 
     Parameters
     ==========
@@ -47,33 +47,31 @@ def apply_roi(timeseries, regions, normalize_regions=False):
         If True, normalize output by
         (regions ** 2).sum(axis=0) / regions.sum(axis=0)
         This factor ensures that if all input timeseries are identical
-        in a region, then the corresponding roi-timeseries is exactly the
+        in a region, then the corresponding regions-timeseries is exactly the
         same, independent of the region weighting.
 
     Returns
     =======
-    timeseries_roi (2D numpy array)
+    timeseries_regions (2D numpy array)
         Computed timeseries for each region.
         shape: (instant number, region number)
     """
 
-    roi_timeseries = splinalg.lstsq(regions, timeseries.T)[0].T
+    regions_timeseries = splinalg.lstsq(regions, timeseries.T)[0].T
     if normalize_regions:
-        roi_timeseries /= regions.sum(axis=0) / (regions ** 2).sum(axis=0)
-    return roi_timeseries
+        regions_timeseries /= regions.sum(axis=0) / (regions ** 2).sum(axis=0)
+    return regions_timeseries
 
 
-def unapply_roi(timeseries_roi, regions):
-    """Recover voxel timeseries from ROI-timeseries.
+def unapply_regions(timeseries_regions, regions):
+    """Recover voxel timeseries from regions timeseries.
 
-    See also apply_roi().
+    See also apply_regions().
     """
-    return np.dot(timeseries_roi, regions.T)
+    return np.dot(timeseries_regions, regions.T)
 
 
-## Split this function in two? one for regions given by labels,
-## one for every other case?
-def apply_mask_regions(regions_img_in, mask_img):
+def apply_mask_to_regions(regions_img_in, mask_img):
     """Convert region definition to timeseries-like representation.
 
     Parameters
@@ -82,9 +80,9 @@ def apply_mask_regions(regions_img_in, mask_img):
         regions definition. Three formats are accepted, with the following
         meanings:
         - 4D volume or list of 3D volume: each slice/3D volume defines a single
-          region. Values are interpreted as weights.
+        region. Values are interpreted as weights.
         - single 3D volume: values are interpreted as labels, each value
-          defining a single region. No overlapping is possible in this case.
+        defining a single region. No overlapping is possible in this case.
 
     mask_img (niimg)
         mask definition. Value are interpreted as boolean: every non-zero value
@@ -102,7 +100,7 @@ def apply_mask_regions(regions_img_in, mask_img):
     See also
     ========
     nisl.masking.apply_mask
-    nisl.roi.apply_roi
+    nisl.region.apply_regions
     """
 
     regions_img = utils.check_niimgs(regions_img_in, accept_3d=True)
@@ -113,13 +111,14 @@ def apply_mask_regions(regions_img_in, mask_img):
     data = regions_img.get_data()
     if data.shape[3] == 1:  # labeled case
          # FIXME: use as_ndarray(data) here
-        regions_img = nibabel.Nifti1Image(regions_labels_to_array(data)[0],
-                                          regions_img.get_affine())
+        regions_img = nibabel.Nifti1Image(
+            regions_labels_to_array(data[..., 0], dtype=np.int8)[0],
+            regions_img.get_affine())
 
     return masking.apply_mask(regions_img, mask_img).T
 
 
-def unapply_mask_regions(region_ts, mask_img):
+def unapply_mask_to_regions(region_ts, mask_img):
     """Convert regions as timeseries into regions as volume.
 
     This function is the inverse of apply_mask_regions()
@@ -143,7 +142,7 @@ def unapply_mask_regions(region_ts, mask_img):
 
     See also
     ========
-    nisl.roi.apply_mask_regions
+    nisl.region.apply_mask_regions
     """
 
     mask_img = utils.check_niimg(mask_img)
@@ -238,13 +237,17 @@ def regions_labels_to_array(region_labels, dtype=np.bool):
 
     See also
     ========
-    nisl.roi.regions_array_to_labels
+    nisl.region.regions_array_to_labels
     """
 
     # TODO: add an option to exclude labels from ouput (useful for background
     # suppression)
     # FIXME: should display a warning if array has not integer values
     labels = np.unique(region_labels)
+    if region_labels.ndim == 4 and region_labels.shape[3] != 1:
+        raise ValueError("input array containing labels must be 3D, "
+                         "you provided this shape: %s"
+                         % str(region_labels.shape))
     regions_array = np.zeros(region_labels.shape + (len(labels), ),
                              dtype=dtype)
 
@@ -278,7 +281,7 @@ def regions_array_to_labels(region_array, labels=None, background_label=0):
 
     See also
     ========
-    nisl.roi.regions_labels_to_array
+    nisl.region.regions_labels_to_array
 
     """
     if labels is not None and (len(labels) != region_array.shape[-1]):
