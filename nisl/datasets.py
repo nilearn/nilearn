@@ -462,8 +462,8 @@ def fetch_craddock_2011(data_dir=None, url=None, resume=True, verbose=0):
 
     The provided images are in MNI152 space.
 
-    Return
-    ------
+    Returns
+    -------
     data (Bunch)
         dictionary-like object, keys are:
         scorr_mean, tcorr_mean,
@@ -511,8 +511,8 @@ def fetch_yeo_2011(data_dir=None, url=None, resume=True, verbose=0):
 
     The provided images are in MNI152 space.
 
-    Return
-    ------
+    Returns
+    -------
     data (Bunch)
         dictionary-like object, keys are:
         - "tight_7", "liberal_7": 7-region parcellations, resp. tightly
@@ -574,8 +574,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
 
-    Return
-    ------
+    Returns
+    -------
     data (Bunch)
         dictionary-like object, interest keys are:
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
@@ -652,15 +652,12 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
     -------
     data: Bunch
         Dictionary-like object, interest attributes are:
-        'func': string
-            Path to nifti file with bold data
-        'session_target': string
-            Path to text file containing session and target data
-        'mask': string
-            Path to nifti mask file
-        'session': string
-            Path to text file containing labels (can be used for
-            LeaveOneLabelOut cross validation for example)
+        'func': string.  Path to nifti file with bold data.
+        'session_target': string. Path to text file containing session and
+        target data.
+        'mask': string. Path to nifti mask file.
+        'session': string. Path to text file containing labels (can be used
+        for LeaveOneLabelOut cross validation for example).
 
     References
     ----------
@@ -720,22 +717,17 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'anat': string list
-            Paths to anatomic images
-        'func': string list
-            Paths to nifti file with bold data
-        'session_target': string list
-            Paths to text file containing session and target data
-        'mask_vt': string list
-            Paths to nifti ventral temporal mask file
-        'mask_face': string list
-            Paths to nifti ventral temporal mask file
-        'mask_house': string list
-            Paths to nifti ventral temporal mask file
-        'mask_face_little': string list
-            Paths to nifti ventral temporal mask file
-        'mask_house_little': string list
-            Paths to nifti ventral temporal mask file
+        'anat': string list. Paths to anatomic images.
+        'func': string list. Paths to nifti file with bold data.
+        'session_target': string list. Paths to text file containing
+        session and target data.
+        'mask_vt': string list. Paths to nifti ventral temporal mask file.
+        'mask_face': string list. Paths to nifti ventral temporal mask file.
+        'mask_house': string list. Paths to nifti ventral temporal mask file.
+        'mask_face_little': string list. Paths to nifti ventral temporal
+        mask file.
+        'mask_house_little': string list. Paths to nifti ventral temporal
+        mask file.
 
     References
     ----------
@@ -844,18 +836,13 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
     -------
     data : Bunch
         Dictionary-like object, the interest attributes are :
-        'func': string list
-            Paths to functional images
-        'anat_anon': string list
-            Paths to anatomic images
-        'anat_skull': string
-            Paths to skull-stripped images
-        'session': numpy array
-            List of ids corresponding to images sessions
+        'func': string list. Paths to functional images.
+        'anat_anon': string list. Paths to anatomic images.
+        'anat_skull': string. Paths to skull-stripped images.
+        'session': numpy array. List of ids corresponding to images sessions.
 
     Notes
     ------
-
     This dataset is composed of 3 sessions of 26 participants (11 males).
     For each session, three sets of data are available:
 
@@ -994,10 +981,8 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     -------
     data : Bunch
         Dictionary-like object, the interest attributes are :
-        'func': string list
-            Paths to functional images
-        'parameters': string list
-            Parameters of preprocessing steps
+        - 'func': string list. Paths to functional images
+        - 'parameters': string list. Parameters of preprocessing steps
 
     References
     ----------

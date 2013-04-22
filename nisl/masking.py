@@ -354,8 +354,8 @@ def unmask_nD(X, mask):
     mask: numpy array (boolean)
         Mask. mask.ndim must be equal to 3.
 
-    Return
-    ======
+    Returns
+    =======
     data: 4D numpy array
         Unmasked data.
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
@@ -385,8 +385,8 @@ def unmask(X, mask):
     mask  (array-like with boolean values)
         Mask. mask.ndim must be equal to 3, in all cases..
 
-    Return
-    ======
+    Returns
+    =======
     data (numpy array, or list of)
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
