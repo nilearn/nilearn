@@ -12,9 +12,8 @@ from ..signals import clean
 import scipy.signal
 
 
-def generate_signals(feature_number=17,
-                     confound_number=5,
-                     length=41):
+def generate_signals(feature_number=17, n_confounds=5, length=41,
+                     same_variance=True, order="C"):
     """Generate test signals.
 
     Returned signals have no trends at all (to machine precision).
@@ -22,17 +21,28 @@ def generate_signals(feature_number=17,
     randgen = np.random.RandomState(0)
 
     # Generate random confounds
-    confounds = randgen.randn(length, confound_number)
-    confounds = scipy.signal.detrend(confounds, axis=0)
+    confounds_shape = (length, n_confounds)
+    confounds = np.ndarray(confounds_shape, order=order)
+    confounds[...] = randgen.randn(*confounds_shape)
+    confounds[...] = scipy.signal.detrend(confounds, axis=0)
 
     # Compute noise based on confounds, with random factors
-    factors = randgen.randn(confound_number, feature_number)
-    noises = np.dot(confounds, factors)
-    noises = scipy.signal.detrend(noises, axis=0)
+    factors = randgen.randn(n_confounds, feature_number)
+    noises_shape = (length, feature_number)
+    noises = np.ndarray(noises_shape, order=order)
+    noises[...] = np.dot(confounds, factors)
+    noises[...] = scipy.signal.detrend(noises, axis=0)
 
-    # Generate random signal
-    signals = 0.5 * randgen.randn(length, feature_number)
-    signals = scipy.signal.detrend(signals, axis=0)
+    # Generate random signals with random amplitudes
+    signals_shape = noises_shape
+    signals = np.ndarray(signals_shape, order=order)
+    if same_variance:
+        signals[...] = randgen.randn(*signals_shape)
+    else:
+        signals[...] = (4. * abs(randgen.randn(signals_shape[1])) + 0.5
+                        ) * randgen.randn(*signals_shape)
+
+    signals[...] = scipy.signal.detrend(signals, axis=0)
     return signals, noises, confounds
 
 
@@ -118,14 +128,15 @@ def test_detrend():
     point_number = 703
     features = 17
     signals, _, _ = generate_signals(feature_number=features,
-                                     length=point_number)
+                                     length=point_number,
+                                     same_variance=True)
     trends = generate_trends(feature_number=features, length=point_number)
     x = signals + trends + 1
     original = x.copy()
 
     # Mean removal only (out-of-place)
     detrended = nisignals._detrend(x, inplace=False, type="constant")
-    assert(abs(detrended.mean(axis=0)).max() < 7. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignals._detrend(x, inplace=False)
@@ -133,14 +144,15 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert(abs(detrended.mean(axis=0)).max() < 7. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max() <
+                15. * np.finfo(np.float).eps)
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
     nisignals._detrend(x, inplace=True)
-    assert(abs(x.mean(axis=0)).max() < 7. * np.finfo(np.float).eps)
+    assert_true(abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
@@ -181,13 +193,12 @@ def test_clean_frequencies():
 
 def test_clean_confounds():
     signals, noises, confounds = generate_signals(feature_number=41,
-                                                  confound_number=5, length=45)
+                                                  n_confounds=5, length=45)
     # No signal: output must be zero.
     eps = np.finfo(np.float).eps
     noises1 = noises.copy()
     cleaned_signals = nisignals.clean(noises, confounds=confounds,
                                       detrend=True, standardize=True)
-    print(abs(cleaned_signals).max())
     assert(abs(cleaned_signals).max() < 15. * eps)
 
     np.testing.assert_almost_equal(noises, noises1, decimal=12)
@@ -195,7 +206,47 @@ def test_clean_confounds():
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
                                       detrend=True, standardize=True)
-    print(abs(np.dot(confounds.T, cleaned_signals)).max())
     assert(abs(np.dot(confounds.T, cleaned_signals)).max() < 15. * eps)
 
     # TODO: Test with confounds read from a file
+
+
+def test_high_variance_confounds():
+    # C and F order might take different paths in the function. Check that the
+    # result is identical.
+    feature_number = 1001
+    length = 20
+    n_confounds = 5
+    seriesC, _, _ = generate_signals(feature_number=feature_number,
+                                     length=length, order="C")
+    seriesF, _, _ = generate_signals(feature_number=feature_number,
+                                     length=length, order="F")
+
+    np.testing.assert_almost_equal(seriesC, seriesF, decimal=13)
+    outC = nisignals.high_variance_confounds(seriesC,
+                                             n_confounds=n_confounds)
+    outF = nisignals.high_variance_confounds(seriesF,
+                                             n_confounds=n_confounds)
+    np.testing.assert_almost_equal(outC, outF, decimal=13)
+
+    # Result must not be influenced by global scaling
+    seriesG = 2 * seriesC
+    outG = nisignals.high_variance_confounds(seriesG,
+                                             n_confounds=n_confounds)
+    np.testing.assert_almost_equal(outC, outG, decimal=13)
+    assert(outG.shape == (length, n_confounds))
+
+    # Changing percentile changes the result
+    seriesG = seriesC
+    outG = nisignals.high_variance_confounds(seriesG, percentile=2.,
+                                             n_confounds=n_confounds)
+    assert_raises(AssertionError, np.testing.assert_almost_equal,
+                  outC, outG, decimal=13)
+    assert(outG.shape == (length, n_confounds))
+
+    # Check shape of output
+    out = nisignals.high_variance_confounds(seriesG,
+                                            n_confounds=7)
+    assert(out.shape == (length, 7))
+
+    # TODO: any other ideas?
