@@ -208,6 +208,23 @@ def test_clean_confounds():
                                       detrend=True, standardize=True)
     assert(abs(np.dot(confounds.T, cleaned_signals)).max() < 20. * eps)
 
+    # Test detrending. No trend should exist in the output.
+    # Use confounds with a trend.
+    temp = confounds.T
+    temp += np.arange(confounds.shape[0])
+
+    cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
+                                      detrend=False)
+    coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
+                        cleaned_signals, 1)
+    assert_true((abs(coeffs) > 1e-3).any())   # trend remains
+
+    cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
+                                      detrend=True)
+    coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
+                        cleaned_signals, 1)
+    assert_true((abs(coeffs) < 5. * eps).all())  # trend removed
+
     # TODO: Test with confounds read from a file
 
 
