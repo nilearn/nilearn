@@ -199,14 +199,14 @@ def test_clean_confounds():
     noises1 = noises.copy()
     cleaned_signals = nisignals.clean(noises, confounds=confounds,
                                       detrend=True, standardize=True)
-    assert(abs(cleaned_signals).max() < 15. * eps)
+    assert(abs(cleaned_signals).max() < 20. * eps)
 
     np.testing.assert_almost_equal(noises, noises1, decimal=12)
 
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
                                       detrend=True, standardize=True)
-    assert(abs(np.dot(confounds.T, cleaned_signals)).max() < 15. * eps)
+    assert(abs(np.dot(confounds.T, cleaned_signals)).max() < 20. * eps)
 
     # TODO: Test with confounds read from a file
 
