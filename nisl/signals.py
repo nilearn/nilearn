@@ -298,7 +298,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                     confounds = np.genfromtxt(filename, skiprows=1)
         # Restrict the signal to the orthogonal of the confounds
         confounds = np.atleast_2d(confounds)
-        confounds = _standardize(confounds, normalize=True)
+        confounds = _standardize(confounds, normalize=True, detrend=detrend)
         Q = qr_economic(confounds)[0]
         signals -= np.dot(Q, np.dot(Q.T, signals))
 
