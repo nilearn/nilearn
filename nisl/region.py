@@ -1,6 +1,7 @@
 """
 Regions of interest extraction and handling.
 """
+# Author: Philippe Gervais
 # License: simplified BSD
 
 # Vocabulary:
@@ -11,6 +12,8 @@ Regions of interest extraction and handling.
 
 # masked regions: 2D array, (region number, voxel number) values are weights.
 # apply_mask/unmask to convert to 4D array
+
+import collections
 
 import numpy as np
 import scipy.linalg as splinalg
@@ -430,3 +433,93 @@ def regions_labels_to_list(regions_labels, background_label=0,
             region = region.astype(dtype)  # copy
         regions_list.append(region)
     return regions_list, labels
+
+
+def regions_to_mask(regions_img, threshold=0., background=0,
+                    target_img=None, dtype=np.bool):
+    """Merge all regions to give a binary mask.
+
+    A non-zero value in the output means that this point is inside at
+    least one region.
+
+    This function can process regions defined as weights or as labels.
+    A label image must always be a single image with 3 dimensions. Passing
+    a list with only one 3D array does not qualify: it will be considered
+    as a single fuzzy region.
+
+    Parameters
+    ==========
+    regions_img (niimg or list of niimg)
+        Regions definition as niimg, in one of the handled formats:
+        (4D image, list of 3D images, or 3D label image). All images given
+        therein must have the same shape and affine, no resampling is
+        performed.
+
+    threshold (float)
+        absolute values of weights defining a region must be above this
+        threshold to be considered as "inside". Used for fuzzy regions
+        definition only (4D and list of 3D arrays). Defaults to zero, as
+        it can be exactly represented in floating-point arithmetic.
+
+    background (integer)
+        value considered as background for the labeled array case (one 3D
+        array) defaults to zero.
+
+    target_img (niimg)
+        Image which gives shape and affine to which output must be resampled.
+        If None, affine and shape of regions are left unchanged. Resampling is
+        performed after mask computation.
+        Not implemented yet.
+
+    dtype (numpy.dtype)
+        dtype of the output array.
+
+    Returns
+    =======
+    mask (NislImage)
+        union of all the regions (boolean image)
+
+    See also
+    ========
+    nisl.masking.intersect_masks
+    """
+
+    if isinstance(regions_img, collections.Iterable):
+        first = utils.check_niimg(regions_img.__iter__().next())
+        affine = first.get_affine()
+        shape = utils._get_shape(first)
+        if len(shape) != 3:
+            raise ValueError("List must contain 3D arrays, {0:d}D "
+                             + "array was provided".format(len(shape)))
+        output = np.zeros(shape, dtype=dtype)
+        del first
+        for r in regions_img:  # Load one image at a time to save memory
+            niimg = utils.check_niimg(r)
+            if utils._get_shape(niimg) != output.shape:
+                raise ValueError("Inconsistent shape in input list")
+            output[abs(niimg.get_data()) > threshold] = True
+
+    elif isinstance(regions_img, str) or utils.is_a_niimg(regions_img):
+        niimg = utils.check_niimg(regions_img)
+        shape = utils._get_shape(niimg)
+        affine = niimg.get_affine()
+        if len(shape) == 4:
+            output = np.zeros(shape[:3], dtype=dtype)
+            data = niimg.get_data()
+            for n in xrange(shape[3]):
+                output[abs(data[..., n]) > threshold] = True
+
+        elif len(shape) == 3:  # labels
+            output = (niimg.get_data() != background).astype(dtype)
+
+        else:
+            raise ValueError(
+                "Invalid shape for input array: {0}".format(str(shape)))
+
+    else:
+        raise TypeError("Unhandled data type: {0}".format(regions_img.__class__))
+
+    # FIXME: resample if needed
+    # Use NislImage and not Nifti1Image to be able to carry around
+    # boolean arrays.
+    return utils.NislImage(output, affine)

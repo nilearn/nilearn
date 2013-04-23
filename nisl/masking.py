@@ -159,9 +159,9 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
     """
     grp_mask = None
     if threshold > 1:
-        raise ValueError('The threshold should be < 1')
+        raise ValueError('The threshold should be smaller than 1')
     if threshold < 0:
-        raise ValueError('The threshold should be > 0')
+        raise ValueError('The threshold should be greater than 0')
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in input_masks:

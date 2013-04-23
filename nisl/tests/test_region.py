@@ -6,7 +6,7 @@ Test for "region" module.
 
 import numpy as np
 import scipy.signal as spsignal
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_true
 
 import nibabel
 
@@ -310,6 +310,84 @@ def test_mask_regions():
     # array with labels
     region_labels = region.unapply_mask_to_regions(regions_ts, mask_img)
     assert(region_labels.shape == shape + (n_regions,))
-    regions_ts_recovered = region.apply_mask_to_regions(region_labels, mask_img)
+    regions_ts_recovered = region.apply_mask_to_regions(region_labels,
+                                                        mask_img)
     np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
 
+
+def test_regions_to_mask():
+    """Test of regions_to_mask(): union of regions."""
+    shape = (4, 5, 6)
+    n_regions = 11
+
+    # Generate data
+    affine = np.eye(4)
+    mask_data = np.ones(shape, dtype=np.bool)
+    mask_data[..., 0] = False
+    mask_data[0, ...] = False
+    n_voxels = mask_data.sum()
+    mask_img = utils.NislImage(mask_data, affine)
+
+    regions_ts = generate_regions_ts(n_voxels, n_regions,
+                                     overlap=2, window="hamming")
+    region_img = region.unapply_mask_to_regions(regions_ts, mask_img)
+    regions_ts[0, 0] = 0  # change something
+    region_broken_img = region.unapply_mask_to_regions(regions_ts, mask_img)
+
+    region_labels_img = utils.NislImage(
+        region.regions_array_to_labels(region_img.get_data()), affine)
+    region_labels_broken_img = utils.NislImage(
+        region.regions_array_to_labels(region_broken_img.get_data()), affine)
+
+    region_list_img = [utils.NislImage(data, affine)
+                       for data
+                       in region.regions_array_to_list(region_img.get_data())]
+    region_list_broken_img = [
+        utils.NislImage(data, affine)
+        for data
+        in region.regions_array_to_list(region_broken_img.get_data())]
+
+    # _r stands for "recovered"
+    # TODO: list of filenames
+    # list of Nifti1Image
+    mask_r_img = region.regions_to_mask(region_list_img)
+    np.testing.assert_array_equal(mask_data, mask_r_img.get_data())
+
+    mask_r_img = region.regions_to_mask(region_list_broken_img)
+    assert_raises(AssertionError,
+                  np.testing.assert_array_equal,
+                  mask_data, mask_r_img.get_data())
+
+    # one Nifti1Image, 4D array
+    mask_r_img = region.regions_to_mask(region_img)
+    assert_true(utils.is_a_niimg(mask_r_img))
+    np.testing.assert_array_equal(mask_data, mask_r_img.get_data())
+
+    mask_r_img = region.regions_to_mask(region_broken_img)
+    assert_true(utils.is_a_niimg(mask_r_img))
+    assert_raises(AssertionError,
+                  np.testing.assert_array_equal,
+                  mask_data, mask_r_img.get_data())
+
+    # TODO: one filename, 4D array
+    # TODO: Check effect of "threshold" argument
+
+    # TODO: one filename, 3D file (labels)
+    # one Nifti1Image, 3D array (labels)
+    mask_r_img = region.regions_to_mask(region_labels_img)
+    assert_true(utils.is_a_niimg(mask_r_img))
+    np.testing.assert_array_equal(mask_data, mask_r_img.get_data())
+
+    mask_r_img = region.regions_to_mask(region_labels_broken_img)
+    assert_true(utils.is_a_niimg(mask_r_img))
+    assert_raises(AssertionError,
+                  np.testing.assert_array_equal,
+                  mask_data, mask_r_img.get_data())
+
+    # TODO: Check effect of "background" argument
+
+    ## Error checking:
+    # TODO: list of Nifti1Image with inconsistent shape
+    # TODO: list of Nifti1Image with a non-3D image as first element.
+
+    pass

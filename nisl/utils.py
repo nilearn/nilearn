@@ -98,14 +98,14 @@ def _repr_niimgs(niimgs):
 
 
 def check_niimg(niimg):
-    """Check that an object is a niimg or a string, ensure that data are loaded
+    """Check that niimg is a proper niimg. Turn filenames into objects.
 
     Parameters
     ----------
     niimg: string or object
         If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. If it is an object, check if get_data
-        and get_affine methods are present, raise an Exception otherwise.
+        call nibabel.load on it. If it is an object, check if get_data()
+        and get_affine() methods are present, raise TypeError otherwise.
 
     Returns
     -------
@@ -421,3 +421,23 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
         raise ValueError("Type not handled: %s" % arr.__class__)
 
     return ret
+
+
+class NislImage(object):
+    """Minimal niimg class.
+
+    The purpose of this class is to enable manipulation of boolean arrays
+    as niimg, which is not possible with nibabel.Nifti1Image.
+    """
+
+    def __init__(self, data, affine=np.eye(4)):
+        self._data = data
+        self._affine = affine
+        if hasattr(data, "shape"):
+            self.shape = data.shape
+
+    def get_data(self):
+        return self._data
+
+    def get_affine(self):
+        return self._affine
