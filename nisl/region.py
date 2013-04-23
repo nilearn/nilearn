@@ -220,13 +220,16 @@ def regions_are_overlapping(regions):
     return predicate
 
 
-def regions_labels_to_array(region_labels, dtype=np.bool):
+def regions_labels_to_array(region_labels, background_label=0, dtype=np.bool):
     """Convert regions expressed as labels to a 4D array with weights.
 
     Parameters
     ==========
     region_labels (numpy.ndarray)
         3D array, with integer labels as values
+
+    background_label (integer)
+        label corresponding to background. No region is output for this label.
 
     dtype (numpy dtype)
         dtype of the returned array. Defaults to boolean.
@@ -246,7 +249,13 @@ def regions_labels_to_array(region_labels, dtype=np.bool):
     # TODO: add an option to exclude labels from ouput (useful for background
     # suppression)
     # FIXME: should display a warning if array has not integer values
-    labels = np.unique(region_labels)
+    labels = list(np.unique(region_labels))
+    if background_label is not None:
+        try:
+            labels.remove(background_label)
+        except ValueError:  # value not in list
+            pass
+
     if region_labels.ndim == 4 and region_labels.shape[3] != 1:
         raise ValueError("input array containing labels must be 3D, "
                          "you provided this shape: %s"
@@ -257,7 +266,7 @@ def regions_labels_to_array(region_labels, dtype=np.bool):
     for n, label in enumerate(labels):
         regions_array[..., n] = np.where(region_labels == label, 1, 0)
 
-    return regions_array, list(labels)
+    return regions_array, labels
 
 
 def regions_array_to_labels(region_array, labels=None, background_label=0):
