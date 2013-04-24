@@ -337,7 +337,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     return series[mask].T
 
 
-def unmask_3D(X, mask_img):
+def unmask_3d(X, mask_img):
     """Take masked data and bring them back to 3D (space only).
 
     Parameters
@@ -346,6 +346,12 @@ def unmask_3D(X, mask_img):
         Masked data. shape: (samples,)
     mask_img: nifti-like image
         Mask. mask.ndim must be equal to 3.
+    
+    Return
+    ======
+    data: 3D nifti-like image
+        Unmasked data.
+        Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
     """
 
     mask_img = utils.check_niimg(mask_img)
@@ -360,7 +366,7 @@ def unmask_3D(X, mask_img):
     return Nifti1Image(data, mask_img.get_affine())
 
 
-def unmask_nD(X, mask_img):
+def unmask_nd(X, mask_img):
     """Take masked data and bring them back to n-dimension
 
     Parameters
@@ -417,6 +423,6 @@ def unmask(X, mask):
         return ret
 
     if X.ndim == 2:
-        return unmask_nD(X, mask)
+        return unmask_nd(X, mask)
     elif X.ndim == 1:
-        return unmask_3D(X, mask)
+        return unmask_3d(X, mask)
