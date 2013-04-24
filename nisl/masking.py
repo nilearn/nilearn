@@ -337,19 +337,19 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     return series[mask].T
 
 
-def unmask_3D(X, mask):
+def unmask_3D(X, mask_img):
     """Take masked data and bring them back to 3D (space only).
 
     Parameters
     ==========
     X: numpy array
         Masked data. shape: (samples,)
-    mask: numpy array (boolean)
+    mask_img: nifti-like image
         Mask. mask.ndim must be equal to 3.
     """
 
-    if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+    mask_img = utils.check_niimg(mask_img)
+    mask = mask_img.get_data().astype(bool)
     if X.ndim != 1:
         raise ValueError("X must be a 1-dimensional array")
 
@@ -357,35 +357,35 @@ def unmask_3D(X, mask):
         (mask.shape[0], mask.shape[1], mask.shape[2]),
         dtype=X.dtype)
     data[mask] = X
-    return data
+    return Nifti1Image(data, mask_img.get_affine())
 
 
-def unmask_nD(X, mask):
+def unmask_nD(X, mask_img):
     """Take masked data and bring them back to n-dimension
 
     Parameters
     ==========
     X: numpy array
         Masked data. shape: (samples, features)
-    mask: numpy array (boolean)
+    mask_img: nifti-like image
         Mask. mask.ndim must be equal to 3.
 
     Return
     ======
-    data: 4D numpy array
+    data: 4D nifti-like image
         Unmasked data.
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
     """
 
     # Much faster than nisl unmask, and uses three times less memory !
-    if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+    mask_img = utils.check_niimg(mask_img)
+    mask = mask_img.get_data().astype(bool)
     if X.ndim != 2:
         raise ValueError("X must be a 2-dimensional array")
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype)
     data[mask, :] = X.T
-    return data
+    return Nifti1Image(data, mask_img.get_affine())
 
 
 def unmask(X, mask):
@@ -396,12 +396,12 @@ def unmask(X, mask):
     X: numpy array (or list of)
         Masked data. shape: (samples #, features #).
         If X is one-dimensional, it is assumed that samples# == 1.
-    mask: numpy array (boolean)
+    mask: nifti-like image
         Mask. mask.ndim must be equal to 3, in all cases..
 
     Return
     ======
-    data: numpy array (or list of)
+    data: nifti-like image (or list of)
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
         - X.ndim = 2:

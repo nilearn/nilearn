@@ -74,7 +74,9 @@ def test_unmask():
     generator = np.random.RandomState(42)
     data4D = generator.rand(*shape)
     data3D = data4D[..., 0]
-    mask = generator.randint(2, size=shape[:3]).astype(np.bool)
+    mask = generator.randint(2, size=shape[:3])
+    mask_img = Nifti1Image(mask, np.eye(4))
+    mask = mask.astype(bool)
 
     masked4D = data4D[mask, :].T
     unmasked4D = data4D.copy()
@@ -84,19 +86,21 @@ def test_unmask():
     unmasked3D[-mask] = 0
 
     # 4D Test
-    t = unmask(masked4D, mask)
+    t = unmask(masked4D, mask_img).get_data()
     assert_equal(t.ndim, 4)
     assert_array_equal(t, unmasked4D)
-    t = unmask([masked4D], mask)
+    t = unmask([masked4D], mask_img)
+    t = [t_.get_data() for t_ in t]
     assert_true(isinstance(t, types.ListType))
     assert_equal(t[0].ndim, 4)
     assert_array_equal(t[0], unmasked4D)
 
     # 3D Test
-    t = unmask(masked3D, mask)
+    t = unmask(masked3D, mask_img).get_data()
     assert_equal(t.ndim, 3)
     assert_array_equal(t, unmasked3D)
-    t = unmask([masked3D], mask)
+    t = unmask([masked3D], mask_img)
+    t = [t_.get_data() for t_ in t]
     assert_true(isinstance(t, types.ListType))
     assert_equal(t[0].ndim, 3)
     assert_array_equal(t[0], unmasked3D)
@@ -104,24 +108,27 @@ def test_unmask():
     # 5D test
     shape5D = (10, 20, 30, 40, 41)
     data5D = generator.rand(*shape5D)
-    mask = generator.randint(2, size=shape5D[:-1]).astype(np.bool)
+    mask = generator.randint(2, size=shape5D[:-1])
+    mask_img = Nifti1Image(mask, np.eye(4))
+    mask = mask.astype(bool)
 
     masked5D = data5D[mask, :].T
     unmasked5D = data5D.copy()
     unmasked5D[-mask, :] = 0
 
-    t = unmask(masked5D, mask)
+    t = unmask(masked5D, mask_img).get_data()
     assert_equal(t.ndim, len(shape5D))
     assert_array_equal(t, unmasked5D)
-    t = unmask([masked5D], mask)
+    t = unmask([masked5D], mask_img)
+    t = [t_.get_data() for t_ in t]
     assert_true(isinstance(t, types.ListType))
     assert_equal(t[0].ndim, len(shape5D))
     assert_array_equal(t[0], unmasked5D)
 
     # Error test
     dummy = generator.rand(500)
-    assert_raises(ValueError, unmask, dummy, mask)
-    assert_raises(ValueError, unmask, [dummy], mask)
+    assert_raises(ValueError, unmask, dummy, mask_img)
+    assert_raises(ValueError, unmask, [dummy], mask_img)
 
 
 def test_intersect_masks():
