@@ -207,7 +207,6 @@ def test_intersect_masks():
 
 def test_compute_multi_epi_mask():
     # As it calls intersect_masks, we only test resampling here.
-
     # Same masks as test_intersect_masks
     mask_a = np.zeros((4, 4, 1), dtype=np.bool)
     mask_a[2:4, 2:4] = 1
