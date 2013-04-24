@@ -2,10 +2,11 @@
 """
 Utilities to download NeuroImaging datasets
 """
-# Author: Alexandre Abraham
+# Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
 import os
+import os.path
 import urllib
 import urllib2
 import tarfile
@@ -15,7 +16,11 @@ import shutil
 import time
 import hashlib
 
+import numpy as np
+from scipy import ndimage
 from sklearn.datasets.base import Bunch
+
+import nibabel
 
 
 def _format_time(t):
@@ -1036,3 +1041,84 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
         confounds.append(files[i])
 
     return Bunch(func=func, confounds=confounds)
+
+
+def load_harvard_oxford(atlas_name,
+                        dirname="/usr/share/data/harvard-oxford-atlases/"
+                        "HarvardOxford/", symmetric_split=False):
+    """Load Harvard-Oxford parcellation.
+
+    This function does not download anything, files must all be already on
+    disk. They are distributed with FSL.
+
+    Parameters
+    ==========
+    atlas_name (string)
+        Name of atlas to load. Can be:
+        cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
+        cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
+        cort-maxprob-thr50-1mm, cort-maxprob-thr50-2mm,
+        sub-maxprob-thr0-1mm,  sub-maxprob-thr0-2mm,
+        sub-maxprob-thr25-1mm, sub-maxprob-thr25-2mm,
+        sub-maxprob-thr50-1mm, sub-maxprob-thr50-2mm,
+        cort-prob-1mm, cort-prob-2mm,
+        sub-prob-1mm, sub-prob-2mm
+
+    dirname (string, optional)
+        This is the neurodebian's directory for FSL data. It may be different
+        with another distribution / installation.
+
+    symmetric_split (boolean, optional)
+        If True, split every symmetric region in left and right parts.
+        Effectively doubles the number of regions. Default: False.
+        Not implemented for probabilistic atlas (*-prob-* atlases)
+
+    Returns
+    =======
+    regions (nibabel.Nifti1Image)
+        regions definition, as a label image.
+    """
+    if atlas_name not in ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+                          "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+                          "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+                          "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+                          "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+                          "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+                          "cort-prob-1mm", "cort-prob-2mm",
+                          "sub-prob-1mm", "sub-prob-2mm"
+                          ):
+        raise ValueError("Invalid atlas name: {0}".format(atlas_name))
+
+    filename = os.path.join(dirname, "HarvardOxford-") + atlas_name + ".nii.gz"
+    regions_img = nibabel.load(filename)
+
+    if not symmetric_split:
+        return regions_img
+
+    if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
+                      "sub-prob-1mm", "sub-prob-2mm"):
+        raise ValueError("Region splitting not supported for probabilistic "
+                         "atlases")
+
+    regions = regions_img.get_data()
+
+    labels = np.unique(regions)
+    slices = ndimage.find_objects(regions)
+    middle_ind = (regions.shape[0] - 1) / 2
+    crosses_middle = [s.start < middle_ind and s.stop > middle_ind
+             for s, _, _ in slices]
+
+    # Split every zone crossing the median plane into two parts.
+    # Assumes that the background label is zero.
+    half = np.zeros(regions.shape, dtype=np.bool)
+    half[:middle_ind, ...] = True
+    new_label = max(labels) + 1
+    # Put zeros on the median plane
+    regions[middle_ind, ...] = 0
+    for label, crosses in zip(labels[1:], crosses_middle):
+        if not crosses:
+            continue
+        regions[np.logical_and(regions == label, half)] = new_label
+        new_label += 1
+
+    return nibabel.Nifti1Image(regions, regions_img.get_affine())
