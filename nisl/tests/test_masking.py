@@ -9,27 +9,32 @@ import numpy as np
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
-from ..masking import apply_mask, compute_epi_mask, unmask, intersect_masks
+from ..masking import apply_mask, compute_epi_mask, compute_multi_epi_mask, \
+    unmask, intersect_masks
+
 
 def test_mask():
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
+    mean_image = Nifti1Image(mean_image, np.eye(4))
     mask1 = compute_epi_mask(mean_image, opening=False)
     mask2 = compute_epi_mask(mean_image, exclude_zeros=True,
                              opening=False)
     # With an array with no zeros, exclude_zeros should not make
     # any difference
-    yield np.testing.assert_array_equal, mask1, mask2
+    yield np.testing.assert_array_equal, mask1.get_data(), mask2.get_data()
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30))
-    mean_image2[:9, :9] = mean_image
+    mean_image2[:9, :9] = mean_image.get_data()
+    mean_image2 = Nifti1Image(mean_image2, np.eye(4))
     mask3 = compute_epi_mask(mean_image2, exclude_zeros=True,
                              opening=False)
-    yield np.testing.assert_array_equal, mask1, mask3[:9, :9]
+    yield np.testing.assert_array_equal, \
+        mask1.get_data(), mask3.get_data()[:9, :9]
     # However, without exclude_zeros, it does
     mask3 = compute_epi_mask(mean_image2, opening=False)
-    yield assert_false, np.allclose(mask1, mask3[:9, :9])
+    yield assert_false, np.allclose(mask1.get_data(), mask3.get_data()[:9, :9])
 
 
 def test_apply_mask():
@@ -126,6 +131,7 @@ def test_intersect_masks():
     # Create dummy masks
     mask_a = np.zeros((4, 4), dtype=np.bool)
     mask_a[2:4, 2:4] = 1
+    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -139,6 +145,7 @@ def test_intersect_masks():
 
     mask_b = np.zeros((4, 4), dtype=np.bool)
     mask_b[1:3, 1:3] = 1
+    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -153,6 +160,7 @@ def test_intersect_masks():
     mask_c = np.zeros((4, 4), dtype=np.bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
+    mask_c_img = Nifti1Image(mask_c.astype(int), np.eye(4))
 
     # +---+---+---+---+
     # | X |   | X |   |
@@ -166,23 +174,47 @@ def test_intersect_masks():
 
     mask_ab = np.zeros((4, 4), dtype=np.bool)
     mask_ab[2, 2] = 1
-    mask_ab_ = intersect_masks([mask_a, mask_b], threshold=1.)
-    assert_array_equal(mask_ab, mask_ab_)
+    mask_ab_ = intersect_masks([mask_a_img, mask_b_img], threshold=1.)
+    assert_array_equal(mask_ab, mask_ab_.get_data())
 
     mask_abc = mask_a + mask_b + mask_c
-    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c], threshold=0.,
-                                connected=False)
-    assert_array_equal(mask_abc, mask_abc_)
+    mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img],
+                                threshold=0., connected=False)
+    assert_array_equal(mask_abc, mask_abc_.get_data())
 
     mask_abc[0, 0] = 0
-    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c], threshold=0.)
-    assert_array_equal(mask_abc, mask_abc_)
+    mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img],
+                                threshold=0.)
+    assert_array_equal(mask_abc, mask_abc_.get_data())
 
     mask_abc = mask_ab
-    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c], threshold=1.)
-    assert_array_equal(mask_abc, mask_abc_)
+    mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img],
+                                threshold=1.)
+    assert_array_equal(mask_abc, mask_abc_.get_data())
 
     mask_abc[1, 2] = 1
     mask_abc[3, 2] = 1
-    mask_abc_ = intersect_masks([mask_a, mask_b, mask_c])
-    assert_array_equal(mask_abc, mask_abc_)
+    mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img])
+    assert_array_equal(mask_abc, mask_abc_.get_data())
+
+
+def test_compute_multi_epi_mask():
+    # As it calls intersect_masks, we only test resampling here.
+
+    # Same masks as test_intersect_masks
+    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a[2:4, 2:4] = 1
+    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+
+    mask_b = np.zeros((8, 8, 1), dtype=np.bool)
+    mask_b[2:6, 2:6] = 1
+    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
+
+    assert_raises(ValueError, compute_multi_epi_mask, [mask_a_img, mask_b_img])
+    mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_ab[2, 2] = 1
+    mask_ab_ = compute_multi_epi_mask([mask_a_img, mask_b_img], threshold=1.,
+                                      opening=0,
+                                      target_affine=np.eye(4),
+                                      target_shape=(4, 4, 1))
+    assert_array_equal(mask_ab, mask_ab_.get_data())

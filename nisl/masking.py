@@ -5,8 +5,9 @@ Utilities to compute a brain mask from EPI images
 # License: simplified BSD
 import numpy as np
 from scipy import ndimage
+from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
-from . import utils
+from . import utils, resampling
 
 
 def extrapolate_out_mask(data, mask, iterations=1):
@@ -48,7 +49,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 ###############################################################################
 
 
-def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
                      ensure_finite=True, verbose=0):
     """
@@ -94,15 +95,15 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Returns
     -------
-    mask : 3D boolean ndarray
+    mask : 3D nifti-like image
         The brain mask
     """
     if verbose > 0:
         print "EPI mask computation"
-    if not isinstance(mean_epi, np.ndarray):
-        # We suppose that it is a niimg
-        # XXX make a is_a_niimgs function ?
-        mean_epi = utils.check_niimgs(mean_epi, accept_3d=True).get_data()
+    # We suppose that it is a niimg
+    # XXX make a is_a_niimgs function ?
+    mean_epi_img = utils.check_niimgs(mean_epi_img, accept_3d=True)
+    mean_epi = mean_epi_img.get_data()
     if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
@@ -120,18 +121,16 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     threshold = 0.5 * (sorted_input[ia + lower_cutoff]
                        + sorted_input[ia + lower_cutoff + 1])
 
-    mask = (mean_epi >= threshold)
+    mask = mean_epi >= threshold
 
     if opening:
         opening = int(opening)
-        mask = ndimage.binary_erosion(mask.astype(np.int),
-                                      iterations=opening)
+        mask = ndimage.binary_erosion(mask, iterations=opening)
     if connected:
         mask = utils.largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask.astype(np.int),
-                                      iterations=opening)
-    return mask.astype(bool)
+        mask = ndimage.binary_dilation(mask, iterations=opening)
+    return Nifti1Image(mask.astype(int), mean_epi_img.get_affine())
 
 
 def intersect_masks(input_masks, threshold=0.5, connected=True):
@@ -142,7 +141,7 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
 
     Parameters
     ----------
-    input_masks: list of ndarrays
+    input_masks: list of 3D nifti-like images
         3D individual masks
 
     threshold: float within [0, 1], optional
@@ -155,9 +154,13 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
 
     Returns
     -------
-        grp_mask, boolean array of shape the image shape
+        grp_mask, 3D nifti-like image of shape the image shape
     """
+    if len(input_masks) == 0:
+        raise ValueError('No mask provided for intersection')
     grp_mask = None
+    ref_affine = input_masks[0].get_affine()
+    ref_shape = input_masks[0].shape
     if threshold > 1:
         raise ValueError('The threshold should be < 1')
     if threshold < 0:
@@ -165,7 +168,11 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in input_masks:
-        this_mask = this_mask.copy().astype(np.int)
+        if np.any(this_mask.get_affine() != ref_affine):
+            raise ValueError("All masks should have the same affine")
+        if np.any(this_mask.shape != ref_shape):
+            raise ValueError("All masks should have the same shape")
+        this_mask = this_mask.get_data().copy().astype(int)
         # Convert the mask in [0, 1] values
         if not len(np.unique(this_mask)) == 2:
             raise ValueError('This mask is not made of 2 values: %s'
@@ -189,12 +196,13 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
 
     if np.any(grp_mask > 0) and connected:
         grp_mask = utils.largest_connected_component(grp_mask)
-
-    return grp_mask > 0
+    grp_mask = grp_mask.astype(int)
+    return Nifti1Image(grp_mask, ref_affine)
 
 
 def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                            connected=True, opening=2, threshold=0.5,
+                           target_affine=None, target_shape=None,
                            exclude_zeros=False, n_jobs=1, verbose=0):
     """ Compute a common mask for several sessions or subjects of fMRI data.
 
@@ -235,7 +243,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Returns
     -------
-    mask : 3D boolean ndarray
+    mask : 3D nifti-like image
         The brain mask
     """
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -246,6 +254,14 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                                   opening=opening,
                                   exclude_zeros=exclude_zeros)
         for session in session_epi)
+
+    # Resample if needed
+    if target_affine is not None or target_shape is not None:
+        masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
+                delayed(resampling.resample_img)
+                    (mask, target_affine=target_affine,
+                     target_shape=target_shape)
+                for mask in masks)
 
     mask = intersect_masks(masks, connected=connected)
     return mask
