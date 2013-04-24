@@ -159,7 +159,6 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         else:
             signals[...] = output
     else:
-        # lfilter() leaks memory in scipy 0.7.0.
         if copy:
             # No way to save memory when a copy has been requested,
             # because lfilter does out-of-place processing
@@ -171,7 +170,8 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     return signals
 
 
-def high_variance_confounds(series, n_confounds=10, percentile=1.):
+def high_variance_confounds(series, n_confounds=10, percentile=1.,
+                            detrend=True):
     """ Return confounds time series extracted from series with highest
         variance.
 
@@ -188,6 +188,9 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.):
             Highest-variance series percentile to keep before computing the
             singular value decomposition.
             series.shape[0] * percentile must be greater than n_confounds.
+
+        detrend (boolean)
+            If True, detrend timeseries before processing.
 
         Returns
         =======
@@ -206,11 +209,16 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.):
         - return a given number (n_confounds) of series from the svd with
           highest singular values.
     """
+
+    # FIXME: when detrend=True, two copies of "series" are made.  Variance
+    # computation below can be made chunk-by-chunk, which uses almost no
+    # extra memory, and is as fast (if not faster).
+    if detrend:
+        series = _detrend(series)  # copy
+
     # Retrieve the voxels|features with highest variance
 
     # Compute variance without mean removal.
-    # The execution speed of these three lines is independent of array
-    # ordering (C or F)
     var = np.copy(series)
     var **= 2
     var = var.mean(axis=0)

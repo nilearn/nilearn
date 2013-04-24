@@ -23,9 +23,9 @@ from sklearn import covariance
 import nibabel
 
 import nisl.signals
-import nisl.masking as nimasking
+import nisl.masking
+import nisl.region
 import nisl.datasets as datasets
-import nisl.region as niregion
 
 
 def load_harvard_oxford():
@@ -76,19 +76,17 @@ def clean_signals(subject_n=0):
     confound_file = dataset["confounds"][subject_n]
 
     ho_regions_img = load_harvard_oxford()
-    ho_mask_img = niregion.regions_to_mask(ho_regions_img)
-    fmri_masked = nimasking.apply_mask(filename, ho_mask_img)
-    fmri_masked = nisl.signals._detrend(fmri_masked)
+    ho_mask_img = nisl.region.regions_to_mask(ho_regions_img)
+    fmri_masked = nisl.masking.apply_mask(filename, ho_mask_img)
 
     print("-- Computing confounds ...")
     hv_confounds = nisl.signals.high_variance_confounds(fmri_masked)
     mvt_confounds = np.loadtxt(confound_file, skiprows=1)
-    mvt_confounds = nisl.signals._detrend(mvt_confounds)
     confounds = np.hstack((hv_confounds, mvt_confounds))
 
     print("-- Cleaning signals ...")
     fmri_masked_c = nisl.signals.clean(fmri_masked, low_pass=None,
-                                    detrend=False, standardize=True,
+                                    detrend=True, standardize=True,
                                     confounds=confounds,
                                     t_r=2.5, high_pass=0.01
                                        )
@@ -99,9 +97,9 @@ def clean_signals(subject_n=0):
 def get_region_ts(timeseries, region_img, mask_img):
     """Compute timeseries for regions."""
 
-    print("Computing region signals ...")
-    regions_masked = niregion.apply_mask_to_regions(region_img, mask_img)
-    region_ts = niregion.apply_regions(timeseries, regions_masked)
+    print("-- Computing region signals ...")
+    regions_masked = nisl.region.apply_mask_to_regions(region_img, mask_img)
+    region_ts = nisl.region.apply_regions(timeseries, regions_masked)
     region_ts /= region_ts.std(axis=0)
     return region_ts
 
@@ -148,9 +146,10 @@ def plot_matrices(cov, prec, title, subject_n=0):
 
 def graph_lasso_covariance(region_ts, subject_n):
     """Compute graph lasso covariance and display it."""
+    print("Computing covariance matrices ...")
     estimator = covariance.GraphLassoCV()
     estimator.fit(region_ts)
-    print("Selected alpha: {0:.3f}".format(estimator.alpha_))
+    print("   selected alpha: {0:.3f}".format(estimator.alpha_))
 
     plot_matrices(estimator.covariance_, -estimator.precision_,
                   title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
