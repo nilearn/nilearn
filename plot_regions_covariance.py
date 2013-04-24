@@ -17,18 +17,18 @@ import numpy as np
 import pylab as pl
 import matplotlib
 
-import scipy.ndimage as ndi
+from scipy import ndimage
 from sklearn import covariance
 
 import nibabel
 
-import nisl.signals as nisignals
+import nisl.signals
 import nisl.masking as nimasking
 import nisl.datasets as datasets
 import nisl.region as niregion
 
 
-def get_ho_parcellation():
+def load_harvard_oxford():
     """Get Harvard-Oxford parcellation.
 
     Split every symmetric region in left and right parts. Effectively
@@ -48,7 +48,7 @@ def get_ho_parcellation():
     regions = regions_img.get_data()
 
     labels = np.unique(regions)
-    slices = ndi.find_objects(regions)
+    slices = ndimage.find_objects(regions)
     middle_ind = (regions.shape[0] - 1) / 2
     crosses_middle = [s.start < middle_ind and s.stop > middle_ind
              for s, _, _ in slices]
@@ -75,22 +75,23 @@ def clean_signals(subject_n=0):
     filename = dataset["func"][subject_n]
     confound_file = dataset["confounds"][subject_n]
 
-    ho_regions_img = get_ho_parcellation()
+    ho_regions_img = load_harvard_oxford()
     ho_mask_img = niregion.regions_to_mask(ho_regions_img)
     fmri_masked = nimasking.apply_mask(filename, ho_mask_img)
-    fmri_masked = nisignals._detrend(fmri_masked)
+    fmri_masked = nisl.signals._detrend(fmri_masked)
 
     print("-- Computing confounds ...")
-    hv_confounds = nisignals.high_variance_confounds(fmri_masked)
+    hv_confounds = nisl.signals.high_variance_confounds(fmri_masked)
     mvt_confounds = np.loadtxt(confound_file, skiprows=1)
+    mvt_confounds = nisl.signals._detrend(mvt_confounds)
     confounds = np.hstack((hv_confounds, mvt_confounds))
 
     print("-- Cleaning signals ...")
-    fmri_masked_c = nisignals.clean(fmri_masked, low_pass=None,
+    fmri_masked_c = nisl.signals.clean(fmri_masked, low_pass=None,
                                     detrend=False, standardize=True,
                                     confounds=confounds,
                                     t_r=2.5, high_pass=0.01
-                                    )
+                                       )
 
     return fmri_masked_c, ho_regions_img, ho_mask_img
 
@@ -103,17 +104,6 @@ def get_region_ts(timeseries, region_img, mask_img):
     region_ts = niregion.apply_regions(timeseries, regions_masked)
     region_ts /= region_ts.std(axis=0)
     return region_ts
-
-
-def graph_lasso_covariance(region_ts, subject_n):
-    """Compute graph lasso covariance and display it."""
-    estimator = covariance.GraphLassoCV()
-    estimator.fit(region_ts)
-    print("Selected alpha: {0:.3f}".format(estimator.alpha_))
-
-    plot_matrices(estimator.covariance_, -estimator.precision_,
-                  title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
-                  subject_n=subject_n)
 
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99
@@ -154,6 +144,17 @@ def plot_matrices(cov, prec, title, subject_n=0):
               pl.ylim()[0], pl.ylim()[1])
     pl.colorbar()
     pl.title(title + " / precision")
+
+
+def graph_lasso_covariance(region_ts, subject_n):
+    """Compute graph lasso covariance and display it."""
+    estimator = covariance.GraphLassoCV()
+    estimator.fit(region_ts)
+    print("Selected alpha: {0:.3f}".format(estimator.alpha_))
+
+    plot_matrices(estimator.covariance_, -estimator.precision_,
+                  title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
+                  subject_n=subject_n)
 
 
 if __name__ == "__main__":
