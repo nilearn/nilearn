@@ -23,10 +23,10 @@ import numpy as np
 
 ### Load ADHD rest dataset ####################################################
 from nisl import datasets
-# Here we use only 5 subjects to get faster-running code. For better
-# results, simply increase this number
+# Here we use a limited number of subjects to get faster-running code. For
+# better results, simply increase the number.
 dataset = datasets.fetch_adhd()
-func_files = dataset.func[:20]
+func_files = dataset.func[:5]
 
 ### Preprocess ################################################################
 from nisl import io
@@ -46,11 +46,11 @@ mean_epi = masker.inverse_transform(data_masked[0].mean(axis=0)).get_data()
 
 from nisl.decomposition.canica import CanICA
 n_components = 20
-ica = CanICA(n_components=n_components, random_state=42, memory="canica",
+ica = CanICA(n_components=n_components, random_state=42, memory="nisl_cache",
              maps_only=True)
 components_masked = ica.fit(data_masked).maps_
 
-# We normalize the estimated components, for thresholding to make sens
+# We normalize the estimated components, for thresholding to make sense
 # XXX: this should probably be integrated in the CanICA object
 components_masked -= components_masked.mean(axis=1)[:, np.newaxis]
 components_masked /= components_masked.std(axis=1)[:, np.newaxis]
@@ -60,7 +60,7 @@ components_masked /= components_masked.std(axis=1)[:, np.newaxis]
 threshold = .9
 components_masked[np.abs(components_masked) < threshold] = 0
 
-# Now we inverting the masking operation, to go back to a full 3D
+# Now invert the masking operation, to go back to a full 3D
 # representation
 components_img = masker.inverse_transform(components_masked)
 components = components_img.get_data()

@@ -1,14 +1,11 @@
 """
 Utilities to compute a brain mask from EPI images
 """
-# Author: Gael Varoquaux, Alexandre Abraham
+# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
-import warnings
-
 import numpy as np
 from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
-
 from . import utils
 
 
@@ -65,7 +62,7 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: 3D or 4D array or nifti like image
+    mean_epi: 3D or 4D array or nifti-like image
         EPI image, used to compute the mask.
 
     lower_cutoff : float, optional
@@ -208,8 +205,8 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    session_files: list 3D or 4D array
-        A list arrays, each item is a subject or a session.
+    session_files: list 3D or 4D array or Niimgs
+        A list of arrays, each item being a subject or a session.
 
     threshold: float, optional
         the inter-session threshold: the fraction of the
@@ -258,9 +255,8 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 # Time series extraction
 ###############################################################################
 
-
 def apply_mask(niimgs, mask_img, dtype=np.float32,
-               smooth=False, ensure_finite=True, transpose=False):
+               smooth=None, ensure_finite=True):
     """ Extract time series using specified mask
 
     Read the time series from the given nifti images or filepaths,
@@ -268,116 +264,143 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     Parameters
     -----------
-    niimgs: list 4D (ot list of 3D)  nifti images (or filenames)
+    niimgs (list 4D (ot list of 3D) nifti images)
         Images to be masked.
 
-    mask: 3d ndarray
+    mask (3d boolean numpy array)
         3D mask array: true where a voxel should be used.
 
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
-        spatial smoothing to apply to the signal.
+    smooth (float)
+        (optional) Gives the size of the spatial smoothing to apply to
+        the signal, in voxels. Implies ensure_finite=True
 
-    ensure_finite: boolean
-        If ensure_finite is True, the non-finite values (NaNs and infs)
-        found in the images will be replaced by zeros
-
-    transpose: boolean, optional
-        Indicate if data must be transposed after masking.
+    ensure_finite (boolean)
+        If ensure_finite is True (default), the non-finite values (NaNs and
+        infs) found in the images will be replaced by zeros.
 
     Returns
     --------
-    session_series: ndarray
-        2D array of time series (voxel, time)
+    session_series (ndarray)
+        2D array of timeseries with shape (time, voxel)
 
     Notes
     -----
-    When using smoothing, ensure_finite should be True: as elsewhere non
-    finite values will spread accross the image.
-    """
-    mask = utils.check_niimg(mask_img)
-    mask = mask_img.get_data().astype(np.bool)
-    if smooth:
-        # Convert from a sigma to a FWHM:
-        smooth /= np.sqrt(8 * np.log(2))
+    When using smoothing, ensure_finite is set to True, as non finite
+    values will spread accross the image.
 
-    niimgs = utils.check_niimgs(niimgs)
-    series = niimgs.get_data()
-    affine = niimgs.get_affine()
+    """
+    if smooth is not None:
+        ensure_finite = True
+
+    mask = utils.check_niimg(mask_img)
+    mask = mask.get_data().astype(np.bool)
+
+    niimgs_img = utils.check_niimgs(niimgs)
+    affine = niimgs_img.get_affine()[:3, :3]
+
+    data = niimgs_img.get_data()
+    # All the following has been optimized for C order.
+    # Time that may be lost in conversion here is regained multiple times
+    # afterward, especially if smoothing is applied.
+    series = utils.as_ndarray(data, dtype=dtype, order="C")
+    del data, niimgs_img  # frees a lot of memory
+
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         series[np.logical_not(np.isfinite(series))] = 0
-    series = series.astype(dtype)
-    affine = affine[:3, :3]
-    # del data
-    if isinstance(series, np.memmap):
-        series = np.asarray(series).copy()
-    if smooth:
+
+    if smooth is not None:
+        # Convert from a sigma to a FWHM:
+        # Do not use /=, smooth may be a numpy scalar
+        smooth = smooth / np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         smooth_sigma = smooth / vox_size
-        for this_volume in np.rollaxis(series, -1):
-            this_volume[...] = ndimage.gaussian_filter(this_volume,
-                                                       smooth_sigma)
-    series = series[mask]
-    if transpose:
-        series = series.T
-    return series
+        for n, s in enumerate(smooth_sigma):
+            ndimage.gaussian_filter1d(series, s, output=series, axis=n)
+
+    return series[mask].T
 
 
-def unmask(X, mask, transpose=False):
-    """ Take masked data and bring them back into 3D
-
-    This function is intelligent and will process data of any dimensions.
-    It iterates until data has only one dimension and then it tries to
-    unmask it. An error is raised if masked data has not the right number
-    of voxels.
+def unmask_3D(X, mask):
+    """Take masked data and bring them back to 3D (space only).
 
     Parameters
-    ----------
-    X: (list of)* numpy array
-        Masked data. You can provide data of any dimension so if you want to
-        unmask several images at one time, it is possible to give a list of
-        images.
-
-    mask: numpy array of boolean values
-        Mask of the data
-
-    transpose: boolean, optional
-        Indicates if data must be transposed after unmasking.
-
-    Returns
-    -------
-    data: (list of)* 3D numpy array
-        Unmasked data: 1D or 2D arrays are converted into 3D or 4D arrays
-        resp. The number of dimensions is respected wrt input data.
+    ==========
+    X: numpy array
+        Masked data. shape: (samples,)
+    mask: numpy array (boolean)
+        Mask. mask.ndim must be equal to 3.
     """
+
     if mask.dtype != np.bool:
-        warnings.warn('[unmask] Given mask had dtype %s.It has been converted'
-                      ' to bool.' % mask.dtype.name)
-        mask = mask.astype(np.bool)
+        raise ValueError("mask must be a boolean array")
+    if X.ndim != 1:
+        raise ValueError("X must be a 1-dimensional array")
 
-    if isinstance(X, np.ndarray) and len(X.shape) == 1:
-        if X.shape[0] != mask.sum():
-            raise ValueError('[unmask] Masked data and mask have not the same'
-                             ' number of voxels')
-        img = np.zeros(mask.shape)
-        img[mask] = X
-        return img
-
-    data = []
-    if isinstance(X, np.ndarray):
-        for x in X:
-            img = unmask(x, mask)
-            if transpose:
-                data.append(img[..., np.newaxis])
-            else:
-                data.append(img[np.newaxis, ...])
-        if transpose:
-            data = np.concatenate(data, axis=-1)
-        else:
-            data = np.concatenate(data, axis=0)
-    else:
-        for x in X:
-            img = unmask(x, mask)
-            data.append(img)
+    data = np.zeros(
+        (mask.shape[0], mask.shape[1], mask.shape[2]),
+        dtype=X.dtype)
+    data[mask] = X
     return data
+
+
+def unmask_nD(X, mask):
+    """Take masked data and bring them back to n-dimension
+
+    Parameters
+    ==========
+    X: numpy array
+        Masked data. shape: (samples, features)
+    mask: numpy array (boolean)
+        Mask. mask.ndim must be equal to 3.
+
+    Return
+    ======
+    data: 4D numpy array
+        Unmasked data.
+        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+    """
+
+    # Much faster than nisl unmask, and uses three times less memory !
+    if mask.dtype != np.bool:
+        raise ValueError("mask must be a boolean array")
+    if X.ndim != 2:
+        raise ValueError("X must be a 2-dimensional array")
+
+    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype)
+    data[mask, :] = X.T
+    return data
+
+
+def unmask(X, mask):
+    """Take masked data and bring them back into 3D/4D
+
+    Parameters
+    ==========
+    X: numpy array (or list of)
+        Masked data. shape: (samples #, features #).
+        If X is one-dimensional, it is assumed that samples# == 1.
+    mask: numpy array (boolean)
+        Mask. mask.ndim must be equal to 3, in all cases..
+
+    Return
+    ======
+    data: numpy array (or list of)
+        Unmasked data. Depending on the shape of X, data can have
+        different shapes:
+        - X.ndim = 2:
+        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+        - X.ndim == 1:
+        Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
+    """
+
+    if isinstance(X, list):
+        ret = []
+        for x in X:
+            ret.append(unmask(x, mask))  # 1-level recursion
+        return ret
+
+    if X.ndim == 2:
+        return unmask_nD(X, mask)
+    elif X.ndim == 1:
+        return unmask_3D(X, mask)

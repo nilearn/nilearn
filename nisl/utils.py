@@ -48,26 +48,26 @@ def largest_connected_component(volume):
 # Niimg related operations
 ###############################################################################
 
-def is_a_niimg(object):
+def is_a_niimg(obj):
     """ Check for get_data and get_affine method in an object
 
     Parameters
     ----------
-    object: unknown object
+    obj (any object)
         Tested object
 
     Returns
     -------
     True if get_data and get_affine methods are present and callable,
-    False otherwise.
+        False otherwise.
     """
 
     # We use a try/except here because this is the way hasattr works
     try:
-        get_data = getattr(object, "get_data")
-        get_affine = getattr(object, "get_affine")
+        get_data = getattr(obj, "get_data")
+        get_affine = getattr(obj, "get_affine")
         return callable(get_data) and callable(get_affine)
-    except Exception:
+    except AttributeError:
         return False
 
 
@@ -98,7 +98,7 @@ def _repr_niimgs(niimgs):
 
 
 def check_niimg(niimg):
-    """ Check that an object is a niimg and load it if necessary
+    """Check that an object is a niimg or a string, ensure that data are loaded
 
     Parameters
     ----------
@@ -109,13 +109,15 @@ def check_niimg(niimg):
 
     Returns
     -------
-    A nifti-like object (for the moment, nibabel.Nifti1Image)
+    result: nifti-like
+       result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+       that the returned object has get_data() and get_affine() methods.
 
     Notes
     -----
     In Nisl, special care has been taken to make image manipulation easy. This
     method is a kind of pre-requisite for any data processing method in Nisl as
-    it check if data has the right format and load it if necessary.
+    it checks if data has a correct format and loads it if necessary.
 
     Its application is idempotent.
     """
@@ -132,43 +134,55 @@ def check_niimg(niimg):
     return result
 
 
-def concat_niimgs(niimgs):
+def concat_niimgs(niimgs, dtype=np.float32):
     """ Concatenate a list of niimgs
 
     Parameters
     ----------
     niimgs: array of niimgs
-        List of niimgs to concatenate. Can be paths to Nifti files or numpy
-        matrices.
+        List of niimgs to concatenate.
 
     Returns
     -------
     A single niimg
     """
 
-    data = []
     first_niimg = check_niimg(iter(niimgs).next())
     affine = first_niimg.get_affine()
+    first_data = first_niimg.get_data()
+    first_data_shape = first_data.shape
+    # Using fortran order makes concatenation much faster than with C order,
+    # because the voxels for a given image are grouped together in memory.
+    data = np.ndarray(first_data_shape + (len(niimgs),),
+                      order="F", dtype=dtype)
+    data[..., 0] = first_data
+    del first_data, first_niimg
+
     for index, iter_niimg in enumerate(niimgs):
+        if index == 0:
+            continue
         niimg = check_niimg(iter_niimg)
         if not np.array_equal(niimg.get_affine(), affine):
-            s_error = ""
             if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
             else:
                 i_error = "image #" + str(index)
 
-            raise ValueError("Affine of %s%s is different"
+            raise ValueError("Affine of %s is different"
                              " from reference affine"
                              "\nReference affine:\n%s\n"
                              "Wrong affine:\n%s"
-                             % (i_error, s_error,
+                             % (i_error,
                              repr(affine), repr(niimg.get_affine())))
         this_data = niimg.get_data()
-        if len(this_data.shape) == 3:
-            this_data = this_data[..., np.newaxis]
-        data.append(this_data)
-    data = np.concatenate(data, axis=-1)
+        if this_data.shape != first_data_shape:
+            if (isinstance(iter_niimg, basestring)):
+                i_error = "image " + iter_niimg
+            else:
+                i_error = "image #" + str(index)
+            raise ValueError("Shape of %s is different from first image shape."
+                             % i_error)
+        data[..., index] = this_data
     return nibabel.Nifti1Image(data, affine)
 
 
@@ -215,7 +229,7 @@ def check_niimgs(niimgs, accept_3d=False):
         first_img = iter(first_img).next()
         depth += 1
 
-    # First Image is supposed to be a path or a Nifti like element
+    # First image is supposed to be a path or a Nifti-like element
     first_img = check_niimg(first_img)
 
     # Check dimension and depth
@@ -235,59 +249,169 @@ def check_niimgs(niimgs, accept_3d=False):
         niimg = concat_niimgs(niimgs)
     return niimg
 
+
 ###############################################################################
 ### Caching
 ###############################################################################
 
+class CacheMixin(object):
+    """Mixin to add caching to a class.
 
-def cache(self, func, func_memory_level, **kwargs):
-    """ Return a joblib.Memory object if necessary (depends on memory_level)
+    This class is a thin layer on top of joblib.Memory, that mainly adds a
+    "caching level", similar to a "log level".
 
-    The memory_level is a rough estimator of the amount of memory necessary
-    to cache a function call. By specifying a numeric value for this level,
-    the user will be able to control more or less the memory used on his
-    computer. This function will cache the function call or not depending
-    on the memory level. This is an helper to avoid code pasting.
+    Usage: to cache the results of a method, wrap it in self._cache()
+    defined by this class. Caching is performed only if the user-specified
+    cache level (self._memory_level) is greater than the value given as a
+    parameter to self._cache(). See _cache() documentation for details.
+    """
+
+    def _cache(self, func, memory_level=1, **kwargs):
+        """ Return a joblib.Memory object if necessary.
+
+        The memory_level determines the level above which the wrapped
+        function output is cached. By specifying a numeric value for
+        this level, the user can to control the amount of cache memory
+        used. This function will cache the function call or not
+        depending on the cache level.
+
+        Parameters
+        ----------
+        func: python function
+            The function which output is to be cached.
+
+        memory_level: integer
+            The memory_level from which caching must be enabled for the wrapped
+            function.
+
+        Returns
+        -------
+        Either the original function, if there is no need to cache it (because
+        the requested level is lower than the value given to _cache()) or a
+        joblib.Memory object that wraps the function func.
+        """
+
+        # Creates attributes if they don't exist
+        # This is to make creating them in __init__() optional.
+        if not hasattr(self, "memory_level"):
+            self.memory_level = 0
+        if not hasattr(self, "memory"):
+            self.memory = Memory(cachedir=None)
+
+        # If cache level is 0 but a memory object has been provided, set
+        # memory_level to 1 with a warning.
+        if self.memory_level == 0:
+            if (isinstance(self.memory, basestring)
+                    or self.memory.cachedir is not None):
+                warnings.warn("memory_level is currently set to 0 but "
+                              "a Memory object has been provided. "
+                              "Setting memory_level to 1.")
+                self.memory_level = 1
+
+        if self.memory_level < memory_level:
+            mem = Memory(cachedir=None)
+            return mem.cache(func, **kwargs)
+        else:
+            memory = self.memory
+            if isinstance(memory, basestring):
+                memory = Memory(cachedir=memory)
+            if not isinstance(memory, Memory):
+                raise TypeError("'memory' argument must be a string or a "
+                                "joblib.Memory object.")
+            if memory.cachedir is None:
+                warnings.warn("Caching has been enabled (memory_level = %d) but no"
+                              " Memory object or path has been provided (parameter"
+                              " memory). Caching deactivated for function %s." %
+                              (self.memory_level, func.func_name))
+            return memory.cache(func, **kwargs)
+
+
+def _asarray(arr, dtype=None, order=None):
+    # np.asarray does not take "K" and "A" orders in version 1.3.0
+    # changed_order is True when array order has changed (implying a copy)
+    changed_order = False
+    if order in ("K", "A"):
+        ret = np.asarray(arr, dtype=dtype)
+    else:
+        ret = np.asarray(arr, dtype=dtype, order=order)
+        if not ((arr.flags["C_CONTIGUOUS"] and order == "C")
+                or (arr.flags["F_CONTIGUOUS"] and order == "F")):
+            changed_order = True
+
+    return ret, changed_order
+
+
+def as_ndarray(arr, copy=False, dtype=None, order='K'):
+    """Starting with an arbitrary array, convert to numpy.ndarray.
+
+    In the case of a memmap array, a copy is automatically made to break the
+    link with the underlying file (whatever the value of the "value" keyword).
+
+    The purpose of this function is mainly to get rid of memmap objects, but
+    it can be used for other purposes. In particular, combining copying and
+    casting can lead to performance improvements in some cases, by avoiding
+    unnecessary copies.
 
     Parameters
-    ----------
-
-    self: python object
-        The object containing information about caching. It must have a
-        memory attribute (used if caching is necessary) and an integer
-        memory_level attribute to determine if the function must be cached
-        or not.
-
-    func: python function
-        The function that may be cached
-
-    func_memory_level: integer
-        The memory_level from which caching must be enabled.
+    ==========
+    arr (any value accepted by numpy.asarray)
+        input array
+    copy (boolean)
+        if True, force a copy of the array. Alway True when arr is a memmap.
+    dtype (any numpy dtype)
+        dtype of the returned array. Performing copy and type conversion at the
+        same time can in some cases avoid an additional copy.
+    order (str)
+        gives the order of the returned array.
+        Valid values are: "C", "F", "A", "K".
+        default is "K". See ndarray.copy() for more information.
 
     Returns
-    -------
-
-    Either the original function (if there is no need to cache it) or a
-    joblib.Memory object that will be used to cache the function call.
+    =======
+    nd_arr (numpy.ndarray)
+        Numpy array exactly like arr, but of class numpy.ndarray, and with no
+        link to any underlying file.
     """
-    # if memory level is 0 but a memory object is provided, put memory_level
-    # to 1 with a warning
-    if self.memory_level == 0:
-        if hasattr(self, 'memory') and self.memory is not None \
-                                   and (isinstance(self.memory, basestring)
-                                   or self.memory.cachedir is not None):
-            warnings.warn("memory_level is set to 0 but a Memory object has"
-                    " been provided. Setting memory_level to 1.")
-            self.memory_level = 1
-    if self.memory_level < func_memory_level:
-        return func
+    # This function should work on numpy 1.3
+    # in this version, astype() and copy() have no "order" keyword.
+    # and asarray() does not accept the "K" and "A" values for order.
+
+    # numpy.asarray never copies a subclass of numpy.ndarray (even for
+    #     memmaps) when dtype is unchanged.
+    # .astype() always copies
+
+    if isinstance(arr, np.memmap):
+        if dtype is None:
+            if order in ("K", "A"):
+                ret = np.array(np.asarray(arr), copy=True)
+            else:
+                ret = np.array(np.asarray(arr), copy=True, order=order)
+        else:
+            if order in ("K", "A"):
+                # always copy (even when dtype does not change)
+                ret = np.asarray(arr).astype(dtype)
+            else:
+                # First load data from disk without changing order
+                # Changing order while reading through a memmap is incredibly
+                # inefficient.
+                ret = np.array(arr, copy=True)
+                ret = np.array(ret, dtype=dtype, order=order)
+
+    elif isinstance(arr, np.ndarray):
+        if dtype is None:
+            ret, changed_order = _asarray(arr, order=order)
+            if copy and not changed_order:
+                ret = ret.copy()
+        else:
+            ret, _ = _asarray(arr, dtype=dtype, order=order)
+
+    elif isinstance(arr, (list, tuple)):
+        if order in ("A", "K"):
+            ret = np.asarray(arr, dtype=dtype)
+        else:
+            ret = np.asarray(arr, dtype=dtype, order=order)
+
     else:
-        memory = self.memory
-        if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory)
-        if memory.cachedir is None:
-            warnings.warn("Caching has been enabled (memory_level = %d) but no"
-                          " Memory object or path has been provided (parameter"
-                          " memory). Caching canceled for function %s." %
-                          (self.memory_level, func.func_name))
-        return memory.cache(func, **kwargs)
+        raise ValueError("Type not handled: %s" % arr.__class__)
+
+    return ret

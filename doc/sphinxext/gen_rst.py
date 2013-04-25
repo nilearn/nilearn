@@ -134,10 +134,11 @@ def generate_example_rst(app):
         os.makedirs(root_dir)
 
     # we create an index.rst with all examples
-    fhindex = file(os.path.join(root_dir, 'index.rst'), 'w')  
+    fhindex = file(os.path.join(root_dir, 'index.rst'), 'w')
     #Note: The sidebar button has been removed from the examples page for now
     #      due to how it messes up the layout. Will be fixed at a later point
     fhindex.write("""\
+.. This file has been auto-generated. Do not edit
 
 .. raw:: html
     
@@ -190,11 +191,11 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
         target_dir = root_dir
         src_dir = example_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print 80 * '_'
-        print ('Example directory %s does not have a README.txt file'
+        print(80 * '_')
+        print('Example directory %s does not have a README.txt file'
                         % src_dir)
-        print 'Skipping this directory'
-        print 80 * '_'
+        print('Skipping this directory')
+        print(80 * '_')
         return
     fhindex.write("""
 
@@ -211,6 +212,8 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
         if not a.startswith('plot') and a.endswith('.py'):
             return 'zz' + a
         return a
+
+    print("\nStarting generating rst files for example scripts.")
     for fname in sorted(os.listdir(src_dir), key=sort_key):
         if fname == 'setup.py':
             continue
@@ -226,7 +229,7 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
                                                                fname[:-3]))
             else:
                 fhindex.write('   :target: ./%s.html\n\n' % link_name[:-3])
-            fhindex.write("""   :ref:`example_tutorial_%s`
+            fhindex.write("""   :download:`%s`
 
 .. toctree::
    :hidden:
@@ -239,11 +242,20 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
 
     <div style="clear: both"></div>
     """)  # clear at the end of the section
+    print("Done with example scripts.\n")
+
+
+def execute_example(fname, src_file, stdout_path, time_path,
+                    image_path, image_fname, stdout):
+    """Execute one example file and save figures."""
+    # We need to execute the code
 
 
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example.
     """
+    if not plot_gallery:
+        print("gallery generation deactivated")
     base_image_name = os.path.splitext(fname)[0]
     image_fname = '%s_%%s.png' % base_image_name
 
@@ -254,7 +266,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         last_dir = ''
     else:
         last_dir += '_'
-    short_fname = last_dir + fname
+    short_fname = last_dir + fname  # used in templates
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
@@ -276,8 +288,8 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     thumb_file = os.path.join(thumb_dir, fname[:-3] + '.png')
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
-        # generate the plot as png image if file name
-        # starts with plot and if it is more recent than an
+        # generate the plot as png images if file name
+        # starts with "plot" and if it's more recent than an
         # existing image.
         first_image_file = image_path % 1
         if os.path.exists(stdout_path):
@@ -286,32 +298,37 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
             stdout = ''
         if os.path.exists(time_path):
             time_elapsed = float(open(time_path).read())
+        else:
+            time_elapsed = -1
 
         if (not os.path.exists(first_image_file) or
                 os.stat(first_image_file).st_mtime <=
                                     os.stat(src_file).st_mtime):
-            # We need to execute the code
-            print 'plotting %s' % fname
-            t0 = time()
+
+            print('Executing %s...' % fname)
             import matplotlib.pyplot as plt
             plt.close('all')
             cwd = os.getcwd()
+            orig_stdout = sys.stdout
             try:
                 # First CD in the original example dir, so that any file
                 # created by the example get created in this directory
-                orig_stdout = sys.stdout
                 os.chdir(os.path.dirname(src_file))
                 my_buffer = StringIO()
                 my_stdout = Tee(sys.stdout, my_buffer)
+
                 sys.stdout = my_stdout
                 my_globals = {'pl': plt}
+                t0 = time()
                 execfile(os.path.basename(src_file), my_globals)
                 time_elapsed = time() - t0
                 sys.stdout = orig_stdout
+
                 my_stdout = my_buffer.getvalue()
+
                 if '__doc__' in my_globals:
-                    # The __doc__ is often printed in the example, we
-                    # don't with to echo it
+                    # The __doc__ is often printed in the example, so we
+                    # don't echo it
                     my_stdout = my_stdout.replace(
                                             my_globals['__doc__'],
                                             '')
@@ -337,23 +354,26 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                     fig_file_name = image_path % fig_num
                     try:
                         plt.tight_layout(pad=.5)
-                    except Exception:
-                        # tight_layout is present only is recent versions
+                    except AttributeError:
+                        # tight_layout is present only in recent versions
                         # of matplotlib
                         pass
                     plt.savefig(fig_file_name)
                     figure_list.append(image_fname % fig_num)
             except:
-                print 80 * '_'
-                print '%s is not compiling:' % fname
+                print(80 * '_')
+                print('execution of %s has failed:' % fname)
                 traceback.print_exc()
-                print 80 * '_'
+                print(80 * '_')
             finally:
                 os.chdir(cwd)
                 sys.stdout = orig_stdout
-            
-            print " - time elapsed : %.2g sec" % time_elapsed
+
+            if time_elapsed >= 0:
+                print(" - time elapsed : %.2g sec" % time_elapsed)
+
         else:
+            print("Output of %s is up-to-date." % fname)
             figure_list = [f[len(image_dir):]
                             for f in glob.glob(image_path % '[1-9]')]
                             #for f in glob.glob(image_path % '*')]

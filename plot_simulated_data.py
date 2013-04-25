@@ -108,7 +108,6 @@ classifiers = [
     ('svr', svm.SVR(kernel='linear', C=0.001)),
     ('searchlight', searchlight.SearchLight(
         mask=mask, process_mask=process_mask,
-        masked_data=True,
         radius=4.,
         score_func=r2_score,
         cv=KFold(y_train.size, k=4)))
