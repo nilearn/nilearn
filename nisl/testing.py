@@ -46,7 +46,7 @@ def mock_uncompress_file(file, delete_archive=True):
 def mock_get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     """ Mock the original _get_dataset function
 
-    For test prupose, this function act as a two pass function. During the
+    For test purposes, this function acts as a two-pass function. During the
     first run (normally, the fetching function is checking if the dataset
     already exists), the function will throw an error and create the files
     to prepare the second pass. After this first call, any other call will

@@ -16,7 +16,7 @@ Regions of interest extraction and handling.
 import collections
 
 import numpy as np
-import scipy.linalg as splinalg
+from scipy import linalg
 import nibabel
 from . import utils
 from . import masking
@@ -59,8 +59,7 @@ def apply_regions(timeseries, regions, normalize_regions=False):
         Computed timeseries for each region.
         shape: (instant number, region number)
     """
-
-    regions_timeseries = splinalg.lstsq(regions, timeseries.T)[0].T
+    regions_timeseries = linalg.lstsq(regions, timeseries.T)[0].T
     if normalize_regions:
         regions_timeseries /= regions.sum(axis=0) / (regions ** 2).sum(axis=0)
     return regions_timeseries

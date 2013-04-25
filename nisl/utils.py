@@ -1,7 +1,7 @@
 """
 Validation and conversion utilities.
 """
-# Author: Gael Varoquaux, Alexandre Abraham
+# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
 

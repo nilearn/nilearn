@@ -1,7 +1,7 @@
 """
 Preprocessing functions for time series.
 """
-# Authors: Alexandre Abraham, Gael Varoquaux
+# Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
 
 import numpy as np
