@@ -337,25 +337,19 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     return series[mask].T
 
 
-def unmask_3d(X, mask_img):
+def _unmask_3d(X, mask):
     """Take masked data and bring them back to 3D (space only).
 
     Parameters
     ==========
     X: numpy array
         Masked data. shape: (samples,)
-    mask_img: nifti-like image
+    mask: numpy array (boolean)
         Mask. mask.ndim must be equal to 3.
-    
-    Return
-    ======
-    data: 3D nifti-like image
-        Unmasked data.
-        Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
     """
 
-    mask_img = utils.check_niimg(mask_img)
-    mask = mask_img.get_data().astype(bool)
+    if mask.dtype != np.bool:
+        raise ValueError("mask must be a boolean array")
     if X.ndim != 1:
         raise ValueError("X must be a 1-dimensional array")
 
@@ -363,38 +357,38 @@ def unmask_3d(X, mask_img):
         (mask.shape[0], mask.shape[1], mask.shape[2]),
         dtype=X.dtype)
     data[mask] = X
-    return Nifti1Image(data, mask_img.get_affine())
+    return data
 
 
-def unmask_nd(X, mask_img):
+def _unmask_nd(X, mask):
     """Take masked data and bring them back to n-dimension
 
     Parameters
     ==========
     X: numpy array
         Masked data. shape: (samples, features)
-    mask_img: nifti-like image
+    mask: numpy array (boolean)
         Mask. mask.ndim must be equal to 3.
 
     Return
     ======
-    data: 4D nifti-like image
+    data: 4D numpy array
         Unmasked data.
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
     """
 
     # Much faster than nisl unmask, and uses three times less memory !
-    mask_img = utils.check_niimg(mask_img)
-    mask = mask_img.get_data().astype(bool)
+    if mask.dtype != np.bool:
+        raise ValueError("mask must be a boolean array")
     if X.ndim != 2:
         raise ValueError("X must be a 2-dimensional array")
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype)
     data[mask, :] = X.T
-    return Nifti1Image(data, mask_img.get_affine())
+    return data
 
 
-def unmask(X, mask):
+def unmask(X, mask_img):
     """Take masked data and bring them back into 3D/4D
 
     Parameters
@@ -402,8 +396,8 @@ def unmask(X, mask):
     X: numpy array (or list of)
         Masked data. shape: (samples #, features #).
         If X is one-dimensional, it is assumed that samples# == 1.
-    mask: nifti-like image
-        Mask. mask.ndim must be equal to 3, in all cases..
+    mask_img: nifti-like image
+        Mask. mask must be 3 dimensional
 
     Return
     ======
@@ -419,10 +413,14 @@ def unmask(X, mask):
     if isinstance(X, list):
         ret = []
         for x in X:
-            ret.append(unmask(x, mask))  # 1-level recursion
+            ret.append(unmask(x, mask_img))  # 1-level recursion
         return ret
 
+    mask_img = utils.check_niimg(mask_img)
+    mask = mask_img.get_data().astype(bool)
+
     if X.ndim == 2:
-        return unmask_nd(X, mask)
+        unmasked = _unmask_nd(X, mask)
     elif X.ndim == 1:
-        return unmask_3d(X, mask)
+        unmasked = _unmask_3d(X, mask)
+    return Nifti1Image(unmasked, mask_img.get_affine())
