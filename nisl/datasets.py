@@ -462,7 +462,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_craddock_2011(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     """Download and return file names for the Craddock 2011 parcellation
 
     The provided images are in MNI152 space.
@@ -511,7 +511,7 @@ def fetch_craddock_2011(data_dir=None, url=None, resume=True, verbose=0):
     return Bunch(**params)
 
 
-def fetch_yeo_2011(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     """Download and return file names for the Yeo 2011 parcellation.
 
     The provided images are in MNI152 space.
