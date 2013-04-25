@@ -5,119 +5,57 @@ Test for "region" module.
 # License: simplified BSD
 
 import numpy as np
-import scipy.signal as spsignal
-from nose.tools import assert_raises, assert_true
-
-import nibabel
+from nose.tools import assert_raises, assert_true, assert_false
 
 from .. import region
 from .. import masking
 from .. import utils
-
-
-def generate_timeseries(n_instants, n_features,
-                        randgen=None):
-    """Generate some random timeseries. """
-    if randgen is None:
-        randgen = np.random.RandomState(0)
-    return randgen.randn(n_instants, n_features)
-
-
-def generate_regions_ts(n_features, n_regions,
-                        overlap=0,
-                        randgen=None,
-                        window="boxcar"):
-    """Generate some regions.
-
-    Parameters
-    ==========
-    overlap (int)
-        Number of overlapping voxels between two regions (more or less)
-    window (str)
-        Name of a window in scipy.signal. e.g. "hamming".
-
-    Returns
-    =======
-    regions (numpy.ndarray)
-        timeseries representing regions.
-        shape (n_features, n_regions)
-    """
-
-    if randgen is None:
-        randgen = np.random.RandomState(0)
-    if window is None:
-        window = "boxcar"
-
-    assert(n_features > n_regions)
-
-    # Compute region boundaries indices.
-    # Start at 1 to avoid getting an empty region
-    boundaries = np.zeros(n_regions + 1)
-    boundaries[-1] = n_features
-    boundaries[1:-1] = randgen.permutation(range(1, n_features)
-                                           )[:n_regions - 1]
-    boundaries.sort()
-
-    regions = np.zeros((n_features, n_regions))
-    overlap_end = int((overlap + 1) / 2)
-    overlap_start = int(overlap / 2)
-    for n in xrange(len(boundaries) - 1):
-        start = max(0, boundaries[n] - overlap_start)
-        end = min(n_features, boundaries[n + 1] + overlap_end)
-        win = spsignal.get_window(window, end - start)
-        win /= win.mean()  # unity mean
-        regions[start:end, n] = win
-
-    return regions
+from ..testing import generate_timeseries, generate_regions_ts
+from ..testing import generate_labeled_regions
 
 
 def test_generate_regions_ts():
     """Minimal testing of generate_regions_ts()"""
 
     # Check that no regions overlap
-    regions = generate_regions_ts(50, 10, overlap=0)
-    np.testing.assert_array_less((regions > 0).sum(axis=-1) - 0.1,
-                                 np.ones(regions.shape[0]))
+    n_voxels = 50
+    n_regions = 10
+    regions = generate_regions_ts(n_voxels, n_regions, overlap=0)
+    assert_true(regions.shape == (n_regions, n_voxels))
+    # check: no overlap
+    np.testing.assert_array_less((regions > 0).sum(axis=0) - 0.1,
+                                 np.ones(regions.shape[1]))
+    # check: a region everywhere
+    np.testing.assert_array_less(np.zeros(regions.shape[1]),
+                                 (regions > 0).sum(axis=0))
 
-    regions = generate_regions_ts(50, 10, overlap=0, window="hamming")
-    np.testing.assert_array_less((regions > 0).sum(axis=-1) - 0.1,
-                                 np.ones(regions.shape[0]))
+    regions = generate_regions_ts(n_voxels, n_regions, overlap=0,
+                                  window="hamming")
+    assert_true(regions.shape == (n_regions, n_voxels))
+    # check: no overlap
+    np.testing.assert_array_less((regions > 0).sum(axis=0) - 0.1,
+                                 np.ones(regions.shape[1]))
+    # check: a region everywhere
+    np.testing.assert_array_less(np.zeros(regions.shape[1]),
+                                 (regions > 0).sum(axis=0))
 
     # Check that some regions overlap
-    regions = generate_regions_ts(50, 10, overlap=1)
+    regions = generate_regions_ts(n_voxels, n_regions, overlap=1)
+    assert_true(regions.shape == (n_regions, n_voxels))
     assert(np.any((regions > 0).sum(axis=-1) > 1.9))
 
-    regions = generate_regions_ts(50, 10, overlap=1, window="hamming")
+    regions = generate_regions_ts(n_voxels, n_regions, overlap=1,
+                                  window="hamming")
     assert(np.any((regions > 0).sum(axis=-1) > 1.9))
 
 
-def generate_labeled_regions(shape, n_regions, randgen=None, labels=None):
-    """Generate a 3D volume with labeled regions.
-
-    Parameters
-    ==========
-    shape (tuple)
-        shape of returned array
-    n_regions (integer)
-        number of regions to generate. By default (if "labels" is None),
-        add a background with value zero.
-    labels (iterable)
-        labels to use for each zone. If provided, n_regions is unused.
-    randgen (numpy.random.RandomState object)
-        random generator to use for generation.
-    """
-    n_voxels = shape[0] * shape[1] * shape[2]
-    if labels is None:
-        labels = xrange(0, n_regions + 1)
-        n_regions += 1
-    else:
-        n_regions = len(labels)
-
-    regions = generate_regions_ts(n_voxels, n_regions, randgen=randgen)
-    # replace weights with labels
-    for n, col in zip(labels, regions.T):
-        col[col > 0] = n
-    return masking.unmask(regions.sum(axis=1), np.ones(shape, dtype=np.bool))
+def test_generate_labeled_regions():
+    """Minimal testing of generate_labeled_regions"""
+    shape = (3, 4, 5)
+    n_regions = 10
+    regions = generate_labeled_regions(shape, n_regions)
+    assert_true(regions.shape == shape)
+    assert (len(np.unique(regions)) == n_regions + 1)
 
 
 def test_apply_regions():
@@ -138,7 +76,7 @@ def test_apply_regions():
 
     # Extract one timeseries from each region, they must be identical
     # to ROI timeseries.
-    indices = regions.argmax(axis=0)
+    indices = regions.argmax(axis=1)
     recovered2 = region.apply_regions(timeseries, regions_nonflat,
                                normalize_regions=True)
     region_signals = timeseries.T[indices].T
@@ -267,16 +205,16 @@ def test_regions_are_overlapping():
                                   window="hamming")
     assert_true(not region.regions_are_overlapping(regions))
 
-    regions[0, :2] = 1  # make regions overlap
+    regions[:2, 0] = 1  # make regions overlap
     assert_true(region.regions_are_overlapping(regions))
 
     # 3D volume with labels. No possible overlap.
     regions_labels = generate_labeled_regions(shape, n_regions)
-    assert_true(not region.regions_are_overlapping(regions_labels))
+    assert_false(region.regions_are_overlapping(regions_labels))
 
     # 4D volume, with weights
     regions_4D, labels = region.regions_labels_to_array(regions_labels)
-    assert_true(not region.regions_are_overlapping(regions_4D))
+    assert_false(region.regions_are_overlapping(regions_4D))
 
     regions_4D[0, 0, 0, :2] = 1  # Make regions overlap
     assert_true(region.regions_are_overlapping(regions_4D))
@@ -287,7 +225,7 @@ def test_regions_are_overlapping():
 
     regions_4D, labels = region.regions_labels_to_array(regions_labels)
     regions_list = region.regions_array_to_list(regions_4D)
-    assert_true(not region.regions_are_overlapping(regions_list))
+    assert_false(region.regions_are_overlapping(regions_list))
 
     # Bad input
     assert_raises(TypeError, region.regions_are_overlapping, None)
@@ -300,40 +238,6 @@ def test_regions_are_overlapping():
     # - check overlapping / not overlapping
     # - check with / without holes
     # - check length consistency assertion
-
-
-def test_mask_regions():
-    """Test masking of regions.
-    The procedure is slightly different from that for masking fMRI signals.
-    """
-    shape = (4, 5, 6)
-    n_voxels = shape[0] * shape[1] * shape[2]
-    n_regions = 11
-
-    # Generate data
-    affine = np.eye(4)
-    mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
-    regions_ts = generate_regions_ts(n_voxels, n_regions,
-                                  overlap=2, window="hamming")
-
-    # 4D volume with weights
-    region_array = region.unapply_mask_to_regions(regions_ts, mask_img)
-    assert_true(region_array.shape == shape + (n_regions,))
-    regions_ts_recovered = region.apply_mask_to_regions(region_array, mask_img)
-    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
-
-    # list of 3D volumes
-    region_list = region.unapply_mask_to_regions(regions_ts, mask_img)
-    assert_true(region_list.shape == shape + (n_regions,))
-    regions_ts_recovered = region.apply_mask_to_regions(region_list, mask_img)
-    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
-
-    # array with labels
-    region_labels = region.unapply_mask_to_regions(regions_ts, mask_img)
-    assert_true(region_labels.shape == shape + (n_regions,))
-    regions_ts_recovered = region.apply_mask_to_regions(region_labels,
-                                                        mask_img)
-    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
 
 
 def test_regions_to_mask():
@@ -351,9 +255,9 @@ def test_regions_to_mask():
 
     regions_ts = generate_regions_ts(n_voxels, n_regions,
                                      overlap=2, window="hamming")
-    region_img = region.unapply_mask_to_regions(regions_ts, mask_img)
+    region_img = masking.unapply_mask_to_regions(regions_ts, mask_img)
     regions_ts[0, 0] = 0  # change something
-    region_broken_img = region.unapply_mask_to_regions(regions_ts, mask_img)
+    region_broken_img = masking.unapply_mask_to_regions(regions_ts, mask_img)
 
     region_labels_img = utils.NislImage(
         region.regions_array_to_labels(region_img.get_data()), affine)

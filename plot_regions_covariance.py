@@ -90,7 +90,8 @@ if __name__ == "__main__":
                                     )
 
     print("-- Computing region signals ...")
-    regions_masked = nisl.region.apply_mask_to_regions(regions_img, mask_img)
+    regions_masked = nisl.masking.apply_mask(regions_img, mask_img,
+                                             input_type="regions")
     region_ts = nisl.region.apply_regions(timeseries, regions_masked)
     region_ts /= region_ts.std(axis=0)
 

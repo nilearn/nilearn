@@ -2,14 +2,17 @@
 Test the mask-extracting utilities.
 """
 import types
+import numpy as np
 
+from numpy.testing import assert_array_equal
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
-import numpy as np
 from nibabel import Nifti1Image
-from numpy.testing import assert_array_equal
 
 from ..masking import apply_mask, compute_epi_mask, unmask, intersect_masks
+from .. import masking
+from ..testing import generate_regions_ts
+
 
 def test_mask():
     mean_image = np.ones((9, 9))
@@ -36,6 +39,7 @@ def test_apply_mask():
     """ Test smoothing of timeseries extraction
     """
     # A delta in 3D
+    # Standard masking
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     mask = np.ones((40, 40, 40))
@@ -59,6 +63,41 @@ def test_apply_mask():
     series = apply_mask(Nifti1Image(data, affine),
                         Nifti1Image(mask, affine), smooth=9)
     assert_true(np.all(np.isfinite(series)))
+
+    # Masking of regions
+    """Test masking of regions.
+    The procedure is slightly different from that for masking fMRI signals.
+    """
+    shape = (4, 5, 6)
+    n_voxels = shape[0] * shape[1] * shape[2]
+    n_regions = 11
+
+    # Generate data
+    affine = np.eye(4)
+    mask_img = Nifti1Image(np.ones(shape, dtype=np.int8), affine)
+    regions_ts = generate_regions_ts(n_voxels, n_regions,
+                                     overlap=2, window="hamming")
+
+    # 4D volume with weights
+    region_array = masking.unapply_mask_to_regions(regions_ts, mask_img)
+    assert_true(region_array.shape == shape + (n_regions,))
+    regions_ts_recovered = apply_mask(region_array, mask_img,
+                                      input_type="regions")
+    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
+
+    # list of 3D volumes
+    region_list = masking.unapply_mask_to_regions(regions_ts, mask_img)
+    assert_true(region_list.shape == shape + (n_regions,))
+    regions_ts_recovered = apply_mask(region_list, mask_img,
+                                      input_type="regions")
+    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
+
+    # array with labels
+    region_labels = masking.unapply_mask_to_regions(regions_ts, mask_img)
+    assert_true(region_labels.shape == shape + (n_regions,))
+    regions_ts_recovered = apply_mask(region_labels, mask_img,
+                                      input_type="regions")
+    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
 
 
 def test_unmask():
