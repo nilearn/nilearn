@@ -102,15 +102,10 @@ Functions
 
    region.apply_regions
    region.unapply_regions
-   region.apply_mask_to_regions
-   region.unapply_mask_to_regions
    region.regions_are_overlapping
-   region.regions_labels_to_array
-   region.regions_array_to_labels
-   region.regions_array_to_list
-   region.regions_list_to_array
-   region.regions_list_to_labels
-   region.regions_labels_to_list
+   region.unapply_mask_to_regions
+
+**See also:** nisl.masking.unmask()
 
 .. _resampling_ref:
 

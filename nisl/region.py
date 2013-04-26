@@ -147,7 +147,7 @@ def regions_are_overlapping(regions):
     return predicate
 
 
-def regions_labels_to_array(region_labels, background_label=0, dtype=np.bool):
+def _regions_labels_to_array(region_labels, background_label=0, dtype=np.bool):
     """Convert regions expressed as labels to a 4D array with weights.
 
     Parameters
@@ -196,7 +196,7 @@ def regions_labels_to_array(region_labels, background_label=0, dtype=np.bool):
     return regions_array, labels
 
 
-def regions_array_to_labels(region_array, labels=None, background_label=0):
+def _regions_array_to_labels(region_array, labels=None, background_label=0):
     """Convert regions expressed as a 4D array into a labeled array.
 
     region_array can contain overlapping regions, but return values cannot.
@@ -241,7 +241,7 @@ def regions_array_to_labels(region_array, labels=None, background_label=0):
     return region_labels
 
 
-def regions_array_to_list(regions_array, copy=False):
+def _regions_array_to_list(regions_array, copy=False):
     """Convert a numpy array into an list of arrays with one dimension less.
 
     By default, data are NOT copied. Arrays in list are views of the
@@ -268,7 +268,7 @@ def regions_array_to_list(regions_array, copy=False):
     return regions_list
 
 
-def regions_list_to_array(regions_list):
+def _regions_list_to_array(regions_list):
     """Turn a list of arrays into one array with an extra dimension.
 
     Data are copied.
@@ -289,11 +289,11 @@ def regions_list_to_array(regions_list):
     return regions_array
 
 
-def regions_list_to_labels(regions_list, labels=None, background_label=0):
+def _regions_list_to_labels(regions_list, labels=None, background_label=0):
     """Convert a list of regions into an array of labels.
 
     If regions overlap, they are made non-overlapping (see
-    regions_array_to_labels for details)
+    _regions_array_to_labels for details)
 
     Parameters
     ==========
@@ -332,7 +332,7 @@ def regions_list_to_labels(regions_list, labels=None, background_label=0):
     return regions_labels
 
 
-def regions_labels_to_list(regions_labels, background_label=0,
+def _regions_labels_to_list(regions_labels, background_label=0,
                            dtype=np.bool):
     """Convert an array of labels into a list of region arrays.
 

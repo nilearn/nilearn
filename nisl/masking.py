@@ -353,7 +353,7 @@ def _apply_mask_regions(regions_img_in, mask_img):
     if data.shape[3] == 1:  # labeled case
         # FIXME: use sparse matrices here.
         regions_img = nibabel.Nifti1Image(
-            region.regions_labels_to_array(data[..., 0], dtype=np.int8)[0],
+            region._regions_labels_to_array(data[..., 0], dtype=np.int8)[0],
             regions_img.get_affine())
 
     return _apply_mask_fmri(regions_img, mask_img)
@@ -364,16 +364,17 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     if smooth is not None:
         ensure_finite = True
 
-    mask = utils.check_niimg(mask_img)
-    mask = mask.get_data().astype(np.bool)
+    mask_img = utils.check_niimg(mask_img)
+    mask = mask_img.get_data().astype(np.bool)
+    del mask_img
 
     niimgs_img = utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
 
-    data = niimgs_img.get_data()
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
+    data = niimgs_img.get_data()
     series = utils.as_ndarray(data, dtype=dtype, order="C")
     del data, niimgs_img  # frees a lot of memory
 
@@ -389,7 +390,6 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
         smooth_sigma = smooth / vox_size
         for n, s in enumerate(smooth_sigma):
             ndimage.gaussian_filter1d(series, s, output=series, axis=n)
-
     return series[mask].T
 
 

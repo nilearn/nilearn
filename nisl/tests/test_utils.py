@@ -285,7 +285,6 @@ def test_as_ndarray():
     assert(arr2.dtype == np.int32)
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
-
     ## list
     # same dtype, no copy requested
     arr1 = [0, 1, 2, 3]

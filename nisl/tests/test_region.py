@@ -98,19 +98,19 @@ def test_regions_convert():
 
     # FIXME: test dtype argument
     # FIXME: test labels argument
-    regions_4D, labels = region.regions_labels_to_array(regions_labels)
+    regions_4D, labels = region._regions_labels_to_array(regions_labels)
     assert(regions_4D.shape == shape + (n_regions,))
-    regions_labels_recovered = region.regions_array_to_labels(regions_4D)
+    regions_labels_recovered = region._regions_array_to_labels(regions_4D)
 
     np.testing.assert_almost_equal(regions_labels_recovered, regions_labels)
 
     ## 4D array <-> list of 3D arrays
-    regions_list = region.regions_array_to_list(regions_4D, copy=False)
+    regions_list = region._regions_array_to_list(regions_4D, copy=False)
     assert (len(regions_list) == regions_4D.shape[-1])
     for n in xrange(regions_4D.shape[-1]):
         np.testing.assert_almost_equal(regions_list[n], regions_4D[..., n])
 
-    regions_4D_recovered = region.regions_list_to_array(regions_list)
+    regions_4D_recovered = region._regions_list_to_array(regions_list)
     np.testing.assert_almost_equal(regions_4D_recovered, regions_4D)
     # check that arrays in list are views (modifies arrays)
     for n in xrange(regions_4D.shape[-1]):
@@ -119,7 +119,7 @@ def test_regions_convert():
         assert(regions_list[n][0, 0, 0] == regions_4D[0, 0, 0, n])
 
     # Assert that data have been copied
-    regions_list = region.regions_array_to_list(regions_4D, copy=True)
+    regions_list = region._regions_array_to_list(regions_4D, copy=True)
     for n in xrange(regions_4D.shape[-1]):
         regions_list[n][0, 0, 0] = False
         regions_4D[0, 0, 0, n] = True
@@ -127,15 +127,15 @@ def test_regions_convert():
 
     # Use "labels" argument
     regions_labels += 3
-    regions_4D, labels = region.regions_labels_to_array(regions_labels)
-    regions_labels_recovered = region.regions_array_to_labels(regions_4D,
+    regions_4D, labels = region._regions_labels_to_array(regions_labels)
+    regions_labels_recovered = region._regions_array_to_labels(regions_4D,
                                                            labels=labels)
     np.testing.assert_almost_equal(regions_labels_recovered, regions_labels)
-    regions_labels_recovered = region.regions_array_to_labels(regions_4D,
+    regions_labels_recovered = region._regions_array_to_labels(regions_4D,
                                                  labels=np.asarray(labels))
     np.testing.assert_almost_equal(regions_labels_recovered, regions_labels)
 
-    assert_raises(ValueError, region.regions_array_to_labels,
+    assert_raises(ValueError, region._regions_array_to_labels,
                   regions_4D, labels=[])
 
     ## list of 3D arrays <-> labels
@@ -143,23 +143,23 @@ def test_regions_convert():
     regions_labels = generate_labeled_regions(shape, n_regions)
     assert_true(len(np.unique(regions_labels)) == n_regions + 1)
 
-    regions_list, labels = region.regions_labels_to_list(regions_labels,
+    regions_list, labels = region._regions_labels_to_list(regions_labels,
                                               background_label=1)
     assert_true(len(labels) == len(regions_list))
     assert_true(len(regions_list) == n_regions)
     assert_true(regions_list[0].shape == regions_labels.shape)
     assert_true(regions_list[0].dtype == np.bool)
-    regions_labels_recovered = region.regions_list_to_labels(regions_list,
+    regions_labels_recovered = region._regions_list_to_labels(regions_list,
                                                           labels=labels,
                                                           background_label=1)
     np.testing.assert_almost_equal(regions_labels, regions_labels_recovered)
 
     # same with different dtype
-    regions_list, labels = region.regions_labels_to_list(regions_labels,
+    regions_list, labels = region._regions_labels_to_list(regions_labels,
                                                       background_label=1,
                                                       dtype=np.float)
     assert_true(regions_list[0].dtype == np.float)
-    regions_labels_recovered = region.regions_list_to_labels(regions_list,
+    regions_labels_recovered = region._regions_list_to_labels(regions_list,
                                                           labels=labels,
                                                           background_label=1)
     np.testing.assert_almost_equal(regions_labels, regions_labels_recovered)
@@ -167,28 +167,28 @@ def test_regions_convert():
     # second case: no background
     regions_labels = generate_labeled_regions(shape, n_regions,
                                               labels=range(1, n_regions + 1))
-    regions_list, labels = region.regions_labels_to_list(regions_labels,
+    regions_list, labels = region._regions_labels_to_list(regions_labels,
                                                       background_label=None)
     assert_true(len(labels) == len(regions_list))
     assert_true(len(regions_list) == n_regions)
     assert_true(regions_list[0].shape == regions_labels.shape)
 
-    regions_labels_recovered = region.regions_list_to_labels(regions_list)
+    regions_labels_recovered = region._regions_list_to_labels(regions_list)
     np.testing.assert_almost_equal(regions_labels, regions_labels_recovered)
 
     ## check conversion consistency (labels -> 4D -> list -> labels)
     # loop one way, with background
     regions_labels = generate_labeled_regions(shape, n_regions)
-    regions_array, _ = region.regions_labels_to_array(regions_labels)
-    regions_list = region.regions_array_to_list(regions_array)
-    regions_labels_recovered = region.regions_list_to_labels(regions_list)
+    regions_array, _ = region._regions_labels_to_array(regions_labels)
+    regions_list = region._regions_array_to_list(regions_array)
+    regions_labels_recovered = region._regions_list_to_labels(regions_list)
 
     np.testing.assert_almost_equal(regions_labels_recovered, regions_labels)
 
     # loop the other way
-    regions_list, _ = region.regions_labels_to_list(regions_labels)
-    regions_array = region.regions_list_to_array(regions_list)
-    regions_labels_recovered = region.regions_array_to_labels(regions_array)
+    regions_list, _ = region._regions_labels_to_list(regions_labels)
+    regions_array = region._regions_list_to_array(regions_list)
+    regions_labels_recovered = region._regions_array_to_labels(regions_array)
 
     np.testing.assert_almost_equal(regions_labels_recovered, regions_labels)
 
@@ -213,18 +213,18 @@ def test_regions_are_overlapping():
     assert_false(region.regions_are_overlapping(regions_labels))
 
     # 4D volume, with weights
-    regions_4D, labels = region.regions_labels_to_array(regions_labels)
+    regions_4D, labels = region._regions_labels_to_array(regions_labels)
     assert_false(region.regions_are_overlapping(regions_4D))
 
     regions_4D[0, 0, 0, :2] = 1  # Make regions overlap
     assert_true(region.regions_are_overlapping(regions_4D))
 
     # List of arrays
-    regions_list = region.regions_array_to_list(regions_4D)
+    regions_list = region._regions_array_to_list(regions_4D)
     assert_true(region.regions_are_overlapping(regions_list))
 
-    regions_4D, labels = region.regions_labels_to_array(regions_labels)
-    regions_list = region.regions_array_to_list(regions_4D)
+    regions_4D, labels = region._regions_labels_to_array(regions_labels)
+    regions_list = region._regions_array_to_list(regions_4D)
     assert_false(region.regions_are_overlapping(regions_list))
 
     # Bad input
@@ -260,17 +260,17 @@ def test_regions_to_mask():
     region_broken_img = masking.unapply_mask_to_regions(regions_ts, mask_img)
 
     region_labels_img = utils.NislImage(
-        region.regions_array_to_labels(region_img.get_data()), affine)
+        region._regions_array_to_labels(region_img.get_data()), affine)
     region_labels_broken_img = utils.NislImage(
-        region.regions_array_to_labels(region_broken_img.get_data()), affine)
+        region._regions_array_to_labels(region_broken_img.get_data()), affine)
 
     region_list_img = [utils.NislImage(data, affine)
                        for data
-                       in region.regions_array_to_list(region_img.get_data())]
+                       in region._regions_array_to_list(region_img.get_data())]
     region_list_broken_img = [
         utils.NislImage(data, affine)
         for data
-        in region.regions_array_to_list(region_broken_img.get_data())]
+        in region._regions_array_to_list(region_broken_img.get_data())]
 
     # _r stands for "recovered"
     # TODO: list of filenames

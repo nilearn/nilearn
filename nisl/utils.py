@@ -362,6 +362,9 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     casting can lead to performance improvements in some cases, by avoiding
     unnecessary copies.
 
+    If not specified, input array order is preserved, in all cases, even when
+    a copy is requested.
+
     Parameters
     ==========
     arr (any value accepted by numpy.asarray)
@@ -408,7 +411,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
                 # Changing order while reading through a memmap is incredibly
                 # inefficient.
                 ret = np.array(arr, copy=True)
-                ret = np.array(ret, dtype=dtype, order=order)
+                ret = _asarray(arr, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
         ret = _asarray(arr, dtype=dtype, order=order)
