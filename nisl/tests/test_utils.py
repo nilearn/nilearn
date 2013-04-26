@@ -10,7 +10,7 @@ import os.path as osp
 import tempfile
 
 import nose
-from nose.tools import assert_raises, assert_equal
+from nose.tools import assert_raises, assert_equal, assert_true
 
 import numpy as np
 
@@ -175,45 +175,67 @@ def test_are_array_identical():
 
 
 def test_as_ndarray():
-    # There are 8 cases to test
+    # All test cases
+    # input dtype, input order, should copy, output dtype, output order, copied
+    test_cases = [
+        # no-op
+        (np.float, "C", False, None, None, False),
+        (np.float, "F", False, None, None, False),
 
-    ## ndarray
-    # unchanged dtype, no copy
-    arr1 = np.ones(10)
-    arr2 = utils.as_ndarray(arr1)
-    assert(are_arrays_identical(arr1, arr2))
+        # simple copy
+        (np.float, "C", True, None, None, True),
+        (np.float, "F", True, None, None, True),
 
-    # unchanged dtype, copy
-    arr1 = np.ones(10)
-    arr2 = utils.as_ndarray(arr1, copy=True)
-    assert(not are_arrays_identical(arr1, arr2))
+        # dtype provided, identical
+        (np.float, "C", False, np.float, None, False),
+        (np.float, "F", False, np.float, None, False),
 
-    # same dtype, explicitly provided: no copy
-    arr1 = np.ones(10, dtype=np.int32)
-    arr2 = utils.as_ndarray(arr1, dtype=np.int32)
-    assert(arr2.dtype == np.int32)
-    assert(are_arrays_identical(arr1, arr2))
+        # dtype changed
+        (np.float, "C", False, np.float32, None, True),
+        (np.float, "F", False, np.float32, None, True),
 
-    # new dtype of same size
-    arr1 = np.ones(10, dtype=np.int32)
-    arr2 = utils.as_ndarray(arr1, dtype=np.float32)
-    assert(arr2.dtype == np.float32)
-    assert(not are_arrays_identical(arr1, arr2))
+        # dtype and order provided, but identical
+        (np.float, "C", False, np.float, "C", False),
+        (np.float, "F", False, np.float, "F", False),
 
-    # same dtype, order provided: copy.
-    arr1 = np.ones((10, 10), dtype=np.int32, order="C")
-    arr2 = utils.as_ndarray(arr1, order="F")
-    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
-    assert(arr2.dtype == arr1.dtype)
-    assert(not are_arrays_identical(arr1[0], arr2[0]))
+        # order provided, unchanged
+        (np.float, "C", False, None, "C", False),
+        (np.float, "F", False, None, "F", False),
+        (np.float, "C", True, None, "C", True),
+        (np.float, "F", True, None, "F", True),
 
-    # same dtype, order unchanged but provided: no copy.
-    arr1 = np.ones((10, 10), dtype=np.int32, order="F")
-    arr2 = utils.as_ndarray(arr1, order="F")
-    assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
-    assert(arr2.dtype == arr1.dtype)
-    assert(are_arrays_identical(arr1[0], arr2[0]))
+        # order provided, changed
+        (np.float, "C", False, None, "F", True),
+        (np.float, "F", False, None, "C", True),
+        (np.float, "C", True, None, "F", True),
+        (np.float, "F", True, None, "C", True),
 
+        # Special case for int8 -> bool conversion.
+        (np.int8, "C", False, np.bool, None, False),
+        (np.int8, "F", False, np.bool, None, False),
+        (np.int8, "C", False, np.bool, "C", False),
+        (np.int8, "F", False, np.bool, "F", False),
+
+        (np.int8, "C", True, np.bool, None, True),
+        (np.int8, "F", True, np.bool, None, True),
+        (np.int8, "C", True, np.bool, "C", True),
+        (np.int8, "F", True, np.bool, "F", True),
+        ]
+
+    shape = (10, 11)
+    for case in test_cases:
+        in_dtype, in_order, copy, out_dtype, out_order, copied = case
+        arr1 = np.ones(shape, dtype=in_dtype, order=in_order)
+        arr2 = utils.as_ndarray(arr1,
+                                copy=copy, dtype=out_dtype, order=out_order)
+        assert_true(not are_arrays_identical(arr1[0], arr2[0]) == copied,
+                    msg=str(case))
+
+        result_order = out_order if out_order is not None else in_order
+        if result_order == "F":
+            assert_true(arr2.flags["F_CONTIGUOUS"])
+        else:
+            assert_true(arr2.flags["C_CONTIGUOUS"])
 
     ## memmap
     filename = osp.join(osp.dirname(__file__), "data", "mmap.dat")
@@ -288,6 +310,6 @@ def test_as_ndarray():
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
-    ## Unhandled case
+    ## Unhandled cases
     assert_raises(ValueError, utils.as_ndarray, "test string")
-
+    assert_raises(ValueError, utils.as_ndarray, [], order="invalid")

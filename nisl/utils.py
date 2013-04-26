@@ -325,26 +325,30 @@ class CacheMixin(object):
                 raise TypeError("'memory' argument must be a string or a "
                                 "joblib.Memory object.")
             if memory.cachedir is None:
-                warnings.warn("Caching has been enabled (memory_level = %d) but no"
-                              " Memory object or path has been provided (parameter"
-                              " memory). Caching deactivated for function %s." %
+                warnings.warn("Caching has been enabled (memory_level = %d) "
+                              "but no Memory object or path has been provided"
+                              " (parameter memory). Caching deactivated for "
+                              "function %s." %
                               (self.memory_level, func.func_name))
             return memory.cache(func, **kwargs)
 
 
 def _asarray(arr, dtype=None, order=None):
     # np.asarray does not take "K" and "A" orders in version 1.3.0
-    # changed_order is True when array order has changed (implying a copy)
-    changed_order = False
-    if order in ("K", "A"):
-        ret = np.asarray(arr, dtype=dtype)
+    if order in ("K", "A", None):
+        if dtype == np.bool and arr.itemsize == 1:
+            ret = arr.view(dtype=np.bool)
+        else:
+            ret = np.asarray(arr, dtype=dtype)
     else:
-        ret = np.asarray(arr, dtype=dtype, order=order)
-        if not ((arr.flags["C_CONTIGUOUS"] and order == "C")
-                or (arr.flags["F_CONTIGUOUS"] and order == "F")):
-            changed_order = True
+        if dtype == np.bool and arr.itemsize == 1\
+            and (order == "F" and arr.flags["F_CONTIGUOUS"]
+                 or order == "C" and arr.flags["C_CONTIGUOUS"]):
+            ret = arr.view(dtype=np.bool)
+        else:
+            ret = np.asarray(arr, dtype=dtype, order=order)
 
-    return ret, changed_order
+    return ret
 
 
 def as_ndarray(arr, copy=False, dtype=None, order='K'):
@@ -369,14 +373,14 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
         same time can in some cases avoid an additional copy.
     order (str)
         gives the order of the returned array.
-        Valid values are: "C", "F", "A", "K".
+        Valid values are: "C", "F", "A", "K", None.
         default is "K". See ndarray.copy() for more information.
 
     Returns
     =======
-    nd_arr (numpy.ndarray)
-        Numpy array exactly like arr, but of class numpy.ndarray, and with no
-        link to any underlying file.
+    ret (numpy.ndarray)
+        Numpy array containing the same data as arr, always of class
+        numpy.ndarray, and with no link to any underlying file.
     """
     # This function should work on numpy 1.3
     # in this version, astype() and copy() have no "order" keyword.
@@ -386,14 +390,17 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     #     memmaps) when dtype is unchanged.
     # .astype() always copies
 
+    if order not in ("C", "F", "A", "K", None):
+        raise ValueError("Invalid value for 'order': %s" % str(order))
+
     if isinstance(arr, np.memmap):
         if dtype is None:
-            if order in ("K", "A"):
+            if order in ("K", "A", None):
                 ret = np.array(np.asarray(arr), copy=True)
             else:
                 ret = np.array(np.asarray(arr), copy=True, order=order)
         else:
-            if order in ("K", "A"):
+            if order in ("K", "A", None):
                 # always copy (even when dtype does not change)
                 ret = np.asarray(arr).astype(dtype)
             else:
@@ -404,12 +411,14 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
                 ret = np.array(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
-        if dtype is None:
-            ret, changed_order = _asarray(arr, order=order)
-            if copy and not changed_order:
+        ret = _asarray(arr, dtype=dtype, order=order)
+        # In the present cas, np.may_share_memory result is always reliable.
+        if np.may_share_memory(ret, arr) and copy:
+            # order-preserving copy
+            if ret.flags["F_CONTIGUOUS"]:
+                ret = ret.T.copy().T
+            else:
                 ret = ret.copy()
-        else:
-            ret, _ = _asarray(arr, dtype=dtype, order=order)
 
     elif isinstance(arr, (list, tuple)):
         if order in ("A", "K"):
