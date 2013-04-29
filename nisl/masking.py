@@ -288,10 +288,10 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
                 delayed(resampling.resample_img)
                     (mask, target_affine=target_affine,
-                     target_shape=target_shape)
+                     target_shape=target_shape, interpolation='nearest')
                 for mask in masks)
 
-    mask = intersect_masks(masks, connected=connected)
+    mask = intersect_masks(masks, connected=connected, threshold=threshold)
     return mask
 
 
