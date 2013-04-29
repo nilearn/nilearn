@@ -10,6 +10,44 @@ from sklearn.externals.joblib import Parallel, delayed
 from . import utils, resampling
 
 
+def _check_mask_img(mask_img):
+    ''' Check that a mask is valid, ie with two values including 0 and load it.
+
+    Parameters
+    ----------
+
+    mask_img: nifti-like image
+        The mask to check
+
+    Returns
+    -------
+
+    mask: boolean numpy array
+        The boolean version of the mask
+    '''
+    mask_img = utils.check_niimg(mask_img)
+    mask = mask_img.get_data()
+    values = np.unique(mask)
+
+    if len(values) == 1:
+        # We accept a single value if it is not 0 (full true mask).
+        if values[0] == 0:
+            raise ValueError('Given mask is invalid because completely False')
+    elif len(values) == 2:
+        # If there are 2 different values, one of them must be 0 (background)
+        if not 0 in values:
+            raise ValueError('Background of the mask must be represented with'
+                             '0. Given mask contains: %s.' % values)
+    elif len(values) != 2:
+        # If there are more than 2 values, the mask is invalid
+        raise ValueError('Given mask is not made of 2 values: %s'
+                         '. Cannot interpret as true or false'
+                         % values)
+
+    mask = mask.astype(bool)
+    return mask, mask_img.get_affine()
+
+
 def extrapolate_out_mask(data, mask, iterations=1):
     """ Extrapolate values outside of the mask.
     """
@@ -130,7 +168,7 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         mask = utils.largest_connected_component(mask)
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=opening)
-    return Nifti1Image(mask.astype(int), mean_epi_img.get_affine())
+    return Nifti1Image(mask.astype(np.int8), mean_epi_img.get_affine())
 
 
 def intersect_masks(input_masks, threshold=0.5, connected=True):
@@ -168,29 +206,19 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in input_masks:
-        if np.any(this_mask.get_affine() != ref_affine):
+        mask, affine = _check_mask_img(this_mask)
+        if np.any(affine != ref_affine):
             raise ValueError("All masks should have the same affine")
-        if np.any(this_mask.shape != ref_shape):
+        if np.any(mask.shape != ref_shape):
             raise ValueError("All masks should have the same shape")
-        this_mask = this_mask.get_data().copy().astype(int)
-        # Convert the mask in [0, 1] values
-        if not len(np.unique(this_mask)) == 2:
-            raise ValueError('This mask is not made of 2 values: %s'
-                             '. Cannot interpret as true or false'
-                             % np.unique(this_mask)
-                            )
-        this_mask -= this_mask.min()
-        this_mask = this_mask != 0
-        this_mask = this_mask.astype(np.int)
-
         if grp_mask is None:
-            grp_mask = this_mask
+            grp_mask = mask.astype(int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
             # casting rules raise an error for in-place addition. Hence we do
             # it long-hand.
             # XXX should the masks be coerced to int before addition?
-            grp_mask += this_mask
+            grp_mask += mask
 
     grp_mask = grp_mask > (threshold * len(list(input_masks)))
 
@@ -308,9 +336,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     if smooth is not None:
         ensure_finite = True
 
-    mask = utils.check_niimg(mask_img)
-    mask = mask.get_data().astype(np.bool)
-
+    mask, _ = _check_mask_img(mask_img)
     niimgs_img = utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
 
@@ -416,11 +442,10 @@ def unmask(X, mask_img):
             ret.append(unmask(x, mask_img))  # 1-level recursion
         return ret
 
-    mask_img = utils.check_niimg(mask_img)
-    mask = mask_img.get_data().astype(bool)
+    mask, affine = _check_mask_img(mask_img)
 
     if X.ndim == 2:
         unmasked = _unmask_nd(X, mask)
     elif X.ndim == 1:
         unmasked = _unmask_3d(X, mask)
-    return Nifti1Image(unmasked, mask_img.get_affine())
+    return Nifti1Image(unmasked, affine)
