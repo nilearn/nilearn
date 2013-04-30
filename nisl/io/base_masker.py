@@ -131,9 +131,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 .transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        mask = utils.check_niimg(self.mask_img_)
+        mask_img = utils.check_niimg(self.mask_img_)
         data = X
 
-        unmasked = masking.unmask(data, mask.get_data().astype(np.bool))
-
-        return _to_nifti(unmasked, mask.get_affine())
+        return masking.unmask(data, mask_img)
