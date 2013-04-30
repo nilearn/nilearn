@@ -8,6 +8,8 @@ import urllib2
 import numpy as np
 import scipy.signal
 
+from nibabel import Nifti1Image
+
 from . import datasets
 from . import masking
 
@@ -155,8 +157,9 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None):
 
     Returns
     =======
-    regions (numpy.ndarray)
-        array of shape "shape", containing region labels.
+    regions (Nifti1Image)
+        data has shape "shape", containing region labels.
+        affine is np.eye(4)
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
@@ -169,4 +172,6 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None):
     # replace weights with labels
     for n, row in zip(labels, regions):
         row[row > 0] = n
-    return masking.unmask(regions.sum(axis=0), np.ones(shape, dtype=np.bool))
+    return masking.unmask(regions.sum(axis=0),
+                          Nifti1Image(np.ones(shape, dtype=np.int8), np.eye(4))
+                          )

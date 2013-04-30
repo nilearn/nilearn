@@ -55,7 +55,7 @@ def test_generate_labeled_regions():
     n_regions = 10
     regions = generate_labeled_regions(shape, n_regions)
     assert_true(regions.shape == shape)
-    assert (len(np.unique(regions)) == n_regions + 1)
+    assert (len(np.unique(regions.get_data())) == n_regions + 1)
 
 
 def test_apply_regions():
@@ -94,7 +94,7 @@ def test_regions_convert():
     n_regions = 11
 
     ## labels <-> 4D array
-    regions_labels = generate_labeled_regions(shape, n_regions)
+    regions_labels = generate_labeled_regions(shape, n_regions).get_data()
 
     # FIXME: test dtype argument
     # FIXME: test labels argument
@@ -140,7 +140,7 @@ def test_regions_convert():
 
     ## list of 3D arrays <-> labels
     # First case
-    regions_labels = generate_labeled_regions(shape, n_regions)
+    regions_labels = generate_labeled_regions(shape, n_regions).get_data()
     assert_true(len(np.unique(regions_labels)) == n_regions + 1)
 
     regions_list, labels = region._regions_labels_to_list(regions_labels,
@@ -166,7 +166,8 @@ def test_regions_convert():
 
     # second case: no background
     regions_labels = generate_labeled_regions(shape, n_regions,
-                                              labels=range(1, n_regions + 1))
+                                              labels=range(1, n_regions + 1)
+                                              ).get_data()
     regions_list, labels = region._regions_labels_to_list(regions_labels,
                                                       background_label=None)
     assert_true(len(labels) == len(regions_list))
@@ -178,7 +179,7 @@ def test_regions_convert():
 
     ## check conversion consistency (labels -> 4D -> list -> labels)
     # loop one way, with background
-    regions_labels = generate_labeled_regions(shape, n_regions)
+    regions_labels = generate_labeled_regions(shape, n_regions).get_data()
     regions_array, _ = region._regions_labels_to_array(regions_labels)
     regions_list = region._regions_array_to_list(regions_array)
     regions_labels_recovered = region._regions_list_to_labels(regions_list)
@@ -209,7 +210,7 @@ def test_regions_are_overlapping():
     assert_true(region.regions_are_overlapping(regions))
 
     # 3D volume with labels. No possible overlap.
-    regions_labels = generate_labeled_regions(shape, n_regions)
+    regions_labels = generate_labeled_regions(shape, n_regions).get_data()
     assert_false(region.regions_are_overlapping(regions_labels))
 
     # 4D volume, with weights

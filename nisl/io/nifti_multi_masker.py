@@ -171,18 +171,19 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                 # if niimg is a string
                 data.append(utils.check_niimgs(niimg, accept_3d=True))
 
-            mask = self._cache(masking.compute_multi_epi_mask,
-                               memory_level=1,
-                               ignore=['n_jobs', 'verbose'])(
-                                   niimgs,
-                                   connected=self.mask_connected,
-                                   opening=self.mask_opening,
-                                   lower_cutoff=self.mask_lower_cutoff,
-                                   upper_cutoff=self.mask_upper_cutoff,
-                                   n_jobs=self.n_jobs,
-                                   verbose=(self.verbose - 1))
-            self.mask_img_ = Nifti1Image(mask.astype(np.int),
-                    data[0].get_affine())
+            self.mask_img_ = self._cache(
+                            masking.compute_multi_epi_mask,
+                            memory_level=1,
+                            ignore=['n_jobs', 'verbose'])(
+                                niimgs,
+                                connected=self.mask_connected,
+                                opening=self.mask_opening,
+                                lower_cutoff=self.mask_lower_cutoff,
+                                upper_cutoff=self.mask_upper_cutoff,
+                                target_affine=self.target_affine,
+                                target_shape=self.target_shape,
+                                n_jobs=self.n_jobs,
+                                verbose=(self.verbose - 1))
         else:
             if niimgs is not None:
                 warnings.warn('[%s.fit] Generation of a mask has been'

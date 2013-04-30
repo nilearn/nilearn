@@ -71,7 +71,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise"):
 
 def test_auto_mask():
     # This mostly a smoke test
-    data = np.ones((9, 9, 9))
+    data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker()

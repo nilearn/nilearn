@@ -5,12 +5,52 @@ Utilities to compute a brain mask from EPI images
 # License: simplified BSD
 import numpy as np
 from scipy import ndimage
+from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
 
 import nibabel
 
 from . import utils
 from . import region
+from . import resampling
+
+
+def _check_mask_img(mask_img):
+    ''' Check that a mask is valid, ie with two values including 0 and load it.
+
+    Parameters
+    ----------
+
+    mask_img: nifti-like image
+        The mask to check
+
+    Returns
+    -------
+
+    mask: boolean numpy array
+        The boolean version of the mask
+    '''
+    mask_img = utils.check_niimg(mask_img)
+    mask = mask_img.get_data()
+    values = np.unique(mask)
+
+    if len(values) == 1:
+        # We accept a single value if it is not 0 (full true mask).
+        if values[0] == 0:
+            raise ValueError('Given mask is invalid because it masks all data')
+    elif len(values) == 2:
+        # If there are 2 different values, one of them must be 0 (background)
+        if not 0 in values:
+            raise ValueError('Background of the mask must be represented with'
+                             '0. Given mask contains: %s.' % values)
+    elif len(values) != 2:
+        # If there are more than 2 values, the mask is invalid
+        raise ValueError('Given mask is not made of 2 values: %s'
+                         '. Cannot interpret as true or false'
+                         % values)
+
+    mask = mask.astype(bool)
+    return mask, mask_img.get_affine()
 
 
 def extrapolate_out_mask(data, mask, iterations=1):
@@ -52,7 +92,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 ###############################################################################
 
 
-def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
                      ensure_finite=True, verbose=0):
     """
@@ -98,15 +138,15 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Returns
     -------
-    mask : 3D boolean ndarray
+    mask : 3D nifti-like image
         The brain mask
     """
     if verbose > 0:
         print "EPI mask computation"
-    if not isinstance(mean_epi, np.ndarray):
-        # We suppose that it is a niimg
-        # XXX make a is_a_niimgs function ?
-        mean_epi = utils.check_niimgs(mean_epi, accept_3d=True).get_data()
+    # We suppose that it is a niimg
+    # XXX make a is_a_niimgs function ?
+    mean_epi_img = utils.check_niimgs(mean_epi_img, accept_3d=True)
+    mean_epi = mean_epi_img.get_data()
     if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
@@ -124,21 +164,19 @@ def compute_epi_mask(mean_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     threshold = 0.5 * (sorted_input[ia + lower_cutoff]
                        + sorted_input[ia + lower_cutoff + 1])
 
-    mask = (mean_epi >= threshold)
+    mask = mean_epi >= threshold
 
     if opening:
         opening = int(opening)
-        mask = ndimage.binary_erosion(mask.astype(np.int),
-                                      iterations=opening)
+        mask = ndimage.binary_erosion(mask, iterations=opening)
     if connected:
         mask = utils.largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask.astype(np.int),
-                                      iterations=opening)
-    return mask.astype(bool)
+        mask = ndimage.binary_dilation(mask, iterations=opening)
+    return Nifti1Image(mask.astype(np.int8), mean_epi_img.get_affine())
 
 
-def intersect_masks(input_masks, threshold=0.5, connected=True):
+def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     """ Compute intersection of several masks
 
     Given a list of input mask images, generate the output image which
@@ -146,8 +184,8 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
 
     Parameters
     ----------
-    input_masks: list of ndarrays
-        3D individual masks
+    masks_imgs: list of 3D nifti-like images
+        3D individual masks with same shape and affine.
 
     threshold: float within [0, 1], optional
         gives the level of the intersection.
@@ -159,46 +197,47 @@ def intersect_masks(input_masks, threshold=0.5, connected=True):
 
     Returns
     -------
-        grp_mask, boolean array of shape the image shape
+        grp_mask, 3D nifti-like image
     """
+    if len(mask_imgs) == 0:
+        raise ValueError('No mask provided for intersection')
     grp_mask = None
+    first_mask, ref_affine = _check_mask_img(mask_imgs[0])
+    ref_shape = first_mask.shape
     if threshold > 1:
         raise ValueError('The threshold should be smaller than 1')
     if threshold < 0:
         raise ValueError('The threshold should be greater than 0')
     threshold = min(threshold, 1 - 1.e-7)
 
-    for this_mask in input_masks:
-        this_mask = this_mask.copy().astype(np.int)
-        # Convert the mask in [0, 1] values
-        if not len(np.unique(this_mask)) == 2:
-            raise ValueError('This mask is not made of 2 values: %s'
-                             '. Cannot interpret as true or false'
-                             % np.unique(this_mask)
-                             )
-        this_mask -= this_mask.min()
-        this_mask = this_mask != 0
-        this_mask = this_mask.astype(np.int)
+    for this_mask in mask_imgs:
+        mask, affine = _check_mask_img(this_mask)
+        if np.any(affine != ref_affine):
+            raise ValueError("All masks should have the same affine")
+        if np.any(mask.shape != ref_shape):
+            raise ValueError("All masks should have the same shape")
 
         if grp_mask is None:
-            grp_mask = this_mask
+            # We use int here because there may be a lot of masks to merge
+            grp_mask = mask.astype(int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
             # casting rules raise an error for in-place addition. Hence we do
             # it long-hand.
             # XXX should the masks be coerced to int before addition?
-            grp_mask += this_mask
+            grp_mask += mask
 
-    grp_mask = grp_mask > (threshold * len(list(input_masks)))
+    grp_mask = grp_mask > (threshold * len(list(mask_imgs)))
 
     if np.any(grp_mask > 0) and connected:
         grp_mask = utils.largest_connected_component(grp_mask)
-
-    return grp_mask > 0
+    grp_mask = grp_mask.astype(np.int8)
+    return Nifti1Image(grp_mask, ref_affine)
 
 
 def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                            connected=True, opening=2, threshold=0.5,
+                           target_affine=None, target_shape=None,
                            exclude_zeros=False, n_jobs=1, verbose=0):
     """ Compute a common mask for several sessions or subjects of fMRI data.
 
@@ -239,7 +278,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Returns
     -------
-    mask : 3D boolean ndarray
+    mask : 3D nifti-like image
         The brain mask
     """
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -251,7 +290,15 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                                   exclude_zeros=exclude_zeros)
         for session in session_epi)
 
-    mask = intersect_masks(masks, connected=connected)
+    # Resample if needed
+    if target_affine is not None or target_shape is not None:
+        masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
+                delayed(resampling.resample_img)
+                    (mask, target_affine=target_affine,
+                     target_shape=target_shape, interpolation='nearest')
+                for mask in masks)
+
+    mask = intersect_masks(masks, connected=connected, threshold=threshold)
     return mask
 
 
@@ -364,10 +411,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     if smooth is not None:
         ensure_finite = True
 
-    mask_img = utils.check_niimg(mask_img)
-    mask = mask_img.get_data().astype(np.bool)
-    del mask_img
-
+    mask, _ = _check_mask_img(mask_img)
     niimgs_img = utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
 
@@ -427,12 +471,10 @@ def unapply_mask_to_regions(region_ts, mask_img):
     if region_ts.shape[1] != (mask_img.get_data() > 0).sum():
         raise ValueError("Mask definition and number of slices do not match")
 
-    return nibabel.Nifti1Image(unmask(region_ts,
-                                      mask_img.get_data().astype(np.bool)),
-                               mask_img.get_affine())
+    return unmask(region_ts, mask_img)
 
 
-def unmask_3D(X, mask):
+def _unmask_3d(X, mask):
     """Take masked data and bring them back to 3D (space only).
 
     Parameters
@@ -455,7 +497,7 @@ def unmask_3D(X, mask):
     return data
 
 
-def unmask_nD(X, mask):
+def _unmask_nd(X, mask):
     """Take masked data and bring them back to n-dimension
 
     Parameters
@@ -483,25 +525,25 @@ def unmask_nD(X, mask):
     return data
 
 
-def unmask(X, mask):
+def unmask(X, mask_img):
     """Take masked data and bring them back into 3D/4D
 
     This function can be applied to a list of masked data.
 
     Parameters
     ==========
-    X (numpy array, or list of)
-        Masked data. shape: (samples number, voxels number).
-        If X is one-dimensional, it is assumed that samples number equals one.
-    mask  (array-like with boolean values)
-        Mask. mask.ndim must be equal to 3, in all cases..
+    X: numpy array (or list of)
+        Masked data. shape: (samples #, features #).
+        If X is one-dimensional, it is assumed that samples# == 1.
+    mask_img: nifti-like image
+        Mask. mask must be 3 dimensional
 
-    Returns
-    =======
-    data (numpy array, or list of)
+    Return
+    ======
+    data: nifti-like image (or list of)
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
-        - X.ndim = 2:
+        - X.ndim == 2:
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
         - X.ndim == 1:
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
@@ -510,10 +552,13 @@ def unmask(X, mask):
     if isinstance(X, list):
         ret = []
         for x in X:
-            ret.append(unmask(x, mask))  # 1-level recursion
+            ret.append(unmask(x, mask_img))  # 1-level recursion
         return ret
 
+    mask, affine = _check_mask_img(mask_img)
+
     if X.ndim == 2:
-        return unmask_nD(X, mask)
+        unmasked = _unmask_nd(X, mask)
     elif X.ndim == 1:
-        return unmask_3D(X, mask)
+        unmasked = _unmask_3d(X, mask)
+    return Nifti1Image(unmasked, affine)

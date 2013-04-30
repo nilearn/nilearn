@@ -5,10 +5,7 @@ Transformer used to apply basic transformations on MRI data.
 # License: simplified BSD
 
 import warnings
-import numpy as np
 from sklearn.externals.joblib import Memory
-
-from nibabel import Nifti1Image
 
 from .. import masking
 from .. import resampling
@@ -158,16 +155,15 @@ class NiftiMasker(BaseMasker, CacheMixin):
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
             niimgs = utils.check_niimgs(niimgs, accept_3d=True)
-            mask = self._cache(masking.compute_epi_mask, memory_level=1,
+            self.mask_img_ = self._cache(masking.compute_epi_mask,
+                              memory_level=1,
                               ignore=['verbose'])(
-                niimgs.get_data(),
+                niimgs,
                 connected=self.mask_connected,
                 opening=self.mask_opening,
                 lower_cutoff=self.mask_lower_cutoff,
                 upper_cutoff=self.mask_upper_cutoff,
                 verbose=(self.verbose - 1))
-            self.mask_img_ = Nifti1Image(mask.astype(np.int),
-                    niimgs.get_affine())
         else:
             if niimgs is not None:
                 warnings.warn('[%s.fit] Generation of a mask has been'
