@@ -212,6 +212,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         if np.any(mask.shape != ref_shape):
             raise ValueError("All masks should have the same shape")
         if grp_mask is None:
+            # We use int here because there may be a lot of masks to merge
             grp_mask = mask.astype(int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
@@ -224,7 +225,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     if np.any(grp_mask > 0) and connected:
         grp_mask = utils.largest_connected_component(grp_mask)
-    grp_mask = grp_mask.astype(int)
+    grp_mask = grp_mask.astype(np.int8)
     return Nifti1Image(grp_mask, ref_affine)
 
 
