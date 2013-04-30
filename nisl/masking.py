@@ -179,8 +179,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     Parameters
     ----------
-    mask_imgs: list of 3D nifti-like images
-        3D individual masks
+    input_masks: list of 3D nifti-like images
+        3D individual masks with same shape and affine.
 
     threshold: float within [0, 1], optional
         gives the level of the intersection.
@@ -192,7 +192,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     Returns
     -------
-        grp_mask, 3D nifti-like image of shape the image shape
+        grp_mask, 3D nifti-like image
     """
     if len(mask_imgs) == 0:
         raise ValueError('No mask provided for intersection')
