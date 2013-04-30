@@ -4,14 +4,14 @@ Validation and conversion utilities.
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-
 import collections
 import warnings
 
-import nibabel
 import numpy as np
 from scipy import ndimage
 from sklearn.externals.joblib import Memory
+
+import nibabel
 
 
 ###############################################################################

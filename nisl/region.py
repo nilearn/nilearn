@@ -17,6 +17,9 @@ import collections
 
 import numpy as np
 from scipy import linalg
+
+import nibabel
+
 from . import utils
 
 
@@ -372,7 +375,7 @@ def _regions_labels_to_list(regions_labels, background_label=0,
 
 
 def regions_to_mask(regions_img, threshold=0., background=0,
-                    target_img=None, dtype=np.bool):
+                    target_img=None, dtype=np.int8):
     """Merge all regions to give a binary mask.
 
     A non-zero value in the output means that this point is inside at
@@ -408,12 +411,13 @@ def regions_to_mask(regions_img, threshold=0., background=0,
         Not implemented yet.
 
     dtype (numpy.dtype)
-        dtype of the output array.
+        dtype of the output image. This dtype must be storable in a Nifti file.
+            (i.e. np.bool is not allowed).
 
     Returns
     =======
-    mask (NislImage)
-        union of all the regions (boolean image)
+    mask (nibabel.Nifti1Image)
+        union of all the regions (binary image)
 
     See also
     ========
@@ -453,9 +457,8 @@ def regions_to_mask(regions_img, threshold=0., background=0,
                 "Invalid shape for input array: {0}".format(str(shape)))
 
     else:
-        raise TypeError("Unhandled data type: {0}".format(regions_img.__class__))
+        raise TypeError(
+            "Unhandled data type: {0}".format(regions_img.__class__))
 
     # FIXME: resample if needed
-    # Use NislImage and not Nifti1Image to be able to carry around
-    # boolean arrays.
-    return utils.NislImage(output, affine)
+    return nibabel.Nifti1Image(output, affine)
