@@ -7,6 +7,8 @@ Test for "region" module.
 import numpy as np
 from nose.tools import assert_raises, assert_true, assert_false
 
+import nibabel
+
 from .. import region
 from .. import masking
 from .. import utils
@@ -239,6 +241,111 @@ def test_regions_are_overlapping():
     # - check overlapping / not overlapping
     # - check with / without holes
     # - check length consistency assertion
+
+
+def test_signals_extraction():
+    """Test conversion between signals and images."""
+
+    shape = (8, 9, 10)
+    n_instants = 11
+    n_regions = 8  # must be 8
+
+    eps = np.finfo(np.float).eps
+    # data
+    ## rand_gen = np.random.RandomState(1)
+    ## data = rand_gen.randn(*(shape + (instants, )))
+    affine = np.eye(4)
+    ## data_img = nibabel.Nifti1Image(data, affine)
+    signals = generate_timeseries(n_instants, n_regions)
+
+    # mask
+    mask_data = np.zeros(shape)
+    mask_data[1:-1, 1:-1, 1:-1] = 1
+    mask_img = nibabel.Nifti1Image(mask_data, affine)
+
+    # labels
+    labels_data = np.zeros(shape, dtype=np.int)
+    h0 = shape[0] / 2
+    h1 = shape[1] / 2
+    h2 = shape[2] / 2
+    labels_data[:h0, :h1, :h2] = 1
+    labels_data[:h0, :h1, h2:] = 2
+    labels_data[:h0, h1:, :h2] = 3
+    labels_data[:h0, h1:, h2:] = 4
+    labels_data[h0:, :h1, :h2] = 5
+    labels_data[h0:, :h1, h2:] = 6
+    labels_data[h0:, h1:, :h2] = 7
+    labels_data[h0:, h1:, h2:] = 8
+
+    labels_img = nibabel.Nifti1Image(labels_data, affine)
+
+    ## Without mask
+    # from labels
+    data_img = region.img_from_labels(signals, labels_img)
+    data = data_img.get_data()
+    assert_true(data_img.shape == (shape + (n_instants,)))
+    assert_true(np.all(data.std(axis=-1) > 0))
+
+    # There must be non-zero data (safety net)
+    assert_true(abs(data).max() > 1e-9)
+
+    # Check that signals in each region are identical in each voxel
+    for n in xrange(1, n_regions + 1):
+        sigs = data[labels_data == n, :]
+        np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
+        assert_true(abs(sigs - sigs[0, :]).max() < eps)
+
+    # and back
+    signals_r, labels_r = region.signals_from_labels(data_img, labels_img)
+    np.testing.assert_almost_equal(signals_r, signals)
+    assert_true(labels_r == range(1, 9))
+
+    ## Same thing, with mask.
+    data_img = region.img_from_labels(signals, labels_img, mask_img=mask_img)
+    assert_true(data_img.shape == (shape + (n_instants,)))
+
+    data = data_img.get_data()
+    assert_true(abs(data).max() > 1e-9)
+    # Zero outside of the mask
+    assert_true(np.all(data[np.logical_not(mask_img.get_data())
+                            ].std(axis=-1) < eps)
+                )
+    # mask labels before checking
+    masked_labels_data = labels_data.copy()
+    masked_labels_data[np.logical_not(mask_img.get_data())] = 0
+    for n in xrange(1, n_regions + 1):
+        sigs = data[masked_labels_data == n, :]
+        np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
+        assert_true(abs(sigs - sigs[0, :]).max() < eps)
+
+    # and back
+    signals_r, labels_r = region.signals_from_labels(data_img, labels_img,
+                                           mask_img=mask_img)
+    np.testing.assert_almost_equal(signals_r, signals)
+    assert_true(labels_r == range(1, 9))
+
+    # Test input validation
+    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
+
+    good_labels_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
+    bad_labels1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
+    bad_labels2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
+
+    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
+    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
+    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
+    assert_raises(ValueError, region.signals_from_labels, data_img,
+                  bad_labels1_img)
+    assert_raises(ValueError, region.signals_from_labels, data_img,
+                  bad_labels2_img)
+    assert_raises(ValueError, region.signals_from_labels, data_img,
+                  bad_labels1_img, mask_img=good_mask_img)
+    assert_raises(ValueError, region.signals_from_labels, data_img,
+                  bad_labels2_img, mask_img=good_mask_img)
+    assert_raises(ValueError, region.signals_from_labels, data_img,
+                  good_labels_img, mask_img=bad_mask1_img)
+    assert_raises(ValueError, region.signals_from_labels, data_img,
+                  good_labels_img, mask_img=bad_mask2_img)
 
 
 def test_regions_to_mask():
