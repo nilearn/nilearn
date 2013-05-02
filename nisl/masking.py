@@ -337,9 +337,18 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     if smooth is not None:
         ensure_finite = True
 
-    mask, _ = _check_mask_img(mask_img)
+    mask, mask_affine = _check_mask_img(mask_img)
     niimgs_img = utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
+
+    if not np.all(mask_affine == niimgs_img.get_affine()):
+        raise ValueError('Mask affine: \n%s\n is different from img affine:'
+                         '\n%s' % (str(mask_affine),
+                                   str(niimgs_img.get_affine())))
+
+    if not mask.shape == niimgs_img.shape[:3]:
+        raise ValueError('Mask shape: %s is different from img shape:%s'
+                         % (str(mask.shape), str(niimgs_img.shape)))
 
     data = niimgs_img.get_data()
     # All the following has been optimized for C order.
