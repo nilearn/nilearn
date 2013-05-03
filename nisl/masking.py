@@ -12,7 +12,7 @@ from . import utils
 from . import resampling
 
 
-def _check_mask_img(mask_img):
+def _load_mask_img(mask_img):
     ''' Check that a mask is valid, ie with two values including 0 and load it.
 
     Parameters
@@ -46,7 +46,7 @@ def _check_mask_img(mask_img):
                          '. Cannot interpret as true or false'
                          % values)
 
-    mask = mask.astype(bool)
+    mask = utils.as_ndarray(mask, dtype=bool)
     return mask, mask_img.get_affine()
 
 
@@ -170,7 +170,8 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         mask = utils.largest_connected_component(mask)
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=opening)
-    return Nifti1Image(mask.astype(np.int8), mean_epi_img.get_affine())
+    return Nifti1Image(utils.as_ndarray(mask, dtype=np.int8),
+                       mean_epi_img.get_affine())
 
 
 def intersect_masks(mask_imgs, threshold=0.5, connected=True):
@@ -199,7 +200,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if len(mask_imgs) == 0:
         raise ValueError('No mask provided for intersection')
     grp_mask = None
-    first_mask, ref_affine = _check_mask_img(mask_imgs[0])
+    first_mask, ref_affine = _load_mask_img(mask_imgs[0])
     ref_shape = first_mask.shape
     if threshold > 1:
         raise ValueError('The threshold should be smaller than 1')
@@ -208,7 +209,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in mask_imgs:
-        mask, affine = _check_mask_img(this_mask)
+        mask, affine = _load_mask_img(this_mask)
         if np.any(affine != ref_affine):
             raise ValueError("All masks should have the same affine")
         if np.any(mask.shape != ref_shape):
@@ -216,7 +217,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
         if grp_mask is None:
             # We use int here because there may be a lot of masks to merge
-            grp_mask = mask.astype(int)
+            grp_mask = utils.as_ndarray(mask, dtype=int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
             # casting rules raise an error for in-place addition. Hence we do
@@ -228,7 +229,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     if np.any(grp_mask > 0) and connected:
         grp_mask = utils.largest_connected_component(grp_mask)
-    grp_mask = grp_mask.astype(np.int8)
+    grp_mask = utils.as_ndarray(grp_mask, dtype=np.int8)
     return Nifti1Image(grp_mask, ref_affine)
 
 
@@ -346,9 +347,18 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     if smooth is not None:
         ensure_finite = True
 
-    mask, _ = _check_mask_img(mask_img)
+    mask, mask_affine = _load_mask_img(mask_img)
     niimgs_img = utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
+
+    if not np.all(mask_affine == niimgs_img.get_affine()):
+        raise ValueError('Mask affine: \n%s\n is different from img affine:'
+                         '\n%s' % (str(mask_affine),
+                                   str(niimgs_img.get_affine())))
+
+    if not mask.shape == niimgs_img.shape[:3]:
+        raise ValueError('Mask shape: %s is different from img shape:%s'
+                         % (str(mask.shape), str(niimgs_img.shape)))
 
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
@@ -453,7 +463,7 @@ def unmask(X, mask_img):
             ret.append(unmask(x, mask_img))  # 1-level recursion
         return ret
 
-    mask, affine = _check_mask_img(mask_img)
+    mask, affine = _load_mask_img(mask_img)
 
     if X.ndim == 2:
         unmasked = _unmask_nd(X, mask)
