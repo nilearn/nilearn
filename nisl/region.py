@@ -439,22 +439,7 @@ def regions_to_mask(regions_img, threshold=0., background=0,
     nisl.masking.intersect_masks
     """
 
-    if isinstance(regions_img, collections.Iterable):
-        first = utils.check_niimg(regions_img.__iter__().next())
-        affine = first.get_affine()
-        shape = utils._get_shape(first)
-        if len(shape) != 3:
-            raise ValueError("List must contain 3D arrays, {0:d}D "
-                             + "array was provided".format(len(shape)))
-        output = np.zeros(shape, dtype=dtype)
-        del first
-        for r in regions_img:  # Load one image at a time to save memory
-            niimg = utils.check_niimg(r)
-            if utils._get_shape(niimg) != output.shape:
-                raise ValueError("Inconsistent shape in input list")
-            output[abs(niimg.get_data()) > threshold] = True
-
-    elif isinstance(regions_img, str) or utils.is_a_niimg(regions_img):
+    if isinstance(regions_img, basestring) or utils.is_a_niimg(regions_img):
         niimg = utils.check_niimg(regions_img)
         shape = utils._get_shape(niimg)
         affine = niimg.get_affine()
@@ -470,6 +455,21 @@ def regions_to_mask(regions_img, threshold=0., background=0,
         else:
             raise ValueError(
                 "Invalid shape for input array: {0}".format(str(shape)))
+
+    elif isinstance(regions_img, collections.Iterable):
+        first = utils.check_niimg(regions_img.__iter__().next())
+        affine = first.get_affine()
+        shape = utils._get_shape(first)
+        if len(shape) != 3:
+            raise ValueError("List must contain 3D arrays, {0:d}D "
+                             + "array was provided".format(len(shape)))
+        output = np.zeros(shape, dtype=dtype)
+        del first
+        for r in regions_img:  # Load one image at a time to save memory
+            niimg = utils.check_niimg(r)
+            if utils._get_shape(niimg) != output.shape:
+                raise ValueError("Inconsistent shape in input list")
+            output[abs(niimg.get_data()) > threshold] = True
 
     else:
         raise TypeError(

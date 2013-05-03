@@ -67,10 +67,10 @@ def test_apply_mask():
                         Nifti1Image(mask, affine), smooth=9)
     assert_true(np.all(np.isfinite(series)))
     # Check data shape and affine
-    assert_raises(ValueError, apply_mask,
+    assert_raises(ValueError, masking.apply_mask,
                   Nifti1Image(data, affine),
                   Nifti1Image(mask[20, ...], affine))
-    assert_raises(ValueError, apply_mask,
+    assert_raises(ValueError, masking.apply_mask,
                   Nifti1Image(data, affine),
                   Nifti1Image(mask, affine / 2.))
 
