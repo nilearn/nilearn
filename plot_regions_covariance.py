@@ -18,8 +18,7 @@ import matplotlib
 
 from sklearn import covariance
 
-import nibabel
-
+import nisl.utils
 import nisl.signals
 import nisl.masking
 import nisl.region
@@ -76,30 +75,26 @@ if __name__ == "__main__":
     print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
     regions_img = datasets.load_harvard_oxford(
         "cort-maxprob-thr25-2mm", symmetric_split=True)
-    mask_img = nisl.region.regions_to_mask(regions_img)
 
     print("-- Computing confounds ...")
     # On full image
-    fmri_img = nibabel.load(filename)
+    fmri_img = nisl.utils.check_niimg(filename)
     fmri_masked = fmri_img.get_data(
         )[np.ones(fmri_img.shape[:3], dtype=np.bool)].T
     hv_confounds = nisl.signals.high_variance_confounds(fmri_masked)
     mvt_confounds = np.loadtxt(confound_file, skiprows=1)
     confounds = np.hstack((hv_confounds, mvt_confounds))
 
-    print("-- Cleaning signals ...")
-    # On regions only
-    fmri_masked = nisl.masking.apply_mask(fmri_img, mask_img)
-    timeseries = nisl.signals.clean(fmri_masked, low_pass=None,
-                                    detrend=True, standardize=True,
-                                    confounds=confounds,
-                                    t_r=2.5, high_pass=0.01
-                                    )
-    fmri_img = nisl.masking.unmask(timeseries, mask_img)
-
     print("-- Computing region signals ...")
     region_ts, _ = nisl.region.signals_from_labels(fmri_img, regions_img)
-    region_ts /= region_ts.std(axis=0)
+
+    print("-- Cleaning signals ...")
+    region_ts = nisl.signals.clean(region_ts, low_pass=None,
+                                   detrend=True, standardize=True,
+                                   confounds=confounds,
+                                   t_r=2.5, high_pass=0.01
+                                   )
+    region_ts /= region_ts.std(axis=0)  # essential
 
     print("-- Computing covariance matrices ...")
     estimator = covariance.GraphLassoCV()
