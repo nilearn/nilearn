@@ -96,7 +96,7 @@ def generate_regions_ts(n_features, n_regions,
                         overlap=0,
                         rand_gen=None,
                         window="boxcar"):
-    """Generate some regions.
+    """Generate some regions as timeseries.
 
     Parameters
     ==========
@@ -138,6 +138,28 @@ def generate_regions_ts(n_features, n_regions,
         regions[n, start:end] = win
 
     return regions
+
+
+def generate_maps(shape, n_regions, overlap=0, border=1,
+                  window="boxcar", rand_gen=None):
+    """Generate a 4D volume containing several maps.
+    Parameters
+    ==========
+    border (int)
+        number of background voxels on each side of the 3D volumes.
+
+    Returns
+    =======
+    maps (Nifti1Image)
+        4D array, containing maps.
+    """
+
+    mask = np.zeros(shape, dtype=np.int8)
+    mask[border:-border, border:-border, border:-border] = 1
+    ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
+                             rand_gen=rand_gen, window=window)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    return masking.unmask(ts, mask_img), mask_img
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None):

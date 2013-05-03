@@ -9,10 +9,9 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from nibabel import Nifti1Image
 
-from ..masking import apply_mask, compute_epi_mask, compute_multi_epi_mask, \
-    unmask, intersect_masks
 from .. import masking
-from ..testing import generate_regions_ts
+from ..masking import compute_epi_mask, compute_multi_epi_mask, \
+    unmask, intersect_masks
 
 
 def test_mask():
@@ -49,8 +48,8 @@ def test_apply_mask():
     mask = np.ones((40, 40, 40))
     for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
                    np.diag((.5, 1, .5, 1))):
-        series = apply_mask(Nifti1Image(data, affine),
-                            Nifti1Image(mask, affine), smooth=9)
+        series = masking.apply_mask(Nifti1Image(data, affine),
+                                    Nifti1Image(mask, affine), smooth=9)
         series = np.reshape(series[0, :], (40, 40, 40))
         vmax = series.max()
         # We are expecting a full-width at half maximum of
@@ -64,44 +63,9 @@ def test_apply_mask():
 
     # Check that NaNs in the data do not propagate
     data[10, 10, 10] = np.NaN
-    series = apply_mask(Nifti1Image(data, affine),
+    series = masking.apply_mask(Nifti1Image(data, affine),
                         Nifti1Image(mask, affine), smooth=9)
     assert_true(np.all(np.isfinite(series)))
-
-    # Masking of regions
-    """Test masking of regions.
-    The procedure is slightly different from that for masking fMRI signals.
-    """
-    shape = (4, 5, 6)
-    n_voxels = shape[0] * shape[1] * shape[2]
-    n_regions = 11
-
-    # Generate data
-    affine = np.eye(4)
-    mask_img = Nifti1Image(np.ones(shape, dtype=np.int8), affine)
-    regions_ts = generate_regions_ts(n_voxels, n_regions,
-                                     overlap=2, window="hamming")
-
-    # 4D volume with weights
-    region_array = masking.unapply_mask_to_regions(regions_ts, mask_img)
-    assert_true(region_array.shape == shape + (n_regions,))
-    regions_ts_recovered = apply_mask(region_array, mask_img,
-                                      input_type="regions")
-    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
-
-    # list of 3D volumes
-    region_list = masking.unapply_mask_to_regions(regions_ts, mask_img)
-    assert_true(region_list.shape == shape + (n_regions,))
-    regions_ts_recovered = apply_mask(region_list, mask_img,
-                                      input_type="regions")
-    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
-
-    # array with labels
-    region_labels = masking.unapply_mask_to_regions(regions_ts, mask_img)
-    assert_true(region_labels.shape == shape + (n_regions,))
-    regions_ts_recovered = apply_mask(region_labels, mask_img,
-                                      input_type="regions")
-    np.testing.assert_almost_equal(regions_ts, regions_ts_recovered)
 
 
 def test_unmask():

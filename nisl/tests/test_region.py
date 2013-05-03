@@ -13,7 +13,7 @@ from .. import region
 from .. import masking
 from .. import utils
 from ..testing import generate_timeseries, generate_regions_ts
-from ..testing import generate_labeled_regions
+from ..testing import generate_labeled_regions, generate_maps
 
 
 def test_generate_regions_ts():
@@ -58,31 +58,6 @@ def test_generate_labeled_regions():
     regions = generate_labeled_regions(shape, n_regions)
     assert_true(regions.shape == shape)
     assert (len(np.unique(regions.get_data())) == n_regions + 1)
-
-
-def test_apply_regions():
-    n_instants = 101
-    n_voxels = 54
-    n_regions = 11
-
-    # First generate signal based on _non-overlapping_ regions, then do
-    # the reverse. Check that the starting signals are recovered.
-    ts_roi = generate_timeseries(n_instants, n_regions)
-    regions_nonflat = generate_regions_ts(n_voxels, n_regions,
-                                          window="hamming")
-    regions = np.where(regions_nonflat > 0, 1, 0)
-    timeseries = region.unapply_regions(ts_roi, regions)
-    recovered = region.apply_regions(timeseries, regions)
-
-    np.testing.assert_almost_equal(ts_roi, recovered, decimal=14)
-
-    # Extract one timeseries from each region, they must be identical
-    # to ROI timeseries.
-    indices = regions.argmax(axis=1)
-    recovered2 = region.apply_regions(timeseries, regions_nonflat,
-                               normalize_regions=True)
-    region_signals = timeseries.T[indices].T
-    np.testing.assert_almost_equal(recovered2, region_signals)
 
 
 def test_regions_convert():
@@ -243,8 +218,9 @@ def test_regions_are_overlapping():
     # - check length consistency assertion
 
 
-def test_signals_extraction():
-    """Test conversion between signals and images."""
+def test_signals_extraction_with_labels():
+    """Test conversion between signals and images using regions defined
+    by labels."""
 
     shape = (8, 9, 10)
     n_instants = 11
@@ -348,6 +324,114 @@ def test_signals_extraction():
                   good_labels_img, mask_img=bad_mask2_img)
 
 
+def test_signal_extraction_with_maps():
+    shape = (10, 11, 12)
+    n_regions = 9
+    n_instants = 13
+
+    # Generate signals
+    rand_gen = np.random.RandomState(0)
+
+    maps_img, mask_img = generate_maps(shape, n_regions, border=1)
+    maps_data = maps_img.get_data()
+    data = np.zeros(shape + (n_instants,), dtype=np.float32)
+
+    signals = np.zeros((n_instants, maps_data.shape[-1]))
+    for n in xrange(maps_data.shape[-1]):
+        signals[:, n] = rand_gen.randn(n_instants)
+        data[maps_data[..., n] > 0, :] = signals[:, n]
+    img = nibabel.Nifti1Image(data, np.eye(4))
+
+    ## Get signals
+    signals_r = region.signals_from_maps(img, maps_img, mask_img=mask_img)
+
+    # The output must be identical to the input signals, because every region
+    # is homogeneous: there is the same signal in all voxels of one given
+    # region (and all maps are uniform).
+    np.testing.assert_almost_equal(signals, signals_r)
+
+    # Same thing without mask (in that case)
+    signals_r = region.signals_from_maps(img, maps_img)
+    np.testing.assert_almost_equal(signals, signals_r)
+
+    ## Recover image
+    img_r = region.img_from_maps(signals, maps_img, mask_img=mask_img)
+    np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
+    img_r = region.img_from_maps(signals, maps_img)
+    np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
+
+    # FIXME: Test reversibility of img_from_maps() and signals_from_maps(),
+    # for non-flat maps.
+
+
+def test_generate_maps():
+    # Basic testing of generate_maps()
+    shape = (10, 11, 12)
+    n_regions = 9
+    maps_img, _ = generate_maps(shape, n_regions, border=1)
+    maps = maps_img.get_data()
+    assert_true(maps.shape == shape + (n_regions,))
+    assert_false(region.regions_are_overlapping(maps))
+    # no empty map
+    assert_true(np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0))
+    # check border
+    assert_true(np.all(maps[0, ...] == 0))
+    assert_true(np.all(maps[:, 0, ...] == 0))
+    assert_true(np.all(maps[:, :, 0, :] == 0))
+
+
+def test__trim_maps():
+    shape = (7, 9, 10)
+    n_regions = 8
+
+    # maps
+    maps_data = np.zeros(shape + (n_regions,), dtype=np.float32)
+    h0 = shape[0] / 2
+    h1 = shape[1] / 2
+    h2 = shape[2] / 2
+    maps_data[:h0, :h1, :h2, 0] = 1
+    maps_data[:h0, :h1, h2:, 1] = 1.1
+    maps_data[:h0, h1:, :h2, 2] = 1
+    maps_data[:h0, h1:, h2:, 3] = 0.5
+    maps_data[h0:, :h1, :h2, 4] = 1
+    maps_data[h0:, :h1, h2:, 5] = 1.4
+    maps_data[h0:, h1:, :h2, 6] = 1
+    maps_data[h0:, h1:, h2:, 7] = 1
+
+    # mask intersecting all regions
+    mask_data = np.zeros(shape, dtype=np.int8)
+    mask_data[1:-1, 1:-1, 1:-1] = 1
+
+    maps_i, maps_i_mask, maps_i_indices = region._trim_maps(maps_data,
+                                                            mask_data)
+    assert_true(maps_i.flags["F_CONTIGUOUS"])
+    assert_true(len(maps_i_indices) == maps_i.shape[-1])
+    assert_true(maps_i.shape == maps_data.shape)
+    maps_i_correct = maps_data.copy()
+    maps_i_correct[np.logical_not(mask_data), :] = 0
+    np.testing.assert_almost_equal(maps_i_correct, maps_i)
+    np.testing.assert_equal(mask_data, maps_i_mask)
+    np.testing.assert_equal(np.asarray(range(8)), maps_i_indices)
+
+    # mask intersecting half of the regions
+    mask_data = np.zeros(shape, dtype=np.int8)
+    mask_data[1:2, 1:-1, 1:-1] = 1
+    maps_data[1, 1, 1, 0] = 0  # remove one point inside mask
+
+    maps_i, maps_i_mask, maps_i_indices = region._trim_maps(maps_data,
+                                                            mask_data)
+    assert_true(maps_i.flags["F_CONTIGUOUS"])
+    assert_true(len(maps_i_indices) == maps_i.shape[-1])
+    assert_true(maps_i.shape == (maps_data.shape[:3] + (4,)))
+    maps_i_correct = maps_data[..., :4].copy()
+    maps_i_correct[np.logical_not(mask_data), :] = 0
+    np.testing.assert_almost_equal(maps_i_correct, maps_i)
+    mask_data[1, 1, 1] = 0  # for test to succeed
+    np.testing.assert_equal(mask_data, maps_i_mask)
+    mask_data[1, 1, 1] = 1  # reset, just in case.
+    np.testing.assert_equal(np.asarray(range(4)), maps_i_indices)
+
+
 def test_regions_to_mask():
     """Test of regions_to_mask(): union of regions."""
     shape = (4, 5, 6)
@@ -363,9 +447,9 @@ def test_regions_to_mask():
 
     regions_ts = generate_regions_ts(n_voxels, n_regions,
                                      overlap=2, window="hamming")
-    region_img = masking.unapply_mask_to_regions(regions_ts, mask_img)
+    region_img = masking.unmask(regions_ts, mask_img)
     regions_ts[0, 0] = 0  # change something
-    region_broken_img = masking.unapply_mask_to_regions(regions_ts, mask_img)
+    region_broken_img = masking.unmask(regions_ts, mask_img)
 
     region_labels_img = utils.NislImage(
         region._regions_array_to_labels(region_img.get_data()), affine)

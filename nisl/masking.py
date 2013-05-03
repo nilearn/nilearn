@@ -8,10 +8,7 @@ from scipy import ndimage
 from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
 
-import nibabel
-
 from . import utils
-from . import region
 from . import resampling
 
 
@@ -306,9 +303,9 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 # Time series extraction
 ###############################################################################
 
-def apply_mask(niimgs, mask_img, input_type="mri", dtype=np.float32,
+def apply_mask(niimgs, mask_img, dtype=np.float32,
                smooth=None, ensure_finite=True):
-    """Extract time series using specified mask
+    """Extract signals from images using specified mask.
 
     Read the time series from the given nifti images or filepaths,
     using the mask.
@@ -320,14 +317,6 @@ def apply_mask(niimgs, mask_img, input_type="mri", dtype=np.float32,
 
     mask_img (niimg)
         3D mask array: True where a voxel should be used.
-
-    input_type (str)
-        What niimgs represents. Possible values:  "mri" (default), "regions".
-        "mri": niimgs are supposed to be (f)MRI images. Output is always
-        intensity in voxel versus image number. "regions": niimgs are supposed
-        to define regions (fuzzy or not). Output is always intensity in voxel
-        versus region number, even if regions are defined with labels in a
-        single 3D image.
 
     smooth (float)
         (optional) Gives the size of the spatial smoothing to apply to
@@ -348,62 +337,8 @@ def apply_mask(niimgs, mask_img, input_type="mri", dtype=np.float32,
     values would spread accross the image.
 
     """
-    if input_type == "mri":
-        output = _apply_mask_fmri(niimgs, mask_img, dtype=dtype, smooth=smooth,
-                         ensure_finite=ensure_finite)
-    elif input_type == "regions":
-        output = _apply_mask_regions(niimgs, mask_img)
-    else:
-        raise ValueError("Unhandled input type: %s" % input_type)
-
-    return output
-
-
-def _apply_mask_regions(regions_img_in, mask_img):
-    """Convert region definition to timeseries-like representation.
-
-    Parameters
-    ==========
-    regions_img (niimgs)
-        regions definition. Three formats are accepted, with the following
-        meanings:
-        - 4D volume or list of 3D volume: each slice/3D volume defines a single
-        region. Values are interpreted as weights.
-        - single 3D volume: values are interpreted as labels, each value
-        defining a single region. No overlapping is possible in this case.
-
-    mask_img (niimg)
-        mask definition. Value are interpreted as boolean: every non-zero value
-        is equivalent to "True", every other to "False". Only voxels containing
-        "True" are kept.
-        mask.shape must match regions.shape[:3]
-
-    Returns
-    =======
-    masked_regions (numpy.ndarray)
-        Regions in a timeseries-like format. Values are weights.
-        shape is (voxel number, region number), where voxel number is the total
-        number of voxels inside the mask.
-
-    See also
-    ========
-    nisl.masking.apply_mask
-    nisl.region.apply_regions
-    """
-
-    regions_img = utils.check_niimgs(regions_img_in, accept_3d=True)
-
-    if np.any(abs(regions_img.get_affine() - mask_img.get_affine()) > 1e-7):
-        raise ValueError("regions and mask affine are different")
-
-    data = regions_img.get_data()
-    if data.shape[3] == 1:  # labeled case
-        # FIXME: use sparse matrices here.
-        regions_img = nibabel.Nifti1Image(
-            region._regions_labels_to_array(data[..., 0], dtype=np.int8)[0],
-            regions_img.get_affine())
-
-    return _apply_mask_fmri(regions_img, mask_img)
+    return _apply_mask_fmri(niimgs, mask_img, dtype=dtype, smooth=smooth,
+                            ensure_finite=ensure_finite)
 
 
 def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
@@ -435,43 +370,6 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
         for n, s in enumerate(smooth_sigma):
             ndimage.gaussian_filter1d(series, s, output=series, axis=n)
     return series[mask].T
-
-
-def unapply_mask_to_regions(region_ts, mask_img):
-    """Convert regions as timeseries into regions as volume.
-
-    This function is the inverse of apply_mask_regions()
-
-    Parameters
-    ==========
-    region_ts (array-like)
-        shape is (region number, voxel number)
-    mask_img (niimg)
-        Data mask, must have 3 dimensions.
-        The number of non-zero elements in mask must match regions_ts.shape[0]
-    affine (array-like, optional)
-        Gives the affine that should be returned. This value is not used by
-        this function, only in its output.
-
-    Returns
-    =======
-    region_img (niimg)
-        Regions definition as a 4D volume. The affine used in this object is
-        that of mask_img.
-
-    See also
-    ========
-    nisl.region.apply_mask_regions
-    """
-
-    mask_img = utils.check_niimg(mask_img)
-    region_ts = np.asarray(region_ts)
-    if region_ts.ndim != 2:
-        raise ValueError("region_ts is not 2D")
-    if region_ts.shape[1] != (mask_img.get_data() > 0).sum():
-        raise ValueError("Mask definition and number of slices do not match")
-
-    return unmask(region_ts, mask_img)
 
 
 def _unmask_3d(X, mask):
