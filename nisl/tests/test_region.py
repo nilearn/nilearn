@@ -153,7 +153,7 @@ def test_signals_extraction_with_labels():
 
     ## Without mask
     # from labels
-    data_img = region.img_from_labels(signals, labels_img)
+    data_img = region.signals_to_img_labels(signals, labels_img)
     data = data_img.get_data()
     assert_true(data_img.shape == (shape + (n_instants,)))
     assert_true(np.all(data.std(axis=-1) > 0))
@@ -168,12 +168,12 @@ def test_signals_extraction_with_labels():
         assert_true(abs(sigs - sigs[0, :]).max() < eps)
 
     # and back
-    signals_r, labels_r = region.signals_from_labels(data_img, labels_img)
+    signals_r, labels_r = region.img_to_signals_labels(data_img, labels_img)
     np.testing.assert_almost_equal(signals_r, signals)
     assert_true(labels_r == range(1, 9))
 
     ## Same thing, with mask.
-    data_img = region.img_from_labels(signals, labels_img, mask_img=mask_img)
+    data_img = region.signals_to_img_labels(signals, labels_img, mask_img=mask_img)
     assert_true(data_img.shape == (shape + (n_instants,)))
 
     data = data_img.get_data()
@@ -191,7 +191,7 @@ def test_signals_extraction_with_labels():
         assert_true(abs(sigs - sigs[0, :]).max() < eps)
 
     # and back
-    signals_r, labels_r = region.signals_from_labels(data_img, labels_img,
+    signals_r, labels_r = region.img_to_signals_labels(data_img, labels_img,
                                            mask_img=mask_img)
     np.testing.assert_almost_equal(signals_r, signals)
     assert_true(labels_r == range(1, 9))
@@ -206,17 +206,17 @@ def test_signals_extraction_with_labels():
     good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
     bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
     bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    assert_raises(ValueError, region.signals_from_labels, data_img,
+    assert_raises(ValueError, region.img_to_signals_labels, data_img,
                   bad_labels1_img)
-    assert_raises(ValueError, region.signals_from_labels, data_img,
+    assert_raises(ValueError, region.img_to_signals_labels, data_img,
                   bad_labels2_img)
-    assert_raises(ValueError, region.signals_from_labels, data_img,
+    assert_raises(ValueError, region.img_to_signals_labels, data_img,
                   bad_labels1_img, mask_img=good_mask_img)
-    assert_raises(ValueError, region.signals_from_labels, data_img,
+    assert_raises(ValueError, region.img_to_signals_labels, data_img,
                   bad_labels2_img, mask_img=good_mask_img)
-    assert_raises(ValueError, region.signals_from_labels, data_img,
+    assert_raises(ValueError, region.img_to_signals_labels, data_img,
                   good_labels_img, mask_img=bad_mask1_img)
-    assert_raises(ValueError, region.signals_from_labels, data_img,
+    assert_raises(ValueError, region.img_to_signals_labels, data_img,
                   good_labels_img, mask_img=bad_mask2_img)
 
 
@@ -239,7 +239,7 @@ def test_signal_extraction_with_maps():
     img = nibabel.Nifti1Image(data, np.eye(4))
 
     ## Get signals
-    signals_r = region.signals_from_maps(img, maps_img, mask_img=mask_img)
+    signals_r = region.img_to_signals_maps(img, maps_img, mask_img=mask_img)
 
     # The output must be identical to the input signals, because every region
     # is homogeneous: there is the same signal in all voxels of one given
@@ -247,13 +247,13 @@ def test_signal_extraction_with_maps():
     np.testing.assert_almost_equal(signals, signals_r)
 
     # Same thing without mask (in that case)
-    signals_r = region.signals_from_maps(img, maps_img)
+    signals_r = region.img_to_signals_maps(img, maps_img)
     np.testing.assert_almost_equal(signals, signals_r)
 
     ## Recover image
-    img_r = region.img_from_maps(signals, maps_img, mask_img=mask_img)
+    img_r = region.signals_to_img_maps(signals, maps_img, mask_img=mask_img)
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
-    img_r = region.img_from_maps(signals, maps_img)
+    img_r = region.signals_to_img_maps(signals, maps_img)
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
 
 

@@ -107,15 +107,21 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
         """
         # Add smoothing here (factor out function)?
 
-        region_signals, self.labels_ = region.signals_from_labels(
+        region_signals, self.labels_ = region.img_to_signals_labels(
             niimgs, self.labels_img_, background_label=self.background_label
             ## ,smooth=self.smooth
             )
 
-        return signals.clean(region_signals, standardize=self.standardize,
-                             detrend=self.detrend, low_pass=self.low_pass,
-                             high_pass=self.high_pass, t_r=self.t_r,
-                             confounds=confounds)
+        region_signals = signals.clean(region_signals,
+                                       detrend=self.detrend,
+                                       standardize=self.standardize,
+                                       t_r=self.t_r,
+                                       low_pass=self.low_pass,
+                                       high_pass=self.high_pass,
+                                       confounds=confounds)
+        # FIXME: put into signals.clean()
+        region_signals /= region_signals.std(axis=0)
+        return region_signals
 
     def inverse_transform(self, signals):
         """Compute voxel signals from region signals

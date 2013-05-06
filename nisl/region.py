@@ -24,7 +24,7 @@ from . import utils
 from . import masking
 
 
-def signals_from_labels(niimgs, labels_img, mask_img=None,
+def img_to_signals_labels(niimgs, labels_img, mask_img=None,
                         background_label=0, order="F"):
     """Extract region signals from fmri data.
 
@@ -108,7 +108,7 @@ def signals_from_labels(niimgs, labels_img, mask_img=None,
     return signals, labels
 
 
-def img_from_labels(signals, labels_img, mask_img=None,
+def signals_to_img_labels(signals, labels_img, mask_img=None,
                     background_label=0, order="F"):
     """Create image from region signals.
 
@@ -177,7 +177,7 @@ def img_from_labels(signals, labels_img, mask_img=None,
     return nibabel.Nifti1Image(data, target_affine)
 
 
-def signals_from_maps(niimgs, maps_img, mask_img=None):
+def img_to_signals_maps(niimgs, maps_img, mask_img=None):
     """Extract region signals from fmri data.
 
     This function is applicable to regions defined by maps.
@@ -241,7 +241,7 @@ def signals_from_maps(niimgs, maps_img, mask_img=None):
     return signals
 
 
-def img_from_maps(signals, maps_img, mask_img=None):
+def signals_to_img_maps(signals, maps_img, mask_img=None):
     """
     See also
     ========

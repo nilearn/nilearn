@@ -100,7 +100,6 @@ if __name__ == "__main__":
                                               )
 
     region_ts = nifti_regions.fit().transform(filename, confounds=confounds)
-    region_ts /= region_ts.std(axis=0)  # essential
 
     print("-- Computing covariance matrices ...")
     estimator = covariance.GraphLassoCV()
