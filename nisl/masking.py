@@ -372,10 +372,10 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     return series[mask].T
 
 
-def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=False):
-    """Smooth images by applying a gaussian filter.
+def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=True):
+    """Smooth images by applying a Gaussian filter.
 
-    Apply a gaussian filter along the three first dimensions of arr.
+    Apply a Gaussian filter along the three first dimensions of arr.
 
     Parameters
     ==========
@@ -388,9 +388,9 @@ def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=False):
         are also accepted (only these coefficients are used).
 
     smooth: scalar or numpy.ndarray
-        Full-width half maximum smoothing strength. If a scalar is given,
-        width is identical on all three directions. A numpy.ndarray must
-        have 3 elements, giving the FWHM along each axis.
+        Smoothing strength, as a full-width at half maximum, in millimeters.
+        If a scalar is given, width is identical on all three directions.
+        A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
         If smooth is None, no filtering is performed (useful when just removal
         of non-finite values is needed)
 

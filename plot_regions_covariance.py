@@ -4,8 +4,8 @@
 load_harvard_oxford() function below**.
 
 The following things are performed:
-- improvement of fMRI data SNR (confound removal, filtering, etc.)
 - parcellation loading, and signals extraction
+- improvement of fMRI data SNR (confound removal, filtering, etc.)
 - covariance/precision matrices computation
 - display of matrices
 
@@ -18,7 +18,7 @@ import matplotlib
 
 from sklearn import covariance
 
-import nisl.datasets as datasets
+import nisl.datasets
 import nisl.image
 import nisl.region
 import nisl.signals
@@ -67,12 +67,12 @@ def plot_matrices(cov, prec, title, subject_n=0):
 if __name__ == "__main__":
     subject_n = 1
 
-    dataset = datasets.fetch_adhd()
+    dataset = nisl.datasets.fetch_adhd()
     filename = dataset["func"][subject_n]
     confound_file = dataset["confounds"][subject_n]
 
     print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-    regions_img = datasets.load_harvard_oxford(
+    regions_img = nisl.datasets.load_harvard_oxford(
         "cort-maxprob-thr25-2mm", symmetric_split=True)
 
     print("-- Computing confounds ...")

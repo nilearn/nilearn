@@ -17,7 +17,7 @@ from . import masking
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 def img_to_signals_labels(niimgs, labels_img, mask_img=None,
-                        background_label=0, order="F"):
+                          background_label=0, order="F"):
     """Extract region signals from fmri data.
 
     This function is applicable to regions defined by labels.

@@ -20,23 +20,50 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
 
     Parameters
     ==========
-    labels_img (niimg)
+    labels_img: niimg
         Region definitions, as one image of labels.
 
-    background_label (number)
+    background_label: number, optional
         Label used in labels_img to represent background.
 
-    mask_img (niimg)
+    mask_img: niimg, optional
         Mask to apply to regions before extracting signals.
 
-    memory (joblib.Memory or str)
+    smooth: False or float, optional
+        If smooth is not False, it gives the size, in voxel of the
+        spatial smoothing to apply to the signal.
+
+    standardize: boolean, optional
+        If standardize is True, the time-series are centered and normed:
+        their mean is put to 0 and their variance to 1.
+
+    detrend: boolean, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
+
+    low_pass: False or float, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
+
+    high_pass: False or float, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
+
+    t_r: float, optional
+        This parameter is passed to signals.clean. Please see the related
+        documentation for details
+
+    memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level (int, optional)
+    memory_level: int, optional
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
+
+    verbose: integer, optional
+        Indicate the level of verbosity. By default, nothing is printed
 
     See also
     ========
@@ -85,22 +112,25 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
 
         return self
 
+    def fit_transform(self, niimgs, confounds=None):
+        return self.fit().transform(niimgs, confounds=confounds)
+
     def transform(self, niimgs, confounds=None):
         """Extract signals from images.
 
         Parameters
         ==========
-        niimgs (niimg)
-            Images to process. It must boils down to a 4D image with scans
+        niimgs: niimg
+            Images to process. It must boil down to a 4D image with scans
             number as last dimension.
-        confounds (array-like)
+        confounds: array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
         Returns
         =======
-        signals (2D numpy.ndarray)
+        signals: 2D numpy.ndarray
             Signal for each region.
             shape: (number of scans, number of regions)
 

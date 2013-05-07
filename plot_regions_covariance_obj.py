@@ -4,13 +4,11 @@
 load_harvard_oxford() function below**.
 
 The following things are performed:
-- improvement of fMRI data SNR (confound removal, filtering, etc.)
 - parcellation loading, and signals extraction
+- improvement of fMRI data SNR (confound removal, filtering, etc.)
 - covariance/precision matrices computation
 - display of matrices
 
-This script is intended for advanced users only, since it makes use of
-low-level functions.
 """
 import numpy as np
 import pylab as pl
@@ -94,7 +92,7 @@ if __name__ == "__main__":
                                               detrend=True, standardize=True
                                               )
 
-    region_ts = nifti_regions.fit().transform(filename, confounds=confounds)
+    region_ts = nifti_regions.fit_transform(filename, confounds=confounds)
 
     print("-- Computing covariance matrices ...")
     estimator = covariance.GraphLassoCV()
