@@ -45,28 +45,29 @@ def _standardize(signals, detrend=False, normalize=True):
 
 
 def _detrend(signals, inplace=False, type="linear"):
-    """Detrend timeseries in signals.
+    """Detrend columns of input array.
 
-    Timeseries are supposed to be columns of `signals`.
+    Signals are supposed to be columns of `signals`.
     This function is significantly faster than scipy.signal.detrend.
 
     Parameters
     ==========
-    signals (2D numpy array)
-        timeseries to detrend. A timeseries is a column.
+    signals: numpy.ndarray
+        This parameter must be two-dimensional.
+        Signals to detrend. A signal is a column.
 
-    inplace (boolean)
-        tells if the computation must be made inplace or not (default
+    inplace: boolean
+        Tells if the computation must be made inplace or not (default
         False).
 
-    type (string)
-        detrending type ("linear" or "constant").
+    type: string
+        Detrending type ("linear" or "constant").
         See also scipy.signal.detrend.
 
     Returns
     =======
-    detrended_signals (2D numpy array)
-        detrended timeseries.
+    detrended_signals: numpy.ndarray
+        Detrended signals. The shape is that of 'signals'.
     """
     if not inplace:
         signals = signals.copy()

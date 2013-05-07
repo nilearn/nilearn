@@ -38,6 +38,55 @@ def test_mask():
     yield assert_false, np.allclose(mask1.get_data(), mask3.get_data()[:9, :9])
 
 
+def test__smooth_array():
+    """Test smoothing of images: _smooth_img()"""
+    # Impulse in 3D
+    data = np.zeros((40, 41, 42))
+    data[20, 20, 20] = 1
+
+    # smooth divided by any test affine must be odd. Otherwise assertion below
+    # will fail. ( 9 / 0.6 = 15 is fine)
+    smooth = 9
+    test_affines = (np.eye(4), np.diag((1, 1, -1, 1)),
+                    np.diag((.6, 1, .6, 1)))
+    for affine in test_affines:
+        filtered = masking._smooth_array(data, affine,
+                                         smooth=smooth, copy=True)
+        assert_false(np.may_share_memory(filtered, data))
+
+        # We are expecting a full-width at half maximum of
+        # smooth / voxel_size:
+        vmax = filtered.max()
+        above_half_max = filtered > .5 * vmax
+        for axis in (0, 1, 2):
+            proj = np.any(np.any(np.rollaxis(above_half_max,
+                          axis=axis), axis=-1), axis=-1)
+            np.testing.assert_equal(proj.sum(),
+                                    smooth / np.abs(affine[axis, axis]))
+
+    # Check that NaNs in the data do not propagate
+    data[10, 10, 10] = np.NaN
+    filtered = masking._smooth_array(data, affine, smooth=smooth,
+                                   ensure_finite=True, copy=True)
+    assert_true(np.all(np.isfinite(filtered)))
+
+    # Check copy=False.
+    for affine in test_affines:
+        data = np.zeros((40, 41, 42))
+        data[20, 20, 20] = 1
+        masking._smooth_array(data, affine, smooth=smooth, copy=False)
+
+        # We are expecting a full-width at half maximum of
+        # smooth / voxel_size:
+        vmax = data.max()
+        above_half_max = data > .5 * vmax
+        for axis in (0, 1, 2):
+            proj = np.any(np.any(np.rollaxis(above_half_max,
+                          axis=axis), axis=-1), axis=-1)
+            np.testing.assert_equal(proj.sum(),
+                                    smooth / np.abs(affine[axis, axis]))
+
+
 def test_apply_mask():
     """ Test smoothing of timeseries extraction
     """

@@ -138,5 +138,5 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
             Signal for each voxel
             shape: (number of scans, number of voxels)
         """
-        return region.img_from_signals(signals, self.labels_img,
+        return region.img_from_signals(signals, self.labels_img_,
                                        background_label=self.background_label)

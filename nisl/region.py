@@ -4,15 +4,6 @@ Regions of interest extraction and handling.
 # Author: Philippe Gervais
 # License: simplified BSD
 
-# Vocabulary:
-# region array: 4D array, (x, y, z, region number) values are
-#               weights (nifti-like)
-# region list: list of 3D arrays [(x, y, z)] values are weights
-# region labels: 3D array, (x, y, z) values are labels.
-
-# masked regions: 2D array, (region number, voxel number) values are weights.
-# apply_mask/unmask to convert to 4D array
-
 import collections
 
 import numpy as np
@@ -24,6 +15,7 @@ from . import utils
 from . import masking
 
 
+# FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 def img_to_signals_labels(niimgs, labels_img, mask_img=None,
                         background_label=0, order="F"):
     """Extract region signals from fmri data.

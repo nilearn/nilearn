@@ -367,9 +367,60 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     series = utils.as_ndarray(data, dtype=dtype, order="C")
     del data, niimgs_img  # frees a lot of memory
 
+    _smooth_array(series, affine, smooth=smooth,
+                  ensure_finite=ensure_finite, copy=False)
+    return series[mask].T
+
+
+def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=False):
+    """Smooth images by applying a gaussian filter.
+
+    Apply a gaussian filter along the three first dimensions of arr.
+
+    Parameters
+    ==========
+    arr: numpy.ndarray
+        4D array, with image number as last dimension. 3D arrays are also
+        accepted.
+
+    affine: numpy.ndarray
+        (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
+        are also accepted (only these coefficients are used).
+
+    smooth: scalar or numpy.ndarray
+        Full-width half maximum smoothing strength. If a scalar is given,
+        width is identical on all three directions. A numpy.ndarray must
+        have 3 elements, giving the FWHM along each axis.
+        If smooth is None, no filtering is performed (useful when just removal
+        of non-finite values is needed)
+
+    ensure_finite: boolean
+        if True, replace every non-finite values (like NaNs) by zero before
+        filtering.
+
+    copy: boolean
+        if True, input array is not modified. False by default: the filtering
+        is performed in-place.
+
+    Returns
+    =======
+    filtered_arr: numpy.ndarray
+        arr, filtered.
+
+    Notes
+    =====
+    This function is most efficient with arr in C order.
+    """
+
+    if copy:
+        arr = arr.copy()
+
+    # Keep only the scale part.
+    affine = affine[:3, :3]
+
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        series[np.logical_not(np.isfinite(series))] = 0
+        arr[np.logical_not(np.isfinite(arr))] = 0
 
     if smooth is not None:
         # Convert from a sigma to a FWHM:
@@ -378,8 +429,9 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         smooth_sigma = smooth / vox_size
         for n, s in enumerate(smooth_sigma):
-            ndimage.gaussian_filter1d(series, s, output=series, axis=n)
-    return series[mask].T
+            ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
+
+    return arr
 
 
 def _unmask_3d(X, mask):
