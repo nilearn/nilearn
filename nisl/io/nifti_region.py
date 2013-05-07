@@ -7,9 +7,12 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
+import nibabel
+
 from .. import utils
 from .. import signals
 from .. import region
+from .. import masking
 
 
 class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
@@ -40,14 +43,11 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
     nisl.io.NiftiMasker
     """
 
-    def __init__(self, labels_img=None, background_label=0, mask_img=None,
+    def __init__(self, labels_img, background_label=0, mask_img=None,
                  smooth=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
-        # TODO: add a parameter to choose computation method. Either use
-        # lstsq (faster for a single transformation) or pinv (faster for
-        # repeated transformations, useful for multi-subjects studies).
         self.labels_img = labels_img
         self.background_label = background_label
         self.mask_img = mask_img
@@ -72,7 +72,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
         """
         self.labels_img_ = utils.check_niimg(self.labels_img)
         if self.mask_img is not None:
-            mask_data, mask_affine = utils._load_mask_img(self.mask_img)
+            mask_data, mask_affine = masking._load_mask_img(self.mask_img)
             if mask_data.shape != self.labels_img_.shape[:3]:
                 raise ValueError("Regions and mask do not have the same shape")
             if abs(mask_affine - self.labels_img_.get_affine()).max() > 1e-9:
@@ -105,12 +105,17 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
             shape: (number of scans, number of regions)
 
         """
-        # Add smoothing here (factor out function)?
+        niimgs = utils.check_niimgs(niimgs)
+        data = utils.as_ndarray(niimgs.get_data())
+        affine = niimgs.get_affine()
+        if self.smooth is not None:
+            # FIXME: useless copy if input parameter niimg is a string.
+            data = masking._smooth_array(data, affine, smooth=self.smooth,
+                                         copy=True)
 
         region_signals, self.labels_ = region.img_to_signals_labels(
-            niimgs, self.labels_img_, background_label=self.background_label
-            ## ,smooth=self.smooth
-            )
+            nibabel.Nifti1Image(data, affine), self.labels_img_,
+            background_label=self.background_label)
 
         region_signals = signals.clean(region_signals,
                                        detrend=self.detrend,
@@ -138,5 +143,5 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
             Signal for each voxel
             shape: (number of scans, number of voxels)
         """
-        return region.img_from_signals(signals, self.labels_img_,
-                                       background_label=self.background_label)
+        return region.signals_to_img_labels(signals, self.labels_img_,
+                                        background_label=self.background_label)

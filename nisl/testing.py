@@ -162,7 +162,8 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     return masking.unmask(ts, mask_img), mask_img
 
 
-def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None):
+def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
+                             affine=np.eye(4)):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -176,12 +177,13 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None):
         labels to use for each zone. If provided, n_regions is unused.
     rand_gen (numpy.random.RandomState object)
         random generator to use for generation.
+    affine (numpy.ndarray)
+        affine of returned image
 
     Returns
     =======
     regions (Nifti1Image)
         data has shape "shape", containing region labels.
-        affine is np.eye(4)
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
@@ -195,5 +197,61 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None):
     for n, row in zip(labels, regions):
         row[row > 0] = n
     return masking.unmask(regions.sum(axis=0),
-                          Nifti1Image(np.ones(shape, dtype=np.int8), np.eye(4))
+                          Nifti1Image(np.ones(shape, dtype=np.int8), affine)
                           )
+
+
+def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
+                       affine=np.eye(4)):
+    """Generate a signal which can be used for testing.
+
+    The return value is a 4D array, representing 3D volumes along time.
+    Only the voxels in the center are non-zero, to mimic the presence of
+    brain voxels in real signals.
+
+    Parameters
+    ==========
+    shape (tuple, optional)
+        Shape of 3D volume
+    length (integer, optional)
+        Number of time instants
+    kind (string, optional)
+        Kind of signal used as timeseries.
+        "noise": uniformly sampled values in [0..255]
+        "step": 0.5 for the first half then 1.
+    affine (numpy.ndarray)
+        affine of returned images
+
+    Returns
+    =======
+    fmri (nibabel.Nifti1Image)
+        fake fmri signal.
+        shape: shape + (length,)
+    mask (nibabel.Nifti1Image)
+        mask giving non-zero voxels
+    """
+    full_shape = shape + (length, )
+    fmri = np.zeros(full_shape)
+    # Fill central voxels timeseries with random signals
+    rand_gen = np.random.RandomState(0)
+    width = [s / 2 for s in shape]
+    shift = [s / 4 for s in shape]
+
+    if kind == "noise":
+        signals = rand_gen.randint(256, size=(width + [length]))
+    elif kind == "step":
+        signals = np.ones(width + [length])
+        signals[..., :length / 2] = 0.5
+    else:
+        raise ValueError("Unhandled value for parameter 'kind'")
+
+    fmri[shift[0]:shift[0] + width[0],
+         shift[1]:shift[1] + width[1],
+         shift[2]:shift[2] + width[2],
+         :] = signals
+
+    mask = np.zeros(shape)
+    mask[shift[0]:shift[0] + width[0],
+         shift[1]:shift[1] + width[1],
+         shift[2]:shift[2] + width[2]] = 1
+    return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
