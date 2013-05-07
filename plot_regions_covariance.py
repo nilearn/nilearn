@@ -18,11 +18,10 @@ import matplotlib
 
 from sklearn import covariance
 
-import nisl.utils
-import nisl.signals
-import nisl.masking
-import nisl.region
 import nisl.datasets as datasets
+import nisl.image
+import nisl.region
+import nisl.signals
 
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99
@@ -77,16 +76,13 @@ if __name__ == "__main__":
         "cort-maxprob-thr25-2mm", symmetric_split=True)
 
     print("-- Computing confounds ...")
-    # On full image
-    fmri_img = nisl.utils.check_niimg(filename)
-    fmri_masked = fmri_img.get_data(
-        )[np.ones(fmri_img.shape[:3], dtype=np.bool)].T
-    hv_confounds = nisl.signals.high_variance_confounds(fmri_masked)
+    # Compcor on full image
+    hv_confounds = nisl.image.high_variance_confounds(filename)
     mvt_confounds = np.loadtxt(confound_file, skiprows=1)
     confounds = np.hstack((hv_confounds, mvt_confounds))
 
     print("-- Computing region signals ...")
-    region_ts, _ = nisl.region.signals_from_labels(fmri_img, regions_img)
+    region_ts, _ = nisl.region.img_to_signals_labels(filename, regions_img)
 
     print("-- Cleaning signals ...")
     region_ts = nisl.signals.clean(region_ts, low_pass=None,

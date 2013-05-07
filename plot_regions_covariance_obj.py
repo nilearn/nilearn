@@ -20,11 +20,9 @@ from joblib import Memory
 from sklearn import covariance
 
 import nisl.datasets
+import nisl.image
 import nisl.io
-import nisl.utils
-import nisl.signals
-## import nisl.masking
-## import nisl.region
+
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
@@ -67,11 +65,8 @@ def plot_matrices(cov, prec, title, subject_n=0):
 
 
 def get_confounds(filename, confound_file):
-    # On full image
-    fmri_img = nisl.utils.check_niimg(filename)
-    fmri_masked = fmri_img.get_data(
-        )[np.ones(fmri_img.shape[:3], dtype=np.bool)].T
-    hv_confounds = nisl.signals.high_variance_confounds(fmri_masked)
+    # Compcor on full image
+    hv_confounds = nisl.image.high_variance_confounds(filename)
     mvt_confounds = np.loadtxt(confound_file, skiprows=1)
     confounds = np.hstack((hv_confounds, mvt_confounds))
     return confounds
@@ -86,14 +81,14 @@ if __name__ == "__main__":
     confound_file = dataset["confounds"][subject_n]
 
     print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-    regions_img = nisl.datasets.load_harvard_oxford(
+    labels_img = nisl.datasets.load_harvard_oxford(
         "cort-maxprob-thr25-2mm", symmetric_split=True)
 
     print("-- Computing confounds ...")
     confounds = mem.cache(get_confounds)(filename, confound_file)
 
     print("-- Computing region signals ...")
-    nifti_regions = nisl.io.NiftiLabelsMasker(labels_img=regions_img,
+    nifti_regions = nisl.io.NiftiLabelsMasker(labels_img=labels_img,
                                               t_r=2.5,
                                               low_pass=None, high_pass=0.01,
                                               detrend=True, standardize=True

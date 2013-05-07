@@ -52,7 +52,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
         self.background_label = background_label
         self.mask_img = mask_img
 
-        # Parameters for signals_from_regions()
+        # Parameters for _smooth_array
         self.smooth = smooth
 
         # Parameters for clean()

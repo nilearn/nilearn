@@ -209,6 +209,10 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
         - compute an svd of the extracted series
         - return a given number (n_confounds) of series from the svd with
           highest singular values.
+
+        See also
+        ========
+        nisl.image.high_variance_confounds
     """
 
     # FIXME: when detrend=True, two copies of "series" are made.  Variance
