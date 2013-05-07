@@ -198,15 +198,14 @@ def test_clean_confounds():
     eps = np.finfo(np.float).eps
     noises1 = noises.copy()
     cleaned_signals = nisignals.clean(noises, confounds=confounds,
-                                      detrend=True, standardize=True)
-    assert(abs(cleaned_signals).max() < 20. * eps)
-
+                                      detrend=True, standardize=False)
+    assert_true(abs(cleaned_signals).max() < 20. * eps)
     np.testing.assert_almost_equal(noises, noises1, decimal=12)
 
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
-                                      detrend=True, standardize=True)
-    assert(abs(np.dot(confounds.T, cleaned_signals)).max() < 20. * eps)
+                                      detrend=True, standardize=False)
+    assert_true(abs(np.dot(confounds.T, cleaned_signals)).max() < 20. * eps)
 
     # Test detrending. No trend should exist in the output.
     # Use confounds with a trend.
@@ -214,16 +213,28 @@ def test_clean_confounds():
     temp += np.arange(confounds.shape[0])
 
     cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
-                                      detrend=False)
+                                      detrend=False, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert_true((abs(coeffs) > 1e-3).any())   # trend remains
+    assert_true((abs(coeffs) > 1e-3).any())   # trends remain
 
     cleaned_signals = nisignals.clean(signals + noises, confounds=confounds,
-                                      detrend=True)
+                                      detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert_true((abs(coeffs) < 5. * eps).all())  # trend removed
+    assert_true((abs(coeffs) < 10. * eps).all())  # trend removed
+
+    # Test no-op
+    input_signals = 10 * signals
+    cleaned_signals = nisignals.clean(input_signals, detrend=False,
+                                      standardize=False)
+    np.testing.assert_almost_equal(cleaned_signals, input_signals)
+
+    cleaned_signals = nisignals.clean(input_signals, detrend=False,
+                                      standardize=True)
+    np.testing.assert_almost_equal(cleaned_signals.var(axis=0),
+                                   np.ones(cleaned_signals.shape[1]))
+
 
     # TODO: Test with confounds read from a file
 
