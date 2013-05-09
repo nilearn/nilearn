@@ -14,8 +14,7 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 ### Compute the mask ##########################################################
 
-nifti_masker = NiftiMasker(transpose=True,
-                           memory="nisl_cache", memory_level=2)
+nifti_masker = NiftiMasker(memory="nisl_cache", memory_level=2)
 nifti_masker.fit(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data()
 
@@ -34,7 +33,7 @@ pl.title("Mask")
 
 ### Preprocess data ###########################################################
 nifti_masker.fit(dataset.func[0])
-fmri_masked = nifti_masker.transform(dataset.func[0])
+fmri_masked = nifti_masker.transform(dataset.func[0]).T
 
 ### Run an algorithm ##########################################################
 from sklearn.decomposition import FastICA
@@ -43,7 +42,7 @@ ica = FastICA(n_components=n_components, random_state=42)
 components_masked = ica.fit_transform(fmri_masked)
 
 ### Reverse masking ###########################################################
-components = nifti_masker.inverse_transform(components_masked)
+components = nifti_masker.inverse_transform(components_masked.T)
 
 ### Show results ##############################################################
 components = np.ma.masked_equal(components.get_data(), 0)
@@ -51,13 +50,6 @@ pl.figure()
 pl.axis('off')
 pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
           interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[..., 20, 16]), interpolation='nearest',
+pl.imshow(np.rot90(components[..., 20, 7]), interpolation='nearest',
           cmap=pl.cm.hot)
-
-### The same with a pipeline ##################################################
-from sklearn.pipeline import Pipeline
-mask_ica = Pipeline([('masking', nifti_masker), ('ica', ica)])
-components = nifti_masker.inverse_transform(
-    mask_ica.fit_transform(dataset.func[0]))
-
 pl.show()
