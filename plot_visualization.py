@@ -56,7 +56,7 @@ pl.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
 
 # Simple computation of a mask from the fMRI data
 from nisl.masking import compute_epi_mask
-mask = compute_epi_mask(mean_img)
+mask = compute_epi_mask(nifti_img).get_data().astype(bool)
 
 # We create a new figure
 pl.figure()
