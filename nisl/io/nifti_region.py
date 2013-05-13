@@ -10,12 +10,13 @@ from sklearn.externals.joblib import Memory
 import nibabel
 
 from .. import utils
+from ..utils import CacheMixin
 from .. import signals
 from .. import region
 from .. import masking
 
 
-class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
+class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Extract labeled-defined region signals from images.
 
     Parameters
@@ -69,6 +70,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
     ========
     nisl.io.NiftiMasker
     """
+    # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
                  smooth=None, standardize=False, detrend=False,
@@ -144,15 +146,17 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
         affine = niimgs.get_affine()
         if self.smooth is not None:
             # FIXME: useless copy if input parameter niimg is a string.
-            data = masking._smooth_array(data, affine, smooth=self.smooth,
-                                         copy=True)
+            data = self._cache(masking._smooth_array, memory_level=1)(
+                data, affine, smooth=self.smooth, copy=True)
 
-        region_signals, self.labels_ = region.img_to_signals_labels(
+        region_signals, self.labels_ = self._cache(
+            region.img_to_signals_labels, memory_level=1)(
             nibabel.Nifti1Image(data, affine),
             nibabel.Nifti1Image(self.labels_data_, self.labels_affine_),
             background_label=self.background_label)
 
-        region_signals = signals.clean(region_signals,
+        region_signals = self._cache(signals.clean, memory_level=1
+                                     )(region_signals,
                                        detrend=self.detrend,
                                        standardize=self.standardize,
                                        t_r=self.t_r,

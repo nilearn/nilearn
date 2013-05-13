@@ -273,7 +273,7 @@ class CacheMixin(object):
     """
 
     def _cache(self, func, memory_level=1, **kwargs):
-        """ Return a joblib.Memory object if necessary.
+        """ Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for
@@ -292,9 +292,10 @@ class CacheMixin(object):
 
         Returns
         -------
-        Either the original function, if there is no need to cache it (because
-        the requested level is lower than the value given to _cache()) or a
-        joblib.Memory object that wraps the function func.
+        joblib.Memory object that wraps the function func. This object may be
+        a no-op, if the requested level is lower than the value given
+        to _cache()). For consistency, a joblib.Memory object is always
+        returned.
         """
 
         # Creates attributes if they don't exist
