@@ -60,60 +60,6 @@ def test_generate_labeled_regions():
     assert (len(np.unique(regions.get_data())) == n_regions + 1)
 
 
-def test_regions_are_overlapping():
-    """Test of regions_are_overlapping()"""
-
-    shape = (4, 5, 6)
-    n_voxels = shape[0] * shape[1] * shape[2]
-    n_regions = 11
-
-    # masked array of labels
-    regions = generate_regions_ts(n_voxels, n_regions,
-                                  window="hamming")
-    assert_true(not region.regions_are_overlapping(regions))
-
-    regions[:2, 0] = 1  # make regions overlap
-    assert_true(region.regions_are_overlapping(regions))
-
-    # generate data
-    regions_labels = generate_labeled_regions(shape, n_regions).get_data()
-    labels = list(np.unique(regions_labels))
-    labels.remove(0)
-    regions_4D = np.zeros(shape + (n_regions, ))
-    regions_list = []
-    for n, label in enumerate(labels):
-        regions_4D[label == regions_labels, n] = 1
-        regions_list.append(regions_4D[..., n])
-
-    # 3D volume with labels. No possible overlap.
-    assert_false(region.regions_are_overlapping(regions_labels))
-
-    # 4D volume, with weights
-    assert_false(region.regions_are_overlapping(regions_4D))
-
-    regions_4D[0, 0, 0, :2] = 1  # Make regions overlap
-    assert_true(region.regions_are_overlapping(regions_4D))
-    regions_4D[0, 0, 0, :2] = 0  # reset
-
-    # List of arrays
-    assert_false(region.regions_are_overlapping(regions_list))
-    regions_list[0][0, 0, 0] = 1  # Make regions overlap
-    regions_list[1][0, 0, 0] = 1
-    assert_true(region.regions_are_overlapping(regions_list))
-
-    # Bad input
-    assert_raises(TypeError, region.regions_are_overlapping, None)
-    assert_raises(TypeError, region.regions_are_overlapping,
-                  np.zeros((2, 2, 2, 2, 2)))
-
-
-    # TODO:
-    # - check with / without labels
-    # - check overlapping / not overlapping
-    # - check with / without holes
-    # - check length consistency assertion
-
-
 def test_signals_extraction_with_labels():
     """Test conversion between signals and images using regions defined
     by labels."""
@@ -264,7 +210,6 @@ def test_generate_maps():
     maps_img, _ = generate_maps(shape, n_regions, border=1)
     maps = maps_img.get_data()
     assert_true(maps.shape == shape + (n_regions,))
-    assert_false(region.regions_are_overlapping(maps))
     # no empty map
     assert_true(np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0))
     # check border
@@ -323,88 +268,3 @@ def test__trim_maps():
     np.testing.assert_equal(mask_data, maps_i_mask)
     mask_data[1, 1, 1] = 1  # reset, just in case.
     np.testing.assert_equal(np.asarray(range(4)), maps_i_indices)
-
-
-def test_regions_to_mask():
-    """Test of regions_to_mask(): union of all regions."""
-    shape = (4, 5, 6)
-    n_regions = 11
-
-    ## Generate data
-    # mask
-    affine = np.eye(4)
-    mask_data = np.zeros(shape, dtype=np.int8)
-    mask_data[1:-1, 1:-1, 1:-1] = 1
-    n_voxels = mask_data.sum()
-    mask_img = nibabel.Nifti1Image(mask_data, affine)
-
-    # maps
-    regions_ts = generate_regions_ts(n_voxels, n_regions,
-                                     overlap=2, window="hamming")
-    region_img = masking.unmask(regions_ts, mask_img)
-    regions_ts[0, 0] = 0  # change something
-    region_broken_img = masking.unmask(regions_ts, mask_img)
-
-    # list of maps
-    region_list_img = [nibabel.Nifti1Image(data, affine)
-                       for data
-                       in np.rollaxis(region_img.get_data(), -1)]
-    region_list_broken_img = [
-        nibabel.Nifti1Image(data, affine)
-        for data
-        in np.rollaxis(region_broken_img.get_data(), -1)]
-
-    # labels
-    region_labels = np.zeros(shape, dtype=np.int)
-    for n, m in enumerate(np.rollaxis(region_img.get_data(), -1)):
-        region_labels[m != 0] = n + 1
-    region_labels_img = nibabel.Nifti1Image(region_labels, affine)
-
-    region_labels_broken = np.zeros(shape, dtype=np.int)
-    for n, m in enumerate(np.rollaxis(region_broken_img.get_data(), -1)):
-        region_labels_broken[m != 0] = n + 1
-    region_labels_broken_img = nibabel.Nifti1Image(region_labels_broken,
-                                                   affine)
-
-    # _r stands for "recovered"
-    # TODO: list of filenames
-    # list of nibabel.Nifti1Image
-    mask_r_img = region.regions_to_mask(region_list_img)
-    np.testing.assert_array_equal(mask_data, mask_r_img.get_data())
-
-    mask_r_img = region.regions_to_mask(region_list_broken_img)
-    assert_raises(AssertionError,
-                  np.testing.assert_array_equal,
-                  mask_data, mask_r_img.get_data())
-
-    # one Nifti1Image, 4D array
-    mask_r_img = region.regions_to_mask(region_img)
-    assert_true(utils.is_a_niimg(mask_r_img))
-    np.testing.assert_array_equal(mask_data, mask_r_img.get_data())
-
-    mask_r_img = region.regions_to_mask(region_broken_img)
-    assert_true(utils.is_a_niimg(mask_r_img))
-    assert_raises(AssertionError,
-                  np.testing.assert_array_equal,
-                  mask_data, mask_r_img.get_data())
-
-    # TODO: one filename, 4D array
-    # TODO: Check effect of "threshold" argument
-
-    # TODO: one filename, 3D file (labels)
-    # one Nifti1Image, 3D array (labels)
-    mask_r_img = region.regions_to_mask(region_labels_img)
-    assert_true(utils.is_a_niimg(mask_r_img))
-    np.testing.assert_array_equal(mask_data, mask_r_img.get_data())
-
-    mask_r_img = region.regions_to_mask(region_labels_broken_img)
-    assert_true(utils.is_a_niimg(mask_r_img))
-    assert_raises(AssertionError,
-                  np.testing.assert_array_equal,
-                  mask_data, mask_r_img.get_data())
-
-    # TODO: Check effect of "background" argument
-
-    ## Error checking:
-    # TODO: list of Nifti1Image with inconsistent shape
-    # TODO: list of Nifti1Image with a non-3D image as first element.
