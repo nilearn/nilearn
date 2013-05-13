@@ -69,6 +69,10 @@ def test_nifti_labels_masker():
     signals11 = masker11.fit().transform(fmri11_img)
     assert_true(signals11.shape == (length, n_regions))
 
+    masker11 = NiftiLabelsMasker(labels11_img, smooth=3)
+    signals11 = masker11.fit_transform(fmri11_img)
+    assert_true(signals11.shape == (length, n_regions))
+
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
     assert_true(fmri11_img_r.shape == fmri11_img.shape)

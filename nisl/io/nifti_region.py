@@ -97,18 +97,22 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
     def fit(self, y=None):
         """Prepare signal extraction from regions.
         """
-        self.labels_img_ = utils.check_niimg(self.labels_img)
+        labels_img = utils.check_niimg(self.labels_img)
+        # Since a copy is required, order can be forced as well.
+        self.labels_data_ = utils.as_ndarray(labels_img.get_data(),
+                                        copy=True, order="C")
+        self.labels_affine_ = utils.as_ndarray(labels_img.get_affine())
+        del labels_img
+
         if self.mask_img is not None:
             mask_data, mask_affine = masking._load_mask_img(self.mask_img)
-            if mask_data.shape != self.labels_img_.shape[:3]:
+            if mask_data.shape != self.labels_data_.shape[:3]:
                 raise ValueError("Regions and mask do not have the same shape")
-            if abs(mask_affine - self.labels_img_.get_affine()).max() > 1e-9:
+            if abs(mask_affine - self.labels_affine_).max() > 1e-9:
                 raise ValueError("Regions and mask do not have the same "
                                  "affine.")
-            # This may not work with all niimgs. In some, get_data() may return
-            # a copy of the underlying object.
-            self.labels_img_.get_data(
-                )[np.logical_not(mask_data)] = self.background_label
+            self.labels_data_[
+                np.logical_not(mask_data)] = self.background_label
 
         return self
 
@@ -144,7 +148,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
                                          copy=True)
 
         region_signals, self.labels_ = region.img_to_signals_labels(
-            nibabel.Nifti1Image(data, affine), self.labels_img_,
+            nibabel.Nifti1Image(data, affine),
+            nibabel.Nifti1Image(self.labels_data_, self.labels_affine_),
             background_label=self.background_label)
 
         region_signals = signals.clean(region_signals,
@@ -173,5 +178,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin):
             Signal for each voxel
             shape: (number of scans, number of voxels)
         """
-        return region.signals_to_img_labels(signals, self.labels_img_,
-                                        background_label=self.background_label)
+        return region.signals_to_img_labels(
+            signals,
+            nibabel.Nifti1Image(self.labels_data_, self.labels_affine_),
+            background_label=self.background_label)
