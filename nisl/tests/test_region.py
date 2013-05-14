@@ -5,15 +5,14 @@ Test for "region" module.
 # License: simplified BSD
 
 import numpy as np
-from nose.tools import assert_raises, assert_true, assert_false
+from nose.tools import assert_raises, assert_true
 
 import nibabel
 
 from .. import region
-from .. import masking
-from .. import utils
 from ..testing import generate_timeseries, generate_regions_ts
 from ..testing import generate_labeled_regions, generate_maps
+from ..testing import write_tmp_imgs
 
 
 def test_generate_regions_ts():
@@ -70,10 +69,7 @@ def test_signals_extraction_with_labels():
 
     eps = np.finfo(np.float).eps
     # data
-    ## rand_gen = np.random.RandomState(1)
-    ## data = rand_gen.randn(*(shape + (instants, )))
     affine = np.eye(4)
-    ## data_img = nibabel.Nifti1Image(data, affine)
     signals = generate_timeseries(n_instants, n_regions)
 
     # mask
@@ -118,8 +114,15 @@ def test_signals_extraction_with_labels():
     np.testing.assert_almost_equal(signals_r, signals)
     assert_true(labels_r == range(1, 9))
 
+    with write_tmp_imgs(data_img) as fname_img:
+        signals_r, labels_r = region.img_to_signals_labels(fname_img,
+                                                           labels_img)
+        np.testing.assert_almost_equal(signals_r, signals)
+        assert_true(labels_r == range(1, 9))
+
     ## Same thing, with mask.
-    data_img = region.signals_to_img_labels(signals, labels_img, mask_img=mask_img)
+    data_img = region.signals_to_img_labels(signals, labels_img,
+                                            mask_img=mask_img)
     assert_true(data_img.shape == (shape + (n_instants,)))
 
     data = data_img.get_data()
@@ -128,6 +131,19 @@ def test_signals_extraction_with_labels():
     assert_true(np.all(data[np.logical_not(mask_img.get_data())
                             ].std(axis=-1) < eps)
                 )
+
+    with write_tmp_imgs(labels_img, mask_img) as filenames:
+        data_img = region.signals_to_img_labels(signals, filenames[0],
+                                                mask_img=filenames[1])
+        assert_true(data_img.shape == (shape + (n_instants,)))
+
+        data = data_img.get_data()
+        assert_true(abs(data).max() > 1e-9)
+        # Zero outside of the mask
+        assert_true(np.all(data[np.logical_not(mask_img.get_data())
+                                ].std(axis=-1) < eps)
+                    )
+
     # mask labels before checking
     masked_labels_data = labels_data.copy()
     masked_labels_data[np.logical_not(mask_img.get_data())] = 0

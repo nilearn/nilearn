@@ -13,6 +13,8 @@ from .. import masking
 from ..masking import compute_epi_mask, compute_multi_epi_mask, \
     unmask, intersect_masks
 
+from ..testing import write_tmp_imgs
+
 
 def test_mask():
     mean_image = np.ones((9, 9))
@@ -39,7 +41,7 @@ def test_mask():
 
 
 def test__smooth_array():
-    """Test smoothing of images: _smooth_img()"""
+    """Test smoothing of images: _smooth_array()"""
     # Impulse in 3D
     data = np.zeros((40, 41, 42))
     data[20, 20, 20] = 1
@@ -95,26 +97,34 @@ def test_apply_mask():
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     mask = np.ones((40, 40, 40))
-    for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
-                   np.diag((.5, 1, .5, 1))):
-        series = masking.apply_mask(Nifti1Image(data, affine),
-                                    Nifti1Image(mask, affine), smooth=9)
-        series = np.reshape(series[0, :], (40, 40, 40))
-        vmax = series.max()
-        # We are expecting a full-width at half maximum of
-        # 9mm/voxel_size:
-        above_half_max = series > .5 * vmax
-        for axis in (0, 1, 2):
-            proj = np.any(np.any(np.rollaxis(above_half_max,
-                          axis=axis), axis=-1), axis=-1)
-            np.testing.assert_equal(proj.sum(),
-                                    9 / np.abs(affine[axis, axis]))
+    for create_files in (False, True):
+        for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
+                       np.diag((.5, 1, .5, 1))):
+            data_img = Nifti1Image(data, affine)
+            mask_img = Nifti1Image(mask, affine)
+            with write_tmp_imgs(data_img, mask_img, create_files=create_files)\
+                     as filenames:
+                series = masking.apply_mask(filenames[0], filenames[1],
+                                            smooth=9)
+
+            series = np.reshape(series[0, :], (40, 40, 40))
+            vmax = series.max()
+            # We are expecting a full-width at half maximum of
+            # 9mm/voxel_size:
+            above_half_max = series > .5 * vmax
+            for axis in (0, 1, 2):
+                proj = np.any(np.any(np.rollaxis(above_half_max,
+                              axis=axis), axis=-1), axis=-1)
+                np.testing.assert_equal(proj.sum(),
+                                        9 / np.abs(affine[axis, axis]))
 
     # Check that NaNs in the data do not propagate
     data[10, 10, 10] = np.NaN
-    series = masking.apply_mask(Nifti1Image(data, affine),
-                        Nifti1Image(mask, affine), smooth=9)
+    data_img = Nifti1Image(data, affine)
+    mask_img = Nifti1Image(mask, affine)
+    series = masking.apply_mask(data_img, mask_img, smooth=9)
     assert_true(np.all(np.isfinite(series)))
+
     # Check data shape and affine
     assert_raises(ValueError, masking.apply_mask,
                   Nifti1Image(data, affine),
@@ -125,8 +135,6 @@ def test_apply_mask():
 
 
 def test_unmask():
-    """ Test the unmask_optimized function
-    """
     # A delta in 3D
     shape = (10, 20, 30, 40)
     generator = np.random.RandomState(42)
@@ -153,15 +161,17 @@ def test_unmask():
     assert_equal(t[0].ndim, 4)
     assert_array_equal(t[0], unmasked4D)
 
-    # 3D Test
-    t = unmask(masked3D, mask_img).get_data()
-    assert_equal(t.ndim, 3)
-    assert_array_equal(t, unmasked3D)
-    t = unmask([masked3D], mask_img)
-    t = [t_.get_data() for t_ in t]
-    assert_true(isinstance(t, types.ListType))
-    assert_equal(t[0].ndim, 3)
-    assert_array_equal(t[0], unmasked3D)
+    # 3D Test - check both with Nifti1Image and file
+    for create_files in (False, True):
+        with write_tmp_imgs(mask_img, create_files=create_files) as filename:
+            t = unmask(masked3D, filename).get_data()
+            assert_equal(t.ndim, 3)
+            assert_array_equal(t, unmasked3D)
+            t = unmask([masked3D], filename)
+            t = [t_.get_data() for t_ in t]
+            assert_true(isinstance(t, types.ListType))
+            assert_equal(t[0].ndim, 3)
+            assert_array_equal(t[0], unmasked3D)
 
     # 5D test
     shape5D = (10, 20, 30, 40, 41)

@@ -3,15 +3,77 @@
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
 import os
+import sys
 import urllib2
+import contextlib
+import warnings
 
 import numpy as np
 import scipy.signal
 
 from nibabel import Nifti1Image
+import nibabel
 
 from . import datasets
 from . import masking
+
+
+@contextlib.contextmanager
+def write_tmp_imgs(*imgs, **kwargs):
+    """Context manager for writing Nifti images.
+
+    Write nifti images in a temporary location, and remove them at the end of
+    the block.
+
+    Parameters
+    ==========
+    imgs: Nifti1Image
+        Several Nifti images. Every format understood by nibabel.save is
+        accepted.
+
+    create_files: boolean
+        if True, imgs are written on disk and filenames are returned. If
+        False, nothing is written, and imgs is returned as output. This is
+        useful to test the two cases (filename / Nifti1Image) in the same
+        loop.
+
+    Returns
+    =======
+    filenames: str or list of
+        filename(s) where input images have been written. If a single image
+        has been given as input, a single string is returned. Otherwise, a
+        list of string is returned.
+    """
+    valid_keys = set(("create_files",))
+    input_keys = set(kwargs.keys())
+    invalid_keys = input_keys - valid_keys
+    if len(invalid_keys) > 0:
+        raise TypeError("%s: unexpected keyword argument(s): %s" %
+                        (sys._getframe().f_code.co_name,
+                        " ".join(invalid_keys)))
+    create_files = kwargs.get("create_files", True)
+
+    if create_files:
+        filenames = []
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            for img in imgs:
+                filename = os.tempnam(None, "nisl_") + ".nii"
+                filenames.append(filename)
+                nibabel.save(img, filename)
+
+        if len(imgs) == 1:
+            yield filenames[0]
+        else:
+            yield filenames
+
+        for filename in filenames:
+            os.remove(filename)
+    else:  # No-op
+        if len(imgs) == 1:
+            yield imgs[0]
+        else:
+            yield imgs
 
 
 class mock_urllib2(object):

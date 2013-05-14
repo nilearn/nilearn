@@ -269,7 +269,6 @@ def signals_to_img_maps(signals, maps_img, mask_img=None):
     assert(maps_mask.shape == maps_data.shape[:3])
     data = np.dot(signals, maps_data[maps_mask, :].T)
 
-    # FIXME: data = masking.unmask(data, maps_mask)
     return masking.unmask(data, nibabel.Nifti1Image(
         utils.as_ndarray(maps_mask, dtype=np.int8), affine)
                           )
