@@ -201,6 +201,20 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
                           )
 
 
+def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
+                                   affine=np.eye(4)):
+    """Similar to generate_labeled_regions, but suitable for a large number of
+    regions.
+
+    See generate_labeled_regions for details.
+    """
+    if rand_gen is None:
+        rand_gen = np.random.RandomState(0)
+    data = rand_gen.randint(n_regions + 1, size=shape)
+
+    return Nifti1Image(data, affine)
+
+
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                        affine=np.eye(4)):
     """Generate a signal which can be used for testing.

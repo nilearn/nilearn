@@ -4,8 +4,6 @@ Regions of interest extraction and handling.
 # Author: Philippe Gervais
 # License: simplified BSD
 
-import collections
-
 import numpy as np
 from scipy import linalg, ndimage
 
@@ -151,8 +149,6 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
             raise ValueError("mask_img and labels_img affines "
                              "must be identical")
 
-    data = np.zeros(target_shape + (signals.shape[0],),
-                    dtype=signals.dtype, order=order)
     labels_data = labels_img.get_data()
     if mask_img is not None:
         mask_data = mask_img.get_data()
@@ -163,8 +159,21 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     if background_label in labels:
         labels.remove(background_label)
 
-    for n, label in enumerate(labels):
-        data[labels_data == label, :] = signals[:, n]
+    # nditer is not available in numpy 1.3: using multiple loops.
+    # Using these loops still gives a much faster code (6x) than this one:
+    ## for n, label in enumerate(labels):
+    ##     data[labels_data == label, :] = signals[:, n]
+    data = np.zeros(target_shape + (signals.shape[0],),
+                    dtype=signals.dtype, order=order)
+    labels_dict = dict([(label, n) for n, label in enumerate(labels)])
+    # optimized for F order.
+    for k in xrange(labels_data.shape[2]):
+        for j in xrange(labels_data.shape[1]):
+            for i in xrange(labels_data.shape[0]):
+                label = labels_data[i, j, k]
+                num = labels_dict.get(label, None)
+                if num is not None:
+                    data[i, j, k, :] = signals[:, num]
 
     return nibabel.Nifti1Image(data, target_affine)
 
