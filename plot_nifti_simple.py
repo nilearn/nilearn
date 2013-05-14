@@ -33,7 +33,7 @@ pl.title("Mask")
 
 ### Preprocess data ###########################################################
 nifti_masker.fit(dataset.func[0])
-fmri_masked = nifti_masker.transform(dataset.func[0])
+fmri_masked = nifti_masker.transform(dataset.func[0]).T
 
 ### Run an algorithm ##########################################################
 from sklearn.decomposition import FastICA
@@ -50,7 +50,6 @@ pl.figure()
 pl.axis('off')
 pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
           interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[..., 20, 16]), interpolation='nearest',
+pl.imshow(np.rot90(components[..., 20, 7]), interpolation='nearest',
           cmap=pl.cm.hot)
-
 pl.show()
