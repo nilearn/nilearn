@@ -31,7 +31,7 @@ def _format_time(t):
 
 
 def _md5_sum_file(path):
-    """ Calculates the MD5 sum of a file
+    """ Calculates the MD5 sum of a file.
     """
     f = open(path, 'rb')
     m = hashlib.md5()
@@ -44,7 +44,7 @@ def _md5_sum_file(path):
 
 
 def _read_md5_sum_file(path):
-    """ Reads a MD5 checksum file and returns hashes as a dictionnary
+    """ Reads a MD5 checksum file and returns hashes as a dictionary.
     """
     f = open(path, "r")
     hashes = {}
@@ -59,8 +59,8 @@ def _read_md5_sum_file(path):
 
 class ResumeURLOpener(urllib.FancyURLopener):
     """Create sub-class in order to overide error 206.  This error means a
-       partial file is being sent,
-       which is ok in this case.  Do nothing with this error.
+       partial file is being sent, which is fine in this case.
+       Do nothing with this error.
 
        Note
        ----
@@ -72,17 +72,17 @@ class ResumeURLOpener(urllib.FancyURLopener):
 
 
 def _chunk_report_(bytes_so_far, total_size, t0):
-    """Show downloading percentage
+    """Show downloading percentage.
 
     Parameters
     ----------
-    bytes_so_far: integer
+    bytes_so_far: int
         Number of downloaded bytes
 
-    total_size: integer, optional
+    total_size: int, optional
         Total size of the file. None is valid
 
-    t0: integer, optional
+    t0: int, optional
         The time in seconds (as returned by time.time()) at which the
         download was started.
     """
@@ -114,10 +114,10 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     local_file: file
         Hard disk file where data should be written
 
-    chunk_size: integer, optional
+    chunk_size: int, optional
         Size of downloaded chunks. Default: 8192
 
-    report_hook: boolean
+    report_hook: bool
         Whether or not to show downloading advancement. Default: None
 
     initial_size: int, optional
@@ -174,7 +174,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
     folder: string, optional
         Folder in which the file must be fetched inside the dataset folder.
 
-    create_dir: boolean, optional
+    create_dir: bool, optional
         If the directory does not exist, determine whether or not it is created
 
     Returns
@@ -209,7 +209,7 @@ def _uncompress_file(file, delete_archive=True):
     file: string
         path of file to be uncompressed.
 
-    delete_archive: boolean, optional
+    delete_archive: bool, optional
         Wheteher or not to delete archive once it is uncompressed.
         Default: True
 
@@ -255,38 +255,38 @@ def _uncompress_file(file, delete_archive=True):
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None,
                 verbose=0):
-    """Load requested file, downloading it if needed or requested
+    """Load requested file, downloading it if needed or requested.
 
     Parameters
     ----------
-    urls: array of strings
-        Contains the urls of files to be downloaded.
+    url: string
+        Contains the url of the file to be downloaded.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    resume: boolean, optional
+    resume: bool, optional
         If true, try to resume partially downloaded files
 
-    overwrite: boolean, optional
+    overwrite: bool, optional
         If true and file already exists, delete it.
 
     md5sum: string, optional
         MD5 sum of the file. Checked if download of the file is required
 
-    verbose: integer, optional
+    verbose: int, optional
         Defines the level of verbosity of the output
 
     Returns
     -------
-    files: array of string
-        Absolute paths of downloaded files on disk
+    files: string
+        Absolute path of downloaded file.
 
     Notes
     -----
-    If, for any reason, the download procedure fails, all downloaded data are
-    cleaned.
+    If, for any reason, the download procedure fails, all downloaded files are
+    removed.
     """
     # Determine data path
     if not os.path.exists(data_dir):
@@ -361,42 +361,42 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False, md5sum=None,
 
 def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
                    resume=True, folder=None, md5sums=None, verbose=0):
-    """Load requested dataset, downloading it if needed or requested
+    """Load requested dataset, downloading it if needed or requested.
 
     Parameters
     ----------
     dataset_name: string
         Unique dataset name
 
-    urls: array of strings
+    urls: iterable of strings
         Contains the urls of files to be downloaded.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    uncompress: boolean, optional
+    uncompress: bool, optional
         Ask for uncompression of the dataset. The type of the archive is
         determined automatically.
 
-    resume: boolean, optional
+    resume: bool, optional
         If true, try resuming download if possible
 
     folder: string, optional
         Folder in which the file must be fetched inside the dataset folder.
 
-    md5sums: dictionary, optional
+    md5sums: dict, optional
         Dictionary of MD5 sums of files to download
 
     Returns
     -------
-    files: array of string
+    files: list of string
         Absolute paths of downloaded files on disk
 
     Notes
     -----
-    If, for any reason, the download procedure fails, all downloaded data is
-    cleaned.
+    If, for any reason, the download procedure fails, all downloaded files are
+    removed.
     """
     # Determine data path
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
@@ -422,14 +422,14 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
 
 
 def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
-    """Returns absolute paths of a dataset files if exist
+    """Returns absolute paths of a dataset files if they exist.
 
     Parameters
     ----------
     dataset_name: string
         Unique dataset name
 
-    file_names: array of strings
+    file_names: iterable of strings
         File that compose the dataset to be retrieved on the disk.
 
     folder: string, optional
@@ -441,7 +441,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
 
     Returns
     -------
-    files: array of string
+    files: list of string
         List of dataset files on disk
 
     Notes
@@ -467,9 +467,23 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
 
     The provided images are in MNI152 space.
 
+    Parameters
+    ----------
+    data_dir: string
+        directory where data should be downloaded and unpacked.
+
+    url: string
+        url of file to download.
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
     Returns
     -------
-    data (Bunch)
+    data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
         scorr_mean, tcorr_mean,
         scorr_2level, tcorr_2level,
@@ -516,9 +530,23 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
 
     The provided images are in MNI152 space.
 
+    Parameters
+    ----------
+    data_dir: string
+        directory where data should be downloaded and unpacked.
+
+    url: string
+        url of file to download.
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
     Returns
     -------
-    data (Bunch)
+    data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
         - "tight_7", "liberal_7": 7-region parcellations, resp. tightly
             fitted to cortex shape, and liberally fitted.
@@ -573,7 +601,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
 
     Parameters
     ----------
-    data_dir (string, optional)
+    data_dir: string, optional
         Path of the data directory. Use to forec data storage in a non-
         standard location. Default: None (meaning: default)
     url: string, optional
@@ -581,7 +609,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
 
     Returns
     -------
-    data (Bunch)
+    data: sklearn.datasets.base.Bunch
         dictionary-like object, interest keys are:
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
             given modality (resp. T1, T2, T2 relaxometry and proton
@@ -655,7 +683,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
 
     Returns
     -------
-    data: Bunch
+    data: sklearn.datasets.base.Bunch
         Dictionary-like object, interest attributes are:
         'func': string.  Path to nifti file with bold data.
         'session_target': string. Path to text file containing session and
@@ -715,12 +743,12 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    n_subjects: integer, optional
+    n_subjects: int, optional
         Number of subjects, from 1 to 5.
 
     Returns
     -------
-    data: Bunch
+    data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
         'anat': string list. Paths to anatomic images.
         'func': string list. Paths to nifti file with bold data.
@@ -742,7 +770,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
 
     Notes
     -----
-    PyMVPA provides a tutorial using this dataset :
+    PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
     More informations about its structure :
@@ -822,15 +850,15 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
-    """Download and loads the NYU resting-state test-retest dataset
+    """Download and loads the NYU resting-state test-retest dataset.
 
     Parameters
     ----------
-    n_subjects: integer optional
+    n_subjects: int, optional
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    n_sessions: array of integers optional
+    sessions: iterable of int, optional
         The sessions to load. Load only the first session by default.
 
     data_dir: string, optional
@@ -839,7 +867,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
 
     Returns
     -------
-    data : Bunch
+    data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
         'func': string list. Paths to functional images.
         'anat_anon': string list. Paths to anatomic images.
@@ -966,11 +994,11 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
 
 def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
                verbose=0):
-    """Download and loads the ADHD resting-state dataset
+    """Download and loads the ADHD resting-state dataset.
 
     Parameters
     ----------
-    n_subjects: integer optional
+    n_subjects: int, optional
         The number of subjects to load. If None is given, all the
         40 subjects are used.
 
@@ -984,7 +1012,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
 
     Returns
     -------
-    data : Bunch
+    data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
         - 'func': string list. Paths to functional images
         - 'parameters': string list. Parameters of preprocessing steps
@@ -1053,7 +1081,7 @@ def load_harvard_oxford(atlas_name,
 
     Parameters
     ==========
-    atlas_name (string)
+    atlas_name: string
         Name of atlas to load. Can be:
         cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
         cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
@@ -1064,18 +1092,18 @@ def load_harvard_oxford(atlas_name,
         cort-prob-1mm, cort-prob-2mm,
         sub-prob-1mm, sub-prob-2mm
 
-    dirname (string, optional)
+    dirname: string, optional
         This is the neurodebian's directory for FSL data. It may be different
         with another distribution / installation.
 
-    symmetric_split (boolean, optional)
+    symmetric_split: bool, optional
         If True, split every symmetric region in left and right parts.
         Effectively doubles the number of regions. Default: False.
         Not implemented for probabilistic atlas (*-prob-* atlases)
 
     Returns
     =======
-    regions (nibabel.Nifti1Image)
+    regions: nibabel.Nifti1Image
         regions definition, as a label image.
     """
     if atlas_name not in ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",

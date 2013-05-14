@@ -17,15 +17,13 @@ def _load_mask_img(mask_img):
 
     Parameters
     ----------
-
     mask_img: nifti-like image
         The mask to check
 
     Returns
     -------
-
-    mask: boolean numpy array
-        The boolean version of the mask
+    mask: numpy.ndarray
+        boolean version of the mask
     '''
     mask_img = utils.check_niimg(mask_img)
     mask = mask_img.get_data()
@@ -103,40 +101,40 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: 3D or 4D array or nifti-like image
-        EPI image, used to compute the mask.
+    mean_epi: nifti-like image
+        EPI image, used to compute the mask. 3D and 4D images are accepted.
 
-    lower_cutoff : float, optional
+    lower_cutoff: float, optional
         lower fraction of the histogram to be discarded.
 
     upper_cutoff: float, optional
         upper fraction of the histogram to be discarded.
 
-    connected: boolean, optional
+    connected: bool, optional
         if connected is True, only the largest connect component is kept.
 
-    opening: boolean or integer, optional
+    opening: bool or int, optional
         if opening is True, an morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
         If opening is an integer 'n', it is performed via 'n' erosion
         followed by 'n' dilations.
 
-    ensure_finite: boolean
+    ensure_finite: bool
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
 
-    exclude_zeros: boolean, optional
+    exclude_zeros: bool, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
 
-    verbose: integer, optional
+    verbose: int, optional
 
     Returns
     -------
-    mask : 3D nifti-like image
-        The brain mask
+    mask: nibabel.Nifti1Image
+        The brain mask (3D image)
     """
     if verbose > 0:
         print "EPI mask computation"
@@ -185,8 +183,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     masks_imgs: list of 3D nifti-like images
         3D individual masks with same shape and affine.
 
-    threshold: float within [0, 1], optional
-        gives the level of the intersection.
+    threshold: float, optional
+        Gives the level of the intersection, must be within [0, 1].
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
 
@@ -195,7 +193,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     Returns
     -------
-        grp_mask, 3D nifti-like image
+        grp_mask: 3D nifti-like image
+            intersection of all masks.
     """
     if len(mask_imgs) == 0:
         raise ValueError('No mask provided for intersection')
@@ -243,11 +242,11 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
-
     Parameters
     ----------
-    session_files: list 3D or 4D array or Niimgs
+    session_files: list of Niimgs
         A list of arrays, each item being a subject or a session.
+        3D and 4D images are accepted.
 
     threshold: float, optional
         the inter-session threshold: the fraction of the
@@ -277,7 +276,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
     Returns
     -------
     mask : 3D nifti-like image
-        The brain mask
+        The brain mask.
     """
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(compute_epi_mask)(session,
@@ -313,30 +312,29 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     Parameters
     -----------
-    niimgs (list 4D (ot list of 3D) nifti images)
-        Images to be masked.
+    niimgs: list of 4D nifti images
+        Images to be masked. list of lists of 3D images are also accepted.
 
-    mask_img (niimg)
+    mask_img: niimg
         3D mask array: True where a voxel should be used.
 
-    smooth (float)
+    smooth: float
         (optional) Gives the size of the spatial smoothing to apply to
         the signal, in voxels. Implies ensure_finite=True.
 
-    ensure_finite (boolean)
+    ensure_finite: bool
         If ensure_finite is True (default), the non-finite values (NaNs and
         infs) found in the images will be replaced by zeros.
 
     Returns
     --------
-    session_series (numpy.ndarray)
+    session_series: numpy.ndarray
         2D array of series with shape (image number, voxel number)
 
     Notes
     -----
     When using smoothing, ensure_finite is set to True, as non-finite
     values would spread accross the image.
-
     """
     return _apply_mask_fmri(niimgs, mask_img, dtype=dtype, smooth=smooth,
                             ensure_finite=ensure_finite)
@@ -394,11 +392,11 @@ def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=True):
         If smooth is None, no filtering is performed (useful when just removal
         of non-finite values is needed)
 
-    ensure_finite: boolean
+    ensure_finite: bool
         if True, replace every non-finite values (like NaNs) by zero before
         filtering.
 
-    copy: boolean
+    copy: bool
         if True, input array is not modified. False by default: the filtering
         is performed in-place.
 
@@ -439,10 +437,11 @@ def _unmask_3d(X, mask):
 
     Parameters
     ==========
-    X: numpy array
+    X: numpy.ndarray
         Masked data. shape: (samples,)
-    mask: numpy array (boolean)
-        Mask. mask.ndim must be equal to 3.
+
+    mask: numpy.ndarray
+        Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """
 
     if mask.dtype != np.bool:
@@ -462,14 +461,15 @@ def _unmask_nd(X, mask):
 
     Parameters
     ==========
-    X: numpy array
+    X: numpy.ndarray
         Masked data. shape: (samples, features)
-    mask: numpy array (boolean)
-        Mask. mask.ndim must be equal to 3.
+
+    mask: numpy.ndarray
+        Mask. mask.ndim must be equal to 3, and dtype equal to bool.
 
     Returns
     =======
-    data: 4D numpy array
+    data: numpy.ndarray
         Unmasked data.
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
     """
@@ -492,11 +492,11 @@ def unmask(X, mask_img):
 
     Parameters
     ==========
-    X: numpy array (or list of)
+    X: numpy.ndarray (or list of)
         Masked data. shape: (samples #, features #).
         If X is one-dimensional, it is assumed that samples# == 1.
     mask_img: nifti-like image
-        Mask. mask must be 3 dimensional
+        Mask. Must be 3-dimensional.
 
     Return
     ======

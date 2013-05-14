@@ -21,14 +21,14 @@ def to_matrix_vector(transform):
 
     Parameters
     ----------
-    transform : ndarray
+    transform: numpy.ndarray
         Transform matrix in homogeneous coordinates.  Example, a 4x4
         transform representing rotations and translations in 3
         dimensions.
 
     Returns
     -------
-    matrix, vector : ndarray
+    matrix, vector: numpy.ndarray
         The matrix and vector components of the transform matrix.  For
         an NxN transform, matrix will be N-1xN-1 and vector will be
         1xN-1.
@@ -53,20 +53,20 @@ def from_matrix_vector(matrix, vector):
 
     Parameters
     ----------
-    matrix : ndarray
+    matrix: numpy.ndarray
         An NxN array representing the rotation matrix.
 
-    vector : ndarray
+    vector: numpy.ndarray
         A 1xN array representing the translation.
 
     Returns
     -------
-    xform : ndarray
+    xform: numpy.ndarray
         An N+1xN+1 transform matrix.
 
     See Also
     --------
-    to_matrix_vector
+    nisl.resampling.to_matrix_vector
     """
 
     nin, nout = matrix.shape
@@ -106,17 +106,17 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     niimg: nisl nifti image
         Path to a nifti file or nifti-like object
 
-    target_affine: numpy matrix, optional
+    target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix
 
     target_shape: 3-tuple, optional
         If specified, the image will be resized to match this new shape.
 
-    interpolation: string, optional
+    interpolation: str, optional
         Can be continuous' (default) or 'nearest'. Indicate the resample method
 
-    copy: boolean, optional
+    copy: bool, optional
         If true, copy source data to avoid side-effects.
     """
 

@@ -14,19 +14,20 @@ def _standardize(signals, detrend=False, normalize=True):
 
     Parameters
     ==========
-    signals (numpy.ndarray)
+    signals: numpy.ndarray
         Timeseries to standardize
 
-    detrend (boolean)
+    detrend: bool
         if detrending of timeseries is requested
 
-    normalize (boolean)
+    normalize: bool
         if True, shift timeseries to zero mean value and scale
         to unit energy (sum of squares).
 
     Returns
     =======
-    std_signals: copy of signals, normalized.
+    std_signals: numpy.ndarray
+        copy of signals, normalized.
     """
     if detrend:
         signals = _detrend(signals, inplace=False)
@@ -56,11 +57,11 @@ def _detrend(signals, inplace=False, type="linear"):
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
 
-    inplace: boolean
+    inplace: bool
         Tells if the computation must be made inplace or not (default
         False).
 
-    type: string
+    type: str
         Detrending type ("linear" or "constant").
         See also scipy.signal.detrend.
 
@@ -83,16 +84,16 @@ def _detrend(signals, inplace=False, type="linear"):
 
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
                 order=5, copy=False, save_memory=False):
-    """ Apply a low pass, high pass or band pass butterworth filter
+    """ Apply a low-pass, high-pass or band-pass Butterworth filter
 
     Apply a filter to remove signal below the `low` frequency and above the
     `high`frequency.
 
     Parameters
     ----------
-    signals: numpy array (1D sequence or n_samples x n_sources)
-        Timeseries to be filtered. A timeseries is assumed to be a
-        column of `signals`.
+    signals: numpy.ndarray (1D sequence or n_samples x n_sources)
+        Signals to be filtered. A signal is assumed to be a column
+        of `signals`.
 
     sampling_rate: float
         Number of samples per time unit (sample frequency)
@@ -111,13 +112,13 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         sharpens this decay. Be aware that very high orders could lead
         to numerical instability.
 
-    copy: boolean, optional
+    copy: bool, optional
         If False, `signals` is modified inplace, and memory consumption is
         lower than for copy=True, though computation time is higher.
 
     Returns
     -------
-    filtered_signals: numpy array
+    filtered_signals: numpy.ndarray
         Signals filtered according to the parameters
     """
     if low_pass is None and high_pass is None:
@@ -178,24 +179,24 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
 
         Parameters
         ==========
-        series (numpy.ndarray)
+        series: numpy.ndarray
             Timeseries. A timeseries is a column in the "series" array.
             shape (sample number, feature number)
 
-        n_confounds (int)
+        n_confounds: int
             Number of confounds to return
 
-        percentile (float)
+        percentile: float
             Highest-variance series percentile to keep before computing the
             singular value decomposition.
             series.shape[0] * percentile must be greater than n_confounds.
 
-        detrend (boolean)
+        detrend: bool
             If True, detrend timeseries before processing.
 
         Returns
         =======
-        v (numpy.ndarray)
+        v: numpy.ndarray
             highest variance confounds. Shape: (samples, n_confounds)
 
         Notes
@@ -256,33 +257,35 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
 
        Parameters
        ==========
-       signals (numpy array)
+       signals: numpy.ndarray
            Timeseries. Must have shape (instant number, features number).
            This array is not modified.
 
-       confounds (numpy array or file name)
+       confounds: numpy.ndarray or str
            Confounds timeseries. Shape muse be
            (instant number, confound number). The number of time
            instants in signals and confounds must be identical
-           (i.e. signals.shape[0] == confounds.shape[0])
+           (i.e. signals.shape[0] == confounds.shape[0]).
+           If a string is provided, it is assumed to be the name of a csv file
+           containing signals as columns, with an optional one-line header.
 
-       t_r (float)
+       t_r: float
            Repetition time, in second (sampling period).
 
-       low_pass, high_pass (float)
+       low_pass, high_pass: float
            Respectively low and high cutoff frequencies, in Hertz.
 
-       detrend (boolean)
+       detrend: bool
            If detrending should be applied on timeseries (before
            confound removal)
 
-       standardize (boolean)
+       standardize: bool
            If variances should be set to one and mean to zero for
            all timeseries (before confound removal)
 
        Returns
        =======
-       cleaned_signals (numpy array)
+       cleaned_signals: numpy.ndarray
            Input signals, cleaned. Same shape as `signals`.
 
        Notes

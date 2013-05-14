@@ -23,13 +23,13 @@ def largest_connected_component(volume):
 
     Parameters
     -----------
-    volume: 3D boolean array
-        3D array indicating a volume.
+    volume: numpy.array
+        3D boolean array indicating a volume.
 
     Returns
     --------
-    volume: 3D boolean array
-        3D array with only one connected component.
+    volume: numpy.array
+        3D boolean array with only one connected component.
     """
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
@@ -53,12 +53,13 @@ def is_a_niimg(obj):
 
     Parameters
     ----------
-    obj (any object)
+    obj: any object
         Tested object
 
     Returns
     -------
-    True if get_data and get_affine methods are present and callable,
+    is_niimg: boolean
+        True if get_data and get_affine methods are present and callable,
         False otherwise.
     """
 
@@ -135,16 +136,17 @@ def check_niimg(niimg):
 
 
 def concat_niimgs(niimgs, dtype=np.float32):
-    """ Concatenate a list of niimgs
+    """Concatenate a list of niimgs
 
     Parameters
     ----------
-    niimgs: array of niimgs
-        List of niimgs to concatenate.
+    niimgs: iterable of niimgs
+        niimgs to concatenate.
 
     Returns
     -------
-    A single niimg
+    concatenated: nibabel.Nifti1Image
+        A single niimg.
     """
 
     first_niimg = check_niimg(iter(niimgs).next())
@@ -191,9 +193,9 @@ def check_niimgs(niimgs, accept_3d=False):
 
     Parameters
     ----------
-    niimgs (list of)* string or object
-        If niimgs is a list, checks if data is really 4D. Then, considering
-        that it is a list of niimg and load them one by one.
+    niimgs: (iterable of)* strings or objects
+        If niimgs is an iterable, checks if data is really 4D. Then,
+        considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
@@ -204,7 +206,7 @@ def check_niimgs(niimgs, accept_3d=False):
 
     Returns
     -------
-    niimg (nibabel.Nifti1Image)
+    niimg: nibabel.Nifti1Image
         One 4D image. If 3D images were provided as input, this is the
         concatenation of all of them.
 
@@ -283,19 +285,20 @@ class CacheMixin(object):
 
         Parameters
         ----------
-        func: python function
+        func: function
             The function which output is to be cached.
 
-        memory_level: integer
+        memory_level: int
             The memory_level from which caching must be enabled for the wrapped
             function.
 
         Returns
         -------
-        joblib.Memory object that wraps the function func. This object may be
-        a no-op, if the requested level is lower than the value given
-        to _cache()). For consistency, a joblib.Memory object is always
-        returned.
+        mem: joblib.Memory
+            object that wraps the function func. This object may be
+            a no-op, if the requested level is lower than the value given
+            to _cache()). For consistency, a joblib.Memory object is always
+            returned.
         """
 
         # Creates attributes if they don't exist
@@ -368,21 +371,24 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
 
     Parameters
     ==========
-    arr (any value accepted by numpy.asarray)
-        input array
-    copy (boolean)
+    arr: array-like
+        input array. Any value accepted by numpy.asarray is valid.
+
+    copy: bool
         if True, force a copy of the array. Alway True when arr is a memmap.
-    dtype (any numpy dtype)
+
+    dtype: any numpy dtype
         dtype of the returned array. Performing copy and type conversion at the
         same time can in some cases avoid an additional copy.
-    order (str)
+
+    order: string
         gives the order of the returned array.
         Valid values are: "C", "F", "A", "K", None.
         default is "K". See ndarray.copy() for more information.
 
     Returns
     =======
-    ret (numpy.ndarray)
+    ret: numpy.ndarray
         Numpy array containing the same data as arr, always of class
         numpy.ndarray, and with no link to any underlying file.
     """

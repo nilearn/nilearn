@@ -1,5 +1,5 @@
 """
-Preprocessing functions for images
+Preprocessing functions for images.
 
 See also nisl.signal.
 """
@@ -26,7 +26,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
             If provided, confounds are extracted from voxels inside the mask.
             If not provided, all voxels are used.
 
-        n_confounds (int)
+        n_confounds: int
             Number of confounds to return
 
         percentile: float
@@ -34,7 +34,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
             singular value decomposition.
             signals.shape[0] * percentile must be greater than n_confounds.
 
-        detrend: boolean
+        detrend: bool
             If True, detrend signals before processing.
 
         Returns

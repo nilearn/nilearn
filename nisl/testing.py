@@ -31,7 +31,7 @@ def write_tmp_imgs(*imgs, **kwargs):
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
 
-    create_files: boolean
+    create_files: bool
         if True, imgs are written on disk and filenames are returned. If
         False, nothing is written, and imgs is returned as output. This is
         useful to test the two cases (filename / Nifti1Image) in the same
@@ -39,7 +39,7 @@ def write_tmp_imgs(*imgs, **kwargs):
 
     Returns
     =======
-    filenames: str or list of
+    filenames: string or list of
         filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
@@ -162,15 +162,15 @@ def generate_regions_ts(n_features, n_regions,
 
     Parameters
     ==========
-    overlap (int)
+    overlap: int
         Number of overlapping voxels between two regions (more or less)
-    window (str)
+    window: str
         Name of a window in scipy.signal. e.g. "hamming".
 
     Returns
     =======
-    regions (numpy.ndarray)
-        timeseries representing regions.
+    regions: numpy.ndarray
+        regions, nepresented as signals.
         shape (n_features, n_regions)
     """
 
@@ -207,12 +207,21 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     """Generate a 4D volume containing several maps.
     Parameters
     ==========
-    border (int)
+    n_regions: int
+        number of regions to generate
+
+    overlap: int
+        approximate number of voxels common to two neighboring regions
+
+    window: str
+        name of a window in scipy.signal. Used to get non-uniform regions.
+
+    border: int
         number of background voxels on each side of the 3D volumes.
 
     Returns
     =======
-    maps (Nifti1Image)
+    maps: nibabel.Nifti1Image
         4D array, containing maps.
     """
 
@@ -230,21 +239,25 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
 
     Parameters
     ==========
-    shape (tuple)
+    shape: tuple
         shape of returned array
-    n_regions (integer)
+
+    n_regions: int
         number of regions to generate. By default (if "labels" is None),
         add a background with value zero.
-    labels (iterable)
+
+    labels: iterable
         labels to use for each zone. If provided, n_regions is unused.
-    rand_gen (numpy.random.RandomState object)
+
+    rand_gen: numpy.random.RandomState
         random generator to use for generation.
-    affine (numpy.ndarray)
+
+    affine: numpy.ndarray
         affine of returned image
 
     Returns
     =======
-    regions (Nifti1Image)
+    regions: nibabel.Nifti1Image
         data has shape "shape", containing region labels.
     """
     n_voxels = shape[0] * shape[1] * shape[2]
@@ -287,23 +300,27 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
 
     Parameters
     ==========
-    shape (tuple, optional)
+    shape: tuple, optional
         Shape of 3D volume
-    length (integer, optional)
+
+    length: int, optional
         Number of time instants
-    kind (string, optional)
+
+    kind: string, optional
         Kind of signal used as timeseries.
         "noise": uniformly sampled values in [0..255]
         "step": 0.5 for the first half then 1.
-    affine (numpy.ndarray)
+
+    affine: numpy.ndarray
         affine of returned images
 
     Returns
     =======
-    fmri (nibabel.Nifti1Image)
+    fmri: nibabel.Nifti1Image
         fake fmri signal.
         shape: shape + (length,)
-    mask (nibabel.Nifti1Image)
+
+    mask: nibabel.Nifti1Image
         mask giving non-zero voxels
     """
     full_shape = shape + (length, )
