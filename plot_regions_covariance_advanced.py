@@ -9,17 +9,19 @@ The following things are performed:
 - covariance/precision matrices computation
 - display of matrices
 
+This script is intended for advanced users only, since it makes use of
+low-level functions.
 """
 import numpy as np
 import pylab as pl
 import matplotlib
 
-from joblib import Memory
 from sklearn import covariance
 
 import nisl.datasets
 import nisl.image
-import nisl.io
+import nisl.region
+import nisl.signals
 
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99
@@ -62,37 +64,32 @@ def plot_matrices(cov, prec, title, subject_n=0):
     pl.title(title + " / precision")
 
 
-def get_confounds(filename, confound_file):
-    # Compcor on full image
-    hv_confounds = nisl.image.high_variance_confounds(filename)
-    mvt_confounds = np.loadtxt(confound_file, skiprows=1)
-    confounds = np.hstack((hv_confounds, mvt_confounds))
-    return confounds
-
-
 if __name__ == "__main__":
     subject_n = 1
-    mem = Memory('.')
 
     dataset = nisl.datasets.fetch_adhd()
     filename = dataset["func"][subject_n]
     confound_file = dataset["confounds"][subject_n]
 
     print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-    labels_img = nisl.datasets.load_harvard_oxford(
+    regions_img = nisl.datasets.load_harvard_oxford(
         "cort-maxprob-thr25-2mm", symmetric_split=True)
 
     print("-- Computing confounds ...")
-    confounds = mem.cache(get_confounds)(filename, confound_file)
+    # Compcor on full image
+    hv_confounds = nisl.image.high_variance_confounds(filename)
+    mvt_confounds = np.loadtxt(confound_file, skiprows=1)
+    confounds = np.hstack((hv_confounds, mvt_confounds))
 
     print("-- Computing region signals ...")
-    nifti_regions = nisl.io.NiftiLabelsMasker(labels_img=labels_img,
-                                              t_r=2.5,
-                                              low_pass=None, high_pass=0.01,
-                                              detrend=True, standardize=True
-                                              )
+    region_ts, _ = nisl.region.img_to_signals_labels(filename, regions_img)
 
-    region_ts = nifti_regions.fit_transform(filename, confounds=confounds)
+    region_ts = nisl.signals.clean(region_ts, low_pass=None,
+                                   detrend=True, standardize=True,
+                                   confounds=confounds,
+                                   t_r=2.5, high_pass=0.01
+                                   )
+    region_ts /= region_ts.std(axis=0)  # essential
 
     print("-- Computing covariance matrices ...")
     estimator = covariance.GraphLassoCV()
