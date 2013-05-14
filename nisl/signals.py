@@ -252,7 +252,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
        High-pass filtering should be kept small, to keep some
        sensitivity.
 
-       Filtering is only meaningful on evenly-sampled timeseries.
+       Filtering is only meaningful on evenly-sampled signals.
 
        Parameters
        ==========

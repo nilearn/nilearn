@@ -64,38 +64,37 @@ def plot_matrices(cov, prec, title, subject_n=0):
     pl.title(title + " / precision")
 
 
-if __name__ == "__main__":
-    subject_n = 1
+subject_n = 1
 
-    dataset = nisl.datasets.fetch_adhd()
-    filename = dataset["func"][subject_n]
-    confound_file = dataset["confounds"][subject_n]
+dataset = nisl.datasets.fetch_adhd()
+filename = dataset["func"][subject_n]
+confound_file = dataset["confounds"][subject_n]
 
-    print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-    regions_img = nisl.datasets.load_harvard_oxford(
-        "cort-maxprob-thr25-2mm", symmetric_split=True)
+print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
+regions_img = nisl.datasets.load_harvard_oxford(
+    "cort-maxprob-thr25-2mm", symmetric_split=True)
 
-    print("-- Computing confounds ...")
-    # Compcor on full image
-    hv_confounds = nisl.image.high_variance_confounds(filename)
-    mvt_confounds = np.loadtxt(confound_file, skiprows=1)
-    confounds = np.hstack((hv_confounds, mvt_confounds))
+print("-- Computing confounds ...")
+# Compcor on full image
+hv_confounds = nisl.image.high_variance_confounds(filename)
+mvt_confounds = np.loadtxt(confound_file, skiprows=1)
+confounds = np.hstack((hv_confounds, mvt_confounds))
 
-    print("-- Computing region signals ...")
-    region_ts, _ = nisl.region.img_to_signals_labels(filename, regions_img)
+print("-- Computing region signals ...")
+region_ts, _ = nisl.region.img_to_signals_labels(filename, regions_img)
 
-    region_ts = nisl.signals.clean(region_ts, low_pass=None,
-                                   detrend=True, standardize=True,
-                                   confounds=confounds,
-                                   t_r=2.5, high_pass=0.01
-                                   )
-    region_ts /= region_ts.std(axis=0)  # essential
+region_ts = nisl.signals.clean(region_ts, low_pass=None,
+                               detrend=True, standardize=True,
+                               confounds=confounds,
+                               t_r=2.5, high_pass=0.01
+                               )
+region_ts /= region_ts.std(axis=0)  # essential
 
-    print("-- Computing covariance matrices ...")
-    estimator = covariance.GraphLassoCV()
-    estimator.fit(region_ts)
+print("-- Computing covariance matrices ...")
+estimator = covariance.GraphLassoCV()
+estimator.fit(region_ts)
 
-    plot_matrices(estimator.covariance_, -estimator.precision_,
-                  title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
-                  subject_n=subject_n)
-    pl.show()
+plot_matrices(estimator.covariance_, -estimator.precision_,
+              title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
+              subject_n=subject_n)
+pl.show()

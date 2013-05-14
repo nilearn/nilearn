@@ -1,5 +1,8 @@
 """
-Regions of interest extraction and handling.
+Functions for processing region-defined signals.
+
+Two ways of defining regions are supported: as labels in a single 3D image,
+or as weights in one image per region (maps).
 """
 # Author: Philippe Gervais
 # License: simplified BSD
@@ -16,7 +19,7 @@ from . import masking
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 def img_to_signals_labels(niimgs, labels_img, mask_img=None,
                           background_label=0, order="F"):
-    """Extract region signals from fmri data.
+    """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
 
@@ -54,7 +57,8 @@ def img_to_signals_labels(niimgs, labels_img, mask_img=None,
 
     See also
     ========
-    nisl.region.labels_from_signals
+    nisl.region.signals_to_img_labels
+    nisl.region.img_to_signals_maps
     """
 
     labels_img = utils.check_niimg(labels_img)
@@ -100,7 +104,7 @@ def img_to_signals_labels(niimgs, labels_img, mask_img=None,
 
 def signals_to_img_labels(signals, labels_img, mask_img=None,
                     background_label=0, order="F"):
-    """Create image from region signals.
+    """Create image from region signals defined as labels.
 
     The same region signal is used for each voxel of the corresponding 3D
     volume.
@@ -131,7 +135,8 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     See also
     ========
-    nisl.region.signals_from_labels
+    nisl.region.img_to_signals_labels
+    nisl.region.signals_to_img_maps
     """
 
     labels_img = utils.check_niimg(labels_img)
@@ -179,7 +184,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
 
 def img_to_signals_maps(niimgs, maps_img, mask_img=None):
-    """Extract region signals from fmri data.
+    """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
 
@@ -208,7 +213,8 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
 
     See also
     ========
-    nisl.region.signals_from_labels
+    nisl.region.img_to_signals_labels
+    nisl.region.signals_to_img_maps
     """
 
     maps_img = utils.check_niimg(maps_img)
@@ -243,10 +249,31 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
 
 
 def signals_to_img_maps(signals, maps_img, mask_img=None):
-    """
+    """Create image from region signals defined as maps.
+
+    labels_img, mask_img must have the same shapes and affines.
+
+    Parameters
+    ==========
+    signals: numpy.ndarray
+        signals to process, as a 2D array. A signal is a column.
+
+    maps_img (niimg)
+        Region definitions using maps.
+
+    mask_img (niimg, optional)
+        Boolean array giving voxels to process. integer arrays also accepted,
+        zero meaning False.
+
+    Returns
+    =======
+    img (Nifti1Image)
+        Reconstructed image. affine and shape are those of maps_img.
+
     See also
     ========
-    nisl.region.img_from_labels
+    nisl.region.signals_to_img_labels
+    nisl.region.img_to_signals_maps
     """
 
     maps_img = utils.check_niimg(maps_img)
@@ -267,6 +294,7 @@ def signals_to_img_maps(signals, maps_img, mask_img=None):
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
 
     assert(maps_mask.shape == maps_data.shape[:3])
+    # TODO: take care of ordering (C/F) in "data".
     data = np.dot(signals, maps_data[maps_mask, :].T)
 
     return masking.unmask(data, nibabel.Nifti1Image(

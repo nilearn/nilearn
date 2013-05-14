@@ -100,10 +100,10 @@ Functions
    :toctree: generated/
    :template: function.rst
 
-   region.apply_regions
-   region.unapply_regions
-   region.regions_are_overlapping
-   region.unapply_mask_to_regions
+   region.img_to_signals_labels
+   region.signals_to_img_labels
+   region.img_to_signals_maps
+   region.signals_to_img_maps
 
 **See also:** nisl.masking.unmask()
 
@@ -154,7 +154,7 @@ Functions
 
 .. _io_ref:
 
-:mod:`nisl.io`: Loading and Preprocessing files easily
+:mod:`nisl.io`: Loading and Processing files easily
 ======================================================
 
 .. automodule:: nisl.io
@@ -173,4 +173,4 @@ Classes
 
    nifti_masker.NiftiMasker
    nifti_multi_masker.NiftiMultiMasker
-
+   nifti_region.NiftiLabelsMasker
