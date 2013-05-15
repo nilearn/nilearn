@@ -1,17 +1,21 @@
-"""Example showing how to compute a covariance matrix between brain regions.
-
-**Running this script may require to set the dirname parameter in the
-load_harvard_oxford() function below**.
+"""
+Computation of covariance matrix between brain regions (advanced)
+=================================================================
 
 The following things are performed:
+
 - parcellation loading, and signals extraction
 - improvement of fMRI data SNR (confound removal, filtering, etc.)
 - covariance/precision matrices computation
 - display of matrices
 
-This script is intended for advanced users only, since it makes use of
+This script is intended for advanced users only, because it makes use of
 low-level functions.
 """
+
+# Running this script may require to set the dirname parameter in the
+# load_harvard_oxford() function below
+
 import numpy as np
 import pylab as pl
 import matplotlib

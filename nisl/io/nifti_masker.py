@@ -90,6 +90,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     Attributes
     ----------
+
     `mask_img_`: Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
