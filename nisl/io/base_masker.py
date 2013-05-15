@@ -65,8 +65,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # Temporal
         # ========
         # Detrending (optional)
-        # Filtering (grab TR from header)
-        # Confounds (from csv file or numpy array)
+        # Filtering
+        # Confounds removing (from csv file or numpy array)
         # Normalizing
 
         if self.verbose > 1:

@@ -16,6 +16,7 @@ bold = haxby_files.func
 import nibabel
 nifti_img = nibabel.load(bold)
 fmri_data = nifti_img.get_data()
+fmri_affine = nifti_img.get_affine()
 
 # Visualization #############################################################
 import numpy as np
@@ -56,21 +57,22 @@ pl.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
 
 # Simple computation of a mask from the fMRI data
 from nisl.masking import compute_epi_mask
-mask = compute_epi_mask(nifti_img).get_data().astype(bool)
+mask_img = compute_epi_mask(nifti_img)
+mask_data = mask_img.get_data().astype(bool)
 
 # We create a new figure
 pl.figure()
 # A plot the axial view of the mask to compare with the axial
 # view of the raw data displayed previously
-pl.imshow(np.rot90(mask[:, :, 32]), interpolation='nearest')
+pl.imshow(np.rot90(mask_data[:, :, 32]), interpolation='nearest')
 
 # Applying the mask #########################################################
 
-# Applying the mask is just a simple array manipulation
-masked_data = fmri_data[mask]
+from nisl.masking import apply_mask
+masked_data = apply_mask(nifti_img, mask_img)
 
-# masked_data is now a voxel x time matrix. We can plot the first 10
-# lines: they correspond to time-series of 10 voxels on the side of the
+# masked_data shape is (instant number, voxel number). We can plot the first 10
+# lines: they correspond to timeseries of 10 voxels on the side of the
 # brain
 pl.figure()
 pl.plot(masked_data[:10].T)

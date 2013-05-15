@@ -1,17 +1,17 @@
 """
 Validation and conversion utilities.
 """
-# Author: Gael Varoquaux, Alexandre Abraham
+# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
-
 
 import collections
 import warnings
 
-import nibabel
 import numpy as np
 from scipy import ndimage
 from sklearn.externals.joblib import Memory
+
+import nibabel
 
 
 ###############################################################################
@@ -23,13 +23,13 @@ def largest_connected_component(volume):
 
     Parameters
     -----------
-    volume: 3D boolean array
-        3D array indicating a volume.
+    volume: numpy.array
+        3D boolean array indicating a volume.
 
     Returns
     --------
-    volume: 3D boolean array
-        3D array with only one connected component.
+    volume: numpy.array
+        3D boolean array with only one connected component.
     """
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
@@ -53,12 +53,13 @@ def is_a_niimg(obj):
 
     Parameters
     ----------
-    obj (any object)
+    obj: any object
         Tested object
 
     Returns
     -------
-    True if get_data and get_affine methods are present and callable,
+    is_niimg: boolean
+        True if get_data and get_affine methods are present and callable,
         False otherwise.
     """
 
@@ -98,14 +99,14 @@ def _repr_niimgs(niimgs):
 
 
 def check_niimg(niimg):
-    """Check that an object is a niimg or a string, ensure that data are loaded
+    """Check that niimg is a proper niimg. Turn filenames into objects.
 
     Parameters
     ----------
     niimg: string or object
         If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. If it is an object, check if get_data
-        and get_affine methods are present, raise an Exception otherwise.
+        call nibabel.load on it. If it is an object, check if get_data()
+        and get_affine() methods are present, raise TypeError otherwise.
 
     Returns
     -------
@@ -135,16 +136,17 @@ def check_niimg(niimg):
 
 
 def concat_niimgs(niimgs, dtype=np.float32):
-    """ Concatenate a list of niimgs
+    """Concatenate a list of niimgs
 
     Parameters
     ----------
-    niimgs: array of niimgs
-        List of niimgs to concatenate.
+    niimgs: iterable of niimgs
+        niimgs to concatenate.
 
     Returns
     -------
-    A single niimg
+    concatenated: nibabel.Nifti1Image
+        A single niimg.
     """
 
     first_niimg = check_niimg(iter(niimgs).next())
@@ -191,21 +193,27 @@ def check_niimgs(niimgs, accept_3d=False):
 
     Parameters
     ----------
-    niimgs: (list of)* string or object
-        If niimgs is a list, checks if data is really 4D. Then, considering
-        that it is a list of niimg and load them one by one.
+    niimgs: (iterable of)* strings or objects
+        If niimgs is an iterable, checks if data is really 4D. Then,
+        considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
+   accept_3d (boolean)
+       If True, consider a 3D image as a 4D one with last dimension equals
+       to 1.
+
     Returns
     -------
-    A list of nifti-like object (for the moment, nibabel.Nifti1Image)
+    niimg: nibabel.Nifti1Image
+        One 4D image. If 3D images were provided as input, this is the
+        concatenation of all of them.
 
     Notes
     -----
-    This application is the pendant of check_niimg for niimages with a session
-    level.
+    This function is the equivalent of check_niimg() for niimages with a
+    session level.
 
     Its application is idempotent.
     """
@@ -267,7 +275,7 @@ class CacheMixin(object):
     """
 
     def _cache(self, func, memory_level=1, **kwargs):
-        """ Return a joblib.Memory object if necessary.
+        """ Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for
@@ -277,18 +285,20 @@ class CacheMixin(object):
 
         Parameters
         ----------
-        func: python function
+        func: function
             The function which output is to be cached.
 
-        memory_level: integer
+        memory_level: int
             The memory_level from which caching must be enabled for the wrapped
             function.
 
         Returns
         -------
-        Either the original function, if there is no need to cache it (because
-        the requested level is lower than the value given to _cache()) or a
-        joblib.Memory object that wraps the function func.
+        mem: joblib.Memory
+            object that wraps the function func. This object may be
+            a no-op, if the requested level is lower than the value given
+            to _cache()). For consistency, a joblib.Memory object is always
+            returned.
         """
 
         # Creates attributes if they don't exist
@@ -319,26 +329,30 @@ class CacheMixin(object):
                 raise TypeError("'memory' argument must be a string or a "
                                 "joblib.Memory object.")
             if memory.cachedir is None:
-                warnings.warn("Caching has been enabled (memory_level = %d) but no"
-                              " Memory object or path has been provided (parameter"
-                              " memory). Caching deactivated for function %s." %
+                warnings.warn("Caching has been enabled (memory_level = %d) "
+                              "but no Memory object or path has been provided"
+                              " (parameter memory). Caching deactivated for "
+                              "function %s." %
                               (self.memory_level, func.func_name))
             return memory.cache(func, **kwargs)
 
 
 def _asarray(arr, dtype=None, order=None):
     # np.asarray does not take "K" and "A" orders in version 1.3.0
-    # changed_order is True when array order has changed (implying a copy)
-    changed_order = False
-    if order in ("K", "A"):
-        ret = np.asarray(arr, dtype=dtype)
+    if order in ("K", "A", None):
+        if dtype == np.bool and arr.itemsize == 1:
+            ret = arr.view(dtype=np.bool)
+        else:
+            ret = np.asarray(arr, dtype=dtype)
     else:
-        ret = np.asarray(arr, dtype=dtype, order=order)
-        if not ((arr.flags["C_CONTIGUOUS"] and order == "C")
-                or (arr.flags["F_CONTIGUOUS"] and order == "F")):
-            changed_order = True
+        if dtype == np.bool and arr.itemsize == 1\
+            and (order == "F" and arr.flags["F_CONTIGUOUS"]
+                 or order == "C" and arr.flags["C_CONTIGUOUS"]):
+            ret = arr.view(dtype=np.bool)
+        else:
+            ret = np.asarray(arr, dtype=dtype, order=order)
 
-    return ret, changed_order
+    return ret
 
 
 def as_ndarray(arr, copy=False, dtype=None, order='K'):
@@ -352,25 +366,31 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     casting can lead to performance improvements in some cases, by avoiding
     unnecessary copies.
 
+    If not specified, input array order is preserved, in all cases, even when
+    a copy is requested.
+
     Parameters
     ==========
-    arr (any value accepted by numpy.asarray)
-        input array
-    copy (boolean)
+    arr: array-like
+        input array. Any value accepted by numpy.asarray is valid.
+
+    copy: bool
         if True, force a copy of the array. Alway True when arr is a memmap.
-    dtype (any numpy dtype)
+
+    dtype: any numpy dtype
         dtype of the returned array. Performing copy and type conversion at the
         same time can in some cases avoid an additional copy.
-    order (str)
+
+    order: string
         gives the order of the returned array.
-        Valid values are: "C", "F", "A", "K".
+        Valid values are: "C", "F", "A", "K", None.
         default is "K". See ndarray.copy() for more information.
 
     Returns
     =======
-    nd_arr (numpy.ndarray)
-        Numpy array exactly like arr, but of class numpy.ndarray, and with no
-        link to any underlying file.
+    ret: numpy.ndarray
+        Numpy array containing the same data as arr, always of class
+        numpy.ndarray, and with no link to any underlying file.
     """
     # This function should work on numpy 1.3
     # in this version, astype() and copy() have no "order" keyword.
@@ -380,14 +400,17 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     #     memmaps) when dtype is unchanged.
     # .astype() always copies
 
+    if order not in ("C", "F", "A", "K", None):
+        raise ValueError("Invalid value for 'order': %s" % str(order))
+
     if isinstance(arr, np.memmap):
         if dtype is None:
-            if order in ("K", "A"):
+            if order in ("K", "A", None):
                 ret = np.array(np.asarray(arr), copy=True)
             else:
                 ret = np.array(np.asarray(arr), copy=True, order=order)
         else:
-            if order in ("K", "A"):
+            if order in ("K", "A", None):
                 # always copy (even when dtype does not change)
                 ret = np.asarray(arr).astype(dtype)
             else:
@@ -395,15 +418,17 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
                 # Changing order while reading through a memmap is incredibly
                 # inefficient.
                 ret = np.array(arr, copy=True)
-                ret = np.array(ret, dtype=dtype, order=order)
+                ret = _asarray(arr, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
-        if dtype is None:
-            ret, changed_order = _asarray(arr, order=order)
-            if copy and not changed_order:
+        ret = _asarray(arr, dtype=dtype, order=order)
+        # In the present cas, np.may_share_memory result is always reliable.
+        if np.may_share_memory(ret, arr) and copy:
+            # order-preserving copy
+            if ret.flags["F_CONTIGUOUS"]:
+                ret = ret.T.copy().T
+            else:
                 ret = ret.copy()
-        else:
-            ret, _ = _asarray(arr, dtype=dtype, order=order)
 
     elif isinstance(arr, (list, tuple)):
         if order in ("A", "K"):
