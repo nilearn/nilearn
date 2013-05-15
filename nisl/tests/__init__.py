@@ -6,5 +6,7 @@ from . import test_masking
 from . import test_datasets
 from . import test_resampling
 from . import test_signals
+from . import test_image
 from . import test_utils
 from . import test_searchlight
+from . import test_region

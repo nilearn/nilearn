@@ -23,7 +23,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
     """Nifti data loader with preprocessing for multiple subjects
 
     Parameters
-    ----------
+    ==========
     mask: filename or NiImage, optional
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters detailed below (mask_connected...) can be set to
@@ -94,22 +94,22 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed
 
     Attributes
-    ----------
+    ==========
     `mask_img_`: Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
-    `affine_`: 4x4 numpy array
+    `affine_`: 4x4 numpy.ndarray
         Affine of the transformed NiImages. If affine is different across
         subjects, contains the affine of the first subject on which other
         subject data have been resampled.
 
-    See also
+    See Also
     --------
-    nisl.masking.compute_epi_mask
-    nisl.resampling.resample_img
-    nisl.masking.apply_mask
-    nisl.signals.clean
+    nisl.resampling.resample_img: image resampling
+    nisl.masking.compute_epi_mask: mask computation
+    nisl.masking.apply_mask: mask application on image
+    nisl.signals.clean: confounds removal and general filtering of signals
     """
 
     def __init__(self, mask=None, smooth=False,

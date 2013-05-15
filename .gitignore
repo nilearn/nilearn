@@ -18,6 +18,8 @@ doc/datasets/generated/
 pip-log.txt
 .coverage
 coverage
+nosetests_coverage/
+.ropeproject/
 tags
 
 *.zip

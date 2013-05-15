@@ -1,13 +1,13 @@
-#Authors : Vincent Michel (vm.michel@gmail.com)
-#          Alexandre Gramfort (alexandre.gramfort@inria.fr)
+# Authors : Vincent Michel (vm.michel@gmail.com)
+#           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #
-#License: BSD 3 clause
+# License: simplified BSD
 
-import numpy as np
 import time
 import sys
-from sklearn.externals.joblib import Parallel, delayed, cpu_count
+import numpy as np
 
+from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn.svm import LinearSVC
 from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
@@ -29,7 +29,7 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     estimator: estimator object implementing 'fit'
         The object to use to fit the data
 
-    A : sparse matrix.
+    A: numpy sparse matrix.
         adjacency matrix. Defines for each sample the neigbhoring samples
         following a given structure of the data.
 
@@ -43,11 +43,11 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-    n_jobs: integer, optional
+    n_jobs: int, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose: integer, optional
+    verbose: int, optional
         The verbosity level. Defaut is 0
 
     Returns
@@ -76,7 +76,7 @@ class GroupIterator(object):
     n_features: int
         Total number of features
 
-    n_jobs: integer, optional
+    n_jobs: int, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'. Defaut is 1
     """
@@ -98,7 +98,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
 
     Parameters
     -----------
-    list_i: array of integers
+    list_i: array of int
         Indices of voxels to be processed by the thread.
 
     list_rows: array of array of integers
@@ -113,7 +113,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
     y: array-like
         The target variable to try to predict.
 
-    total: integer
+    total: int
         Total number of voxels
 
     score_func: callable, optional
@@ -126,13 +126,13 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-    verbose: integer, optional
+    verbose: int, optional
         The verbosity level. Defaut is 0
 
     Returns
     -------
-    par_scores: array of float
-        precision of each voxel
+    par_scores: numpy.ndarray
+        precision of each voxel. dtype: float64.
     """
     par_scores = np.zeros(len(list_rows))
     id = (list_i[0] + 1) / len(list_i) + 1
@@ -167,8 +167,6 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
 ##############################################################################
 ### Class for search_light ###################################################
 ##############################################################################
-
-
 class SearchLight(BaseEstimator):
     """Class to perform a search_light using an arbitrary type of classifier.
 
@@ -186,7 +184,7 @@ class SearchLight(BaseEstimator):
     estimator: estimator object implementing 'fit'
         The object to use to fit the data
 
-    n_jobs: integer, optional. Default is -1.
+    n_jobs: int, optional. Default is -1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
@@ -200,7 +198,7 @@ class SearchLight(BaseEstimator):
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-    verbose: integer, optional
+    verbose: int, optional
         The verbosity level. Defaut is False
 
     Notes

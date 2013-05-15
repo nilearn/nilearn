@@ -120,19 +120,19 @@
             sidebarbutton.height(bodywrapper.height());
 
 	});
-        
+
         </SCRIPT>
 
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
 
 .. only:: html
 
- .. sidebar:: Download 
-       
+ .. sidebar:: Download
+
     * `PDF, 2 pages per side <./_downloads/nisl.pdf>`_
 
     * `HTML and example files <https://github.com/nisl/nisl.github.com/zipball/master>`_
-    
+
     * `Source code (github) <https://github.com/nisl/tutorial>`_
 
 
@@ -159,11 +159,13 @@ User Guide
    unsupervised_learning.rst
    dataset_manipulation.rst
    Reference <modules/classes.rst>
+
 .. only:: html
+
    auto_examples/index
 
 
-..  
+..
  FIXME: I need the link below to make sure the banner gets copied to the
  target directory.
 
@@ -171,12 +173,12 @@ User Guide
 .. only:: html
 
  .. raw:: html
- 
+
    <div style='visibility: hidden ; height=0'>
 
  :download:`nisl.pdf`
 
  .. raw:: html
- 
+
    </div>
 

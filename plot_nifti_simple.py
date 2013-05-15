@@ -33,23 +33,23 @@ pl.title("Mask")
 
 ### Preprocess data ###########################################################
 nifti_masker.fit(dataset.func[0])
-fmri_masked = nifti_masker.transform(dataset.func[0]).T
+fmri_masked = nifti_masker.transform(dataset.func[0])
 
 ### Run an algorithm ##########################################################
 from sklearn.decomposition import FastICA
 n_components = 20
 ica = FastICA(n_components=n_components, random_state=42)
-components_masked = ica.fit_transform(fmri_masked)
+components_masked = ica.fit_transform(fmri_masked.T).T
 
 ### Reverse masking ###########################################################
-components = nifti_masker.inverse_transform(components_masked.T)
+components = nifti_masker.inverse_transform(components_masked)
 
 ### Show results ##############################################################
-components = np.ma.masked_equal(components.get_data(), 0)
+components_data = np.ma.masked_equal(components.get_data(), 0)
 pl.figure()
 pl.axis('off')
 pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
           interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[..., 20, 7]), interpolation='nearest',
+pl.imshow(np.rot90(components_data[..., 20, 7]), interpolation='nearest',
           cmap=pl.cm.hot)
 pl.show()
