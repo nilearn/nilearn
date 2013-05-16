@@ -280,8 +280,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
            confound removal)
 
        standardize: bool
-           If variances should be set to one and mean to zero for
-           all timeseries (before confound removal)
+           If True, returned signals are set to unit variance.
 
        Returns
        =======
@@ -299,7 +298,12 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
     """
 
     # Standardize / detrend
-    signals = _standardize(signals, normalize=standardize, detrend=detrend)
+    normalize = False
+    if confounds is not None:
+        # If confounds are to be removed, then force normalization to improve
+        # matrix conditioning.
+        normalize = True
+    signals = _standardize(signals, normalize=normalize, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
@@ -321,5 +325,9 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
     if low_pass is not None or high_pass is not None:
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
+
+    if standardize:
+        signals = _standardize(signals, normalize=True, detrend=False)
+        signals *= np.sqrt(signals.shape[0])  # for unit variance
 
     return signals
