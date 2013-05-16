@@ -125,6 +125,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     affine = niimg.get_affine()
 
     if copy:
+        # FIXME: "import copy" overwrites input parameter "copy"!
         import copy
         data = copy.copy(data)
         affine = copy.copy(affine)
