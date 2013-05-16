@@ -9,7 +9,7 @@ See also nisl.signal.
 import numpy as np
 import nibabel
 
-from . import signals
+from . import signal
 from . import utils
 from . import masking
 
@@ -34,7 +34,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
         percentile: float
             Highest-variance signals percentile to keep before computing the
             singular value decomposition.
-            signals.shape[0] * percentile must be greater than n_confounds.
+            mask_img.sum() * percentile must be greater than n_confounds.
 
         detrend: bool
             If True, detrend signals before processing.
@@ -58,7 +58,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
 
         See also
         ========
-        nisl.signals.high_variance_confounds
+        nisl.signal.high_variance_confounds
     """
 
     niimgs = utils.check_niimgs(niimgs)
@@ -70,7 +70,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
         # Not using apply_mask here saves memory in most cases.
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
-    return signals.high_variance_confounds(sigs, n_confounds=n_confounds,
+    return signal.high_variance_confounds(sigs, n_confounds=n_confounds,
                                            percentile=percentile,
                                            detrend=detrend)
 
