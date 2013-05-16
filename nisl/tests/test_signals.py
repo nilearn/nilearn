@@ -251,30 +251,42 @@ def test_high_variance_confounds():
                                      length=length, order="F")
 
     np.testing.assert_almost_equal(seriesC, seriesF, decimal=13)
-    outC = nisignals.high_variance_confounds(seriesC,
-                                             n_confounds=n_confounds)
-    outF = nisignals.high_variance_confounds(seriesF,
-                                             n_confounds=n_confounds)
+    outC = nisignals.high_variance_confounds(seriesC, n_confounds=n_confounds,
+                                             detrend=False)
+    outF = nisignals.high_variance_confounds(seriesF, n_confounds=n_confounds,
+                                             detrend=False)
     np.testing.assert_almost_equal(outC, outF, decimal=13)
 
     # Result must not be influenced by global scaling
     seriesG = 2 * seriesC
-    outG = nisignals.high_variance_confounds(seriesG,
-                                             n_confounds=n_confounds)
+    outG = nisignals.high_variance_confounds(seriesG, n_confounds=n_confounds,
+                                             detrend=False)
     np.testing.assert_almost_equal(outC, outG, decimal=13)
     assert(outG.shape == (length, n_confounds))
 
     # Changing percentile changes the result
     seriesG = seriesC
     outG = nisignals.high_variance_confounds(seriesG, percentile=2.,
-                                             n_confounds=n_confounds)
+                                             n_confounds=n_confounds,
+                                             detrend=False)
     assert_raises(AssertionError, np.testing.assert_almost_equal,
                   outC, outG, decimal=13)
     assert(outG.shape == (length, n_confounds))
 
     # Check shape of output
-    out = nisignals.high_variance_confounds(seriesG,
-                                            n_confounds=7)
+    out = nisignals.high_variance_confounds(seriesG, n_confounds=7,
+                                            detrend=False)
     assert(out.shape == (length, 7))
 
     # TODO: any other ideas?
+
+    # Adding a trend and detrending should give same results as with no trend.
+    seriesG = seriesC
+    trends = generate_trends(feature_number=feature_number, length=length)
+    seriesGt = seriesG + trends
+
+    outG = nisignals.high_variance_confounds(seriesG, detrend=False,
+                                             n_confounds=n_confounds)
+    outGt = nisignals.high_variance_confounds(seriesGt, detrend=True,
+                                             n_confounds=n_confounds)
+    np.testing.assert_almost_equal(outG, outGt, decimal=10)

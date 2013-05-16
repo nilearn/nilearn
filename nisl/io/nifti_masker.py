@@ -85,11 +85,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    verbose: interger, optional
+    verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
     Attributes
     ----------
+
     `mask_img_`: Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
@@ -113,7 +114,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  memory_level=0, memory=Memory(cachedir=None),
                  verbose=0
                  ):
-        # Mask is compulsory or computed
+        # Mask is provided or computed
         self.mask = mask
         self.sessions = sessions
         self.smooth = smooth

@@ -39,7 +39,7 @@ components_masked = ica.fit_transform(data_masked.T).T
 components_masked -= components_masked.mean(axis=0)
 components_masked /= components_masked.std(axis=0)
 # Threshold
-components_masked[np.abs(components_masked) < 1.3] = 0
+components_masked[components_masked < .8] = 0
 
 # Now invert the masking operation, going back to a full 3D
 # representation
@@ -55,17 +55,17 @@ mean_epi = mean_img.get_data()
 import pylab as pl
 pl.figure()
 pl.axis('off')
-vmax = np.max(np.abs(components[:, :, 19, 15]))
-pl.imshow(np.rot90(mean_epi[:, :, 19]), interpolation='nearest',
+vmax = np.max(np.abs(components[:, :, 25, 5]))
+pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
           cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 19, 15]), interpolation='nearest',
+pl.imshow(np.rot90(components[:, :, 25, 5]), interpolation='nearest',
           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 
 pl.figure()
 pl.axis('off')
-vmax = np.max(np.abs(components[:, :, 25, 19]))
-pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
+vmax = np.max(np.abs(components[:, :, 23, 12]))
+pl.imshow(np.rot90(mean_epi[:, :, 23]), interpolation='nearest',
           cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 25, 19]), interpolation='nearest',
+pl.imshow(np.rot90(components[:, :, 23, 12]), interpolation='nearest',
           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 pl.show()

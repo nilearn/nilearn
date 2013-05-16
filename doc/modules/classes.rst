@@ -83,6 +83,30 @@ Functions
    masking.apply_mask
    masking.unmask
 
+.. _region_ref:
+
+:mod:`nisl.region`: Regions Handling Utilities
+==============================================
+
+.. automodule:: nisl.region
+   :no-members:
+   :no-inherited-members:
+
+Functions
+---------
+.. currentmodule:: nisl
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   region.img_to_signals_labels
+   region.signals_to_img_labels
+   region.img_to_signals_maps
+   region.signals_to_img_maps
+
+**See also:** nisl.masking.unmask()
+
 .. _resampling_ref:
 
 :mod:`nisl.resampling`: Data Resampling Utilities
@@ -130,7 +154,7 @@ Functions
 
 .. _io_ref:
 
-:mod:`nisl.io`: Loading and Preprocessing files easily
+:mod:`nisl.io`: Loading and Processing files easily
 ======================================================
 
 .. automodule:: nisl.io
@@ -149,4 +173,4 @@ Classes
 
    nifti_masker.NiftiMasker
    nifti_multi_masker.NiftiMultiMasker
-
+   nifti_region.NiftiLabelsMasker
