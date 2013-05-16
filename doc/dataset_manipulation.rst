@@ -384,6 +384,6 @@ preprocessing procedure:
   * intersect several masks (useful for multi sessions/subjects): :func:`nisl.masking.intersect_masks`
   * unmasking: :func:`nisl.masking.unmask`
 
-* Cleaning signals: :func:`nisl.signals.clean`
+* Cleaning signals: :func:`nisl.signal.clean`
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
