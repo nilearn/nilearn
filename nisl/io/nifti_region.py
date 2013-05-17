@@ -321,7 +321,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             nibabel.Nifti1Image(self.maps_data_, self.maps_affine_),
             mask_img = self.mask_img_)
 
-        region_signals = self._cache(signals.clean, memory_level=1
+        region_signals = self._cache(signal.clean, memory_level=1
                                      )(region_signals,
                                        detrend=self.detrend,
                                        standardize=self.standardize,
