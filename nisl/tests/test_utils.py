@@ -210,16 +210,30 @@ def test_as_ndarray():
         (np.float, "C", True, None, "F", True),
         (np.float, "F", True, None, "C", True),
 
-        # Special case for int8 -> bool conversion.
+        # Special case for int8 <-> bool conversion.
         (np.int8, "C", False, np.bool, None, False),
         (np.int8, "F", False, np.bool, None, False),
         (np.int8, "C", False, np.bool, "C", False),
         (np.int8, "F", False, np.bool, "F", False),
+        (np.int8, "C", False, np.bool, "F", True),
+        (np.int8, "F", False, np.bool, "C", True),
 
         (np.int8, "C", True, np.bool, None, True),
         (np.int8, "F", True, np.bool, None, True),
         (np.int8, "C", True, np.bool, "C", True),
         (np.int8, "F", True, np.bool, "F", True),
+
+        (np.bool, "C", False, np.int8, None, False),
+        (np.bool, "F", False, np.int8, None, False),
+        (np.bool, "C", False, np.int8, "C", False),
+        (np.bool, "F", False, np.int8, "F", False),
+        (np.bool, "C", False, np.int8, "F", True),
+        (np.bool, "F", False, np.int8, "C", True),
+
+        (np.bool, "C", True, np.int8, None, True),
+        (np.bool, "F", True, np.int8, None, True),
+        (np.bool, "C", True, np.int8, "C", True),
+        (np.bool, "F", True, np.int8, "F", True),
         ]
 
     shape = (10, 11)
@@ -230,12 +244,16 @@ def test_as_ndarray():
                                 copy=copy, dtype=out_dtype, order=out_order)
         assert_true(not are_arrays_identical(arr1[0], arr2[0]) == copied,
                     msg=str(case))
+        if out_dtype is None:
+            assert_true(arr2.dtype == in_dtype, msg=str(case))
+        else:
+            assert_true(arr2.dtype == out_dtype, msg=str(case))
 
         result_order = out_order if out_order is not None else in_order
         if result_order == "F":
-            assert_true(arr2.flags["F_CONTIGUOUS"])
+            assert_true(arr2.flags["F_CONTIGUOUS"], msg=str(case))
         else:
-            assert_true(arr2.flags["C_CONTIGUOUS"])
+            assert_true(arr2.flags["C_CONTIGUOUS"], msg=str(case))
 
     ## memmap
     filename = osp.join(osp.dirname(__file__), "data", "mmap.dat")
