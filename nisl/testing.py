@@ -291,7 +291,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
 
 
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
-                       affine=np.eye(4)):
+                       affine=np.eye(4), rand_gen = np.random.RandomState(0)):
     """Generate a signal which can be used for testing.
 
     The return value is a 4D array, representing 3D volumes along time.
@@ -326,7 +326,6 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     full_shape = shape + (length, )
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
-    rand_gen = np.random.RandomState(0)
     width = [s / 2 for s in shape]
     shift = [s / 4 for s in shape]
 

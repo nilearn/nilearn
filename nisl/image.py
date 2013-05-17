@@ -7,6 +7,8 @@ See also nisl.signal.
 # License: simplified BSD
 
 import numpy as np
+import nibabel
+
 from . import signals
 from . import utils
 from . import masking
@@ -71,3 +73,52 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
     return signals.high_variance_confounds(sigs, n_confounds=n_confounds,
                                            percentile=percentile,
                                            detrend=detrend)
+
+
+def smooth(niimgs, smooth):
+    """Smooth images by applying a Gaussian filter.
+
+    Apply a Gaussian filter along the three first dimensions of arr.
+    In all cases, non-finite values in input image are replaced by zeros.
+
+    Parameters
+    ==========
+    niimgs: niimgs or iterable of niimgs
+        One or several niimage(s), either 3D or 4D.
+
+    smooth: scalar or numpy.ndarray
+        Smoothing strength, as a Full-Width at Half Maximum, in millimeters.
+        If a scalar is given, width is identical on all three directions.
+        A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If smooth is None, no filtering is performed (useful when just removal
+        of non-finite values is needed)
+
+    Returns
+    =======
+    filtered_img: nibabel.Nifti1Image or list of.
+        Input image, filtered. If niimgs is an iterable, then filtered_img is a
+        list.
+    """
+
+    # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
+    # See http://bugs.python.org/issue7624
+    if hasattr(niimgs, "__iter__") \
+       and not isinstance(niimgs, basestring):
+        single_img = False
+    else:
+        single_img = True
+        niimgs = [niimgs]
+
+    ret = []
+    for img in niimgs:
+        img = utils.check_niimg(img)
+        affine = img.get_affine()
+        filtered = masking._smooth_array(img.get_data(), affine,
+                                         smooth=smooth, ensure_finite=True,
+                                         copy=True)
+        ret.append(nibabel.Nifti1Image(filtered, affine))
+
+    if single_img:
+        return ret[0]
+    else:
+        return ret
