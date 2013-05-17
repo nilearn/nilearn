@@ -138,7 +138,8 @@ def test_detrend():
 
     # Mean removal only (out-of-place)
     detrended = nisignal._detrend(x, inplace=False, type="constant")
-    assert_true(abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max()
+                < 15. * np.finfo(np.float).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignal._detrend(x, inplace=False)
@@ -228,11 +229,11 @@ def test_clean_confounds():
 
     # Test no-op
     input_signals = 10 * signals
-    cleaned_signals = nisignals.clean(input_signals, detrend=False,
+    cleaned_signals = nisignal.clean(input_signals, detrend=False,
                                       standardize=False)
     np.testing.assert_almost_equal(cleaned_signals, input_signals)
 
-    cleaned_signals = nisignals.clean(input_signals, detrend=False,
+    cleaned_signals = nisignal.clean(input_signals, detrend=False,
                                       standardize=True)
     np.testing.assert_almost_equal(cleaned_signals.var(axis=0),
                                    np.ones(cleaned_signals.shape[1]))

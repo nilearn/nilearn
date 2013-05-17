@@ -73,7 +73,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smooth=None, standardize=False, detrend=False,
+                 smooth=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -163,8 +163,6 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
                                        confounds=confounds)
-        # FIXME: put into signal.clean()
-        region_signals /= region_signal.std(axis=0)
         return region_signals
 
     def inverse_transform(self, signals):
