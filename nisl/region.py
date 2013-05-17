@@ -212,7 +212,7 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
 
-    labels: numpy.ndarray
+    labels: list
         Indices of regions that have a non-empty intersection with mask.
         len(indices) == region_signals.shape[1]. In other words:
         maps_img[..., labels[n]] is the region that has been used to extract
@@ -252,9 +252,9 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
 
     data = niimgs.get_data()
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
-                           data[maps_mask, :])[0].T
+                                  data[maps_mask, :])[0].T
 
-    return region_signals, labels
+    return region_signals, list(labels)
 
 
 def signals_to_img_maps(region_signals, maps_img, mask_img=None):
