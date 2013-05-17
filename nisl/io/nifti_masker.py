@@ -37,19 +37,19 @@ class NiftiMasker(BaseMasker, CacheMixin):
         their mean is put to 0 and their variance to 1.
 
     detrend: boolean, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     low_pass: False or float, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     high_pass: False or float, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     t_r: float, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     target_affine: 3x3 or 4x4 matrix, optional
@@ -103,7 +103,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nisl.masking.compute_epi_mask
     nisl.resampling.resample_img
     nisl.masking.apply_mask
-    nisl.signals.clean
+    nisl.signal.clean
     """
     def __init__(self, mask=None, sessions=None, smooth=False,
                  standardize=False, detrend=False,
@@ -195,8 +195,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
             Data to be preprocessed
 
         confounds: CSV file path or 2D matrix
-            This parameter is passed to signals.clean. Please see the related
-            documentation for details
+            This parameter is passed to nisl.signal.clean. Please see the
+            related documentation for details
         """
         return self.transform_single_niimgs(
             niimgs, self.sessions, confounds)

@@ -11,7 +11,7 @@ import nibabel
 def test_high_variance_confounds():
     # See also test_signals.test_high_variance_confounds()
     # There is only tests on what is added by image.high_variance_confounds()
-    # compared to signals.high_variance_confounds()
+    # compared to signal.high_variance_confounds()
 
     shape = (40, 41, 42)
     length = 17

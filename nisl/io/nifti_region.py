@@ -11,7 +11,7 @@ import nibabel
 
 from .. import utils
 from ..utils import CacheMixin
-from .. import signals
+from .. import signal
 from .. import region
 from .. import masking
 
@@ -39,19 +39,19 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         their mean is put to 0 and their variance to 1.
 
     detrend: boolean, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     low_pass: False or float, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     high_pass: False or float, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     t_r: float, optional
-        This parameter is passed to signals.clean. Please see the related
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     memory: joblib.Memory or str, optional
@@ -73,7 +73,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smooth=None, standardize=False, detrend=False,
+                 smooth=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -155,7 +155,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             nibabel.Nifti1Image(self.labels_data_, self.labels_affine_),
             background_label=self.background_label)
 
-        region_signals = self._cache(signals.clean, memory_level=1
+        region_signals = self._cache(signal.clean, memory_level=1
                                      )(region_signals,
                                        detrend=self.detrend,
                                        standardize=self.standardize,
@@ -163,8 +163,6 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
                                        confounds=confounds)
-        # FIXME: put into signals.clean()
-        region_signals /= region_signals.std(axis=0)
         return region_signals
 
     def inverse_transform(self, signals):

@@ -10,7 +10,7 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from .. import resampling
-from .. import signals
+from .. import signal
 from .. import utils
 from ..utils import CacheMixin
 
@@ -72,7 +72,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.verbose > 1:
             print "[%s.transform] Cleaning signal" % self.__class__.__name__
         if sessions is None:
-            data = self._cache(signals.clean, memory_level=2)(
+            data = self._cache(signal.clean, memory_level=2)(
                 data,
                 confounds=confounds, low_pass=self.low_pass,
                 high_pass=self.high_pass, t_r=self.t_r,
@@ -82,7 +82,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             for s in np.unique(sessions):
                 if confounds is not None:
                     confounds = confounds[sessions == s]
-                data[:, sessions == s] = self._cache(signals.clean,
+                data[:, sessions == s] = self._cache(signal.clean,
                                                     memory_level=2)(
                     data[:, sessions == s],
                     confounds=confounds,

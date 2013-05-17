@@ -131,16 +131,16 @@ Functions
    resampling.get_bounds
    resampling.resample_img
 
-.. _signals_ref:
+.. _signal_ref:
 
-:mod:`nisl.signals`: Preprocessing Time Series
+:mod:`nisl.signal`: Preprocessing Time Series
 ==============================================
 
-.. automodule:: nisl.signals
+.. automodule:: nisl.signal
    :no-members:
    :no-inherited-members:
 
-**User guide:** See the :ref:`signals` section for further details.
+**User guide:** See the :ref:`signal` section for further details.
 
 Functions
 ---------
@@ -150,7 +150,7 @@ Functions
    :toctree: generated/
    :template: function.rst
 
-   signals.clean
+   signal.clean
 
 .. _io_ref:
 

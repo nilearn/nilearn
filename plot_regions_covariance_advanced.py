@@ -25,7 +25,7 @@ from sklearn import covariance
 import nisl.datasets
 import nisl.image
 import nisl.region
-import nisl.signals
+import nisl.signal
 
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99
@@ -87,7 +87,7 @@ confounds = np.hstack((hv_confounds, mvt_confounds))
 print("-- Computing region signals ...")
 region_ts, _ = nisl.region.img_to_signals_labels(filename, regions_img)
 
-region_ts = nisl.signals.clean(region_ts, low_pass=None,
+region_ts = nisl.signal.clean(region_ts, low_pass=None,
                                detrend=True, standardize=True,
                                confounds=confounds,
                                t_r=2.5, high_pass=0.01
