@@ -208,9 +208,15 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
 
     Returns
     =======
-    signals: numpy.ndarray
+    region_signals: numpy.ndarray
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
+
+    labels: numpy.ndarray
+        Indices of regions that have a non-empty intersection with mask.
+        len(indices) == region_signals.shape[1]. In other words:
+        maps_img[..., labels[n]] is the region that has been used to extract
+        signal region_signals[:, n].
 
     See also
     ========
@@ -237,26 +243,28 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
             raise ValueError("mask_img and niimgs shapes must be identical.")
         if abs(mask_img.get_affine() - affine).max() > 1e-9:
             raise ValueError("mask_img and niimgs affines must be identical")
-        maps_data, maps_mask, _ = _trim_maps(maps_data, mask_img.get_data())
+        maps_data, maps_mask, labels = \
+                   _trim_maps(maps_data, mask_img.get_data())
         maps_mask = utils.as_ndarray(maps_mask, dtype=np.bool)
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
+        labels = np.arange(maps_data.shape[-1], dtype=np.int)
 
     data = niimgs.get_data()
-    signals = linalg.lstsq(maps_data[maps_mask, :],
+    region_signals = linalg.lstsq(maps_data[maps_mask, :],
                            data[maps_mask, :])[0].T
 
-    return signals
+    return region_signals, labels
 
 
-def signals_to_img_maps(signals, maps_img, mask_img=None):
+def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     """Create image from region signals defined as maps.
 
     labels_img, mask_img must have the same shapes and affines.
 
     Parameters
     ==========
-    signals: numpy.ndarray
+    region_signals: numpy.ndarray
         signals to process, as a 2D array. A signal is a column.
 
     maps_img: niimg
@@ -295,8 +303,8 @@ def signals_to_img_maps(signals, maps_img, mask_img=None):
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
 
     assert(maps_mask.shape == maps_data.shape[:3])
-    # TODO: take care of ordering (C/F) in "data".
-    data = np.dot(signals, maps_data[maps_mask, :].T)
+    # TODO: pay attention to ordering (C/F) in "data".
+    data = np.dot(region_signals, maps_data[maps_mask, :].T)
 
     return masking.unmask(data, nibabel.Nifti1Image(
         utils.as_ndarray(maps_mask, dtype=np.int8), affine)

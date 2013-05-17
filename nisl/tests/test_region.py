@@ -201,7 +201,8 @@ def test_signal_extraction_with_maps():
     img = nibabel.Nifti1Image(data, np.eye(4))
 
     ## Get signals
-    signals_r = region.img_to_signals_maps(img, maps_img, mask_img=mask_img)
+    signals_r, labels = region.img_to_signals_maps(img, maps_img,
+                                                   mask_img=mask_img)
 
     # The output must be identical to the input signals, because every region
     # is homogeneous: there is the same signal in all voxels of one given
@@ -209,7 +210,7 @@ def test_signal_extraction_with_maps():
     np.testing.assert_almost_equal(signals, signals_r)
 
     # Same thing without mask (in that case)
-    signals_r = region.img_to_signals_maps(img, maps_img)
+    signals_r, labels = region.img_to_signals_maps(img, maps_img)
     np.testing.assert_almost_equal(signals, signals_r)
 
     ## Recover image
