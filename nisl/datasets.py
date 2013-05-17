@@ -994,7 +994,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
 
 def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
                verbose=0):
-    """Download and loads the ADHD resting-state dataset.
+    """Download and load the ADHD resting-state dataset.
 
     Parameters
     ----------
@@ -1069,6 +1069,63 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
         confounds.append(files[i])
 
     return Bunch(func=func, confounds=confounds)
+
+
+def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
+    """Download and load the MSDL brain atlas.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+        - 'labels': str. Path to csv file containing labels.
+        - 'maps': str. path to nifti file containing regions definition.
+
+    References
+    ----------
+    :Download:
+        https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip
+
+    :Paper to cite:
+        `Multi-subject dictionary learning to segment an atlas of brain
+        spontaneous activity <http://hal.inria.fr/inria-00588898/en>`_
+        Gaël Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel,
+        Bertrand Thirion. Information Processing in Medical Imaging, 2011,
+        pp. 562-573, Lecture Notes in Computer Science.
+
+    :Other references:
+        `Learning and comparing functional connectomes across subjects
+        <http://hal.inria.fr/hal-00812911/en>`_.
+        Gaël Varoquaux, R.C. Craddock NeuroImage, 2013.
+
+    """
+    dataset_name = "msdl_atlas"
+    file_names = ['msdl_rois_labels.csv', 'msdl_rois.nii']
+    tars = ['MSDL_rois.zip']
+    path = "MSDL_rois"  # created by unzipping the above archive.
+
+    paths = [os.path.join(path, fname) for fname in file_names]
+
+    try:
+        files = _get_dataset(dataset_name, paths, data_dir=data_dir)
+    except IOError:
+        if url is None:
+            url = 'https://team.inria.fr/parietal/files/2013/05/' + tars[0]
+        _fetch_dataset(dataset_name, [url], data_dir=data_dir, resume=resume,
+                       verbose=verbose)
+        files = _get_dataset(dataset_name, paths, data_dir=data_dir)
+
+    return Bunch(labels=files[0], maps=files[1])
 
 
 def load_harvard_oxford(atlas_name,
