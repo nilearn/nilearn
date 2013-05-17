@@ -4,6 +4,8 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
+import warnings
+
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from nibabel import Nifti1Image
@@ -124,11 +126,22 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # method is possible for a given clustering algorithm
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
-            return self.fit(X, **fit_params).transform(X, confounds=confounds)
+            if self.mask is None:
+                return self.fit(X, **fit_params
+                                ).transform(X, confounds=confounds)
+            else:
+                return self.fit(**fit_params).transform(X, confounds=confounds)
         else:
             # fit method of arity 2 (supervised transformation)
-            return self.fit(X, y, **fit_params) \
-                .transform(X, confounds=confounds)
+            if self.mask is None:
+                return self.fit(X, y, **fit_params
+                                ).transform(X, confounds=confounds)
+            else:
+                warnings.warn('[%s.fit] Generation of a mask has been'
+                              ' requested (y != None) while a mask has'
+                              ' been provided at masker creation. Given mask'
+                              ' will be used.' % self.__class__.__name__)
+                return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
         mask_img = utils.check_niimg(self.mask_img_)

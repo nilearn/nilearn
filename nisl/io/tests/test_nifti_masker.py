@@ -62,8 +62,7 @@ def test_matrix_orientation():
     # would leave a null signal. Along the correct axis, the step remains.
     fmri, mask = testing.generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask=mask, standardize=True, detrend=True)
-    masker.fit()
-    timeseries = masker.transform(fmri)
+    timeseries = masker.fit_transform(fmri)
     assert(timeseries.shape[0] == fmri.shape[3])
     assert(timeseries.shape[1] == mask.get_data().sum())
     std = timeseries.std(axis=0)
