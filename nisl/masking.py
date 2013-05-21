@@ -502,10 +502,11 @@ def unmask(X, mask_img):
     data: nifti-like image (or list of)
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
+
         - X.ndim == 2:
-        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+          Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
         - X.ndim == 1:
-        Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
+          Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
     """
 
     if isinstance(X, list):
