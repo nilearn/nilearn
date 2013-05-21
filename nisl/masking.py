@@ -150,8 +150,8 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
-    lower_cutoff = np.floor(lower_cutoff * len(sorted_input))
-    upper_cutoff = np.floor(upper_cutoff * len(sorted_input))
+    lower_cutoff = int(np.floor(lower_cutoff * len(sorted_input)))
+    upper_cutoff = int(np.floor(upper_cutoff * len(sorted_input)))
 
     delta = sorted_input[lower_cutoff + 1:upper_cutoff + 1] \
         - sorted_input[lower_cutoff:upper_cutoff]
