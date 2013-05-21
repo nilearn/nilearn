@@ -5,7 +5,7 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_true, assert_false, assert_raises
+from nose.tools import assert_raises, assert_equal
 import numpy as np
 
 import nibabel
@@ -46,11 +46,11 @@ def test_nifti_labels_masker():
     # No exception raised here
     masker11 = NiftiLabelsMasker(labels11_img)
     signals11 = masker11.fit().transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    assert_equal(signals11.shape, (length, n_regions))
 
     masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img)
     signals11 = masker11.fit().transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    assert_equal(signals11.shape, (length, n_regions))
 
     # Test all kinds of mismatch between shapes and between affines
     masker11 = NiftiLabelsMasker(labels11_img)
@@ -67,15 +67,15 @@ def test_nifti_labels_masker():
     # Transform, with smoothing (smoke test)
     masker11 = NiftiLabelsMasker(labels11_img, smooth=3)
     signals11 = masker11.fit().transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    assert_equal(signals11.shape, (length, n_regions))
 
     masker11 = NiftiLabelsMasker(labels11_img, smooth=3)
     signals11 = masker11.fit_transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    assert_equal(signals11.shape, (length, n_regions))
 
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
-    assert_true(fmri11_img_r.shape == fmri11_img.shape)
+    assert_equal(fmri11_img_r.shape, fmri11_img.shape)
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
                                    fmri11_img.get_affine())
 
@@ -102,22 +102,29 @@ def test_nifti_maps_masker():
                   testing.generate_maps(shape1, n_regions, affine=affine1)
 
     # No exception raised here
-    masker11 = NiftiMapsMasker(labels11_img)
-    signals11 = masker11.fit().transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    for create_files in (True, False):
+        with testing.write_tmp_imgs(labels11_img, create_files=create_files) \
+                as labels11:
+            masker11 = NiftiMapsMasker(labels11)
+            signals11 = masker11.fit().transform(fmri11_img)
+            assert_equal(signals11.shape, (length, n_regions))
 
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img)
     signals11 = masker11.fit().transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    assert_equal(signals11.shape, (length, n_regions))
 
     # Test all kinds of mismatch between shapes and between affines
-    masker11 = NiftiMapsMasker(labels11_img)
-    masker11.fit()
-    assert_raises(ValueError, masker11.transform, fmri12_img)
-    assert_raises(ValueError, masker11.transform, fmri21_img)
+    for create_files in (True, False):
+        with testing.write_tmp_imgs(labels11_img, mask12_img,
+                                    create_files=create_files) as images:
+            labels11, mask12 = images
+            masker11 = NiftiMapsMasker(labels11)
+            masker11.fit()
+            assert_raises(ValueError, masker11.transform, fmri12_img)
+            assert_raises(ValueError, masker11.transform, fmri21_img)
 
-    masker11 = NiftiMapsMasker(labels11_img, mask_img=mask12_img)
-    assert_raises(ValueError, masker11.fit)
+            masker11 = NiftiMapsMasker(labels11, mask_img=mask12)
+            assert_raises(ValueError, masker11.fit)
 
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
     assert_raises(ValueError, masker11.fit)
@@ -125,14 +132,14 @@ def test_nifti_maps_masker():
     # Transform, with smoothing (smoke test)
     masker11 = NiftiMapsMasker(labels11_img, smooth=3)
     signals11 = masker11.fit().transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    assert_equal(signals11.shape, (length, n_regions))
 
     masker11 = NiftiMapsMasker(labels11_img, smooth=3)
     signals11 = masker11.fit_transform(fmri11_img)
-    assert_true(signals11.shape == (length, n_regions))
+    assert_equal(signals11.shape, (length, n_regions))
 
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
-    assert_true(fmri11_img_r.shape == fmri11_img.shape)
+    assert_equal(fmri11_img_r.shape, fmri11_img.shape)
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
                                    fmri11_img.get_affine())

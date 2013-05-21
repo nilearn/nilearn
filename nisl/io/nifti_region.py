@@ -16,6 +16,29 @@ from .. import region
 from .. import masking
 
 
+def _compose_err_msg(msg, **kwargs):
+    """Append key-value pairs to msg, for display.
+
+    Parameters
+    ==========
+    msg: string
+        arbitrary message
+    kwargs: dict
+        arbitrary dictionary
+
+    Returns
+    =======
+    updated_msg: string
+        msg, with "key: value" appended. Only string values are appended.
+    """
+    updated_msg = msg
+    for k, v in kwargs.iteritems():
+        if isinstance(v, basestring):
+            updated_msg += "\n" + k + ": " + v
+
+    return updated_msg
+
+
 class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Extract labeled-defined region signals from images.
 
@@ -96,8 +119,10 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(self, y=None):
+    def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
+
+        All parameters are unused, they are for scikit-learn compatibility.
         """
         labels_img = utils.check_niimg(self.labels_img)
         # Since a copy is required, order can be forced as well.
@@ -109,10 +134,14 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.mask_img is not None:
             mask_data, mask_affine = masking._load_mask_img(self.mask_img)
             if mask_data.shape != self.labels_data_.shape[:3]:
-                raise ValueError("Regions and mask do not have the same shape")
-            if abs(mask_affine - self.labels_affine_).max() > 1e-9:
-                raise ValueError("Regions and mask do not have the same "
-                                 "affine.")
+                raise ValueError(
+                    _compose_err_msg(
+                        "Regions and mask do not have the same shape",
+                        mask_img=self.mask_img, labels_img=self.labels_img))
+            if not np.allclose(mask_affine, self.labels_affine_):
+                raise ValueError(_compose_err_msg(
+                    "Regions and mask do not have the same affine.",
+                    mask_img=self.mask_img, labels_img=self.labels_img))
             self.labels_data_[
                 np.logical_not(mask_data)] = self.background_label
 
@@ -262,8 +291,10 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(self, y=None):
+    def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
+
+        All parameters are unused, they are for scikit-learn compatibility.
         """
         maps_img = utils.check_niimg(self.maps_img)
         # Since a copy is required, order can be forced as well.
@@ -275,11 +306,16 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.mask_img is not None:
             self.mask_img_ = utils.check_niimg(self.mask_img)
             if self.mask_img_.shape != self.maps_data_.shape[:3]:
-                raise ValueError("Regions and mask do not have the same shape")
-            if abs(self.mask_img_.get_affine() - self.maps_affine_
-                   ).max() > 1e-9:
-                raise ValueError("Regions and mask do not have the same "
-                                 "affine.")
+                raise ValueError(
+                    _compose_err_msg(
+                        "Regions and mask do not have the same shape",
+                        mask_img=self.mask_img, maps_img=self.maps_img))
+            if not np.allclose(self.mask_img_.get_affine(),
+                               self.maps_affine_):
+                raise ValueError(
+                    _compose_err_msg(
+                        "Regions and mask do not have the same affine.",
+                        mask_img=self.mask_img, maps_img=self.maps_img))
         else:
             self.mask_img_ = None
 
@@ -296,6 +332,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         niimgs: niimg
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
+
         confounds: array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
@@ -336,13 +373,13 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ==========
-        region_signals (2D numpy.ndarray)
+        region_signals: 2D numpy.ndarray
             Signal for each region.
             shape: (number of scans, number of regions)
 
         Returns
         =======
-        voxel_signals (Nifti1Image)
+        voxel_signals: nibabel.Nifti1Image
             Signal for each voxel
             shape: (number of scans, number of voxels)
         """
