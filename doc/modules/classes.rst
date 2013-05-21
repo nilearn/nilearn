@@ -43,7 +43,7 @@ Functions
    :no-members:
    :no-inherited-members:
 
-**User guide:** See the :ref:`nifti_masker` and :ref:`nifti_masker_advanced` section for further details.
+**User guide:** See the :ref:`nifti_masker` section for further details.
 
 Classes
 -------
@@ -56,6 +56,7 @@ Classes
    nifti_masker.NiftiMasker
    nifti_multi_masker.NiftiMultiMasker
    nifti_region.NiftiLabelsMasker
+
 .. _masking_ref:
 
 :mod:`nisl.masking`: Data Masking Utilities
@@ -103,7 +104,9 @@ Functions
    region.img_to_signals_maps
    region.signals_to_img_maps
 
-**See also:** nisl.masking.unmask()
+.. seealso::
+   
+   :func:`nisl.masking.unmask`
 
 .. _resampling_ref:
 
