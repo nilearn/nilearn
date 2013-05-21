@@ -195,8 +195,12 @@ def test_unmask():
 
     # Error test
     dummy = generator.rand(500)
-    assert_raises(ValueError, unmask, dummy, mask_img)
-    assert_raises(ValueError, unmask, [dummy], mask_img)
+    if np.__version__ > '1.8':
+        assert_raises(IndexError, unmask, dummy, mask_img)
+        assert_raises(IndexError, unmask, [dummy], mask_img)
+    else:
+        assert_raises(ValueError, unmask, dummy, mask_img)
+        assert_raises(ValueError, unmask, [dummy], mask_img)
 
 
 def test_intersect_masks():
