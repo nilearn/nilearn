@@ -474,7 +474,6 @@ def _unmask_nd(X, mask):
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
     """
 
-    # Much faster than nisl unmask, and uses three times less memory !
     if mask.dtype != np.bool:
         raise ValueError("mask must be a boolean array")
     if X.ndim != 2:

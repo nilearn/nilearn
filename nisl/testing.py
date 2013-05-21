@@ -203,7 +203,7 @@ def generate_regions_ts(n_features, n_regions,
 
 
 def generate_maps(shape, n_regions, overlap=0, border=1,
-                  window="boxcar", rand_gen=None):
+                  window="boxcar", rand_gen=None, affine=np.eye(4)):
     """Generate a 4D volume containing several maps.
     Parameters
     ==========
@@ -229,12 +229,12 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
                              rand_gen=rand_gen, window=window)
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4)):
+                             affine=np.eye(4), dtype=np.int):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -271,9 +271,9 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     # replace weights with labels
     for n, row in zip(labels, regions):
         row[row > 0] = n
-    return masking.unmask(regions.sum(axis=0),
-                          Nifti1Image(np.ones(shape, dtype=np.int8), affine)
-                          )
+    data = np.zeros(shape, dtype=dtype)
+    data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
+    return Nifti1Image(data, affine)
 
 
 def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
