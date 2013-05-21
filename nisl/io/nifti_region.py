@@ -14,6 +14,8 @@ from ..utils import CacheMixin
 from .. import signal
 from .. import region
 from .. import masking
+from .. import resampling
+from .. import image
 
 
 def _compose_err_msg(msg, **kwargs):
@@ -180,9 +182,9 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_labels, memory_level=1)(
-            nibabel.Nifti1Image(data, affine),
-            nibabel.Nifti1Image(self.labels_data_, self.labels_affine_),
-            background_label=self.background_label)
+                nibabel.Nifti1Image(data, affine),
+                nibabel.Nifti1Image(self.labels_data_, self.labels_affine_),
+                background_label=self.background_label)
 
         region_signals = self._cache(signal.clean, memory_level=1
                                      )(region_signals,
@@ -250,6 +252,13 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    target: string, optional.
+        Gives which image gives the final shape/size. Accepted values
+        are "mask", "maps" and None. For example, if `target`
+        is "mask" then maps_img and images provided to fit() are resampled to
+        the shape and affine of mask_img. "None" means no resampling. If shapes
+        and affines do not match, a ValueError is raised.
+
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
         By default, no caching is done. If a string is given, it is the
@@ -265,12 +274,14 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     See also
     ========
     nisl.io.NiftiMasker
+    nisl.io.NiftiLabelsMasker
     """
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
                  smooth=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
+                 target=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img
@@ -286,38 +297,71 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
 
+        # Parameters for resampling
+        self.target = target
+
         # Parameters for joblib
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+
+        if target not in ("mask", "maps", None):
+            raise ValueError("invalid value for 'target' parameter")
+
+        if self.mask_img is None and target == "mask":
+            raise ValueError("target has been set to 'mask' but no mask "
+                             "has been provided.\nSet target to something else"
+                             " or provide a mask.")
 
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
 
         All parameters are unused, they are for scikit-learn compatibility.
         """
-        maps_img = utils.check_niimg(self.maps_img)
-        # Since a copy is required, order can be forced as well.
-        self.maps_data_ = utils.as_ndarray(maps_img.get_data(),
-                                        copy=True, order="C")
-        self.maps_affine_ = utils.as_ndarray(maps_img.get_affine())
-        del maps_img
+        # Load images
+        self.maps_img_ = utils.check_niimg(self.maps_img)
 
         if self.mask_img is not None:
             self.mask_img_ = utils.check_niimg(self.mask_img)
-            if self.mask_img_.shape != self.maps_data_.shape[:3]:
+        else:
+            self.mask_img_ = None
+
+        # Check shapes and affines or resample.
+        if self.target is None and self.mask_img_ is not None:
+            if utils._get_shape(self.mask_img_) \
+                    != utils._get_shape(self.maps_img_)[:3]:
                 raise ValueError(
                     _compose_err_msg(
                         "Regions and mask do not have the same shape",
                         mask_img=self.mask_img, maps_img=self.maps_img))
             if not np.allclose(self.mask_img_.get_affine(),
-                               self.maps_affine_):
+                               self.maps_img_.get_affine()):
                 raise ValueError(
                     _compose_err_msg(
                         "Regions and mask do not have the same affine.",
                         mask_img=self.mask_img, maps_img=self.maps_img))
-        else:
-            self.mask_img_ = None
+
+            # Since a copy is required, order can be forced as well.
+            maps_data = utils.as_ndarray(self.maps_img_.get_data(),
+                                          copy=True, order="C")
+            maps_affine = utils.as_ndarray(self.maps_img_.get_affine())
+            self.maps_img_ = nibabel.Nifti1Image(maps_data, maps_affine)
+
+        elif self.target == "mask" and self.mask_img_ is not None:
+            self.maps_img_ = resampling.resample_img(
+                self.maps_img_,
+                target_affine=self.mask_img_.get_affine(),
+                target_shape=utils._get_shape(self.mask_img_),
+                interpolation="nearest",
+                copy=True)
+
+        elif self.target == "maps" and self.mask_img_ is not None:
+            self.mask_img_ = resampling.resample_img(
+                self.mask_img_,
+                target_affine=self.maps_img_.get_affine(),
+                target_shape=utils._get_shape(self.maps_img_)[:3],
+                interpolation="continuous",
+                copy=True)
 
         return self
 
@@ -345,18 +389,29 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             shape: (number of scans, number of regions)
         """
         niimgs = utils.check_niimgs(niimgs)
-        data = utils.as_ndarray(niimgs.get_data())
-        affine = niimgs.get_affine()
+
+        # FIXME: add _cache to the calls to resampling.resample.
+        if self.target == "mask":
+            niimgs = resampling.resample_img(
+                niimgs, interpolation="continuous",
+                target_shape=utils._get_shape(self.mask_img_),
+                target_affine=self.mask_img_.get_affine())
+
+        if self.target == "maps":
+            niimgs = resampling.resample_img(
+                niimgs, interpolation="continuous",
+                target_shape=utils._get_shape(self.maps_img_)[:3],
+                target_affine=self.maps_img_.get_affine())
+
         if self.smooth is not None:
-            # FIXME: useless copy if input parameter niimg is a string.
-            data = self._cache(masking._smooth_array, memory_level=1)(
-                data, affine, fwhm=self.smooth, copy=True)
+            niimgs = self._cache(image.smooth, memory_level=1)(
+                niimgs, fwhm=self.smooth)
 
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_maps, memory_level=1)(
-            nibabel.Nifti1Image(data, affine),
-            nibabel.Nifti1Image(self.maps_data_, self.maps_affine_),
-            mask_img = self.mask_img_)
+                niimgs,
+                self.maps_img_,
+                mask_img=self.mask_img_)
 
         region_signals = self._cache(signal.clean, memory_level=1
                                      )(region_signals,
@@ -380,9 +435,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Returns
         =======
         voxel_signals: nibabel.Nifti1Image
-            Signal for each voxel
-            shape: (number of scans, number of voxels)
+            Signal for each voxel. shape: that of maps.
         """
-        return region.signals_to_img_maps(
-            region_signals,
-            nibabel.Nifti1Image(self.maps_data_, self.maps_affine_))
+        return region.signals_to_img_maps(region_signals, self.maps_img_,
+                                          mask_img=self.mask_img_)
