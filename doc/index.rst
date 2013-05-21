@@ -147,8 +147,8 @@
 
 .. include:: includes/big_toc_css.rst
 
-User Guide
-==========
+Tutorial topics
+================
 
 .. toctree::
    :numbered:
