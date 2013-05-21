@@ -497,8 +497,8 @@ def unmask(X, mask_img):
     mask_img: nifti-like image
         Mask. Must be 3-dimensional.
 
-    Return
-    ======
+    Returns
+    =======
     data: nifti-like image (or list of)
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
