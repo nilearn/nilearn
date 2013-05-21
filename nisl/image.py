@@ -75,7 +75,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
                                            detrend=detrend)
 
 
-def smooth(niimgs, smooth):
+def smooth(niimgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of arr.
@@ -86,7 +86,7 @@ def smooth(niimgs, smooth):
     niimgs: niimgs or iterable of niimgs
         One or several niimage(s), either 3D or 4D.
 
-    smooth: scalar or numpy.ndarray
+    fwhm: scalar or numpy.ndarray
         Smoothing strength, as a Full-Width at Half Maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
@@ -114,7 +114,7 @@ def smooth(niimgs, smooth):
         img = utils.check_niimg(img)
         affine = img.get_affine()
         filtered = masking._smooth_array(img.get_data(), affine,
-                                         smooth=smooth, ensure_finite=True,
+                                         fwhm=fwhm, ensure_finite=True,
                                          copy=True)
         ret.append(nibabel.Nifti1Image(filtered, affine))
 

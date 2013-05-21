@@ -176,7 +176,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.smooth is not None:
             # FIXME: useless copy if input parameter niimg is a string.
             data = self._cache(masking._smooth_array, memory_level=1)(
-                data, affine, smooth=self.smooth, copy=True)
+                data, affine, fwhm=self.smooth, copy=True)
 
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_labels, memory_level=1)(
@@ -350,7 +350,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.smooth is not None:
             # FIXME: useless copy if input parameter niimg is a string.
             data = self._cache(masking._smooth_array, memory_level=1)(
-                data, affine, smooth=self.smooth, copy=True)
+                data, affine, fwhm=self.smooth, copy=True)
 
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_maps, memory_level=1)(

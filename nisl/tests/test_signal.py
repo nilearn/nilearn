@@ -10,7 +10,7 @@ from nose.tools import assert_true, assert_false, assert_raises
 # Use nisignal here to avoid name collisions (using nisl.signal is
 # not possible)
 from .. import signal as nisignal
-from ..signals import clean
+from ..signal import clean
 import scipy.signal
 
 

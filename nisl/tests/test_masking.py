@@ -53,7 +53,7 @@ def test__smooth_array():
                     np.diag((.6, 1, .6, 1)))
     for affine in test_affines:
         filtered = masking._smooth_array(data, affine,
-                                         smooth=smooth, copy=True)
+                                         fwhm=smooth, copy=True)
         assert_false(np.may_share_memory(filtered, data))
 
         # We are expecting a full-width at half maximum of
@@ -68,7 +68,7 @@ def test__smooth_array():
 
     # Check that NaNs in the data do not propagate
     data[10, 10, 10] = np.NaN
-    filtered = masking._smooth_array(data, affine, smooth=smooth,
+    filtered = masking._smooth_array(data, affine, fwhm=smooth,
                                    ensure_finite=True, copy=True)
     assert_true(np.all(np.isfinite(filtered)))
 
@@ -76,7 +76,7 @@ def test__smooth_array():
     for affine in test_affines:
         data = np.zeros((40, 41, 42))
         data[20, 20, 20] = 1
-        masking._smooth_array(data, affine, smooth=smooth, copy=False)
+        masking._smooth_array(data, affine, fwhm=smooth, copy=False)
 
         # We are expecting a full-width at half maximum of
         # smooth / voxel_size:

@@ -365,12 +365,12 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     series = utils.as_ndarray(data, dtype=dtype, order="C")
     del data, niimgs_img  # frees a lot of memory
 
-    _smooth_array(series, affine, smooth=smooth,
+    _smooth_array(series, affine, fwhm=smooth,
                   ensure_finite=ensure_finite, copy=False)
     return series[mask].T
 
 
-def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=True):
+def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of arr.
@@ -385,7 +385,7 @@ def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
 
-    smooth: scalar or numpy.ndarray
+    fwhm: scalar or numpy.ndarray
         Smoothing strength, as a full-width at half maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
@@ -420,12 +420,12 @@ def _smooth_array(arr, affine, smooth=None, ensure_finite=True, copy=True):
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
 
-    if smooth is not None:
-        # Convert from a sigma to a FWHM:
+    if fwhm is not None:
+        # Convert from a FWHM to a sigma:
         # Do not use /=, smooth may be a numpy scalar
-        smooth = smooth / np.sqrt(8 * np.log(2))
+        fwhm = fwhm / np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
-        smooth_sigma = smooth / vox_size
+        smooth_sigma = fwhm / vox_size
         for n, s in enumerate(smooth_sigma):
             ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
 
