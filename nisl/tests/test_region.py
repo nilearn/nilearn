@@ -12,6 +12,7 @@ import nibabel
 from .. import region
 from ..testing import generate_timeseries, generate_regions_ts
 from ..testing import generate_labeled_regions, generate_maps
+from ..testing import generate_fake_fmri
 from ..testing import write_tmp_imgs
 
 
@@ -201,7 +202,8 @@ def test_signal_extraction_with_maps():
     img = nibabel.Nifti1Image(data, np.eye(4))
 
     ## Get signals
-    signals_r = region.img_to_signals_maps(img, maps_img, mask_img=mask_img)
+    signals_r, labels = region.img_to_signals_maps(img, maps_img,
+                                                   mask_img=mask_img)
 
     # The output must be identical to the input signals, because every region
     # is homogeneous: there is the same signal in all voxels of one given
@@ -209,7 +211,7 @@ def test_signal_extraction_with_maps():
     np.testing.assert_almost_equal(signals, signals_r)
 
     # Same thing without mask (in that case)
-    signals_r = region.img_to_signals_maps(img, maps_img)
+    signals_r, labels = region.img_to_signals_maps(img, maps_img)
     np.testing.assert_almost_equal(signals, signals_r)
 
     ## Recover image
@@ -217,6 +219,76 @@ def test_signal_extraction_with_maps():
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
     img_r = region.signals_to_img_maps(signals, maps_img)
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
+
+    # Test input validation
+    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
+
+    good_maps_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), np.eye(4))
+    bad_maps1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5, 7)), np.eye(4))
+    bad_maps2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), 2 * np.eye(4))
+
+    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
+    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
+    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
+    assert_raises(ValueError, region.img_to_signals_maps, data_img,
+                  bad_maps1_img)
+    assert_raises(ValueError, region.img_to_signals_maps, data_img,
+                  bad_maps2_img)
+    assert_raises(ValueError, region.img_to_signals_maps, data_img,
+                  bad_maps1_img, mask_img=good_mask_img)
+    assert_raises(ValueError, region.img_to_signals_maps, data_img,
+                  bad_maps2_img, mask_img=good_mask_img)
+    assert_raises(ValueError, region.img_to_signals_maps, data_img,
+                  good_maps_img, mask_img=bad_mask1_img)
+    assert_raises(ValueError, region.img_to_signals_maps, data_img,
+                  good_maps_img, mask_img=bad_mask2_img)
+
+
+def test_signal_extraction_with_maps_and_labels():
+    shape = (4, 5, 6)
+    n_regions = 7
+    length = 8
+
+    # Generate labels
+    labels = range(n_regions + 1)  # 0 is background
+    labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
+    labels_data = labels_img.get_data()
+    # Convert to maps
+    maps_data = np.zeros(shape + (n_regions,))
+    for n, l in enumerate(labels):
+        if n == 0:
+            continue
+
+        maps_data[labels_data == l, n - 1] = 1
+
+    maps_img = nibabel.Nifti1Image(maps_data, labels_img.get_affine())
+
+    # Generate fake data
+    fmri_img, _ = generate_fake_fmri(shape=shape, length=length,
+                                     affine=labels_img.get_affine())
+
+    # Extract signals from maps and labels: results must be identical.
+    maps_signals, maps_labels = region.img_to_signals_maps(fmri_img, maps_img)
+    labels_signals, labels_labels =\
+                    region.img_to_signals_labels(fmri_img, labels_img)
+
+    np.testing.assert_almost_equal(maps_signals, labels_signals)
+
+    ## Same thing with a mask, containing only 3 regions.
+    mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 3)
+    mask_img = nibabel.Nifti1Image(mask_data.astype(np.int8),
+                                   labels_img.get_affine())
+    maps_signals, maps_labels = \
+                  region.img_to_signals_maps(fmri_img, maps_img,
+                                             mask_img=mask_img)
+    labels_signals, labels_labels =\
+                    region.img_to_signals_labels(fmri_img, labels_img,
+                                                 mask_img=mask_img)
+
+    np.testing.assert_almost_equal(maps_signals, labels_signals)
+    assert_true(maps_signals.shape[1] == 3)
+    assert_true(maps_labels == [0, 1, 2])
+    assert_true(labels_labels == [1, 2, 3])
 
 
 def test_generate_maps():
