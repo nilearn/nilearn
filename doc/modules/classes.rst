@@ -34,30 +34,28 @@ Functions
    datasets.fetch_nyu_rest
    datasets.fetch_adhd
 
-.. _utils_ref:
+.. _io_ref:
 
-:mod:`nisl.utils`: Manipulating Niimgs
-======================================
+:mod:`nisl.io`: Loading and Processing files easily
+======================================================
 
-.. automodule:: nisl.utils
+.. automodule:: nisl.io
    :no-members:
    :no-inherited-members:
 
-**User guide:** See the :ref:`utils` section for further details.
+**User guide:** See the :ref:`nifti_masker` and :ref:`nifti_masker_advanced` section for further details.
 
-Functions
----------
-.. currentmodule:: nisl
+Classes
+-------
+.. currentmodule:: nisl.io
 
 .. autosummary::
    :toctree: generated/
-   :template: function.rst
+   :template: class.rst
 
-   utils.is_a_niimg
-   utils.check_niimg
-   utils.check_niimgs
-   utils.concat_niimgs
-
+   nifti_masker.NiftiMasker
+   nifti_multi_masker.NiftiMultiMasker
+   nifti_region.NiftiLabelsMasker
 .. _masking_ref:
 
 :mod:`nisl.masking`: Data Masking Utilities
@@ -152,25 +150,28 @@ Functions
 
    signal.clean
 
-.. _io_ref:
+.. _utils_ref:
 
-:mod:`nisl.io`: Loading and Processing files easily
-======================================================
+:mod:`nisl.utils`: Manipulating Niimgs
+======================================
 
-.. automodule:: nisl.io
+.. automodule:: nisl.utils
    :no-members:
    :no-inherited-members:
 
-**User guide:** See the :ref:`nifti_masker` and :ref:`nifti_masker_advanced` section for further details.
+**User guide:** See the :ref:`utils` section for further details.
 
-Classes
--------
-.. currentmodule:: nisl.io
+Functions
+---------
+.. currentmodule:: nisl
 
 .. autosummary::
    :toctree: generated/
-   :template: class.rst
+   :template: function.rst
 
-   nifti_masker.NiftiMasker
-   nifti_multi_masker.NiftiMultiMasker
-   nifti_region.NiftiLabelsMasker
+   utils.is_a_niimg
+   utils.check_niimg
+   utils.check_niimgs
+   utils.concat_niimgs
+
+
