@@ -34,6 +34,24 @@ Functions
    datasets.fetch_nyu_rest
    datasets.fetch_adhd
 
+:mod:`nisl.image`: Image processing utilities
+=============================================
+
+.. automodule:: nisl.image
+   :no-members:
+   :no-inherited-members:
+
+Functions
+---------
+.. currentmodule:: nisl
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   image.high_variance_confounds
+   image.smooth
+
 .. _io_ref:
 
 :mod:`nisl.io`: Loading and Processing files easily
