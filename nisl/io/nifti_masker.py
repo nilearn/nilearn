@@ -28,8 +28,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Add a session level to the preprocessing. Each session will be
         detrended independently. Must be a 1D array of n_samples elements.
 
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
+    fwhm: float, optional
+        If fwhm is not None, it gives the size, in millimeters of the
         spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
@@ -105,7 +105,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nisl.masking.apply_mask
     nisl.signal.clean
     """
-    def __init__(self, mask=None, sessions=None, smooth=False,
+    def __init__(self, mask=None, sessions=None, fwhm=False,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
@@ -117,7 +117,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # Mask is provided or computed
         self.mask = mask
         self.sessions = sessions
-        self.smooth = smooth
+        self.fwhm = fwhm
         self.standardize = standardize
         self.detrend = detrend
         self.low_pass = low_pass

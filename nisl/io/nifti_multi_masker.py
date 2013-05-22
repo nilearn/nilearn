@@ -10,8 +10,6 @@ import collections
 import numpy as np
 from sklearn.externals.joblib import Memory
 
-from nibabel import Nifti1Image
-
 from .. import masking
 from .. import resampling
 from .. import utils
@@ -29,8 +27,8 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         Optional parameters detailed below (mask_connected...) can be set to
         fine tune the mask extraction.
 
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
+    fwhm: float, optional
+        If fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
@@ -112,7 +110,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
     nisl.signal.clean: confounds removal and general filtering of signals
     """
 
-    def __init__(self, mask=None, smooth=False,
+    def __init__(self, mask=None, fwhm=False,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
@@ -123,7 +121,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                  ):
         # Mask is provided or computed
         self.mask = mask
-        self.smooth = smooth
+        self.fwhm = fwhm
         self.standardize = standardize
         self.detrend = detrend
         self.low_pass = low_pass

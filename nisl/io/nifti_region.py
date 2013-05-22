@@ -55,9 +55,9 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     mask_img: niimg, optional
         Mask to apply to regions before extracting signals.
 
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
-        spatial smoothing to apply to the signal.
+    fwhm: float, optional
+        If fwhm is not None, it gives the full-width half maximum in
+        millimeters of the spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
@@ -98,7 +98,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smooth=None, standardize=True, detrend=True,
+                 fwhm=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -107,7 +107,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.mask_img = mask_img
 
         # Parameters for _smooth_array
-        self.smooth = smooth
+        self.fwhm = fwhm
 
         # Parameters for clean()
         self.standardize = standardize
@@ -175,10 +175,10 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         niimgs = utils.check_niimgs(niimgs)
         data = utils.as_ndarray(niimgs.get_data())
         affine = niimgs.get_affine()
-        if self.smooth is not None:
+        if self.fwhm is not None:
             # FIXME: useless copy if input parameter niimg is a string.
             data = self._cache(masking._smooth_array, memory_level=1)(
-                data, affine, fwhm=self.smooth, copy=True)
+                data, affine, fwhm=self.fwhm, copy=True)
 
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_labels, memory_level=1)(
@@ -228,9 +228,9 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     mask_img: niimg, optional
         Mask to apply to regions before extracting signals.
 
-    smooth: False or float, optional
-        If smooth is not False, it gives the size, in voxel of the
-        spatial smoothing to apply to the signal.
+    fwhm: float, optional
+        If fwhm is not None, it gives the full-width half maximum in
+        millimeters of the spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
@@ -279,7 +279,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
-                 smooth=None, standardize=True, detrend=True,
+                 fwhm=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  target=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
@@ -287,8 +287,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.maps_img = maps_img
         self.mask_img = mask_img
 
-        # Parameters for _smooth_array
-        self.smooth = smooth
+        # Parameters for image.smooth
+        self.fwhm = fwhm
 
         # Parameters for clean()
         self.standardize = standardize
@@ -403,9 +403,9 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 target_shape=utils._get_shape(self.maps_img_)[:3],
                 target_affine=self.maps_img_.get_affine())
 
-        if self.smooth is not None:
+        if self.fwhm is not None:
             niimgs = self._cache(image.smooth, memory_level=1)(
-                niimgs, fwhm=self.smooth)
+                niimgs, fwhm=self.fwhm)
 
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_maps, memory_level=1)(

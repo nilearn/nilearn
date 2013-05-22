@@ -65,11 +65,11 @@ def test_nifti_labels_masker():
     assert_raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiLabelsMasker(labels11_img, smooth=3)
+    masker11 = NiftiLabelsMasker(labels11_img, fwhm=3)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiLabelsMasker(labels11_img, smooth=3)
+    masker11 = NiftiLabelsMasker(labels11_img, fwhm=3)
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
@@ -130,11 +130,11 @@ def test_nifti_maps_masker():
     assert_raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiMapsMasker(labels11_img, smooth=3)
+    masker11 = NiftiMapsMasker(labels11_img, fwhm=3)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiMapsMasker(labels11_img, smooth=3)
+    masker11 = NiftiMapsMasker(labels11_img, fwhm=3)
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
