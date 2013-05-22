@@ -80,6 +80,95 @@ def test_nifti_labels_masker():
                                    fmri11_img.get_affine())
 
 
+def test_nifti_labels_masker_2():
+    # Test resampling in NiftiLabelsMasker
+    shape1 = (10, 11, 12)
+    affine = np.eye(4)
+
+    # mask
+    shape2 = (16, 17, 18)
+
+    # labels
+    shape3 = (13, 14, 15)
+
+    n_regions = 9
+    length = 3
+
+    fmri11_img, _ = generate_random_img(shape1, affine=affine,
+                                                 length=length)
+    _, mask22_img = generate_random_img(shape2, affine=affine,
+                                                 length=length)
+
+    labels33_img = testing.generate_labeled_regions(shape3, n_regions,
+                                                    affine=affine)
+
+    # Test error checking
+    assert_raises(ValueError, NiftiLabelsMasker, labels33_img,
+                  resampling_target="mask")
+    assert_raises(ValueError, NiftiLabelsMasker, labels33_img,
+                  resampling_target="invalid")
+
+    # Target: labels
+    masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img,
+                               resampling_target="labels")
+
+    masker.fit()
+    np.testing.assert_almost_equal(masker.labels_img_.get_affine(),
+                                   labels33_img.get_affine())
+    assert_equal(masker.labels_img_.shape, labels33_img.shape)
+
+    np.testing.assert_almost_equal(masker.mask_img_.get_affine(),
+                                   masker.labels_img_.get_affine())
+    assert_equal(masker.mask_img_.shape, masker.labels_img_.shape[:3])
+
+    transformed = masker.transform(fmri11_img)
+    assert_equal(transformed.shape, (length, n_regions))
+
+    fmri11_img_r = masker.inverse_transform(transformed)
+    np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
+                                   masker.labels_img_.get_affine())
+    assert_equal(fmri11_img_r.shape,
+                 (masker.labels_img_.shape[:3] + (length,)))
+
+    # Test with clipped labels: mask does not contain all labels.
+    shape1 = (10, 11, 12)
+    shape2 = (13, 14, 15)
+    shape3 = (16, 17, 18)
+
+    n_regions = 9
+    length = 21
+
+    fmri11_img, _ = generate_random_img(shape1, affine=affine,
+                                                 length=length)
+    _, mask22_img = generate_random_img(shape2, affine=affine,
+                                                 length=length)
+    # Target: labels
+    labels33_img = testing.generate_labeled_regions(shape3, n_regions,
+                                                    affine=affine)
+    masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img,
+                               resampling_target="labels")
+
+    masker.fit()
+    np.testing.assert_almost_equal(masker.labels_img_.get_affine(),
+                                   labels33_img.get_affine())
+    assert_equal(masker.labels_img_.shape, labels33_img.shape)
+
+    np.testing.assert_almost_equal(masker.mask_img_.get_affine(),
+                                   masker.labels_img_.get_affine())
+    assert_equal(masker.mask_img_.shape, masker.labels_img_.shape[:3])
+
+    transformed = masker.transform(fmri11_img)
+    assert_equal(transformed.shape[0], length)
+    # make sure mask does not contain all labels
+    assert(transformed.shape[1] < n_regions)
+
+    fmri11_img_r = masker.inverse_transform(transformed)
+    np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
+                                   masker.labels_img_.get_affine())
+    assert_equal(fmri11_img_r.shape,
+                 (masker.labels_img_.shape[:3] + (length,)))
+
+
 def test_nifti_maps_masker():
     # Check working of shape/affine checks
     shape1 = (13, 11, 12)
