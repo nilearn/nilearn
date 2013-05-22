@@ -75,19 +75,13 @@ print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
 labels_img = nisl.datasets.load_harvard_oxford(
     "cort-maxprob-thr25-2mm", symmetric_split=True)
 
-print("-- Computing confounds ...")
-hv_confounds = nisl.image.high_variance_confounds(filename)
-mvt_confounds = np.loadtxt(confound_file, skiprows=1)
-confounds = np.hstack((hv_confounds, mvt_confounds))
-
 print("-- Computing region signals ...")
 nifti_regions = nisl.io.NiftiLabelsMasker(labels_img=labels_img,
                                           t_r=2.5,
                                           low_pass=None, high_pass=0.01,
                                           detrend=True, standardize=True
                                           )
-
-region_ts = nifti_regions.fit_transform(filename, confounds=confounds)
+region_ts = nifti_regions.fit_transform(filename, confounds=confound_file)
 
 print("-- Computing covariance matrices ...")
 estimator = covariance.GraphLassoCV()
