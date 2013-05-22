@@ -105,7 +105,7 @@ def test_apply_mask():
             with write_tmp_imgs(data_img, mask_img, create_files=create_files)\
                      as filenames:
                 series = masking.apply_mask(filenames[0], filenames[1],
-                                            fwhm=9)
+                                            smoothing_fwhm=9)
 
             series = np.reshape(series[0, :], (40, 40, 40))
             vmax = series.max()
@@ -122,7 +122,7 @@ def test_apply_mask():
     data[10, 10, 10] = np.NaN
     data_img = Nifti1Image(data, affine)
     mask_img = Nifti1Image(mask, affine)
-    series = masking.apply_mask(data_img, mask_img, fwhm=9)
+    series = masking.apply_mask(data_img, mask_img, smoothing_fwhm=9)
     assert_true(np.all(np.isfinite(series)))
 
     # Check data shape and affine

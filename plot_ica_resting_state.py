@@ -17,7 +17,7 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 ### Preprocess ################################################################
 from nisl import io
 
-masker = io.NiftiMasker(smooth=8, memory='nisl_cache', memory_level=1)
+masker = io.NiftiMasker(smoothing_fwhm=8, memory='nisl_cache', memory_level=1)
 data_masked = masker.fit_transform(dataset.func[0])
 
 # Concatenate all the subjects

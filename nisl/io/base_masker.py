@@ -62,7 +62,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.verbose > 1:
             print "[%s.transform] Masking and smoothing" \
                 % self.__class__.__name__
-        data = masking.apply_mask(niimgs, self.mask_img_, fwhm=self.fwhm)
+        data = masking.apply_mask(niimgs, self.mask_img_,
+                                  smoothing_fwhm=self.smoothing_fwhm)
 
         # Temporal
         # ========

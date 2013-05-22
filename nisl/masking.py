@@ -304,7 +304,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 ###############################################################################
 
 def apply_mask(niimgs, mask_img, dtype=np.float32,
-               fwhm=None, ensure_finite=True):
+               smoothing_fwhm=None, ensure_finite=True):
     """Extract signals from images using specified mask.
 
     Read the time series from the given nifti images or filepaths,
@@ -318,7 +318,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     mask_img: niimg
         3D mask array: True where a voxel should be used.
 
-    fwhm: float
+    smoothing_fwhm: float
         (optional) Gives the size of the spatial smoothing to apply to
         the signal, in voxels. Implies ensure_finite=True.
 
@@ -336,13 +336,13 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     When using smoothing, ensure_finite is set to True, as non-finite
     values would spread accross the image.
     """
-    return _apply_mask_fmri(niimgs, mask_img, dtype=dtype, fwhm=fwhm,
+    return _apply_mask_fmri(niimgs, mask_img, dtype=dtype, smoothing_fwhm=smoothing_fwhm,
                             ensure_finite=ensure_finite)
 
 
 def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
-                     fwhm=None, ensure_finite=True):
-    if fwhm is not None:
+                     smoothing_fwhm=None, ensure_finite=True):
+    if smoothing_fwhm is not None:
         ensure_finite = True
 
     mask, mask_affine = _load_mask_img(mask_img)
@@ -365,7 +365,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     series = utils.as_ndarray(data, dtype=dtype, order="C")
     del data, niimgs_img  # frees a lot of memory
 
-    _smooth_array(series, affine, fwhm=fwhm,
+    _smooth_array(series, affine, fwhm=smoothing_fwhm,
                   ensure_finite=ensure_finite, copy=False)
     return series[mask].T
 
@@ -425,8 +425,8 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         # Do not use /=, fwhm may be a numpy scalar
         fwhm = fwhm / np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
-        fwhm_sigma = fwhm / vox_size
-        for n, s in enumerate(fwhm_sigma):
+        sigma = fwhm / vox_size
+        for n, s in enumerate(sigma):
             ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
 
     return arr

@@ -27,8 +27,8 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         Optional parameters detailed below (mask_connected...) can be set to
         fine tune the mask extraction.
 
-    fwhm: float, optional
-        If fwhm is not None, it gives the size in millimeters of the
+    smoothing_fwhm: float, optional
+        If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
@@ -110,7 +110,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
     nisl.signal.clean: confounds removal and general filtering of signals
     """
 
-    def __init__(self, mask=None, fwhm=False,
+    def __init__(self, mask=None, smoothing_fwhm=None,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
@@ -121,7 +121,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                  ):
         # Mask is provided or computed
         self.mask = mask
-        self.fwhm = fwhm
+        self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.detrend = detrend
         self.low_pass = low_pass

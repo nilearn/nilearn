@@ -65,11 +65,11 @@ def test_nifti_labels_masker():
     assert_raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiLabelsMasker(labels11_img, fwhm=3)
+    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiLabelsMasker(labels11_img, fwhm=3)
+    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3)
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
@@ -130,11 +130,11 @@ def test_nifti_maps_masker():
     assert_raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiMapsMasker(labels11_img, fwhm=3)
+    masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiMapsMasker(labels11_img, fwhm=3)
+    masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3)
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
@@ -148,26 +148,24 @@ def test_nifti_maps_masker():
 def test_nifti_maps_masker_2():
     # Test resampling in NiftiMapsMasker
     shape1 = (10, 11, 12)
-    affine1 = np.eye(4)
+    affine = np.eye(4)
 
     # mask
     shape2 = (16, 17, 18)
-    affine2 = affine1
 
     # maps
     shape3 = (13, 14, 15)
-    affine3 = affine1
 
     n_regions = 9
     length = 3
 
-    fmri11_img, _ = generate_random_img(shape1, affine=affine1,
+    fmri11_img, _ = generate_random_img(shape1, affine=affine,
                                                  length=length)
-    _, mask22_img = generate_random_img(shape2, affine=affine2,
+    _, mask22_img = generate_random_img(shape2, affine=affine,
                                                  length=length)
 
     maps33_img, _ = \
-                  testing.generate_maps(shape3, n_regions, affine=affine3)
+                  testing.generate_maps(shape3, n_regions, affine=affine)
 
     # Test error checking
     assert_raises(ValueError, NiftiMapsMasker, maps33_img, target="mask")
@@ -215,24 +213,19 @@ def test_nifti_maps_masker_2():
 
     # Test with clipped maps: mask does not contain all maps.
     shape1 = (10, 11, 12)
-    affine1 = np.eye(4)
-
     shape2 = (13, 14, 15)
-    affine2 = affine1
-
     shape3 = (16, 17, 18)
-    affine3 = affine1
 
     n_regions = 9
     length = 21
 
-    fmri11_img, _ = generate_random_img(shape1, affine=affine1,
+    fmri11_img, _ = generate_random_img(shape1, affine=affine,
                                                  length=length)
-    _, mask22_img = generate_random_img(shape2, affine=affine2,
+    _, mask22_img = generate_random_img(shape2, affine=affine,
                                                  length=length)
     # Target: maps
     maps33_img, _ = \
-                  testing.generate_maps(shape3, n_regions, affine=affine3)
+                  testing.generate_maps(shape3, n_regions, affine=affine)
     masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img, target="maps")
 
     masker.fit()
