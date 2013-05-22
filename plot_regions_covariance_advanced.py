@@ -92,7 +92,6 @@ region_ts = nisl.signal.clean(region_ts, low_pass=None,
                                confounds=confounds,
                                t_r=2.5, high_pass=0.01
                                )
-region_ts /= region_ts.std(axis=0)  # essential
 
 print("-- Computing covariance matrices ...")
 estimator = covariance.GraphLassoCV()
