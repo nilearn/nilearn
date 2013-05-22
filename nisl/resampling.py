@@ -159,8 +159,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                         np.ceil(ymax - ymin) + 1,
                         np.ceil(zmax - zmin) + 1, )
     if not len(target_shape) == 3:
-        raise ValueError('The shape specified should be the shape '
-                         'the 3D grid, and thus of length 3. %s was specified'
+        raise ValueError('The shape specified should be the shape of the'
+                         '3D grid, and thus of length 3. %s was specified'
                          % target_shape)
 
     # Determine interpolation order
