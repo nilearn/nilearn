@@ -252,9 +252,9 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    target: string, optional.
+    resampling_target: string, optional.
         Gives which image gives the final shape/size. Accepted values
-        are "mask", "maps" and None. For example, if `target`
+        are "mask", "maps" and None. For example, if `resampling_target`
         is "mask" then maps_img and images provided to fit() are resampled to
         the shape and affine of mask_img. "None" means no resampling. If shapes
         and affines do not match, a ValueError is raised.
@@ -281,7 +281,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def __init__(self, maps_img, mask_img=None,
                  smoothing_fwhm=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
-                 target=None,
+                 resampling_target=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img
@@ -298,19 +298,19 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.t_r = t_r
 
         # Parameters for resampling
-        self.target = target
+        self.resampling_target = resampling_target
 
         # Parameters for joblib
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
 
-        if target not in ("mask", "maps", None):
-            raise ValueError("invalid value for 'target' parameter")
+        if resampling_target not in ("mask", "maps", None):
+            raise ValueError("invalid value for 'resampling_target' parameter")
 
-        if self.mask_img is None and target == "mask":
-            raise ValueError("target has been set to 'mask' but no mask "
-                             "has been provided.\nSet target to something else"
+        if self.mask_img is None and resampling_target == "mask":
+            raise ValueError("resampling_target has been set to 'mask' but no mask "
+                             "has been provided.\nSet resampling_target to something else"
                              " or provide a mask.")
 
     def fit(self, X=None, y=None):
@@ -327,7 +327,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             self.mask_img_ = None
 
         # Check shapes and affines or resample.
-        if self.target is None and self.mask_img_ is not None:
+        if self.resampling_target is None and self.mask_img_ is not None:
             if utils._get_shape(self.mask_img_) \
                     != utils._get_shape(self.maps_img_)[:3]:
                 raise ValueError(
@@ -347,7 +347,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             maps_affine = utils.as_ndarray(self.maps_img_.get_affine())
             self.maps_img_ = nibabel.Nifti1Image(maps_data, maps_affine)
 
-        elif self.target == "mask" and self.mask_img_ is not None:
+        elif self.resampling_target == "mask" and self.mask_img_ is not None:
             self.maps_img_ = resampling.resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.get_affine(),
@@ -355,7 +355,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 interpolation="nearest",
                 copy=True)
 
-        elif self.target == "maps" and self.mask_img_ is not None:
+        elif self.resampling_target == "maps" and self.mask_img_ is not None:
             self.mask_img_ = resampling.resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.get_affine(),
@@ -391,13 +391,13 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         niimgs = utils.check_niimgs(niimgs)
 
         # FIXME: add _cache to the calls to resampling.resample.
-        if self.target == "mask":
+        if self.resampling_target == "mask":
             niimgs = resampling.resample_img(
                 niimgs, interpolation="continuous",
                 target_shape=utils._get_shape(self.mask_img_),
                 target_affine=self.mask_img_.get_affine())
 
-        if self.target == "maps":
+        if self.resampling_target == "maps":
             niimgs = resampling.resample_img(
                 niimgs, interpolation="continuous",
                 target_shape=utils._get_shape(self.maps_img_)[:3],

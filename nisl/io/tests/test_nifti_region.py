@@ -168,11 +168,14 @@ def test_nifti_maps_masker_2():
                   testing.generate_maps(shape3, n_regions, affine=affine)
 
     # Test error checking
-    assert_raises(ValueError, NiftiMapsMasker, maps33_img, target="mask")
-    assert_raises(ValueError, NiftiMapsMasker, maps33_img, target="invalid")
+    assert_raises(ValueError, NiftiMapsMasker, maps33_img,
+                  resampling_target="mask")
+    assert_raises(ValueError, NiftiMapsMasker, maps33_img,
+                  resampling_target="invalid")
 
     # Target: mask
-    masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img, target="mask")
+    masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
+                             resampling_target="mask")
 
     masker.fit()
     np.testing.assert_almost_equal(masker.mask_img_.get_affine(),
@@ -192,7 +195,8 @@ def test_nifti_maps_masker_2():
     assert_equal(fmri11_img_r.shape, (masker.maps_img_.shape[:3] + (length,)))
 
     # Target: maps
-    masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img, target="maps")
+    masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
+                             resampling_target="maps")
 
     masker.fit()
     np.testing.assert_almost_equal(masker.maps_img_.get_affine(),
@@ -226,7 +230,8 @@ def test_nifti_maps_masker_2():
     # Target: maps
     maps33_img, _ = \
                   testing.generate_maps(shape3, n_regions, affine=affine)
-    masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img, target="maps")
+    masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
+                             resampling_target="maps")
 
     masker.fit()
     np.testing.assert_almost_equal(masker.maps_img_.get_affine(),
