@@ -95,12 +95,12 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    resampling_target: string, optional.
-        Gives which image gives the final shape/size. Accepted values
-        are "labels" and None. For example, if `resampling_target`
-        is "labels" then mask_img and images provided to fit() are resampled to
-        the shape and affine of maps_img. "None" means no resampling: if shapes
-        and affines do not match, a ValueError is raised.
+    resampling_target: {"labels", None}, optional.
+        Gives which image gives the final shape/size. For example, if
+        `resampling_target` is"labels" then mask_img and images provided to
+        fit() are resampled to the shape and affine of maps_img. "None" means
+        no resampling: if shapes and affines do not match, a ValueError is
+        raised.
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
@@ -314,12 +314,12 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    resampling_target: string, optional.
-        Gives which image gives the final shape/size. Accepted values
-        are "mask", "maps" and None. For example, if `resampling_target`
-        is "mask" then maps_img and images provided to fit() are resampled to
-        the shape and affine of mask_img. "None" means no resampling: if shapes
-        and affines do not match, a ValueError is raised.
+    resampling_target: {"mask", "maps", None} optional.
+        Gives which image gives the final shape/size. For example, if
+        `resampling_target` is "mask" then maps_img and images provided to
+        fit() are resampled to the shape and affine of mask_img. "None" means
+        no resampling: if shapes and affines do not match, a ValueError is
+        raised.
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
