@@ -177,14 +177,6 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
             mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
 
-            # Apply mask on labels image
-            labels_affine = utils.as_ndarray(self.labels_img_.get_affine())
-            # Since a copy is required, order can be forced as well.
-            labels_data = utils.as_ndarray(self.labels_img_.get_data(),
-                                           copy=True, order="C")
-            labels_data[np.logical_not(mask_data)] = self.background_label
-            self.labels_img_ = nibabel.Nifti1Image(labels_data, labels_affine)
-
         return self
 
     def fit_transform(self, niimgs, confounds=None):
@@ -198,6 +190,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         niimgs: niimg
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
+
         confounds: array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
@@ -240,6 +233,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def inverse_transform(self, signals):
         """Compute voxel signals from region signals
 
+        Any mask given at initialization is taken into account.
+
         Parameters
         ==========
         signals (2D numpy.ndarray)
@@ -253,7 +248,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             shape: (number of scans, number of voxels)
         """
         return region.signals_to_img_labels(
-            signals, self.labels_img_, background_label=self.background_label)
+            signals, self.labels_img_, self.mask_img_,
+            background_label=self.background_label)
 
 
 class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -465,6 +461,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def inverse_transform(self, region_signals):
         """Compute voxel signals from region signals
+
+        Any mask given at initialization is taken into account.
 
         Parameters
         ==========
