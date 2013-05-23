@@ -2,6 +2,8 @@
 Transformer for computing ROI signals.
 """
 
+import inspect
+
 import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -41,7 +43,21 @@ def _compose_err_msg(msg, **kwargs):
     return updated_msg
 
 
-class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class LogMixin(object):
+    def log(self, msg, verbose=1):
+        """Print a message for the user.
+
+        Signature is that of print(), with an extra keyword argument giving
+        the verbosity level above which the message should be printed.
+        This method prepends class and method names.
+        """
+        if self.verbose >= verbose:
+            calling_function = (inspect.stack())[1][3]
+            prefix = "[%s.%s] " % (self.__class__.__name__, calling_function)
+            print (prefix + msg)
+
+
+class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
     """Extract labeled-defined region signals from images.
 
     Parameters
@@ -141,8 +157,12 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         All parameters are unused, they are for scikit-learn compatibility.
         """
+        self.log("loading data from %s" %
+                 utils._repr_niimgs(self.labels_img)[:200])
         self.labels_img_ = utils.check_niimg(self.labels_img)
         if self.mask_img is not None:
+            self.log("loading data from %s" %
+                     utils._repr_niimgs(self.mask_img)[:200])
             self.mask_img_ = utils.check_niimg(self.mask_img)
         else:
             self.mask_img_ = None
@@ -164,6 +184,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         mask_img=self.mask_img, labels_img=self.labels_img))
 
             elif self.resampling_target == "labels":
+                self.log("resampling the mask")
                 self.mask_img_ = resampling.resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.get_affine(),
@@ -203,23 +224,28 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             shape: (number of scans, number of regions)
 
         """
+        self.log("loading images: %s" % utils._repr_niimgs(niimgs)[:200])
         niimgs = utils.check_niimgs(niimgs)
 
         if self.resampling_target == "labels":
+            self.log("resampling images")
             niimgs = self._cache(resampling.resample_img, memory_level=1)(
                 niimgs, interpolation="continuous",
                 target_shape=utils._get_shape(self.labels_img_),
                 target_affine=self.labels_img_.get_affine())
 
         if self.smoothing_fwhm is not None:
+            self.log("smoothing images")
             niimgs = self._cache(image.smooth, memory_level=1)(
                 niimgs, fwhm=self.smoothing_fwhm)
 
+        self.log("extracting region signals")
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_labels, memory_level=1)(
                 niimgs, self.labels_img_,
                 background_label=self.background_label)
 
+        self.log("cleaning extracted signals")
         region_signals = self._cache(signal.clean, memory_level=1
                                      )(region_signals,
                                        detrend=self.detrend,
@@ -247,12 +273,13 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Signal for each voxel
             shape: (number of scans, number of voxels)
         """
+        self.log("computing image from signals")
         return region.signals_to_img_labels(
             signals, self.labels_img_, self.mask_img_,
             background_label=self.background_label)
 
 
-class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
     """Extract maps-defined region signals from images.
 
     Parameters
@@ -356,9 +383,13 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         All parameters are unused, they are for scikit-learn compatibility.
         """
         # Load images
+        self.log("loading regions from %s" %
+                 utils._repr_niimgs(self.maps_img)[:200])
         self.maps_img_ = utils.check_niimg(self.maps_img)
 
         if self.mask_img is not None:
+            self.log("loading mask from %s" %
+                     utils._repr_niimgs(self.mask_img)[:200])
             self.mask_img_ = utils.check_niimg(self.mask_img)
         else:
             self.mask_img_ = None
@@ -385,6 +416,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             self.maps_img_ = nibabel.Nifti1Image(maps_data, maps_affine)
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
+            self.log("resampling regions")
             self.maps_img_ = resampling.resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.get_affine(),
@@ -393,6 +425,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 copy=True)
 
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
+            self.log("resampling mask")
             self.mask_img_ = resampling.resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.get_affine(),
@@ -425,30 +458,36 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Signal for each region.
             shape: (number of scans, number of regions)
         """
+        self.log("loading images from %s" % utils._repr_niimgs(niimgs)[:200])
         niimgs = utils.check_niimgs(niimgs)
 
         if self.resampling_target == "mask":
+            self.log("resampling images to fit mask")
             niimgs = self._cache(resampling.resample_img, memory_level=1)(
                 niimgs, interpolation="continuous",
                 target_shape=utils._get_shape(self.mask_img_),
                 target_affine=self.mask_img_.get_affine())
 
         if self.resampling_target == "maps":
+            self.log("resampling images to fit maps")
             niimgs = self._cache(resampling.resample_img, memory_level=1)(
                 niimgs, interpolation="continuous",
                 target_shape=utils._get_shape(self.maps_img_)[:3],
                 target_affine=self.maps_img_.get_affine())
 
         if self.smoothing_fwhm is not None:
+            self.log("smoothing images")
             niimgs = self._cache(image.smooth, memory_level=1)(
                 niimgs, fwhm=self.smoothing_fwhm)
 
+        self.log("extracting region signals")
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_maps, memory_level=1)(
                 niimgs,
                 self.maps_img_,
                 mask_img=self.mask_img_)
 
+        self.log("cleaning extracted signals")
         region_signals = self._cache(signal.clean, memory_level=1
                                      )(region_signals,
                                        detrend=self.detrend,
@@ -475,5 +514,6 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         voxel_signals: nibabel.Nifti1Image
             Signal for each voxel. shape: that of maps.
         """
+        self.log("computing image from signals")
         return region.signals_to_img_maps(region_signals, self.maps_img_,
                                           mask_img=self.mask_img_)

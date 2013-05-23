@@ -64,7 +64,8 @@ confounds = np.hstack((hv_confounds, mvt_confounds))
 
 print("-- Computing region signals ...")
 masker = nisl.io.NiftiMapsMasker(msdl_atlas["maps"], resampling_target="maps",
-                                 low_pass=None, high_pass=0.01, t_r=2.5)
+                                 low_pass=None, high_pass=0.01, t_r=2.5,
+                                 verbose=1)
 region_ts = masker.fit_transform(filename, confounds=confounds)
 
 print("-- Computing covariance matrices ...")
