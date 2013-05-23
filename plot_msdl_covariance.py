@@ -1,16 +1,9 @@
 """
-Computation of covariance matrix between brain regions (advanced)
-=================================================================
+Computation of covariance matrix between brain regions
+======================================================
 
-The following things are performed:
-
-- parcellation loading, and signals extraction
-- improvement of fMRI data SNR (confound removal, filtering, etc.)
-- covariance/precision matrices computation
-- display of matrices
-
-This script is intended for advanced users only, because it makes use of
-low-level functions.
+This example shows how to extract signals from regions defined by an atlas,
+and to estimate a covariance matrix based on these signals.
 """
 
 import numpy as np
@@ -24,7 +17,7 @@ import nisl.image
 import nisl.signal
 import nisl.io
 
-# Copied from matplotlib 1.2.0 for matplotlib 0.99
+# Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
 pl.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
     "bwr", _bwr_data))
@@ -65,7 +58,6 @@ print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
 msdl_atlas = nisl.datasets.fetch_msdl_atlas()
 
 print("-- Computing confounds ...")
-# Compcor on full image
 hv_confounds = nisl.image.high_variance_confounds(filename)
 mvt_confounds = np.loadtxt(confound_file, skiprows=1)
 confounds = np.hstack((hv_confounds, mvt_confounds))
@@ -83,5 +75,4 @@ plot_matrices(estimator.covariance_, -estimator.precision_,
               title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
               subject_n=subject_n)
 pl.show()
-
 
