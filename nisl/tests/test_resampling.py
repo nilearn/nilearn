@@ -18,20 +18,20 @@ def rotation(theta, phi):
     cos = np.cos
     sin = np.sin
     a1 = np.array([[cos(theta), -sin(theta), 0],
-                  [sin(theta),  cos(theta), 0],
+                   [sin(theta), cos(theta), 0],
                   [0, 0, 1]])
     a2 = np.array([[1, 0, 0],
                   [0, cos(phi), -sin(phi)],
-                  [0, sin(phi),  cos(phi)]])
+                  [0, sin(phi), cos(phi)]])
     return np.dot(a1, a2)
 
 
 ###############################################################################
 # Tests
 def test_identity_resample():
-    """ Test resampling of the VolumeImg with an identity affine.
+    """ Test resampling with an identity affine.
     """
-    shape = (3., 2., 5., 2.)
+    shape = (3, 2, 5, 2)
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
@@ -46,13 +46,14 @@ def test_identity_resample():
 
 
 def test_downsample():
-    """ Test resampling of the VolumeImg with a 1/2 down-sampling affine.
+    """ Test resampling with a 1/2 down-sampling affine.
     """
-    shape = (6., 3., 6, 2.)
-    data = np.random.random(shape)
+    rand_gen = np.random.RandomState(0)
+    shape = (6, 3, 6, 2)
+    data = rand_gen.random_sample(shape)
     affine = np.eye(4)
     rot_img = resample_img(Nifti1Image(data, affine),
-                           2 * affine, interpolation='nearest')
+                           target_affine=2 * affine, interpolation='nearest')
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
