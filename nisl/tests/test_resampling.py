@@ -2,7 +2,7 @@
 Test the resampling code.
 """
 
-import nose
+from nose.tools import assert_equal, assert_not_equal, assert_raises
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -74,14 +74,44 @@ def test_resampling_with_affine():
                                        np.max(rot_img.get_data()))
 
 
-def test_missing_parameter():
-    """ Test Error when shape provided without affine.
-    """
-    shape = (3., 2., 5., 2.)
-    target_shape = (5., 3., 2., 2.)
+def test_resampling_error_checks():
+    shape = (3, 2, 5, 2)
+    target_shape = (5, 3, 2)
     affine = np.eye(4)
     data = np.random.randint(0, 10, shape)
-    nose.tools.assert_raises(ValueError, resample_img,
-                             Nifti1Image(data, affine),
-                             target_shape=target_shape,
-                             interpolation='nearest')
+    img = Nifti1Image(data, affine)
+
+    # Correct parameters: no exception
+    resample_img(img, target_shape=target_shape, target_affine=affine)
+
+    # Missing parameter
+    assert_raises(ValueError, resample_img, img, target_shape=target_shape)
+
+    # Invalid shape
+    assert_raises(ValueError, resample_img, img, target_shape=(2, 3))
+
+    # Invalid interpolation
+    assert_raises(ValueError, resample_img, img, target_shape=target_shape,
+                  target_affine=affine, interpolation="invalid")
+
+    # Noop
+    target_shape = shape[:3]
+
+    img_r = resample_img(img, copy=False)
+    assert_equal(img_r, img)
+
+    img_r = resample_img(img, copy=True)
+    assert_not_equal(img_r, img)
+    np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
+    np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
+
+    img_r = resample_img(img, target_affine=affine, target_shape=target_shape,
+                         copy=False)
+    assert_equal(img_r, img)
+
+    img_r = resample_img(img, target_affine=affine, target_shape=target_shape,
+                         copy=True)
+    assert_not_equal(img_r, img)
+    np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
+    np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
+

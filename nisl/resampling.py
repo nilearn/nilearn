@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 from nibabel import Nifti1Image
 
-from .utils import check_niimg
+from . import utils
 
 
 def to_matrix_vector(transform):
@@ -110,8 +110,9 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix
 
-    target_shape: 3-tuple, optional
+    target_shape: tuple or list, optional
         If specified, the image will be resized to match this new shape.
+        len(target_shape) must be equal to 3.
 
     interpolation: str, optional
         Can be continuous' (default) or 'nearest'. Indicate the resample method
@@ -119,29 +120,49 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     copy: bool, optional
         If true, copy source data to avoid side-effects.
     """
-
-    niimg = check_niimg(niimg)
-    data = niimg.get_data()
-    affine = niimg.get_affine()
-
-    if copy:
-        # FIXME: "import copy" overwrites input parameter "copy"!
-        import copy
-        data = copy.copy(data)
-        affine = copy.copy(affine)
-    if target_affine is None and target_shape is None:
-        return niimg
-    if (np.all(np.array(target_shape) == data.shape) and
-                    np.all(target_affine == affine)):
-        return niimg
-    if target_affine is None and target_shape is not None:
+    # Do as many checks as possible before loading data, to avoid potentially
+    # costly calls before raising an exception.
+    if target_shape is not None and target_affine is None:
         raise ValueError("If target_shape is specified, target_affine should"
                          " be specified too.")
+
+    if target_shape is not None and not len(target_shape) == 3:
+        raise ValueError('The shape specified should be the shape of'
+                         'the 3D grid, and thus of length 3. %s was specified'
+                         % str(target_shape))
+
+    if interpolation == 'continuous':
+        interpolation_order = 3
+    elif interpolation == 'nearest':
+        interpolation_order = 0
+    else:
+        raise ValueError("interpolation must be either 'continuous' "
+                         "or 'nearest'")
+
+    # noop cases
+    niimg = utils.check_niimg(niimg)
+    if copy:
+        niimg = Nifti1Image(niimg.get_data(), niimg.get_affine())
+
+    if target_affine is None and target_shape is None:
+        return niimg
+
+    shape = utils._get_shape(niimg)
+    affine = niimg.get_affine()
+
+    if (np.all(np.array(target_shape) == shape[:3]) and
+            np.allclose(target_affine, affine)):
+        return niimg
+
+    # We now know that some resampling must be done.
+    data = niimg.get_data()
+
     if target_affine is None:
         target_affine = np.eye(4)
     if target_shape is None:
         target_shape = data.shape[:3]
     target_shape = list(target_shape)
+
     if target_affine.shape[0] == 3:
         # We have a 3D affine, we need to find out the offset and
         # shape to keep the same bounding box in the new space
@@ -158,33 +179,21 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         target_shape = (np.ceil(xmax - xmin) + 1,
                         np.ceil(ymax - ymin) + 1,
                         np.ceil(zmax - zmin) + 1, )
-    if not len(target_shape) == 3:
-        raise ValueError('The shape specified should be the shape of the'
-                         '3D grid, and thus of length 3. %s was specified'
-                         % target_shape)
-
-    # Determine interpolation order
-    if interpolation == 'continuous':
-        interpolation_order = 3
-    elif interpolation == 'nearest':
-        interpolation_order = 0
-    else:
-        raise ValueError("interpolation must be either 'continuous' "
-                         "or 'nearest'")
 
     if np.all(target_affine == affine):
-        # Small trick to be more numericaly stable
+        # Small trick to be more numerically stable
         transform_affine = np.eye(4)
     else:
         transform_affine = np.dot(np.linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
     A_inv = np.linalg.inv(A)
-    # If A is diagonal, ndimage.affine_transform is clever-enough
-    # to use a better algorithm
+    # If A is diagonal, ndimage.affine_transform is clever enough to use a
+    # better algorithm.
     if np.all(np.diag(np.diag(A)) == A):
         A = np.diag(A)
     else:
         b = np.dot(A, b)
+
     # For images with dimensions larger than 3D:
     data_shape = list(data.shape)
     if len(data_shape) > 3:
