@@ -100,7 +100,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
         `resampling_target` is"labels" then mask_img and images provided to
         fit() are resampled to the shape and affine of maps_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
-        raised.
+        raised. Defaults to "labels".
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
@@ -114,6 +114,12 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
+    Notes
+    =====
+    With the default value for resampling_target, every 3D image processed by
+    transform() will be resampled to the shape of labels_img. It may lead to a
+    very large memory consumption is the voxel number in labels_img is large.
+
     See also
     ========
     nisl.io.NiftiMasker
@@ -123,7 +129,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
     def __init__(self, labels_img, background_label=0, mask_img=None,
                  smoothing_fwhm=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
-                 resampling_target=None,
+                 resampling_target="labels",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
         self.labels_img = labels_img
@@ -319,7 +325,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
         `resampling_target` is "mask" then maps_img and images provided to
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
-        raised.
+        raised. Default value: "maps".
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
@@ -333,6 +339,12 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
+    Notes
+    =====
+    With the default value for resampling_target, every 3D image processed by
+    transform() will be resampled to the shape of maps_img. It may lead to a
+    very large memory consumption is the voxel number in labels_img is large.
+
     See also
     ========
     nisl.io.NiftiMasker
@@ -343,7 +355,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
     def __init__(self, maps_img, mask_img=None,
                  smoothing_fwhm=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
-                 resampling_target=None,
+                 resampling_target="maps",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img

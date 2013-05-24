@@ -44,32 +44,37 @@ def test_nifti_labels_masker():
                                                     n_regions=n_regions)
 
     # No exception raised here
-    masker11 = NiftiLabelsMasker(labels11_img)
+    masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img)
+    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img,
+                                 resampling_target=None)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
     # Test all kinds of mismatch between shapes and between affines
-    masker11 = NiftiLabelsMasker(labels11_img)
+    masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     masker11.fit()
     assert_raises(ValueError, masker11.transform, fmri12_img)
     assert_raises(ValueError, masker11.transform, fmri21_img)
 
-    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask12_img)
+    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask12_img,
+                                 resampling_target=None)
     assert_raises(ValueError, masker11.fit)
 
-    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask21_img)
+    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask21_img,
+                                 resampling_target=None)
     assert_raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3)
+    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3,
+                                 resampling_target=None)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3)
+    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3,
+                                 resampling_target=None)
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
@@ -202,11 +207,12 @@ def test_nifti_maps_masker():
     for create_files in (True, False):
         with testing.write_tmp_imgs(labels11_img, create_files=create_files) \
                 as labels11:
-            masker11 = NiftiMapsMasker(labels11)
+            masker11 = NiftiMapsMasker(labels11, resampling_target=None)
             signals11 = masker11.fit().transform(fmri11_img)
             assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img)
+    masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img,
+                               resampling_target=None)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
@@ -215,23 +221,27 @@ def test_nifti_maps_masker():
         with testing.write_tmp_imgs(labels11_img, mask12_img,
                                     create_files=create_files) as images:
             labels11, mask12 = images
-            masker11 = NiftiMapsMasker(labels11)
+            masker11 = NiftiMapsMasker(labels11, resampling_target=None)
             masker11.fit()
             assert_raises(ValueError, masker11.transform, fmri12_img)
             assert_raises(ValueError, masker11.transform, fmri21_img)
 
-            masker11 = NiftiMapsMasker(labels11, mask_img=mask12)
+            masker11 = NiftiMapsMasker(labels11, mask_img=mask12,
+                                       resampling_target=None)
             assert_raises(ValueError, masker11.fit)
 
-    masker11 = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
+    masker11 = NiftiMapsMasker(labels11_img, mask_img=mask21_img,
+                               resampling_target=None)
     assert_raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3)
+    masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3,
+                               resampling_target=None)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3)
+    masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3,
+                               resampling_target=None)
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
