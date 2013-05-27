@@ -20,16 +20,16 @@ def generate_signals(feature_number=17, n_confounds=5, length=41,
 
     Returned signals have no trends at all (to machine precision).
     """
-    randgen = np.random.RandomState(0)
+    rand_gen = np.random.RandomState(0)
 
     # Generate random confounds
     confounds_shape = (length, n_confounds)
     confounds = np.ndarray(confounds_shape, order=order)
-    confounds[...] = randgen.randn(*confounds_shape)
+    confounds[...] = rand_gen.randn(*confounds_shape)
     confounds[...] = scipy.signal.detrend(confounds, axis=0)
 
     # Compute noise based on confounds, with random factors
-    factors = randgen.randn(n_confounds, feature_number)
+    factors = rand_gen.randn(n_confounds, feature_number)
     noises_shape = (length, feature_number)
     noises = np.ndarray(noises_shape, order=order)
     noises[...] = np.dot(confounds, factors)
@@ -39,10 +39,10 @@ def generate_signals(feature_number=17, n_confounds=5, length=41,
     signals_shape = noises_shape
     signals = np.ndarray(signals_shape, order=order)
     if same_variance:
-        signals[...] = randgen.randn(*signals_shape)
+        signals[...] = rand_gen.randn(*signals_shape)
     else:
-        signals[...] = (4. * abs(randgen.randn(signals_shape[1])) + 0.5
-                        ) * randgen.randn(*signals_shape)
+        signals[...] = (4. * abs(rand_gen.randn(signals_shape[1])) + 0.5
+                        ) * rand_gen.randn(*signals_shape)
 
     signals[...] = scipy.signal.detrend(signals, axis=0)
     return signals, noises, confounds
@@ -56,15 +56,15 @@ def generate_trends(feature_number=17, length=41):
     trends (numpy.ndarray)
         shape: (length, feature_number)
     """
-    randgen = np.random.RandomState(0)
+    rand_gen = np.random.RandomState(0)
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
     trends = np.repeat(np.atleast_2d(trends).T, feature_number, axis=1)
-    factors = randgen.randn(feature_number)
+    factors = rand_gen.randn(feature_number)
     return trends * factors
 
 
 def test_butterworth():
-    randgen = np.random.RandomState(0)
+    rand_gen = np.random.RandomState(0)
     n_features = 20000
     n_samples = 100
 
@@ -74,7 +74,7 @@ def test_butterworth():
 
     # Compare output for different options.
     # single timeseries
-    data = randgen.randn(n_samples)
+    data = rand_gen.randn(n_samples)
     data_original = data.copy()
 
     out_single = nisignal.butterworth(data, sampling,
@@ -87,7 +87,7 @@ def test_butterworth():
     np.testing.assert_almost_equal(out_single, data)
 
     # multiple timeseries
-    data = randgen.randn(n_samples, n_features)
+    data = rand_gen.randn(n_samples, n_features)
     data[:, 0] = data_original  # set first timeseries to previous data
     data_original = data.copy()
 
@@ -104,12 +104,12 @@ def test_butterworth():
 
 
 def test_standardize():
-    randgen = np.random.RandomState(0)
+    rand_gen = np.random.RandomState(0)
     n_features = 10
     n_samples = 17
 
     # Create random signals with offsets
-    a = randgen.random_sample((n_samples, n_features))
+    a = rand_gen.random_sample((n_samples, n_features))
     a += np.linspace(0, 2., n_features)
 
     # transpose array to fit _standardize input.
