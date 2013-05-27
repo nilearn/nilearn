@@ -154,26 +154,34 @@ def test_unmask():
     unmasked3D = data3D.copy()
     unmasked3D[-mask] = 0
 
-    # 4D Test
-    t = unmask(masked4D, mask_img).get_data()
+    # 4D Test, test value ordering at the same time.
+    t = unmask(masked4D, mask_img, order="C").get_data()
     assert_equal(t.ndim, 4)
+    assert_true(t.flags["C_CONTIGUOUS"])
+    assert_false(t.flags["F_CONTIGUOUS"])
     assert_array_equal(t, unmasked4D)
-    t = unmask([masked4D], mask_img)
+    t = unmask([masked4D], mask_img, order="F")
     t = [t_.get_data() for t_ in t]
     assert_true(isinstance(t, types.ListType))
     assert_equal(t[0].ndim, 4)
+    assert_false(t[0].flags["C_CONTIGUOUS"])
+    assert_true(t[0].flags["F_CONTIGUOUS"])
     assert_array_equal(t[0], unmasked4D)
 
     # 3D Test - check both with Nifti1Image and file
     for create_files in (False, True):
         with write_tmp_imgs(mask_img, create_files=create_files) as filename:
-            t = unmask(masked3D, filename).get_data()
+            t = unmask(masked3D, filename, order="C").get_data()
             assert_equal(t.ndim, 3)
+            assert_true(t.flags["C_CONTIGUOUS"])
+            assert_false(t.flags["F_CONTIGUOUS"])
             assert_array_equal(t, unmasked3D)
-            t = unmask([masked3D], filename)
+            t = unmask([masked3D], filename, order="F")
             t = [t_.get_data() for t_ in t]
             assert_true(isinstance(t, types.ListType))
             assert_equal(t[0].ndim, 3)
+            assert_false(t[0].flags["C_CONTIGUOUS"])
+            assert_true(t[0].flags["F_CONTIGUOUS"])
             assert_array_equal(t[0], unmasked3D)
 
     # 5D test

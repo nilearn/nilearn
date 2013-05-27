@@ -432,7 +432,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     return arr
 
 
-def _unmask_3d(X, mask):
+def _unmask_3d(X, mask, order="C"):
     """Take masked data and bring them back to 3D (space only).
 
     Parameters
@@ -451,12 +451,12 @@ def _unmask_3d(X, mask):
 
     data = np.zeros(
         (mask.shape[0], mask.shape[1], mask.shape[2]),
-        dtype=X.dtype)
+        dtype=X.dtype, order=order)
     data[mask] = X
     return data
 
 
-def _unmask_nd(X, mask):
+def _unmask_nd(X, mask, order="C"):
     """Take masked data and bring them back to n-dimension
 
     Parameters
@@ -479,12 +479,12 @@ def _unmask_nd(X, mask):
     if X.ndim != 2:
         raise ValueError("X must be a 2-dimensional array")
 
-    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype)
+    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
     return data
 
 
-def unmask(X, mask_img):
+def unmask(X, mask_img, order="F"):
     """Take masked data and bring them back into 3D/4D
 
     This function can be applied to a list of masked data.
@@ -512,13 +512,13 @@ def unmask(X, mask_img):
     if isinstance(X, list):
         ret = []
         for x in X:
-            ret.append(unmask(x, mask_img))  # 1-level recursion
+            ret.append(unmask(x, mask_img, order=order))  # 1-level recursion
         return ret
 
     mask, affine = _load_mask_img(mask_img)
 
     if X.ndim == 2:
-        unmasked = _unmask_nd(X, mask)
+        unmasked = _unmask_nd(X, mask, order=order)
     elif X.ndim == 1:
-        unmasked = _unmask_3d(X, mask)
+        unmasked = _unmask_3d(X, mask, order=order)
     return Nifti1Image(unmasked, affine)
