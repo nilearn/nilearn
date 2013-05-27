@@ -98,7 +98,7 @@ def get_bounds(shape, affine):
 
 
 def resample_img(niimg, target_affine=None, target_shape=None,
-                 interpolation='continuous', copy=True):
+                 interpolation='continuous', copy=True, order="F"):
     """ Resample a Nifti Image
 
     Parameters
@@ -119,6 +119,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     copy: bool, optional
         If true, copy source data to avoid side-effects.
+
+    order: "F" or "C"
+        Data ordering in output array. This function is slightly faster with
+        Fortran ordering.
     """
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -194,24 +198,24 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     else:
         b = np.dot(A, b)
 
-    # For images with dimensions larger than 3D:
     data_shape = list(data.shape)
+    # For images with dimensions larger than 3D:
     if len(data_shape) > 3:
         # Iter in a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost
-        data = np.reshape(data, data_shape[:3] + [-1])
-        data = np.rollaxis(data, 3)
-        resampled_data = [ndimage.affine_transform(slice, A,
-                                                   offset=np.dot(A_inv, b),
-                                                   output_shape=target_shape,
-                                                   order=interpolation_order)
-                          for slice in data]
-        resampled_data = np.concatenate([d[..., np.newaxis]
-                                        for d in resampled_data],
-                                        axis=3)
-        resampled_data = np.reshape(resampled_data, list(target_shape) +
-                                    list(data_shape[3:]))
+        other_shape = data_shape[3:]
+        resampled_data = np.ndarray(target_shape + other_shape, order=order)
+
+        all_img = (slice(None),) * 3
+
+        for ind in np.ndindex(*other_shape):
+            img = data[all_img + ind]
+            resampled_data[all_img + ind] = \
+                                   ndimage.affine_transform(img, A,
+                                                    offset=np.dot(A_inv, b),
+                                                    output_shape=target_shape,
+                                                    order=interpolation_order)
     else:
         resampled_data = ndimage.affine_transform(data, A,
                                                   offset=np.dot(A_inv, b),
