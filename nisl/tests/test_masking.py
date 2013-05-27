@@ -2,6 +2,7 @@
 Test the mask-extracting utilities.
 """
 import types
+import distutils.version
 import numpy as np
 
 from numpy.testing import assert_array_equal
@@ -14,6 +15,8 @@ from ..masking import compute_epi_mask, compute_multi_epi_mask, \
     unmask, intersect_masks
 
 from ..testing import write_tmp_imgs
+
+np_version = distutils.version.LooseVersion(np.version.short_version).version
 
 
 def test_mask():
@@ -195,7 +198,7 @@ def test_unmask():
 
     # Error test
     dummy = generator.rand(500)
-    if np.__version__ > '1.8':
+    if np_version > [1, 8, 0]:
         assert_raises(IndexError, unmask, dummy, mask_img)
         assert_raises(IndexError, unmask, [dummy], mask_img)
     else:

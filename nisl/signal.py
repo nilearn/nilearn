@@ -4,9 +4,13 @@ Preprocessing functions for time series.
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
 
+import distutils.version
+
 import numpy as np
 from scipy import signal, stats, linalg
 from sklearn.utils.fixes import qr_economic
+
+np_version = distutils.version.LooseVersion(np.version.short_version).version
 
 
 def _standardize(signals, detrend=False, normalize=True):
@@ -312,7 +316,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
             confounds = np.genfromtxt(filename)
             if np.isnan(confounds.flat[0]):
                 # There may be a header
-                if np.version.short_version >= '1.4.0':
+                if np_version >= [1, 4, 0]:
                     confounds = np.genfromtxt(filename, skip_header=1)
                 else:
                     confounds = np.genfromtxt(filename, skiprows=1)
