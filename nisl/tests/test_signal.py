@@ -4,6 +4,8 @@ Test the signals module
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
+import os.path
+
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
 
@@ -238,8 +240,15 @@ def test_clean_confounds():
     np.testing.assert_almost_equal(cleaned_signals.var(axis=0),
                                    np.ones(cleaned_signals.shape[1]))
 
+    # Test with confounds read from a file. Smoke test only (result has
+    # no meaning).
+    current_dir = os.path.split(__file__)[0]
 
-    # TODO: Test with confounds read from a file
+    signals, _, _ = generate_signals(feature_number=41,
+                                                  n_confounds=1, length=20)
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=os.path.join(current_dir, "test_files",
+                                          "spm_confounds.txt"))
 
 
 def test_high_variance_confounds():
