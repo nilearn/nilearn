@@ -35,7 +35,8 @@ from nisl import io
 # NiftiMultiMasker, rather than the NiftiMasker
 # We specify the target_affine to downsample to 3mm isotropic
 # resolution
-masker = io.NiftiMultiMasker(smooth=6, target_affine=np.diag((3, 3, 3)),
+masker = io.NiftiMultiMasker(smoothing_fwhm=6,
+                             target_affine=np.diag((3, 3, 3)),
                              memory="nisl_cache", memory_level=1,
                              verbose=True)
 data_masked = masker.fit_transform(func_files)

@@ -46,29 +46,29 @@ def test__smooth_array():
     data = np.zeros((40, 41, 42))
     data[20, 20, 20] = 1
 
-    # smooth divided by any test affine must be odd. Otherwise assertion below
+    # fwhm divided by any test affine must be odd. Otherwise assertion below
     # will fail. ( 9 / 0.6 = 15 is fine)
-    smooth = 9
+    fwhm = 9
     test_affines = (np.eye(4), np.diag((1, 1, -1, 1)),
                     np.diag((.6, 1, .6, 1)))
     for affine in test_affines:
         filtered = masking._smooth_array(data, affine,
-                                         fwhm=smooth, copy=True)
+                                         fwhm=fwhm, copy=True)
         assert_false(np.may_share_memory(filtered, data))
 
         # We are expecting a full-width at half maximum of
-        # smooth / voxel_size:
+        # fwhm / voxel_size:
         vmax = filtered.max()
         above_half_max = filtered > .5 * vmax
         for axis in (0, 1, 2):
             proj = np.any(np.any(np.rollaxis(above_half_max,
                           axis=axis), axis=-1), axis=-1)
             np.testing.assert_equal(proj.sum(),
-                                    smooth / np.abs(affine[axis, axis]))
+                                    fwhm / np.abs(affine[axis, axis]))
 
     # Check that NaNs in the data do not propagate
     data[10, 10, 10] = np.NaN
-    filtered = masking._smooth_array(data, affine, fwhm=smooth,
+    filtered = masking._smooth_array(data, affine, fwhm=fwhm,
                                    ensure_finite=True, copy=True)
     assert_true(np.all(np.isfinite(filtered)))
 
@@ -76,17 +76,17 @@ def test__smooth_array():
     for affine in test_affines:
         data = np.zeros((40, 41, 42))
         data[20, 20, 20] = 1
-        masking._smooth_array(data, affine, fwhm=smooth, copy=False)
+        masking._smooth_array(data, affine, fwhm=fwhm, copy=False)
 
         # We are expecting a full-width at half maximum of
-        # smooth / voxel_size:
+        # fwhm / voxel_size:
         vmax = data.max()
         above_half_max = data > .5 * vmax
         for axis in (0, 1, 2):
             proj = np.any(np.any(np.rollaxis(above_half_max,
                           axis=axis), axis=-1), axis=-1)
             np.testing.assert_equal(proj.sum(),
-                                    smooth / np.abs(affine[axis, axis]))
+                                    fwhm / np.abs(affine[axis, axis]))
 
 
 def test_apply_mask():
@@ -105,7 +105,7 @@ def test_apply_mask():
             with write_tmp_imgs(data_img, mask_img, create_files=create_files)\
                      as filenames:
                 series = masking.apply_mask(filenames[0], filenames[1],
-                                            smooth=9)
+                                            smoothing_fwhm=9)
 
             series = np.reshape(series[0, :], (40, 40, 40))
             vmax = series.max()
@@ -122,7 +122,7 @@ def test_apply_mask():
     data[10, 10, 10] = np.NaN
     data_img = Nifti1Image(data, affine)
     mask_img = Nifti1Image(mask, affine)
-    series = masking.apply_mask(data_img, mask_img, smooth=9)
+    series = masking.apply_mask(data_img, mask_img, smoothing_fwhm=9)
     assert_true(np.all(np.isfinite(series)))
 
     # Check data shape and affine

@@ -275,7 +275,7 @@ def test_signal_extraction_with_maps_and_labels():
     np.testing.assert_almost_equal(maps_signals, labels_signals)
 
     ## Same thing with a mask, containing only 3 regions.
-    mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 3)
+    mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
     mask_img = nibabel.Nifti1Image(mask_data.astype(np.int8),
                                    labels_img.get_affine())
     maps_signals, maps_labels = \
@@ -286,9 +286,19 @@ def test_signal_extraction_with_maps_and_labels():
                                                  mask_img=mask_img)
 
     np.testing.assert_almost_equal(maps_signals, labels_signals)
-    assert_true(maps_signals.shape[1] == 3)
-    assert_true(maps_labels == [0, 1, 2])
-    assert_true(labels_labels == [1, 2, 3])
+    assert_true(maps_signals.shape[1] == n_regions)
+    assert_true(maps_labels == range(len(maps_labels)))
+    assert_true(labels_signals.shape == (length, n_regions))
+    assert_true(labels_labels == labels[1:])
+
+    # Inverse operation (mostly smoke test)
+    labels_img_r = region.signals_to_img_labels(labels_signals, labels_img,
+                                                mask_img=mask_img)
+    assert_true(labels_img_r.shape == shape + (length,))
+
+    maps_img_r = region.signals_to_img_maps(maps_signals, maps_img,
+                                            mask_img=mask_img)
+    assert_true(maps_img_r.shape == shape + (length,))
 
 
 def test_generate_maps():
