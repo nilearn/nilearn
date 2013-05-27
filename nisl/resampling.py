@@ -118,7 +118,9 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         Can be continuous' (default) or 'nearest'. Indicate the resample method
 
     copy: bool, optional
-        If true, copy source data to avoid side-effects.
+        If True, guarantees that output array has no memory in common with
+        input array.
+        In all cases, input images are never modified by this function.
 
     order: "F" or "C"
         Data ordering in output array. This function is slightly faster with
@@ -143,12 +145,18 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         raise ValueError("interpolation must be either 'continuous' "
                          "or 'nearest'")
 
+    if isinstance(niimg, basestring):
+        # Avoid a useless copy
+        input_niimg_is_string = True
+    else:
+        input_niimg_is_string = False
+
     # noop cases
     niimg = utils.check_niimg(niimg)
-    if copy:
-        niimg = Nifti1Image(niimg.get_data(), niimg.get_affine())
 
     if target_affine is None and target_shape is None:
+        if copy and not input_niimg_is_string:
+            niimg = utils.copy_niimg(niimg)
         return niimg
 
     shape = utils._get_shape(niimg)
@@ -156,13 +164,15 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
+        if copy and not input_niimg_is_string:
+            niimg = utils.copy_niimg(niimg)
         return niimg
 
     # We now know that some resampling must be done.
+    # The value of "copy" is of no importance: output is always a separate
+    # array.
     data = niimg.get_data()
 
-    if target_affine is None:
-        target_affine = np.eye(4)
     if target_shape is None:
         target_shape = data.shape[:3]
     target_shape = list(target_shape)
@@ -205,7 +215,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         # separable in the extra dimensions. This reduces the
         # computational cost
         other_shape = data_shape[3:]
-        resampled_data = np.ndarray(target_shape + other_shape, order=order)
+        resampled_data = np.ndarray(list(target_shape) + other_shape,
+                                    order=order)
 
         all_img = (slice(None),) * 3
 

@@ -2,13 +2,13 @@
 Test the resampling code.
 """
 
-from nose.tools import assert_equal, assert_not_equal, assert_raises
+from nose.tools import assert_equal, assert_raises, assert_false
 import numpy as np
 
 from nibabel import Nifti1Image
 
 from ..resampling import resample_img
-
+from .. import testing
 
 ###############################################################################
 # Helper function
@@ -83,12 +83,17 @@ def test_resampling_error_checks():
 
     # Correct parameters: no exception
     resample_img(img, target_shape=target_shape, target_affine=affine)
+    resample_img(img, target_affine=affine)
+
+    with testing.write_tmp_imgs(img) as filename:
+        resample_img(filename, target_shape=target_shape, target_affine=affine)
 
     # Missing parameter
     assert_raises(ValueError, resample_img, img, target_shape=target_shape)
 
     # Invalid shape
-    assert_raises(ValueError, resample_img, img, target_shape=(2, 3))
+    assert_raises(ValueError, resample_img, img, target_shape=(2, 3),
+                  target_affine=affine)
 
     # Invalid interpolation
     assert_raises(ValueError, resample_img, img, target_shape=target_shape,
@@ -101,7 +106,8 @@ def test_resampling_error_checks():
     assert_equal(img_r, img)
 
     img_r = resample_img(img, copy=True)
-    assert_not_equal(img_r, img)
+    assert_false(np.may_share_memory(img_r.get_data(), img.get_data()))
+
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
     np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
 
@@ -111,7 +117,6 @@ def test_resampling_error_checks():
 
     img_r = resample_img(img, target_affine=affine, target_shape=target_shape,
                          copy=True)
-    assert_not_equal(img_r, img)
+    assert_false(np.may_share_memory(img_r.get_data(), img.get_data()))
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
     np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
-
