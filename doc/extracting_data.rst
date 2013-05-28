@@ -152,7 +152,7 @@ Preprocessing
 .. _resampling:
 
 Resampling
-...........
+..........
 
 :class:`NiftiMasker` offers two ways to resample images:
 
@@ -162,10 +162,22 @@ Resampling
 Resampling can be used for example to reduce processing time by lowering image
 resolution.
 
+
+Smoothing
+.........
+
+If smoothing the data prior to converting to voxel signals is required, it can
+be performed by :class:`NiftiMasker`. It is achieved by passing the full-width
+half maximum (in millimeter) along each axis in the parameter `smoothing_fwhm`.
+For an isotropic filtering, passing a scalar is also possible. The underlying
+function handles properly the tricky case of non-cubic voxels, by scaling the
+given widths appropriately.
+
+
 .. _temporal_filtering:
 
 Temporal Filtering
-...................
+..................
 
 All previous filters operate on images, before conversion to voxel signals.
 NiftiMasker can also process voxel signals. Here are the possibilities:

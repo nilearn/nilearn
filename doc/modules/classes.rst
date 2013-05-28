@@ -125,6 +125,7 @@ Functions
 
 .. seealso::
    
+   :func:`nisl.masking.apply_mask`,
    :func:`nisl.masking.unmask`
 
 .. _resampling_ref:

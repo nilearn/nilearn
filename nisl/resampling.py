@@ -13,25 +13,28 @@ from . import utils
 
 
 def to_matrix_vector(transform):
-    """Split a transform into it's matrix and vector components.
+    """Split an homogeneous transform into its matrix and vector components.
 
-    The tranformation must be represented in homogeneous coordinates
-    and is split into it's rotation matrix and translation vector
+    The transformation must be represented in homogeneous coordinates.
+    It is split into its linear transformation matrix and translation vector
     components.
+
+    This function does not normalize the matrix. This means that for it to be
+    the inverse of from_matrix_vector, transform[-1, -1] must equal 1, and
+    transform[-1, :-1] must equal 0.
 
     Parameters
     ----------
     transform: numpy.ndarray
-        Transform matrix in homogeneous coordinates.  Example, a 4x4
-        transform representing rotations and translations in 3
-        dimensions.
+        Homogeneous transform matrix. Example: a (4, 4) transform representing
+        linear transformation and translation in 3 dimensions.
 
     Returns
     -------
     matrix, vector: numpy.ndarray
         The matrix and vector components of the transform matrix.  For
-        an NxN transform, matrix will be N-1xN-1 and vector will be
-        1xN-1.
+        an (N, N) transform, matrix will be (N-1, N-1) and vector will be
+        a 1D array of shape (N-1,).
 
     See Also
     --------
@@ -54,15 +57,15 @@ def from_matrix_vector(matrix, vector):
     Parameters
     ----------
     matrix: numpy.ndarray
-        An NxN array representing the rotation matrix.
+        An (N, N) array representing the rotation matrix.
 
     vector: numpy.ndarray
-        A 1xN array representing the translation.
+        A (1, N) array representing the translation.
 
     Returns
     -------
     xform: numpy.ndarray
-        An N+1xN+1 transform matrix.
+        An (N+1, N+1) transform matrix.
 
     See Also
     --------
@@ -78,7 +81,24 @@ def from_matrix_vector(matrix, vector):
 
 
 def get_bounds(shape, affine):
-    """ Return the world-space bounds occupied by an array given an affine.
+    """Return the world-space bounds occupied by an array given an affine.
+
+    The coordinates returned correspond to the **center** of the corner voxels.
+
+    Parameters
+    ==========
+    shape: tuple
+        shape of the array. Must have 3 integer values.
+
+    affine: numpy.ndarray
+        affine giving the linear transformation between voxel coordinates
+        and world-space coordinates.
+
+    Returns
+    =======
+    coord: list of tuples
+        coord[i] is a 2-tuple giving minimal and maximal coordinates along
+        i-th axis.
     """
     adim, bdim, cdim = shape
     adim -= 1
@@ -125,6 +145,12 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     order: "F" or "C"
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
+
+    Returns
+    =======
+    resampled: nibabel.Nifti1Image
+        input image, resampled to have respectively target_shape and
+        target_affine as shape and affine.
     """
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
