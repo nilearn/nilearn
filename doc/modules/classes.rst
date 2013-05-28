@@ -74,6 +74,7 @@ Classes
    nifti_masker.NiftiMasker
    nifti_multi_masker.NiftiMultiMasker
    nifti_region.NiftiLabelsMasker
+   nifti_region.NiftiMapsMasker
 
 .. _masking_ref:
 
