@@ -205,6 +205,88 @@ in Nisl.
 
 
 Extraction of signals from regions:\  :class:`NiftiLabelsMasker`, :class:`NiftiMapsMasker`.
-=========================================================================================
-Generalization of :class:`NiftiMasker`.
+===========================================================================================
 
+The purpose of :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker` is to
+compute signals from regions containing many voxels. They make it easy to get
+these signals once you have an atlas or a parcellation.
+
+Regions definition
+------------------
+
+Nisl understands two different way of defining regions, which are called
+labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
+:class:`NiftiMapsMasker`.
+
+- labels: a single region is defined as the set of all the voxels that have a
+  common label (usually an integer) in the region definition array. The set of
+  region is defined by a single 3D array, containing at each location the label
+  of the region the voxel is in. This technique has one big advantage: the
+  amount of memory required is independent of the number of regions, allowing
+  for representing a large number of regions. On the other hand, there are
+  several contraints: regions cannot overlap, and only their support could be
+  represented (no weighting).
+- maps: a single region is defined as the set of all the voxels that have a
+  non-zero weight. A set of regions is thus defined by a set of 3D images (or a
+  single 4D image), one 3D image per region. Overlapping regions with weights
+  can be represented, but with a storage cost that scales linearly with the
+  number of regions. Handling a large number (thousands) of regions will prove
+  difficult with this representation.
+
+NiftiMapsMasker Usage
+---------------------
+
+Usage of :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` is very close,
+and very close to the usage of NiftiMasker. Only options specific to
+NiftiMapsMasker and NiftiLabelsMasker are described in this section.
+
+Nisl provided a few downloaders to get a brain parcellation. Load the MSDL one:
+
+
+.. literalinclude:: ../plot_adhd_covariance.py
+    :start-after: print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
+    :end-before: print("-- Computing confounds ...")
+
+This atlas defines its regions using maps. The path to the corresponding file
+can be found under the "maps" key. Assuming that a confounds file name is in the
+variable "confounds", extracting region signals can be performed like this:
+
+
+.. literalinclude:: ../plot_adhd_covariance.py
+   :start-after: print("-- Computing region signals ...")
+   :end-before: print("-- Computing covariance matrices ...")
+
+`region_ts` is a numpy.ndarray, containing one signal per column.
+
+One important thing that happens transparently during the execution of
+fit_transform() is resampling. Initially, the images and the atlas do not have
+the same shape nor the same affine. Getting them to the same format is required
+for the signals extraction to work. The keyword argument `resampling_target`
+specifies which format everything should be resampled to. In the present case,
+"maps" indicates that all images should be resampled to have the same shape and
+affine as the msdl atlas. See the reference documentation for every possible
+option.
+
+`region_ts` can then be used as input to a scikit-learn transformer. In the
+present case, covariance between region signals can be obtained using the graph
+lasso algorithm:
+
+.. literalinclude:: ../plot_adhd_covariance.py
+   :start-after: print("-- Computing covariance matrices ...")
+   :end-before: plot_matrices(estimator.covariance_, -estimator.precision_,
+
+
+NiftiLabelsMasker Usage
+-----------------------
+
+Usage of :class:`NiftiLabelsMasker` is similar to that of
+:class:`NiftiMapsMasker`. The main difference is that it requires a labels image
+instead of a set of maps as input.
+
+The `background_label` keyword of :class:`NiftiLabelsMasker` deserves some
+explanation. The voxels that correspond to the brain in an fMRI image do not
+fill the entire image. Consequently, in the labels image, there must be a label
+corresponding to "outside" the brain, for which no signal should be extracted.
+By default, this label is set to zero in Nisl, and is referred to as
+"background". Should some non-zero value occur, it is possible to change the
+background value with the `background_label` keyword.
