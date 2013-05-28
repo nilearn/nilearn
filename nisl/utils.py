@@ -98,6 +98,25 @@ def _repr_niimgs(niimgs):
     return repr(niimgs)
 
 
+def copy_niimg(niimg):
+    """Copy a niimg to a nibabel.Nifti1Image.
+
+    Parameters
+    ==========
+    niimg: niimg
+        Nifti image to copy.
+
+    Returns
+    =======
+    niimg_copy: nibabel.Nifti1Image
+        copy of input (data and affine)
+    """
+    if not is_a_niimg(niimg):
+        raise ValueError("input value is not a niimg")
+    return nibabel.Nifti1Image(niimg.get_data().copy(),
+                               niimg.get_affine().copy())
+
+
 def check_niimg(niimg):
     """Check that niimg is a proper niimg. Turn filenames into objects.
 
