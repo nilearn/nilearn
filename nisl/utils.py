@@ -337,7 +337,7 @@ class CacheMixin(object):
                               "Setting memory_level to 1.")
                 self.memory_level = 1
 
-        if self.memory_level < memory_level:
+        if self.memory_level >= memory_level:
             mem = Memory(cachedir=None)
             return mem.cache(func, **kwargs)
         else:
