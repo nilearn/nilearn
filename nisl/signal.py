@@ -265,13 +265,15 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
            Timeseries. Must have shape (instant number, features number).
            This array is not modified.
 
-       confounds: numpy.ndarray or str
-           Confounds timeseries. Shape muse be
-           (instant number, confound number). The number of time
-           instants in signals and confounds must be identical
-           (i.e. signals.shape[0] == confounds.shape[0]).
+       confounds: numpy.ndarray, str or list of
+           Confounds timeseries. Shape must be
+           (instant number, confound number), or just (instant number,)
+           The number of time instants in signals and confounds must be
+           identical (i.e. signals.shape[0] == confounds.shape[0]).
            If a string is provided, it is assumed to be the name of a csv file
            containing signals as columns, with an optional one-line header.
+           If a list is provided, all confounds are removed from the input
+           signal, as if all were in the same array.
 
        t_r: float
            Repetition time, in second (sampling period).
@@ -301,6 +303,11 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
        <http://dx.doi.org/10.1002/hbm.460020402>`_
     """
 
+    if not isinstance(confounds,
+                      (list, tuple, basestring, np.ndarray, type(None))):
+        raise TypeError("confounds keyword has an unhandled type: %s"
+                        % confounds.__class__)
+
     # Standardize / detrend
     normalize = False
     if confounds is not None:
@@ -311,17 +318,41 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
 
     # Remove confounds
     if confounds is not None:
-        if isinstance(confounds, basestring):
-            filename = confounds
-            confounds = np.genfromtxt(filename)
-            if np.isnan(confounds.flat[0]):
-                # There may be a header
-                if np_version >= [1, 4, 0]:
-                    confounds = np.genfromtxt(filename, skip_header=1)
-                else:
-                    confounds = np.genfromtxt(filename, skiprows=1)
+        if not isinstance(confounds, (list, tuple)):
+            confounds = (confounds, )
+
+        # Read confounds
+        all_confounds = []
+        for confound in confounds:
+            if isinstance(confound, basestring):
+                filename = confound
+                confound = np.genfromtxt(filename)
+                if np.isnan(confound.flat[0]):
+                    # There may be a header
+                    if np_version >= [1, 4, 0]:
+                        confound = np.genfromtxt(filename, skip_header=1)
+                    else:
+                        confound = np.genfromtxt(filename, skiprows=1)
+                if confound.shape[0] != signals.shape[0]:
+                    raise ValueError("Confound signal has an incorrect length")
+
+            elif isinstance(confound, np.ndarray):
+                if confound.ndim == 1:
+                    confound = np.atleast_2d(confound).T
+                elif confound.ndim != 2:
+                    raise ValueError("confound array has an incorrect number "
+                                     "of dimensions: %d" % confound.ndim)
+
+                if confound.shape[0] != signals.shape[0]:
+                    raise ValueError("Confound signal has an incorrect length")
+            else:
+                raise TypeError("confound has an unhandled type: %s"
+                                % confound.__class__)
+            all_confounds.append(confound)
+
         # Restrict the signal to the orthogonal of the confounds
-        confounds = np.atleast_2d(confounds)
+        confounds = np.hstack(all_confounds)
+        del all_confounds
         confounds = _standardize(confounds, normalize=True, detrend=detrend)
         Q = qr_economic(confounds)[0]
         signals -= np.dot(Q, np.dot(Q.T, signals))

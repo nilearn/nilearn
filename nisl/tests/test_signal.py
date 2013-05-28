@@ -244,11 +244,35 @@ def test_clean_confounds():
     # no meaning).
     current_dir = os.path.split(__file__)[0]
 
-    signals, _, _ = generate_signals(feature_number=41,
-                                                  n_confounds=1, length=20)
+    signals, _, confounds = generate_signals(feature_number=41,
+                                                  n_confounds=3, length=20)
+    filename1 = os.path.join(current_dir, "test_files", "spm_confounds.txt")
+    filename2 = os.path.join(current_dir, "test_files",
+                             "confounds_with_header.csv")
+
     nisignal.clean(signals, detrend=False, standardize=False,
-                   confounds=os.path.join(current_dir, "test_files",
-                                          "spm_confounds.txt"))
+                   confounds=filename1)
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=filename2)
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=confounds[:, 1])
+
+    # Use a list containing two filenames, a 2D array and a 1D array
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=[filename1, confounds[:, 0:2],
+                              filename2, confounds[:, 2]])
+
+    # Test error handling
+    assert_raises(TypeError, nisignal.clean, signals, confounds=1)
+    assert_raises(ValueError, nisignal.clean, signals, confounds=np.zeros(2))
+    assert_raises(ValueError, nisignal.clean, signals,
+                  confounds=np.zeros((2, 2)))
+    assert_raises(ValueError, nisignal.clean, signals,
+                  confounds=np.zeros((2, 3, 4)))
+    assert_raises(ValueError, nisignal.clean, signals[:-1, :],
+                  confounds=filename1)
+    assert_raises(TypeError, nisignal.clean, signals,
+                  confounds=[None])
 
 
 def test_high_variance_confounds():
