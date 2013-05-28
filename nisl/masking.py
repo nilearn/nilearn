@@ -336,7 +336,8 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     When using smoothing, ensure_finite is set to True, as non-finite
     values would spread accross the image.
     """
-    return _apply_mask_fmri(niimgs, mask_img, dtype=dtype, smoothing_fwhm=smoothing_fwhm,
+    return _apply_mask_fmri(niimgs, mask_img, dtype=dtype,
+                            smoothing_fwhm=smoothing_fwhm,
                             ensure_finite=ensure_finite)
 
 
@@ -362,7 +363,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
     data = niimgs_img.get_data()
-    series = utils.as_ndarray(data, dtype=dtype, order="C")
+    series = utils.as_ndarray(data, dtype=dtype, order="C", copy=True)
     del data, niimgs_img  # frees a lot of memory
 
     _smooth_array(series, affine, fwhm=smoothing_fwhm,
