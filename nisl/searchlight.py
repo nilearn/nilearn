@@ -1,5 +1,6 @@
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
+#           Philippe Gervais (philippe.gervais@inria.fr)
 #
 # License: simplified BSD
 
@@ -13,6 +14,9 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
 from sklearn import neighbors
 
+from . import masking
+from . import utils
+
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
                  verbose=0):
@@ -21,13 +25,13 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     Parameters
     ----------
     X: array-like of shape at least 2D
-        The data to fit.
+        data to fit.
 
     y: array-like
-        The target variable to try to predict.
+        target variable to predict.
 
     estimator: estimator object implementing 'fit'
-        The object to use to fit the data
+        object to use to fit the data
 
     A: numpy sparse matrix.
         adjacency matrix. Defines for each sample the neigbhoring samples
@@ -135,7 +139,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
         precision of each voxel. dtype: float64.
     """
     par_scores = np.zeros(len(list_rows))
-    id = (list_i[0] + 1) / len(list_i) + 1
+    thread_id = (list_i[0] + 1) / len(list_i) + 1
     t0 = time.time()
     for i, row in enumerate(list_rows):
         if list_i[i] not in row:
@@ -160,7 +164,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
                 sys.stderr.write(
                     "Job #%d, processed %d/%d voxels"
                     "(%0.2f%%, %i seconds remaining)%s"
-                    % (id, i, len(list_rows), percent, remaining, crlf))
+                    % (thread_id, i, len(list_rows), percent, remaining, crlf))
     return par_scores
 
 
@@ -220,11 +224,24 @@ class SearchLight(BaseEstimator):
     vol. 103, no. 10, pages 3863-3868, March 2006
     """
 
-    def __init__(self, mask, process_mask=None, radius=2.,
+    def __init__(self, mask_img, process_mask_img=None, radius=2.,
                  estimator=LinearSVC(C=1), n_jobs=1, score_func=None, cv=None,
                  verbose=0):
-        self.mask = mask
-        self.process_mask = process_mask
+        """
+        Parameters
+        ==========
+        mask_img: niimg
+            boolean image giving location of voxels containing usable signals.
+
+        process_mask: niimg, optional
+            boolean image giving voxels on which searchlight should be
+            computed.
+
+        radius: float, optional
+            radius of searchlight ball, in millimeters. Defaults to 2.
+        """
+        self.mask_img = mask_img
+        self.process_mask_img = process_mask_img
         self.radius = radius
         self.estimator = estimator
         self.n_jobs = n_jobs
@@ -232,31 +249,55 @@ class SearchLight(BaseEstimator):
         self.cv = cv
         self.verbose = verbose
 
-    def fit(self, X, y):
-        """Fit the search_light
+    def fit(self, niimgs, y):
+        """Fit the searchlight
 
-        X: array-like of shape at least 2D
-            The data to fit.
+        niimg: niimg
+            4D image.
 
-        y: array-like
-            The target variable to try to predict.
+        y: 1D array-like
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
 
         Attributes
         ----------
-        scores_: array-like of shape (number of rows in A)
-            search_light scores
+        scores_: numpy.ndarray
+            search_light scores. Same shape as input parameter
+            process_mask_img.
         """
-        mask = self.mask
-        process_mask = self.process_mask
-        if process_mask is None:
+        # Compute world coordinates of all in-mask voxels.
+        mask, mask_affine = masking._load_mask_img(self.mask_img)
+        mask_coords = np.where(mask != 0)
+        mask_coords = np.asarray(mask_coords + (np.ones(len(mask_coords[0]),
+                                                        dtype=np.int),))
+        mask_coords = np.dot(mask_affine, mask_coords)[:3].T
+
+        # Compute world coordinates of all in-process mask voxels
+        if self.process_mask_img is None:
             process_mask = mask
-        mask_indices = np.asarray(np.where(mask != 0)).T
-        process_mask_indices = np.asarray(np.where(process_mask != 0)).T
+            process_mask_coords = mask_coords
+        else:
+            process_mask, process_mask_affine = \
+                masking._load_mask_img(self.process_mask_img)
+            process_mask_coords = np.where(process_mask != 0)
+            process_mask_coords = \
+                np.asarray(process_mask_coords
+                           + (np.ones(len(process_mask_coords[0]),
+                                      dtype=np.int),))
+            process_mask_coords = np.dot(process_mask_affine,
+                                         process_mask_coords)[:3].T
+
         clf = neighbors.NearestNeighbors(radius=self.radius)
-        A = clf.fit(mask_indices).radius_neighbors_graph(process_mask_indices)
+        A = clf.fit(mask_coords).radius_neighbors_graph(process_mask_coords)
+        del process_mask_coords, mask_coords
         A = A.tolil()
 
-        # scores is an array of CV scores with same cardinality as process_mask
+        # scores is an 1D array of CV scores with length equals to the number
+        # of voxels in processing mask (columns in process_mask)
+        niimgs = utils.check_niimgs(niimgs)
+        X = utils.as_ndarray(niimgs.get_data(), order="C")
+        X = X[mask].T
+        del niimgs, mask
         scores = search_light(X, y, self.estimator, A,
                               self.score_func, self.cv, self.n_jobs,
                               self.verbose)
