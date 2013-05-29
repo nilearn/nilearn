@@ -59,14 +59,13 @@ msdl_atlas = nisl.datasets.fetch_msdl_atlas()
 
 print("-- Computing confounds ...")
 hv_confounds = nisl.image.high_variance_confounds(filename)
-mvt_confounds = np.loadtxt(confound_file, skiprows=1)
-confounds = np.hstack((hv_confounds, mvt_confounds))
 
 print("-- Computing region signals ...")
 masker = nisl.io.NiftiMapsMasker(msdl_atlas["maps"], resampling_target="maps",
                                  low_pass=None, high_pass=0.01, t_r=2.5,
                                  verbose=1)
-region_ts = masker.fit_transform(filename, confounds=confounds)
+region_ts = masker.fit_transform(filename,
+                                 confounds=[hv_confounds, confound_file])
 
 print("-- Computing covariance matrices ...")
 estimator = covariance.GraphLassoCV()
@@ -76,4 +75,3 @@ plot_matrices(estimator.covariance_, -estimator.precision_,
               title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
               subject_n=subject_n)
 pl.show()
-
