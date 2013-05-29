@@ -51,7 +51,7 @@ process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 n_jobs = 1
 
 ### Define the score function used to evaluate classifiers
-# Here we use precision which mesures proportion of true positives among
+# Here we use precision which measures proportion of true positives among
 # all positives results for one class.
 from sklearn.metrics import precision_score
 score_func = precision_score

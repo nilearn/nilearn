@@ -59,7 +59,6 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     scores: array-like of shape (number of rows in A)
         search_light scores
     """
-    scores = np.zeros(len(A.rows), dtype=float)
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
@@ -142,13 +141,11 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
     thread_id = (list_i[0] + 1) / len(list_i) + 1
     t0 = time.time()
     for i, row in enumerate(list_rows):
-        if list_i[i] not in row:
-            row.append(list_i[i])
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
                                                 y, score_func=score_func,
                                                 cv=cv, n_jobs=1))
         if verbose > 0:
-            # One can't print less than each 100 iterations
+            # One can't print less than each 10 iterations
             step = 11 - min(verbose, 10)
             if (i % step == 0):
                 # If there is only one job, progress information is fixed

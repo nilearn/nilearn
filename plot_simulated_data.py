@@ -4,7 +4,7 @@ Example of pattern recognition on simulated data
 =================================================
 
 This examples simulates data according to a very simple sketch of brain
-imaging data and applies machine learing techniques to predict output
+imaging data and applies machine learning techniques to predict output
 values.
 """
 
@@ -23,7 +23,11 @@ from sklearn.utils import check_random_state
 from sklearn.metrics import r2_score
 from sklearn.cross_validation import KFold
 from sklearn.feature_selection import f_regression
+
+import nibabel
+
 from nisl import searchlight
+import nisl.masking
 
 
 ###############################################################################
@@ -59,7 +63,7 @@ def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
     # Add additive noise
     noise = noise_coef * orig_noise
     snr = 20 * np.log(linalg.norm(y, 2) / linalg.norm(noise, 2))
-    print "SNR : %d " % snr
+    print ("SNR: %.1f dB" % snr)
     y += noise
 
     X -= X.mean(axis=-1)[:, np.newaxis]
@@ -88,13 +92,15 @@ def plot_slices(data, title=None):
 
 ###############################################################################
 # Create data
-X_train, X_test, y_train, y_test, snr, noise, coefs, size = \
+X_train, X_test, y_train, y_test, snr, _, coefs, size = \
     create_simulation_data(snr=10, n_samples=400, size=12)
 mask = np.ones((size, size, size), np.bool)
+mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
 process_mask = np.zeros((size, size, size), np.bool)
 process_mask[:, :, 0] = True
 process_mask[:, :, 6] = True
 process_mask[:, :, 11] = True
+process_mask_img = nibabel.Nifti1Image(process_mask.astype(np.int), np.eye(4))
 
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
@@ -107,16 +113,22 @@ classifiers = [
     ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
     ('svr', svm.SVR(kernel='linear', C=0.001)),
     ('searchlight', searchlight.SearchLight(
-        mask=mask, process_mask=process_mask,
-        radius=4., estimator=svm.SVR(kernel="linear"),
-        score_func=r2_score,
-        cv=KFold(y_train.size, k=4)))
+        mask_img, process_mask_img=process_mask_img,
+        radius=2.7,
+        score_func=r2_score, estimator=svm.SVR(kernel="linear"),
+        cv=KFold(y_train.size, k=4),
+        verbose=1, n_jobs=1))
 ]
 
 # Run the estimators
 for name, classifier in classifiers:
     t1 = time()
-    classifier.fit(X_train, y_train)
+    if name != "searchlight":
+        classifier.fit(X_train, y_train)
+    else:
+        X = nisl.masking.unmask(X_train, mask_img)
+        classifier.fit(X, y_train)
+        del X
     elapsed_time = time() - t1
 
     if name != 'searchlight':
