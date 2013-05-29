@@ -62,9 +62,10 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
-            list_i, A.rows[list_i],
-            estimator, X, y, A.shape[0], score_func, cv, verbose)
-        for list_i in group_iter)
+            A.rows[list_i],
+            estimator, X, y, score_func, cv,
+            thread_id + 1, A.shape[0], verbose)
+        for thread_id, list_i in enumerate(group_iter))
     return np.concatenate(scores)
 
 
@@ -95,29 +96,24 @@ class GroupIterator(object):
             yield list_i
 
 
-def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
-                             score_func, cv, verbose=0):
+def _group_iter_search_light(list_rows, estimator, X, y,
+                             score_func, cv, thread_id, total, verbose=0):
     """Function for grouped iterations of search_light
 
     Parameters
     -----------
-    list_i: array of int
-        Indices of voxels to be processed by the thread.
-
-    list_rows: array of array of integers
-        Indices of adjacency rows corresponding to list_i voxels
+    list_rows: array of arrays of int
+        adjacency rows. For a voxel with index i in X, list_rows[i] is the list
+        of neighboring voxels indices (in X).
 
     estimator: estimator object implementing 'fit'
-        The object to use to fit the data
+        object to use to fit the data
 
     X: array-like of shape at least 2D
-        The data to fit.
+        data to fit.
 
     y: array-like
-        The target variable to try to predict.
-
-    total: int
-        Total number of voxels
+        target variable to predict.
 
     score_func: callable, optional
         callable taking as arguments the fitted estimator, the
@@ -125,9 +121,14 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
         not None.
 
     cv: cross-validation generator, optional
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used or 3-fold stratified cross-validation
-        when y is supplied.
+        A cross-validation generator. If None, a 3-fold cross validation is
+        used or 3-fold stratified cross-validation when y is supplied.
+
+    thread_id: int
+        process id, used for display.
+
+    total: int
+        Total number of voxels, used for display
 
     verbose: int, optional
         The verbosity level. Defaut is 0
@@ -135,10 +136,9 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
     Returns
     -------
     par_scores: numpy.ndarray
-        precision of each voxel. dtype: float64.
+        score for each voxel. dtype: float64.
     """
     par_scores = np.zeros(len(list_rows))
-    thread_id = (list_i[0] + 1) / len(list_i) + 1
     t0 = time.time()
     for i, row in enumerate(list_rows):
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
