@@ -162,7 +162,7 @@ def _group_iter_search_light(list_i, list_rows, estimator, X, y, total,
                 # We use a max to avoid a division by zero
                 remaining = (100. - percent) / max(0.01, percent) * dt
                 sys.stderr.write(
-                    "Job #%d, processed %d/%d voxels"
+                    "Job #%d, processed %d/%d voxels "
                     "(%0.2f%%, %i seconds remaining)%s"
                     % (thread_id, i, len(list_rows), percent, remaining, crlf))
     return par_scores
