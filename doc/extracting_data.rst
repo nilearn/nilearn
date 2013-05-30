@@ -216,6 +216,8 @@ in Nisl.
     :end-before: # We use a masked array so that the voxels at '-1' are displayed
 
 
+.. _region:
+
 Extraction of signals from regions:\  :class:`NiftiLabelsMasker`, :class:`NiftiMapsMasker`.
 ===========================================================================================
 

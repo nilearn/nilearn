@@ -130,7 +130,6 @@ counter-clockwise.
     :scale: 60
 
 
-
 Masking data manually
 =====================
 
