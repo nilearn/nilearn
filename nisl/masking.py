@@ -336,6 +336,8 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     When using smoothing, ensure_finite is set to True, as non-finite
     values would spread accross the image.
     """
+    mask, mask_affine = _load_mask_img(mask_img)
+    mask_img = Nifti1Image(utils.as_ndarray(mask, dtype=np.int8), mask_affine)
     return _apply_mask_fmri(niimgs, mask_img, dtype=dtype,
                             smoothing_fwhm=smoothing_fwhm,
                             ensure_finite=ensure_finite)
@@ -343,10 +345,20 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
 def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
                      smoothing_fwhm=None, ensure_finite=True):
+    """Same as apply_mask().
+
+    The only difference with apply_mask is that some costly checks on mask_img
+    are not performed: mask_img is assumed to contain only two different
+    values (this is checked for in apply_mask, not in this function).
+    """
+
+    mask_img = utils.check_niimg(mask_img)
+    mask_affine = mask_img.get_affine()
+    mask_data = utils.as_ndarray(mask_img.get_data(), dtype=np.bool)
+
     if smoothing_fwhm is not None:
         ensure_finite = True
 
-    mask, mask_affine = _load_mask_img(mask_img)
     niimgs_img = utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
 
@@ -355,9 +367,9 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
                          '\n%s' % (str(mask_affine),
                                    str(niimgs_img.get_affine())))
 
-    if not mask.shape == niimgs_img.shape[:3]:
+    if not mask_data.shape == niimgs_img.shape[:3]:
         raise ValueError('Mask shape: %s is different from img shape:%s'
-                         % (str(mask.shape), str(niimgs_img.shape)))
+                         % (str(mask_data.shape), str(niimgs_img.shape)))
 
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
@@ -368,7 +380,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
 
     _smooth_array(series, affine, fwhm=smoothing_fwhm,
                   ensure_finite=ensure_finite, copy=False)
-    return series[mask].T
+    return series[mask_data].T
 
 
 def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):

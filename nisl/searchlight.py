@@ -14,6 +14,8 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
 from sklearn import neighbors
 
+import nibabel
+
 from . import masking
 from . import utils
 
@@ -291,10 +293,10 @@ class SearchLight(BaseEstimator):
 
         # scores is an 1D array of CV scores with length equals to the number
         # of voxels in processing mask (columns in process_mask)
-        niimgs = utils.check_niimgs(niimgs)
-        X = utils.as_ndarray(niimgs.get_data(), order="C")
-        X = X[mask].T
-        del niimgs, mask
+        X = masking._apply_mask_fmri(niimgs,
+                nibabel.Nifti1Image(utils.as_ndarray(mask, dtype=np.int8),
+                                    mask_affine))
+
         scores = search_light(X, y, self.estimator, A,
                               self.score_func, self.cv, self.n_jobs,
                               self.verbose)
