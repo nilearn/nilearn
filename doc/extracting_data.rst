@@ -232,11 +232,11 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
 
 - labels: a single region is defined as the set of all the voxels that have a
   common label (usually an integer) in the region definition array. The set of
-  region is defined by a single 3D array, containing at each location the label
+  region is defined by a single 3D array, containing at each location the label
   of the region the voxel is in. This technique has one big advantage: the
   amount of memory required is independent of the number of regions, allowing
   for representing a large number of regions. On the other hand, there are
-  several contraints: regions cannot overlap, and only their support could be
+  several contraints: regions cannot overlap, and only their support could be
   represented (no weighting).
 - maps: a single region is defined as the set of all the voxels that have a
   non-zero weight. A set of regions is thus defined by a set of 3D images (or a
@@ -296,7 +296,7 @@ Usage of :class:`NiftiLabelsMasker` is similar to that of
 instead of a set of maps as input.
 
 The `background_label` keyword of :class:`NiftiLabelsMasker` deserves some
-explanation. The voxels that correspond to the brain in an fMRI image do not
+explanation. The voxels that correspond to the brain in an fMRI image do not
 fill the entire image. Consequently, in the labels image, there must be a label
 corresponding to "outside" the brain, for which no signal should be extracted.
 By default, this label is set to zero in Nisl, and is referred to as

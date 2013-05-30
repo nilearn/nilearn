@@ -526,7 +526,7 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
 
 
 def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
-    """Download and return file names for the Yeo 2011 parcellation.
+    """Download and return file names for the Yeo 2011 parcellation.
 
     The provided images are in MNI152 space.
 
@@ -553,7 +553,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
         - "tight_17", "liberal_17": 17-region parcellations.
         - "colors_7", "colors_17": colormaps (text files) for 7- and 17-region
             parcellation respectively.
-        - "anat": anatomy image.
+        - "anat": anatomy image.
 
     Notes
     -----
