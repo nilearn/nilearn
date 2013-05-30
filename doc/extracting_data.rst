@@ -8,10 +8,11 @@ Before applying some complex machine learning algorithm, or perform
 sophisticated analysis, the first step is to read data from file and
 do some basic transformation on them. Nisl offers several ways to do
 this. This part is concerned with only high-level classes (in
-modules nisl.io.nifti_masker and nisl.io.nifti_region), description of
+modules :mod:`nisl.io`), description of
 low-level functions can be found in the reference documentation.
 
-The philosophy underlying these classes is similar to scikit-learn's
+The philosophy underlying these classes is similar to `scikit-learn
+<http://scikit-learn.org>`_\ 's
 transformers. Objects are initialized with some parameters unrelated
 to the data, then the fit() method is called, possibly with some
 information related to the data (such as number of images to process).
@@ -25,7 +26,8 @@ region signals from fMRI data. Advanced usage of these classes
 requires to tweak their parameters. However, some choices have been
 made in the design, and not every operation is possible. It is thus
 sometimes necessary to go beyond them and use low-level functions to
-achieve what is wanted.
+achieve what is wanted (see e.g. :mod:`nisl.signal`,
+:mod:`nisl.masking`).
 
 .. currentmodule:: nisl.io
 
@@ -42,20 +44,23 @@ steps by default with commonly used default parameters. But it is
 *very important* to look at your data to see the effects of the
 preprocessings and validate them.
 
-In addition, :class:`NiftiMasker` is a scikit-learn compliant
-transformer so that you can directly plug it into a scikit-learn
-pipeline.
+In addition, :class:`NiftiMasker` is a `scikit-learn
+<http://scikit-learn.org>`_ compliant
+transformer so that you can directly plug it into a `scikit-learn
+<http://scikit-learn.org>`_ pipeline.
 
 Custom data loading
 --------------------
 
 Sometimes, some custom preprocessing of data is necessary. In this
 example, we will restrict Haxby dataset (which contains 1452 frames)
-to 150 frames to speed up computation. To do that, we load the
-dataset, restrain it to 150 frames and build a brand new Nifti-like
-object to give it to the Nifti masker. Though it is possible, there is
-no need to save your data in a file to pass it to a NiftiMasker. Simply
-use `nibabel` to create a :ref:`Niimg <niimg>` in memory:
+to 150 frames to speed up computation. To do that, we load the dataset
+with :func:`fetch_haxby_simple() <nisl.datasets.fetch_haxby_simple>`,
+restrict it to 150 frames and build a brand new Nifti-like object to
+give it to the masker. Though it is possible, there is no need to save
+your data in a file to pass it to a :class:`NiftiMasker`. Simply use
+`nibabel <http://nipy.sourceforge.net/nibabel/>`_ to create a
+:ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../plot_nifti_advanced.py
@@ -70,7 +75,7 @@ Custom Masking
 In the basic tutorial, we showed how the masker could compute a mask
 automatically, and it has done a good job. But, on some datasets, the
 default algorithm performs poorly. This is why it is very important to
-*always look at how your data look like*.
+**always look at how your data look like**.
 
 Mask Visualization
 ...................
@@ -87,8 +92,6 @@ epi scans) and a mask as a red layer over this background.
 
 Computing the mask
 ...................
-
-.. currentmodule:: nisl.io
 
 If a mask is not given, :class:`NiftiMasker` will try to compute
 one. It is *very important* to take a look at the generated mask, to see if it
@@ -180,13 +183,13 @@ Temporal Filtering
 ..................
 
 All previous filters operate on images, before conversion to voxel signals.
-NiftiMasker can also process voxel signals. Here are the possibilities:
+:class:`NiftiMasker` can also process voxel signals. Here are the possibilities:
 
 - Confound removal. Two ways of removing confounds are provided. Any linear
   trend can be removed by activating the `detrend` option. It is not activated
-  by default in NiftiMasker but is almost essential. More complex confounds can
-  be removed by passing them to transform(). If the dataset provides a confounds
-  file, just pass its path to the masker.
+  by default in :class:`NiftiMasker` but is almost essential. More complex confounds can
+  be removed by passing them to :meth:`NiftiMasker.transform`. If the
+  dataset provides a confounds file, just pass its path to the masker.
 
 - Linear filtering. Low-pass and high-pass filters allow for removing artifacts.
   Care has been taken to apply this processing to confounds if necessary.
@@ -195,11 +198,11 @@ NiftiMasker can also process voxel signals. Here are the possibilities:
   returning them. This is performed by default.
 
 .. note:: **Exercise**
-   :class: green
 
    You can, more as a training than as an exercise, try to play with the
-   parameters in Nisl examples. Try to enable detrending in haxby decoding
-   and run it: does it have a big impact on the result?
+   parameters in :doc:`Nisl examples <auto_examples/index>`. Try to enable
+   detrending in haxby decoding and run it: does it have a big impact
+   on the result?
 
 
 Inverse transform: unmasking data
@@ -207,8 +210,8 @@ Inverse transform: unmasking data
 
 Once voxel signals have been processed, the result can be visualized as images
 after unmasking (turning voxel signals into a series of images, using the same
-mask as for masking). This step is present in almost all the examples provided
-in Nisl.
+mask as for masking). This step is present in almost all the
+:doc:`examples <auto_examples/index>` provided in Nisl.
 
 
 .. literalinclude:: ../plot_haxby_decoding.py
@@ -247,14 +250,17 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
   number of regions. Handling a large number (thousands) of regions will prove
   difficult with this representation.
 
-NiftiMapsMasker Usage
----------------------
+:class:`NiftiMapsMasker` Usage
+------------------------------
 
 Usage of :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` is very close,
-and very close to the usage of NiftiMasker. Only options specific to
-NiftiMapsMasker and NiftiLabelsMasker are described in this section.
+and very close to the usage of :class:`NiftiMasker`. Only options specific to
+:class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` are described
+in this section.
 
-Nisl provided a few downloaders to get a brain parcellation. Load the MSDL one:
+Nisl provides several downloaders to get a brain parcellation. Load
+the `MSDL one
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_:
 
 
 .. literalinclude:: ../plot_adhd_covariance.py
@@ -270,20 +276,26 @@ variable "confounds", extracting region signals can be performed like this:
    :start-after: print("-- Computing region signals ...")
    :end-before: print("-- Computing covariance matrices ...")
 
-`region_ts` is a numpy.ndarray, containing one signal per column.
+`region_ts` is a `numpy.ndarray
+<http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html>`_,
+containing one signal per column.
 
 One important thing that happens transparently during the execution of
-fit_transform() is resampling. Initially, the images and the atlas do not have
-the same shape nor the same affine. Getting them to the same format is required
-for the signals extraction to work. The keyword argument `resampling_target`
-specifies which format everything should be resampled to. In the present case,
-"maps" indicates that all images should be resampled to have the same shape and
-affine as the msdl atlas. See the reference documentation for every possible
-option.
+:meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
+and the atlas do not have the same shape nor the same affine. Getting
+them to the same format is required for the signals extraction to
+work. The keyword argument `resampling_target` specifies which format
+everything should be resampled to. In the present case, "maps"
+indicates that all images should be resampled to have the same shape
+and affine as the `MSDL atlas
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_.
+See the reference documentation for :class:`NiftiMasker` for every
+possible option.
 
-`region_ts` can then be used as input to a scikit-learn transformer. In the
-present case, covariance between region signals can be obtained using the graph
-lasso algorithm:
+`region_ts` can then be used as input to a `scikit-learn
+<http://scikit-learn.org>`_ transformer. In the present case,
+covariance between region signals can be obtained using the graph
+lasso algorithm (with cross-validation):
 
 .. literalinclude:: ../plot_adhd_covariance.py
    :start-after: print("-- Computing covariance matrices ...")
