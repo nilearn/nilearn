@@ -13,21 +13,20 @@ low-level functions can be found in the reference documentation.
 
 The philosophy underlying these classes is similar to `scikit-learn
 <http://scikit-learn.org>`_\ 's
-transformers. Objects are initialized with some parameters unrelated
-to the data, then the fit() method is called, possibly with some
-information related to the data (such as number of images to process).
-This step performs some initial computations (e.g. fitting a mask
-based on the data). Then transform() is called, with the data as argument.
-This method is meant to perform some computation on the dataset itself
-(e.g. extracting timeseries from images).
+transformers. Objects are initialized with some parameters proper to
+the transformation (unrelated to the data), then the fit() method
+should be called, possibly specifying some data-related
+information (such as number of images to process), to perform some
+initial computation (e.g. fitting a mask based on the data). Then
+transform() can be called, with the data as argument, to perform some
+computation on data themselves (e.g. extracting timeseries from images).
 
 The following parts explain how to use this API to extract voxel or
 region signals from fMRI data. Advanced usage of these classes
-requires to tweak their parameters. However, some choices have been
-made in the design, and not every operation is possible. It is thus
-sometimes necessary to go beyond them and use low-level functions to
-achieve what is wanted (see e.g. :mod:`nisl.signal`,
-:mod:`nisl.masking`).
+requires to tweak their parameters. However, high-level objects have
+been designed to perform common operations. Users who want to make
+some specific processing may have to call low-level functions (see
+e.g. :mod:`nisl.signal`, :mod:`nisl.masking`.)
 
 .. currentmodule:: nisl.io
 
@@ -148,6 +147,13 @@ high values by lowering *upper cutoff*. Default value is 0.9, so we try
 The resulting mask seems to be correct. Compared to the original one,
 it is very close.
 
+.. topic:: **Note**
+
+    The full example described in this section can be found here:
+    :doc:`plot_nifti_advanced.py <auto_examples/plot_nifti_advanced>`.
+    This one can be relevant too:
+    :doc:`plot_nifti_simple.py <auto_examples/plot_nifti_simple>`.
+
 
 Preprocessing
 -------------
@@ -197,12 +203,12 @@ All previous filters operate on images, before conversion to voxel signals.
 - Normalization. Signals can be normalized (scaled to unit variance) before
   returning them. This is performed by default.
 
-.. note:: **Exercise**
+.. topic:: **Exercise**
 
-   You can, more as a training than as an exercise, try to play with the
-   parameters in :doc:`Nisl examples <auto_examples/index>`. Try to enable
-   detrending in haxby decoding and run it: does it have a big impact
-   on the result?
+   You can, more as a training than as an exercise, try to play with
+   the parameters in :doc:`plot_haxby_simple.py
+   <auto_examples/plot_haxby_simple>`. Try to enable detrending
+   and run the script: does it have a big impact on the result?
 
 
 Inverse transform: unmasking data
@@ -294,12 +300,18 @@ possible option.
 
 `region_ts` can then be used as input to a `scikit-learn
 <http://scikit-learn.org>`_ transformer. In the present case,
-covariance between region signals can be obtained using the graph
-lasso algorithm (with cross-validation):
+covariance between region signals can be obtained using the `graph
+lasso algorithm
+<http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_
+(with cross-validation):
 
 .. literalinclude:: ../plot_adhd_covariance.py
    :start-after: print("-- Computing covariance matrices ...")
    :end-before: plot_matrices(estimator.covariance_, -estimator.precision_,
+
+.. topic:: Note
+
+   The full example can be found here: :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
 
 
 NiftiLabelsMasker Usage
