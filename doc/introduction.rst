@@ -136,7 +136,7 @@ reader of NeuroImaging data files. It is not included in scientific
 Python distributions but is required for all parts of this tutorial.
 You can install it with the following command::
 
-  $ easy_install -U --user nibabel
+  $ pip install -U --user nibabel
 
 Scikit-learn
 ...............
@@ -145,7 +145,7 @@ If scikit-learn is not installed on your computer, and you have a
 working install of scientific Python packages (numpy, scipy) and a
 C compiler, you can add it to your scientific Python install using::
 
-  $ easy_install -U --user scikit-learn
+  $ pip install -U --user scikit-learn
 
 Python for Science quickstart
 ------------------------------
