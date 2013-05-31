@@ -161,8 +161,6 @@ Functions
    get_bounds
    resample_img
 
-
-
 .. _decoding_ref:
 
 :mod:`nisl.decoding`: Decoding
@@ -178,7 +176,7 @@ Classes
 
 .. autosummary::
    :toctree: generated/
-   :template: function.rst
+   :template: class.rst
 
    SearchLight
 

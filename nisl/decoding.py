@@ -174,7 +174,7 @@ def _group_iter_search_light(list_rows, estimator, X, y,
 ### Class for search_light ###################################################
 ##############################################################################
 class SearchLight(BaseEstimator):
-    """search_light analysis using an arbitrary type of classifier.
+    """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters
     -----------
@@ -254,6 +254,8 @@ class SearchLight(BaseEstimator):
     def fit(self, niimgs, y):
         """Fit the searchlight
 
+        Parameters
+        ----------
         niimg: niimg
             4D image.
 
@@ -267,6 +269,7 @@ class SearchLight(BaseEstimator):
             search_light scores. Same shape as input parameter
             process_mask_img.
         """
+
         # Compute world coordinates of all in-mask voxels.
         mask, mask_affine = masking._load_mask_img(self.mask_img)
         mask_coords = np.where(mask != 0)

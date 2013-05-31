@@ -548,11 +548,15 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
+
         - "tight_7", "liberal_7": 7-region parcellations, resp. tightly
-            fitted to cortex shape, and liberally fitted.
+          fitted to cortex shape, and liberally fitted.
+
         - "tight_17", "liberal_17": 17-region parcellations.
+
         - "colors_7", "colors_17": colormaps (text files) for 7- and 17-region
-            parcellation respectively.
+          parcellation respectively.
+
         - "anat": anatomy image.
 
     Notes
@@ -612,12 +616,12 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
     data: sklearn.datasets.base.Bunch
         dictionary-like object, interest keys are:
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
-            given modality (resp. T1, T2, T2 relaxometry and proton
-            density weighted). Values are file paths.
+        given modality (resp. T1, T2, T2 relaxometry and proton
+        density weighted). Values are file paths.
         "gm", "wm", "csf": segmented images, giving resp. gray matter,
-            white matter and cerebrospinal fluid. Values are file paths.
+        white matter and cerebrospinal fluid. Values are file paths.
         "eye_mask", "face_mask", "mask": use these images to mask out
-            parts of mri images. Values are file paths.
+        parts of mri images. Values are file paths.
 
     References
     ----------

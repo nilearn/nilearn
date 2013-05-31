@@ -93,17 +93,17 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
 
     Attributes
     ==========
-    `mask_img_`: Nifti like image
+    mask_img_: Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
-    `affine_`: 4x4 numpy.ndarray
+    affine_: 4x4 numpy.ndarray
         Affine of the transformed NiImages. If affine is different across
         subjects, contains the affine of the first subject on which other
         subject data have been resampled.
 
     See Also
-    --------
+    ========
     nisl.resampling.resample_img: image resampling
     nisl.masking.compute_epi_mask: mask computation
     nisl.masking.apply_mask: mask application on image

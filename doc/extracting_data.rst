@@ -66,8 +66,6 @@ your data in a file to pass it to a :class:`NiftiMasker`. Simply use
     :start-after: from nisl import datasets
     :end-before: # Display helper
 
-.. _masking:
-
 Custom Masking
 ---------------
 
