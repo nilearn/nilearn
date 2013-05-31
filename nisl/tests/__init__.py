@@ -8,5 +8,5 @@ from . import test_resampling
 from . import test_signal
 from . import test_image
 from . import test_utils
-from . import test_searchlight
+from . import test_decoding
 from . import test_region

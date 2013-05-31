@@ -63,9 +63,9 @@ score_func = precision_score
 from sklearn.cross_validation import KFold
 cv = KFold(y.size, k=4)
 
-import nisl.searchlight
+import nisl.decoding
 # The radius is the one of the Searchlight sphere that will scan the volume
-searchlight = nisl.searchlight.SearchLight(mask_img,
+searchlight = nisl.decoding.SearchLight(mask_img,
                                       process_mask_img=process_mask_img,
                                       radius=5.6, n_jobs=n_jobs,
                                       score_func=score_func, verbose=1, cv=cv)
