@@ -19,8 +19,8 @@ from sklearn import neighbors
 
 import nibabel
 
-from . import masking
-from . import utils
+from .. import masking
+from .. import utils
 
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
