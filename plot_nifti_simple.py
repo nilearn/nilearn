@@ -14,7 +14,8 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 ### Compute the mask ##########################################################
 
-nifti_masker = NiftiMasker(memory="nisl_cache", memory_level=2)
+nifti_masker = NiftiMasker(standardize=False,
+                           memory="nisl_cache", memory_level=2)
 nifti_masker.fit(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data()
 
