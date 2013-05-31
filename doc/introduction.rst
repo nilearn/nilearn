@@ -202,8 +202,8 @@ libraries:
     >>> t[:3] # In Python indexing is done with [] and starts at zero
     array([ 1.        ,  1.00450225,  1.0090045 ])
 
-  `More documentation...
-  <http://scipy-lectures.github.com/intro/numpy/index.html>`_
+  `More documentation ...
+  <http://scipy-lectures.github.com/intro/numpy/index.html>`__
 
 :Plotting:
 
@@ -219,8 +219,8 @@ libraries:
     [<matplotlib.lines.Line2D object at ...>]
 
 
- `More documentation...
- <http://scipy-lectures.github.com/intro/matplotlib/matplotlib.html>`_
+ `More documentation ...
+ <http://scipy-lectures.github.com/intro/matplotlib/matplotlib.html>`__
 
 :Image processing:
 
@@ -229,16 +229,16 @@ libraries:
     >>> from scipy import ndimage
     >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
 
- `More documentation...
- <http://scipy-lectures.github.com/advanced/image_processing/index.html>`_
+ `More documentation ...
+ <http://scipy-lectures.github.com/advanced/image_processing/index.html>`__
 
 :Signal processing:
 
     >>> from scipy import signal
     >>> t_detrended = signal.detrend(t)
 
- `More documentation...
- <http://scipy-lectures.github.com/intro/scipy.html#signal-processing-scipy-signal>`_
+ `More documentation ...
+ <http://scipy-lectures.github.com/intro/scipy.html#signal-processing-scipy-signal>`__
 
 :Much more:
 
@@ -253,7 +253,7 @@ libraries:
         >>> from scipy import linalg
 
   `More documentation...
-  <http://scipy-lectures.github.com/intro/scipy.html>`_
+  <http://scipy-lectures.github.com/intro/scipy.html>`__
 
 Scikit-learn: machine learning
 ..............................

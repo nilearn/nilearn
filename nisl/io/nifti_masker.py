@@ -106,7 +106,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nisl.signal.clean
     """
     def __init__(self, mask=None, sessions=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False,
+                 standardize=True, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_connected=True, mask_opening=False,

@@ -23,16 +23,23 @@ uses.
 
 Functions
 ---------
-.. currentmodule:: nisl
+.. currentmodule:: nisl.datasets
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   datasets.fetch_haxby
-   datasets.fetch_haxby_simple
-   datasets.fetch_nyu_rest
-   datasets.fetch_adhd
+   fetch_adhd
+   fetch_craddock_2011_atlas
+   fetch_haxby
+   fetch_haxby_simple
+   fetch_nyu_rest
+   fetch_icbm152_2009
+   fetch_msdl_atlas
+   fetch_yeo_2011_atlas
+   load_harvard_oxford
+
+.. _image_ref:
 
 :mod:`nisl.image`: Image processing utilities
 =============================================
@@ -43,14 +50,14 @@ Functions
 
 Functions
 ---------
-.. currentmodule:: nisl
+.. currentmodule:: nisl.image
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   image.high_variance_confounds
-   image.smooth
+   high_variance_confounds
+   smooth
 
 .. _io_ref:
 
@@ -71,9 +78,10 @@ Classes
    :toctree: generated/
    :template: class.rst
 
-   nifti_masker.NiftiMasker
-   nifti_multi_masker.NiftiMultiMasker
-   nifti_region.NiftiLabelsMasker
+   NiftiMasker
+   NiftiMultiMasker
+   NiftiLabelsMasker
+   NiftiMapsMasker
 
 .. _masking_ref:
 
@@ -88,17 +96,17 @@ Classes
 
 Functions
 ---------
-.. currentmodule:: nisl
+.. currentmodule:: nisl.masking
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   masking.compute_epi_mask
-   masking.compute_multi_epi_mask
-   masking.intersect_masks
-   masking.apply_mask
-   masking.unmask
+   compute_epi_mask
+   compute_multi_epi_mask
+   intersect_masks
+   apply_mask
+   unmask
 
 .. _region_ref:
 
@@ -109,21 +117,24 @@ Functions
    :no-members:
    :no-inherited-members:
 
+**User guide:** See the :ref:`region` section for further details.
+
 Functions
 ---------
-.. currentmodule:: nisl
+.. currentmodule:: nisl.region
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   region.img_to_signals_labels
-   region.signals_to_img_labels
-   region.img_to_signals_maps
-   region.signals_to_img_maps
+   img_to_signals_labels
+   signals_to_img_labels
+   img_to_signals_maps
+   signals_to_img_maps
 
 .. seealso::
-   
+
+   :func:`nisl.masking.apply_mask`,
    :func:`nisl.masking.unmask`
 
 .. _resampling_ref:
@@ -139,16 +150,35 @@ Functions
 
 Functions
 ---------
-.. currentmodule:: nisl
+.. currentmodule:: nisl.resampling
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   resampling.to_matrix_vector
-   resampling.from_matrix_vector
-   resampling.get_bounds
-   resampling.resample_img
+   to_matrix_vector
+   from_matrix_vector
+   get_bounds
+   resample_img
+
+.. _decoding_ref:
+
+:mod:`nisl.decoding`: Decoding
+==============================
+
+.. automodule:: nisl.decoding
+   :no-members:
+   :no-inherited-members:
+
+Classes
+-------
+.. currentmodule:: nisl.decoding
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   SearchLight
 
 .. _signal_ref:
 
@@ -159,17 +189,19 @@ Functions
    :no-members:
    :no-inherited-members:
 
-**User guide:** See the :ref:`signal` section for further details.
+.. No relevant user manual section yet.
 
 Functions
 ---------
-.. currentmodule:: nisl
+.. currentmodule:: nisl.signal
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   signal.clean
+   clean
+   high_variance_confounds
+   butterworth
 
 .. _utils_ref:
 
@@ -180,19 +212,19 @@ Functions
    :no-members:
    :no-inherited-members:
 
-**User guide:** See the :ref:`utils` section for further details.
+.. No relevant user manual section yet.
 
 Functions
 ---------
-.. currentmodule:: nisl
+.. currentmodule:: nisl.utils
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   utils.is_a_niimg
-   utils.check_niimg
-   utils.check_niimgs
-   utils.concat_niimgs
-
+   is_a_niimg
+   check_niimg
+   check_niimgs
+   concat_niimgs
+   copy_niimg
 

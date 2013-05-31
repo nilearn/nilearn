@@ -1,3 +1,6 @@
+"""
+Decoding algorithms
+"""
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
@@ -16,8 +19,8 @@ from sklearn import neighbors
 
 import nibabel
 
-from . import masking
-from . import utils
+from .. import masking
+from .. import utils
 
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
@@ -171,7 +174,7 @@ def _group_iter_search_light(list_rows, estimator, X, y,
 ### Class for search_light ###################################################
 ##############################################################################
 class SearchLight(BaseEstimator):
-    """Class to perform a search_light using an arbitrary type of classifier.
+    """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters
     -----------
@@ -251,6 +254,8 @@ class SearchLight(BaseEstimator):
     def fit(self, niimgs, y):
         """Fit the searchlight
 
+        Parameters
+        ----------
         niimg: niimg
             4D image.
 
@@ -264,6 +269,7 @@ class SearchLight(BaseEstimator):
             search_light scores. Same shape as input parameter
             process_mask_img.
         """
+
         # Compute world coordinates of all in-mask voxels.
         mask, mask_affine = masking._load_mask_img(self.mask_img)
         mask_coords = np.where(mask != 0)

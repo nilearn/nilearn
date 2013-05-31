@@ -1,5 +1,5 @@
 """
-Functions for processing region-defined signals.
+Functions for extracting region-defined signals.
 
 Two ways of defining regions are supported: as labels in a single 3D image,
 or as weights in one image per region (maps).

@@ -91,7 +91,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     """ Apply a low-pass, high-pass or band-pass Butterworth filter
 
     Apply a filter to remove signal below the `low` frequency and above the
-    `high`frequency.
+    `high` frequency.
 
     Parameters
     ----------
@@ -209,6 +209,7 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
         as 'CompCor' (Behzadi NeuroImage 2007).
 
         The implemented algorithm does the following:
+
         - compute sum of squares for each time series (no mean removal)
         - keep a given percentile of series with highest variances (percentile)
         - compute an svd of the extracted series

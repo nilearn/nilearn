@@ -138,7 +138,7 @@ one for you in the `fit` step. The generated mask can be accessed via the
 `mask_img_` attribute.
 
 Detailed information on automatic mask computation can be found in:
-:ref:`nifti_masker_advanced`.
+:ref:`extracting_data`.
 
 Applying a scikit-learn machine learning method
 ================================================

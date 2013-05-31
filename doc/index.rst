@@ -155,6 +155,7 @@ Tutorial topics
 
    introduction.rst
    getting_started.rst
+   extracting_data.rst
    supervised_learning.rst
    unsupervised_learning.rst
    dataset_manipulation.rst

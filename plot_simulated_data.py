@@ -26,7 +26,7 @@ from sklearn.feature_selection import f_regression
 
 import nibabel
 
-from nisl import searchlight
+from nisl import decoding
 import nisl.masking
 
 
@@ -94,6 +94,10 @@ def plot_slices(data, title=None):
 # Create data
 X_train, X_test, y_train, y_test, snr, _, coefs, size = \
     create_simulation_data(snr=10, n_samples=400, size=12)
+
+# Create masks for SearchLight. process_mask is the voxels where SearchLight
+# computation is performed. It is a subset of the brain mask, just to reduce
+# computation time.
 mask = np.ones((size, size, size), np.bool)
 mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
 process_mask = np.zeros((size, size, size), np.bool)
@@ -112,7 +116,7 @@ classifiers = [
     ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05)),
     ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
     ('svr', svm.SVR(kernel='linear', C=0.001)),
-    ('searchlight', searchlight.SearchLight(
+    ('searchlight', decoding.SearchLight(
         mask_img, process_mask_img=process_mask_img,
         radius=2.7,
         score_func=r2_score, estimator=svm.SVR(kernel="linear"),

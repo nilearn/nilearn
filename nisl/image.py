@@ -50,6 +50,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
         as 'CompCor' (Behzadi NeuroImage 2007).
 
         The implemented algorithm does the following:
+
         - compute sum of squares for each signals (no mean removal)
         - keep a given percentile of signals with highest variance (percentile)
         - compute an svd of the extracted signals

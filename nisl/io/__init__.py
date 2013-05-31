@@ -4,5 +4,4 @@ tools to preprocess neuro-imaging data.
 """
 from .nifti_masker import NiftiMasker
 from .nifti_multi_masker import NiftiMultiMasker
-from .nifti_region import NiftiLabelsMasker
-from .nifti_region import NiftiMapsMasker
+from .nifti_region import NiftiLabelsMasker, NiftiMapsMasker
