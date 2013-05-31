@@ -10,55 +10,40 @@ the fMRI (see the generated figures).
 """
 
 ### Load Haxby dataset ########################################################
-from nisl import datasets
 import numpy as np
 import nibabel
+from nisl import datasets
 
 dataset_files = datasets.fetch_haxby_simple()
 
-# fmri_data and mask are copied to lose the reference to the original data
-bold_img = nibabel.load(dataset_files.func)
-fmri_data = np.copy(bold_img.get_data())
-affine = bold_img.get_affine()
+fmri_img = nibabel.load(dataset_files.func)
 y, session = np.loadtxt(dataset_files.session_target).astype("int").T
 conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
-mask = dataset_files.mask
-
-### Preprocess data ###########################################################
-# Build the mean image because we have no anatomic data
-mean_img = fmri_data.mean(axis=-1)
 
 ### Restrict to faces and houses ##############################################
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
-X = fmri_data[..., condition_mask]
-y = y[condition_mask]
-session = session[condition_mask]
+
+fmri_img = nibabel.Nifti1Image(fmri_img.get_data()[..., condition_mask],
+                               fmri_img.get_affine().copy())
+y, session = y[condition_mask], session[condition_mask]
 conditions = conditions[condition_mask]
 
-### Loading step ##############################################################
-from nisl.io import NiftiMasker
-from nibabel import Nifti1Image
+### Prepare masks #############################################################
+# - mask_img is the original mask
+# - process_mask_img is a subset of mask_img, it contains the voxels that
+#   should be processed (we only keep the slice z = 26 and the back of the
+#   brain to speed up computation)
 
-nifti_masker = NiftiMasker(mask=mask, sessions=session,
-                           memory='nisl_cache', memory_level=1)
-niimg = Nifti1Image(X, affine)
-X_masked = nifti_masker.fit(niimg).transform(niimg)
-#X_preprocessed = nifti_masker.inverse_transform(X_masked).get_data()
-#X_preprocessed = np.rollaxis(X_preprocessed, axis=-1)
-mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+mask_img = nibabel.load(dataset_files.mask)
 
-### Prepare the masks #########################################################
-# Here we will use several masks :
-# * mask is the originalmask
-# * process_mask is a subset of mask, it contains voxels that should be
-#   processed (we only keep the slice z = 26 and the back of the brain to speed
-#   up computation)
-process_mask = mask.copy()
-process_mask[..., 38:] = False
-process_mask[..., :36] = False
-process_mask[:, 30:] = False
+# .astype() makes a copy.
+process_mask = mask_img.get_data().astype(np.int)
+process_mask[..., 38:] = 0
+process_mask[..., :36] = 0
+process_mask[:, 30:] = 0
+process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 
-### Searchlight ###############################################################
+### Searchlight computation ###################################################
 
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
@@ -66,7 +51,7 @@ process_mask[:, 30:] = False
 n_jobs = 1
 
 ### Define the score function used to evaluate classifiers
-# Here we use precision which maesures proportion of true positives among
+# Here we use precision which measures proportion of true positives among
 # all positives results for one class.
 from sklearn.metrics import precision_score
 score_func = precision_score
@@ -78,40 +63,49 @@ score_func = precision_score
 from sklearn.cross_validation import KFold
 cv = KFold(y.size, k=4)
 
-### Fit #######################################################################
-
-from nisl import searchlight
-
+import nisl.searchlight
 # The radius is the one of the Searchlight sphere that will scan the volume
-searchlight = searchlight.SearchLight(mask=mask, process_mask=process_mask,
-                                      radius=1.5, n_jobs=n_jobs,
+searchlight = nisl.searchlight.SearchLight(mask_img,
+                                      process_mask_img=process_mask_img,
+                                      radius=5.6, n_jobs=n_jobs,
                                       score_func=score_func, verbose=1, cv=cv)
+searchlight.fit(fmri_img, y)
 
-searchlight.fit(X_masked, y)
+### F-scores computation ######################################################
+from nisl.io import NiftiMasker
+
+nifti_masker = NiftiMasker(mask=mask_img, sessions=session,
+                           memory='nisl_cache', memory_level=1)
+fmri_masked = nifti_masker.fit_transform(fmri_img)
+
+from sklearn.feature_selection import f_classif
+f_values, p_values = f_classif(fmri_masked, y)
+p_values = -np.log10(p_values)
+p_values[np.isnan(p_values)] = 0
+p_values[p_values > 10] = 10
+p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
 ### Visualization #############################################################
 import pylab as pl
+
+# Use the fmri mean image as a surrogate of anatomical data
+mean_fmri = fmri_img.get_data().mean(axis=-1)
+
+# Searchlight results
 pl.figure(1)
 # searchlight.scores_ contains per voxel cross validation scores
 s_scores = np.ma.array(searchlight.scores_, mask=np.logical_not(process_mask))
-pl.imshow(np.rot90(mean_img[..., 37]), interpolation='nearest',
+pl.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
           cmap=pl.cm.gray)
 pl.imshow(np.rot90(s_scores[..., 37]), interpolation='nearest',
           cmap=pl.cm.hot, vmax=1)
 pl.axis('off')
 pl.title('Searchlight')
-pl.show()
 
-### Show the F_score
-from sklearn.feature_selection import f_classif
+### F_score results
 pl.figure(2)
-f_values, p_values = f_classif(X_masked, y)
-p_values = -np.log10(p_values)
-p_values[np.isnan(p_values)] = 0
-p_values[p_values > 10] = 10
-p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-pl.imshow(np.rot90(mean_img[..., 37]), interpolation='nearest',
+pl.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
           cmap=pl.cm.gray)
 pl.imshow(np.rot90(p_ma[..., 37]), interpolation='nearest',
           cmap=pl.cm.hot)
