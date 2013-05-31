@@ -94,6 +94,10 @@ def plot_slices(data, title=None):
 # Create data
 X_train, X_test, y_train, y_test, snr, _, coefs, size = \
     create_simulation_data(snr=10, n_samples=400, size=12)
+
+# Create masks for SearchLight. process_mask is the voxels where SearchLight
+# computation is performed. It is a subset of the brain mask, just to reduce
+# computation time.
 mask = np.ones((size, size, size), np.bool)
 mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
 process_mask = np.zeros((size, size, size), np.bool)
