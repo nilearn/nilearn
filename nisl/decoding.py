@@ -1,3 +1,6 @@
+"""
+Decoding algorithms
+"""
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
@@ -171,7 +174,7 @@ def _group_iter_search_light(list_rows, estimator, X, y,
 ### Class for search_light ###################################################
 ##############################################################################
 class SearchLight(BaseEstimator):
-    """Class to perform a search_light using an arbitrary type of classifier.
+    """search_light analysis using an arbitrary type of classifier.
 
     Parameters
     -----------

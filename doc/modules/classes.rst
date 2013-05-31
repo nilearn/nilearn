@@ -161,6 +161,27 @@ Functions
    get_bounds
    resample_img
 
+
+
+.. _decoding_ref:
+
+:mod:`nisl.decoding`: Decoding
+==============================
+
+.. automodule:: nisl.decoding
+   :no-members:
+   :no-inherited-members:
+
+Classes
+-------
+.. currentmodule:: nisl.decoding
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   SearchLight
+
 .. _signal_ref:
 
 :mod:`nisl.signal`: Preprocessing Time Series
