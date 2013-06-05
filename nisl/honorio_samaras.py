@@ -10,11 +10,14 @@ Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
 # Authors: Philippe Gervais
 # License: simplified BSD
 
+import warnings
+import sys
+
 import numpy as np
 import scipy.optimize
 
 # Test:
-# - Decreasing energy
+# - watch criterion
 # - omega matrices always positive definite
 
 
@@ -34,6 +37,11 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
 
     n_iter: int
         number of iteration
+
+    Returns
+    =======
+    omega:
+        estimated precision matrices
     """
 
     # Check that all covariances have the same size.
@@ -45,7 +53,7 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
     assert(covar.shape[0] == covar.shape[1])
     n_task = covar.shape[2]
     omega = np.ndarray(shape=covar.shape, dtype=np.float)
-    for k in n_task:
+    for k in xrange(n_task):
         omega[..., k] = np.diag(1. / np.diag(covar[..., k]))
 
     y = np.ndarray(shape=(n_task, n_var - 1), dtype=np.float)
@@ -60,6 +68,7 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
     c = np.ndarray(shape=(n_task,))
 
     for n in xrange(n_iter):
+        print("Starting {iter_n:d}-th iteration...".format(iter_n=n))
         for p in xrange(n_var):
 
             if p == 0:
@@ -81,8 +90,8 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
             y[:, :p] = omega[:p, p, :].T
             y[:, p:] = omega[p + 1:, p, :].T
             # Extract u
-            u[:, :p] = covariances[:p, :].T
-            u[:, p:] = covariances[p + 1:, :].T
+            u[:, :p] = covar[:p, p, :].T
+            u[:, p:] = covar[p + 1:, p, :].T
 
             for m in xrange(n_var - 1):
                 # Compute  c
@@ -112,12 +121,15 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
                     # q(k) -> T(k) * v(k) * h_22(k)
                     # \lambda -> l   (lambda is a python keyword)
                     q = n_samples * covar[p, p, :] * Winv[m, m, :]
-                    # FIXME: compute lambda (Newton-Raphson)
-                    # x* = \lambda* diag(1 + \lambda q)^{-1} c
+                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
                     l = scipy.optimize.newton(
                         quadratic_trust_region, 0,
                         fprime=quadratic_trust_region_deriv,
                         args=(c, q, rho))
+                    remainder = quadratic_trust_region(l, c, q, rho)
+                    if abs(remainder) > 1e-4:
+                        warnings.warn("Newton-Raphson step did not converge. "
+                                      "remainder: %f" % remainder)
                     y[:, m] = (l * c) / (1. + l * q)
 
             # Copy back y in omega
@@ -128,15 +140,109 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
                 omega[p, p, k] = 1. / covar[p, p, k] + np.dot(
                     np.dot(y[k, :], Winv[..., k]), y[k, :])
 
+            # Compute optimization criterion (for display)
+            ll = 0  # log-likelihood
+            for k in xrange(n_task):
+                t = np.log(np.linalg.det(omega[..., k]))
+                t -= (omega[..., k] * covar[..., k]).sum()
+                ll += n_samples[k] * t
+
+            # L(1,2)-norm
+            l12 = np.sqrt((omega ** 2).sum(axis=-1)).sum()
+            criterion = ll - rho * l12
+            print("Criterion to maximize: {criterion:.3f}".format(
+                    criterion=criterion))
+
     return omega
 
 
+def quadratic_trust_region_criterion(l, c, q, rho):
+    if l < 0:
+        ret = ((c * c) / q).sum()  # value at zero. Just for display
+    else:
+        ret = ((c * c) / (q + l * q * q)).sum() + rho ** 2 * l
+    return ret
+
+
 def quadratic_trust_region(l, c, q, rho):
+    if l < 0:
+        slope = 2 * ((c * c) * q).sum()
+        return rho ** 2 - (c * c).sum() + l * slope
+
     return rho ** 2 - ((c * c) / ((1. + l * q) ** 2)).sum()
 
 
 def quadratic_trust_region_deriv(l, c, q, rho):
-    return - 2 * (c * c) * q / ((1. + l * q) ** 3)
+    if l < 0:
+        return 2 * ((c * c) * q).sum()
+    return 2 * ((c * c) * q / ((1. + l * q) ** 3)).sum()
+
+
+def test_plot_quadratic_trust_region():
+    import pylab as pl
+
+    rand_gen = np.random.RandomState(0)
+    size = 5
+
+    rho = 0.5
+    c = 2. * rand_gen.randn(size)
+    q = abs(20. * rand_gen.randn(size))
+
+    c2 = np.sqrt((c * c).sum())
+    t = pl.linspace(-10., c2 / rho, 500)
+    criterion = [quadratic_trust_region_criterion(l, c, q, rho) for
+                 l in t]
+    criterion_deriv = [quadratic_trust_region(l, c, q, rho) for
+                       l in t]
+    criterion_dderiv = [quadratic_trust_region_deriv(l, c, q, rho) for
+                       l in t]
+
+    pl.plot(t, criterion, label="criterion")
+    pl.plot(t, criterion_deriv, label="deriv 1")
+    pl.plot(t, criterion_dderiv, label="deriv 2")
+    pl.grid()
+    pl.show()
+
+
+def test_quadratic_trust_region():
+    import pylab as pl
+
+    rand_gen = np.random.RandomState(0)
+    size = 5
+
+    rho = 0.01
+    c = 2. * rand_gen.randn(size)
+    q = abs(20. * rand_gen.randn(size))
+
+    c2 = np.sqrt((c * c).sum())
+    print ("c2: %.2f" % c2)
+    if c2 <= rho:
+        print("bad input values")
+
+    l = 0.
+
+    print("criterion before: %.2f"
+          % quadratic_trust_region_criterion(l, c, q, rho))
+
+    t = pl.linspace(-10., 2. * c2 / rho, 1000)
+    criterion = [quadratic_trust_region_criterion(l, c, q, rho) for
+                 l in t]
+    deriv = [quadratic_trust_region(l, c, q, rho) for l in t]
+    pl.plot(t, criterion, label="criterion")
+    pl.plot(t, deriv, label="deriv")
+    pl.legend()
+    pl.grid()
+
+    l = scipy.optimize.newton(
+        quadratic_trust_region, l,
+        fprime=quadratic_trust_region_deriv,
+        args=(c, q, rho))
+
+    print("criterion after: %.2f. l = %.2f"
+          % (quadratic_trust_region_criterion(l, c, q, rho), l))
+    print("deriv after: %.2f. l = %.2f"
+          % (quadratic_trust_region(l, c, q, rho), l))
+    pl.show()
 
 
 def update_submatrix(full, sub, sub_inv, n):
@@ -291,15 +397,32 @@ def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
 
 
 if __name__ == "__main__":
-    import pylab as pl
-    signals, covariances, topology = generate_multi_task_gg_model(density=0.3)
+#    test_plot_quadratic_trust_region()
+    test_quadratic_trust_region()
+    sys.exit(0)
 
-    for n, value in enumerate(zip(signals, covariances)):
-        s, covar = value
-        covar_est = np.dot(s.T, s) / len(s)
-        pl.figure()
-        pl.imshow(covar, interpolation="nearest", vmin=-1.2, vmax=1.2,
-                  cmap="gray")
-        pl.colorbar()
-        pl.title("{n:d}".format(n=n))
-    pl.show()
+    display = False
+
+    signals, covariances, topology = generate_multi_task_gg_model(density=0.3)
+    covar_est = [np.dot(s.T, s) / len(s) for s in signals]
+
+    if display:
+        import pylab as pl
+
+        for n, value in enumerate(zip(signals, covariances)):
+            s, covar = value
+            pl.figure()
+            pl.imshow(covar_est[n], interpolation="nearest",
+                      vmin=-1.2, vmax=1.2, cmap="gray")
+            pl.colorbar()
+            pl.title("{n:d}".format(n=n))
+
+    rho = 0.01
+    n_samples = [len(signal) for signal in signals]
+
+    omega = honorio_samaras(rho, covar_est, n_samples, n_iter=3)
+
+    print (omega.shape)
+
+    if display:
+        pl.show()
