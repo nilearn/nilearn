@@ -16,6 +16,8 @@ import sys
 import numpy as np
 import scipy.optimize
 
+from sklearn.utils.extmath import fast_logdet
+
 # Test:
 # - watch criterion
 # - omega matrices always positive definite
@@ -44,6 +46,8 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
         estimated precision matrices
     """
 
+    assert(rho > 0)
+
     # Check that all covariances have the same size.
     n_samples = np.asarray(n_samples)
 
@@ -51,7 +55,11 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
     covar = np.dstack(covariances)
     n_var = covar.shape[0]
     assert(covar.shape[0] == covar.shape[1])
+
     n_task = covar.shape[2]
+    for k in xrange(n_task):
+        assert_spd(covar[..., k])
+
     omega = np.ndarray(shape=covar.shape, dtype=np.float)
     for k in xrange(n_task):
         omega[..., k] = np.diag(1. / np.diag(covar[..., k]))
@@ -67,34 +75,71 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
     q = np.ndarray(shape=(n_task,))
     c = np.ndarray(shape=(n_task,))
 
+    all_crit = []
+
+    W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
+                          omega.shape[2]),
+                   dtype=np.float)
+    Winv = np.ndarray(shape=W.shape, dtype=np.float)
+
+    criterion2 = float("inf")
     for n in xrange(n_iter):
-        print("Starting {iter_n:d}-th iteration...".format(iter_n=n))
+        print("\n-- Starting {iter_n:d}-th iteration...".format(iter_n=n))
         for p in xrange(n_var):
 
-            if p == 0:
+            if p == 0 and False:
                 # Initial state: remove first col/row
-                W = omega[1:, 1:, :]   # stack of W(k)
+                W = omega[1:, 1:, :].copy()   # stack of W(k)
                 Winv = np.ndarray(shape=W.shape, dtype=np.float)
                 for k in xrange(W.shape[2]):
                     # stack of W^-1(k)
                     Winv[..., k] = np.linalg.inv(W[..., k])
+                    assert_submatrix(omega[..., k], W[..., k], p)
             else:
-                # Update W and Winv (use update_submatrix() )
+                # Update W and Winv
+                omega_orig = omega.copy()
                 for k in xrange(n_task):
-                    update_submatrix(omega[..., k],
-                                     W[..., k], Winv[..., k], p - 1)
-                pass
+                    update_submatrix(omega[..., k], W[..., k], Winv[..., k], p)
+#                    assert_submatrix(omega[..., k], W[..., k], p)
+                    assert_spd(W[..., k])
+                    assert_spd(Winv[..., k])
+                np.testing.assert_almost_equal(omega_orig, omega)
 
             # In the following lines, implicit loop on k (tasks)
             # Extract y
             y[:, :p] = omega[:p, p, :].T
             y[:, p:] = omega[p + 1:, p, :].T
-            # Extract u
+            # Extract u (optimize: covar does not change)
             u[:, :p] = covar[:p, p, :].T
             u[:, p:] = covar[p + 1:, p, :].T
 
+            Winv_orig = Winv.copy()  # test
+
+            print("\n-- entering coordinate descent loop (%d)" % p)
+            if False:
+                print("[[ Single value update")
+                criterion1 = display_criterion(
+                    n_task, n_samples, rho, omega, covar, display=True)
+                display_criterion_2(n_task, n_samples, rho, omega, covar,
+                                    y, u, Winv, p)
+                for k in xrange(n_task):
+                    assert(omega[p, p, k]
+                           - np.dot(np.dot(y[k, :], Winv[..., k]), y[k, :])
+                           > 0)
+                    omega[p, p, k] = 1. / covar[p, p, k] + np.dot(
+                        np.dot(y[k, :], Winv[..., k]), y[k, :])
+                display_criterion_2(n_task, n_samples, rho, omega, covar,
+                                    y, u, Winv, p)
+                criterion2 = display_criterion(
+                    n_task, n_samples, rho, omega, covar, display=True)
+                assert(criterion1 >= criterion2)
+                print("]] Single value update")
+
             for m in xrange(n_var - 1):
-                # Compute  c
+                # Coordinate descent on y
+                criterion1 = display_criterion(
+                    n_task, n_samples, rho, omega, covar, display=False)
+
                 # T(k) -> n_samples[k]
                 # v(k) -> covar[p, p, k]
                 # h_22(k) -> Winv[m, m, k]
@@ -106,21 +151,26 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
                 y_1[:, :m] = y[:, :m]
                 y_1[:, m:] = y[:, m + 1:]
 
+                # Compute c
                 for k in xrange(n_task):
                     c[k] = - n_samples[k] * (
                         covar[p, p, k] * np.dot(h_12[k, :], y_1[k, :])
                         + u[k, m]
                         )
 
-                c2 = np.sqrt((c * c).sum())
+                c2 = np.sqrt(np.dot(c, c))
 
                 # x -> y[:][m]
+#                print("c2 - rho: %f" % (c2 - rho))
                 if c2 <= rho:
-                    y[:, m] = 0
+                    print("zero")
+                    y[:, m] = 0  # x* = 0
                 else:
                     # q(k) -> T(k) * v(k) * h_22(k)
-                    # \lambda -> l   (lambda is a python keyword)
+                    # \lambda -> l   (lambda is a Python keyword)
+                    # TODO: replace by "alpha"
                     q = n_samples * covar[p, p, :] * Winv[m, m, :]
+                    assert(np.all(q > 0))
                      # x* = \lambda* diag(1 + \lambda q)^{-1} c
                     l = scipy.optimize.newton(
                         quadratic_trust_region, 0,
@@ -130,43 +180,82 @@ def honorio_samaras(rho, covariances, n_samples, n_iter=10):
                     if abs(remainder) > 1e-4:
                         warnings.warn("Newton-Raphson step did not converge. "
                                       "remainder: %f" % remainder)
-                    y[:, m] = (l * c) / (1. + l * q)
+                    assert(l >= 0)
+                    y[:, m] = (l * c) / (1. + l * q)  # x*
+ #                   print("l: %f" % l)
 
-            # Copy back y in omega
-            omega[:p, p, :] = y[:, :p].T
-            omega[p + 1:, p, :] = y[:, p:].T
+                # These lines can be put out of this loop. Used only to
+                # compute criterion for debugging.
+                # Copy back y in omega (column and row)
+                omega[:p, p, :] = y[:, :p].T
+                omega[p + 1:, p, :] = y[:, p:].T
+                omega[p, :p, :] = y[:, :p].T
+                omega[p, p + 1:, :] = y[:, p:].T
 
-            for k in xrange(n_task):
-                omega[p, p, k] = 1. / covar[p, p, k] + np.dot(
-                    np.dot(y[k, :], Winv[..., k]), y[k, :])
+                for k in xrange(n_task):
+                    omega[p, p, k] = 1. / covar[p, p, k] + np.dot(
+                        np.dot(y[k, :], Winv[..., k]), y[k, :])
 
-            # Compute optimization criterion (for display)
-            ll = 0  # log-likelihood
-            for k in xrange(n_task):
-                t = np.log(np.linalg.det(omega[..., k]))
-                t -= (omega[..., k] * covar[..., k]).sum()
-                ll += n_samples[k] * t
+                    # Check that all omega are symmetric positive definite
+                    assert_spd(omega[..., k])
 
-            # L(1,2)-norm
-            l12 = np.sqrt((omega ** 2).sum(axis=-1)).sum()
-            criterion = ll - rho * l12
-            print("Criterion to maximize: {criterion:.3f}".format(
-                    criterion=criterion))
+                criterion2 = display_criterion(n_task, n_samples, rho,
+                                               omega, covar)
+                all_crit.append(criterion2)
+                assert((criterion1 - criterion2) > -1e-8)
+                # In the previous loop, Winv must not have changed
+                np.testing.assert_almost_equal(Winv_orig, Winv)
 
-    return omega
+    return omega, all_crit
+
+
+def display_criterion(n_task, n_samples, rho, omega, covar, display=True):
+    # Compute optimization criterion (for display)
+    ll = 0  # log-likelihood
+    for k in xrange(n_task):
+        t = fast_logdet(omega[..., k])
+        t -= (omega[..., k] * covar[..., k]).sum()
+        ll += n_samples[k] * t
+
+    # L(1,2)-norm
+    l2 = np.sqrt((omega ** 2).sum(axis=-1))
+    # Do not count diagonal terms
+    l12 = l2.sum() - np.diag(l2).sum()
+    criterion = - (ll - rho * l12)
+    if display:
+        print("Criterion to minimize: {criterion:.8f}".format(
+                criterion=criterion))
+    return criterion
+
+
+def display_criterion_2(n_task, n_samples, rho, omega, covar,
+                        y, u, Winv, p, display=True):
+    criterion = 0
+    for k in xrange(n_task):
+        t = 0
+        t += np.log(omega[p, p, k]
+                    - np.dot(np.dot(y[k, :], Winv[..., k]), y[k, :]))
+        t += - 2 * np.dot(u[k, :], y[k, :]) - covar[p, p, k] * omega[p, p, k]
+        criterion += n_samples[k] * t
+    criterion += - 2. * rho * np.sqrt((y * y).sum(axis=0)).sum()
+    criterion = -criterion
+    if display:
+        print("Criterion(2) to minimize: {criterion:.8f}".format(
+                criterion=criterion))
+    return criterion
 
 
 def quadratic_trust_region_criterion(l, c, q, rho):
     if l < 0:
         ret = ((c * c) / q).sum()  # value at zero. Just for display
     else:
-        ret = ((c * c) / (q + l * q * q)).sum() + rho ** 2 * l
+        ret = ((c * c) / (q * (1 + l * q))).sum() + (rho ** 2) * l
     return ret
 
 
 def quadratic_trust_region(l, c, q, rho):
     if l < 0:
-        slope = 2 * ((c * c) * q).sum()
+        slope = 2 * (c * c * q).sum()
         return rho ** 2 - (c * c).sum() + l * slope
 
     return rho ** 2 - ((c * c) / ((1. + l * q) ** 2)).sum()
@@ -246,10 +335,18 @@ def test_quadratic_trust_region():
 
 
 def update_submatrix(full, sub, sub_inv, n):
+    sub[:n, :n] = full[:n, :n]
+    sub[n:, n:] = full[n + 1:, n + 1:]
+    sub[:n, n:] = full[:n, n + 1:]
+    sub[n:, :n] = full[n + 1:, :n]
+    sub_inv[...] = np.linalg.inv(sub)
+
+
+def update_submatrix2(full, sub, sub_inv, p):
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
-    the n-th row and column.
+    the p-th row and column.
 
     sub_inv is modified in-place. After execution of this function, it contains
     the inverse of the submatrix of "full" obtained by removing the n+1-th row
@@ -258,6 +355,7 @@ def update_submatrix(full, sub, sub_inv, n):
     This computation is based on Sherman-Woodbury-Morrison identity.
     """
 
+    n = p - 1
     h, v = update_vectors(full, n)
 
     # change row
@@ -275,6 +373,19 @@ def update_submatrix(full, sub, sub_inv, n):
     sub[:, n] = v   # equivalent to sub[n, :] += U
 
 
+def assert_submatrix(full, sub, n):
+    """Check that "sub" is the matrix obtained by removing the p-th col and row
+    in "full".
+    """
+    true_sub = np.ndarray(shape=sub.shape, dtype=sub.dtype)
+    true_sub[:n, :n] = full[:n, :n]
+    true_sub[n:, n:] = full[n + 1:, n + 1:]
+    true_sub[:n, n:] = full[:n, n + 1:]
+    true_sub[n:, :n] = full[n + 1:, :n]
+
+    np.testing.assert_almost_equal(true_sub, sub)
+
+
 def test_update_submatrix():
     N = 5
     rand_gen = np.random.RandomState(0)
@@ -285,7 +396,7 @@ def test_update_submatrix():
     true_inv = sub_inv.copy()
 
     for n in xrange(1, N):
-        update_submatrix(M, sub, sub_inv, n - 1)
+        update_submatrix(M, sub, sub_inv, n)
 
         true_sub[n:, n:] = M[n + 1:, n + 1:]
         true_sub[:n, :n] = M[:n, :n]
@@ -361,23 +472,23 @@ def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
         rand_gen.randint(0, high=int(1. / density), size=n_var * n_var)
         ).reshape(n_var, n_var) == 0, k=1)
 
-    # Generate edges weights
-    covariances = []
+    # Generate edges weights on precision matrices
+    precisions = []
     for _ in xrange(n_task):
 
         while True:
             weights = rand_gen.uniform(low=-.7, high=1., size=n_var * n_var
                                        ).reshape((n_var, n_var))
-            covar = topology * weights
-            covar += np.triu(covar, k=1).T
-            covar += np.eye(*covar.shape)
+            prec = topology * weights
+            prec += np.triu(prec, k=1).T
+            prec += np.eye(*prec.shape)
             # Loop until a positive definite matrix is obtained.
-            if np.linalg.eigvals(covar).min() > min_eigenvalue:
-                covariances.append(covar)
+            if np.linalg.eigvals(prec).min() > min_eigenvalue:
+                precisions.append(prec)
                 break
 
-    for covar in covariances:
-        np.testing.assert_almost_equal(covar, covar.T)
+    for prec in precisions:
+        np.testing.assert_almost_equal(prec, prec.T)
 
     # Returns a symmetric topology matrix
     topology = topology + np.triu(topology, k=1).T
@@ -388,41 +499,67 @@ def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
     signals = []
     mean = np.zeros(topology.shape[0])
     n_samples = rand_gen.randint(min_samples, high=max_samples,
-                                 size=len(covariances))
+                                 size=len(precisions))
 
-    for n, covar in zip(n_samples, covariances):
-        signals.append(rand_gen.multivariate_normal(mean, covar, (n,)))
+    for n, prec in zip(n_samples, precisions):
+        signals.append(rand_gen.multivariate_normal(mean, -np.linalg.inv(prec),
+                                                    (n,)))
 
-    return signals, covariances, topology
+    return signals, precisions, topology
+
+
+def assert_spd(M):
+    np.testing.assert_almost_equal(M, M.T)
+    assert(np.all(np.isreal(np.linalg.eigvals(M))))
+    assert(np.linalg.eigvals(M).min() > 0)
 
 
 if __name__ == "__main__":
-#    test_plot_quadratic_trust_region()
-    test_quadratic_trust_region()
-    sys.exit(0)
+    ## test_plot_quadratic_trust_region()
+    ## test_quadratic_trust_region()
+    ## sys.exit(0)
 
-    display = False
+    display = True
 
-    signals, covariances, topology = generate_multi_task_gg_model(density=0.3)
+    signals, precisions, topology = generate_multi_task_gg_model(density=0.3,
+                                                           n_task=5, n_var=10)
+    # todo: covar_est -> emp_covs
     covar_est = [np.dot(s.T, s) / len(s) for s in signals]
 
     if display:
         import pylab as pl
 
-        for n, value in enumerate(zip(signals, covariances)):
-            s, covar = value
-            pl.figure()
-            pl.imshow(covar_est[n], interpolation="nearest",
-                      vmin=-1.2, vmax=1.2, cmap="gray")
-            pl.colorbar()
-            pl.title("{n:d}".format(n=n))
-
-    rho = 0.01
+    rho = 50.
     n_samples = [len(signal) for signal in signals]
 
-    omega = honorio_samaras(rho, covar_est, n_samples, n_iter=3)
+    omega, all_crit = honorio_samaras(rho, covar_est, n_samples, n_iter=10)
 
-    print (omega.shape)
+    if display:
+
+        for n, value in enumerate(zip(signals, precisions)):
+            s, prec = value
+            pl.figure()
+            pl.subplot(1, 2, 1)
+            pl.imshow(omega[..., n] != 0, interpolation="nearest", cmap="gray",
+                      vmin=0, vmax=1)
+            pl.colorbar()
+            pl.title("sparsity {n:d}".format(n=n))
+
+            pl.subplot(1, 2, 2)
+            pl.imshow(omega[..., n], interpolation="nearest", cmap="gray")
+            pl.colorbar()
+            pl.title("precision {n:d}".format(n=n))
+
+    if display:
+        pl.figure()
+        pl.plot(np.asarray(all_crit))
+        pl.ylabel("criterion")
+        pl.xlabel("iteration")
+
+        pl.figure()
+        pl.imshow(topology, interpolation="nearest", cmap="gray")
+        pl.colorbar()
+        pl.title("true sparsity")
 
     if display:
         pl.show()
