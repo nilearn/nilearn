@@ -25,13 +25,14 @@ def session_pca(niimgs, mask_img, parameters,
     # not
     parameters['detrend'] = True
     parameters['standardize'] = True
-    data = _prepare_niimgs(niimgs, mask_img, parameters,
-                           ref_memory_level=ref_memory_level,
-                           memory=memory,
-                           verbose=verbose,
-                           confounds=confounds,
-                           class_name=class_name,
-                           copy=copy)
+    data, affine = _prepare_niimgs(
+                       niimgs, mask_img, parameters,
+                       ref_memory_level=ref_memory_level,
+                       memory=memory,
+                       verbose=verbose,
+                       confounds=confounds,
+                       class_name=class_name,
+                       copy=copy)
     U, S, _ = linalg.svd(data.T, full_matrices=False)
     U = U.T[:n_components].copy()
     S = S[:n_components]
@@ -41,6 +42,7 @@ def session_pca(niimgs, mask_img, parameters,
 class MultiPCA(NiftiMultiMasker, TransformerMixin):
 
     do_cca = True
+    n_components = 20
 
     def fit_transform(self, niimgs=None, y=None):
         """Compute the mask and the components """
@@ -50,7 +52,7 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
         subject_pca = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                            delayed(session_pca)(niimg, self.mask_img,
+                            delayed(session_pca)(niimg, self.mask_img_,
                                     self.parameters,
                                     n_components=self.n_components,
                                     # XXX: need to give all the filtering
