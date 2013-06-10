@@ -20,7 +20,7 @@ from sklearn import neighbors
 import nibabel
 
 from .. import masking
-from .. import utils
+from .._utils.numpy_conversions import as_ndarray
 
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
@@ -300,7 +300,7 @@ class SearchLight(BaseEstimator):
         # scores is an 1D array of CV scores with length equals to the number
         # of voxels in processing mask (columns in process_mask)
         X = masking._apply_mask_fmri(niimgs,
-                nibabel.Nifti1Image(utils.as_ndarray(mask, dtype=np.int8),
+                nibabel.Nifti1Image(as_ndarray(mask, dtype=np.int8),
                                     mask_affine))
 
         scores = search_light(X, y, self.estimator, A,

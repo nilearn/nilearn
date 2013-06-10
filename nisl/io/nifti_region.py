@@ -11,8 +11,9 @@ from sklearn.externals.joblib import Memory
 
 import nibabel
 
-from .. import utils
-from ..utils import CacheMixin
+from .._utils import niimg_conversions
+from .._utils import numpy_conversions
+from .._utils.cache_mixin import CacheMixin
 from .. import signal
 from .. import region
 from .. import masking
@@ -164,20 +165,20 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
         All parameters are unused, they are for scikit-learn compatibility.
         """
         self.log("loading data from %s" %
-                 utils._repr_niimgs(self.labels_img)[:200])
-        self.labels_img_ = utils.check_niimg(self.labels_img)
+                 niimg_conversions._repr_niimgs(self.labels_img)[:200])
+        self.labels_img_ = niimg_conversions.check_niimg(self.labels_img)
         if self.mask_img is not None:
             self.log("loading data from %s" %
-                     utils._repr_niimgs(self.mask_img)[:200])
-            self.mask_img_ = utils.check_niimg(self.mask_img)
+                     niimg_conversions._repr_niimgs(self.mask_img)[:200])
+            self.mask_img_ = niimg_conversions.check_niimg(self.mask_img)
         else:
             self.mask_img_ = None
 
         # Check shapes and affines or resample.
         if self.mask_img_ is not None:
             if self.resampling_target is None:
-                if utils._get_shape(self.mask_img_) \
-                        != utils._get_shape(self.labels_img_)[:3]:
+                if niimg_conversions._get_shape(self.mask_img_) \
+                        != niimg_conversions._get_shape(self.labels_img_)[:3]:
                     raise ValueError(
                         _compose_err_msg(
                             "Regions and mask do not have the same shape",
@@ -194,7 +195,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
                 self.mask_img_ = resampling.resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.get_affine(),
-                    target_shape=utils._get_shape(self.labels_img_)[:3],
+                    target_shape=niimg_conversions._get_shape(
+                                                self.labels_img_)[:3],
                     interpolation="nearest",
                     copy=True)
 
@@ -230,14 +232,15 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
             shape: (number of scans, number of regions)
 
         """
-        self.log("loading images: %s" % utils._repr_niimgs(niimgs)[:200])
-        niimgs = utils.check_niimgs(niimgs)
+        self.log("loading images: %s" %
+                 niimg_conversions._repr_niimgs(niimgs)[:200])
+        niimgs = niimg_conversions.check_niimgs(niimgs)
 
         if self.resampling_target == "labels":
             self.log("resampling images")
             niimgs = self._cache(resampling.resample_img, memory_level=1)(
                 niimgs, interpolation="continuous",
-                target_shape=utils._get_shape(self.labels_img_),
+                target_shape=niimg_conversions._get_shape(self.labels_img_),
                 target_affine=self.labels_img_.get_affine())
 
         if self.smoothing_fwhm is not None:
@@ -396,20 +399,20 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
         """
         # Load images
         self.log("loading regions from %s" %
-                 utils._repr_niimgs(self.maps_img)[:200])
-        self.maps_img_ = utils.check_niimg(self.maps_img)
+                 niimg_conversions._repr_niimgs(self.maps_img)[:200])
+        self.maps_img_ = niimg_conversions.check_niimg(self.maps_img)
 
         if self.mask_img is not None:
             self.log("loading mask from %s" %
-                     utils._repr_niimgs(self.mask_img)[:200])
-            self.mask_img_ = utils.check_niimg(self.mask_img)
+                     niimg_conversions._repr_niimgs(self.mask_img)[:200])
+            self.mask_img_ = niimg_conversions.check_niimg(self.mask_img)
         else:
             self.mask_img_ = None
 
         # Check shapes and affines or resample.
         if self.resampling_target is None and self.mask_img_ is not None:
-            if utils._get_shape(self.mask_img_) \
-                    != utils._get_shape(self.maps_img_)[:3]:
+            if niimg_conversions._get_shape(self.mask_img_) \
+                    != niimg_conversions._get_shape(self.maps_img_)[:3]:
                 raise ValueError(
                     _compose_err_msg(
                         "Regions and mask do not have the same shape",
@@ -422,9 +425,10 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
                         mask_img=self.mask_img, maps_img=self.maps_img))
 
             # Since a copy is required, order can be forced as well.
-            maps_data = utils.as_ndarray(self.maps_img_.get_data(),
+            maps_data = numpy_conversions.as_ndarray(self.maps_img_.get_data(),
                                           copy=True, order="C")
-            maps_affine = utils.as_ndarray(self.maps_img_.get_affine())
+            maps_affine = numpy_conversions.as_ndarray(
+                                            self.maps_img_.get_affine())
             self.maps_img_ = nibabel.Nifti1Image(maps_data, maps_affine)
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
@@ -432,7 +436,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
             self.maps_img_ = resampling.resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.get_affine(),
-                target_shape=utils._get_shape(self.mask_img_),
+                target_shape=niimg_conversions._get_shape(self.mask_img_),
                 interpolation="continuous",
                 copy=True)
 
@@ -441,7 +445,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
             self.mask_img_ = resampling.resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.get_affine(),
-                target_shape=utils._get_shape(self.maps_img_)[:3],
+                target_shape=niimg_conversions._get_shape(self.maps_img_)[:3],
                 interpolation="nearest",
                 copy=True)
 
@@ -470,21 +474,22 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
             Signal for each region.
             shape: (number of scans, number of regions)
         """
-        self.log("loading images from %s" % utils._repr_niimgs(niimgs)[:200])
-        niimgs = utils.check_niimgs(niimgs)
+        self.log("loading images from %s" %
+                        niimg_conversions._repr_niimgs(niimgs)[:200])
+        niimgs = niimg_conversions.check_niimgs(niimgs)
 
         if self.resampling_target == "mask":
             self.log("resampling images to fit mask")
             niimgs = self._cache(resampling.resample_img, memory_level=1)(
                 niimgs, interpolation="continuous",
-                target_shape=utils._get_shape(self.mask_img_),
+                target_shape=niimg_conversions._get_shape(self.mask_img_),
                 target_affine=self.mask_img_.get_affine())
 
         if self.resampling_target == "maps":
             self.log("resampling images to fit maps")
             niimgs = self._cache(resampling.resample_img, memory_level=1)(
                 niimgs, interpolation="continuous",
-                target_shape=utils._get_shape(self.maps_img_)[:3],
+                target_shape=niimg_conversions._get_shape(self.maps_img_)[:3],
                 target_affine=self.maps_img_.get_affine())
 
         if self.smoothing_fwhm is not None:

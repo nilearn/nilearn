@@ -7,14 +7,15 @@ Transformer used to apply basic transformations on MRI data.
 import warnings
 
 import numpy as np
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from nibabel import Nifti1Image
 
 from .. import masking
 from .. import resampling
 from .. import signal
-from .. import utils
-from ..utils import CacheMixin
+from .._utils import niimg_conversions
+from .._utils.cache_mixin import CacheMixin
 
 
 def _to_nifti(X, affine):
@@ -40,14 +41,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.verbose > 0:
             print "[%s.transform] Loading data from %s" % (
                 self.__class__.__name__,
-                utils._repr_niimgs(niimgs)[:200])
+                niimg_conversions._repr_niimgs(niimgs)[:200])
 
         # If we have a string (filename), we won't need to copy, as
         # there will be no side effect
         if isinstance(niimgs, basestring):
             copy = False
 
-        niimgs = utils.check_niimgs(niimgs)
+        niimgs = niimg_conversions.check_niimgs(niimgs)
 
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 1:
@@ -145,7 +146,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        mask_img = utils.check_niimg(self.mask_img_)
+        mask_img = niimg_conversions.check_niimg(self.mask_img_)
         data = X
 
         return masking.unmask(data, mask_img)
