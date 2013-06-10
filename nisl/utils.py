@@ -331,7 +331,7 @@ def cache(func, memory, ref_memory_level, memory_level=1, **kwargs):
                           "but no Memory object or path has been provided"
                           " (parameter memory). Caching deactivated for "
                           "function %s." %
-                          (self.memory_level, func.func_name))
+                          (ref_memory_level, func.func_name))
         return memory.cache(func, **kwargs)
 
 
