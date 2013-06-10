@@ -93,7 +93,7 @@ class CanICA(DecompositionModel, TransformerMixin):
                 randomized_svd)(pcas, n_components)[0]
             group_maps = group_maps[:, :n_components]
 
-            if (distutils.LooseVersion(sklearn.__version__).version
+            if (distutils.version.LooseVersion(sklearn.__version__).version
                     > [0, 12]):
                 # random_state in fastica was added in 0.13
                 ica_maps = memory.cache(fastica)(group_maps, whiten=False,
