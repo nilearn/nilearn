@@ -10,7 +10,7 @@ before_install:
     - sudo apt-get install -qq python-scipy python-nose python-nibabel
     - virtualenv --system-site-packages ~/virtualenv/this
     - source ~/virtualenv/this/bin/activate
-O
+
 install:
     - python setup.py install
 
