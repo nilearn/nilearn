@@ -1,15 +1,42 @@
 """
 pca dimension reduction on multiple subjects
 """
+from scipy import linalg
 import numpy as np
 
 from sklearn.base import TransformerMixin
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.utils.extmath import randomized_svd
+from sklearn.externals.joblib import Memory
 
 from ..io import NiftiMultiMasker, NiftiMapsMasker
+from ..io.base_masker import _prepare_niimgs
 
-from multi_pca import session_pca
+
+def session_pca(niimgs, mask_img, parameters,
+                n_components=20,
+                ref_memory_level=0,
+                memory=Memory(cachedir=None),
+                verbose=0,
+                confounds=None,
+                class_name='',
+                copy=True):
+    # XXX: we should warn the user that we enable these options if they are
+    # not
+    parameters['detrend'] = True
+    parameters['standardize'] = True
+    data = _prepare_niimgs(niimgs, mask_img, parameters,
+                           ref_memory_level=ref_memory_level,
+                           memory=memory,
+                           verbose=verbose,
+                           confounds=confounds,
+                           class_name=class_name,
+                           copy=copy)
+    U, S, _ = linalg.svd(data.T, full_matrices=False)
+    U = U.T[:n_components].copy()
+    S = S[:n_components]
+    return U, S
+
 
 class MultiPCA(NiftiMultiMasker, TransformerMixin):
 
@@ -23,9 +50,9 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
         subject_pca = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                            delayed(session_pca)(niimg,
+                            delayed(session_pca)(niimg, self.mask_img,
+                                    self.parameters,
                                     n_components=self.n_components,
-                                    mask=self.mask_img_,
                                     # XXX: need to give all the filtering
                                     # other options
                             )
@@ -43,7 +70,7 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
                     subject_pcas[0].shape[1]), dtype=subject_pcas[0].dtype)
             for index, subject_pca in enumerate(subject_pca):
                 data[index * self.n_components:
-                            (index +1) * self.n_components] = subject_pca
+                            (index + 1) * self.n_components] = subject_pca
             data, variance, _ = randomized_svd(data,
                                     n_components=self.n_components)
         else:
