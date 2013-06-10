@@ -16,7 +16,7 @@ from ..masking import compute_epi_mask, compute_multi_epi_mask, \
 
 from ..testing import write_tmp_imgs
 
-np_version = distutils.version.LooseVersion(np.version.short_version).version
+np_version = distutils.version.LooseVersion(np.version.full_version).version
 
 
 def test_mask():
