@@ -10,7 +10,7 @@ import numpy as np
 import nibabel
 
 from . import signal
-from _utils.niimg_conversions import check_niimgs, check_niimg
+from _utils import check_niimgs, check_niimg
 from . import masking
 
 

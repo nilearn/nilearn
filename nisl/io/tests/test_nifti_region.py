@@ -12,7 +12,7 @@ import nibabel
 
 from ..nifti_region import NiftiLabelsMasker, NiftiMapsMasker
 from ... import testing
-from ..._utils.numpy_conversions import as_ndarray
+from ..._utils import as_ndarray
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),

@@ -12,8 +12,8 @@ from sklearn.externals.joblib import Memory
 
 from .. import masking
 from .. import resampling
-from .._utils import niimg_conversions
-from .._utils.cache_mixin import CacheMixin
+from .. import _utils
+from .._utils import CacheMixin
 from .base_masker import BaseMasker
 
 
@@ -153,7 +153,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         if self.verbose > 0:
             print "[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
-                niimg_conversions._repr_niimgs(niimgs)[:200])
+                _utils._repr_niimgs(niimgs)[:200])
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
@@ -167,7 +167,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
             for niimg in niimgs:
                 # Note that data is not loaded into memory at this stage
                 # if niimg is a string
-                data.append(niimg_conversions.check_niimgs(niimg,
+                data.append(_utils.check_niimgs(niimg,
                                                           accept_3d=True))
 
             self.mask_img_ = self._cache(
@@ -189,7 +189,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                              ' requested (niimgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
                              ' will be used.' % self.__class__.__name__)
-            self.mask_img_ = niimg_conversions.check_niimg(self.mask)
+            self.mask_img_ = _utils.check_niimg(self.mask)
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
@@ -228,7 +228,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
             # If we have a string (filename), we won't need to copy, as
             # there will be no side effect
             copy = not isinstance(niimg, basestring)
-            niimg = niimg_conversions.check_niimgs(niimg)
+            niimg = _utils.check_niimgs(niimg)
 
             if affine is not None and np.all(niimg.get_affine() != affine):
                 warnings.warn('Affine is different across subjects.'

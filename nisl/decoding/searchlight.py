@@ -20,7 +20,7 @@ from sklearn import neighbors
 import nibabel
 
 from .. import masking
-from .._utils.numpy_conversions import as_ndarray
+from .._utils import as_ndarray
 
 
 def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,

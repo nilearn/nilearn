@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 from nibabel import Nifti1Image
 
-from ._utils import niimg_conversions
+from . import _utils
 
 
 def to_matrix_vector(transform):
@@ -178,20 +178,20 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         input_niimg_is_string = False
 
     # noop cases
-    niimg = niimg_conversions.check_niimg(niimg)
+    niimg = _utils.check_niimg(niimg)
 
     if target_affine is None and target_shape is None:
         if copy and not input_niimg_is_string:
-            niimg = niimg_conversions.copy_niimg(niimg)
+            niimg = _utils.copy_niimg(niimg)
         return niimg
 
-    shape = niimg_conversions._get_shape(niimg)
+    shape = _utils._get_shape(niimg)
     affine = niimg.get_affine()
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
         if copy and not input_niimg_is_string:
-            niimg = niimg_conversions.copy_niimg(niimg)
+            niimg = _utils.copy_niimg(niimg)
         return niimg
 
     # We now know that some resampling must be done.

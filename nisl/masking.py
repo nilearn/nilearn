@@ -8,8 +8,7 @@ from scipy import ndimage
 from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
 
-from ._utils import niimg_conversions
-from ._utils import numpy_conversions
+from . import _utils
 from ._utils.ndimage import largest_connected_component
 from . import resampling
 
@@ -27,7 +26,7 @@ def _load_mask_img(mask_img):
     mask: numpy.ndarray
         boolean version of the mask
     '''
-    mask_img = niimg_conversions.check_niimg(mask_img)
+    mask_img = _utils.check_niimg(mask_img)
     mask = mask_img.get_data()
     values = np.unique(mask)
 
@@ -46,7 +45,7 @@ def _load_mask_img(mask_img):
                          '. Cannot interpret as true or false'
                          % values)
 
-    mask = numpy_conversions.as_ndarray(mask, dtype=bool)
+    mask = _utils.as_ndarray(mask, dtype=bool)
     return mask, mask_img.get_affine()
 
 
@@ -142,7 +141,7 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         print "EPI mask computation"
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
-    mean_epi_img = niimg_conversions.check_niimgs(mean_epi_img, accept_3d=True)
+    mean_epi_img = _utils.check_niimgs(mean_epi_img, accept_3d=True)
     mean_epi = mean_epi_img.get_data()
     if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
@@ -170,7 +169,7 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         mask = largest_connected_component(mask)
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=opening)
-    return Nifti1Image(numpy_conversions.as_ndarray(mask, dtype=np.int8),
+    return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
                        mean_epi_img.get_affine())
 
 
@@ -218,7 +217,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
         if grp_mask is None:
             # We use int here because there may be a lot of masks to merge
-            grp_mask = numpy_conversions.as_ndarray(mask, dtype=int)
+            grp_mask = _utils.as_ndarray(mask, dtype=int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
             # casting rules raise an error for in-place addition. Hence we do
@@ -230,7 +229,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     if np.any(grp_mask > 0) and connected:
         grp_mask = largest_connected_component(grp_mask)
-    grp_mask = numpy_conversions.as_ndarray(grp_mask, dtype=np.int8)
+    grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
     return Nifti1Image(grp_mask, ref_affine)
 
 
@@ -339,7 +338,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
     values would spread accross the image.
     """
     mask, mask_affine = _load_mask_img(mask_img)
-    mask_img = Nifti1Image(numpy_conversions.as_ndarray(mask, dtype=np.int8),
+    mask_img = Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
                            mask_affine)
     return _apply_mask_fmri(niimgs, mask_img, dtype=dtype,
                             smoothing_fwhm=smoothing_fwhm,
@@ -355,15 +354,15 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     values (this is checked for in apply_mask, not in this function).
     """
 
-    mask_img = niimg_conversions.check_niimg(mask_img)
+    mask_img = _utils.check_niimg(mask_img)
     mask_affine = mask_img.get_affine()
-    mask_data = numpy_conversions.as_ndarray(mask_img.get_data(),
+    mask_data = _utils.as_ndarray(mask_img.get_data(),
                                              dtype=np.bool)
 
     if smoothing_fwhm is not None:
         ensure_finite = True
 
-    niimgs_img = niimg_conversions.check_niimgs(niimgs)
+    niimgs_img = _utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
 
     if not np.all(mask_affine == niimgs_img.get_affine()):
@@ -379,7 +378,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
     data = niimgs_img.get_data()
-    series = numpy_conversions.as_ndarray(data, dtype=dtype, order="C",
+    series = _utils.as_ndarray(data, dtype=dtype, order="C",
                                           copy=True)
     del data, niimgs_img  # frees a lot of memory
 
