@@ -45,7 +45,7 @@ mean_epi = masker.inverse_transform(data_masked[0].mean(axis=0)).get_data()
 
 ### Apply CanICA ##############################################################
 
-from nisl.decomposition.canica import CanICA
+from nisl.decomposition.old_canica import CanICA
 n_components = 20
 ica = CanICA(n_components=n_components, random_state=42, memory="nisl_cache",
              maps_only=True)
