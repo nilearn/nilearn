@@ -87,7 +87,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 ###############################################################################
 
 
-def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
                      ensure_finite=True, verbose=0):
     """
@@ -101,8 +101,9 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: nifti-like image
+    epi_img: nifti-like image
         EPI image, used to compute the mask. 3D and 4D images are accepted.
+        If a 3D image is given, we suggest to use the mean image
 
     lower_cutoff: float, optional
         lower fraction of the histogram to be discarded.
@@ -140,8 +141,8 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         print "EPI mask computation"
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
-    mean_epi_img = utils.check_niimgs(mean_epi_img, accept_3d=True)
-    mean_epi = mean_epi_img.get_data()
+    epi_img = utils.check_niimgs(epi_img, accept_3d=True)
+    mean_epi = epi_img.get_data()
     if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
@@ -169,7 +170,7 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=opening)
     return Nifti1Image(utils.as_ndarray(mask, dtype=np.int8),
-                       mean_epi_img.get_affine())
+                       epi_img.get_affine())
 
 
 def intersect_masks(mask_imgs, threshold=0.5, connected=True):
@@ -232,7 +233,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
-def compute_multi_epi_mask(session_means, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
                            connected=True, opening=2, threshold=0.5,
                            target_affine=None, target_shape=None,
                            exclude_zeros=False, n_jobs=1, verbose=0):
@@ -244,9 +245,11 @@ def compute_multi_epi_mask(session_means, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    session_means: list of Niimgs
+    epi_imgs: list of Niimgs
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
+        If 3D images is given, we suggest to use the mean image of each
+        session
 
     threshold: float, optional
         the inter-session threshold: the fraction of the
@@ -279,13 +282,13 @@ def compute_multi_epi_mask(session_means, lower_cutoff=0.2, upper_cutoff=0.9,
         The brain mask.
     """
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(compute_epi_mask)(session,
+        delayed(compute_epi_mask)(epi_img,
                                   lower_cutoff=lower_cutoff,
                                   upper_cutoff=upper_cutoff,
                                   connected=connected,
                                   opening=opening,
                                   exclude_zeros=exclude_zeros)
-        for session in session_means)
+        for epi_img in epi_imgs)
 
     # Resample if needed
     if target_affine is not None or target_shape is not None:
