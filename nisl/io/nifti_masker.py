@@ -116,19 +116,20 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  ):
         # Mask is provided or computed
         self.mask = mask
-        self.sessions = sessions
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.target_affine = target_affine
-        self.target_shape = target_shape
-        self.mask_connected = mask_connected
-        self.mask_opening = mask_opening
-        self.mask_lower_cutoff = mask_lower_cutoff
-        self.mask_upper_cutoff = mask_upper_cutoff
+        self.parameters = {}
+        self.parameters['sessions'] = sessions
+        self.parameters['smoothing_fwhm'] = smoothing_fwhm
+        self.parameters['standardize'] = standardize
+        self.parameters['detrend'] = detrend
+        self.parameters['low_pass'] = low_pass
+        self.parameters['high_pass'] = high_pass
+        self.parameters['t_r'] = t_r
+        self.parameters['target_affine'] = target_affine
+        self.parameters['target_shape'] = target_shape
+        self.parameters['mask_connected'] = mask_connected
+        self.parameters['mask_opening'] = mask_opening
+        self.parameters['mask_lower_cutoff'] = mask_lower_cutoff
+        self.parameters['mask_upper_cutoff'] = mask_upper_cutoff
 
         self.memory = memory
         self.memory_level = memory_level
@@ -160,10 +161,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
                               memory_level=1,
                               ignore=['verbose'])(
                 niimgs,
-                connected=self.mask_connected,
-                opening=self.mask_opening,
-                lower_cutoff=self.mask_lower_cutoff,
-                upper_cutoff=self.mask_upper_cutoff,
+                connected=self.parameters['mask_connected'],
+                opening=self.parameters['mask_opening'],
+                lower_cutoff=self.parameters['mask_lower_cutoff'],
+                upper_cutoff=self.parameters['mask_upper_cutoff'],
                 verbose=(self.verbose - 1))
         else:
             if niimgs is not None:
@@ -179,10 +180,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
             print "[%s.transform] Resampling mask" % self.__class__.__name__
         self.mask_img_ = self._cache(resampling.resample_img, memory_level=1)(
             self.mask_img_,
-            target_affine=self.target_affine,
-            target_shape=self.target_shape,
-            copy=(self.target_affine is not None and
-                  self.target_shape is not None))
+            target_affine=self.parameters['target_affine'],
+            target_shape=self.parameters['target_shape'],
+            copy=False)
 
         return self
 
@@ -199,4 +199,4 @@ class NiftiMasker(BaseMasker, CacheMixin):
             related documentation for details
         """
         return self.transform_single_niimgs(
-            niimgs, self.sessions, confounds)
+            niimgs, confounds)

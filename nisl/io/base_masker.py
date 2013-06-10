@@ -26,17 +26,14 @@ def _to_nifti(X, affine):
     return X
 
 
-def _transform_single_niimgs(niimgs, mask_img_, sessions=None,
-                            smoothing_fwhm=None,
-                            standardize=True, detrend=False,
-                            low_pass=None, high_pass=None, t_r=None,
-                            target_affine=None, target_shape=None,
-                            ref_memory_level=0,
-                            memory=Memory(cachedir=None),
-                            verbose=0,
-                            confounds=None,
-                            class_name='',
-                            copy=True):
+def _prepare_niimgs(niimgs, mask_img_,
+                    parameters,
+                    ref_memory_level=0,
+                    memory=Memory(cachedir=None),
+                    verbose=0,
+                    confounds=None,
+                    class_name='',
+                    copy=True):
     # Load data (if filenames are given, load them)
     if verbose > 0:
         print "[%s.transform] Loading data from %s" % (
@@ -56,8 +53,8 @@ def _transform_single_niimgs(niimgs, mask_img_, sessions=None,
     niimgs = cache(resampling.resample_img, memory, ref_memory_level,
                    memory_level=2)(
             niimgs,
-            target_affine=target_affine,
-            target_shape=target_shape,
+            target_affine=parameters['target_affine'],
+            target_shape=parameters['target_shape'],
             copy=copy)
 
     # Get series from data with optional smoothing
@@ -65,7 +62,7 @@ def _transform_single_niimgs(niimgs, mask_img_, sessions=None,
         print "[%s.transform] Masking and smoothing" \
             % class_name
     data = masking.apply_mask(niimgs, mask_img_,
-                              smoothing_fwhm=smoothing_fwhm)
+                              smoothing_fwhm=parameters['smoothing_fwhm'])
 
     # Temporal
     # ========
@@ -76,14 +73,15 @@ def _transform_single_niimgs(niimgs, mask_img_, sessions=None,
 
     if verbose > 1:
         print "[%s.transform] Cleaning signal" % class_name
-    if sessions is None:
+    if not 'sessions' in parameters or parameters['sessions'] is None:
         data = cache(signal.clean, memory, ref_memory_level, memory_level=2)(
             data,
-            confounds=confounds, low_pass=low_pass,
-            high_pass=high_pass, t_r=t_r,
-            detrend=detrend,
-            standardize=standardize)
+            confounds=confounds, low_pass=parameters['low_pass'],
+            high_pass=parameters['high_pass'], t_r=parameters['t_r'],
+            detrend=parameters['detrend'],
+            standardize=parameters['standardize'])
     else:
+        sessions = parameters['sessions']
         for s in np.unique(sessions):
             if confounds is not None:
                 confounds = confounds[sessions == s]
@@ -91,10 +89,11 @@ def _transform_single_niimgs(niimgs, mask_img_, sessions=None,
                 cache(signal.clean, memory, ref_memory_level, memory_level=2)(
                     data[:, sessions == s],
                     confounds=confounds,
-                    low_pass=low_pass,
-                    high_pass=high_pass, t_r=t_r,
-                    detrend=detrend,
-                    standardize=standardize
+                    low_pass=parameters['low_pass'],
+                    high_pass=parameters['high_pass'],
+                    t_r=parameters['t_r'],
+                    detrend=parameters['detrend'],
+                    standardize=parameters['standardize']
                 )
 
     # For _later_: missing value removal or imputing of missing data
@@ -110,21 +109,16 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
 
-    def transform_single_niimgs(self, niimgs, sessions=None,
-                                confounds=None, copy=True):
+    def transform_single_niimgs(self, niimgs, confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fit. '
                 "You must call fit() before calling transform()."
                 % self.__class__.__name__)
 
         data, affine = \
-            self._cache(_transform_single_niimgs, memory_level=1)(
+            self._cache(_prepare_niimgs, memory_level=1)(
                 niimgs, self.mask_img_,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize, detrend=self.detrend,
-                low_pass=self.low_pass, high_pass=self.high_pass, t_r=self.t_r,
-                target_affine=self.target_affine,
-                target_shape=self.target_shape,
+                self.parameters,
                 ref_memory_level=self.memory_level,
                 memory=self.memory,
                 verbose=self.verbose,
