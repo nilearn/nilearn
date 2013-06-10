@@ -232,7 +232,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
-def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_multi_epi_mask(session_means, lower_cutoff=0.2, upper_cutoff=0.9,
                            connected=True, opening=2, threshold=0.5,
                            target_affine=None, target_shape=None,
                            exclude_zeros=False, n_jobs=1, verbose=0):
@@ -244,7 +244,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    session_files: list of Niimgs
+    session_means: list of Niimgs
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
 
@@ -285,7 +285,7 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
                                   connected=connected,
                                   opening=opening,
                                   exclude_zeros=exclude_zeros)
-        for session in session_epi)
+        for session in session_means)
 
     # Resample if needed
     if target_affine is not None or target_shape is not None:
