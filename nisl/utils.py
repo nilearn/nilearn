@@ -281,6 +281,60 @@ def check_niimgs(niimgs, accept_3d=False):
 ### Caching
 ###############################################################################
 
+
+def cache(func, memory, ref_memory_level, memory_level=1, **kwargs):
+    """ Return a joblib.Memory object.
+
+    The memory_level determines the level above which the wrapped
+    function output is cached. By specifying a numeric value for
+    this level, the user can to control the amount of cache memory
+    used. This function will cache the function call or not
+    depending on the cache level.
+
+    Parameters
+    ----------
+    func: function
+        The function which output is to be cached.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
+    ref_memory_level: int
+        The reference memory_level used to determine if function call must
+        be cached or not
+
+    memory_level: int
+        The memory_level from which caching must be enabled for the wrapped
+        function.
+
+    Returns
+    -------
+    mem: joblib.Memory
+        object that wraps the function func. This object may be
+        a no-op, if the requested level is lower than the value given
+        to _cache()). For consistency, a joblib.Memory object is always
+        returned.
+    """
+
+    if ref_memory_level <= memory_level:
+        mem = Memory(cachedir=None)
+        return mem.cache(func, **kwargs)
+    else:
+        memory = memory
+        if isinstance(memory, basestring):
+            memory = Memory(cachedir=memory)
+        if not isinstance(memory, Memory):
+            raise TypeError("'memory' argument must be a string or a "
+                            "joblib.Memory object.")
+        if memory.cachedir is None:
+            warnings.warn("Caching has been enabled (memory_level = %d) "
+                          "but no Memory object or path has been provided"
+                          " (parameter memory). Caching deactivated for "
+                          "function %s." %
+                          (self.memory_level, func.func_name))
+        return memory.cache(func, **kwargs)
+
+
 class CacheMixin(object):
     """Mixin to add caching to a class.
 
@@ -337,23 +391,8 @@ class CacheMixin(object):
                               "Setting memory_level to 1.")
                 self.memory_level = 1
 
-        if self.memory_level <= memory_level:
-            mem = Memory(cachedir=None)
-            return mem.cache(func, **kwargs)
-        else:
-            memory = self.memory
-            if isinstance(memory, basestring):
-                memory = Memory(cachedir=memory)
-            if not isinstance(memory, Memory):
-                raise TypeError("'memory' argument must be a string or a "
-                                "joblib.Memory object.")
-            if memory.cachedir is None:
-                warnings.warn("Caching has been enabled (memory_level = %d) "
-                              "but no Memory object or path has been provided"
-                              " (parameter memory). Caching deactivated for "
-                              "function %s." %
-                              (self.memory_level, func.func_name))
-            return memory.cache(func, **kwargs)
+        return cache(func, self.memory, self.memory_level,
+               memory_level=memory_level, **kwargs)
 
 
 def _asarray(arr, dtype=None, order=None):
