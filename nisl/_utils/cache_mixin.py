@@ -6,7 +6,6 @@ Mixin for cache with joblib
 
 import warnings
 
-import numpy as np
 from sklearn.externals.joblib import Memory
 
 
@@ -34,7 +33,7 @@ class CacheMixin(object):
         Parameters
         ----------
         func: function
-            The function which output is to be cached.
+            The function the output of which is to be cached.
 
         memory_level: int
             The memory_level from which caching must be enabled for the wrapped

@@ -9,7 +9,7 @@ from scipy import ndimage
 
 
 ###############################################################################
-# Operating on connect component
+# Operating on connected components
 ###############################################################################
 
 def largest_connected_component(volume):

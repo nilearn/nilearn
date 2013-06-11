@@ -31,7 +31,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     """Starting with an arbitrary array, convert to numpy.ndarray.
 
     In the case of a memmap array, a copy is automatically made to break the
-    link with the underlying file (whatever the value of the "value" keyword).
+    link with the underlying file (whatever the value of the "copy" keyword).
 
     The purpose of this function is mainly to get rid of memmap objects, but
     it can be used for other purposes. In particular, combining copying and
@@ -59,7 +59,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
         input array. Any value accepted by numpy.asarray is valid.
 
     copy: bool
-        if True, force a copy of the array. Alway True when arr is a memmap.
+        if True, force a copy of the array. Always True when arr is a memmap.
 
     dtype: any numpy dtype
         dtype of the returned array. Performing copy and type conversion at the
