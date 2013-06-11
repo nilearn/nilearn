@@ -17,6 +17,7 @@ from .. import resampling
 from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
+from .._utils.class_inspect import enclosing_scope_name
 
 
 def _to_nifti(X, affine):
@@ -27,30 +28,30 @@ def _to_nifti(X, affine):
     return X
 
 
-def _prepare_niimgs(niimgs, mask_img_,
+def filter_and_mask(niimgs, mask_img_,
                     parameters,
                     ref_memory_level=0,
                     memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    class_name='',
                     copy=True):
-    # Load data (if filenames are given, load them)
-    if verbose > 0:
-        print "[%s.transform] Loading data from %s" % (
-            class_name,
-            _utils._repr_niimgs(niimgs)[:200])
-
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
     if isinstance(niimgs, basestring):
         copy = False
 
+    # Load data (if filenames are given, load them)
+    if verbose > 0:
+        class_name = enclosing_scope_name(stack_level=2)
+        print "[%s] Loading data from %s" % (
+            class_name,
+            _utils._repr_niimgs(niimgs)[:200])
+
     niimgs = _utils.check_niimgs(niimgs)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
-        print "[%s.transform] Resampling" % class_name
+        print "[%s] Resampling" % class_name
     niimgs = cache(resampling.resample_img, memory, ref_memory_level,
                    memory_level=2)(
             niimgs,
@@ -60,7 +61,7 @@ def _prepare_niimgs(niimgs, mask_img_,
 
     # Get series from data with optional smoothing
     if verbose > 1:
-        print "[%s.transform] Masking and smoothing" \
+        print "[%s] Masking and smoothing" \
             % class_name
     data = masking.apply_mask(niimgs, mask_img_,
                               smoothing_fwhm=parameters['smoothing_fwhm'])
@@ -73,7 +74,7 @@ def _prepare_niimgs(niimgs, mask_img_,
     # Normalizing
 
     if verbose > 1:
-        print "[%s.transform] Cleaning signal" % class_name
+        print "[%s] Cleaning signal" % class_name
     if not 'sessions' in parameters or parameters['sessions'] is None:
         data = cache(signal.clean, memory, ref_memory_level, memory_level=2)(
             data,
@@ -117,14 +118,13 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 % self.__class__.__name__)
 
         data, affine = \
-            self._cache(_prepare_niimgs, memory_level=1)(
+            self._cache(filter_and_mask, memory_level=1)(
                 niimgs, self.mask_img_,
                 self.parameters,
                 ref_memory_level=self.memory_level,
                 memory=self.memory,
                 verbose=self.verbose,
                 confounds=confounds,
-                class_name=self.__class__.__name__,
                 copy=copy
             )
 

@@ -10,7 +10,7 @@ from sklearn.utils.extmath import randomized_svd
 from sklearn.externals.joblib import Memory
 
 from ..io import NiftiMultiMasker, NiftiMapsMasker
-from ..io.base_masker import _prepare_niimgs
+from ..io.base_masker import filter_and_mask
 
 
 def session_pca(niimgs, mask_img, parameters,
@@ -19,19 +19,17 @@ def session_pca(niimgs, mask_img, parameters,
                 memory=Memory(cachedir=None),
                 verbose=0,
                 confounds=None,
-                class_name='',
                 copy=True):
     # XXX: we should warn the user that we enable these options if they are
     # not set
     parameters['detrend'] = True
     parameters['standardize'] = True
-    data, affine = _prepare_niimgs(
+    data, affine = filter_and_mask(
                     niimgs, mask_img, parameters,
                     ref_memory_level=ref_memory_level,
                     memory=memory,
                     verbose=verbose,
                     confounds=confounds,
-                    class_name=class_name,
                     copy=copy)
     U, S, _ = linalg.svd(data.T, full_matrices=False)
     U = U.T[:n_components].copy()

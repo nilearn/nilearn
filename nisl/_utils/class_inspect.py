@@ -1,6 +1,7 @@
 """ Small utilities to inspect classes
 """
 
+from sklearn.base import BaseEstimator
 import inspect
 
 
@@ -19,6 +20,11 @@ def get_params(cls, instance, ignore=None):
 
     ignore: None of list of strings
         The names of the parameters that are not returned.
+
+    Returns
+    =======
+    params: dict
+        The dict of parameters
     """
 
     _ignore = set(('memory', 'memory_level', 'verbose', 'copy'))
@@ -37,14 +43,27 @@ def get_params(cls, instance, ignore=None):
     return params
 
 
-def retrieve_scope():
+def enclosing_scope_name(ensure_estimator=True, stack_level=2):
     try:
-        caller_frame = inspect.currentframe().f_back.f_back
-        if 'self' in caller_frame.f_locals:
-            caller_name = caller_frame.f_locals['self'].__class__.__name__
+        frame = inspect.currentframe()
+        if not ensure_estimator:
+            for _ in range(stack_level):
+                frame = frame.f_back
+        else:
+            while True:
+                frame = frame.f_back
+                if not 'self' in frame.f_locals:
+                    continue
+                if not isinstance(frame.f_locals['self'], BaseEstimator):
+                    continue
+                break
+        if 'self' in frame.f_locals:
+            caller_name = frame.f_locals['self'].__class__.__name__
             caller_name = '%s.%s' % (caller_name,
-                                    caller_frame.f_code.co_name)
-            #caller_name = caller_frame.f_code.co_name
-            return caller_name
+                                    frame.f_code.co_name)
+        else:
+            caller_name = frame.f_code.co_name
+
+        return caller_name
     except Exception:
         return 'Unknown'
