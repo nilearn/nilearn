@@ -12,7 +12,7 @@ from scipy import linalg, ndimage
 
 import nibabel
 
-from . import utils
+from . import _utils
 from . import masking
 
 
@@ -63,23 +63,23 @@ def img_to_signals_labels(niimgs, labels_img, mask_img=None,
     nisl.region.img_to_signals_maps
     """
 
-    labels_img = utils.check_niimg(labels_img)
+    labels_img = _utils.check_niimg(labels_img)
 
     # TODO: Make a special case for list of strings (load one image at a
     # time).
-    niimgs = utils.check_niimgs(niimgs)
+    niimgs = _utils.check_niimgs(niimgs)
     target_affine = niimgs.get_affine()
-    target_shape = utils._get_shape(niimgs)[:3]
+    target_shape = _utils._get_shape(niimgs)[:3]
 
     # Check shapes and affines.
-    if utils._get_shape(labels_img) != target_shape:
+    if _utils._get_shape(labels_img) != target_shape:
         raise ValueError("labels_img and niimgs shapes must be identical.")
     if abs(labels_img.get_affine() - target_affine).max() > 1e-9:
         raise ValueError("labels_img and niimgs affines must be identical")
 
     if mask_img is not None:
-        mask_img = utils.check_niimg(mask_img)
-        if utils._get_shape(mask_img) != target_shape:
+        mask_img = _utils.check_niimg(mask_img)
+        if _utils._get_shape(mask_img) != target_shape:
             raise ValueError("mask_img and niimgs shapes must be identical.")
         if abs(mask_img.get_affine() - target_affine).max() > 1e-9:
             raise ValueError("mask_img and niimgs affines must be identical")
@@ -143,15 +143,15 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     nisl.region.signals_to_img_maps
     """
 
-    labels_img = utils.check_niimg(labels_img)
+    labels_img = _utils.check_niimg(labels_img)
 
     signals = np.asarray(signals)
     target_affine = labels_img.get_affine()
-    target_shape = utils._get_shape(labels_img)[:3]
+    target_shape = _utils._get_shape(labels_img)[:3]
 
     if mask_img is not None:
-        mask_img = utils.check_niimg(mask_img)
-        if utils._get_shape(mask_img) != target_shape:
+        mask_img = _utils.check_niimg(mask_img)
+        if _utils._get_shape(mask_img) != target_shape:
             raise ValueError("mask_img and labels_img shapes "
                              "must be identical.")
         if abs(mask_img.get_affine() - target_affine).max() > 1e-9:
@@ -225,13 +225,13 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
     nisl.region.signals_to_img_maps
     """
 
-    maps_img = utils.check_niimg(maps_img)
-    niimgs = utils.check_niimgs(niimgs)
+    maps_img = _utils.check_niimg(maps_img)
+    niimgs = _utils.check_niimgs(niimgs)
     affine = niimgs.get_affine()
-    shape = utils._get_shape(niimgs)[:3]
+    shape = _utils._get_shape(niimgs)[:3]
 
     # Check shapes and affines.
-    if utils._get_shape(maps_img)[:3] != shape:
+    if _utils._get_shape(maps_img)[:3] != shape:
         raise ValueError("maps_img and niimgs shapes must be identical.")
     if abs(maps_img.get_affine() - affine).max() > 1e-9:
         raise ValueError("maps_img and niimgs affines must be identical")
@@ -239,14 +239,14 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
     maps_data = maps_img.get_data()
 
     if mask_img is not None:
-        mask_img = utils.check_niimg(mask_img)
-        if utils._get_shape(mask_img) != shape:
+        mask_img = _utils.check_niimg(mask_img)
+        if _utils._get_shape(mask_img) != shape:
             raise ValueError("mask_img and niimgs shapes must be identical.")
         if abs(mask_img.get_affine() - affine).max() > 1e-9:
             raise ValueError("mask_img and niimgs affines must be identical")
         maps_data, maps_mask, labels = \
                    _trim_maps(maps_data, mask_img.get_data(), keep_empty=True)
-        maps_mask = utils.as_ndarray(maps_mask, dtype=np.bool)
+        maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
         labels = np.arange(maps_data.shape[-1], dtype=np.int)
@@ -288,21 +288,21 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     nisl.region.img_to_signals_maps
     """
 
-    maps_img = utils.check_niimg(maps_img)
+    maps_img = _utils.check_niimg(maps_img)
     maps_data = maps_img.get_data()
-    shape = utils._get_shape(maps_img)[:3]
+    shape = _utils._get_shape(maps_img)[:3]
     affine = maps_img.get_affine()
 
     if mask_img is not None:
-        mask_img = utils.check_niimg(mask_img)
-        if utils._get_shape(mask_img) != shape:
+        mask_img = _utils.check_niimg(mask_img)
+        if _utils._get_shape(mask_img) != shape:
             raise ValueError("mask_img and maps_img shapes must be identical.")
         if abs(mask_img.get_affine() - affine).max() > 1e-9:
             raise ValueError("mask_img and maps_img affines must be "
                              "identical.")
         maps_data, maps_mask, _ = _trim_maps(maps_data, mask_img.get_data(),
                                              keep_empty=True)
-        maps_mask = utils.as_ndarray(maps_mask, dtype=np.bool)
+        maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
 
@@ -310,7 +310,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
     return masking.unmask(data, nibabel.Nifti1Image(
-        utils.as_ndarray(maps_mask, dtype=np.int8), affine)
+        _utils.as_ndarray(maps_mask, dtype=np.int8), affine)
                           )
 
 
@@ -357,7 +357,8 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     """
 
     maps = maps.copy()
-    sums = abs(maps[utils.as_ndarray(mask, dtype=np.bool), :]).sum(axis=0)
+    sums = abs(maps[_utils.as_ndarray(mask, dtype=np.bool),
+                    :]).sum(axis=0)
 
     if keep_empty:
         n_regions = maps.shape[-1]
@@ -370,7 +371,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     # iterate on maps
     p = 0
-    mask = utils.as_ndarray(mask, dtype=np.bool, order="C")
+    mask = _utils.as_ndarray(mask, dtype=np.bool, order="C")
     for n, m in enumerate(np.rollaxis(maps, -1)):
         if not keep_empty and sums[n] == 0:
             continue

@@ -1,0 +1,18 @@
+language: python
+
+python:
+    - "2.6"
+    - "2.7"
+
+before_install:
+    - deactivate
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
+    - virtualenv --system-site-packages ~/virtualenv/this
+    - source ~/virtualenv/this/bin/activate
+
+install:
+    - python setup.py install
+
+script:
+    - make

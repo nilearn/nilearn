@@ -10,7 +10,7 @@ import numpy as np
 import nibabel
 
 from . import signal
-from . import utils
+from _utils import check_niimgs, check_niimg
 from . import masking
 
 
@@ -62,9 +62,9 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
         nisl.signal.high_variance_confounds
     """
 
-    niimgs = utils.check_niimgs(niimgs)
+    niimgs = check_niimgs(niimgs)
     if mask_img is not None:
-        mask_img = utils.check_niimg(mask_img)
+        mask_img = check_niimg(mask_img)
         sigs = masking.apply_mask(niimgs, mask_img)
     else:
         sigs = niimgs.get_data()
@@ -112,7 +112,7 @@ def smooth(niimgs, fwhm):
 
     ret = []
     for img in niimgs:
-        img = utils.check_niimg(img)
+        img = check_niimg(img)
         affine = img.get_affine()
         filtered = masking._smooth_array(img.get_data(), affine,
                                          fwhm=fwhm, ensure_finite=True,

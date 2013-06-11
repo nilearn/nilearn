@@ -40,7 +40,7 @@ def test_canica_square_img():
     for rs in range(50):
         canica.random_state = np.random.RandomState(rs)
         canica.fit(data)
-        maps_ = canica.maps_
+        maps_ = canica.components_
         sparsity_ = np.sum(np.abs(maps_), 1).max()
         if sparsity_ < sparsity:
             sparsity = sparsity_

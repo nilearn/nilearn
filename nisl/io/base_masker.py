@@ -7,6 +7,7 @@ Transformer used to apply basic transformations on MRI data.
 import warnings
 
 import numpy as np
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 from nibabel import Nifti1Image
@@ -14,8 +15,8 @@ from nibabel import Nifti1Image
 from .. import masking
 from .. import resampling
 from .. import signal
-from .. import utils
-from ..utils import CacheMixin, cache
+from .. import _utils
+from .._utils.cache_mixin import CacheMixin, cache
 
 
 def _to_nifti(X, affine):
@@ -38,14 +39,14 @@ def _prepare_niimgs(niimgs, mask_img_,
     if verbose > 0:
         print "[%s.transform] Loading data from %s" % (
             class_name,
-            utils._repr_niimgs(niimgs)[:200])
+            _utils._repr_niimgs(niimgs)[:200])
 
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
     if isinstance(niimgs, basestring):
         copy = False
 
-    niimgs = utils.check_niimgs(niimgs)
+    niimgs = _utils.check_niimgs(niimgs)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
@@ -128,6 +129,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             )
 
         self.affine_ = affine
+
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
@@ -172,7 +174,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        mask_img = utils.check_niimg(self.mask_img_)
+        mask_img = _utils.check_niimg(self.mask_img_)
         data = X
 
         return masking.unmask(data, mask_img)

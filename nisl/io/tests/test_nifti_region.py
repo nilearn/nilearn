@@ -12,14 +12,14 @@ import nibabel
 
 from ..nifti_region import NiftiLabelsMasker, NiftiMapsMasker
 from ... import testing
-from ... import utils
+from ..._utils import as_ndarray
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
                         rand_gen=np.random.RandomState(0)):
     data = rand_gen.randn(*(shape + (length,)))
     return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
-        utils.as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
+                    as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
 
 def test_nifti_labels_masker():

@@ -40,6 +40,8 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('nisl')
     config.add_subpackage('nisl/io')
     config.add_subpackage('nisl/decomposition')
+    config.add_subpackage('nisl/decoding')
+    config.add_subpackage('nisl/_utils')
     return config
 
 
