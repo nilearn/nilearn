@@ -115,7 +115,7 @@ class CanICA(MultiPCA):
 
         ica_maps = self._find_high_kurtosis(self.components_.T, self.memory)
 
-        self.maps_ = ica_maps
+        self.components_ = ica_maps
         if not self.maps_only:
             # Relearn the time series
             self.learn_from_maps(data)

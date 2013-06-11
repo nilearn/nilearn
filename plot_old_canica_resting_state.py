@@ -49,7 +49,7 @@ from nisl.decomposition.old_canica import CanICA
 n_components = 20
 ica = CanICA(n_components=n_components, random_state=42, memory="nisl_cache",
              maps_only=True)
-components_masked = ica.fit(data_masked).maps_
+components_masked = ica.fit(data_masked).components_
 
 # We normalize the estimated components, for thresholding to make sense
 # XXX: this should probably be integrated in the CanICA object

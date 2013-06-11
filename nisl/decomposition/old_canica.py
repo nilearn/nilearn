@@ -131,7 +131,7 @@ class CanICA(DecompositionModel, TransformerMixin):
         ica_maps = self._find_high_kurtosis(pcas, memory)
 
         del pcas
-        self.maps_ = ica_maps
+        self.components_ = ica_maps
         if not self.maps_only:
             # Relearn the time series
             self.learn_from_maps(data)

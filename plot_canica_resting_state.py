@@ -46,7 +46,7 @@ data_masked = masker.fit(func_files)
 ### Apply CanICA ##############################################################
 
 n_components = 20
-components_masked = masker.maps_
+components_masked = masker.components_
 
 # We normalize the estimated components, for thresholding to make sense
 # XXX: this should probably be integrated in the CanICA object
