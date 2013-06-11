@@ -5,10 +5,12 @@ CanICA
 # Author: ALexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 import copy
+import distutils
 
 import numpy as np
 from scipy import linalg, stats
 
+import sklearn
 from sklearn.base import TransformerMixin
 from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory, Parallel, delayed
@@ -91,9 +93,15 @@ class CanICA(DecompositionModel, TransformerMixin):
                 randomized_svd)(pcas, n_components)[0]
             group_maps = group_maps[:, :n_components]
 
-            ica_maps = memory.cache(fastica)(group_maps, whiten=False,
+            if (distutils.version.LooseVersion(sklearn.__version__).version
+                    > [0, 12]):
+                # random_state in fastica was added in 0.13
+                ica_maps = memory.cache(fastica)(group_maps, whiten=False,
                                              fun='cube',
                                              random_state=random_state)[2]
+            else:
+                ica_maps = memory.cache(fastica)(group_maps, whiten=False,
+                                             fun='cube')[2]
             ica_maps = ica_maps.T
             kurtosis = stats.kurtosis(ica_maps, axis=1)
             kurtosis_mask = kurtosis > kurtosis_thr

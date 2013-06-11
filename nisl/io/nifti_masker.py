@@ -9,8 +9,8 @@ from sklearn.externals.joblib import Memory
 
 from .. import masking
 from .. import resampling
-from ..utils import CacheMixin
-from .. import utils
+from .. import _utils
+from .._utils import CacheMixin
 from .base_masker import BaseMasker
 
 
@@ -149,13 +149,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
         if self.verbose > 0:
             print "[%s.fit] Loading data from %s" % (
                             self.__class__.__name__,
-                            utils._repr_niimgs(niimgs)[:200])
+                            _utils._repr_niimgs(niimgs)[:200])
 
         # Compute the mask if not given by the user
         if self.mask is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            niimgs = utils.check_niimgs(niimgs, accept_3d=True)
+            niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
             self.mask_img_ = self._cache(masking.compute_epi_mask,
                               memory_level=1,
                               ignore=['verbose'])(
@@ -171,7 +171,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                              ' requested (niimgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
                              ' will be used.' % self.__class__.__name__)
-            self.mask_img_ = utils.check_niimg(self.mask)
+            self.mask_img_ = _utils.check_niimg(self.mask)
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
