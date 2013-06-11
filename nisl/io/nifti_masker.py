@@ -134,7 +134,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
-        self.parameters = class_inspect.get_params(NiftiMasker, self)
 
     def fit(self, niimgs=None, y=None):
         """Compute the mask corresponding to the data
@@ -188,6 +187,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.target_affine
         else:
             self.affine_ = self.mask_img_.get_affine()
+        self.parameters = class_inspect.get_params(NiftiMasker, self)
         return self
 
     def transform(self, niimgs, confounds=None):
