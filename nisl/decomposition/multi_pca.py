@@ -13,6 +13,7 @@ from ..io import NiftiMultiMasker, NiftiMapsMasker
 from ..io.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 
+
 def session_pca(niimgs, mask_img, parameters,
                 n_components=20,
                 ref_memory_level=0,
@@ -66,6 +67,14 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
         """Compute the mask and the components """
         # First learn the mask
         NiftiMultiMasker.fit(self, niimgs)
+
+        # XXX: we should warn the user that we enable these options if they are
+        # not set
+
+        self.standardize = True
+        self.detrend = True
+        self.parameters['detrend'] = True
+        self.parameters['standardize'] = True
 
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
