@@ -161,11 +161,6 @@ Tutorial topics
    dataset_manipulation.rst
    Reference <modules/classes.rst>
 
-.. only:: html
-
-   auto_examples/index
-
-
 ..
  FIXME: I need the link below to make sure the banner gets copied to the
  target directory.
