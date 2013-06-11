@@ -62,7 +62,7 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
         self.n_components = n_components
         self.parameters = get_params(NiftiMultiMasker, self)
 
-    def fit(self, niimgs=None, y=None):
+    def fit(self, niimgs=None, y=None, confounds=None):
         """Compute the mask and the components """
         # First learn the mask
         NiftiMultiMasker.fit(self, niimgs)
@@ -73,6 +73,10 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
                             delayed(session_pca)(niimg, self.mask_img_,
                                     self.parameters,
                                     n_components=self.n_components,
+                                    memory=self.memory,
+                                    ref_memory_level=self.memory_level,
+                                    confounds=confounds,
+                                    verbose=self.verbose
                             )
                             for niimg in niimgs)
 
