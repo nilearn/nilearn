@@ -6,7 +6,7 @@ Utilities to resample a Nifti Image
 
 
 import numpy as np
-from scipy import ndimage
+from scipy import ndimage, linalg
 from nibabel import Nifti1Image
 
 from . import _utils
@@ -208,7 +208,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         # shape to keep the same bounding box in the new space
         affine4d = np.eye(4)
         affine4d[:3, :3] = target_affine
-        transform_affine = np.dot(np.linalg.inv(affine4d), affine)
+        transform_affine = np.dot(linalg.inv(affine4d), affine)
         # The bounding box in the new world, if no offset is given
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = \
             get_bounds(data.shape[:3], transform_affine)
@@ -224,9 +224,9 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         # Small trick to be more numerically stable
         transform_affine = np.eye(4)
     else:
-        transform_affine = np.dot(np.linalg.inv(affine), target_affine)
+        transform_affine = np.dot(linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
-    A_inv = np.linalg.inv(A)
+    A_inv = linalg.inv(A)
     # If A is diagonal, ndimage.affine_transform is clever enough to use a
     # better algorithm.
     if np.all(np.diag(np.diag(A)) == A):
@@ -244,7 +244,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         resampled_data = np.ndarray(list(target_shape) + other_shape,
                                     order=order)
 
-        all_img = (slice(None),) * 3
+        all_img = (slice(None), ) * 3
 
         for ind in np.ndindex(*other_shape):
             img = data[all_img + ind]

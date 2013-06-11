@@ -76,7 +76,13 @@ def filter_and_mask(niimgs, mask_img_,
     if verbose > 1:
         print "[%s] Cleaning signal" % class_name
     if not 'sessions' in parameters or parameters['sessions'] is None:
-        data = cache(signal.clean, memory, ref_memory_level, memory_level=2)(
+        clean_memory_level = 2
+        if (parameters['high_pass'] is not None
+                                and parameters['low_pass'] is not None):
+            clean_memory_level = 4
+
+        data = cache(signal.clean, memory, ref_memory_level,
+                     memory_level=clean_memory_level)(
             data,
             confounds=confounds, low_pass=parameters['low_pass'],
             high_pass=parameters['high_pass'], t_r=parameters['t_r'],
