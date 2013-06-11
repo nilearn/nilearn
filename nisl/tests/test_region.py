@@ -300,6 +300,15 @@ def test_signal_extraction_with_maps_and_labels():
                                             mask_img=mask_img)
     assert_true(maps_img_r.shape == shape + (length,))
 
+    ## Check that NaNs in regions inside mask are preserved
+    region1 = labels_data == 2
+    indices = [ind[:1] for ind in np.where(region1)]
+    fmri_img.get_data()[indices + [slice(None)]] = float('nan')
+    labels_signals, labels_labels =\
+                    region.img_to_signals_labels(fmri_img, labels_img,
+                                                 mask_img=mask_img)
+    assert_true(np.all(np.isnan(labels_signals[:, labels_labels.index(2)])))
+
 
 def test_generate_maps():
     # Basic testing of generate_maps()

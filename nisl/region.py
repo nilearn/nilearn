@@ -101,6 +101,11 @@ def img_to_signals_labels(niimgs, labels_img, mask_img=None,
         signals[n] = np.asarray(ndimage.measurements.mean(img,
                                                           labels=labels_data,
                                                           index=labels))
+    # Set to zero signals for missing labels. Workaround for Scipy behaviour
+    missing_labels = set(labels) - set(np.unique(labels_data))
+    labels_index = dict([(l, n) for n, l in enumerate(labels)])
+    for l in missing_labels:
+        signals[:, labels_index[l]] = 0
     return signals, labels
 
 
