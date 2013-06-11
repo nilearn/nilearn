@@ -1,14 +1,17 @@
 """Test CanICA"""
+import nibabel
 import numpy as np
 from numpy.testing import assert_array_equal
 from nisl.decomposition import CanICA
 
 
 def test_canica_square_img():
-    shape = (20, 20)
+    shape = (20, 20, 1)
     rng = np.random.RandomState(0)
 
-    # Create two images with "activated regions"
+    mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), np.eye(4))
+
+    # Create four images with "activated regions"
     component1 = np.zeros(shape)
     component1[:5, :10] = 1
     component1[5:10, :10] = -1
@@ -25,8 +28,8 @@ def test_canica_square_img():
     component4[-5:, :10] = 1
     component4[-10:-5, :10] = -1
 
-    components = np.vstack((component1.ravel(), component2.ravel(),
-                            component3.ravel(), component4.ravel()))
+    components = np.vstack((component1, component2,
+                            component3, component4))
 
     # Create a "multi-subject" dataset
     data = []
@@ -56,7 +59,7 @@ def test_canica_square_img():
             ref_map = components[j].ravel() != 0
             if np.all(map == ref_map):
                 indices.remove(j)
-                break;
+                break
         else:
             assert False, "Non matching component"
 
