@@ -108,18 +108,31 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
         else:
             data = subject_pcas[0]
         self.components_ = data
+        # For the moment, store also the components_img
+        self.components_img_ = NiftiMultiMasker.inverse_transform(self, data)
         return self
 
-    def transform(self, niimgs):
+    def transform(self, niimgs, confounds=None):
         """ Project the data into a reduced representation
         """
-        valid_params = NiftiMapsMasker._get_param_names()
-        params = dict((name, param) for name, param in self.get_params()
-                      if name in valid_params)
-        params['mask_img'] = self.mask_img_
-        params['maps_img'] = NiftiMapsMasker.inverse_transform(self,
-                                    self.components_)
-        nifti_maps_masker = NiftiMapsMasker(**params)
+
+        params = get_params(NiftiMapsMasker, self)
+        nifti_maps_masker = NiftiMapsMasker(
+            self.components_img_, self.mask_img_, **params)
+        nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
-        return [nifti_maps_masker.transform(niimg)
-                for niimg in niimgs]
+        if confounds is None:
+            confounds = [None] * len(niimgs)
+        return [nifti_maps_masker.transform(niimg, confounds=confound)
+                for niimg, confound in zip(niimgs, confounds)]
+
+    def inverse_transform(self, component_signals):
+        """ Transform regions signals into voxel signals
+        """
+        params = get_params(NiftiMapsMasker, self)
+        nifti_maps_masker = NiftiMapsMasker(
+            self.components_img_, self.mask_img_, **params)
+        nifti_maps_masker.fit()
+        # XXX: dealing properly with 2D/ list of 2D data?
+        return [nifti_maps_masker.inverse_transform(signal)
+                for signal in component_signals]

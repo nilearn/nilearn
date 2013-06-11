@@ -10,7 +10,7 @@ from sklearn.externals.joblib import Memory
 from .. import masking
 from .. import resampling
 from .. import _utils
-from .._utils import CacheMixin, class_inspect
+from .._utils import CacheMixin
 from .base_masker import BaseMasker
 
 
@@ -187,7 +187,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.target_affine
         else:
             self.affine_ = self.mask_img_.get_affine()
-        self.parameters = class_inspect.get_params(NiftiMasker, self)
         return self
 
     def transform(self, niimgs, confounds=None):

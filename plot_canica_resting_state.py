@@ -50,7 +50,7 @@ masker = CanICA(smoothing_fwhm=6,
                   memory="nisl_cache", memory_level=5,
                   n_components=n_components,
                   verbose=True)
-data_masked = masker.fit(func_files)
+masker.fit(func_files)
 
 ### Apply CanICA ##############################################################
 

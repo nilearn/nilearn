@@ -13,7 +13,7 @@ from sklearn.externals.joblib import Memory
 from .. import masking
 from .. import resampling
 from .. import _utils
-from .._utils import CacheMixin, class_inspect
+from .._utils import CacheMixin
 from .base_masker import BaseMasker
 
 
@@ -176,12 +176,12 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                         memory_level=1,
                         ignore=['n_jobs', 'verbose', 'memory'])(
                             niimgs,
-                            connected=self.parameters['mask_connected'],
-                            opening=self.parameters['mask_opening'],
-                            lower_cutoff=self.parameters['mask_lower_cutoff'],
-                            upper_cutoff=self.parameters['mask_upper_cutoff'],
-                            target_affine=self.parameters['target_affine'],
-                            target_shape=self.parameters['target_shape'],
+                            connected=self.mask_connected,
+                            opening=self.mask_opening,
+                            lower_cutoff=self.mask_lower_cutoff,
+                            upper_cutoff=self.mask_upper_cutoff,
+                            target_affine=self.target_affine,
+                            target_shape=self.target_shape,
                             n_jobs=self.n_jobs,
                             memory=self.memory,
                             verbose=(self.verbose - 1))
@@ -200,15 +200,13 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         self.mask_img_ = self._cache(resampling.resample_img,
                                     memory_level=1)(
             self.mask_img_,
-            target_affine=self.parameters['target_affine'],
-            target_shape=self.parameters['target_shape'],
+            target_affine=self.target_affine,
+            target_shape=self.target_shape,
             copy=False)
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
             self.affine_ = self.mask_img_.get_affine()
-
-        self.parameters = class_inspect.get_params(NiftiMultiMasker, self)
         return self
 
     def transform(self, niimgs, confounds=None):

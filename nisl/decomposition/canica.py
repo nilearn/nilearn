@@ -114,12 +114,13 @@ class CanICA(MultiPCA):
             raise ValueError('Could not find components with high-enough'
                              ' kurtosis')
         self.n_components_ = n_components
+        # For the moment, store also the components_img
+        self.components_img_ = NiftiMultiMasker.inverse_transform(self, data)
         return ica_maps
 
     def fit(self, data, y=None):
 
         MultiPCA.fit(self, data)
-
         ica_maps = self._find_high_kurtosis(self.components_.T,
                                             ref_memory_level=self.memory,
                                             memory=self.memory)
@@ -129,10 +130,3 @@ class CanICA(MultiPCA):
             # Relearn the time series
             self.learn_from_maps(data)
         return self
-
-    def transform(self, X, y=None):
-        """Apply un-mixing matrix "W" to X to recover the sources
-
-            S = X * W.T
-        """
-        return np.dot(X, self.maps_.T)

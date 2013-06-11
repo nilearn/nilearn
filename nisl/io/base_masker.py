@@ -17,7 +17,7 @@ from .. import resampling
 from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
-from .._utils.class_inspect import enclosing_scope_name
+from .._utils.class_inspect import enclosing_scope_name, get_params
 
 
 def _to_nifti(X, affine):
@@ -124,11 +124,12 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('It seems that %s has not been fit. '
                 "You must call fit() before calling transform()."
                 % self.__class__.__name__)
-
+        from .nifti_masker import NiftiMasker
+        params = get_params(NiftiMasker, self)
         data, affine = \
             self._cache(filter_and_mask, memory_level=1)(
                 niimgs, self.mask_img_,
-                self.parameters,
+                params,
                 ref_memory_level=self.memory_level,
                 memory=self.memory,
                 verbose=self.verbose,
