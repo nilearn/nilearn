@@ -35,17 +35,18 @@ from nisl.decomposition.canica import CanICA
 # NiftiMultiMasker, rather than the NiftiMasker
 # We specify the target_affine to downsample to 3mm isotropic
 # resolution
+n_components = 20
 masker = CanICA(smoothing_fwhm=6,
                   target_affine=np.diag((3, 3, 3)),
                   memory="nisl_cache", memory_level=5,
+                  n_components=n_components,
                   verbose=True)
 data_masked = masker.fit(func_files)
 
-# mean_epi = masker.inverse_transform(data_masked.mean(axis=0)).get_data()
+mean_epi = nibabel.load(func_files[0]).get_data().mean(axis=-1)
 
 ### Apply CanICA ##############################################################
 
-n_components = 20
 components_masked = masker.components_
 
 # We normalize the estimated components, for thresholding to make sense
@@ -76,8 +77,8 @@ for i in range(n_components):
     pl.axis('off')
     cut_coord = ndimage.maximum_position(np.abs(components[..., i]))[2]
     vmax = np.max(np.abs(components[:, :, cut_coord, i]))
-    #pl.imshow(np.rot90(mean_epi[:, :, cut_coord]), interpolation='nearest',
-    #          cmap=pl.cm.gray)
+    pl.imshow(np.rot90(mean_epi[:, :, cut_coord]), interpolation='nearest',
+              cmap=pl.cm.gray)
     pl.imshow(np.rot90(components[:, :, cut_coord, i]),
               interpolation='nearest', cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 

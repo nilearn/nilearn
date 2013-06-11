@@ -16,6 +16,7 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 
 from .multi_pca import MultiPCA
+from .._utils.cache_mixin import cache
 
 
 class CanICA(MultiPCA):
@@ -70,7 +71,8 @@ class CanICA(MultiPCA):
         self.maps_only = maps_only
         self.random_state = random_state
 
-    def _find_high_kurtosis(self, pcas, memory):
+    def _find_high_kurtosis(self, pcas, ref_memory_level=0,
+                            memory=Memory(cachedir=None)):
         random_state = check_random_state(self.random_state)
 
         if not self.kurtosis_thr:
@@ -80,18 +82,23 @@ class CanICA(MultiPCA):
         n_components = self.n_components
 
         while n_components < 3 * self.n_components:
-            group_maps = memory.cache(
-                randomized_svd)(pcas, n_components)[0]
+            group_maps = cache(
+                randomized_svd, memory, ref_memory_level, memory_level=2
+            )(pcas, n_components)[0]
             group_maps = group_maps[:, :n_components]
 
             if (distutils.version.LooseVersion(sklearn.__version__).version
                     > [0, 12]):
                 # random_state in fastica was added in 0.13
-                ica_maps = memory.cache(fastica)(group_maps, whiten=False,
-                                             fun='cube',
-                                             random_state=random_state)[2]
+                ica_maps = cache(fastica, memory, ref_memory_level,
+                                 memory_level=1)(
+                    group_maps,
+                    whiten=False,
+                    fun='cube',
+                    random_state=random_state)[2]
             else:
-                ica_maps = memory.cache(fastica)(group_maps, whiten=False,
+                ica_maps = cache(fastica, memory, ref_memory_level,
+                                 memory_level=1)(group_maps, whiten=False,
                                              fun='cube')[2]
             ica_maps = ica_maps.T
             kurtosis = stats.kurtosis(ica_maps, axis=1)
@@ -113,7 +120,9 @@ class CanICA(MultiPCA):
 
         MultiPCA.fit(self, data)
 
-        ica_maps = self._find_high_kurtosis(self.components_.T, self.memory)
+        ica_maps = self._find_high_kurtosis(self.components_.T,
+                                            ref_memory_level=self.memory,
+                                            memory=self.memory)
 
         self.components_ = ica_maps
         if not self.maps_only:
