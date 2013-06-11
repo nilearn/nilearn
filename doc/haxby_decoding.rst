@@ -128,7 +128,7 @@ based feature selection (a.k.a.
 Launching it on real data: fit (train) and predict (test)
 ----------------------------------------------------------
 
-In scikit-learn, the prediction function has a very simple API:
+In scikit-learn, the prediction objects (classifiers, regression) have a very simple API:
 
 - a *fit* function that "learns" the parameters of the model from the data.
   Thus, we need to give some training data to *fit*.
@@ -224,7 +224,7 @@ correct predictions on the left-out data.
     >>> classification_accuracy # doctest: +SKIP
     0.99537037037037035
 
-We have a total prediction accuracy of 74% across the different folds.
+We have a total prediction accuracy of 99% across the different folds.
 
 
 We can add a line to print the results:

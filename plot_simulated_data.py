@@ -83,7 +83,7 @@ def plot_slices(data, title=None):
                   interpolation="nearest", cmap=pl.cm.RdBu_r)
         pl.xticks(())
         pl.yticks(())
-    pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97)
+    pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97, top=.9)
     if title is not None:
         pl.suptitle(title, y=.95)
 

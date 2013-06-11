@@ -119,8 +119,8 @@ Running Searchlight
 
 Running Searchlight is straightforward now that everything is set. The only
 parameter left is the radius of the ball that will run through the data.
-Kriegskorte uses a 4mm radius because it yielded the best detection
-performance in his simulation.
+Kriegskorte et al. use a 4mm radius because it yielded the best detection
+performance in their simulation.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Fit #######################################################################
