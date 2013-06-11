@@ -2,7 +2,7 @@
 CanICA
 """
 
-# Author: ALexandre Abraham, Gael Varoquaux,
+# Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 import distutils
 
@@ -48,10 +48,27 @@ class CanICA(MultiPCA):
 
     """
 
-    kurtosis_thr = None
-    n_components = 20
-    maps_only = True
-    random_state = 0
+    def __init__(self, mask=None, smoothing_fwhm=None,
+             standardize=True, detrend=True,
+             low_pass=None, high_pass=None, t_r=None,
+             target_affine=None, target_shape=None,
+             mask_connected=True, mask_opening=False,
+             mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+             memory=Memory(cachedir=None), memory_level=0,
+             n_jobs=1, verbose=0,
+             # MultiPCA options
+             do_cca=True, n_components=20,
+             # CanICA options
+             kurtosis_thr = None, maps_only = True, random_state = 0
+             ):
+        super(CanICA, self).__init__(
+            mask, smoothing_fwhm, standardize, detrend, low_pass, high_pass,
+            t_r, target_affine, target_shape, mask_connected, mask_opening,
+            mask_lower_cutoff, mask_upper_cutoff, memory, memory_level,
+            n_jobs, verbose, do_cca, n_components)
+        self.kurtosis_thr = kurtosis_thr
+        self.maps_only = maps_only
+        self.random_state = random_state
 
     def _find_high_kurtosis(self, pcas, memory):
         random_state = check_random_state(self.random_state)
@@ -96,7 +113,6 @@ class CanICA(MultiPCA):
 
         MultiPCA.fit(self, data)
 
-        self.memory = Memory(cachedir='nisl_cache')
         ica_maps = self._find_high_kurtosis(self.components_.T, self.memory)
 
         self.maps_ = ica_maps

@@ -13,7 +13,7 @@ from sklearn.externals.joblib import Memory
 from .. import masking
 from .. import resampling
 from .. import _utils
-from .._utils import CacheMixin
+from .._utils import CacheMixin, class_inspect
 from .base_masker import BaseMasker
 
 
@@ -122,24 +122,24 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         # Mask is provided or computed
         self.mask = mask
 
-        self.parameters = {}
-        self.parameters['smoothing_fwhm'] = smoothing_fwhm
-        self.parameters['standardize'] = standardize
-        self.parameters['detrend'] = detrend
-        self.parameters['low_pass'] = low_pass
-        self.parameters['high_pass'] = high_pass
-        self.parameters['t_r'] = t_r
-        self.parameters['target_affine'] = target_affine
-        self.parameters['target_shape'] = target_shape
-        self.parameters['mask_connected'] = mask_connected
-        self.parameters['mask_opening'] = mask_opening
-        self.parameters['mask_lower_cutoff'] = mask_lower_cutoff
-        self.parameters['mask_upper_cutoff'] = mask_upper_cutoff
+        self.smoothing_fwhm = smoothing_fwhm
+        self.standardize = standardize
+        self.detrend = detrend
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
+        self.target_affine = target_affine
+        self.target_shape = target_shape
+        self.mask_connected = mask_connected
+        self.mask_opening = mask_opening
+        self.mask_lower_cutoff = mask_lower_cutoff
+        self.mask_upper_cutoff = mask_upper_cutoff
 
         self.memory = memory
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+        self.parameters = class_inspect.get_params(NiftiMultiMasker, self)
 
     def fit(self, niimgs=None, y=None):
         """Compute the mask corresponding to the data

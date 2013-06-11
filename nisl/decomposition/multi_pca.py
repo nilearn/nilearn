@@ -11,7 +11,7 @@ from sklearn.externals.joblib import Memory
 
 from ..io import NiftiMultiMasker, NiftiMapsMasker
 from ..io.base_masker import filter_and_mask
-
+from .._utils.class_inspect import get_params
 
 def session_pca(niimgs, mask_img, parameters,
                 n_components=20,
@@ -31,7 +31,10 @@ def session_pca(niimgs, mask_img, parameters,
                     verbose=verbose,
                     confounds=confounds,
                     copy=copy)
-    U, S, _ = linalg.svd(data.T, full_matrices=False)
+    if n_components <= data.shape[0] / 4:
+        U, S, _ = randomized_svd(data.T, n_components)
+    else:
+        U, S, _ = linalg.svd(data.T, full_matrices=False)
     U = U.T[:n_components].copy()
     S = S[:n_components]
     return U, S
@@ -39,8 +42,25 @@ def session_pca(niimgs, mask_img, parameters,
 
 class MultiPCA(NiftiMultiMasker, TransformerMixin):
 
-    do_cca = True
-    n_components = 20
+    def __init__(self, mask=None, smoothing_fwhm=None,
+             standardize=True, detrend=True,
+             low_pass=None, high_pass=None, t_r=None,
+             target_affine=None, target_shape=None,
+             mask_connected=True, mask_opening=False,
+             mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+             memory=Memory(cachedir=None), memory_level=0,
+             n_jobs=1, verbose=0,
+             # MultiPCA options
+             do_cca=True, n_components=20
+             ):
+        super(MultiPCA, self).__init__(
+            mask, smoothing_fwhm, standardize, detrend, low_pass, high_pass,
+            t_r, target_affine, target_shape, mask_connected, mask_opening,
+            mask_lower_cutoff, mask_upper_cutoff, memory, memory_level,
+            n_jobs, verbose)
+        self.do_cca = do_cca
+        self.n_components = n_components
+        self.parameters = get_params(NiftiMultiMasker, self)
 
     def fit(self, niimgs=None, y=None):
         """Compute the mask and the components """
@@ -49,17 +69,14 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
 
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
-        # XXX change the name of this variable
-        subject_pca = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+        subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                             delayed(session_pca)(niimg, self.mask_img_,
                                     self.parameters,
                                     n_components=self.n_components,
-                                    # XXX: need to give all the filtering
-                                    # other options
                             )
                             for niimg in niimgs)
 
-        subject_pcas, subject_svd_vals = zip(*subject_pca)
+        subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
         if len(niimgs) > 1:
             if not self.do_cca:
