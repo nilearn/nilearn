@@ -114,8 +114,8 @@ to original data.
     :end-before: # Generate mask with opening
 
 With naked eyes, we can see that the outline of the mask is not very
-smooth. To make it smoother, try applying opening
-(*mask_opening=true*).
+smooth. To make it less smooth, bypass the opening step
+(*mask_opening=0*).
 
 .. figure:: auto_examples/images/plot_nifti_advanced_2.png
     :target: auto_examples/plot_nifti_advanced.html

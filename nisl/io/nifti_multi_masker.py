@@ -63,7 +63,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
-    mask_opening: boolean, optional
+    mask_opening: int, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
@@ -114,7 +114,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
-                 mask_connected=True, mask_opening=False,
+                 mask_connected=True, mask_opening=2,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0

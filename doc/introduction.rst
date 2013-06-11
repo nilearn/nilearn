@@ -299,7 +299,7 @@ Let's use all but the last 10 samples to train the SVC::
 and try predicting the labels on the left-out data::
 
     >>> svc.predict(data[-10:])
-    array([ 5.,  4.,  8.,  8.,  4.,  9.,  0.,  8.,  9.,  8.])
+    array([5, 4, 8, 8, 4, 9, 0, 8, 9, 8])
     >>> labels[-10:]    # The actual labels
     array([5, 4, 8, 8, 4, 9, 0, 8, 9, 8])
 
