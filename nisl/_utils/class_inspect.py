@@ -44,6 +44,16 @@ def get_params(cls, instance, ignore=None):
 
 
 def enclosing_scope_name(ensure_estimator=True, stack_level=2):
+    """ Find the name of the enclosing scope
+
+    Parameters
+    ==========
+    ensure_estimator: boolean, default: True
+        If true, find the enclosing object deriving from 'BaseEstimator'
+    stack_level: integer, default 2
+        If ensure_estimator is not True, stack_level quantifies the
+        number of frame we will go up.
+    """
     try:
         frame = inspect.currentframe()
         if not ensure_estimator:
