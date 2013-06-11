@@ -157,9 +157,10 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
 
-    epi_img = cache(resampling.resample_img, memory)(epi_img,
-                        target_affine=target_affine,
-                        target_shape=target_shape)
+    epi_img = cache(resampling.resample_img, memory, ignore=['copy'])(
+                                epi_img,
+                                target_affine=target_affine,
+                                target_shape=target_shape)
 
     epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
     mean_epi = epi_img.get_data()

@@ -54,8 +54,10 @@ def _repr_niimgs(niimgs):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
     # Nibabel objects have a 'get_filename'
     try:
-        return "%s('%s')" % (niimgs.__class__.__name__,
-                             niimgs.get_filename())
+        filename = niimgs.get_filename()
+        if filename is not None:
+            return "%s('%s')" % (niimgs.__class__.__name__,
+                                filename)
     except:
         pass
     return repr(niimgs)

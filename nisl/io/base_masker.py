@@ -40,24 +40,26 @@ def filter_and_mask(niimgs, mask_img_,
     if isinstance(niimgs, basestring):
         copy = False
 
-    # Load data (if filenames are given, load them)
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
-        print "[%s] Loading data from %s" % (
-            class_name,
-            _utils._repr_niimgs(niimgs)[:200])
-
-    niimgs = _utils.check_niimgs(niimgs)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
         print "[%s] Resampling" % class_name
     niimgs = cache(resampling.resample_img, memory, ref_memory_level,
-                   memory_level=2)(
+                   memory_level=2, ignore=['copy'])(
             niimgs,
             target_affine=parameters['target_affine'],
             target_shape=parameters['target_shape'],
             copy=copy)
+
+    # Load data (if filenames are given, load them)
+    if verbose > 0:
+        print "[%s] Loading data from %s" % (
+            class_name,
+            _utils._repr_niimgs(niimgs)[:200])
+
+    niimgs = _utils.check_niimgs(niimgs)
 
     # Get series from data with optional smoothing
     if verbose > 1:
