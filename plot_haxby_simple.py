@@ -35,7 +35,7 @@ target = target[no_rest_indices]
 from nisl.io import NiftiMasker
 nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
 
-# We give to the nifti_masker a filename, and retrieve a 2D array ready
+# We give the nifti_masker a filename and retrieve a 2D array ready
 # for machine learning with scikit-learn
 fmri_masked = nifti_masker.fit_transform(dataset.func[0])
 

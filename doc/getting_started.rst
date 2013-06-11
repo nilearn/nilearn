@@ -82,7 +82,7 @@ This can be done as follows:
 Masking the data: from 4D image to 2D array
 ---------------------------------------------
 
-While the neuroimaging data is made of 4D images, positioned in a
+While functional neuroimaging data consist in 4D images, positioned in a
 coordinate space (which we will call :ref:`Niimgs <niimg>`). For use with
 the scikit-learn, they need to be converted into 2D arrays of
 samples and features.

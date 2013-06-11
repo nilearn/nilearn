@@ -87,7 +87,7 @@ def plot_slices(data, title=None):
         pl.yticks(())
     pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97)
     if title is not None:
-        pl.suptitle(title)
+        pl.suptitle(title, y=.95)
 
 
 ###############################################################################
