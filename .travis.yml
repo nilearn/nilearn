@@ -16,4 +16,4 @@ install:
 
 script:
     - make clean
-    - make test
+    - make test-code
