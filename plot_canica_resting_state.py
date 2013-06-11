@@ -20,6 +20,7 @@ Pre-prints for both papers are available on hal
 (http://hal.archives-ouvertes.fr)
 """
 import numpy as np
+import nibabel
 
 ### Load ADHD rest dataset ####################################################
 from nisl import datasets
@@ -30,20 +31,26 @@ func_files = dataset.func
 
 ### Preprocess ################################################################
 from nisl.decomposition.canica import CanICA
+from nisl.resampling import resample_img
 
 # This is a multi-subject method, thus we need to use the
 # NiftiMultiMasker, rather than the NiftiMasker
 # We specify the target_affine to downsample to 3mm isotropic
 # resolution
+
+target_affine = np.diag((3, 3, 3))
+epi_img = nibabel.load(func_files[0])
+mean_epi = epi_img.get_data().mean(axis=-1)
+mean_epi_img = nibabel.Nifti1Image(mean_epi, epi_img.get_affine())
+mean_epi = resample_img(mean_epi_img, target_affine=target_affine).get_data()
+
 n_components = 20
 masker = CanICA(smoothing_fwhm=6,
-                  target_affine=np.diag((3, 3, 3)),
+                  target_affine=target_affine,
                   memory="nisl_cache", memory_level=5,
                   n_components=n_components,
                   verbose=True)
 data_masked = masker.fit(func_files)
-
-mean_epi = nibabel.load(func_files[0]).get_data().mean(axis=-1)
 
 ### Apply CanICA ##############################################################
 
