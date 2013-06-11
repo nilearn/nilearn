@@ -9,7 +9,7 @@ import warnings
 from sklearn.externals.joblib import Memory
 
 
-def cache(func, memory, ref_memory_level, memory_level=1, **kwargs):
+def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
     """ Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
@@ -28,15 +28,19 @@ def cache(func, memory, ref_memory_level, memory_level=1, **kwargs):
 
     ref_memory_level: int
         The reference memory_level used to determine if function call must
-        be cached or not
+        be cached or not (if memory_level is larger than ref_memory_level
+        the function is cached)
 
     memory_level: int
         The memory_level from which caching must be enabled for the wrapped
         function.
 
+    kwargs: keyword arguments
+        The keyword arguments passed to memory.cache
+
     Returns
     -------
-    mem: joblib.Memory
+    mem: joblib.MemorizedFunc
         object that wraps the function func. This object may be
         a no-op, if the requested level is lower than the value given
         to _cache()). For consistency, a joblib.Memory object is always
@@ -44,8 +48,7 @@ def cache(func, memory, ref_memory_level, memory_level=1, **kwargs):
     """
 
     if ref_memory_level <= memory_level:
-        mem = Memory(cachedir=None)
-        return mem.cache(func, **kwargs)
+        memory = Memory(cachedir=None)
     else:
         memory = memory
         if isinstance(memory, basestring):
@@ -59,7 +62,7 @@ def cache(func, memory, ref_memory_level, memory_level=1, **kwargs):
                           " (parameter memory). Caching deactivated for "
                           "function %s." %
                           (ref_memory_level, func.func_name))
-        return memory.cache(func, **kwargs)
+    return memory.cache(func, **kwargs)
 
 
 class CacheMixin(object):

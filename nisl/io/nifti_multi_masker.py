@@ -174,7 +174,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
             self.mask_img_ = self._cache(
                         masking.compute_multi_epi_mask,
                         memory_level=1,
-                        ignore=['n_jobs', 'verbose'])(
+                        ignore=['n_jobs', 'verbose', 'memory'])(
                             niimgs,
                             connected=self.parameters['mask_connected'],
                             opening=self.parameters['mask_opening'],
@@ -183,6 +183,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                             target_affine=self.parameters['target_affine'],
                             target_shape=self.parameters['target_shape'],
                             n_jobs=self.n_jobs,
+                            memory=self.memory,
                             verbose=(self.verbose - 1))
         else:
             if niimgs is not None:

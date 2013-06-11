@@ -10,6 +10,7 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
 from ._utils.ndimage import largest_connected_component
+from ._utils.cache_mixin import cache
 from . import resampling
 
 
@@ -90,7 +91,9 @@ def extrapolate_out_mask(data, mask, iterations=1):
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
-                     ensure_finite=True, verbose=0):
+                     ensure_finite=True,
+                     target_affine=None, target_shape=None,
+                     memory=None, verbose=0,):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
@@ -131,6 +134,17 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
 
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
     verbose: int, optional
 
     Returns
@@ -142,6 +156,11 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         print "EPI mask computation"
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
+
+    epi_img = cache(resampling.resample_img, memory)(epi_img,
+                        target_affine=target_affine,
+                        target_shape=target_shape)
+
     epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
     mean_epi = epi_img.get_data()
     if mean_epi.ndim == 4:
@@ -237,7 +256,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
                            connected=True, opening=2, threshold=0.5,
                            target_affine=None, target_shape=None,
-                           exclude_zeros=False, n_jobs=1, verbose=0):
+                           exclude_zeros=False, n_jobs=1,
+                           memory=None, verbose=0):
     """ Compute a common mask for several sessions or subjects of fMRI data.
 
     Uses the mask-finding algorithms to extract masks for each session
@@ -273,6 +293,17 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
 
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
@@ -288,16 +319,11 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
                                   upper_cutoff=upper_cutoff,
                                   connected=connected,
                                   opening=opening,
-                                  exclude_zeros=exclude_zeros)
+                                  exclude_zeros=exclude_zeros,
+                                  target_affine=target_affine,
+                                  target_shape=target_shape,
+                                  memory=memory)
         for epi_img in epi_imgs)
-
-    # Resample if needed
-    if target_affine is not None or target_shape is not None:
-        masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
-                delayed(resampling.resample_img)
-                    (mask, target_affine=target_affine,
-                     target_shape=target_shape, interpolation='nearest')
-                for mask in masks)
 
     mask = intersect_masks(masks, connected=connected, threshold=threshold)
     return mask
