@@ -2,14 +2,12 @@
 import nibabel
 import numpy as np
 from numpy.testing import assert_array_equal
-from nisl.decomposition import CanICA
+from nisl.decomposition.old_canica import CanICA
 
 
 def test_canica_square_img():
-    shape = (20, 20, 1)
+    shape = (20, 20)
     rng = np.random.RandomState(0)
-
-    mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), np.eye(4))
 
     # Create four images with "activated regions"
     component1 = np.zeros(shape)
@@ -28,8 +26,8 @@ def test_canica_square_img():
     component4[-5:, :10] = 1
     component4[-10:-5, :10] = -1
 
-    components = np.vstack((component1, component2,
-                            component3, component4))
+    components = np.vstack((component1.ravel(), component2.ravel(),
+                            component3.ravel(), component4.ravel()))
 
     # Create a "multi-subject" dataset
     data = []
@@ -43,7 +41,7 @@ def test_canica_square_img():
     for rs in range(50):
         canica.random_state = np.random.RandomState(rs)
         canica.fit(data)
-        maps_ = canica.components_
+        maps_ = canica.maps_
         sparsity_ = np.sum(np.abs(maps_), 1).max()
         if sparsity_ < sparsity:
             sparsity = sparsity_
