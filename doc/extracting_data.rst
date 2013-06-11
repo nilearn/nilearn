@@ -8,7 +8,7 @@ Before applying some complex machine learning algorithm, or perform
 sophisticated analysis, the first step is to read data from file and
 do some basic transformation on them. Nisl offers several ways to do
 this. This part is concerned with only high-level classes (in
-modules :mod:`nisl.io`), description of
+modules :mod:`nisl.io`), the description of
 low-level functions can be found in the reference documentation.
 
 The philosophy underlying these classes is similar to `scikit-learn
@@ -114,8 +114,8 @@ to original data.
     :end-before: # Generate mask with opening
 
 With naked eyes, we can see that the outline of the mask is not very
-smooth. To make it smoother, try applying opening
-(*mask_opening=true*).
+smooth. To make it less smooth, bypass the opening step
+(*mask_opening=0*).
 
 .. figure:: auto_examples/images/plot_nifti_advanced_2.png
     :target: auto_examples/plot_nifti_advanced.html
@@ -161,13 +161,17 @@ Preprocessing
 Resampling
 ..........
 
-:class:`NiftiMasker` offers two ways to resample images:
+:class:`NiftiMasker` makes it possible to resample images. 
+       The resampling procedure takes as input the
+       *target_affine* to resample (resize, rotate...) images in order
+       to match the spatial configuration defined by the new
+       affine. Additionally, a *target_shape* can be used to resize
+       images (i.e. croping or padding with zeros) to match an
+       expected shape.
 
-  * *target_affine*: resample (resize, rotate...) images by providing a new affine
-  * *target_shape*: resize images by directly providing a new shape
-
-Resampling can be used for example to reduce processing time by lowering image
-resolution.
+Resampling can be used for example to reduce processing time by
+lowering image resolution. Certain image viewers also require images to be
+resampled in order to allow image fusion.
 
 
 Smoothing
@@ -195,7 +199,7 @@ All previous filters operate on images, before conversion to voxel signals.
   be removed by passing them to :meth:`NiftiMasker.transform`. If the
   dataset provides a confounds file, just pass its path to the masker.
 
-- Linear filtering. Low-pass and high-pass filters allow for removing artifacts.
+- Linear filtering. Low-pass and high-pass filters can be used to remove artifacts.
   Care has been taken to apply this processing to confounds if necessary.
 
 - Normalization. Signals can be normalized (scaled to unit variance) before
@@ -319,10 +323,12 @@ Usage of :class:`NiftiLabelsMasker` is similar to that of
 :class:`NiftiMapsMasker`. The main difference is that it requires a labels image
 instead of a set of maps as input.
 
-The `background_label` keyword of :class:`NiftiLabelsMasker` deserves some
-explanation. The voxels that correspond to the brain in an fMRI image do not
-fill the entire image. Consequently, in the labels image, there must be a label
-corresponding to "outside" the brain, for which no signal should be extracted.
-By default, this label is set to zero in Nisl, and is referred to as
-"background". Should some non-zero value occur, it is possible to change the
-background value with the `background_label` keyword.
+The `background_label` keyword of :class:`NiftiLabelsMasker` deserves
+some explanation. The voxels that correspond to the brain or a region
+of interest in an fMRI image do not fill the entire
+image. Consequently, in the labels image, there must be a label
+corresponding to "outside" the brain, for which no signal should be
+extracted.  By default, this label is set to zero in Nisl, and is
+referred to as "background". Should some non-zero value occur, it is
+possible to change the background value with the `background_label`
+keyword.

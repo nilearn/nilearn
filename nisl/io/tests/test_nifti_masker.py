@@ -42,7 +42,7 @@ def test_nan():
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
-    masker = NiftiMasker()
+    masker = NiftiMasker(mask_opening=0)
     masker.fit(img)
     mask = masker.mask_img_.get_data()
     assert_true(mask[1:-1, 1:-1, 1:-1].all())

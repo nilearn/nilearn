@@ -155,7 +155,7 @@ can be easily extracted from the fMRI data using the
 .. figure:: auto_examples/images/plot_visualization_2.png
     :target: auto_examples/plot_visualization.html
     :align: center
-    :scale: 50
+    :scale: 50%
 
 .. _mask_4d_2_3d:
 

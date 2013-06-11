@@ -54,11 +54,11 @@ overlays.
 
 .. |left_img| image:: auto_examples/images/plot_ica_resting_state_1.png
    :target: auto_examples/plot_ica_resting_state.html
-   :width: 49%
+   :width: 48%
 
 .. |right_img| image:: auto_examples/images/plot_ica_resting_state_2.png
    :target: auto_examples/plot_ica_resting_state.html
-   :width: 49%
+   :width: 48%
 
 |left_img| |right_img|
 

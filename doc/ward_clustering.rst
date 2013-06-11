@@ -35,9 +35,9 @@ Applying Ward clustering
 Compute connectivity map
 ------------------------
 
-Before computing the ward itself, we compute a connectivity map. This is
-useful to constrain clusters to form contiguous parcels (see `the
-scikit-learn documentation
+Before applying Ward's method, we compute a spatial neighborhood map,
+aka connectivity map. This is useful to constrain clusters to form
+contiguous parcels (see `the scikit-learn documentation
 <http://www.scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
 
 .. literalinclude:: ../plot_rest_clustering.py
@@ -47,20 +47,21 @@ scikit-learn documentation
 Principle
 ---------
 
-The Ward algorithm is a hierarchical clustering algorithm: it
-merges together voxels that have similar timecourses.
+Ward's algorithm is a hierarchical clustering algorithm: it
+recursively merges voxels, then clusters that have similar signal
+(parameters, measurements or time courses).
 
 Caching
 -------
 
-Note that in practice the scikit-learn implementation of the Ward
+Note that in practice the scikit-learn implementation of Ward's
 clustering first computes a tree of possible merges, and then, given a
 requested number of clusters, breaks apart the tree at the right level.
 
 As no matter how many clusters we want, we do not need to compute the
 tree again, we can rely on caching to speed things up when varying the
 number of clusters. Scikit-learn integrates a transparent caching library
-(`joblib <http://packages.python.org/joblib/>`_). In the ward clustering,
+(`joblib <http://packages.python.org/joblib/>`_). In Ward's clustering,
 the *memory* parameter is used to cache the computed component tree. You
 can give it either a *joblib.Memory* instance or the name of a directory
 used for caching.
@@ -68,7 +69,7 @@ used for caching.
 Apply the ward
 --------------
 
-Here we simply launch the ward to find 1000 clusters and we time it.
+Here we simply launch Ward's algorithm to find 1000 clusters and we time it.
 
 .. literalinclude:: ../plot_rest_clustering.py
     :start-after: # Computing the ward for the first time, this is long...

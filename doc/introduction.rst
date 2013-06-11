@@ -23,8 +23,8 @@ make **predictions**. Two kinds of problems appear:
     * a **regression** problem: predicting a continuous quantity such 
       as age
     
-    * a **classification** problem: predicting to which class each 
-      observation belongs too: patient or control
+    * a **classification** problem: predicting to class each 
+      observation belongs to: patient or control
 
     In neuroimaging, supervised learning is typically used to relate
     brain images to behavioral or clinical observations.
@@ -32,7 +32,7 @@ make **predictions**. Two kinds of problems appear:
 :Unsupervised learning:
 
     :ref:`unsupervised_learning` is concerned with data `X` without any
-    label. It studies the structure of a dataset, for instance
+    label. It analyzes the structure of a dataset, for instance
     **clustering** or extracting latent factors such as independent
     components.
 
@@ -67,7 +67,7 @@ Why is machine learning relevant NeuroImaging: a few examples
     From a statistical point of view, machine learning implements
     statistical estimation of models with a large number of parameters.
     The tricks pulled in machine learning (e.g. regularization) can
-    enable this estimation with a small number of observations
+    make this estimation possible with a small number of observations
     `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
     usage of machine learning requires some understanding of the models.
 
@@ -299,7 +299,7 @@ Let's use all but the last 10 samples to train the SVC::
 and try predicting the labels on the left-out data::
 
     >>> svc.predict(data[-10:])
-    array([ 5.,  4.,  8.,  8.,  4.,  9.,  0.,  8.,  9.,  8.])
+    array([5, 4, 8, 8, 4, 9, 0, 8, 9, 8])
     >>> labels[-10:]    # The actual labels
     array([5, 4, 8, 8, 4, 9, 0, 8, 9, 8])
 

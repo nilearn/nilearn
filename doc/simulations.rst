@@ -31,8 +31,8 @@ a linear model with a random design matrix **X**:
    \mathbf{y} = \mathbf{X} \mathbf{w} + \mathbf{e}
 
 * **w**: the weights of the linear model correspond to the predictive 
-  brain regions. Here, in the simulations, they form a 3D image with 4
-  regions in opposite corners. 
+  brain regions. Here, in the simulations, they form a 3D image with 5, four
+  of which in opposite corners and one in the middle. 
 
 .. figure:: auto_examples/images/plot_simulated_data_1.png
     :target: auto_examples/plot_simulated_data.html
