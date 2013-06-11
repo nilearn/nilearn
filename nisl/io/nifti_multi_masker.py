@@ -203,6 +203,10 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
             target_affine=self.parameters['target_affine'],
             target_shape=self.parameters['target_shape'],
             copy=False)
+        if self.target_affine is not None:
+            self.affine_ = self.target_affine
+        else:
+            self.affine_ = self.mask_img_.get_affine()
 
         return self
 

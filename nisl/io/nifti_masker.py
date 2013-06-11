@@ -184,7 +184,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             copy=False)
-
+        if self.target_affine is not None:
+            self.affine_ = self.target_affine
+        else:
+            self.affine_ = self.mask_img_.get_affine()
         return self
 
     def transform(self, niimgs, confounds=None):

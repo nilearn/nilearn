@@ -127,9 +127,6 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 confounds=confounds,
                 copy=copy
             )
-
-        self.affine_ = affine
-
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
