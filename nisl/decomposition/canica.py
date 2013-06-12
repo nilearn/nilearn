@@ -116,9 +116,20 @@ class CanICA(MultiPCA):
         self.n_components_ = n_components
         return ica_maps
 
-    def fit(self, data, y=None):
+    def fit(self, niimgs, y=None, confounds=None):
+        """Compute the mask and the ICA maps across subjects
 
-        MultiPCA.fit(self, data)
+        Parameters
+        ----------
+        niimgs: list of filenames or NiImages
+            Data on which the PCA must be calculated. If this is a list,
+            the affine is considered the same for all.
+
+        confounds: CSV file path or 2D matrix
+            This parameter is passed to nisl.signal.clean. Please see the
+            related documentation for details
+        """
+        MultiPCA.fit(self, niimgs, y=y, confounds=confounds)
         ica_maps = self._find_high_kurtosis(self.components_.T,
                                             ref_memory_level=self.memory,
                                             memory=self.memory)
