@@ -31,8 +31,7 @@ from nisl.io import NiftiMultiMasker
 dataset = datasets.fetch_adhd()
 func_files = dataset.func
 
-### Preprocess ################################################################
-from nisl.decomposition.canica import CanICA
+### Filter and mask ###########################################################
 from nisl.resampling import resample_img
 
 # This is a multi-subject method, thus we need to use the
@@ -49,6 +48,9 @@ mean_epi = resample_img(mean_epi_img, target_affine=target_affine).get_data()
 masker = NiftiMultiMasker(smoothing_fwhm=6, target_affine=target_affine,
                           memory="nisl_cache", memory_level=5, verbose=1)
 
+### Apply CanICA ##############################################################
+from nisl.decomposition.canica import CanICA
+
 n_components = 20
 canica = CanICA(mask=masker, n_components=n_components,
                 memory="nisl_cache", memory_level=5,
@@ -56,18 +58,15 @@ canica = CanICA(mask=masker, n_components=n_components,
                 verbose=1)
 canica.fit(func_files)
 
-### Apply CanICA ##############################################################
-
-components_img = canica.components_img_
-components = components_img.get_data()
-
-# Using a masked array is important to have transparency in the figures
-components = np.ma.masked_equal(components, 0, copy=False)
+components = canica.components_img_.get_data()
 
 ### Visualize the results #####################################################
 # Show some interesting components
 import pylab as pl
 from scipy import ndimage
+
+# Using a masked array is important to have transparency in the figures
+components = np.ma.masked_equal(components, 0, copy=False)
 
 for i in range(n_components):
     pl.figure()
