@@ -34,6 +34,9 @@ class CanICA(MultiPCA, CacheMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
+    n_init: int, optional
+        The number of times the fastICA algorithm is restarted
+
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
@@ -64,7 +67,8 @@ class CanICA(MultiPCA, CacheMixin):
 
     def __init__(self, mask=None, n_components=20,
                  smoothing_fwhm=6, do_cca=True,
-                 threshold='auto', random_state=0,
+                 threshold='auto', n_init=10,
+                 random_state=0,
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
                  # Common options
@@ -81,6 +85,7 @@ class CanICA(MultiPCA, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.n_init = n_init
 
     def fit(self, niimgs, y=None, confounds=None):
         """Compute the mask and the ICA maps across subjects
@@ -98,19 +103,26 @@ class CanICA(MultiPCA, CacheMixin):
         MultiPCA.fit(self, niimgs, y=y, confounds=confounds)
         random_state = check_random_state(self.random_state)
 
-        if (distutils.version.LooseVersion(sklearn.__version__).version
-                > [0, 12]):
-            # random_state in fastica was added in 0.13
-            ica_maps = self._cache(fastica, memory_level=6)(
-                                self.components_.T,
-                                whiten=False,
-                                fun='cube',
-                                random_state=random_state)[2]
-        else:
-            ica_maps = self.cache(fastica, memory_level=6)(
-                                self.components_.T, whiten=False,
-                                            fun='cube')[2]
-        ica_maps = ica_maps.T
+        sparsity = np.infty
+        for rs in range(self.n_init):
+            if (distutils.version.LooseVersion(sklearn.__version__).version
+                    > [0, 12]):
+                # random_state in fastica was added in 0.13
+                ica_maps_ = self._cache(fastica, memory_level=6)(
+                                    self.components_.T,
+                                    whiten=False,
+                                    fun='cube',
+                                    random_state=random_state)[2]
+            else:
+                ica_maps_ = self.cache(fastica, memory_level=6)(
+                                    self.components_.T, whiten=False,
+                                                fun='cube')[2]
+            ica_maps_ = ica_maps_.T
+
+            sparsity_ = np.sum(np.abs(ica_maps_), axis=1).max()
+            if sparsity_ < sparsity:
+                sparsity = sparsity_
+                ica_maps = ica_maps_
 
         # Thresholding
         ratio = None

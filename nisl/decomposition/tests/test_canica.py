@@ -42,18 +42,12 @@ def test_canica_square_img():
 
     mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
 
+    # We do a large number of inits to be sure to find the good match
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
-                    smoothing_fwhm=0.)
-    sparsity = np.infty
-    for rs in range(50):
-        canica.random_state = np.random.RandomState(rs)
-        canica.fit(data)
-        maps_ = canica.components_img_.get_data()
-        maps_ = np.rollaxis(maps_, 3, 0)
-        sparsity_ = np.sum(np.abs(maps_), axis=1).max()
-        if sparsity_ < sparsity:
-            sparsity = sparsity_
-            maps = maps_
+                    smoothing_fwhm=0., n_init=50)
+    canica.fit(data)
+    maps = canica.components_img_.get_data()
+    maps = np.rollaxis(maps, 3, 0)
 
     # FIXME: This could be done more efficiently, e.g. thanks to hungarian
     # Find pairs of matching components
