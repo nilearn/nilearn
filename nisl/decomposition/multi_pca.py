@@ -1,6 +1,8 @@
 """
-pca dimension reduction on multiple subjects
+PCA dimension reduction on multiple subjects
 """
+import copy
+
 from scipy import linalg
 import numpy as np
 
@@ -45,12 +47,33 @@ def session_pca(niimgs, mask_img, parameters,
 
 
 class MultiPCA(TransformerMixin):
+    """Perform Multi Subject Principal Component Analysis.
+
+    Perform a PCA on each subject and stack the results. An optional Canical
+    Correlation Analysis can also be performed.
+
+    Parameters
+    ----------
+    mask: filename, NiImage or NiftiMultiMasker instance, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given,
+        it will be computed automatically by a NiftiMultiMasker with default
+        parameters.
+
+    n_components: int
+        Number of components to extract
+
+    do_cca: boolean, optional
+        Indicate if a Canonical Correlation Analysis must be run after the
+        PCA.
+    """
 
     def __init__(self, mask=None,
              memory=Memory(cachedir=None), memory_level=0,
              n_jobs=1, verbose=0,
              # MultiPCA options
-             do_cca=True, n_components=20
+             do_cca=True, n_components=20,
+             smoothing_fwhm=None, target_affine=None
              ):
         self.mask = mask
         self.memory = memory
@@ -60,16 +83,31 @@ class MultiPCA(TransformerMixin):
 
         self.do_cca = do_cca
         self.n_components = n_components
+        self.smoothing_fwhm = smoothing_fwhm
+        self.target_affine = target_affine
 
     def fit(self, niimgs=None, y=None, confounds=None):
-        """Compute the mask and the components """
+        """Compute the mask and the components
+
+        Parameters
+        ----------
+        niimgs: list of filenames or NiImages
+            Data on which the PCA must be calculated. If this is a list,
+            the affine is considered the same for all.
+        """
         # First, learn the mask
         if not isinstance(self.mask, NiftiMultiMasker):
-            mask = NiftiMultiMasker(mask=self.mask)
-        if self.mask.mask is None:
-            self.mask.fit(niimgs)
+            self.mask_ = NiftiMultiMasker(mask=self.mask,
+                                         smoothing_fwhm=self.smoothing_fwhm,
+                                         target_affine=self.target_affine)
         else:
-            self.mask.fit()
+            self.mask_ = copy.copy(self.mask)
+            # XXX Change parameters of the masker for smoothing and
+            # target_affine
+        if self.mask_.mask is None:
+            self.mask_.fit(niimgs)
+        else:
+            self.mask_.fit()
 
         # XXX: we should warn the user that we enable these options if they are
         # not set
@@ -77,14 +115,14 @@ class MultiPCA(TransformerMixin):
         self.standardize = True
         self.detrend = True
 
-        parameters = get_params(NiftiMultiMasker, self.mask)
+        parameters = get_params(NiftiMultiMasker, self.mask_)
         parameters['detrend'] = True
         parameters['standardize'] = True
 
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
         subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                            delayed(session_pca)(niimg, self.mask.mask_img_,
+                            delayed(session_pca)(niimg, self.mask_.mask_img_,
                                     parameters,
                                     n_components=self.n_components,
                                     memory=self.memory,
@@ -114,16 +152,25 @@ class MultiPCA(TransformerMixin):
             data = subject_pcas[0]
         self.components_ = data
         # For the moment, store also the components_img
-        self.components_img_ = self.mask.inverse_transform(data)
+        self.components_img_ = self.mask_.inverse_transform(data)
         return self
 
     def transform(self, niimgs, confounds=None):
         """ Project the data into a reduced representation
+
+        Parameters
+        ----------
+        niimgs: nifti like images
+            Data to be projected
+
+        confounds: CSV file path or 2D matrix
+            This parameter is passed to nisl.signal.clean. Please see the
+            related documentation for details
         """
 
-        params = get_params(NiftiMapsMasker, self.mask)
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.mask.mask_img_, **params)
+            self.components_img_, self.mask_.mask_img_,
+            reasample_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
@@ -133,10 +180,15 @@ class MultiPCA(TransformerMixin):
 
     def inverse_transform(self, component_signals):
         """ Transform regions signals into voxel signals
+
+        Parameters
+        ----------
+        component_signals: list of numpy array (n_samples x n_components)
+            Component signals to tranform back into voxel signals
         """
-        params = get_params(NiftiMapsMasker, self.mask)
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.mask.mask_img_, **params)
+            self.components_img_, self.mask_.mask_img_,
+            reasample_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 2D/ list of 2D data?
         return [nifti_maps_masker.inverse_transform(signal)
