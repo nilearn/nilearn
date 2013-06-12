@@ -40,14 +40,16 @@ class CanICA(MultiPCA):
         If float, the kurtosis will additionally be thresholded by the
         given value.
 
-    maps_only: boolean, optional
-        If maps_only is true, the time-series corresponding to the
-        spatial maps are not learned.
-
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
+    References
+    ----------
+    * G. Varoquaux et al. "A group model for stable multi-subject ICA on
+      fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
 
+    * G. Varoquaux et al. "ICA-based sparse features recovery from fMRI
+      datasets", IEEE ISBI 2010, p. 1177
     """
 
     def __init__(self, mask=None,

@@ -45,6 +45,26 @@ def session_pca(niimgs, mask_img, parameters,
 
 
 class MultiPCA(TransformerMixin):
+    """Perform Multi Subject Principal Component Analysis.
+
+    Perform a PCA on each subject and stack the results. An optional Canical
+    Correlation Analysis can also be performed.
+
+    Parameters
+    ----------
+    mask: filename, NiImage or NiftiMultiMasker instance, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given,
+        it will be computed automatically by a NiftiMultiMasker with default
+        parameters.
+
+    n_components: int
+        Number of components to extract
+
+    do_cca: boolean, optional
+        Indicate if a Canonical Correlation Analysis must be run after the
+        PCA.
+    """
 
     def __init__(self, mask=None,
              memory=Memory(cachedir=None), memory_level=0,
@@ -62,7 +82,14 @@ class MultiPCA(TransformerMixin):
         self.n_components = n_components
 
     def fit(self, niimgs=None, y=None, confounds=None):
-        """Compute the mask and the components """
+        """Compute the mask and the components
+
+        Parameters
+        ----------
+        niimgs: list of filenames or NiImages
+            Data on which the PCA must be calculated. If this is a list,
+            the affine is considered the same for all.
+        """
         # First, learn the mask
         if not isinstance(self.mask, NiftiMultiMasker):
             mask = NiftiMultiMasker(mask=self.mask)
