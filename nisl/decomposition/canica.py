@@ -42,6 +42,29 @@ class CanICA(MultiPCA):
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
+    n_components: int
+        Number of components to extract
+
+    smoothing_fwhm: float, optional
+        If smoothing_fwhm is not None, it gives the size in millimeters of the
+        spatial smoothing to apply to the signal.
+
+    do_cca: boolean, optional
+        Indicate if a Canonical Correlation Analysis must be run after the
+        PCA.
+
+    low_pass: False or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: False or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    t_r: float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
     References
     ----------
     * G. Varoquaux et al. "A group model for stable multi-subject ICA on
@@ -51,16 +74,14 @@ class CanICA(MultiPCA):
       datasets", IEEE ISBI 2010, p. 1177
     """
 
-    def __init__(self, mask=None,
+    def __init__(self, mask=None, n_components=20,
+                 smoothing_fwhm=6, do_cca=True,
+                 kurtosis_thr=None, threshold='auto', random_state=0,
+                 target_affine=None, target_shape=None,
+                 low_pass=None, high_pass=None, t_r=None,
+                 # Common options
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
-                 # MultiPCA options
-                 do_cca=True, n_components=20,
-                 smoothing_fwhm=6, target_affine=None,
-                 target_shape=None,
-                 # CanICA options
-                 kurtosis_thr=None, threshold='auto', random_state=0,
-                 # Common options
              ):
         super(CanICA, self).__init__(
             mask=mask, memory=memory, memory_level=memory_level,
@@ -70,6 +91,9 @@ class CanICA(MultiPCA):
         self.kurtosis_thr = kurtosis_thr
         self.threshold = threshold
         self.random_state = random_state
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
 
     def _find_high_kurtosis(self, pcas, ref_memory_level=0,
                             memory=Memory(cachedir=None)):
