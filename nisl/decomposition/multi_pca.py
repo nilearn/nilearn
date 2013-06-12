@@ -6,6 +6,8 @@ import warnings
 from scipy import linalg
 import numpy as np
 
+import nibabel
+
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.utils.extmath import randomized_svd
@@ -111,6 +113,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
         """
+        # Hack to support single-subject data:
+        if isinstance(niimgs, (basestring, nibabel.Nifti1Image)):
+            niimgs = [niimgs]
+            # This is a very incomplete hack, as it won't work right for
+            # single-subject list of 3D filenames
         # First, learn the mask
         if not isinstance(self.mask, NiftiMultiMasker):
             self.mask_ = NiftiMultiMasker(mask=self.mask,
