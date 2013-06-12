@@ -7,7 +7,7 @@ name starts with an underscore
 import numpy as np
 import os
 
-from nose.utils import assert_true, assert_raises
+from nose.tools import assert_true, assert_raises
 
 from nisl._utils.numpy_conversions import as_ndarray
 
