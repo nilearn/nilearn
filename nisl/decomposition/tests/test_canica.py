@@ -50,7 +50,7 @@ def test_canica_square_img():
         canica.fit(data)
         maps_ = canica.components_img_.get_data()
         maps_ = np.rollaxis(maps_, 3, 0)
-        sparsity_ = np.sum(np.abs(maps_), 1).max()
+        sparsity_ = np.sum(np.abs(maps_), axis=1).max()
         if sparsity_ < sparsity:
             sparsity = sparsity_
             maps = maps_

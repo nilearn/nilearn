@@ -163,11 +163,15 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             if not self.do_cca:
                 for subject_pca, subject_svd_val in zip(
                                     subject_pcas, subject_svd_vals):
-                    subject_pca *= subject_svd_val
+                    subject_pca *= subject_svd_val[:, np.newaxis]
             data = np.empty(
                     (len(niimgs) * self.n_components,
                     subject_pcas[0].shape[1]), dtype=subject_pcas[0].dtype)
             for index, subject_pca in enumerate(subject_pcas):
+                if self.n_components > subject_pca.shape[0]:
+                    raise ValueError('You asked for %i components.'
+                            'This is smaller than single-subject data'
+                            'size.')
                 data[index * self.n_components:
                             (index + 1) * self.n_components] = subject_pca
             data, variance, _ = randomized_svd(data.T,
@@ -195,7 +199,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
         nifti_maps_masker = NiftiMapsMasker(
             self.components_img_, self.mask_.mask_img_,
-            reasample_target='maps')
+            resampling_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
@@ -213,7 +217,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         """
         nifti_maps_masker = NiftiMapsMasker(
             self.components_img_, self.mask_.mask_img_,
-            reasample_target='maps')
+            resampling_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 2D/ list of 2D data?
         return [nifti_maps_masker.inverse_transform(signal)

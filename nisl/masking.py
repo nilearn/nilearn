@@ -402,7 +402,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
 
     if not mask_data.shape == niimgs_img.shape[:3]:
         raise ValueError('Mask shape: %s is different from img shape:%s'
-                         % (str(mask_data.shape), str(niimgs_img.shape)))
+                         % (str(mask_data.shape), str(niimgs_img.shape[:3])))
 
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
