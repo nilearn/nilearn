@@ -17,7 +17,6 @@ from sklearn.utils.extmath import randomized_svd
 
 from .multi_pca import MultiPCA
 from .._utils.cache_mixin import cache
-from ..io import NiftiMultiMasker
 
 
 class CanICA(MultiPCA):
