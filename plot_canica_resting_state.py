@@ -26,6 +26,8 @@ import nibabel
 from nisl import datasets
 # Here we use a limited number of subjects to get faster-running code. For
 # better results, simply increase the number.
+from nisl.io import NiftiMultiMasker
+
 dataset = datasets.fetch_adhd()
 func_files = dataset.func
 
@@ -44,31 +46,19 @@ mean_epi = epi_img.get_data().mean(axis=-1)
 mean_epi_img = nibabel.Nifti1Image(mean_epi, epi_img.get_affine())
 mean_epi = resample_img(mean_epi_img, target_affine=target_affine).get_data()
 
+masker = NiftiMultiMasker(smoothing_fwhm=6, target_affine=target_affine,
+                          memory="nisl_cache", memory_level=5, verbose=1)
+
 n_components = 20
-masker = CanICA(smoothing_fwhm=6,
-                  target_affine=target_affine,
-                  memory="nisl_cache", memory_level=5,
-                  n_components=n_components,
-                  verbose=True)
-masker.fit(func_files)
+canica = CanICA(mask=masker, n_components=n_components,
+                memory="nisl_cache", memory_level=5,
+                threshold=2.,
+                verbose=1)
+canica.fit(func_files)
 
 ### Apply CanICA ##############################################################
 
-components_masked = masker.components_
-
-# We normalize the estimated components, for thresholding to make sense
-# XXX: this should probably be integrated in the CanICA object
-components_masked -= components_masked.mean(axis=1)[:, np.newaxis]
-components_masked /= components_masked.std(axis=1)[:, np.newaxis]
-# Threshold
-#threshold = (stats.norm.isf(0.5*threshold_p_value)
-#                                 /np.sqrt(components_masked.shape[0]))
-threshold = .9
-components_masked[np.abs(components_masked) < threshold] = 0
-
-# Now invert the masking operation, to go back to a full 3D
-# representation
-components_img = masker.inverse_transform(components_masked)
+components_img = canica.components_img_
 components = components_img.get_data()
 
 # Using a masked array is important to have transparency in the figures

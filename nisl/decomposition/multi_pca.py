@@ -12,6 +12,7 @@ from sklearn.externals.joblib import Memory
 from ..io import NiftiMultiMasker, NiftiMapsMasker
 from ..io.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
+from .._utils.cache_mixin import cache
 
 
 def session_pca(niimgs, mask_img, parameters,
@@ -25,13 +26,15 @@ def session_pca(niimgs, mask_img, parameters,
     # not set
     parameters['detrend'] = True
     parameters['standardize'] = True
-    data, affine = filter_and_mask(
-                    niimgs, mask_img, parameters,
-                    ref_memory_level=ref_memory_level,
-                    memory=memory,
-                    verbose=verbose,
-                    confounds=confounds,
-                    copy=copy)
+    data, affine = cache(
+        filter_and_mask, memory=memory, ref_memory_level=ref_memory_level,
+        memory_level=2)(
+            niimgs, mask_img, parameters,
+            ref_memory_level=ref_memory_level,
+            memory=memory,
+            verbose=verbose,
+            confounds=confounds,
+            copy=copy)
     if n_components <= data.shape[0] / 4:
         U, S, _ = randomized_svd(data.T, n_components)
     else:
@@ -41,46 +44,48 @@ def session_pca(niimgs, mask_img, parameters,
     return U, S
 
 
-class MultiPCA(NiftiMultiMasker, TransformerMixin):
+class MultiPCA(TransformerMixin):
 
-    def __init__(self, mask=None, smoothing_fwhm=None,
-             standardize=True, detrend=True,
-             low_pass=None, high_pass=None, t_r=None,
-             target_affine=None, target_shape=None,
-             mask_connected=True, mask_opening=False,
-             mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+    def __init__(self, mask=None,
              memory=Memory(cachedir=None), memory_level=0,
              n_jobs=1, verbose=0,
              # MultiPCA options
              do_cca=True, n_components=20
              ):
-        super(MultiPCA, self).__init__(
-            mask, smoothing_fwhm, standardize, detrend, low_pass, high_pass,
-            t_r, target_affine, target_shape, mask_connected, mask_opening,
-            mask_lower_cutoff, mask_upper_cutoff, memory, memory_level,
-            n_jobs, verbose)
+        self.mask = mask
+        self.memory = memory
+        self.memory_level = memory_level
+        self.n_jobs = n_jobs
+        self.verbose = verbose
+
         self.do_cca = do_cca
         self.n_components = n_components
-        self.parameters = get_params(NiftiMultiMasker, self)
 
     def fit(self, niimgs=None, y=None, confounds=None):
         """Compute the mask and the components """
-        # First learn the mask
-        NiftiMultiMasker.fit(self, niimgs)
+        # First, learn the mask
+        if not isinstance(self.mask, NiftiMultiMasker):
+            mask = NiftiMultiMasker(mask=self.mask)
+        if self.mask.mask is None:
+            self.mask.fit(niimgs)
+        else:
+            self.mask.fit()
 
         # XXX: we should warn the user that we enable these options if they are
         # not set
 
         self.standardize = True
         self.detrend = True
-        self.parameters['detrend'] = True
-        self.parameters['standardize'] = True
+
+        parameters = get_params(NiftiMultiMasker, self.mask)
+        parameters['detrend'] = True
+        parameters['standardize'] = True
 
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
         subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                            delayed(session_pca)(niimg, self.mask_img_,
-                                    self.parameters,
+                            delayed(session_pca)(niimg, self.mask.mask_img_,
+                                    parameters,
                                     n_components=self.n_components,
                                     memory=self.memory,
                                     ref_memory_level=self.memory_level,
@@ -109,16 +114,16 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
             data = subject_pcas[0]
         self.components_ = data
         # For the moment, store also the components_img
-        self.components_img_ = NiftiMultiMasker.inverse_transform(self, data)
+        self.components_img_ = self.mask.inverse_transform(data)
         return self
 
     def transform(self, niimgs, confounds=None):
         """ Project the data into a reduced representation
         """
 
-        params = get_params(NiftiMapsMasker, self)
+        params = get_params(NiftiMapsMasker, self.mask)
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.mask_img_, **params)
+            self.components_img_, self.mask.mask_img_, **params)
         nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
@@ -129,9 +134,9 @@ class MultiPCA(NiftiMultiMasker, TransformerMixin):
     def inverse_transform(self, component_signals):
         """ Transform regions signals into voxel signals
         """
-        params = get_params(NiftiMapsMasker, self)
+        params = get_params(NiftiMapsMasker, self.mask)
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.mask_img_, **params)
+            self.components_img_, self.mask.mask_img_, **params)
         nifti_maps_masker.fit()
         # XXX: dealing properly with 2D/ list of 2D data?
         return [nifti_maps_masker.inverse_transform(signal)

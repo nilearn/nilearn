@@ -17,6 +17,7 @@ from sklearn.utils.extmath import randomized_svd
 
 from .multi_pca import MultiPCA
 from .._utils.cache_mixin import cache
+from ..io import NiftiMultiMasker
 
 
 class CanICA(MultiPCA):
@@ -49,26 +50,21 @@ class CanICA(MultiPCA):
 
     """
 
-    def __init__(self, mask=None, smoothing_fwhm=None,
-             standardize=True, detrend=True,
-             low_pass=None, high_pass=None, t_r=None,
-             target_affine=None, target_shape=None,
-             mask_connected=True, mask_opening=False,
-             mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
-             memory=Memory(cachedir=None), memory_level=0,
-             n_jobs=1, verbose=0,
-             # MultiPCA options
-             do_cca=True, n_components=20,
-             # CanICA options
-             kurtosis_thr = None, maps_only = True, random_state = 0
+    def __init__(self, mask=None,
+                 memory=Memory(cachedir=None), memory_level=0,
+                 n_jobs=1, verbose=0,
+                 # MultiPCA options
+                 do_cca=True, n_components=20,
+                 # CanICA options
+                 kurtosis_thr=None, threshold='auto', random_state=0,
+                 # Common options
              ):
         super(CanICA, self).__init__(
-            mask, smoothing_fwhm, standardize, detrend, low_pass, high_pass,
-            t_r, target_affine, target_shape, mask_connected, mask_opening,
-            mask_lower_cutoff, mask_upper_cutoff, memory, memory_level,
-            n_jobs, verbose, do_cca, n_components)
+            mask, memory=memory, memory_level=memory_level,
+            n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
+            n_components=n_components)
         self.kurtosis_thr = kurtosis_thr
-        self.maps_only = maps_only
+        self.threshold = threshold
         self.random_state = random_state
 
     def _find_high_kurtosis(self, pcas, ref_memory_level=0,
@@ -114,8 +110,6 @@ class CanICA(MultiPCA):
             raise ValueError('Could not find components with high-enough'
                              ' kurtosis')
         self.n_components_ = n_components
-        # For the moment, store also the components_img
-        self.components_img_ = NiftiMultiMasker.inverse_transform(self, data)
         return ica_maps
 
     def fit(self, data, y=None):
@@ -125,8 +119,22 @@ class CanICA(MultiPCA):
                                             ref_memory_level=self.memory,
                                             memory=self.memory)
 
+        # Thresholding
+        ratio = None
+        if isinstance(self.threshold, float):
+            ratio = self.threshold
+        elif self.threshold == 'auto':
+            ratio = 1.
+        if self.threshold is not None:
+            raveled = np.abs(ica_maps).ravel()
+            argsort = np.argsort(raveled)
+            n_voxels = ica_maps[0].size
+            threshold = raveled[argsort[- ratio * n_voxels]]
+            ica_maps[np.abs(ica_maps) < threshold] = 0.
+
         self.components_ = ica_maps
-        if not self.maps_only:
-            # Relearn the time series
-            self.learn_from_maps(data)
+        # For the moment, store also the components_img
+        self.components_img_ = \
+            self.mask.inverse_transform(ica_maps)
+
         return self
