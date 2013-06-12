@@ -128,7 +128,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         from .nifti_masker import NiftiMasker
         params = get_params(NiftiMasker, self)
         data, affine = \
-            self._cache(filter_and_mask, memory_level=1)(
+            self._cache(filter_and_mask, memory_level=1,
+                        ignore=['verbose', 'memory', 'copy'])(
                 niimgs, self.mask_img_,
                 params,
                 ref_memory_level=self.memory_level,
