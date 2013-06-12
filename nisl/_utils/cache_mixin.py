@@ -8,6 +8,14 @@ import warnings
 
 from sklearn.externals.joblib import Memory
 
+memory_classes = (Memory, )
+
+try:
+    from joblib import Memory as JoblibMemory
+    memory_classes = (Memory, JoblibMemory)
+except ImportError:
+    pass
+
 
 def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
     """ Return a joblib.Memory object.
@@ -53,7 +61,7 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
         memory = memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
-        if not isinstance(memory, Memory):
+        if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
                             "joblib.Memory object.")
         if memory.cachedir is None:
@@ -130,7 +138,7 @@ class CacheMixin(object):
             memory = self.memory
             if isinstance(memory, basestring):
                 memory = Memory(cachedir=memory, verbose=verbose)
-            if not isinstance(memory, Memory):
+            if not isinstance(memory, memory_classes):
                 raise TypeError("'memory' argument must be a string or a "
                                 "joblib.Memory object.")
             if memory.cachedir is None:
