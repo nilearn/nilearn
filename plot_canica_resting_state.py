@@ -26,7 +26,6 @@ import nibabel
 from nisl import datasets
 # Here we use a limited number of subjects to get faster-running code. For
 # better results, simply increase the number.
-from nisl.io import NiftiMultiMasker
 
 dataset = datasets.fetch_adhd()
 func_files = dataset.func
@@ -45,17 +44,14 @@ mean_epi = epi_img.get_data().mean(axis=-1)
 mean_epi_img = nibabel.Nifti1Image(mean_epi, epi_img.get_affine())
 mean_epi = resample_img(mean_epi_img, target_affine=target_affine).get_data()
 
-masker = NiftiMultiMasker(smoothing_fwhm=6, target_affine=target_affine,
-                          memory="nisl_cache", memory_level=5, verbose=1)
-
 ### Apply CanICA ##############################################################
 from nisl.decomposition.canica import CanICA
 
 n_components = 20
-canica = CanICA(mask=masker, n_components=n_components,
+canica = CanICA(n_components=n_components,
+                smoothing_fwhm=6., target_affine=target_affine,
                 memory="nisl_cache", memory_level=5,
-                threshold=2.,
-                verbose=1)
+                threshold=2., verbose=1)
 canica.fit(func_files)
 
 components = canica.components_img_.get_data()

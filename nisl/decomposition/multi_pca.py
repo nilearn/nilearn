@@ -117,9 +117,6 @@ class MultiPCA(TransformerMixin):
         # XXX: we should warn the user that we enable these options if they are
         # not set
 
-        self.standardize = True
-        self.detrend = True
-
         parameters = get_params(NiftiMultiMasker, self.mask_)
         parameters['detrend'] = True
         parameters['standardize'] = True
