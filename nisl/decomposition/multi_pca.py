@@ -99,11 +99,13 @@ class MultiPCA(TransformerMixin):
             self.mask_ = NiftiMultiMasker(mask=self.mask,
                                          smoothing_fwhm=self.smoothing_fwhm,
                                          target_affine=self.target_affine,
-                                         target_shape=self.target_shape)
+                                         target_shape=self.target_shape,
+                                         memory=self.memory,
+                                         memory_level=self.memory_level)
         else:
             self.mask_ = clone(self.mask)
             for param_name in ['target_affine', 'target_shape',
-                               'smoothing_fwhm']:
+                               'smoothing_fwhm', 'memory', 'memory_level']:
                 if getattr(self.mask_, param_name) is not None:
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
