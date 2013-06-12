@@ -62,7 +62,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     noise *= noise_coef
     snr = 20 * np.log(linalg.norm(X, 2) / linalg.norm(noise, 2))
     print ("SNR: %.1f dB" % snr)
-    ### Mixing od signal + noise and splitting into train/test
+    ### Mixing of signal + noise and splitting into train/test
     X += noise
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]
