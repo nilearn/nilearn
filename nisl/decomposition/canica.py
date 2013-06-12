@@ -57,6 +57,7 @@ class CanICA(MultiPCA):
                  n_jobs=1, verbose=0,
                  # MultiPCA options
                  do_cca=True, n_components=20,
+                 smoothing_fwhm=6, target_affine=None,
                  # CanICA options
                  kurtosis_thr=None, threshold='auto', random_state=0,
                  # Common options
@@ -64,7 +65,8 @@ class CanICA(MultiPCA):
         super(CanICA, self).__init__(
             mask, memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
-            n_components=n_components)
+            n_components=n_components, smoothing_fwhm=smoothing_fwhm,
+            target_affine=target_affine)
         self.kurtosis_thr = kurtosis_thr
         self.threshold = threshold
         self.random_state = random_state
@@ -137,6 +139,6 @@ class CanICA(MultiPCA):
         self.components_ = ica_maps
         # For the moment, store also the components_img
         self.components_img_ = \
-            self.mask.inverse_transform(ica_maps)
+            self.mask_.inverse_transform(ica_maps)
 
         return self
