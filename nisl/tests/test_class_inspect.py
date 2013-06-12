@@ -1,5 +1,8 @@
 """
 Test the class_inspect module
+
+This test file is in nisl/tests because nosetests seems to ignore modules whose
+name starts with an underscore
 """
 from nose.tools import assert_equal
 
@@ -22,12 +25,14 @@ class B(A):
         self.a = a
         self.b = b
 
-    def get_scope_name(self):
-        return get_scope_name()
+    def get_scope_name(self, stack=0, *args, **kwargs):
+        return get_scope_name(stack=stack, *args, **kwargs)
 
 
-def get_scope_name():
-    return class_inspect.enclosing_scope_name()
+def get_scope_name(stack=0, *args, **kwargs):
+    if stack == 0:
+        return class_inspect.enclosing_scope_name(*args, **kwargs)
+    return get_scope_name(stack - 1, *args, **kwargs)
 
 
 ###############################################################################
@@ -42,4 +47,8 @@ def test_get_params():
 def test_enclosing_scope_name():
     b = B()
     name = b.get_scope_name()
-    assert_equal(name, '[B.get_scope_name]')
+    assert_equal(name, 'B.get_scope_name')
+    name = b.get_scope_name(ensure_estimator=False)
+    assert_equal(name, 'B.get_scope_name')
+    name = b.get_scope_name(stack=3, ensure_estimator=False)
+    assert_equal(name, 'get_scope_name')

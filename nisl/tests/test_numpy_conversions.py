@@ -1,5 +1,8 @@
 """
 Test the numpy_conversions module
+
+This test file is in nisl/tests because nosetests seems to ignore modules whose
+name starts with an underscore
 """
 import numpy as np
 import os
@@ -131,7 +134,7 @@ def test_as_ndarray():
         (np.bool, "F", True, np.int8, None, True),
         (np.bool, "C", True, np.int8, "C", True),
         (np.bool, "F", True, np.int8, "F", True),
-        ]
+    ]
 
     shape = (10, 11)
     for case in test_cases:
@@ -227,4 +230,3 @@ def test_as_ndarray():
     ## Unhandled cases
     assert_raises(ValueError, as_ndarray, "test string")
     assert_raises(ValueError, as_ndarray, [], order="invalid")
-

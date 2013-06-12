@@ -1,5 +1,8 @@
 """
 Test the niimg_conversions
+
+This test file is in nisl/tests because nosetests seems to ignore modules whose
+name starts with an underscore
 """
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
@@ -35,7 +38,6 @@ class PhonyNiimage:
 def test_check_niimg():
     assert_raises(TypeError, utils.check_niimg, 0)
     # Check that a list of 3D images is valid
-
 
 
 def test_check_niimgs():
@@ -99,7 +101,3 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
-
-
-
-
