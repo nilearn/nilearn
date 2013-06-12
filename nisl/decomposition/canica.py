@@ -7,19 +7,17 @@ CanICA
 import distutils
 
 import numpy as np
-from scipy import stats
 
 import sklearn
 from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory
 from sklearn.utils import check_random_state
-from sklearn.utils.extmath import randomized_svd
 
 from .multi_pca import MultiPCA
-from .._utils.cache_mixin import cache
+from .._utils.cache_mixin import CacheMixin
 
 
-class CanICA(MultiPCA):
+class CanICA(MultiPCA, CacheMixin):
     """Perform Canonical Independent Component Analysis.
 
     Parameters
@@ -32,22 +30,12 @@ class CanICA(MultiPCA):
     n_components: int
         Number of components to extract
 
-    kurtosis_thr: boolean or float
-        If kurtosis_thr is None, the algorithm is run regardless of the
-        kurtosis. If it is False, then the algorithm will iter on the
-        number of components to find a kurtosis greater than their number.
-        If float, the kurtosis will additionally be thresholded by the
-        given value.
-
-    random_state: int or RandomState
-        Pseudo number generator state used for random sampling.
-
-    n_components: int
-        Number of components to extract
-
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
+
+    random_state: int or RandomState
+        Pseudo number generator state used for random sampling.
 
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
@@ -76,7 +64,7 @@ class CanICA(MultiPCA):
 
     def __init__(self, mask=None, n_components=20,
                  smoothing_fwhm=6, do_cca=True,
-                 kurtosis_thr=None, threshold='auto', random_state=0,
+                 threshold='auto', random_state=0,
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
                  # Common options
@@ -88,57 +76,11 @@ class CanICA(MultiPCA):
             n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
             n_components=n_components, smoothing_fwhm=smoothing_fwhm,
             target_affine=target_affine, target_shape=target_shape)
-        self.kurtosis_thr = kurtosis_thr
         self.threshold = threshold
         self.random_state = random_state
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
-
-    def _find_high_kurtosis(self, pcas, ref_memory_level=0,
-                            memory=Memory(cachedir=None)):
-        random_state = check_random_state(self.random_state)
-
-        if not self.kurtosis_thr:
-            kurtosis_thr = -np.inf
-        else:
-            kurtosis_thr = self.kurtosis_thr
-        n_components = self.n_components
-
-        while n_components < 3 * self.n_components:
-            group_maps = cache(
-                randomized_svd, memory, ref_memory_level, memory_level=2
-            )(pcas, n_components)[0]
-            group_maps = group_maps[:, :n_components]
-
-            if (distutils.version.LooseVersion(sklearn.__version__).version
-                    > [0, 12]):
-                # random_state in fastica was added in 0.13
-                ica_maps = cache(fastica, memory, ref_memory_level,
-                                 memory_level=1)(
-                    group_maps,
-                    whiten=False,
-                    fun='cube',
-                    random_state=random_state)[2]
-            else:
-                ica_maps = cache(fastica, memory, ref_memory_level,
-                                 memory_level=1)(group_maps, whiten=False,
-                                             fun='cube')[2]
-            ica_maps = ica_maps.T
-            kurtosis = stats.kurtosis(ica_maps, axis=1)
-            kurtosis_mask = kurtosis > kurtosis_thr
-            if np.sum(kurtosis_mask) >= n_components:
-                order = np.argsort(kurtosis)[::-1]
-                ica_maps = ica_maps[order[:n_components]]
-                break
-            n_components += 1
-
-            del group_maps
-        else:
-            raise ValueError('Could not find components with high-enough'
-                             ' kurtosis')
-        self.n_components_ = n_components
-        return ica_maps
 
     def fit(self, niimgs, y=None, confounds=None):
         """Compute the mask and the ICA maps across subjects
@@ -154,9 +96,21 @@ class CanICA(MultiPCA):
             related documentation for details
         """
         MultiPCA.fit(self, niimgs, y=y, confounds=confounds)
-        ica_maps = self._find_high_kurtosis(self.components_.T,
-                                            ref_memory_level=self.memory,
-                                            memory=self.memory)
+        random_state = check_random_state(self.random_state)
+
+        if (distutils.version.LooseVersion(sklearn.__version__).version
+                > [0, 12]):
+            # random_state in fastica was added in 0.13
+            ica_maps = self._cache(fastica, memory_level=6)(
+                                self.components_.T,
+                                whiten=False,
+                                fun='cube',
+                                random_state=random_state)[2]
+        else:
+            ica_maps = self.cache(fastica, memory_level=6)(
+                                self.components_.T, whiten=False,
+                                            fun='cube')[2]
+        ica_maps = ica_maps.T
 
         # Thresholding
         ratio = None
