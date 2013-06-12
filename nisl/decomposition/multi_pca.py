@@ -1,12 +1,12 @@
 """
 PCA dimension reduction on multiple subjects
 """
-import copy
+import warnings
 
 from scipy import linalg
 import numpy as np
 
-from sklearn.base import TransformerMixin
+from sklearn.base import TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.utils.extmath import randomized_svd
 from sklearn.externals.joblib import Memory
@@ -68,12 +68,10 @@ class MultiPCA(TransformerMixin):
         PCA.
     """
 
-    def __init__(self, mask=None,
+    def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
+             do_cca=True, target_affine=None, target_shape=None,
              memory=Memory(cachedir=None), memory_level=0,
              n_jobs=1, verbose=0,
-             # MultiPCA options
-             do_cca=True, n_components=20,
-             smoothing_fwhm=None, target_affine=None
              ):
         self.mask = mask
         self.memory = memory
@@ -85,6 +83,7 @@ class MultiPCA(TransformerMixin):
         self.n_components = n_components
         self.smoothing_fwhm = smoothing_fwhm
         self.target_affine = target_affine
+        self.target_shape = target_shape
 
     def fit(self, niimgs=None, y=None, confounds=None):
         """Compute the mask and the components
@@ -99,11 +98,17 @@ class MultiPCA(TransformerMixin):
         if not isinstance(self.mask, NiftiMultiMasker):
             self.mask_ = NiftiMultiMasker(mask=self.mask,
                                          smoothing_fwhm=self.smoothing_fwhm,
-                                         target_affine=self.target_affine)
+                                         target_affine=self.target_affine,
+                                         target_shape=self.target_shape)
         else:
-            self.mask_ = copy.copy(self.mask)
-            # XXX Change parameters of the masker for smoothing and
-            # target_affine
+            self.mask_ = clone(self.mask)
+            for param_name in ['target_affine', 'target_shape',
+                               'smoothing_fwhm']:
+                if getattr(self.mask_, param_name) is not None:
+                    warnings.warn('Parameter %s of the masker overriden'
+                                  % param_name)
+                setattr(self.mask_, param_name,
+                        getattr(self, param_name))
         if self.mask_.mask is None:
             self.mask_.fit(niimgs)
         else:
