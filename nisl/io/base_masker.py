@@ -46,6 +46,7 @@ def filter_and_mask(niimgs, mask_img_,
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
         print "[%s] Resampling" % class_name
+
     niimgs = cache(resampling.resample_img, memory, ref_memory_level,
                    memory_level=2, ignore=['copy'])(
             niimgs,

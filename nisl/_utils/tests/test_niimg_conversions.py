@@ -34,6 +34,8 @@ class PhonyNiimage:
 
 def test_check_niimg():
     assert_raises(TypeError, utils.check_niimg, 0)
+    # Check that a list of 3D images is valid
+
 
 
 def test_check_niimgs():

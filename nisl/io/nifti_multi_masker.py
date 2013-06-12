@@ -168,8 +168,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
             for niimg in niimgs:
                 # Note that data is not loaded into memory at this stage
                 # if niimg is a string
-                data.append(_utils.check_niimgs(niimg,
-                                                          accept_3d=True))
+                data.append(_utils.check_niimgs(niimg, accept_3d=True))
 
             self.mask_img_ = self._cache(
                         masking.compute_multi_epi_mask,
