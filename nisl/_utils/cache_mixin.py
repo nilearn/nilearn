@@ -55,7 +55,7 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
         returned.
     """
 
-    if ref_memory_level <= memory_level:
+    if ref_memory_level <= memory_level or memory is None:
         memory = Memory(cachedir=None)
     else:
         memory = memory
@@ -63,7 +63,8 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
             memory = Memory(cachedir=memory)
         if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
-                            "joblib.Memory object.")
+                            "joblib.Memory object. "
+                            "%s %s was given." % (memory, type(memory)))
         if memory.cachedir is None:
             warnings.warn("Caching has been enabled (memory_level = %d) "
                           "but no Memory object or path has been provided"
