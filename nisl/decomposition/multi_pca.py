@@ -6,7 +6,7 @@ import warnings
 from scipy import linalg
 import numpy as np
 
-from sklearn.base import TransformerMixin, clone
+from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.utils.extmath import randomized_svd
 from sklearn.externals.joblib import Memory
@@ -24,13 +24,10 @@ def session_pca(niimgs, mask_img, parameters,
                 verbose=0,
                 confounds=None,
                 copy=True):
-    # XXX: we should warn the user that we enable these options if they are
-    # not set
-    parameters['detrend'] = True
-    parameters['standardize'] = True
     data, affine = cache(
         filter_and_mask, memory=memory, ref_memory_level=ref_memory_level,
-        memory_level=2)(
+        memory_level=2,
+        ignore=['verbose', 'memory', 'ref_memory_level', 'copy'])(
             niimgs, mask_img, parameters,
             ref_memory_level=ref_memory_level,
             memory=memory,
@@ -46,7 +43,7 @@ def session_pca(niimgs, mask_img, parameters,
     return U, S
 
 
-class MultiPCA(TransformerMixin):
+class MultiPCA(BaseEstimator, TransformerMixin):
     """Perform Multi Subject Principal Component Analysis.
 
     Perform a PCA on each subject and stack the results. An optional Canical
@@ -63,13 +60,30 @@ class MultiPCA(TransformerMixin):
     n_components: int
         Number of components to extract
 
+    smoothing_fwhm: float, optional
+        If smoothing_fwhm is not None, it gives the size in millimeters of the
+        spatial smoothing to apply to the signal.
+
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
+
+    low_pass: False or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: False or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    t_r: float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
     """
 
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
              do_cca=True, target_affine=None, target_shape=None,
+             low_pass=None, high_pass=None, t_r=None,
              memory=Memory(cachedir=None), memory_level=0,
              n_jobs=1, verbose=0,
              ):
@@ -78,6 +92,9 @@ class MultiPCA(TransformerMixin):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
 
         self.do_cca = do_cca
         self.n_components = n_components
@@ -116,10 +133,7 @@ class MultiPCA(TransformerMixin):
         else:
             self.mask_.fit()
 
-        # XXX: we should warn the user that we enable these options if they are
-        # not set
-
-        parameters = get_params(NiftiMultiMasker, self.mask_)
+        parameters = get_params(NiftiMultiMasker, self)
         parameters['detrend'] = True
         parameters['standardize'] = True
 

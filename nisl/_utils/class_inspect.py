@@ -27,7 +27,7 @@ def get_params(cls, instance, ignore=None):
         The dict of parameters
     """
 
-    _ignore = set(('memory', 'memory_level', 'verbose', 'copy'))
+    _ignore = set(('memory', 'memory_level', 'verbose', 'copy', 'n_jobs'))
     if ignore is not None:
         _ignore.update(ignore)
 
