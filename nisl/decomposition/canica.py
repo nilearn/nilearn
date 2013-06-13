@@ -44,11 +44,11 @@ class CanICA(MultiPCA, CacheMixin):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    low_pass: False or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -74,7 +74,7 @@ class CanICA(MultiPCA, CacheMixin):
                  # Common options
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
-             ):
+                 ):
         super(CanICA, self).__init__(
             mask=mask, memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
@@ -93,7 +93,7 @@ class CanICA(MultiPCA, CacheMixin):
         Parameters
         ----------
         niimgs: list of filenames or NiImages
-            Data on which the PCA must be calculated. If this is a list,
+            Data on which PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 
         confounds: CSV file path or 2D matrix
@@ -109,14 +109,14 @@ class CanICA(MultiPCA, CacheMixin):
                     > [0, 12]):
                 # random_state in fastica was added in 0.13
                 ica_maps_ = self._cache(fastica, memory_level=6)(
-                                    self.components_.T,
-                                    whiten=False,
-                                    fun='cube',
-                                    random_state=random_state)[2]
+                    self.components_.T,
+                    whiten=False,
+                    fun='cube',
+                    random_state=random_state)[2]
             else:
                 ica_maps_ = self._cache(fastica, memory_level=6)(
-                                    self.components_.T, whiten=False,
-                                                fun='cube')[2]
+                    self.components_.T, whiten=False,
+                    fun='cube')[2]
             ica_maps_ = ica_maps_.T
 
             sparsity_ = np.sum(np.abs(ica_maps_), axis=1).max()
