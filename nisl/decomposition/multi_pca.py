@@ -227,7 +227,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 if self.n_components > subject_pca.shape[0]:
                     raise ValueError('You asked for %i components.'
                                      'This is smaller than single-subject '
-                                     'data size.')
+                                     'data size.' % self.n_components)
                 data[index * self.n_components:
                      (index + 1) * self.n_components] = subject_pca
             data, variance, _ = randomized_svd(
