@@ -58,6 +58,11 @@ def _repr_niimgs(niimgs):
         if filename is not None:
             return "%s('%s')" % (niimgs.__class__.__name__,
                                 filename)
+        else:
+            return "%s(\nshape=%s,\naffine=%s\n)" % \
+                   (niimgs.__class__.__name__,
+                    repr(_get_shape(niimgs)),
+                    repr(niimgs.get_affine()))
     except:
         pass
     return repr(niimgs)
@@ -242,4 +247,3 @@ def check_niimgs(niimgs, accept_3d=False):
     else:
         niimg = concat_niimgs(niimgs)
     return niimg
-

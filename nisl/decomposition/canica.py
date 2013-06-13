@@ -114,7 +114,7 @@ class CanICA(MultiPCA, CacheMixin):
                                     fun='cube',
                                     random_state=random_state)[2]
             else:
-                ica_maps_ = self.cache(fastica, memory_level=6)(
+                ica_maps_ = self._cache(fastica, memory_level=6)(
                                     self.components_.T, whiten=False,
                                                 fun='cube')[2]
             ica_maps_ = ica_maps_.T
