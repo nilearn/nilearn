@@ -2,6 +2,7 @@
 PCA dimension reduction on multiple subjects
 """
 import warnings
+import itertools
 
 from scipy import linalg
 import numpy as np
@@ -86,7 +87,7 @@ def session_pca(niimgs, mask_img, parameters,
 class MultiPCA(BaseEstimator, TransformerMixin):
     """Perform Multi Subject Principal Component Analysis.
 
-    Perform a PCA on each subject and stack the results. An optional Canical
+    Perform a PCA on each subject and stack the results. An optional Canonical
     Correlation Analysis can also be performed.
 
     Parameters
@@ -119,6 +120,21 @@ class MultiPCA(BaseEstimator, TransformerMixin):
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
+
+    Attributes
+    ----------
+    masker_: instance of NiftiMultiMasker
+        Masker used to filter and mask data as first step. If an instance of
+        NiftiMultiMasker is given in `mask` parameter,
+        this is a copy of it. Otherwise, a masker is created using the value
+        of `mask` and other NiftiMasker related parameters as initialization.
+
+    components_: 2D numpy array (n_components x n-voxels)
+        Array of masked extracted components
+
+    components_img_: list of Niimg
+        List of unmasked components. They are computed by applying inverse
+        transform of `masker_` on `components`.
     """
 
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
@@ -243,7 +259,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
-            confounds = [None] * len(niimgs)
+            confounds = itertools.repeat(None, len(niimgs))
         return [nifti_maps_masker.transform(niimg, confounds=confound)
                 for niimg, confound in zip(niimgs, confounds)]
 
