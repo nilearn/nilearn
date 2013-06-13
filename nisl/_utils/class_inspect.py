@@ -6,8 +6,12 @@ import inspect
 
 
 def get_params(cls, instance, ignore=None):
-    """ Retrieve the parameters corresponding to the class 'cls' for
-    object 'instance'.
+    """ Retrieve the initialization parameters corresponding to a class
+
+    This helper function retrieves the parameters of function __init__ for
+    class 'cls' and returns the value for these parameters in object
+    'instance'. When using a composition pattern (e.g. with a NiftiMasker
+    class), it is useful to forward parameters from one instance to another.
 
     Parameters
     ==========
@@ -18,8 +22,8 @@ def get_params(cls, instance, ignore=None):
     instance: object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    ignore: None of list of strings
-        The names of the parameters that are not returned.
+    ignore: None or list of strings
+        Names of the parameters that are not returned.
 
     Returns
     =======
@@ -44,7 +48,11 @@ def get_params(cls, instance, ignore=None):
 
 
 def enclosing_scope_name(ensure_estimator=True, stack_level=2):
-    """ Find the name of the enclosing scope
+    """ Find the name of the enclosing scope for debug output purpose
+
+    Use inspection to climb up the stack until the calling object. This is
+    typically used to get the estimator at the origin of a functional call
+    for debug print purpose.
 
     Parameters
     ==========
