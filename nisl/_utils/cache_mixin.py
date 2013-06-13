@@ -132,7 +132,7 @@ class CacheMixin(object):
                 self.memory_level = 1
         verbose = getattr(self, 'verbose', 0)
 
-        if self.memory_level <= memory_level:
+        if self.memory_level < memory_level:
             mem = Memory(cachedir=None, verbose=verbose)
             return mem.cache(func, **kwargs)
         else:
