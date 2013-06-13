@@ -29,7 +29,7 @@ def session_pca(niimgs, mask_img, parameters,
                 copy=True):
     """Filter, mask and compute PCA on niimgs
 
-    This is an helper function whose first call `BaseMasker.filter_and_mask`
+    This is an helper function whose first call `base_masker.filter_and_mask`
     and then apply a PCA to reduce the number of time series.
 
     Parameters
@@ -92,12 +92,6 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    mask: filename, NiImage or NiftiMultiMasker instance, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a NiftiMultiMasker with default
-        parameters.
-
     n_components: int
         Number of components to extract
 
@@ -105,9 +99,23 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
+    mask: filename, NiImage or NiftiMultiMasker instance, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given,
+        it will be computed automatically by a NiftiMultiMasker with default
+        parameters.
+
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
+
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
 
     low_pass: False or float, optional
         This parameter is passed to signal.clean. Please see the related
@@ -120,6 +128,22 @@ class MultiPCA(BaseEstimator, TransformerMixin):
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
+
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    memory_level: integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs', -2 'all CPUs but one', and so on.
+
+    verbose: integer, optional
+        Indicate the level of verbosity. By default, nothing is printed
 
     Attributes
     ----------
@@ -175,11 +199,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         # First, learn the mask
         if not isinstance(self.mask, NiftiMultiMasker):
             self.masker_ = NiftiMultiMasker(mask=self.mask,
-                                          smoothing_fwhm=self.smoothing_fwhm,
-                                          target_affine=self.target_affine,
-                                          target_shape=self.target_shape,
-                                          memory=self.memory,
-                                          memory_level=self.memory_level)
+                                            smoothing_fwhm=self.smoothing_fwhm,
+                                            target_affine=self.target_affine,
+                                            target_shape=self.target_shape,
+                                            memory=self.memory,
+                                            memory_level=self.memory_level)
         else:
             self.masker_ = clone(self.mask)
             for param_name in ['target_affine', 'target_shape',
@@ -236,7 +260,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         else:
             data = subject_pcas[0]
         self.components_ = data
-        # For the moment, store also the components_img
+        # XXX: should we store the unmasked components ?
         self.components_img_ = self.masker_.inverse_transform(data)
         return self
 

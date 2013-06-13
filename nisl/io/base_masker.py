@@ -20,14 +20,6 @@ from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
 
 
-def _to_nifti(X, affine):
-    if isinstance(X, np.ndarray):
-        return Nifti1Image(X, affine)
-    for index, x in enumerate(X):
-        X[index] = _to_nifti(x, affine)
-    return X
-
-
 def filter_and_mask(niimgs, mask_img_,
                     parameters,
                     ref_memory_level=0,
@@ -45,27 +37,27 @@ def filter_and_mask(niimgs, mask_img_,
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
-        print "[%s] Resampling" % class_name
+        print("[%s] Resampling" % class_name)
 
     niimgs = cache(resampling.resample_img, memory, ref_memory_level,
                    memory_level=2, ignore=['copy'])(
-            niimgs,
-            target_affine=parameters['target_affine'],
-            target_shape=parameters['target_shape'],
-            copy=copy)
+                       niimgs,
+                       target_affine=parameters['target_affine'],
+                       target_shape=parameters['target_shape'],
+                       copy=copy)
 
     # Load data (if filenames are given, load them)
     if verbose > 0:
-        print "[%s] Loading data from %s" % (
+        print("[%s] Loading data from %s" % (
             class_name,
-            _utils._repr_niimgs(niimgs)[:200])
+            _utils._repr_niimgs(niimgs)[:200]))
 
     niimgs = _utils.check_niimgs(niimgs)
 
     # Get series from data with optional smoothing
     if verbose > 1:
-        print "[%s] Masking and smoothing" \
-            % class_name
+        print("[%s] Masking and smoothing"
+              % class_name)
     data = masking.apply_mask(niimgs, mask_img_,
                               smoothing_fwhm=parameters['smoothing_fwhm'])
 
@@ -77,20 +69,21 @@ def filter_and_mask(niimgs, mask_img_,
     # Normalizing
 
     if verbose > 1:
-        print "[%s] Cleaning signal" % class_name
+        print("[%s] Cleaning signal" % class_name)
     if not 'sessions' in parameters or parameters['sessions'] is None:
         clean_memory_level = 2
         if (parameters['high_pass'] is not None
-                                and parameters['low_pass'] is not None):
+                and parameters['low_pass'] is not None):
             clean_memory_level = 4
 
         data = cache(signal.clean, memory, ref_memory_level,
                      memory_level=clean_memory_level)(
-            data,
-            confounds=confounds, low_pass=parameters['low_pass'],
-            high_pass=parameters['high_pass'], t_r=parameters['t_r'],
-            detrend=parameters['detrend'],
-            standardize=parameters['standardize'])
+                         data,
+                         confounds=confounds, low_pass=parameters['low_pass'],
+                         high_pass=parameters['high_pass'],
+                         t_r=parameters['t_r'],
+                         detrend=parameters['detrend'],
+                         standardize=parameters['standardize'])
     else:
         sessions = parameters['sessions']
         for s in np.unique(sessions):
@@ -123,21 +116,21 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def transform_single_niimgs(self, niimgs, confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fit. '
-                "You must call fit() before calling transform()."
-                % self.__class__.__name__)
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
         from .nifti_masker import NiftiMasker
         params = get_params(NiftiMasker, self)
         data, affine = \
             self._cache(filter_and_mask, memory_level=1,
                         ignore=['verbose', 'memory', 'copy'])(
-                niimgs, self.mask_img_,
-                params,
-                ref_memory_level=self.memory_level,
-                memory=self.memory,
-                verbose=self.verbose,
-                confounds=confounds,
-                copy=copy
-            )
+                            niimgs, self.mask_img_,
+                            params,
+                            ref_memory_level=self.memory_level,
+                            memory=self.memory,
+                            verbose=self.verbose,
+                            confounds=confounds,
+                            copy=copy
+                        )
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):

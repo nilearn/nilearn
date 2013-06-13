@@ -22,6 +22,12 @@ class CanICA(MultiPCA, CacheMixin):
 
     Parameters
     ----------
+    mask: filename, NiImage or NiftiMultiMasker instance, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given,
+        it will be computed automatically by a NiftiMultiMasker with default
+        parameters.
+
     data: array-like, shape = [[n_samples, n_features], ...]
         Training vector, where n_samples is the number of samples,
         n_features is the number of features. There is one vector per
@@ -34,15 +40,30 @@ class CanICA(MultiPCA, CacheMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
+    do_cca: boolean, optional
+        Indicate if a Canonical Correlation Analysis must be run after the
+        PCA.
+
+    threshold: None, 'auto' or float
+        If None, no thresholding is applied. If 'auto',
+        then we apply a thresholding that will keep the n_voxels,
+        more intense voxels across all the maps, n_voxels being the number
+        of voxels in a brain volume. A float value indicates the
+        ratio of voxels to keep (2. means keeping 2 x n_voxels voxels).
+
     n_init: int, optional
         The number of times the fastICA algorithm is restarted
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
-    do_cca: boolean, optional
-        Indicate if a Canonical Correlation Analysis must be run after the
-        PCA.
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
 
     low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
@@ -55,6 +76,22 @@ class CanICA(MultiPCA, CacheMixin):
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
+
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    memory_level: integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs', -2 'all CPUs but one', and so on.
+
+    verbose: integer, optional
+        Indicate the level of verbosity. By default, nothing is printed
 
     References
     ----------
@@ -130,15 +167,18 @@ class CanICA(MultiPCA, CacheMixin):
             ratio = self.threshold
         elif self.threshold == 'auto':
             ratio = 1.
-        if self.threshold is not None:
+        if ratio is not None:
             raveled = np.abs(ica_maps).ravel()
             argsort = np.argsort(raveled)
             n_voxels = ica_maps[0].size
             threshold = raveled[argsort[- ratio * n_voxels]]
             ica_maps[np.abs(ica_maps) < threshold] = 0.
-
+        elif self.threshold is not None:
+            raise ValueError("Threshold must be None, "
+                             "'auto' or float. You provided %s." %
+                             str(self.threshold))
         self.components_ = ica_maps
-        # For the moment, store also the components_img
+        # XXX: should we store the unmasked components ?
         self.components_img_ = \
             self.masker_.inverse_transform(ica_maps)
 
