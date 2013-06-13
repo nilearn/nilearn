@@ -122,11 +122,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
-             do_cca=True, target_affine=None, target_shape=None,
-             low_pass=None, high_pass=None, t_r=None,
-             memory=Memory(cachedir=None), memory_level=0,
-             n_jobs=1, verbose=0,
-             ):
+                 do_cca=True, target_affine=None, target_shape=None,
+                 low_pass=None, high_pass=None, t_r=None,
+                 memory=Memory(cachedir=None), memory_level=0,
+                 n_jobs=1, verbose=0,
+                 ):
         self.mask = mask
         self.memory = memory
         self.memory_level = memory_level
@@ -159,11 +159,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         # First, learn the mask
         if not isinstance(self.mask, NiftiMultiMasker):
             self.mask_ = NiftiMultiMasker(mask=self.mask,
-                                         smoothing_fwhm=self.smoothing_fwhm,
-                                         target_affine=self.target_affine,
-                                         target_shape=self.target_shape,
-                                         memory=self.memory,
-                                         memory_level=self.memory_level)
+                                          smoothing_fwhm=self.smoothing_fwhm,
+                                          target_affine=self.target_affine,
+                                          target_shape=self.target_shape,
+                                          memory=self.memory,
+                                          memory_level=self.memory_level)
         else:
             self.mask_ = clone(self.mask)
             for param_name in ['target_affine', 'target_shape',
@@ -184,36 +184,38 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
-        subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                            delayed(session_pca)(niimg, self.mask_.mask_img_,
-                                    parameters,
-                                    n_components=self.n_components,
-                                    memory=self.memory,
-                                    ref_memory_level=self.memory_level,
-                                    confounds=confounds,
-                                    verbose=self.verbose
-                            )
-                            for niimg in niimgs)
 
+        subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+            delayed(session_pca)(
+                niimg,
+                self.mask_.mask_img_,
+                parameters,
+                n_components=self.n_components,
+                memory=self.memory,
+                ref_memory_level=self.memory_level,
+                confounds=confounds,
+                verbose=self.verbose
+            )
+            for niimg in niimgs)
         subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
         if len(niimgs) > 1:
             if not self.do_cca:
-                for subject_pca, subject_svd_val in zip(
-                                    subject_pcas, subject_svd_vals):
+                for subject_pca, subject_svd_val in \
+                        zip(subject_pcas, subject_svd_vals):
                     subject_pca *= subject_svd_val[:, np.newaxis]
-            data = np.empty(
-                    (len(niimgs) * self.n_components,
-                    subject_pcas[0].shape[1]), dtype=subject_pcas[0].dtype)
+            data = np.empty((len(niimgs) * self.n_components,
+                            subject_pcas[0].shape[1]),
+                            dtype=subject_pcas[0].dtype)
             for index, subject_pca in enumerate(subject_pcas):
                 if self.n_components > subject_pca.shape[0]:
                     raise ValueError('You asked for %i components.'
-                            'This is smaller than single-subject data'
-                            'size.')
+                                     'This is smaller than single-subject '
+                                     'data size.')
                 data[index * self.n_components:
-                            (index + 1) * self.n_components] = subject_pca
-            data, variance, _ = randomized_svd(data.T,
-                                    n_components=self.n_components)
+                     (index + 1) * self.n_components] = subject_pca
+            data, variance, _ = randomized_svd(
+                data.T, n_components=self.n_components)
             data = data.T
         else:
             data = subject_pcas[0]
