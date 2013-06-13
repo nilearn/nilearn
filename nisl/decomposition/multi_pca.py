@@ -21,11 +21,49 @@ from .._utils.cache_mixin import cache
 
 def session_pca(niimgs, mask_img, parameters,
                 n_components=20,
+                confounds=None,
                 ref_memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
-                confounds=None,
                 copy=True):
+    """Filter, mask and compute PCA on niimgs
+
+    This is an helper function whose first call `BaseMasker.filter_and_mask`
+    and then apply a PCA to reduce the number of time series.
+
+    Parameters
+    ----------
+    niimgs: list of Niimg
+        List of subject data
+
+    mask_img: Niimage
+        Mask to apply on the data
+
+    parameters: dictionary
+        Dictionary of parameters passed to `filter_and_mask`. Please see the
+        documentation of the `NiftiMasker` for more informations.
+
+    confounds: CSV file path or 2D matrix
+        This parameter is passed to signal.clean. Please see the
+        corresponding documentation for details.
+
+    n_components: integer, optional
+        Number of components to be extracted by the PCA
+
+    ref_memory_level: integer, optional
+        Integer indicating the level of memorization. The higher, the more
+        function calls are cached.
+
+    memory: joblib.Memory
+        Used to cache the function calls.
+
+    verbose: integer, optional
+        Indicate the level of verbosity
+
+    copy: boolean, optional
+        Whether or not data should be copied
+    """
+
     data, affine = cache(
         filter_and_mask, memory=memory, ref_memory_level=ref_memory_level,
         memory_level=2,
