@@ -158,25 +158,25 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             # single-subject list of 3D filenames
         # First, learn the mask
         if not isinstance(self.mask, NiftiMultiMasker):
-            self.mask_ = NiftiMultiMasker(mask=self.mask,
+            self.masker_ = NiftiMultiMasker(mask=self.mask,
                                           smoothing_fwhm=self.smoothing_fwhm,
                                           target_affine=self.target_affine,
                                           target_shape=self.target_shape,
                                           memory=self.memory,
                                           memory_level=self.memory_level)
         else:
-            self.mask_ = clone(self.mask)
+            self.masker_ = clone(self.mask)
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'memory', 'memory_level']:
-                if getattr(self.mask_, param_name) is not None:
+                if getattr(self.masker_, param_name) is not None:
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
-                setattr(self.mask_, param_name,
+                setattr(self.masker_, param_name,
                         getattr(self, param_name))
-        if self.mask_.mask is None:
-            self.mask_.fit(niimgs)
+        if self.masker_.mask is None:
+            self.masker_.fit(niimgs)
         else:
-            self.mask_.fit()
+            self.masker_.fit()
 
         parameters = get_params(NiftiMultiMasker, self)
         parameters['detrend'] = True
@@ -188,7 +188,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(session_pca)(
                 niimg,
-                self.mask_.mask_img_,
+                self.masker_.mask_img_,
                 parameters,
                 n_components=self.n_components,
                 memory=self.memory,
@@ -221,7 +221,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             data = subject_pcas[0]
         self.components_ = data
         # For the moment, store also the components_img
-        self.components_img_ = self.mask_.inverse_transform(data)
+        self.components_img_ = self.masker_.inverse_transform(data)
         return self
 
     def transform(self, niimgs, confounds=None):
@@ -238,7 +238,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         """
 
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.mask_.mask_img_,
+            self.components_img_, self.masker_.mask_img_,
             resampling_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
@@ -256,7 +256,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             Component signals to tranform back into voxel signals
         """
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.mask_.mask_img_,
+            self.components_img_, self.masker_.mask_img_,
             resampling_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 2D/ list of 2D data?

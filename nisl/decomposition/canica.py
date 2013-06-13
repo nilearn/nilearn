@@ -140,6 +140,6 @@ class CanICA(MultiPCA, CacheMixin):
         self.components_ = ica_maps
         # For the moment, store also the components_img
         self.components_img_ = \
-            self.mask_.inverse_transform(ica_maps)
+            self.masker_.inverse_transform(ica_maps)
 
         return self
