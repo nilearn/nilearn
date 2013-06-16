@@ -15,9 +15,12 @@ import sys
 import shutil
 import time
 import hashlib
-
+import re
+import glob
+import gzip
 import numpy as np
 from scipy import ndimage
+import gzip
 from sklearn.datasets.base import Bunch
 
 import nibabel
@@ -229,7 +232,6 @@ def _uncompress_file(file, delete_archive=True):
             z.close()
             processed = True
         elif ext == '.gz':
-            import gzip
             gz = gzip.open(file)
             out = open(filename, 'wb')
             shutil.copyfileobj(gz, out, 8192)
@@ -1211,3 +1213,227 @@ def load_harvard_oxford(atlas_name,
         new_label += 1
 
     return nibabel.Nifti1Image(regions, regions_img.get_affine())
+
+
+def fetch_spm_auditory_data(data_dir):
+    """Function to fetch SPM auditory single-subject data.
+
+    Parameters
+    ----------
+    data_dir: string
+        path of the data directory. Used to force data storage in a specified
+        location. If the data is already present there, then will simply
+        glob it.
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are:
+        - 'func': string list. Paths to functional images
+        - 'anat': string list. Path to anat image
+
+    """
+
+    # definition of consituent files of the dataset
+    SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
+                               for index in xrange(4, 100)]
+    SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
+
+    def _glob_spm_auditory_data(subject_dir):
+        """glob data from subject_dir.
+
+        """
+
+        if not os.path.exists(subject_dir):
+            return None
+
+        subject_data = {}
+        subject_data["subject_dir"] = subject_dir
+        for file_name in SPM_AUDITORY_DATA_FILES:
+            file_path = os.path.join(subject_dir, file_name)
+            if os.path.exists(file_path):
+                subject_data[file_name] = file_path
+            else:
+                print("%s missing from filelist!" % file_name)
+                return None
+
+        _subject_data = {}
+        _subject_data["func"] = sorted([subject_data[x]
+                                        for x in subject_data.keys()
+                                        if re.match("^fM00223_0\d\d\.img$",
+                                                    os.path.basename(x))])
+
+        _subject_data["anat"] = [subject_data[x] for x in subject_data.keys()
+                                 if re.match("^sM00223_002\.img$",
+                                             os.path.basename(x))][0]
+        return Bunch(**_subject_data)
+
+    # maybe data_dir already contains the data ?
+    data = _glob_spm_auditory_data(data_dir)
+    if not data is None:
+        return data
+
+    # No. Download the data
+    print("Data absent, downloading...")
+    url = "ftp://ftp.fil.ion.ucl.ac.uk/spm/data/MoAEpilot/MoAEpilot.zip"
+    archive_path = os.path.join(data_dir, os.path.basename(url))
+    _fetch_file(url, data_dir)
+    try:
+        _uncompress_file(archive_path)
+    except:
+        print("Archive corrupted, trying to download it again.")
+        return fetch_spm_auditory_data(data_dir)
+
+    return _glob_spm_auditory_data(data_dir)
+
+
+def fetch_fsl_feeds_data(data_dir, redownload=False):
+    """Function to fetch FSL FEEDS dataset (single-subject)
+
+    Parameters
+    ----------
+    data_dir: string
+        path of the data directory. Used to force data storage in a specified
+        location. If the data is already present there, then will simply
+        glob it.
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are:
+        - 'func': string list. Paths to functional images
+        - 'anat': string list. Path to anat image
+
+    """
+
+    FSL_FEEDS_DATA_FILES = ["fmri.nii.gz", "structural_brain.nii.gz"]
+
+    def _glob_fsl_feeds_data(subject_dir):
+        """glob data from subject_dir.
+
+        """
+
+        if not os.path.exists(subject_dir):
+            return None
+
+        subject_data = {}
+        subject_data["subject_dir"] = subject_dir
+        for file_name in FSL_FEEDS_DATA_FILES:
+            file_path = os.path.join(subject_dir, file_name)
+            if os.path.exists(file_path) or os.path.exists(
+                file_path.rstrip(".gz")):
+                file_name = re.sub("(?:\.nii\.gz|\.txt)", "", file_name)
+                subject_data[file_name] = file_path
+            else:
+                if not os.path.basename(subject_dir) == 'data':
+                    return _glob_fsl_feeds_data(os.path.join(subject_dir,
+                                                             'feeds/data'))
+                else:
+                    print "%s missing from filelist!" % file_name
+                    return None
+
+        _subject_data = {"func": os.path.join(subject_dir,
+                                              "fmri.nii.gz"),
+                         "anat": os.path.join(subject_dir,
+                                              "structural_brain.nii.gz")
+                         }
+
+        return Bunch(**_subject_data)
+
+    # maybe data_dir already contents the data ?
+    data = _glob_fsl_feeds_data(data_dir)
+    if not data is None:
+        return data
+
+    # download the data
+    print("Data absent, downloading...")
+    url = ("http://fsl.fmrib.ox.ac.uk/fsldownloads/oldversions/"
+           "fsl-4.1.0-feeds.tar.gz")
+    archive_path = os.path.join(data_dir, os.path.basename(url))
+    _fetch_file(url, data_dir)
+    try:
+        _uncompress_file(archive_path)
+    except:
+        print "Archive corrupted, trying to download it again."
+        os.remove(archive_path)
+        return fetch_fsl_feeds_data(data_dir)
+
+    return _glob_fsl_feeds_data(data_dir)
+
+
+def fetch_spm_multimodal_fmri_data(data_dir):
+    """Function to fetch SPM auditory single-subject data.
+
+    Parameters
+    ----------
+    data_dir: string
+        path of the data directory. Used to force data storage in a specified
+        location. If the data is already present there, then will simply
+        glob it.
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are:
+        - 'func1': string list. Paths to functional images for session 1
+        - 'func2': string list. Paths to functional images for session 2
+        - 'trials_ses1': string list. Path to onsets file for session 1
+        - 'trials_ses2': string list. Path to onsets file for session 2
+        - 'anat': string. Path to anat file
+
+    """
+
+    def _glob_spm_multimodal_fmri_data(subject_dir):
+        """glob data from subject_dir.
+
+        """
+
+        _subject_data = {}
+        for s in xrange(2):
+            # glob func data for session s + 1
+            session_func = sorted(glob.glob(
+                    os.path.join(
+                        subject_dir,
+                        ("fMRI/Session%i/fMETHODS-000%i-*-01.img" % (
+                                s + 1, s + 5)))))
+            if len(session_func) < 390:
+                return None
+            else:
+                _subject_data['func%i' % (s + 1)] = session_func
+
+            # glob trials .mat file
+            sess_trials = os.path.join(
+                subject_dir,
+                "fMRI/trials_ses%i.mat" % (s + 1))
+            if not os.path.isfile(sess_trials):
+                return None
+            else:
+                _subject_data['trails_ses%i' % (s + 1)] = sess_trials
+
+        # glob for anat data
+        anat = os.path.join(subject_dir, "sMRI/smri.img")
+        if not os.path.isfile(anat):
+            return None
+        else:
+            _subject_data["anat"] = anat
+
+        return Bunch(**_subject_data)
+
+    # maybe data_dir already contains the data ?
+    data = _glob_spm_multimodal_fmri_data(data_dir)
+    if not data is None:
+        return data
+
+    # No. Download the data
+    print("Data absent, downloading...")
+    urls = [
+        # fmri
+        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
+        "multimodal_fmri.zip"),
+
+        # structural
+        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
+         "multimodal_smri.zip")
+        ]
+
+    for url in urls:
+        archive_path = os.path.join(data_dir, os.path.basename(url))
+        _fetch_file(url, data_dir)
+        try:
+            _uncompress_file(archive_path)
+        except:
+            print("Archive corrupted, trying to download it again.")
+            return fetch_spm_multimodal_fmri_data(data_dir)
+
+    return _glob_spm_multimodal_fmri_data(data_dir)
