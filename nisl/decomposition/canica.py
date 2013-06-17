@@ -167,16 +167,16 @@ class CanICA(MultiPCA, CacheMixin):
             ratio = self.threshold
         elif self.threshold == 'auto':
             ratio = 1.
+        elif self.threshold is not None:
+            raise ValueError("Threshold must be None, "
+                             "'auto' or float. You provided %s." %
+                             str(self.threshold))
         if ratio is not None:
             raveled = np.abs(ica_maps).ravel()
             argsort = np.argsort(raveled)
             n_voxels = ica_maps[0].size
             threshold = raveled[argsort[- ratio * n_voxels]]
             ica_maps[np.abs(ica_maps) < threshold] = 0.
-        elif self.threshold is not None:
-            raise ValueError("Threshold must be None, "
-                             "'auto' or float. You provided %s." %
-                             str(self.threshold))
         self.components_ = ica_maps
         # XXX: should we store the unmasked components ?
         self.components_img_ = \
