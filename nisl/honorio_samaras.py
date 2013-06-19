@@ -10,12 +10,21 @@ Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
 # Authors: Philippe Gervais
 # License: simplified BSD
 
+import pdb
+
 import warnings
+import sys
 
 import numpy as np
+import scipy
 import scipy.optimize
 
 from sklearn.utils.extmath import fast_logdet
+
+
+def symmetrize(M):
+    M[...] = M + M.T
+    M[...] /= 2.
 
 
 def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
@@ -57,6 +66,7 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
 
     n_task = emp_covs.shape[2]
     for k in xrange(n_task):
+        symmetrize(emp_covs[..., k])
         assert_spd(emp_covs[..., k])
 
     # TODO: low robustness (?) with inverse computation.
@@ -91,8 +101,17 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
                 Winv = np.ndarray(shape=W.shape, dtype=np.float)
                 for k in xrange(W.shape[2]):
                     # stack of W^-1(k)
+
+# scipy.linalg.pinvh does no exist in scipy 0.7.0.
+#                    Winv[..., k], rank = \
+#                        scipy.linalg.pinvh(W[..., k], return_rank=True)
                     Winv[..., k] = np.linalg.inv(W[..., k])
+                    symmetrize(Winv[..., k])
                     if debug:
+#                        assert(rank == Winv[..., k].shape[0])
+                        np.testing.assert_almost_equal(
+                            np.dot(Winv[..., k], W[..., k]),
+                            np.eye(Winv[..., k].shape[0]), decimal=12)
                         assert_submatrix(omega[..., k], W[..., k], p)
             else:
                 # Update W and Winv
@@ -103,8 +122,11 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
                     update_submatrix(omega[..., k], W[..., k], Winv[..., k], p)
                     if debug:
 #                        assert_submatrix(omega[..., k], W[..., k], p)
-                        assert_spd(W[..., k], debug=debug)
-                        assert_spd(Winv[..., k], debug=debug)
+                        np.testing.assert_almost_equal(
+                            np.dot(Winv[..., k], W[..., k]),
+                            np.eye(Winv[..., k].shape[0]), decimal=12)
+                    assert_spd(W[..., k], debug=debug)
+                    assert_spd(Winv[..., k], debug=debug)
                 if debug:
                     np.testing.assert_almost_equal(omega_orig, omega)
 
@@ -156,12 +178,25 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
                     l = scipy.optimize.newton(
                         quadratic_trust_region, 0,
                         fprime=quadratic_trust_region_deriv,
-                        args=(c, q, rho))
+                        args=(c, q, rho), maxiter=50)
                     remainder = quadratic_trust_region(l, c, q, rho)
-                    # FIXME: there's something wrong with this test.
-                    if abs(remainder) > 1e-4:
-                        warnings.warn("Newton-Raphson step did not converge. "
-                                      "remainder: %f" % remainder)
+
+                    if abs(remainder) > 0.1:  # 1e-4
+                        warnings.warn("Newton-Raphson step did not converge.\n"
+                                      "remainder: {0:f} l: {1:f}, rho: {2:f}, "
+                                      "c2: {3:f}".format(remainder, l, rho, c2)
+                                      )
+                        all_l = np.linspace(-1, 100, 500)
+                        qtr = []
+                        pdb.set_trace()
+                        for l in all_l:
+                            qtr.append(quadratic_trust_region(l, c, q, rho))
+                        import pylab as pl
+                        pl.plot(all_l, qtr)
+                        pl.grid()
+                        pl.show()
+                        sys.exit(0)
+
                     if debug:
                         assert(l >= 0)
                     y[:, m] = (l * c) / (1. + l * q)  # x*
@@ -321,6 +356,7 @@ def update_submatrix(full, sub, sub_inv, n):
     sub[:n, n:] = full[:n, n + 1:]
     sub[n:, :n] = full[n + 1:, :n]
     sub_inv[...] = np.linalg.inv(sub)
+    symmetrize(sub_inv)
 
 
 def update_submatrix2(full, sub, sub_inv, p):
@@ -491,9 +527,9 @@ def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
 
 def assert_spd(M, debug=True):
     if debug:
-        np.testing.assert_almost_equal(M, M.T)
-        assert(np.all(np.isreal(np.linalg.eigvals(M))))
-        assert(np.linalg.eigvals(M).min() > 0)
+        np.testing.assert_almost_equal(M, M.T, decimal=15)
+        eigvalsh = np.linalg.eigvalsh(M)
+        assert eigvalsh.min() > 0, eigvalsh
 
 
 if __name__ == "__main__":
