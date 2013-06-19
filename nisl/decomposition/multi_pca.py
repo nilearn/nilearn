@@ -209,11 +209,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             self.masker_ = clone(self.mask)
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'memory', 'memory_level']:
-                if getattr(self.masker_, param_name) is not None:
-                    warnings.warn('Parameter %s of the masker overriden'
-                                  % param_name)
-                setattr(self.masker_, param_name,
-                        getattr(self, param_name))
+                if getattr(self, param_name) is not None:
+                    warnings.warn('You passed a NiftiMultiMasker instance '
+                                  'as mask. Parameter %s will be consequently '
+                                  'ignored.' % param_name)
         if self.masker_.mask is None:
             self.masker_.fit(niimgs)
         else:
