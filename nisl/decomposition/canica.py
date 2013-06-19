@@ -7,6 +7,7 @@ CanICA
 import distutils
 
 import numpy as np
+from scipy.stats import scoreatpercentile
 
 import sklearn
 from sklearn.decomposition import fastica
@@ -172,11 +173,11 @@ class CanICA(MultiPCA, CacheMixin):
                              "'auto' or float. You provided %s." %
                              str(self.threshold))
         if ratio is not None:
-            raveled = np.abs(ica_maps).ravel()
-            argsort = np.argsort(raveled)
-            n_voxels = ica_maps[0].size
-            threshold = raveled[argsort[- ratio * n_voxels]]
-            ica_maps[np.abs(ica_maps) < threshold] = 0.
+            abs_ica_maps = np.abs(ica_maps)
+            threshold = scoreatpercentile(
+                    abs_ica_maps,
+                    100. - (100. / len(ica_maps)) * ratio)
+            ica_maps[abs_ica_maps < threshold] = 0.
         self.components_ = ica_maps
 
         return self
