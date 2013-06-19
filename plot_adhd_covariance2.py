@@ -80,30 +80,32 @@ def covariance_matrix(subject_n):
 
 
 if __name__ == "__main__":
-    n_subjects = 15
+    n_subjects = 2
     data = []
-    rho = 100
+    rho = 0.1
 #    rho = 20
     mem = joblib.Memory(".")
 
-    # FIXME: Normalize covariance matrix
     for n in xrange(n_subjects):
         data.append(mem.cache(covariance_matrix)(n))
 
     emp_covs, n_samples = zip(*data)
 
+    # Normalize covariance matrices
     for cov, n in zip(emp_covs, n_samples):
         cov /= n
         np.testing.assert_almost_equal(np.diag(cov), np.ones(cov.shape[0]))
 
     print("-- Computing covariance matrices ...")
     from nisl.honorio_samaras import honorio_samaras
-    est_precs, all_crit = honorio_samaras(rho, emp_covs, n_samples, n_iter=10,
+    est_precs, all_crit = honorio_samaras(emp_covs, rho, n_samples,
+                                          normalize_n_samples=True,
+                                          n_iter=5,
                                           debug=True, verbose=1)
 
     for n, value in enumerate(zip(emp_covs,
                                   np.rollaxis(est_precs, -1))):
         emp_cov, prec = value
-        plot_matrices(emp_cov, -prec, title="honorio samaras", subject_n=n)
+        plot_matrices(emp_cov, -prec, title="Honorio Samaras", subject_n=n)
 
     pl.show()

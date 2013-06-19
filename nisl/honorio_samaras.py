@@ -27,23 +27,35 @@ def symmetrize(M):
     M[...] /= 2.
 
 
-def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
-                    debug=False):
+def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
+                    debug=False, normalize_n_samples=True):
     """
     Parameters
     ==========
     rho: float
-        regularization parameter
+        regularization parameter. With normalized covariances matrices and
+        number of samples, sensible values lie in the [0, 1] range.
 
     covariances: list of numpy.ndarray
         covariance estimates. All shapes must be identical. Must be positive
-        semidefinite.
+        semidefinite. Normalizing these matrices (e.g. having ones on the
+        diagonal) is not required, but recommended.
 
-    n_samples: list of int
-        number of samples for each task. len(n_samples) == len(sigma)
+    n_samples: array-like or None
+        number of samples for each task. len(n_samples) == len(emp_covs)
+        if n_samples is None, then the number of samples is assumed to be
+        identical for each task.
 
     n_iter: int
         number of iteration
+
+    debug: bool
+        if True, perform checks during computation. It can help finding
+        numerical instabilities.
+
+    normalize_n_samples: bool
+        if True, divides n_samples by the maximum value. This improves
+        numerical stability a lot.
 
     Returns
     =======
@@ -54,9 +66,9 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
     # Test input arguments
     # FIXME: Check that all covariances have the same size.
     # FIXME: check consistency between matrix sizes and task number.
-    assert(rho > 0)
-
-    n_samples = np.asarray(n_samples)
+    if rho < 0:
+        raise ValueError("Regularization parameter rho must be positive.\n"
+                         "You provided: {0}".format(str(rho)))
 
     # allow passing covariances as a 3D array, not a list.
     emp_covs = np.dstack(emp_covs)
@@ -64,33 +76,40 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
 
     assert(emp_covs.shape[0] == emp_covs.shape[1])
 
-    n_task = emp_covs.shape[2]
-    for k in xrange(n_task):
+    if n_samples is not None:
+        n_samples = np.asarray(n_samples, dtype=np.float)
+    else:
+        n_samples = np.ones(emp_covs.shape[-1])
+    if normalize_n_samples:
+        n_samples /= n_samples.max()
+
+    n_tasks = emp_covs.shape[2]
+    for k in xrange(n_tasks):
         symmetrize(emp_covs[..., k])
         assert_spd(emp_covs[..., k])
 
     # TODO: low robustness (?) with inverse computation.
     omega = np.ndarray(shape=emp_covs.shape, dtype=np.float)
-    for k in xrange(n_task):
+    for k in xrange(n_tasks):
         omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
 
     # debugging
     all_crit = []
 
     # Preallocate arrays
-    y = np.ndarray(shape=(n_task, n_var - 1), dtype=np.float)
-    u = np.ndarray(shape=(n_task, n_var - 1))
-    y_1 = np.ndarray(shape=(n_task, n_var - 2))
-    h_12 = np.ndarray(shape=(n_task, n_var - 2))
-    q = np.ndarray(shape=(n_task,))
-    c = np.ndarray(shape=(n_task,))
+    y = np.ndarray(shape=(n_tasks, n_var - 1), dtype=np.float)
+    u = np.ndarray(shape=(n_tasks, n_var - 1))
+    y_1 = np.ndarray(shape=(n_tasks, n_var - 2))
+    h_12 = np.ndarray(shape=(n_tasks, n_var - 2))
+    q = np.ndarray(shape=(n_tasks,))
+    c = np.ndarray(shape=(n_tasks,))
     W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
                           omega.shape[2]),
                    dtype=np.float)
     Winv = np.ndarray(shape=W.shape, dtype=np.float)
 
     for n in xrange(n_iter):
-        if verbose > 0:
+        if verbose >= 1:
             print("\n-- Starting {iter_n:d}-th iteration...".format(iter_n=n))
 
         for p in xrange(n_var):
@@ -106,7 +125,6 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
 #                    Winv[..., k], rank = \
 #                        scipy.linalg.pinvh(W[..., k], return_rank=True)
                     Winv[..., k] = np.linalg.inv(W[..., k])
-                    symmetrize(Winv[..., k])
                     if debug:
 #                        assert(rank == Winv[..., k].shape[0])
                         np.testing.assert_almost_equal(
@@ -118,7 +136,7 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
                 if debug:
                     omega_orig = omega.copy()
 
-                for k in xrange(n_task):
+                for k in xrange(n_tasks):
                     update_submatrix(omega[..., k], W[..., k], Winv[..., k], p)
                     if debug:
 #                        assert_submatrix(omega[..., k], W[..., k], p)
@@ -138,7 +156,7 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
             u[:, :p] = emp_covs[:p, p, :].T
             u[:, p:] = emp_covs[p + 1:, p, :].T
 
-            if verbose > 1:
+            if verbose >= 2:
                 print("\n-- entering coordinate descent loop (%d)" % p)
 
             for m in xrange(n_var - 1):
@@ -156,7 +174,7 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
                 y_1[:, m:] = y[:, m + 1:]
 
                 # Compute c
-                for k in xrange(n_task):
+                for k in xrange(n_tasks):
                     c[k] = - n_samples[k] * (
                         emp_covs[p, p, k] * np.dot(h_12[k, :], y_1[k, :])
                         + u[k, m]
@@ -209,7 +227,7 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
             omega[p, :p, :] = y[:, :p].T
             omega[p, p + 1:, :] = y[:, p:].T
 
-            for k in xrange(n_task):
+            for k in xrange(n_tasks):
                 omega[p, p, k] = 1. / emp_covs[p, p, k] + np.dot(
                     np.dot(y[k, :], Winv[..., k]), y[k, :])
 
@@ -217,18 +235,18 @@ def honorio_samaras(rho, emp_covs, n_samples, n_iter=10, verbose=0,
                 if debug:
                     assert_spd(omega[..., k], debug=debug)
 
-            criterion = display_criterion(n_task, n_samples, rho,
+            criterion = display_criterion(n_tasks, n_samples, rho,
                                           omega, emp_covs,
-                                          display=verbose > 0)
+                                          display=verbose >= 1)
             all_crit.append(criterion)
 
     return omega, all_crit
 
 
-def display_criterion(n_task, n_samples, rho, omega, emp_covs, display=True):
+def display_criterion(n_tasks, n_samples, rho, omega, emp_covs, display=True):
     # Compute optimization criterion (for display)
     ll = 0  # log-likelihood
-    for k in xrange(n_task):
+    for k in xrange(n_tasks):
         t = fast_logdet(omega[..., k])
         t -= (omega[..., k] * emp_covs[..., k]).sum()
         ll += n_samples[k] * t
@@ -244,10 +262,10 @@ def display_criterion(n_task, n_samples, rho, omega, emp_covs, display=True):
     return criterion
 
 
-def display_criterion_2(n_task, n_samples, rho, omega, emp_covs,
+def display_criterion_2(n_tasks, n_samples, rho, omega, emp_covs,
                         y, u, Winv, p, display=True):
     criterion = 0
-    for k in xrange(n_task):
+    for k in xrange(n_tasks):
         t = 0
         t += np.log(omega[p, p, k]
                     - np.dot(np.dot(y[k, :], Winv[..., k]), y[k, :]))
@@ -446,7 +464,7 @@ def update_vectors(full, n):
     return h, v
 
 
-def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
+def generate_multi_task_gg_model(n_tasks=5, n_var=10, density=0.2,
                                  min_eigenvalue=0.1,
                                  min_samples=30, max_samples=50,
                                  rand_gen=np.random.RandomState(0)):
@@ -454,7 +472,7 @@ def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
 
     Parameters
     ==========
-    n_task: int
+    n_tasks: int
         number of tasks
 
     n_var: int
@@ -475,7 +493,7 @@ def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
     =======
     tasks: list of signals
         tasks[n] is the signals for task n. They are provided as a numpy array
-        with shape (sample number, n_var). len(tasks) == n_task
+        with shape (sample number, n_var). len(tasks) == n_tasks
 
     topology: numpy.array
         binary array giving the graph topology used for generating covariances
@@ -491,7 +509,7 @@ def generate_multi_task_gg_model(n_task=5, n_var=10, density=0.2,
 
     # Generate edges weights on precision matrices
     precisions = []
-    for _ in xrange(n_task):
+    for _ in xrange(n_tasks):
 
         while True:
             weights = rand_gen.uniform(low=-.1, high=1., size=n_var * n_var
@@ -536,7 +554,7 @@ if __name__ == "__main__":
     display = True
 
     signals, precisions, topology = generate_multi_task_gg_model(density=0.3,
-                                                           n_task=5, n_var=10,
+                                                           n_tasks=5, n_var=10,
                                              min_samples=100, max_samples=101)
     emp_covs = [np.dot(s.T, s) / len(s) for s in signals]
 
