@@ -60,15 +60,18 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
     ==========
     ensure_estimator: boolean, default: True
         If true, find the enclosing object deriving from 'BaseEstimator'
-    stack_level: integer, default 2
+    stack_level: integer, default 3
         If ensure_estimator is not True, stack_level quantifies the
-        number of frame we will go up.
+        number of frame we will go up. We stop at the first frame that holds
+        a `self` local.
     """
     try:
         frame = inspect.currentframe()
         if not ensure_estimator:
             for _ in range(stack_level):
                 frame = frame.f_back
+                if 'self' in frame.f_locals:
+                    break
         else:
             while True:
                 frame = frame.f_back
