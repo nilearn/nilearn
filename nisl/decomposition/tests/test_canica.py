@@ -1,11 +1,13 @@
 """Test CanICA"""
+import nibabel
 import numpy as np
-from numpy.testing import assert_array_equal
-from nisl.decomposition import CanICA
+
+from nisl.decomposition.canica import CanICA
 
 
 def test_canica_square_img():
-    shape = (20, 20)
+    shape = (20, 20, 1)
+    affine = np.eye(4)
     rng = np.random.RandomState(0)
 
     # Create two images with "activated regions"
@@ -33,18 +35,19 @@ def test_canica_square_img():
     for i in range(8):
         this_data = np.dot(rng.normal(size=(40, 4)), components)
         this_data += .01 * rng.normal(size=this_data.shape)
-        data.append(this_data)
+        # Get back into 3D for CanICA
+        this_data = np.reshape(this_data, (40,) + shape)
+        this_data = np.rollaxis(this_data, 0, 4)
+        data.append(nibabel.Nifti1Image(this_data, affine))
 
-    canica = CanICA(n_components=4, random_state=rng)
-    sparsity = np.infty
-    for rs in range(50):
-        canica.random_state = np.random.RandomState(rs)
-        canica.fit(data)
-        maps_ = canica.maps_
-        sparsity_ = np.sum(np.abs(maps_), 1).max()
-        if sparsity_ < sparsity:
-            sparsity = sparsity_
-            maps = maps_
+    mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
+
+    # We do a large number of inits to be sure to find the good match
+    canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
+                    smoothing_fwhm=0., n_init=50)
+    canica.fit(data)
+    maps = canica.masker_.inverse_transform(canica.components_).get_data()
+    maps = np.rollaxis(maps, 3, 0)
 
     # FIXME: This could be done more efficiently, e.g. thanks to hungarian
     # Find pairs of matching components
@@ -54,9 +57,9 @@ def test_canica_square_img():
         map = np.abs(maps[i]) > np.abs(maps[i]).max() * 0.95
         for j in indices:
             ref_map = components[j].ravel() != 0
-            if np.all(map == ref_map):
+            if np.all(map.ravel() == ref_map):
                 indices.remove(j)
-                break;
+                break
         else:
             assert False, "Non matching component"
 

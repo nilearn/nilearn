@@ -278,12 +278,12 @@ def test_signal_extraction_with_maps_and_labels():
     mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
     mask_img = nibabel.Nifti1Image(mask_data.astype(np.int8),
                                    labels_img.get_affine())
-    maps_signals, maps_labels = \
-                  region.img_to_signals_maps(fmri_img, maps_img,
-                                             mask_img=mask_img)
     labels_signals, labels_labels =\
                     region.img_to_signals_labels(fmri_img, labels_img,
                                                  mask_img=mask_img)
+    maps_signals, maps_labels = \
+                  region.img_to_signals_maps(fmri_img, maps_img,
+                                             mask_img=mask_img)
 
     np.testing.assert_almost_equal(maps_signals, labels_signals)
     assert_true(maps_signals.shape[1] == n_regions)

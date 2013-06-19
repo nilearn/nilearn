@@ -121,6 +121,7 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
                  ):
         # Mask is provided or computed
         self.mask = mask
+
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.detrend = detrend
@@ -167,22 +168,22 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
             for niimg in niimgs:
                 # Note that data is not loaded into memory at this stage
                 # if niimg is a string
-                data.append(_utils.check_niimgs(niimg,
-                                                          accept_3d=True))
+                data.append(_utils.check_niimgs(niimg, accept_3d=True))
 
             self.mask_img_ = self._cache(
-                            masking.compute_multi_epi_mask,
-                            memory_level=1,
-                            ignore=['n_jobs', 'verbose'])(
-                                niimgs,
-                                connected=self.mask_connected,
-                                opening=self.mask_opening,
-                                lower_cutoff=self.mask_lower_cutoff,
-                                upper_cutoff=self.mask_upper_cutoff,
-                                target_affine=self.target_affine,
-                                target_shape=self.target_shape,
-                                n_jobs=self.n_jobs,
-                                verbose=(self.verbose - 1))
+                        masking.compute_multi_epi_mask,
+                        memory_level=1,
+                        ignore=['n_jobs', 'verbose', 'memory'])(
+                            niimgs,
+                            connected=self.mask_connected,
+                            opening=self.mask_opening,
+                            lower_cutoff=self.mask_lower_cutoff,
+                            upper_cutoff=self.mask_upper_cutoff,
+                            target_affine=self.target_affine,
+                            target_shape=self.target_shape,
+                            n_jobs=self.n_jobs,
+                            memory=self.memory,
+                            verbose=(self.verbose - 1))
         else:
             if niimgs is not None:
                 warnings.warn('[%s.fit] Generation of a mask has been'
@@ -200,9 +201,11 @@ class NiftiMultiMasker(BaseMasker, CacheMixin):
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
-            copy=(self.target_affine is not None and
-                  self.target_shape is not None))
-
+            copy=False)
+        if self.target_affine is not None:
+            self.affine_ = self.target_affine
+        else:
+            self.affine_ = self.mask_img_.get_affine()
         return self
 
     def transform(self, niimgs, confounds=None):

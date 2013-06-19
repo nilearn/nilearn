@@ -16,10 +16,10 @@ from ..masking import compute_epi_mask, compute_multi_epi_mask, \
 
 from ..testing import write_tmp_imgs
 
-np_version = distutils.version.LooseVersion(np.version.short_version).version
+np_version = distutils.version.LooseVersion(np.version.full_version).version
 
 
-def test_mask():
+def test_compute_epi_mask():
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
@@ -29,18 +29,17 @@ def test_mask():
                              opening=False)
     # With an array with no zeros, exclude_zeros should not make
     # any difference
-    yield np.testing.assert_array_equal, mask1.get_data(), mask2.get_data()
+    np.testing.assert_array_equal(mask1.get_data(), mask2.get_data())
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30))
     mean_image2[:9, :9] = mean_image.get_data()
     mean_image2 = Nifti1Image(mean_image2, np.eye(4))
     mask3 = compute_epi_mask(mean_image2, exclude_zeros=True,
                              opening=False)
-    yield np.testing.assert_array_equal, \
-        mask1.get_data(), mask3.get_data()[:9, :9]
+    np.testing.assert_array_equal(mask1.get_data(), mask3.get_data()[:9, :9])
     # However, without exclude_zeros, it does
     mask3 = compute_epi_mask(mean_image2, opening=False)
-    yield assert_false, np.allclose(mask1.get_data(), mask3.get_data()[:9, :9])
+    assert_false(np.allclose(mask1.get_data(), mask3.get_data()[:9, :9]))
 
 
 def test__smooth_array():
@@ -100,6 +99,7 @@ def test_apply_mask():
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     mask = np.ones((40, 40, 40))
+    full_mask = np.zeros((40, 40, 40))
     for create_files in (False, True):
         for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
                        np.diag((.5, 1, .5, 1))):
@@ -125,16 +125,25 @@ def test_apply_mask():
     data[10, 10, 10] = np.NaN
     data_img = Nifti1Image(data, affine)
     mask_img = Nifti1Image(mask, affine)
+    full_mask_img = Nifti1Image(full_mask, affine)
     series = masking.apply_mask(data_img, mask_img, smoothing_fwhm=9)
     assert_true(np.all(np.isfinite(series)))
 
     # Check data shape and affine
     assert_raises(ValueError, masking.apply_mask,
-                  Nifti1Image(data, affine),
-                  Nifti1Image(mask[20, ...], affine))
+                  data_img, Nifti1Image(mask[20, ...], affine))
     assert_raises(ValueError, masking.apply_mask,
-                  Nifti1Image(data, affine),
-                  Nifti1Image(mask, affine / 2.))
+                  data_img, Nifti1Image(mask, affine / 2.))
+    # Check that full masking raises error
+    assert_raises(ValueError, masking.apply_mask,
+                  data_img, full_mask_img)
+    # Check weird values in data
+    mask[10, 10, 10] = 2
+    assert_raises(ValueError, masking.apply_mask,
+                  data_img, Nifti1Image(mask, affine))
+    mask[15, 15, 15] = 3
+    assert_raises(ValueError, masking.apply_mask,
+                  Nifti1Image(data, affine), mask_img)
 
 
 def test_unmask():

@@ -54,8 +54,15 @@ def _repr_niimgs(niimgs):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
     # Nibabel objects have a 'get_filename'
     try:
-        return "%s('%s')" % (niimgs.__class__.__name__,
-                             niimgs.get_filename())
+        filename = niimgs.get_filename()
+        if filename is not None:
+            return "%s('%s')" % (niimgs.__class__.__name__,
+                                filename)
+        else:
+            return "%s(\nshape=%s,\naffine=%s\n)" % \
+                   (niimgs.__class__.__name__,
+                    repr(_get_shape(niimgs)),
+                    repr(niimgs.get_affine()))
     except:
         pass
     return repr(niimgs)
@@ -108,6 +115,8 @@ def check_niimg(niimg):
     if isinstance(niimg, basestring):
         # data is a filename, we load it
         result = nibabel.load(niimg)
+    elif hasattr(niimg, "__iter__"):
+        return concat_niimgs(niimg)
     else:
         # it is an object, it should have get_data and get_affine methods
         if not is_a_niimg(niimg):
@@ -238,4 +247,3 @@ def check_niimgs(niimgs, accept_3d=False):
     else:
         niimg = concat_niimgs(niimgs)
     return niimg
-

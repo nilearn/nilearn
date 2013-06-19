@@ -6,7 +6,6 @@ This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
 
-import numpy as np
 import pylab as pl
 import matplotlib
 

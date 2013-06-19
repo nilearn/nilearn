@@ -9,99 +9,128 @@ import warnings
 import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.externals.joblib import Memory
 from nibabel import Nifti1Image
 
 from .. import masking
 from .. import resampling
 from .. import signal
 from .. import _utils
-from .._utils import CacheMixin
+from .._utils.cache_mixin import CacheMixin, cache
+from .._utils.class_inspect import enclosing_scope_name, get_params
 
 
-def _to_nifti(X, affine):
-    if isinstance(X, np.ndarray):
-        return Nifti1Image(X, affine)
-    for index, x in enumerate(X):
-        X[index] = _to_nifti(x, affine)
-    return X
+def filter_and_mask(niimgs, mask_img_,
+                    parameters,
+                    ref_memory_level=0,
+                    memory=Memory(cachedir=None),
+                    verbose=0,
+                    confounds=None,
+                    copy=True):
+    # If we have a string (filename), we won't need to copy, as
+    # there will be no side effect
+    if isinstance(niimgs, basestring):
+        copy = False
+
+    if verbose > 0:
+        class_name = enclosing_scope_name(stack_level=2)
+
+    # Resampling: allows the user to change the affine, the shape or both
+    if verbose > 1:
+        print("[%s] Resampling" % class_name)
+
+    niimgs = cache(resampling.resample_img, memory, ref_memory_level,
+                   memory_level=2, ignore=['copy'])(
+                       niimgs,
+                       target_affine=parameters['target_affine'],
+                       target_shape=parameters['target_shape'],
+                       copy=copy)
+
+    # Load data (if filenames are given, load them)
+    if verbose > 0:
+        print("[%s] Loading data from %s" % (
+            class_name,
+            _utils._repr_niimgs(niimgs)[:200]))
+
+    niimgs = _utils.check_niimgs(niimgs)
+
+    # Get series from data with optional smoothing
+    if verbose > 1:
+        print("[%s] Masking and smoothing"
+              % class_name)
+    data = masking.apply_mask(niimgs, mask_img_,
+                              smoothing_fwhm=parameters['smoothing_fwhm'])
+
+    # Temporal
+    # ========
+    # Detrending (optional)
+    # Filtering
+    # Confounds removing (from csv file or numpy array)
+    # Normalizing
+
+    if verbose > 1:
+        print("[%s] Cleaning signal" % class_name)
+    if not 'sessions' in parameters or parameters['sessions'] is None:
+        clean_memory_level = 2
+        if (parameters['high_pass'] is not None
+                and parameters['low_pass'] is not None):
+            clean_memory_level = 4
+
+        data = cache(signal.clean, memory, ref_memory_level,
+                     memory_level=clean_memory_level)(
+                         data,
+                         confounds=confounds, low_pass=parameters['low_pass'],
+                         high_pass=parameters['high_pass'],
+                         t_r=parameters['t_r'],
+                         detrend=parameters['detrend'],
+                         standardize=parameters['standardize'])
+    else:
+        sessions = parameters['sessions']
+        for s in np.unique(sessions):
+            if confounds is not None:
+                confounds = confounds[sessions == s]
+            data[:, sessions == s] = \
+                cache(signal.clean, memory, ref_memory_level, memory_level=2)(
+                    data[:, sessions == s],
+                    confounds=confounds,
+                    low_pass=parameters['low_pass'],
+                    high_pass=parameters['high_pass'],
+                    t_r=parameters['t_r'],
+                    detrend=parameters['detrend'],
+                    standardize=parameters['standardize']
+                )
+
+    # For _later_: missing value removal or imputing of missing data
+    # (i.e. we want to get rid of NaNs, if smoothing must be done
+    # earlier)
+    # Optionally: 'doctor_nan', remove voxels with NaNs, other option
+    # for later: some form of imputation
+
+    return data, niimgs.get_affine()
 
 
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
 
-    def transform_single_niimgs(self, niimgs, sessions=None,
-                                confounds=None, copy=True):
+    def transform_single_niimgs(self, niimgs, confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fit. '
-                "You must call fit() before calling transform()."
-                % self.__class__.__name__)
-
-        # Load data (if filenames are given, load them)
-        if self.verbose > 0:
-            print "[%s.transform] Loading data from %s" % (
-                self.__class__.__name__,
-                _utils._repr_niimgs(niimgs)[:200])
-
-        # If we have a string (filename), we won't need to copy, as
-        # there will be no side effect
-        if isinstance(niimgs, basestring):
-            copy = False
-
-        niimgs = _utils.check_niimgs(niimgs)
-
-        # Resampling: allows the user to change the affine, the shape or both
-        if self.verbose > 1:
-            print "[%s.transform] Resampling" % self.__class__.__name__
-        niimgs = self._cache(resampling.resample_img, memory_level=2)(
-            niimgs,
-            target_affine=self.target_affine,
-            target_shape=self.target_shape,
-            copy=copy)
-
-        # Get series from data with optional smoothing
-        if self.verbose > 1:
-            print "[%s.transform] Masking and smoothing" \
-                % self.__class__.__name__
-        data = masking.apply_mask(niimgs, self.mask_img_,
-                                  smoothing_fwhm=self.smoothing_fwhm)
-
-        # Temporal
-        # ========
-        # Detrending (optional)
-        # Filtering
-        # Confounds removing (from csv file or numpy array)
-        # Normalizing
-
-        if self.verbose > 1:
-            print "[%s.transform] Cleaning signal" % self.__class__.__name__
-        if sessions is None:
-            data = self._cache(signal.clean, memory_level=2)(
-                data,
-                confounds=confounds, low_pass=self.low_pass,
-                high_pass=self.high_pass, t_r=self.t_r,
-                detrend=self.detrend,
-                standardize=self.standardize)
-        else:
-            for s in np.unique(sessions):
-                if confounds is not None:
-                    confounds = confounds[sessions == s]
-                data[:, sessions == s] = self._cache(signal.clean,
-                                                    memory_level=2)(
-                    data[:, sessions == s],
-                    confounds=confounds,
-                    low_pass=self.low_pass,
-                    high_pass=self.high_pass, t_r=self.t_r,
-                    detrend=self.detrend,
-                    standardize=self.standardize)
-
-        # For _later_: missing value removal or imputing of missing data
-        # (i.e. we want to get rid of NaNs, if smoothing must be done
-        # earlier)
-        # Optionally: 'doctor_nan', remove voxels with NaNs, other option
-        # for later: some form of imputation
-
-        self.affine_ = niimgs.get_affine()
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
+        from .nifti_masker import NiftiMasker
+        params = get_params(NiftiMasker, self)
+        data, affine = \
+            self._cache(filter_and_mask, memory_level=1,
+                        ignore=['verbose', 'memory', 'copy'])(
+                            niimgs, self.mask_img_,
+                            params,
+                            ref_memory_level=self.memory_level,
+                            memory=self.memory,
+                            verbose=self.verbose,
+                            confounds=confounds,
+                            copy=copy
+                        )
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
