@@ -45,6 +45,3 @@ def test_multi_pca():
 
     # Smoke test the transform and inverse_transform
     multi_pca.inverse_transform(multi_pca.transform(data[-2:]))
-
-
-

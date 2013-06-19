@@ -51,10 +51,10 @@ n_components = 20
 canica = CanICA(n_components=n_components,
                 smoothing_fwhm=6., target_affine=target_affine,
                 memory="nisl_cache", memory_level=5,
-                threshold=2., verbose=10)
+                threshold=3., verbose=10)
 canica.fit(func_files)
 
-components = canica.components_img_.get_data()
+components = canica.masker_.inverse_transform(canica.components_).get_data()
 
 ### Visualize the results #####################################################
 # Show some interesting components
