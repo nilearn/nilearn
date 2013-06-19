@@ -46,7 +46,7 @@ def test_canica_square_img():
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
                     smoothing_fwhm=0., n_init=50)
     canica.fit(data)
-    maps = canica.components_img_.get_data()
+    maps = canica.masker_.inverse_transform(canica.components_).get_data()
     maps = np.rollaxis(maps, 3, 0)
 
     # FIXME: This could be done more efficiently, e.g. thanks to hungarian

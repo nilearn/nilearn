@@ -178,8 +178,5 @@ class CanICA(MultiPCA, CacheMixin):
             threshold = raveled[argsort[- ratio * n_voxels]]
             ica_maps[np.abs(ica_maps) < threshold] = 0.
         self.components_ = ica_maps
-        # XXX: should we store the unmasked components ?
-        self.components_img_ = \
-            self.masker_.inverse_transform(ica_maps)
 
         return self

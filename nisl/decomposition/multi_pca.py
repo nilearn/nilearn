@@ -147,18 +147,19 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    masker_: instance of NiftiMultiMasker
+    `masker_`: instance of NiftiMultiMasker
         Masker used to filter and mask data as first step. If an instance of
         NiftiMultiMasker is given in `mask` parameter,
         this is a copy of it. Otherwise, a masker is created using the value
         of `mask` and other NiftiMasker related parameters as initialization.
 
-    components_: 2D numpy array (n_components x n-voxels)
-        Array of masked extracted components
+    `mask_img_`: Nifti like image
+        The mask of the data. If no mask was given at masker creation, contains
+        the automatically computed mask.
 
-    components_img_: list of Niimg
-        List of unmasked components. They are computed by applying inverse
-        transform of `masker_` on `components`.
+    `components_`: 2D numpy array (n_components x n-voxels)
+        Array of masked extracted components. They can be unmasked thanks to
+        the `masker_` attribute.
     """
 
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
@@ -217,6 +218,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             self.masker_.fit(niimgs)
         else:
             self.masker_.fit()
+        self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(NiftiMultiMasker, self)
         parameters['detrend'] = True
@@ -260,8 +262,6 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         else:
             data = subject_pcas[0]
         self.components_ = data
-        # XXX: should we store the unmasked components ?
-        self.components_img_ = self.masker_.inverse_transform(data)
         return self
 
     def transform(self, niimgs, confounds=None):
@@ -276,9 +276,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             This parameter is passed to nisl.signal.clean. Please see the
             related documentation for details
         """
-
+        components_img_ = self.masker_.inverse_transform(self.components_)
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.masker_.mask_img_,
+            components_img_, self.masker_.mask_img_,
             resampling_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
@@ -295,8 +295,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         component_signals: list of numpy array (n_samples x n_components)
             Component signals to tranform back into voxel signals
         """
+        components_img_ = self.masker_.inverse_transform(self.components_)
         nifti_maps_masker = NiftiMapsMasker(
-            self.components_img_, self.masker_.mask_img_,
+            components_img_, self.masker_.mask_img_,
             resampling_target='maps')
         nifti_maps_masker.fit()
         # XXX: dealing properly with 2D/ list of 2D data?
