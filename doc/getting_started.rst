@@ -4,8 +4,8 @@
 Getting started: introduction to the decoding pipeline
 =======================================================
 
-Nisl comes with code to simplify the use of scikit-learn when dealing
-with neuroimaging data. For the moment, Nisl is focused on functional MRI
+Nilearn comes with code to simplify the use of scikit-learn when dealing
+with neuroimaging data. For the moment, Nilearn is focused on functional MRI
 data.
 
 Before using a machine learning tool, we may need to apply the following
@@ -27,14 +27,14 @@ Data loading and preprocessing
 Downloading the data
 ----------------------
 
-To run demos, data are retrieved using a function provided by Nisl
+To run demos, data are retrieved using a function provided by Nilearn
 which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in :ref:`downloading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
 example, we can download the data from the
 `Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ ::
 
-    >>> from nisl import datasets
+    >>> from nilearn import datasets
     >>> dataset = datasets.fetch_haxby()
 
 `dataset.func` contains filenames referring to dataset files on the disk::
@@ -71,7 +71,7 @@ This can be done as follows:
 .. note::
 
     If you are not comfortable with this kind of data processing, do not
-    worry: there are plenty of examples in Nisl that allows you to easily
+    worry: there are plenty of examples in Nilearn that allows you to easily
     load data from provided datasets. Do not hesitate to copy/paste the
     code and adapt it to your own data format if needed. More information
     can be found in the :ref:`data manipulation <data_manipulation>`
@@ -99,7 +99,7 @@ samples and features.
 
 .. centered:: |niimgs|  |arrow|  |arrays|
 
-.. currentmodule:: nisl.io
+.. currentmodule:: nilearn.io
 
 We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 (i.e. voxels over time). For this purpose, we use the
@@ -191,7 +191,7 @@ discriminating weight.
 Going further
 =============
 
-.. currentmodule:: nisl.io
+.. currentmodule:: nilearn.io
 
 The :class:`NiftiMasker` is a very powerful object and we have only
 scratched the surface of its possibilities. It is described in more

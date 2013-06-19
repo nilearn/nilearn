@@ -6,7 +6,7 @@ Simple example to show data manipulation and visualization.
 """
 
 # Fetch data ################################################################
-from nisl import datasets
+from nilearn import datasets
 haxby_files = datasets.fetch_haxby_simple()
 
 # Get the file names relative to this dataset
@@ -58,7 +58,7 @@ pl.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95,
 # Extracting a brain mask ###################################################
 
 # Simple computation of a mask from the fMRI data
-from nisl.masking import compute_epi_mask
+from nilearn.masking import compute_epi_mask
 mask_img = compute_epi_mask(nifti_img)
 mask_data = mask_img.get_data().astype(bool)
 
@@ -72,7 +72,7 @@ pl.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95)
 
 # Applying the mask #########################################################
 
-from nisl.masking import apply_mask
+from nilearn.masking import apply_mask
 masked_data = apply_mask(nifti_img, mask_img)
 
 # masked_data shape is (instant number, voxel number). We can plot the first 10

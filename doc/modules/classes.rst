@@ -2,7 +2,7 @@
 Reference
 =========
 
-This is the class and function reference of nisl. Please refer to
+This is the class and function reference of nilearn. Please refer to
 the :ref:`full user guide <user_guide>` for further details, as the class and
 function raw specifications may not be enough to give full guidelines on their
 uses.
@@ -12,10 +12,10 @@ uses.
 
 .. _datasets_ref:
 
-:mod:`nisl.datasets`: Automatic Dataset Fetching
+:mod:`nilearn.datasets`: Automatic Dataset Fetching
 ================================================
 
-.. automodule:: nisl.datasets
+.. automodule:: nilearn.datasets
    :no-members:
    :no-inherited-members:
 
@@ -23,7 +23,7 @@ uses.
 
 Functions
 ---------
-.. currentmodule:: nisl.datasets
+.. currentmodule:: nilearn.datasets
 
 .. autosummary::
    :toctree: generated/
@@ -41,16 +41,16 @@ Functions
 
 .. _image_ref:
 
-:mod:`nisl.image`: Image processing utilities
+:mod:`nilearn.image`: Image processing utilities
 =============================================
 
-.. automodule:: nisl.image
+.. automodule:: nilearn.image
    :no-members:
    :no-inherited-members:
 
 Functions
 ---------
-.. currentmodule:: nisl.image
+.. currentmodule:: nilearn.image
 
 .. autosummary::
    :toctree: generated/
@@ -61,10 +61,10 @@ Functions
 
 .. _io_ref:
 
-:mod:`nisl.io`: Loading and Processing files easily
+:mod:`nilearn.io`: Loading and Processing files easily
 ======================================================
 
-.. automodule:: nisl.io
+.. automodule:: nilearn.io
    :no-members:
    :no-inherited-members:
 
@@ -72,7 +72,7 @@ Functions
 
 Classes
 -------
-.. currentmodule:: nisl.io
+.. currentmodule:: nilearn.io
 
 .. autosummary::
    :toctree: generated/
@@ -85,10 +85,10 @@ Classes
 
 .. _masking_ref:
 
-:mod:`nisl.masking`: Data Masking Utilities
+:mod:`nilearn.masking`: Data Masking Utilities
 ===========================================
 
-.. automodule:: nisl.masking
+.. automodule:: nilearn.masking
    :no-members:
    :no-inherited-members:
 
@@ -96,7 +96,7 @@ Classes
 
 Functions
 ---------
-.. currentmodule:: nisl.masking
+.. currentmodule:: nilearn.masking
 
 .. autosummary::
    :toctree: generated/
@@ -110,10 +110,10 @@ Functions
 
 .. _region_ref:
 
-:mod:`nisl.region`: Regions Handling Utilities
+:mod:`nilearn.region`: Regions Handling Utilities
 ==============================================
 
-.. automodule:: nisl.region
+.. automodule:: nilearn.region
    :no-members:
    :no-inherited-members:
 
@@ -121,7 +121,7 @@ Functions
 
 Functions
 ---------
-.. currentmodule:: nisl.region
+.. currentmodule:: nilearn.region
 
 .. autosummary::
    :toctree: generated/
@@ -134,15 +134,15 @@ Functions
 
 .. seealso::
 
-   :func:`nisl.masking.apply_mask`,
-   :func:`nisl.masking.unmask`
+   :func:`nilearn.masking.apply_mask`,
+   :func:`nilearn.masking.unmask`
 
 .. _resampling_ref:
 
-:mod:`nisl.resampling`: Data Resampling Utilities
+:mod:`nilearn.resampling`: Data Resampling Utilities
 =================================================
 
-.. automodule:: nisl.resampling
+.. automodule:: nilearn.resampling
    :no-members:
    :no-inherited-members:
 
@@ -150,7 +150,7 @@ Functions
 
 Functions
 ---------
-.. currentmodule:: nisl.resampling
+.. currentmodule:: nilearn.resampling
 
 .. autosummary::
    :toctree: generated/
@@ -163,16 +163,16 @@ Functions
 
 .. _decoding_ref:
 
-:mod:`nisl.decoding`: Decoding
+:mod:`nilearn.decoding`: Decoding
 ==============================
 
-.. automodule:: nisl.decoding
+.. automodule:: nilearn.decoding
    :no-members:
    :no-inherited-members:
 
 Classes
 -------
-.. currentmodule:: nisl.decoding
+.. currentmodule:: nilearn.decoding
 
 .. autosummary::
    :toctree: generated/
@@ -182,10 +182,10 @@ Classes
 
 .. _signal_ref:
 
-:mod:`nisl.signal`: Preprocessing Time Series
+:mod:`nilearn.signal`: Preprocessing Time Series
 ==============================================
 
-.. automodule:: nisl.signal
+.. automodule:: nilearn.signal
    :no-members:
    :no-inherited-members:
 
@@ -193,7 +193,7 @@ Classes
 
 Functions
 ---------
-.. currentmodule:: nisl.signal
+.. currentmodule:: nilearn.signal
 
 .. autosummary::
    :toctree: generated/
@@ -205,10 +205,10 @@ Functions
 
 .. _utils_ref:
 
-:mod:`nisl.utils`: Manipulating Niimgs
+:mod:`nilearn.utils`: Manipulating Niimgs
 ======================================
 
-.. automodule:: nisl.utils
+.. automodule:: nilearn.utils
    :no-members:
    :no-inherited-members:
 
@@ -216,7 +216,7 @@ Functions
 
 Functions
 ---------
-.. currentmodule:: nisl.utils
+.. currentmodule:: nilearn.utils
 
 .. autosummary::
    :toctree: generated/

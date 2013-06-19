@@ -9,7 +9,7 @@ import os.path
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
 
-# Use nisignal here to avoid name collisions (using nisl.signal is
+# Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from .. import signal as nisignal
 from ..signal import clean

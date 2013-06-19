@@ -135,7 +135,7 @@ class CanICA(MultiPCA, CacheMixin):
             the affine is considered the same for all.
 
         confounds: CSV file path or 2D matrix
-            This parameter is passed to nisl.signal.clean. Please see the
+            This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
         MultiPCA.fit(self, niimgs, y=y, confounds=confounds)

@@ -1,6 +1,6 @@
 New BSD License
 
-Copyright (c) 2009 - 2012 nisl developers.
+Copyright (c) 2009 - 2013 nilearn developers.
 All rights reserved.
 
 
@@ -12,7 +12,7 @@ modification, are permitted provided that the following conditions are met:
   b. Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in the
      documentation and/or other materials provided with the distribution.
-  c. Neither the name of the nisl Developers  nor the names of
+  c. Neither the name of the nilearn Developers  nor the names of
      its contributors may be used to endorse or promote products
      derived from this software without specific prior written
      permission. 

@@ -1,13 +1,13 @@
 """ Test the ndimage module
 
-This test file is in nisl/tests because nosetests seems to ignore modules whose
+This test file is in nilearn/tests because nosetests seems to ignore modules whose
 name starts with an underscore
 """
 from nose.tools import assert_raises
 
 import numpy as np
 
-from nisl._utils.ndimage import largest_connected_component
+from nilearn._utils.ndimage import largest_connected_component
 
 
 def test_largest_cc():

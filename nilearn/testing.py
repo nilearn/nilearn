@@ -1,4 +1,4 @@
-"""Utilities for testing nisl.
+"""Utilities for testing nilearn.
 """
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
@@ -58,7 +58,7 @@ def write_tmp_imgs(*imgs, **kwargs):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for img in imgs:
-                filename = os.tempnam(None, "nisl_") + ".nii"
+                filename = os.tempnam(None, "nilearn_") + ".nii"
                 filenames.append(filename)
                 nibabel.save(img, filename)
 

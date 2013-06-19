@@ -4,9 +4,9 @@
 Dataset loading utilities
 =========================
 
-.. currentmodule:: nisl.datasets
+.. currentmodule:: nilearn.datasets
 
-The ``nisl.datasets`` package embeds tools to fetch and load datasets. It comes
+The ``nilearn.datasets`` package embeds tools to fetch and load datasets. It comes
 with a set of several datasets that can be easily downloaded.
 
 
@@ -20,8 +20,8 @@ rules ordered by priority (the first rule override the others and so on):
 
 1. the keyword argument *data_dir* can be given ton any dataset fetching
    function to force the storage directory.
-2. the environment variable *NISL_DATA*
-3. by default, a directory called *nisl_data* is created in the current working
+2. the environment variable *NILEARN_DATA*
+3. by default, a directory called *nilearn_data* is created in the current working
    directory.
 
 Loading a dataset
@@ -65,7 +65,7 @@ With the definition function comes the associated docstring. As well as
 parameters definition, any information about data structure and/or paper
 references is welcome.
 
-.. literalinclude:: ../../nisl/datasets.py
+.. literalinclude:: ../../nilearn/datasets.py
      :start-after: ### Haxby: function definition
      :end-before: ### Haxby: definition of dataset files
 
@@ -75,7 +75,7 @@ Definition of dataset files
 The first step is to define of which files is composed the dataset. A simple
 array is enough.
 
-.. literalinclude:: ../../nisl/datasets.py
+.. literalinclude:: ../../nilearn/datasets.py
      :start-after: ### Haxby: definition of dataset files
      :end-before: ### Haxby: load the dataset
 
@@ -92,7 +92,7 @@ to helper functions :
   a dataset. Progress information is provided.
 - *uncompress_dataset* try to uncompress a dataset in its directory
 
-.. literalinclude:: ../../nisl/datasets.py
+.. literalinclude:: ../../nilearn/datasets.py
      :start-after: ### Haxby: load the dataset
      :end-before: ### Haxby: preprocess data
 
@@ -103,7 +103,7 @@ If needed, you can preprocess the dataset. As many datasets are in matlab or
 Nifti format, reformatting it in a more user-friendly format (like numpy
 arrays) is encouraged.
 
-.. literalinclude:: ../../nisl/datasets.py
+.. literalinclude:: ../../nilearn/datasets.py
      :start-after: ### Haxby: preprocess data
      :end-before: ### Haxby: return data
 
@@ -113,6 +113,6 @@ Return dataset
 A convenient way to return a dataset is to use the *Bunch* structure which
 encapsulte it and provide easy access to all data fields.
 
-.. literalinclude:: ../../nisl/datasets.py
+.. literalinclude:: ../../nilearn/datasets.py
      :start-after: ### Haxby: return data
      :end-before: ### Haxby: end

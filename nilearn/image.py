@@ -1,7 +1,7 @@
 """
 Preprocessing functions for images.
 
-See also nisl.signal.
+See also nilearn.signal.
 """
 # Authors: Philippe Gervais, Alexandre Abraham
 # License: simplified BSD
@@ -59,7 +59,7 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
 
         See also
         ========
-        nisl.signal.high_variance_confounds
+        nilearn.signal.high_variance_confounds
     """
 
     niimgs = check_niimgs(niimgs)

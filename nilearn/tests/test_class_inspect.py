@@ -1,14 +1,14 @@
 """
 Test the class_inspect module
 
-This test file is in nisl/tests because nosetests seems to ignore modules whose
+This test file is in nilearn/tests because nosetests seems to ignore modules whose
 name starts with an underscore
 """
 from nose.tools import assert_equal
 
 from sklearn.base import BaseEstimator
 
-from nisl._utils import class_inspect
+from nilearn._utils import class_inspect
 
 ###############################################################################
 # Helpers for the tests

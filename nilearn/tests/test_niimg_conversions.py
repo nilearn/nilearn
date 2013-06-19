@@ -1,7 +1,7 @@
 """
 Test the niimg_conversions
 
-This test file is in nisl/tests because nosetests seems to ignore modules whose
+This test file is in nilearn/tests because nosetests seems to ignore modules whose
 name starts with an underscore
 """
 # Author: Gael Varoquaux, Alexandre Abraham
@@ -19,7 +19,7 @@ import numpy as np
 import nibabel
 from nibabel import Nifti1Image
 
-from nisl import _utils
+from nilearn import _utils
 
 
 class PhonyNiimage:

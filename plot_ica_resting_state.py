@@ -8,16 +8,16 @@ An example applying ICA to resting-state data.
 import numpy as np
 
 ### Load nyu_rest dataset #####################################################
-from nisl import datasets
+from nilearn import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
 # XXX: must get the code to run for more than 1 subject
 
 ### Preprocess ################################################################
-from nisl import io
+from nilearn import io
 
-masker = io.NiftiMasker(smoothing_fwhm=8, memory='nisl_cache', memory_level=1,
+masker = io.NiftiMasker(smoothing_fwhm=8, memory='nilearn_cache', memory_level=1,
                         standardize=False)
 data_masked = masker.fit_transform(dataset.func[0])
 

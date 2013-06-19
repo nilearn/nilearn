@@ -9,14 +9,14 @@ import sys
 import os
 import shutil
 
-DISTNAME = 'nisl'
+DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
-URL = 'http://nisl.github.com'
+URL = 'http://nilearn.github.com'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'http://nisl.github.com'
+DOWNLOAD_URL = 'http://nilearn.github.com'
 VERSION = '0.1-git'
 
 from numpy.distutils.core import setup
@@ -37,11 +37,11 @@ def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration(None, parent_package, top_path)
 
-    config.add_subpackage('nisl')
-    config.add_subpackage('nisl/io')
-    config.add_subpackage('nisl/decomposition')
-    config.add_subpackage('nisl/decoding')
-    config.add_subpackage('nisl/_utils')
+    config.add_subpackage('nilearn')
+    config.add_subpackage('nilearn/io')
+    config.add_subpackage('nilearn/decomposition')
+    config.add_subpackage('nilearn/decoding')
+    config.add_subpackage('nilearn/_utils')
     return config
 
 
@@ -62,8 +62,8 @@ if __name__ == "__main__":
             shutil.rmtree(local_path)
         print("Copying source tree into build/py3k for 2to3 transformation"
               "...")
-        shutil.copytree(os.path.join(old_path, 'nisl'),
-                        os.path.join(local_path, 'nisl'))
+        shutil.copytree(os.path.join(old_path, 'nilearn'),
+                        os.path.join(local_path, 'nilearn'))
         import lib2to3.main
         from io import StringIO
         print("Converting to Python3 via 2to3...")

@@ -6,8 +6,8 @@ import numpy as np
 
 import nose
 
-from nisl.io import NiftiMultiMasker
-from nisl.decomposition.multi_pca import MultiPCA
+from nilearn.io import NiftiMultiMasker
+from nilearn.decomposition.multi_pca import MultiPCA
 
 
 def test_multi_pca():

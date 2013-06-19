@@ -4,7 +4,7 @@
 Searchlight : finding voxels containing information
 ===========================================================
 
-.. currentmodule:: nisl.searchlight
+.. currentmodule:: nilearn.searchlight
 
 Searchlight principle
 =====================

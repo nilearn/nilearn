@@ -22,14 +22,14 @@ Pre-prints for both papers are available on hal
 import numpy as np
 
 ### Load ADHD rest dataset ####################################################
-from nisl import datasets
+from nilearn import datasets
 # Here we use a limited number of subjects to get faster-running code. For
 # better results, simply increase the number.
 dataset = datasets.fetch_adhd()
 func_files = dataset.func[:5]
 
 ### Preprocess ################################################################
-from nisl import io
+from nilearn import io
 
 # This is a multi-subject method, thus we need to use the
 # NiftiMultiMasker, rather than the NiftiMasker
@@ -37,7 +37,7 @@ from nisl import io
 # resolution
 masker = io.NiftiMultiMasker(smoothing_fwhm=6,
                              target_affine=np.diag((3, 3, 3)),
-                             memory="nisl_cache", memory_level=1,
+                             memory="nilearn_cache", memory_level=1,
                              verbose=True)
 data_masked = masker.fit_transform(func_files)
 
@@ -45,9 +45,9 @@ mean_epi = masker.inverse_transform(data_masked[0].mean(axis=0)).get_data()
 
 ### Apply CanICA ##############################################################
 
-from nisl.decomposition.old_canica import CanICA
+from nilearn.decomposition.old_canica import CanICA
 n_components = 20
-ica = CanICA(n_components=n_components, random_state=42, memory="nisl_cache",
+ica = CanICA(n_components=n_components, random_state=42, memory="nilearn_cache",
              maps_only=True)
 components_masked = ica.fit(data_masked).components_
 

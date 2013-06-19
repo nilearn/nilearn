@@ -1,6 +1,6 @@
-=========================================
-NISL: neuroimaging with the scikit-learn
-=========================================
+===========================================
+NILEARN: neuroimaging with the scikit-learn
+===========================================
 
 This repository contains code and documentation to use the scikit-learn
 ( http://scikit-learn.org ) for neuroimaging data analysis. The only

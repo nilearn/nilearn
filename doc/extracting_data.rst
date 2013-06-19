@@ -6,9 +6,9 @@ Extracting data: input/output and basic transformation
 
 Before applying some complex machine learning algorithm, or perform
 sophisticated analysis, the first step is to read data from file and
-do some basic transformation on them. Nisl offers several ways to do
+do some basic transformation on them. Nilearn offers several ways to do
 this. This part is concerned with only high-level classes (in
-modules :mod:`nisl.io`), the description of
+modules :mod:`nilearn.io`), the description of
 low-level functions can be found in the reference documentation.
 
 The philosophy underlying these classes is similar to `scikit-learn
@@ -26,9 +26,9 @@ region signals from fMRI data. Advanced usage of these classes
 requires to tweak their parameters. However, high-level objects have
 been designed to perform common operations. Users who want to make
 some specific processing may have to call low-level functions (see
-e.g. :mod:`nisl.signal`, :mod:`nisl.masking`.)
+e.g. :mod:`nilearn.signal`, :mod:`nilearn.masking`.)
 
-.. currentmodule:: nisl.io
+.. currentmodule:: nilearn.io
 
 .. _nifti_masker:
 
@@ -54,7 +54,7 @@ Custom data loading
 Sometimes, some custom preprocessing of data is necessary. In this
 example, we will restrict Haxby dataset (which contains 1452 frames)
 to 150 frames to speed up computation. To do that, we load the dataset
-with :func:`fetch_haxby_simple() <nisl.datasets.fetch_haxby_simple>`,
+with :func:`fetch_haxby_simple() <nilearn.datasets.fetch_haxby_simple>`,
 restrict it to 150 frames and build a brand new Nifti-like object to
 give it to the masker. Though it is possible, there is no need to save
 your data in a file to pass it to a :class:`NiftiMasker`. Simply use
@@ -63,7 +63,7 @@ your data in a file to pass it to a :class:`NiftiMasker`. Simply use
 
 
 .. literalinclude:: ../plot_nifti_advanced.py
-    :start-after: from nisl import datasets
+    :start-after: from nilearn import datasets
     :end-before: # Display helper
 
 Custom Masking
@@ -219,7 +219,7 @@ Inverse transform: unmasking data
 Once voxel signals have been processed, the result can be visualized as images
 after unmasking (turning voxel signals into a series of images, using the same
 mask as for masking). This step is present in almost all the
-:doc:`examples <auto_examples/index>` provided in Nisl.
+:doc:`examples <auto_examples/index>` provided in Nilearn.
 
 
 .. literalinclude:: ../plot_haxby_decoding.py
@@ -239,7 +239,7 @@ these signals once you have an atlas or a parcellation.
 Regions definition
 ------------------
 
-Nisl understands two different way of defining regions, which are called
+Nilearn understands two different way of defining regions, which are called
 labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
 :class:`NiftiMapsMasker`.
 
@@ -266,7 +266,7 @@ and very close to the usage of :class:`NiftiMasker`. Only options specific to
 :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` are described
 in this section.
 
-Nisl provides several downloaders to get a brain parcellation. Load
+Nilearn provides several downloaders to get a brain parcellation. Load
 the `MSDL one
 <https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_:
 
@@ -328,7 +328,7 @@ some explanation. The voxels that correspond to the brain or a region
 of interest in an fMRI image do not fill the entire
 image. Consequently, in the labels image, there must be a label
 corresponding to "outside" the brain, for which no signal should be
-extracted.  By default, this label is set to zero in Nisl, and is
+extracted.  By default, this label is set to zero in Nilearn, and is
 referred to as "background". Should some non-zero value occur, it is
 possible to change the background value with the `background_label`
 keyword.

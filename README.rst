@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-nisl
-====
+nilearn
+=======
 
 This projects contains a tutorial on how to process functional Magnetic Resonance Imaging (fMRI) data with the scikit-learn.
 
@@ -10,8 +10,8 @@ This work is made available by the INRIA Parietal Project Team and the scikit-le
 Important links
 ===============
 
-- Official source code repo: https://github.com/nisl/tutorial/
-- HTML documentation (stable release): http://nisl.github.com/
+- Official source code repo: https://github.com/nilearn/tutorial/
+- HTML documentation (stable release): http://nilearn.github.com/
 
 Dependencies
 ============
@@ -52,10 +52,10 @@ GIT
 
 You can check the latest sources with the command::
 
-    git clone git://github.com/nisl/tutorial
+    git clone git://github.com/nilearn/tutorial
 
 or if you have write privileges::
 
-    git clone git@github.com:nisl/tutorial
+    git clone git@github.com:nilearn/tutorial
 
 

@@ -17,9 +17,9 @@ Pattern Recognition 2011.
 ### Load nyu_rest dataset #####################################################
 
 import numpy as np
-from nisl import datasets, io
+from nilearn import datasets, io
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
-nifti_masker = io.NiftiMasker(memory='nisl_cache', memory_level=1,
+nifti_masker = io.NiftiMasker(memory='nilearn_cache', memory_level=1,
                               standardize=False)
 fmri_masked = nifti_masker.fit_transform(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
@@ -37,7 +37,7 @@ from sklearn.cluster import WardAgglomeration
 import time
 start = time.time()
 ward = WardAgglomeration(n_clusters=1000, connectivity=connectivity,
-                         memory='nisl_cache')
+                         memory='nilearn_cache')
 ward.fit(fmri_masked)
 print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 
@@ -45,7 +45,7 @@ print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
 # the caching mechanism
 start = time.time()
 ward = WardAgglomeration(n_clusters=2000, connectivity=connectivity,
-                         memory='nisl_cache')
+                         memory='nilearn_cache')
 ward.fit(fmri_masked)
 print "Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start)
 

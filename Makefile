@@ -29,7 +29,7 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	$(NOSETESTS) -s nisl 
+	$(NOSETESTS) -s nilearn 
 test-doc:
 	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \
 	--doctest-extension=inc --doctest-fixtures=_fixture doc/ \
@@ -38,7 +38,7 @@ test-doc:
 test-coverage:
 	rm -rf coverage .coverage
 	$(NOSETESTS) -s --with-coverage --cover-html --cover-html-dir=coverage \
-	--cover-package=nisl nisl
+	--cover-package=nilearn nilearn
 
 test: test-code test-doc
 

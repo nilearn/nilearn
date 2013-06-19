@@ -2,7 +2,7 @@
 import nibabel
 import numpy as np
 
-from nisl.decomposition.canica import CanICA
+from nilearn.decomposition.canica import CanICA
 
 
 def test_canica_square_img():

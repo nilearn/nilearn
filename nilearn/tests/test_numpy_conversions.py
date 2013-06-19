@@ -1,7 +1,7 @@
 """
 Test the numpy_conversions module
 
-This test file is in nisl/tests because nosetests seems to ignore modules whose
+This test file is in nilearn/tests because nosetests seems to ignore modules whose
 name starts with an underscore
 """
 import numpy as np
@@ -9,7 +9,7 @@ import os
 
 from nose.tools import assert_true, assert_raises
 
-from nisl._utils.numpy_conversions import as_ndarray
+from nilearn._utils.numpy_conversions import as_ndarray
 
 
 def are_arrays_identical(arr1, arr2):

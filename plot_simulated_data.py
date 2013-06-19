@@ -26,8 +26,8 @@ from sklearn.feature_selection import f_regression
 
 import nibabel
 
-from nisl import decoding
-import nisl.masking
+from nilearn import decoding
+import nilearn.masking
 
 
 ###############################################################################
@@ -128,7 +128,7 @@ for name, classifier in classifiers:
     if name != "searchlight":
         classifier.fit(X_train, y_train)
     else:
-        X = nisl.masking.unmask(X_train, mask_img)
+        X = nilearn.masking.unmask(X_train, mask_img)
         classifier.fit(X, y_train)
         del X
     elapsed_time = time() - t1

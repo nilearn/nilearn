@@ -9,8 +9,8 @@ build
 
 dist/
 doc/.nojekyll
-nisl_cache
-nisl_data
+nilearn_cache
+nilearn_data
 doc/_build/
 doc/auto_examples/
 doc/modules/generated/

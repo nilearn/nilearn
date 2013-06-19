@@ -76,9 +76,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/nisl.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/nilearn.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/nisl.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/nilearn.qhc"
 
 latex:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
@@ -112,24 +112,24 @@ doctest:
 download-data:
 
 zip: html pdf
-	mkdir -p _build/nisl ;
-	cp -r _build/html _build/nisl ;
-	cp -r data _build/nisl ;
-	cp nisl.pdf _build/nisl;
-	zip -r _build/nisl.zip _build/nisl
+	mkdir -p _build/nilearn ;
+	cp -r _build/html _build/nilearn ;
+	cp -r data _build/nilearn ;
+	cp nilearn.pdf _build/nilearn;
+	zip -r _build/nilearn.zip _build/nilearn
 
 pdf: latex
-	cd _build/latex ; make all-pdf ; pdfnup nisl.pdf
-	cp _build/latex/nisl.pdf nisl-simple.pdf
-	cp _build/latex/nisl-nup.pdf nisl.pdf
-	#cd _build/latex ; make all-pdf ; pdfnup nisl.pdf
+	cd _build/latex ; make all-pdf ; pdfnup niearn.pdf
+	cp _build/latex/nilearn.pdf nilearn-simple.pdf
+	cp _build/latex/nilearn-nup.pdf nilearn.pdf
+	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
 
 install: html pdf
-	rm -rf _build/nisl.github.com
+	rm -rf _build/nilearn.github.com
 	cd _build/ && \
-        git clone git@github.com:nisl/nisl.github.com.git && \
-	cp -r html/* nisl.github.com && \
-	cd nisl.github.com && \
+        git clone git@github.com:nilearn/nilearn.github.com.git && \
+	cp -r html/* nilearn.github.com && \
+	cd nilearn.github.com && \
 	git add * && \
 	git commit -a -m 'Make install' && \
 	git push

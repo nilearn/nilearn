@@ -23,7 +23,7 @@ import numpy as np
 import nibabel
 
 ### Load ADHD rest dataset ####################################################
-from nisl import datasets
+from nilearn import datasets
 # Here we use a limited number of subjects to get faster-running code. For
 # better results, simply increase the number.
 
@@ -31,7 +31,7 @@ dataset = datasets.fetch_adhd()
 func_files = dataset.func
 
 ### Filter and mask ###########################################################
-from nisl.resampling import resample_img
+from nilearn.resampling import resample_img
 
 # This is a multi-subject method, thus we need to use the
 # NiftiMultiMasker, rather than the NiftiMasker
@@ -45,12 +45,12 @@ mean_epi_img = nibabel.Nifti1Image(mean_epi, epi_img.get_affine())
 mean_epi = resample_img(mean_epi_img, target_affine=target_affine).get_data()
 
 ### Apply CanICA ##############################################################
-from nisl.decomposition.canica import CanICA
+from nilearn.decomposition.canica import CanICA
 
 n_components = 20
 canica = CanICA(n_components=n_components,
                 smoothing_fwhm=6., target_affine=target_affine,
-                memory="nisl_cache", memory_level=5,
+                memory="nilearn_cache", memory_level=5,
                 threshold=3., verbose=10)
 canica.fit(func_files)
 

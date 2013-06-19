@@ -8,7 +8,7 @@ study.
 
 ### Load haxby dataset ########################################################
 
-from nisl import datasets
+from nilearn import datasets
 dataset = datasets.fetch_haxby()
 
 ### Load Target labels ########################################################
@@ -32,7 +32,7 @@ target = target[no_rest_indices]
 
 ### Load the mask #############################################################
 
-from nisl.io import NiftiMasker
+from nilearn.io import NiftiMasker
 nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
 
 # We give the nifti_masker a filename and retrieve a 2D array ready

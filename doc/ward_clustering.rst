@@ -4,7 +4,7 @@
 fMRI clustering
 ===============
 
-.. currentmodule:: nisl.datasets
+.. currentmodule:: nilearn.datasets
 
 Resting-state dataset
 ========================

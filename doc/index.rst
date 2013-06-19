@@ -129,11 +129,11 @@
 
  .. sidebar:: Download
 
-    * `PDF, 2 pages per side <./_downloads/nisl.pdf>`_
+    * `PDF, 2 pages per side <./_downloads/nilearn.pdf>`_
 
-    * `HTML and example files <https://github.com/nisl/nisl.github.com/zipball/master>`_
+    * `HTML and example files <https://github.com/nilearn/nilearn.github.com/zipball/master>`_
 
-    * `Source code (github) <https://github.com/nisl/tutorial>`_
+    * `Source code (github) <https://github.com/nilearn/tutorial>`_
 
 
  .. topic:: Learn machine learning for fMRI
@@ -172,7 +172,7 @@ Tutorial topics
 
    <div style='visibility: hidden ; height=0'>
 
- :download:`nisl.pdf`
+ :download:`nilearn.pdf`
 
  .. raw:: html
 

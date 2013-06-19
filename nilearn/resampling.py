@@ -69,7 +69,7 @@ def from_matrix_vector(matrix, vector):
 
     See Also
     --------
-    nisl.resampling.to_matrix_vector
+    nilearn.resampling.to_matrix_vector
     """
 
     nin, nout = matrix.shape
@@ -123,7 +123,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    niimg: nisl nifti image
+    niimg: nilearn nifti image
         Path to a nifti file or nifti-like object
 
     target_affine: numpy.ndarray, optional

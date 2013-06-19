@@ -218,7 +218,7 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
 
         See also
         ========
-        nisl.image.high_variance_confounds
+        nilearn.image.high_variance_confounds
     """
 
     # FIXME: when detrend=True, two copies of "series" are made.  Variance

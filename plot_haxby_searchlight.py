@@ -12,7 +12,7 @@ the fMRI (see the generated figures).
 ### Load Haxby dataset ########################################################
 import numpy as np
 import nibabel
-from nisl import datasets
+from nilearn import datasets
 
 dataset_files = datasets.fetch_haxby_simple()
 
@@ -63,19 +63,19 @@ score_func = precision_score
 from sklearn.cross_validation import KFold
 cv = KFold(y.size, k=4)
 
-import nisl.decoding
+import nilearn.decoding
 # The radius is the one of the Searchlight sphere that will scan the volume
-searchlight = nisl.decoding.SearchLight(mask_img,
+searchlight = nilearn.decoding.SearchLight(mask_img,
                                       process_mask_img=process_mask_img,
                                       radius=5.6, n_jobs=n_jobs,
                                       score_func=score_func, verbose=1, cv=cv)
 searchlight.fit(fmri_img, y)
 
 ### F-scores computation ######################################################
-from nisl.io import NiftiMasker
+from nilearn.io import NiftiMasker
 
 nifti_masker = NiftiMasker(mask=mask_img, sessions=session,
-                           memory='nisl_cache', memory_level=1)
+                           memory='nilearn_cache', memory_level=1)
 fmri_masked = nifti_masker.fit_transform(fmri_img)
 
 from sklearn.feature_selection import f_classif

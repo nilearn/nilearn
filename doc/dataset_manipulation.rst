@@ -9,12 +9,12 @@ fMRI data manipulation: input/output, masking, visualization...
 Downloading example datasets
 ============================
 
-.. currentmodule:: nisl.datasets
+.. currentmodule:: nilearn.datasets
 
 This tutorial package embeds tools to download and load datasets. They
-can be imported from :mod:`nisl.datasets`::
+can be imported from :mod:`nilearn.datasets`::
 
-    >>> from nisl import datasets
+    >>> from nilearn import datasets
     >>> haxby_files = datasets.fetch_haxby_simple()
     >>> # The structures contains paths to haxby dataset files:
     >>> haxby_files.keys() # doctest: +SKIP
@@ -38,8 +38,8 @@ following directories (in order of priority):
 
   * the folder specified by `data_dir` parameter in the fetching function
     if it is specified
-  * the environment variable `NISL_DATA` if it exists
-  * the `nisl_data` folder in the current directory
+  * the environment variable `NILEARN_DATA` if it exists
+  * the `nilearn_data` folder in the current directory
    
 Note that you can copy that folder across computers to avoid
 downloading the data twice.
@@ -91,7 +91,7 @@ downloaded, a single line is needed to load it.
 Niimg-like objects
 -------------------
 
-**Niimg:** Niimg (pronounce ni-image) is a common term used in Nisl. A
+**Niimg:** Niimg (pronounce ni-image) is a common term used in Nilearn. A
 Niimg-like object can either be:
 
   * a file path to a Nifti or Analyse image
@@ -138,9 +138,9 @@ Extracting a brain mask
 
 If we do not have a mask of the relevant regions available, a brain mask
 can be easily extracted from the fMRI data using the
-:func:`nisl.masking.compute_epi_mask` function:
+:func:`nilearn.masking.compute_epi_mask` function:
 
-.. currentmodule:: nisl.masking
+.. currentmodule:: nilearn.masking
 
 .. autosummary::
    :toctree: generated/
@@ -193,23 +193,23 @@ array to a 2D array, `voxel` **x** `time`, as depicted below:
 Preprocessing functions
 ========================
 
-.. currentmodule:: nisl.io.nifti_masker
+.. currentmodule:: nilearn.io.nifti_masker
 
 The :class:`NiftiMasker` automatically calls some preprocessing
 functions that are available if you want to set up your own
 preprocessing procedure:
 
-.. currentmodule:: nisl
+.. currentmodule:: nilearn
 
-* Resampling: :func:`nisl.resampling.resample_img`
+* Resampling: :func:`nilearn.resampling.resample_img`
 * Masking:
 
-  * compute: :func:`nisl.masking.compute_epi_mask`
-  * compute for multiple sessions/subjects: :func:`nisl.masking.compute_multi_epi_mask`
-  * apply: :func:`nisl.masking.apply_mask`
-  * intersect several masks (useful for multi sessions/subjects): :func:`nisl.masking.intersect_masks`
-  * unmasking: :func:`nisl.masking.unmask`
+  * compute: :func:`nilearn.masking.compute_epi_mask`
+  * compute for multiple sessions/subjects: :func:`nilearn.masking.compute_multi_epi_mask`
+  * apply: :func:`nilearn.masking.apply_mask`
+  * intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
+  * unmasking: :func:`nilearn.masking.unmask`
 
-* Cleaning signals: :func:`nisl.signal.clean`
+* Cleaning signals: :func:`nilearn.signal.clean`
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
