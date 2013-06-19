@@ -10,16 +10,20 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
 from ._utils.ndimage import largest_connected_component
+from ._utils.cache_mixin import cache
 from . import resampling
 
 
-def _load_mask_img(mask_img):
+def _load_mask_img(mask_img, allow_empty=False):
     ''' Check that a mask is valid, ie with two values including 0 and load it.
 
     Parameters
     ----------
     mask_img: nifti-like image
         The mask to check
+
+    allow_empty: boolean, optional
+        Allow loading an empty mask (full of 0 values)
 
     Returns
     -------
@@ -32,7 +36,7 @@ def _load_mask_img(mask_img):
 
     if len(values) == 1:
         # We accept a single value if it is not 0 (full true mask).
-        if values[0] == 0:
+        if values[0] == 0 and not allow_empty:
             raise ValueError('Given mask is invalid because it masks all data')
     elif len(values) == 2:
         # If there are 2 different values, one of them must be 0 (background)
@@ -88,9 +92,11 @@ def extrapolate_out_mask(data, mask, iterations=1):
 ###############################################################################
 
 
-def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
-                     ensure_finite=True, verbose=0):
+                     ensure_finite=True,
+                     target_affine=None, target_shape=None,
+                     memory=None, verbose=0,):
     """
     Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
@@ -102,8 +108,9 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    mean_epi: nifti-like image
+    epi_img: nifti-like image
         EPI image, used to compute the mask. 3D and 4D images are accepted.
+        If a 3D image is given, we suggest to use the mean image
 
     lower_cutoff: float, optional
         lower fraction of the histogram to be discarded.
@@ -130,6 +137,17 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
 
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
     verbose: int, optional
 
     Returns
@@ -141,8 +159,14 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         print "EPI mask computation"
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
-    mean_epi_img = _utils.check_niimgs(mean_epi_img, accept_3d=True)
-    mean_epi = mean_epi_img.get_data()
+
+    epi_img = cache(resampling.resample_img, memory, ignore=['copy'])(
+                                epi_img,
+                                target_affine=target_affine,
+                                target_shape=target_shape)
+
+    epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
+    mean_epi = epi_img.get_data()
     if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
@@ -165,12 +189,12 @@ def compute_epi_mask(mean_epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     if opening:
         opening = int(opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
-    if connected:
+    if connected and mask.any():
         mask = largest_connected_component(mask)
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=opening)
     return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
-                       mean_epi_img.get_affine())
+                       epi_img.get_affine())
 
 
 def intersect_masks(mask_imgs, threshold=0.5, connected=True):
@@ -200,7 +224,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if len(mask_imgs) == 0:
         raise ValueError('No mask provided for intersection')
     grp_mask = None
-    first_mask, ref_affine = _load_mask_img(mask_imgs[0])
+    first_mask, ref_affine = _load_mask_img(mask_imgs[0], allow_empty=True)
     ref_shape = first_mask.shape
     if threshold > 1:
         raise ValueError('The threshold should be smaller than 1')
@@ -209,7 +233,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in mask_imgs:
-        mask, affine = _load_mask_img(this_mask)
+        mask, affine = _load_mask_img(this_mask, allow_empty=True)
         if np.any(affine != ref_affine):
             raise ValueError("All masks should have the same affine")
         if np.any(mask.shape != ref_shape):
@@ -233,10 +257,11 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
-def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
                            connected=True, opening=2, threshold=0.5,
                            target_affine=None, target_shape=None,
-                           exclude_zeros=False, n_jobs=1, verbose=0):
+                           exclude_zeros=False, n_jobs=1,
+                           memory=None, verbose=0):
     """ Compute a common mask for several sessions or subjects of fMRI data.
 
     Uses the mask-finding algorithms to extract masks for each session
@@ -245,9 +270,11 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
 
     Parameters
     ----------
-    session_files: list of Niimgs
+    epi_imgs: list of Niimgs
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
+        If 3D images is given, we suggest to use the mean image of each
+        session
 
     threshold: float, optional
         the inter-session threshold: the fraction of the
@@ -270,6 +297,17 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
 
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to resampling.resample_img. Please see the
+        related documentation for details.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
@@ -280,21 +318,16 @@ def compute_multi_epi_mask(session_epi, lower_cutoff=0.2, upper_cutoff=0.9,
         The brain mask.
     """
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(compute_epi_mask)(session,
+        delayed(compute_epi_mask)(epi_img,
                                   lower_cutoff=lower_cutoff,
                                   upper_cutoff=upper_cutoff,
                                   connected=connected,
                                   opening=opening,
-                                  exclude_zeros=exclude_zeros)
-        for session in session_epi)
-
-    # Resample if needed
-    if target_affine is not None or target_shape is not None:
-        masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
-                delayed(resampling.resample_img)
-                    (mask, target_affine=target_affine,
-                     target_shape=target_shape, interpolation='nearest')
-                for mask in masks)
+                                  exclude_zeros=exclude_zeros,
+                                  target_affine=target_affine,
+                                  target_shape=target_shape,
+                                  memory=memory)
+        for epi_img in epi_imgs)
 
     mask = intersect_masks(masks, connected=connected, threshold=threshold)
     return mask
@@ -372,7 +405,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
 
     if not mask_data.shape == niimgs_img.shape[:3]:
         raise ValueError('Mask shape: %s is different from img shape:%s'
-                         % (str(mask_data.shape), str(niimgs_img.shape)))
+                         % (str(mask_data.shape), str(niimgs_img.shape[:3])))
 
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times

@@ -36,6 +36,7 @@ test-doc:
 	
 
 test-coverage:
+	rm -rf coverage .coverage
 	$(NOSETESTS) -s --with-coverage --cover-html --cover-html-dir=coverage \
 	--cover-package=nisl nisl
 

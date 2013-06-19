@@ -116,6 +116,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  ):
         # Mask is provided or computed
         self.mask = mask
+
         self.sessions = sessions
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -181,9 +182,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
-            copy=(self.target_affine is not None and
-                  self.target_shape is not None))
-
+            copy=False)
+        if self.target_affine is not None:
+            self.affine_ = self.target_affine
+        else:
+            self.affine_ = self.mask_img_.get_affine()
         return self
 
     def transform(self, niimgs, confounds=None):
@@ -199,4 +202,4 @@ class NiftiMasker(BaseMasker, CacheMixin):
             related documentation for details
         """
         return self.transform_single_niimgs(
-            niimgs, self.sessions, confounds)
+            niimgs, confounds)
