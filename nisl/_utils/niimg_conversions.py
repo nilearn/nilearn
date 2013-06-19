@@ -115,7 +115,7 @@ def check_niimg(niimg):
     if isinstance(niimg, basestring):
         # data is a filename, we load it
         result = nibabel.load(niimg)
-    elif isinstance(niimg, collections.Iterable):
+    elif hasattr(niimg, "__iter__"):
         return concat_niimgs(niimg)
     else:
         # it is an object, it should have get_data and get_affine methods
