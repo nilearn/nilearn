@@ -23,10 +23,10 @@ class CanICA(MultiPCA, CacheMixin):
 
     Parameters
     ----------
-    mask: filename, NiImage or NiftiMultiMasker instance, optional
+    mask: filename, NiImage or MultiNiftiMasker instance, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
-        it will be computed automatically by a NiftiMultiMasker with default
+        it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
     data: array-like, shape = [[n_samples, n_features], ...]

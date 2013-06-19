@@ -1,5 +1,5 @@
 """
-Test the nifti_multi_masker module
+Test the multi_nifti_masker module
 """
 # Author: Gael Varoquaux
 # License: simplified BSD
@@ -10,7 +10,7 @@ from numpy.testing import assert_array_equal
 
 from nibabel import Nifti1Image
 
-from ..nifti_multi_masker import NiftiMultiMasker
+from ..multi_nifti_masker import MultiNiftiMasker
 
 
 def test_auto_mask():
@@ -18,7 +18,7 @@ def test_auto_mask():
     data = np.zeros((9, 9, 9))
     data[2:-2, 2:-2, 2:-2] = 10
     img = Nifti1Image(data, np.eye(4))
-    masker = NiftiMultiMasker(mask_opening=0)
+    masker = MultiNiftiMasker(mask_opening=0)
     # Check that if we have not fit the masker we get a intelligible
     # error
     assert_raises(ValueError, masker.transform, [[img, ]])
@@ -49,7 +49,7 @@ def test_nan():
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
-    masker = NiftiMultiMasker(mask_opening=0)
+    masker = MultiNiftiMasker(mask_opening=0)
     masker.fit([img])
     mask = masker.mask_img_.get_data()
     assert_true(mask[1:-1, 1:-1, 1:-1].all())

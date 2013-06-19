@@ -3,5 +3,5 @@ The :mod:`nilearn.io` module includes scikit-learn tranformers and
 tools to preprocess neuro-imaging data.
 """
 from .nifti_masker import NiftiMasker
-from .nifti_multi_masker import NiftiMultiMasker
+from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_region import NiftiLabelsMasker, NiftiMapsMasker

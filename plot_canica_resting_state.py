@@ -34,7 +34,7 @@ func_files = dataset.func
 from nilearn.resampling import resample_img
 
 # This is a multi-subject method, thus we need to use the
-# NiftiMultiMasker, rather than the NiftiMasker
+# MultiNiftiMasker, rather than the NiftiMasker
 # We specify the target_affine to downsample to 3mm isotropic
 # resolution
 

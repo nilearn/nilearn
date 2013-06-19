@@ -13,7 +13,7 @@ uses.
 .. _datasets_ref:
 
 :mod:`nilearn.datasets`: Automatic Dataset Fetching
-================================================
+===================================================
 
 .. automodule:: nilearn.datasets
    :no-members:
@@ -79,7 +79,7 @@ Classes
    :template: class.rst
 
    NiftiMasker
-   NiftiMultiMasker
+   MultiNiftiMasker
    NiftiLabelsMasker
    NiftiMapsMasker
 

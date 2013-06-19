@@ -32,10 +32,10 @@ func_files = dataset.func[:5]
 from nilearn import io
 
 # This is a multi-subject method, thus we need to use the
-# NiftiMultiMasker, rather than the NiftiMasker
+# MultiNiftiMasker, rather than the NiftiMasker
 # We specify the target_affine to downsample to 3mm isotropic
 # resolution
-masker = io.NiftiMultiMasker(smoothing_fwhm=6,
+masker = io.MultiNiftiMasker(smoothing_fwhm=6,
                              target_affine=np.diag((3, 3, 3)),
                              memory="nilearn_cache", memory_level=1,
                              verbose=True)

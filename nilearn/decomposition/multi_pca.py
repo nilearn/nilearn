@@ -14,7 +14,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
-from ..io import NiftiMultiMasker, NiftiMapsMasker
+from ..io import MultiNiftiMasker, NiftiMapsMasker
 from ..io.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
@@ -99,10 +99,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    mask: filename, NiImage or NiftiMultiMasker instance, optional
+    mask: filename, NiImage or MultiNiftiMasker instance, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
-        it will be computed automatically by a NiftiMultiMasker with default
+        it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
     do_cca: boolean, optional
@@ -147,9 +147,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    `masker_`: instance of NiftiMultiMasker
+    `masker_`: instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
-        NiftiMultiMasker is given in `mask` parameter,
+        MultiNiftiMasker is given in `mask` parameter,
         this is a copy of it. Otherwise, a masker is created using the value
         of `mask` and other NiftiMasker related parameters as initialization.
 
@@ -198,8 +198,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             # This is a very incomplete hack, as it won't work right for
             # single-subject list of 3D filenames
         # First, learn the mask
-        if not isinstance(self.mask, NiftiMultiMasker):
-            self.masker_ = NiftiMultiMasker(mask=self.mask,
+        if not isinstance(self.mask, MultiNiftiMasker):
+            self.masker_ = MultiNiftiMasker(mask=self.mask,
                                             smoothing_fwhm=self.smoothing_fwhm,
                                             target_affine=self.target_affine,
                                             target_shape=self.target_shape,
@@ -223,7 +223,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'memory', 'memory_level']:
                 if getattr(self, param_name) is not None:
-                    warnings.warn('You passed a NiftiMultiMasker instance '
+                    warnings.warn('You passed a MultiNiftiMasker instance '
                                   'as mask. Parameter %s will be consequently '
                                   'ignored.' % param_name)
         if self.masker_.mask is None:
@@ -232,7 +232,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
-        parameters = get_params(NiftiMultiMasker, self)
+        parameters = get_params(MultiNiftiMasker, self)
         parameters['detrend'] = True
         parameters['standardize'] = True
 

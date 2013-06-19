@@ -6,7 +6,7 @@ import numpy as np
 
 import nose
 
-from nilearn.io import NiftiMultiMasker
+from nilearn.io import MultiNiftiMasker
 from nilearn.decomposition.multi_pca import MultiPCA
 
 
@@ -41,7 +41,7 @@ def test_multi_pca():
     nose.tools.assert_raises(ValueError, multi_pca.fit, data[:2])
 
     # Smoke test the use of a masker and without CCA
-    multi_pca = MultiPCA(mask=NiftiMultiMasker(mask_opening=0), do_cca=False,
+    multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_opening=0), do_cca=False,
                          n_components=3)
     multi_pca.fit(data[:2])
 
