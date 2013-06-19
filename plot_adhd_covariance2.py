@@ -80,9 +80,9 @@ def covariance_matrix(subject_n):
 
 
 if __name__ == "__main__":
-    n_subjects = 2
+    n_subjects = 40
     data = []
-    rho = 0.1
+    rho = 1.
 #    rho = 20
     mem = joblib.Memory(".")
 
@@ -101,11 +101,12 @@ if __name__ == "__main__":
     est_precs, all_crit = honorio_samaras(emp_covs, rho, n_samples,
                                           normalize_n_samples=True,
                                           n_iter=5,
-                                          debug=True, verbose=1)
+                                          debug=False, verbose=1)
 
-    for n, value in enumerate(zip(emp_covs,
-                                  np.rollaxis(est_precs, -1))):
-        emp_cov, prec = value
-        plot_matrices(emp_cov, -prec, title="Honorio Samaras", subject_n=n)
+    ## for n, value in enumerate(zip(emp_covs,
+    ##                               np.rollaxis(est_precs, -1))):
+    ##     emp_cov, prec = value
+    ##     plot_matrices(emp_cov, -prec, title="Honorio Samaras", subject_n=n)
+    ##     break
 
-    pl.show()
+#    pl.show()

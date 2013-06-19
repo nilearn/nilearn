@@ -10,10 +10,7 @@ Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
 # Authors: Philippe Gervais
 # License: simplified BSD
 
-import pdb
-
 import warnings
-import sys
 
 import numpy as np
 import scipy
@@ -26,7 +23,7 @@ def symmetrize(M):
     M[...] = M + M.T
     M[...] /= 2.
 
-
+#@profile
 def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
                     debug=False, normalize_n_samples=True):
     """
@@ -88,9 +85,10 @@ def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
         symmetrize(emp_covs[..., k])
         assert_spd(emp_covs[..., k])
 
-    # TODO: low robustness (?) with inverse computation.
     omega = np.ndarray(shape=emp_covs.shape, dtype=np.float)
     for k in xrange(n_tasks):
+        # Values on main diagonals should be far from zero, because they
+        # are timeseries energy.
         omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
 
     # debugging
@@ -187,37 +185,47 @@ def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
                     y[:, m] = 0  # x* = 0
                 else:
                     # q(k) -> T(k) * v(k) * h_22(k)
-                    # \lambda -> l   (lambda is a Python keyword)
-                    # TODO: replace by "alpha"
+                    # \lambda -> alpha   (lambda is a Python keyword)
                     q = n_samples * emp_covs[p, p, :] * Winv[m, m, :]
                     if debug:
                         assert(np.all(q > 0))
-                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
-                    l = scipy.optimize.newton(
-                        quadratic_trust_region, 0,
-                        fprime=quadratic_trust_region_deriv,
-                        args=(c, q, rho), maxiter=50)
-                    remainder = quadratic_trust_region(l, c, q, rho)
+                    # x* = \lambda* diag(1 + \lambda q)^{-1} c
+                    if True:
+                        # Precompute some quantities
+                        cc = c * c
+                        two_ccq = 2. * cc * q
+                        # tolerance does not seem to be important for
+                        # numerical stability (tol=1e-2 works)
+                        alpha = scipy.optimize.newton(
+                            optimized_quadratic_trust_region, 0,
+                            fprime=optimized_quadratic_trust_region_deriv,
+                            args=(q, two_ccq, cc, rho ** 2),
+                            maxiter=50)
 
-                    if abs(remainder) > 0.1:  # 1e-4
+                        remainder = optimized_quadratic_trust_region(
+                            alpha, q, two_ccq, cc, rho ** 2)
+                    else:
+                        alpha = scipy.optimize.newton(
+                            quadratic_trust_region, 0,
+                            fprime=quadratic_trust_region_deriv,
+                            args=(c, q, rho),
+                            maxiter=50)
+
+                        remainder = quadratic_trust_region(
+                            alpha, c, q, rho ** 2)
+
+                    if abs(remainder) > 0.1:
                         warnings.warn("Newton-Raphson step did not converge.\n"
-                                      "remainder: {0:f} l: {1:f}, rho: {2:f}, "
-                                      "c2: {3:f}".format(remainder, l, rho, c2)
-                                      )
-                        all_l = np.linspace(-1, 100, 500)
-                        qtr = []
-                        pdb.set_trace()
-                        for l in all_l:
-                            qtr.append(quadratic_trust_region(l, c, q, rho))
-                        import pylab as pl
-                        pl.plot(all_l, qtr)
-                        pl.grid()
-                        pl.show()
-                        sys.exit(0)
+                                      "This indicates a badly conditioned "
+                                      "system.\n"
+                                      "Try option normalize_n_samples=True or "
+                                      "ensure that values on the main diagonal"
+                                      "of \nempirical covariances are equal "
+                                      "to one.")
 
                     if debug:
-                        assert(l >= 0)
-                    y[:, m] = (l * c) / (1. + l * q)  # x*
+                        assert alpha >= 0, alpha
+                    y[:, m] = (alpha * c) / (1. + alpha * q)  # x*
 
             # These lines can be put out of this loop. Used only to
             # compute criterion for debugging.
@@ -287,6 +295,16 @@ def quadratic_trust_region_criterion(l, c, q, rho):
     return ret
 
 
+#@profile
+def optimized_quadratic_trust_region(alpha, q, two_ccq, cc, rho2):
+    return rho2 - (cc / ((1. + alpha * q) ** 2)).sum()
+
+
+#@profile
+def optimized_quadratic_trust_region_deriv(alpha, q, two_ccq, cc, rho2):
+    return (two_ccq / (1. + alpha * q) ** 3).sum()
+
+#@profile
 def quadratic_trust_region(l, c, q, rho):
     if l < 0:
         slope = 2 * (c * c * q).sum()
@@ -294,7 +312,7 @@ def quadratic_trust_region(l, c, q, rho):
 
     return rho ** 2 - ((c * c) / ((1. + l * q) ** 2)).sum()
 
-
+#@profile
 def quadratic_trust_region_deriv(l, c, q, rho):
     if l < 0:
         return 2 * ((c * c) * q).sum()
