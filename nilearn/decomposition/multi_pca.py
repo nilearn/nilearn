@@ -203,6 +203,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                             smoothing_fwhm=self.smoothing_fwhm,
                                             target_affine=self.target_affine,
                                             target_shape=self.target_shape,
+                                            low_pass=self.low_pass,
+                                            high_pass=self.high_pass,
+                                            t_r=self.t_r,
                                             memory=self.memory,
                                             memory_level=self.memory_level)
         else:
@@ -221,11 +224,13 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 del masker_memory
 
             for param_name in ['target_affine', 'target_shape',
-                               'smoothing_fwhm', 'memory', 'memory_level']:
-                if getattr(self, param_name) is not None:
-                    warnings.warn('You passed a MultiNiftiMasker instance '
-                                  'as mask. Parameter %s will be consequently '
-                                  'ignored.' % param_name)
+                               'smoothing_fwhm', 'low_pass', 'high_pass',
+                               't_r', 'memory', 'memory_level']:
+                if getattr(self.masker_, param_name) is not None:
+                    warnings.warn('Parameter %s of the masker overriden'
+                                  % param_name)
+                setattr(self.masker_, param_name,
+                        getattr(self, param_name))
         if self.masker_.mask is None:
             self.masker_.fit(niimgs)
         else:
