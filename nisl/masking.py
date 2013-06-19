@@ -14,13 +14,16 @@ from ._utils.cache_mixin import cache
 from . import resampling
 
 
-def _load_mask_img(mask_img):
+def _load_mask_img(mask_img, allow_empty=False):
     ''' Check that a mask is valid, ie with two values including 0 and load it.
 
     Parameters
     ----------
     mask_img: nifti-like image
         The mask to check
+
+    allow_empty: boolean, optional
+        Allow loading an empty mask (full of 0 values)
 
     Returns
     -------
@@ -33,7 +36,7 @@ def _load_mask_img(mask_img):
 
     if len(values) == 1:
         # We accept a single value if it is not 0 (full true mask).
-        if values[0] == 0:
+        if values[0] == 0 and not allow_empty:
             raise ValueError('Given mask is invalid because it masks all data')
     elif len(values) == 2:
         # If there are 2 different values, one of them must be 0 (background)
@@ -186,7 +189,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     if opening:
         opening = int(opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
-    if connected:
+    if connected and mask.any():
         mask = largest_connected_component(mask)
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=opening)
@@ -221,7 +224,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if len(mask_imgs) == 0:
         raise ValueError('No mask provided for intersection')
     grp_mask = None
-    first_mask, ref_affine = _load_mask_img(mask_imgs[0])
+    first_mask, ref_affine = _load_mask_img(mask_imgs[0], allow_empty=True)
     ref_shape = first_mask.shape
     if threshold > 1:
         raise ValueError('The threshold should be smaller than 1')
@@ -230,7 +233,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in mask_imgs:
-        mask, affine = _load_mask_img(this_mask)
+        mask, affine = _load_mask_img(this_mask, allow_empty=True)
         if np.any(affine != ref_affine):
             raise ValueError("All masks should have the same affine")
         if np.any(mask.shape != ref_shape):

@@ -21,6 +21,8 @@ def test_multi_pca():
     data = []
     for i in range(8):
         this_data = rng.normal(size=shape)
+        # Create fake activation to get non empty mask
+        this_data[2:4, 2:4, 2:4, :] += 10
         data.append(nibabel.Nifti1Image(this_data, affine))
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
@@ -39,7 +41,7 @@ def test_multi_pca():
     nose.tools.assert_raises(ValueError, multi_pca.fit, data[:2])
 
     # Smoke test the use of a masker and without CCA
-    multi_pca = MultiPCA(mask=NiftiMultiMasker(), do_cca=False,
+    multi_pca = MultiPCA(mask=NiftiMultiMasker(mask_opening=0), do_cca=False,
                          n_components=3)
     multi_pca.fit(data[:2])
 
