@@ -11,7 +11,6 @@ import nibabel
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 
-from sklearn.externals import joblib
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
@@ -207,11 +206,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                             memory=self.memory,
                                             memory_level=self.memory_level)
         else:
-            if isinstance(self.mask, NiftiMultiMasker) \
-               and joblib.__version__.startswith("0.6"):
-                # Dirty workaround for a joblib bug
-                # Memory with cachedir=None cannot be cloned in version 0.6
-                # of joblib.
+            try:
+                self.masker_ = clone(self.mask)
+            except TypeError:
+                # Very dirty workaround for a joblib bug
                 masker_memory = self.mask.memory
                 if masker_memory.cachedir is None:
                     self.mask.memory = None
@@ -221,8 +219,6 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 else:
                     self.masker_ = clone(self.mask)
                 del masker_memory
-            else:
-                self.masker_ = clone(self.mask)
 
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'memory', 'memory_level']:
