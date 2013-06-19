@@ -63,5 +63,5 @@ def test_enclosing_scope_name():
     assert_equal(name, 'C.get_scope_name')
     name = b.get_scope_name(stack=3, ensure_estimator=False)
     assert_equal(name, 'get_scope_name')
-    name = b.get_scope_name(ensure_estimator=False, stack_level=120)
+    name = b.get_scope_name(ensure_estimator=False, max_stack_level=120)
     assert_equal(name, 'C.get_scope_name')

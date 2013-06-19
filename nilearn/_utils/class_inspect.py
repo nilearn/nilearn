@@ -49,7 +49,7 @@ def get_params(cls, instance, ignore=None):
     return params
 
 
-def enclosing_scope_name(ensure_estimator=True, stack_level=2):
+def enclosing_scope_name(ensure_estimator=True, max_stack_level=2):
     """ Find the name of the enclosing scope for debug output purpose
 
     Use inspection to climb up the stack until the calling object. This is
@@ -60,15 +60,15 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
     ==========
     ensure_estimator: boolean, default: True
         If true, find the enclosing object deriving from 'BaseEstimator'
-    stack_level: integer, default 3
+    max_stack_level: integer, default 3
         If ensure_estimator is not True, stack_level quantifies the
-        number of frame we will go up. We stop at the first frame that holds
-        a `self` local.
+        number of frame we will go up at most. We stop at the first frame
+        that holds a `self` local.
     """
     try:
         frame = inspect.currentframe()
         if not ensure_estimator:
-            for _ in range(stack_level):
+            for _ in range(max_stack_level):
                 frame = frame.f_back
                 if 'self' in frame.f_locals:
                     break
