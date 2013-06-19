@@ -4,6 +4,8 @@
 from sklearn.base import BaseEstimator
 import inspect
 
+from .exceptions import AuthorizedException
+
 
 def get_params(cls, instance, ignore=None):
     """ Retrieve the initialization parameters corresponding to a class
@@ -83,5 +85,5 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
             caller_name = frame.f_code.co_name
 
         return caller_name
-    except Exception:
+    except AuthorizedException:
         return 'Unknown'
