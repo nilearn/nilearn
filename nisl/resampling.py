@@ -132,7 +132,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     target_shape: tuple or list, optional
         If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
+        len(target_shape) must be equal to 3. 
+        A target_affine has to be specified jointly with target_shape.
 
     interpolation: str, optional
         Can be continuous' (default) or 'nearest'. Indicate the resample method

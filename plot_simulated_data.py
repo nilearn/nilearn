@@ -32,10 +32,10 @@ import nisl.masking
 
 ###############################################################################
 # Function to generate data
-def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
+def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     generator = check_random_state(random_state)
     roi_size = 2  # size / 3
-    smooth_X = 2
+    smooth_X = 1
     ### Coefs
     w = np.zeros((size, size, size))
     w[0:roi_size, 0:roi_size, 0:roi_size] = -0.6
@@ -46,26 +46,24 @@ def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
       (size - roi_size) / 2:(size + roi_size) / 2,
       (size - roi_size) / 2:(size + roi_size) / 2] = 0.5
     w = w.ravel()
-    ### Images
+    ### Generate smooth background noise
     XX = generator.randn(n_samples, size, size, size)
-    X = []
-    y = []
+    noise = []
     for i in range(n_samples):
         Xi = ndimage.filters.gaussian_filter(XX[i, :, :, :], smooth_X)
         Xi = Xi.ravel()
-        X.append(Xi)
-        y.append(np.dot(Xi, w))
-    X = np.array(X)
-    y = np.array(y)
-    norm_noise = linalg.norm(y, 2) / np.exp(snr / 20.)
-    orig_noise = generator.randn(y.shape[0])
-    noise_coef = norm_noise / linalg.norm(orig_noise, 2)
-    # Add additive noise
-    noise = noise_coef * orig_noise
-    snr = 20 * np.log(linalg.norm(y, 2) / linalg.norm(noise, 2))
+        noise.append(Xi)
+    noise = np.array(noise)
+    ### Generate the signal y
+    y = generator.randn(n_samples)
+    X = np.dot(y[:, np.newaxis], w[np.newaxis])
+    norm_noise = linalg.norm(X, 2) / np.exp(snr / 20.)
+    noise_coef = norm_noise / linalg.norm(noise, 2)
+    noise *= noise_coef
+    snr = 20 * np.log(linalg.norm(X, 2) / linalg.norm(noise, 2))
     print ("SNR: %.1f dB" % snr)
-    y += noise
-
+    ### Mixing of signal + noise and splitting into train/test
+    X += noise
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]
     X_test = X[n_samples / 2:, :]
@@ -85,15 +83,15 @@ def plot_slices(data, title=None):
                   interpolation="nearest", cmap=pl.cm.RdBu_r)
         pl.xticks(())
         pl.yticks(())
-    pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97)
+    pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97, top=.9)
     if title is not None:
-        pl.suptitle(title)
+        pl.suptitle(title, y=.95)
 
 
 ###############################################################################
 # Create data
 X_train, X_test, y_train, y_test, snr, _, coefs, size = \
-    create_simulation_data(snr=10, n_samples=400, size=12)
+    create_simulation_data(snr=-10, n_samples=100, size=12)
 
 # Create masks for SearchLight. process_mask is the voxels where SearchLight
 # computation is performed. It is a subset of the brain mask, just to reduce
