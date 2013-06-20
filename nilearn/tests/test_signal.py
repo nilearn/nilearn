@@ -163,6 +163,23 @@ def test_detrend():
     np.testing.assert_almost_equal(x, signals, decimal=14)
 
 
+def test_mean_of_squares():
+    """Test _mean_of_squares."""
+    point_number = 103
+    features = 171
+    signals, _, _ = generate_signals(feature_number=features,
+                                     length=point_number,
+                                     same_variance=True)
+    # Reference computation
+    var1 = np.copy(signals)
+    var1 **= 2
+    var1 = var1.mean(axis=0)
+
+    var2 = nisignal._mean_of_squares(signals)
+
+    np.testing.assert_almost_equal(var1, var2)
+
+
 # This test is inspired from scipy docstring of detrend function
 def test_clean_detrending():
     point_number = 1000

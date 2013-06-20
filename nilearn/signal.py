@@ -52,6 +52,35 @@ def _standardize(signals, detrend=False, normalize=True):
     return signals
 
 
+def _mean_of_squares(signals):
+    """Compute mean of squares for each signal.
+    This is equivalent to
+
+    var = np.copy(signals)
+    var **= 2
+    var = var.mean(axis=0)
+
+    But uses a lot less memory.
+    """
+    var = np.ndarray(signals.shape[1])
+    # TODO: set n_chunks to 1 when signals.shape[1] is small enough
+    n_chunks = 20
+    chunk_size = max(signals.shape[1] // n_chunks, 1)
+    # Note: the last chunk may be incomplete
+    n_chunks = (signals.shape[1] - 1) // chunk_size + 1
+    assert n_chunks * chunk_size >= signals.shape[1]
+
+    # Fastest for C order
+    for chunk in xrange(n_chunks):
+        sind = chunk * chunk_size
+        eind = (chunk + 1) * chunk_size
+        tvar = np.copy(signals[:, sind:eind])
+        tvar **= 2
+        var[sind:eind] = tvar.mean(axis=0)
+
+    return var
+
+
 def _detrend(signals, inplace=False, type="linear"):
     """Detrend columns of input array.
 
@@ -96,6 +125,9 @@ def _detrend(signals, inplace=False, type="linear"):
         # Compute chunk_size based on n_chunks and update n_chunks.
         # In that case, the initial value of n_chunks is a minimum
         # number of chunks
+
+        # TODO: set n_chunks to 1 when signals.shape[1] is small enough
+        # This is fastest for C order.
         n_chunks = 10
         chunk_size = max(signals.shape[1] // n_chunks, 1)
         # Note: the last chunk may be incomplete
@@ -107,7 +139,6 @@ def _detrend(signals, inplace=False, type="linear"):
             signals[:, sind:eind] -= np.dot(regressor[:, 0],
                                             signals[:, sind:eind]
                                             ) * regressor
-#        signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
     return signals
 
 
