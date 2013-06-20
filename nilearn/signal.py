@@ -82,7 +82,9 @@ def _detrend(signals, inplace=False, type="linear"):
 
     signals -= np.mean(signals, axis=0)
     if type == "linear":
-        regressor = np.arange(signals.shape[0]).astype(np.float)
+        # Keeping "signals" dtype avoids some type conversion further down,
+        # and can save a lot of memory if dtype is single-precision.
+        regressor = np.arange(signals.shape[0], dtype=signals.dtype)
         regressor -= regressor.mean()
         regressor /= np.sqrt((regressor ** 2).sum())
         signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
