@@ -172,12 +172,9 @@ def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
                 y_1[:, m:] = y[:, m + 1:]
 
                 # Compute c
-                for k in xrange(n_tasks):
-                    c[k] = - n_samples[k] * (
-                        emp_covs[p, p, k] * np.dot(h_12[k, :], y_1[k, :])
-                        + u[k, m]
-                        )
-
+                c[:] = - n_samples * (
+                    emp_covs[p, p, :] * (h_12 * y_1).sum(axis=1) + u[:, m]
+                    )
                 c2 = np.sqrt(np.dot(c, c))
 
                 # x -> y[:][m]

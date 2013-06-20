@@ -58,6 +58,8 @@ def covariance_matrix(subject_n):
     filename = dataset["func"][subject_n]
     confound_file = dataset["confounds"][subject_n]
 
+    print("Processing file %s" % filename)
+
     print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
     msdl_atlas = nisl.datasets.fetch_msdl_atlas()
 
@@ -82,8 +84,7 @@ def covariance_matrix(subject_n):
 if __name__ == "__main__":
     n_subjects = 40
     data = []
-    rho = 1.
-#    rho = 20
+    rho = .3
     mem = joblib.Memory(".")
 
     for n in xrange(n_subjects):
@@ -102,11 +103,10 @@ if __name__ == "__main__":
                                           normalize_n_samples=True,
                                           n_iter=5,
                                           debug=False, verbose=1)
+    for n, value in enumerate(zip(emp_covs,
+                                  np.rollaxis(est_precs, -1))):
+        emp_cov, prec = value
+        plot_matrices(emp_cov, -prec, title="Honorio Samaras", subject_n=n)
+        break
 
-    ## for n, value in enumerate(zip(emp_covs,
-    ##                               np.rollaxis(est_precs, -1))):
-    ##     emp_cov, prec = value
-    ##     plot_matrices(emp_cov, -prec, title="Honorio Samaras", subject_n=n)
-    ##     break
-
-#    pl.show()
+    pl.show()
