@@ -211,8 +211,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         else:
             try:
                 self.masker_ = clone(self.mask)
-            except TypeError:
-                # Very dirty workaround for a joblib bug
+            except TypeError as e:
+                # Workaround for a joblib bug: in joblib 0.6, a Memory object
+                # with cachedir = None cannot be cloned.
                 masker_memory = self.mask.memory
                 if masker_memory.cachedir is None:
                     self.mask.memory = None
@@ -220,8 +221,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                     self.mask.memory = masker_memory
                     self.masker_.memory = Memory(cachedir=None)
                 else:
-                    self.masker_ = clone(self.mask)
-                del masker_memory
+                    # The error was raised for another reason
+                    raise e
 
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'low_pass', 'high_pass',
