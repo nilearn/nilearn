@@ -56,7 +56,8 @@ def _detrend(signals, inplace=False, type="linear"):
     """Detrend columns of input array.
 
     Signals are supposed to be columns of `signals`.
-    This function is significantly faster than scipy.signal.detrend.
+    This function is significantly faster than scipy.signal.detrend on this
+    case and uses a lot less memory.
 
     Parameters
     ==========
@@ -87,7 +88,26 @@ def _detrend(signals, inplace=False, type="linear"):
         regressor = np.arange(signals.shape[0], dtype=signals.dtype)
         regressor -= regressor.mean()
         regressor /= np.sqrt((regressor ** 2).sum())
-        signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
+        regressor = regressor[:, np.newaxis]
+
+        # Remove slope by chunking. This slows down things a little
+        # but greatly reduces memory usage.
+
+        # Compute chunk_size based on n_chunks and update n_chunks.
+        # In that case, the initial value of n_chunks is a minimum
+        # number of chunks
+        n_chunks = 10
+        chunk_size = max(signals.shape[1] // n_chunks, 1)
+        # Note: the last chunk may be incomplete
+        n_chunks = (signals.shape[1] - 1) // chunk_size + 1
+        assert n_chunks * chunk_size >= signals.shape[1]
+        for chunk in xrange(n_chunks):
+            sind = chunk * chunk_size
+            eind = (chunk + 1) * chunk_size
+            signals[:, sind:eind] -= np.dot(regressor[:, 0],
+                                            signals[:, sind:eind]
+                                            ) * regressor
+#        signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
     return signals
 
 
