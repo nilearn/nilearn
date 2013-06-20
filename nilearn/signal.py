@@ -54,16 +54,19 @@ def _standardize(signals, detrend=False, normalize=True):
 
 def _mean_of_squares(signals):
     """Compute mean of squares for each signal.
-    This is equivalent to
+    This function is equivalent to
 
-    var = np.copy(signals)
-    var **= 2
-    var = var.mean(axis=0)
+        var = np.copy(signals)
+        var **= 2
+        var = var.mean(axis=0)
 
-    But uses a lot less memory.
+    but uses a lot less memory.
     """
     var = np.ndarray(signals.shape[1])
     # TODO: set n_chunks to 1 when signals.shape[1] is small enough
+    # n_chunks = 20 is very conservative: reduces a lot memory consumption for
+    # large arrays, not affecting too much computation time for small ones.
+    # Adjusting this value can lead to significant speed improvements.
     n_chunks = 20
     chunk_size = max(signals.shape[1] // n_chunks, 1)
     # Note: the last chunk may be incomplete
@@ -277,18 +280,13 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
         nilearn.image.high_variance_confounds
     """
 
-    # FIXME: when detrend=True, two copies of "series" are made.  Variance
-    # computation below can be made chunk-by-chunk, which uses almost no
-    # extra memory, and is as fast (if not faster).
     if detrend:
         series = _detrend(series)  # copy
 
     # Retrieve the voxels|features with highest variance
 
     # Compute variance without mean removal.
-    var = np.copy(series)
-    var **= 2
-    var = var.mean(axis=0)
+    var = _mean_of_squares(series)
 
     var_thr = stats.scoreatpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)

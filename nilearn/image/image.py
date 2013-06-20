@@ -10,7 +10,7 @@ import numpy as np
 import nibabel
 
 from .. import signal
-from .._utils import check_niimgs, check_niimg
+from .._utils import check_niimgs, check_niimg, as_ndarray
 from .. import masking
 
 
@@ -67,8 +67,9 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
         mask_img = check_niimg(mask_img)
         sigs = masking.apply_mask(niimgs, mask_img)
     else:
-        sigs = niimgs.get_data()
+        sigs = as_ndarray(niimgs.get_data())
         # Not using apply_mask here saves memory in most cases.
+        del niimgs  # help reduce memory consumption
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
     return signal.high_variance_confounds(sigs, n_confounds=n_confounds,
