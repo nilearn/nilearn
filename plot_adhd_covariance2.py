@@ -15,10 +15,10 @@ import joblib
 
 import nibabel
 
-import nisl.datasets
-import nisl.image
-import nisl.signal
-import nisl.io
+import nilearn.datasets
+import nilearn.image
+import nilearn.signal
+import nilearn.io
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
@@ -54,35 +54,35 @@ def plot_matrices(cov, prec, title, subject_n=0):
 
 
 def covariance_matrix(subject_n):
-    dataset = nisl.datasets.fetch_adhd()
+    dataset = nilearn.datasets.fetch_adhd()
     filename = dataset["func"][subject_n]
     confound_file = dataset["confounds"][subject_n]
 
     print("Processing file %s" % filename)
 
     print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-    msdl_atlas = nisl.datasets.fetch_msdl_atlas()
+    msdl_atlas = nilearn.datasets.fetch_msdl_atlas()
+    niimgs = nibabel.load(filename)
 
     print("-- Computing confounds ...")
-    hv_confounds = nisl.image.high_variance_confounds(filename)
+    hv_confounds = nilearn.image.high_variance_confounds(niimgs)
 
     print("-- Computing region signals ...")
-    masker = nisl.io.NiftiMapsMasker(msdl_atlas["maps"],
+    masker = nilearn.io.NiftiMapsMasker(msdl_atlas["maps"],
                                      resampling_target="maps",
                                      low_pass=None, high_pass=0.01, t_r=2.5,
                                      standardize=True,
                                      verbose=1)
-    region_ts = masker.fit_transform(filename,
+    region_ts = masker.fit_transform(niimgs,
                                      confounds=[hv_confounds, confound_file])
 
-    data_img = nibabel.load(filename)
-    n_samples = data_img.shape[-1]
+    n_samples = niimgs.shape[-1]
 
     return np.dot(region_ts.T, region_ts), n_samples
 
 
 if __name__ == "__main__":
-    n_subjects = 40
+    n_subjects = 4
     data = []
     rho = .3
     mem = joblib.Memory(".")
@@ -98,15 +98,15 @@ if __name__ == "__main__":
         np.testing.assert_almost_equal(np.diag(cov), np.ones(cov.shape[0]))
 
     print("-- Computing covariance matrices ...")
-    from nisl.honorio_samaras import honorio_samaras
+    from nilearn.honorio_samaras import honorio_samaras
     est_precs, all_crit = honorio_samaras(emp_covs, rho, n_samples,
                                           normalize_n_samples=True,
                                           n_iter=5,
                                           debug=False, verbose=1)
+
     for n, value in enumerate(zip(emp_covs,
                                   np.rollaxis(est_precs, -1))):
         emp_cov, prec = value
         plot_matrices(emp_cov, -prec, title="Honorio Samaras", subject_n=n)
-        break
 
     pl.show()
