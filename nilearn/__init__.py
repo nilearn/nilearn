@@ -2,7 +2,7 @@
 Machine Learning module for NeuroImaging in python
 ==================================================
 
-Nisl aims to simplify the use of the scikit-learn in the context of
+NiLearn aims to simplify the use of the scikit-learn in the context of
 neuroimaging. It provides specific input/output functions, algorithms and
 visualisation tools.
 

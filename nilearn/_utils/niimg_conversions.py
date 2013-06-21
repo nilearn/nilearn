@@ -105,9 +105,10 @@ def check_niimg(niimg):
 
     Notes
     -----
-    In Nisl, special care has been taken to make image manipulation easy. This
-    method is a kind of pre-requisite for any data processing method in Nisl as
-    it checks if data has a correct format and loads it if necessary.
+    In NiLearn, special care has been taken to make image manipulation easy.
+    This method is a kind of pre-requisite for any data processing method in
+    NiLearn because it checks if data have a correct format and loads them if
+    necessary.
 
     Its application is idempotent.
     """

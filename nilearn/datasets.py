@@ -187,11 +187,11 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
     This function retrieve the datasets directory (or data directory) using
     the following priority :
     1. the keyword argument data_dir
-    2. the environment variable NISL_DATA
+    2. the environment variable NILEARN_DATA
     3. "nilearn_data" directory into the current working directory
     """
     if not data_dir:
-        data_dir = os.getenv("NISL_DATA", os.path.join(os.getcwd(),
+        data_dir = os.getenv("NILEARN_DATA", os.path.join(os.getcwd(),
                              'nilearn_data'))
     data_dir = os.path.join(data_dir, dataset_name)
     if folder is not None:
