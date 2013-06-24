@@ -83,7 +83,7 @@ def covariance_matrix(subject_n):
 if __name__ == "__main__":
     n_subjects = 4
     data = []
-    rho = .3
+    rho = 0.05
     mem = joblib.Memory(".")
 
     print("-- Computing covariance matrices ...")
@@ -95,12 +95,13 @@ if __name__ == "__main__":
     from nilearn.group_sparse_covariance import group_sparse_covariance
     est_precs, all_crit = group_sparse_covariance(emp_covs, rho, n_samples,
                                           normalize_n_samples=True,
-                                          n_iter=5,
-                                          debug=False, verbose=1)
+                                          n_iter=5, return_costs=True,
+                                          debug=True, verbose=1)
 
     for n, value in enumerate(zip(emp_covs,
                                   np.rollaxis(est_precs, -1))):
         emp_cov, prec = value
-        plot_matrices(emp_cov, -prec, title="Honorio Samaras", subject_n=n)
+        plot_matrices(emp_cov, -prec,
+                      title="Group sparse estimator", subject_n=n)
 
     pl.show()
