@@ -350,10 +350,10 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
 
 
-def is_spd(M):
+def is_spd(M, decimal=15):
     """Assert that input matrix is symmetric positive definite.
 
-    M must be symmetric down to the 15-th decimal.
+    M must be symmetric down to specified decimal places.
     The check is performed by checking that all eigenvalues are positive.
 
     Parameters
@@ -366,7 +366,7 @@ def is_spd(M):
     answer: boolean
         True if matrix is symmetric positive definite, False otherwise.
     """
-    if not np.allclose(M, M.T, atol=1e-15):
+    if not np.allclose(M, M.T, atol=0.1 ** decimal):
         return False
     eigvalsh = np.linalg.eigvalsh(M)
     return eigvalsh.min() > 0

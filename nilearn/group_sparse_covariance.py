@@ -1,11 +1,6 @@
 """
 Implementation of algorithm for sparse multi-task learning of gaussian
 graphical models.
-
-Jean Honorio and Dimitris Samaras.
-"Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
-
 """
 # Authors: Philippe Gervais
 # License: simplified BSD
@@ -57,17 +52,6 @@ def quad_trust_region_deriv(alpha, q, two_ccq, cc, rho2):
     return (two_ccq / (1. + alpha * q) ** 3).sum()
 
 
-def update_submatrix(full, sub, sub_inv, n):
-    sub[:n, :n] = full[:n, :n]
-    sub[n:, n:] = full[n + 1:, n + 1:]
-    sub[:n, n:] = full[:n, n + 1:]
-    sub[n:, :n] = full[n + 1:, :n]
-    # The inverse of a symmetric matrix can be computed more efficiently than
-    # that. The function is however not available in Scipy 0.7.0 (but is in
-    # later versions)
-    sub_inv[...] = np.linalg.inv(sub)
-
-
 def update_vectors(full, n):
     """full is a (N, N) matrix.
 
@@ -90,7 +74,7 @@ def update_vectors(full, n):
     return h, v
 
 
-def update_submatrix2(full, sub, sub_inv, p):
+def update_submatrix(full, sub, sub_inv, p):
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
@@ -107,14 +91,14 @@ def update_submatrix2(full, sub, sub_inv, p):
     h, v = update_vectors(full, n)
 
     # change row
-    coln = sub_inv[:, n]  # A^(-1)*U
+    coln = sub_inv[:, n]
     V = h - sub[n, :]
     coln = coln / (1. + np.dot(V, coln))
     sub_inv -= np.outer(coln, np.dot(V, sub_inv))
     sub[n, :] = h
 
     # change column
-    rown = sub_inv[n, :]  # V*A^(-1)
+    rown = sub_inv[n, :]
     U = v - sub[:, n]
     rown = rown / (1. + np.dot(rown, U))
     sub_inv -= np.outer(np.dot(sub_inv, U), rown)
@@ -137,7 +121,16 @@ def assert_submatrix(full, sub, n):
 def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
                             verbose=0, return_costs=False,
                             normalize_n_samples=True, debug=False):
-    """
+    """Compute sparse precision matrices starting with covariance matrices.
+
+    The precision matrices returned by this function are sparse, and share a
+    common sparsity pattern: all have zeros at the same location. This is
+    achieved by simultaneous computation of all precision matrices at the
+    same time.
+
+    Running time is linear on n_iter, and number of tasks (number of covariance
+    matrices), but cubic on covariance size (number of signals).
+
     Parameters
     ==========
     emp_covs: list of numpy.ndarray
@@ -149,7 +142,8 @@ def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
 
     rho: float
         regularization parameter. With normalized covariances matrices and
-        number of samples, sensible values lie in the [0, 1] range.
+        number of samples, sensible values lie in the [0, 1] range(zero is
+        no regularization: output is not sparse)
 
     n_samples: array-like or None
         number of samples for each task. len(n_samples) == len(emp_covs)
@@ -182,6 +176,14 @@ def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
     costs: numpy.ndarray
         value of cost function for each iteration. This is output only if
         return_costs is True.
+
+    Notes
+    =====
+    The present algorithm is based on:
+
+    Jean Honorio and Dimitris Samaras.
+    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
+    Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
     """
 
     # Test input arguments
@@ -215,9 +217,6 @@ def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
         # are timeseries energy.
         omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
 
-    # debugging
-    costs = []
-
     # Preallocate arrays
     y = np.ndarray(shape=(n_tasks, n_var - 1), dtype=np.float)
     u = np.ndarray(shape=(n_tasks, n_var - 1))
@@ -230,6 +229,11 @@ def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
                    dtype=np.float)
     Winv = np.ndarray(shape=W.shape, dtype=np.float)
 
+    # Optional.
+    costs = []
+
+    # Start optimization loop. Variables are named following the
+    # Honorio-Samaras paper notations.
     for n in xrange(n_iter):
         if verbose >= 1:
             print("\n-- Starting {iter_n:d}-th iteration...".format(iter_n=n))
@@ -254,22 +258,23 @@ def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
                     omega_orig = omega.copy()
 
                 for k in xrange(n_tasks):
-                    update_submatrix(omega[..., k], W[..., k], Winv[..., k], p)
+                    update_submatrix(omega[..., k],
+                                     W[..., k], Winv[..., k], p)
                     if debug:
-#                        assert_submatrix(omega[..., k], W[..., k], p)
+                        assert_submatrix(omega[..., k], W[..., k], p)
                         np.testing.assert_almost_equal(
                             np.dot(Winv[..., k], W[..., k]),
                             np.eye(Winv[..., k].shape[0]), decimal=12)
                         assert(is_spd(W[..., k]))
-                        assert(is_spd(Winv[..., k]))
+                        assert(is_spd(Winv[..., k], decimal=14))
                 if debug:
                     np.testing.assert_almost_equal(omega_orig, omega)
 
             # In the following lines, implicit loop on k (tasks)
-            # Extract y
+            # Extract y and u
             y[:, :p] = omega[:p, p, :].T
             y[:, p:] = omega[p + 1:, p, :].T
-            # Extract u (TODO: precompute? emp_covs does not change.)
+
             u[:, :p] = emp_covs[:p, p, :].T
             u[:, p:] = emp_covs[p + 1:, p, :].T
 
@@ -365,24 +370,3 @@ def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
         return omega, np.asarray(costs)
     else:
         return omega
-
-
-def test_update_submatrix():
-    N = 5
-    rand_gen = np.random.RandomState(0)
-    M = rand_gen.randn(N, N)
-    sub = M[1:, 1:].copy()
-    sub_inv = np.linalg.inv(M[1:, 1:])
-    true_sub = np.zeros(sub.shape, dtype=sub.dtype)
-    true_inv = sub_inv.copy()
-
-    for n in xrange(1, N):
-        update_submatrix(M, sub, sub_inv, n)
-
-        true_sub[n:, n:] = M[n + 1:, n + 1:]
-        true_sub[:n, :n] = M[:n, :n]
-        true_sub[n:, :n] = M[n + 1:, :n]
-        true_sub[:n, n:] = M[:n, n + 1:]
-        true_inv = np.linalg.inv(true_sub)
-        np.testing.assert_almost_equal(true_sub, sub)
-        np.testing.assert_almost_equal(true_inv, sub_inv)
