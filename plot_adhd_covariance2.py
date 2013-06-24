@@ -77,8 +77,7 @@ def covariance_matrix(subject_n):
                                      confounds=[hv_confounds, confound_file])
 
     n_samples = niimgs.shape[-1]
-
-    return np.dot(region_ts.T, region_ts), n_samples
+    return np.dot(region_ts.T, region_ts) / n_samples, n_samples
 
 
 if __name__ == "__main__":
@@ -87,19 +86,14 @@ if __name__ == "__main__":
     rho = .3
     mem = joblib.Memory(".")
 
+    print("-- Computing covariance matrices ...")
     for n in xrange(n_subjects):
         data.append(mem.cache(covariance_matrix)(n))
-
     emp_covs, n_samples = zip(*data)
 
-    # Normalize covariance matrices
-    for cov, n in zip(emp_covs, n_samples):
-        cov /= n
-        np.testing.assert_almost_equal(np.diag(cov), np.ones(cov.shape[0]))
-
-    print("-- Computing covariance matrices ...")
-    from nilearn.honorio_samaras import honorio_samaras
-    est_precs, all_crit = honorio_samaras(emp_covs, rho, n_samples,
+    print("-- Computing precision matrices ...")
+    from nilearn.group_sparse_covariance import group_sparse_covariance
+    est_precs, all_crit = group_sparse_covariance(emp_covs, rho, n_samples,
                                           normalize_n_samples=True,
                                           n_iter=5,
                                           debug=False, verbose=1)

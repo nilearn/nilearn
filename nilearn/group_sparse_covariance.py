@@ -2,7 +2,7 @@
 Implementation of algorithm for sparse multi-task learning of gaussian
 graphical models.
 
-Honorio, Jean, and Dimitris Samaras.
+Jean Honorio and Dimitris Samaras.
 "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
 Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
 
@@ -23,20 +23,21 @@ def symmetrize(M):
     M[...] = M + M.T
     M[...] /= 2.
 
-#@profile
-def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
-                    debug=False, normalize_n_samples=True):
+
+def group_sparse_covariance(emp_covs, rho, n_samples=None, n_iter=10,
+                            verbose=0, return_costs=False,
+                            normalize_n_samples=True, debug=False):
     """
     Parameters
     ==========
-    rho: float
-        regularization parameter. With normalized covariances matrices and
-        number of samples, sensible values lie in the [0, 1] range.
-
-    covariances: list of numpy.ndarray
+    emp_covs: list of numpy.ndarray
         covariance estimates. All shapes must be identical. Must be positive
         semidefinite. Normalizing these matrices (e.g. having ones on the
         diagonal) is not required, but recommended.
+
+    rho: float
+        regularization parameter. With normalized covariances matrices and
+        number of samples, sensible values lie in the [0, 1] range.
 
     n_samples: array-like or None
         number of samples for each task. len(n_samples) == len(emp_covs)
@@ -46,18 +47,29 @@ def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
     n_iter: int
         number of iteration
 
-    debug: bool
-        if True, perform checks during computation. It can help finding
-        numerical instabilities.
+    verbose: int
+        verbosity level. Zero means "no message".
+
+    return_costs: bool
+        if True, return the value taken by the cost function for each
+        iteration in addition to the precision matrices. Default: False.
 
     normalize_n_samples: bool
         if True, divides n_samples by the maximum value. This improves
         numerical stability a lot.
 
+    debug: bool
+        if True, perform checks during computation. It can help find
+        numerical problems.
+
     Returns
     =======
-    omega:
+    omega: numpy.ndarray
         estimated precision matrices
+
+    costs: list
+        value of cost function for each iteration. This is output only if
+        return_costs is True.
     """
 
     # Test input arguments
@@ -67,7 +79,7 @@ def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
         raise ValueError("Regularization parameter rho must be positive.\n"
                          "You provided: {0}".format(str(rho)))
 
-    # allow passing covariances as a 3D array, not a list.
+    # TODO: allow passing covariances as a 3D array, not a list.
     emp_covs = np.dstack(emp_covs)
     n_var = emp_covs.shape[0]
 
@@ -92,7 +104,7 @@ def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
         omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
 
     # debugging
-    all_crit = []
+    costs = []
 
     # Preallocate arrays
     y = np.ndarray(shape=(n_tasks, n_var - 1), dtype=np.float)
@@ -240,15 +252,18 @@ def honorio_samaras(emp_covs, rho, n_samples=None, n_iter=10, verbose=0,
                 if debug:
                     assert_spd(omega[..., k], debug=debug)
 
-            criterion = display_criterion(n_tasks, n_samples, rho,
-                                          omega, emp_covs,
-                                          display=verbose >= 1)
-            all_crit.append(criterion)
+            if return_costs:
+                cost = compute_cost(n_tasks, n_samples, rho, omega, emp_covs,
+                                    display=verbose >= 1)
+                costs.append(cost)
 
-    return omega, all_crit
+    if return_costs:
+        return omega, costs
+    else:
+        return omega
 
 
-def display_criterion(n_tasks, n_samples, rho, omega, emp_covs, display=True):
+def compute_cost(n_tasks, n_samples, rho, omega, emp_covs, display=True):
     # Compute optimization criterion (for display)
     ll = 0  # log-likelihood
     for k in xrange(n_tasks):
@@ -267,7 +282,7 @@ def display_criterion(n_tasks, n_samples, rho, omega, emp_covs, display=True):
     return criterion
 
 
-def display_criterion_2(n_tasks, n_samples, rho, omega, emp_covs,
+def compute_cost_2(n_tasks, n_samples, rho, omega, emp_covs,
                         y, u, Winv, p, display=True):
     criterion = 0
     for k in xrange(n_tasks):
@@ -579,8 +594,8 @@ if __name__ == "__main__":
     rho = 70.
     n_samples = [len(signal) for signal in signals]
 
-    omega, all_crit = honorio_samaras(rho, emp_covs, n_samples, n_iter=15,
-                                      verbose=1, debug=False)
+    omega, costs = honorio_samaras(rho, emp_covs, n_samples, n_iter=15,
+                                   verbose=1, debug=False, return_costs)
 
     if display:
 
@@ -600,9 +615,9 @@ if __name__ == "__main__":
 
     if display:
         pl.figure()
-        last = all_crit[-1]
-        pl.loglog(np.asarray(all_crit - last
-                             + 4 * (all_crit[-2] - all_crit[-1])))
+        last = costs[-1]
+        pl.loglog(np.asarray(costs - last
+                             + 4 * (costs[-2] - costs[-1])))
         pl.ylabel("criterion")
         pl.xlabel("iteration")
 
