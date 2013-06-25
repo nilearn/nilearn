@@ -1,6 +1,6 @@
 """ Test the ndimage module
 
-This test file is in nilearn/tests because nosetests seems to ignore modules whose
+This test file is in nilearn/tests because nosetests ignores modules whose
 name starts with an underscore
 """
 from nose.tools import assert_raises
