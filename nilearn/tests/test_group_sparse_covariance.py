@@ -1,6 +1,6 @@
 import numpy as np
 
-from nose.tools import assert_equal, assert_true
+from nose.tools import assert_equal, assert_true, assert_raises
 
 from .. group_sparse_covariance import group_sparse_covariance
 
@@ -93,17 +93,23 @@ def test_group_sparse_covariance():
     signals, _, _ = generate_multi_task_gg_model(
         density=0.1, n_tasks=5, n_var=10, min_samples=100, max_samples=151,
         rand_gen=np.random.RandomState(0))
-    emp_covs = [np.dot(s.T, s) / len(s) for s in signals]
 
     rho = 0.8
-    n_samples = [len(signal) for signal in signals]
 
-    omega, costs = group_sparse_covariance(emp_covs, rho, n_samples, n_iter=2,
-                                           verbose=10, debug=True,
-                                           return_costs=True)
+    emp_covs, omega, costs = group_sparse_covariance(signals, rho, n_iter=2,
+                                                     verbose=10, debug=True,
+                                                     return_costs=True)
+    # To increase coverage
+    emp_covs, omega = group_sparse_covariance(signals, rho, n_iter=2,
+                                              verbose=0, return_costs=False)
+
     ## np.testing.assert_array_less is a strict comparison.
     ## Zeros can occur in 'costs'.
     assert_true(np.all(np.diff(costs) <= 0))
     assert_equal(omega.shape, (10, 10, 5))
 
-
+    # Test input argument checking
+    assert_raises(ValueError, group_sparse_covariance, signals, "")
+    assert_raises(ValueError, group_sparse_covariance, 1, rho)
+    assert_raises(ValueError, group_sparse_covariance,
+                  [np.ones((2, 2)), np.ones((2, 3))], rho)

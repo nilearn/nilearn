@@ -53,7 +53,7 @@ def plot_matrices(cov, prec, title, subject_n=0):
     pl.title(title + " / precision")
 
 
-def covariance_matrix(subject_n):
+def region_signals(subject_n):
     dataset = nilearn.datasets.fetch_adhd()
     filename = dataset["func"][subject_n]
     confound_file = dataset["confounds"][subject_n]
@@ -76,29 +76,26 @@ def covariance_matrix(subject_n):
     region_ts = masker.fit_transform(niimgs,
                                      confounds=[hv_confounds, confound_file])
 
-    n_samples = niimgs.shape[-1]
-    return np.dot(region_ts.T, region_ts) / n_samples, n_samples
+    return region_ts
 
 
 if __name__ == "__main__":
-    n_subjects = 4
-    data = []
+    n_subjects = 40
+    signals = []
     rho = 0.2
     mem = joblib.Memory(".")
 
     print("-- Computing covariance matrices ...")
     for n in xrange(n_subjects):
-        data.append(mem.cache(covariance_matrix)(n))
-    emp_covs, n_samples = zip(*data)
+        signals.append(mem.cache(region_signals)(n))
 
     print("-- Computing precision matrices ...")
     from nilearn.group_sparse_covariance import group_sparse_covariance
-    est_precs = group_sparse_covariance(emp_covs, rho, n_samples,
-                                          normalize_n_samples=True,
-                                          n_iter=5, return_costs=False,
-                                          debug=False, verbose=1)
+    emp_covs, est_precs = group_sparse_covariance(signals, rho,
+                                                  n_iter=5, return_costs=False,
+                                                  debug=False, verbose=1)
 
-    for n, value in enumerate(zip(emp_covs,
+    for n, value in enumerate(zip(np.rollaxis(emp_covs, -1),
                                   np.rollaxis(est_precs, -1))):
         emp_cov, prec = value
         plot_matrices(emp_cov, -prec,
