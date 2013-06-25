@@ -12,7 +12,7 @@ from sklearn.externals.joblib import Memory
 import nibabel
 
 from .. import _utils
-from .._utils import CacheMixin
+from .._utils import CacheMixin, LogMixin
 from .. import signal
 from .. import region
 from .. import masking
@@ -40,20 +40,6 @@ def _compose_err_msg(msg, **kwargs):
             updated_msg += "\n" + k + ": " + v
 
     return updated_msg
-
-
-class LogMixin(object):
-    def log(self, msg, verbose=1):
-        """Print a message for the user.
-
-        Signature is that of print(), with an extra keyword argument giving
-        the verbosity level above which the message should be printed.
-        This method prepends class and method names.
-        """
-        if self.verbose >= verbose:
-            calling_function = (inspect.stack())[1][3]
-            prefix = "[%s.%s] " % (self.__class__.__name__, calling_function)
-            print (prefix + msg)
 
 
 class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):

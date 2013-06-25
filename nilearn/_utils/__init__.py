@@ -5,4 +5,5 @@ from niimg_conversions import is_a_niimg, _get_shape, _repr_niimgs, \
 from numpy_conversions import as_ndarray
 
 from cache_mixin import CacheMixin
+from log_mixin import LogMixin
 

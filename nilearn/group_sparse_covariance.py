@@ -13,7 +13,10 @@ import scipy.optimize
 
 from sklearn.utils.extmath import fast_logdet
 from sklearn.covariance import empirical_covariance
+from sklearn.base import BaseEstimator
+from sklearn.externals.joblib import Memory
 
+from ._utils import CacheMixin, LogMixin
 from .testing import is_spd
 
 
@@ -37,7 +40,7 @@ def _group_sparse_covariance_cost(n_tasks, n_samples, rho, omega,
     l12 = l2.sum() - np.diag(l2).sum()
     cost = - (ll - rho * l12)
     if display:
-        print("Cost: {cost:.8f}".format(
+        print("cost: {cost:.8f}".format(
                 cost=cost))
     return cost
 
@@ -120,23 +123,23 @@ def assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
-def group_sparse_covariance(signals, rho, n_iter=10,
+def group_sparse_covariance(tasks, rho, n_iter=10,
                             assume_centered=False, verbose=0,
                             dtype=np.float64,
                             return_costs=False, debug=False):
-    """Compute sparse precision matrices starting with covariance matrices.
+    """Compute sparse precision matrices and covariance matrices.
 
     The precision matrices returned by this function are sparse, and share a
     common sparsity pattern: all have zeros at the same location. This is
     achieved by simultaneous computation of all precision matrices at the
     same time.
 
-    Running time is linear on n_iter, and number of tasks (number of covariance
-    matrices), but cubic on covariance size (number of signals).
+    Running time is linear on n_iter, and number of tasks (len(tasks)), but
+    cubic on number of signals (tasks[0].shape[1]).
 
     Parameters
     ==========
-    signals: list of numpy.ndarray
+    tasks: list of numpy.ndarray
         input tasks. Each task is a 2D array, whose columns contain signals.
         Each array shape must be (sample number, feature number). The sample
         number can vary from task to task, but all tasks must have the same
@@ -194,28 +197,28 @@ def group_sparse_covariance(signals, rho, n_iter=10,
                          "positive number.\n"
                          "You provided: {0}".format(str(rho)))
 
-    if not hasattr(signals, "__iter__"):
-        raise ValueError("'signals' input argument must be an iterable. "
-                         "You provided {0}".format(signals.__class__))
+    if not hasattr(tasks, "__iter__"):
+        raise ValueError("'tasks' input argument must be an iterable. "
+                         "You provided {0}".format(tasks.__class__))
 
-    n_tasks = [s.shape[1] for s in signals]
+    n_tasks = [s.shape[1] for s in tasks]
     if len(set(n_tasks)) > 1:
         raise ValueError("All tasks must have the same number of features.\n"
                          "You provided: {0}".format(str(n_tasks)))
-    n_tasks = len(signals)
-    n_var = signals[0].shape[1]
+    n_tasks = len(tasks)
+    n_var = tasks[0].shape[1]
 
-    n_samples = np.asarray([s.shape[0] for s in signals], dtype=np.double)
+    n_samples = np.asarray([s.shape[0] for s in tasks], dtype=np.double)
     n_samples /= n_samples.max()
 
     emp_covs = np.empty((n_var, n_var, n_tasks), dtype=dtype)
-    for k, s in enumerate(signals):
+    for k, s in enumerate(tasks):
         emp_covs[..., k] = empirical_covariance(
             s, assume_centered=assume_centered)
         symmetrize(emp_covs[..., k])
         if debug:
             assert(is_spd(emp_covs[..., k]))
-    del signals  # reduce memory usage in some cases.
+    del tasks  # reduce memory usage in some cases.
 
     omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype)
     for k in xrange(n_tasks):
@@ -242,7 +245,8 @@ def group_sparse_covariance(signals, rho, n_iter=10,
     # Honorio-Samaras paper notations.
     for n in xrange(n_iter):
         if verbose >= 1:
-            print("\n-- Starting {iter_n:d}-th iteration...".format(iter_n=n))
+            print("* iteration {iter_n:d} ({percentage:.0f} %) ...".format(
+                iter_n=n, percentage=100. * n / n_iter))
 
         for p in xrange(n_var):
 
@@ -283,9 +287,6 @@ def group_sparse_covariance(signals, rho, n_iter=10,
 
             u[:, :p] = emp_covs[:p, p, :].T
             u[:, p:] = emp_covs[p + 1:, p, :].T
-
-            if verbose >= 2:
-                print("\n-- entering coordinate descent loop (%d)" % p)
 
             for m in xrange(n_var - 1):
                 # Coordinate descent on y
@@ -352,13 +353,96 @@ def group_sparse_covariance(signals, rho, n_iter=10,
                 if debug:
                     assert(is_spd(omega[..., k]))
 
-            if return_costs:
+            if return_costs or verbose >= 2:
                 cost = _group_sparse_covariance_cost(n_tasks, n_samples, rho,
                                                      omega, emp_covs,
-                                                     display=verbose >= 1)
+                                                     display=verbose >= 2)
                 costs.append(cost)
 
     if return_costs:
         return emp_covs, omega, np.asarray(costs)
     else:
         return emp_covs, omega
+
+
+class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
+    """Covariance and precision matrix estimator.
+
+    The algorithm used is based on what is described in:
+
+    Jean Honorio and Dimitris Samaras.
+    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
+    Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
+
+    Parameters
+    ----------
+    rho: float
+        regularization parameter. With normalized covariances matrices and
+        number of samples, sensible values lie in the [0, 1] range(zero is
+        no regularization: output is not sparse)
+
+    n_iter: int
+        number of iteration. The default value (10) is rather conservative.
+
+    verbose: int
+        verbosity level. Zero means "no message".
+
+    assume_centered: bool
+        if True, assume that all signals passed to fit() are centered.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    memory_level: int, optional
+        Caching aggressiveness. Higher values mean more caching.
+
+    Attributes
+    ----------
+    `covariances_`: 3D numpy.ndarray
+        maximum likelihood covariance estimations.
+        Shape: (n_features, n_features, n_tasks)
+
+    `precisions_`: 3D numpy.ndarray
+        precisions matrices estimated using Antonio & Samaras algorithm.
+        Shape: (n_features, n_features, n_tasks)
+    """
+
+    def __init__(self, rho=0.3, n_iter=10, verbose=1, assume_centered=False,
+                 memory=Memory(cachedir=None), memory_level=0):
+        self.rho = rho
+        self.n_iter = n_iter
+        self.assume_centered = assume_centered
+
+        self.memory = memory
+        self.memory_level = memory_level
+        self.verbose = verbose
+
+    def fit(self, tasks, y=None):
+        """Fits the group sparse precision model according to the given
+        training data and parameters.
+
+        Parameters
+        ----------
+        tasks: list of numpy.ndarray
+            input tasks. Each task is a 2D array, whose columns contain
+            signals. Each array shape must be (sample number, feature number).
+            The sample number can vary from task to task, but all tasks must
+            have the same number of features (i.e. of columns).
+
+        Returns
+        -------
+        self: object
+            the object itself. Useful for chaining operations.
+        """
+
+        self.log("Computing precision matrices")
+        self.covariances_, self.precisions_ = self._cache(
+            group_sparse_covariance, memory_level=1)(
+                tasks, self.rho, n_iter=self.n_iter,
+                assume_centered=self.assume_centered,
+                verbose=self.verbose - 1, debug=False, return_costs=False,
+                dtype=np.float64)
+
+        return self

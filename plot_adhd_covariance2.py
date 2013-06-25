@@ -81,24 +81,25 @@ def region_signals(subject_n):
 
 if __name__ == "__main__":
     n_subjects = 40
-    signals = []
-    rho = 0.2
+    tasks = []
+    rho = 0.8
     mem = joblib.Memory(".")
 
     print("-- Computing covariance matrices ...")
     for n in xrange(n_subjects):
-        signals.append(mem.cache(region_signals)(n))
+        tasks.append(mem.cache(region_signals)(n))
 
     print("-- Computing precision matrices ...")
-    from nilearn.group_sparse_covariance import group_sparse_covariance
-    emp_covs, est_precs = group_sparse_covariance(signals, rho,
-                                                  n_iter=5, return_costs=False,
-                                                  debug=False, verbose=1)
+    from nilearn.group_sparse_covariance import GroupSparseCovariance
+    gsc = GroupSparseCovariance(rho, n_iter=5, verbose=2)
+    gsc.fit(tasks)
 
-    for n, value in enumerate(zip(np.rollaxis(emp_covs, -1),
-                                  np.rollaxis(est_precs, -1))):
+    for n, value in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
+                                  np.rollaxis(gsc.precisions_, -1))):
         emp_cov, prec = value
         plot_matrices(emp_cov, -prec,
                       title="Group sparse estimator", subject_n=n)
+        if n == 2:
+            break
 
     pl.show()
