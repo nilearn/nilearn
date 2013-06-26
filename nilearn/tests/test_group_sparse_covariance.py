@@ -104,8 +104,9 @@ def test_group_sparse_covariance():
                                               verbose=0, return_costs=False)
 
     ## np.testing.assert_array_less is a strict comparison.
-    ## Zeros can occur in 'costs'.
-    assert_true(np.all(np.diff(costs) <= 0))
+    ## Zeros can occur in 'objective'.
+    objective, _ = zip(*costs)
+    assert_true(np.all(np.diff(objective) <= 0))
     assert_equal(omega.shape, (10, 10, 5))
 
     # Test input argument checking

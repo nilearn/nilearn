@@ -40,12 +40,28 @@ def _group_sparse_covariance_cost(n_tasks, n_samples, rho, omega,
     l12 = l2.sum() - np.diag(l2).sum()
     cost = - (ll - rho * l12)
     if display:
-        print("cost: {cost:.8f}".format(
-                cost=cost))
+        print("cost: {cost:.8f}".format(cost=cost))
     return cost
 
 
-# The signature of quad_trust_region and quad_trust_region_deriv are
+def _group_sparse_covariance_duality_gap(n_tasks, n_var, n_samples, rho,
+                                      omega, emp_covs, display=False):
+    """Compute the primal-dual gap during computation"""
+    ll = 0
+    for k in xrange(n_tasks):
+        ll += n_samples[k] * (omega[..., k] * emp_covs[..., k]).sum()
+
+    # L(1,2)-norm
+    l2 = np.sqrt((omega ** 2).sum(axis=-1))
+    # Do not count diagonal terms
+    l12 = l2.sum() - np.diag(l2).sum()
+    gap = ll + rho * l12 - n_var * n_samples.sum()
+    if display:
+        print("duality gap: {gap:.8f}".format(gap=gap))
+    return gap
+
+
+# The signatures of quad_trust_region and quad_trust_region_deriv are
 # complicated, but this allows for some interesting optimizations.
 def quad_trust_region(alpha, q, two_ccq, cc, rho2):
     """This value is optimized to zero by the Newton-Raphson step."""
@@ -124,8 +140,7 @@ def assert_submatrix(full, sub, n):
 
 
 def group_sparse_covariance(tasks, rho, n_iter=10,
-                            assume_centered=False, verbose=0,
-                            dtype=np.float64,
+                            assume_centered=False, verbose=0, dtype=np.float64,
                             return_costs=False, debug=False):
     """Compute sparse precision matrices and covariance matrices.
 
@@ -164,8 +179,9 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
         type of returned matrices. Defaults to 8-byte floats (double).
 
     return_costs: bool
-        if True, return the value taken by the cost function for each
-        iteration in addition to the matrices. Default: False.
+        if True, return the value taken by the objective and the duality gap
+        functions for each iteration in addition to the matrices.
+        Default: False.
 
     debug: bool
         if True, perform checks during computation. It can help find
@@ -177,12 +193,12 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
         empirical covariance matrices (output of
         sklearn.covariance.empirical_covariance)
 
-    omega: numpy.ndarray
+    precision: numpy.ndarray
         estimated precision matrices
 
-    costs: numpy.ndarray
-        value of cost function for each iteration. This is output only if
-        return_costs is True.
+    costs : list of (objective, duality_gap) pairs
+        The list of values of the objective function and the duality gap at
+        each iteration. Returned only if return_costs is True
 
     Notes
     =====
@@ -354,13 +370,17 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
                     assert(is_spd(omega[..., k]))
 
             if return_costs or verbose >= 2:
+                duality_gap = _group_sparse_covariance_duality_gap(
+                    n_tasks, n_var, n_samples, rho, omega, emp_covs,
+                    display=verbose >= 2)
+
                 cost = _group_sparse_covariance_cost(n_tasks, n_samples, rho,
                                                      omega, emp_covs,
                                                      display=verbose >= 2)
-                costs.append(cost)
+                costs.append((cost, duality_gap))
 
     if return_costs:
-        return emp_covs, omega, np.asarray(costs)
+        return emp_covs, omega, costs
     else:
         return emp_covs, omega
 
@@ -390,6 +410,10 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
     assume_centered: bool
         if True, assume that all signals passed to fit() are centered.
 
+    return_costs: bool
+        if True, objective and duality gap are computed for each iteration and
+        returned as self.objective_ and self.duality_gap_ respectively.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -410,10 +434,12 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
     """
 
     def __init__(self, rho=0.3, n_iter=10, verbose=1, assume_centered=False,
+                 return_costs=False,
                  memory=Memory(cachedir=None), memory_level=0):
         self.rho = rho
         self.n_iter = n_iter
         self.assume_centered = assume_centered
+        self.return_costs = return_costs
 
         self.memory = memory
         self.memory_level = memory_level
@@ -438,11 +464,17 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         """
 
         self.log("Computing precision matrices")
-        self.covariances_, self.precisions_ = self._cache(
+        ret = self._cache(
             group_sparse_covariance, memory_level=1)(
                 tasks, self.rho, n_iter=self.n_iter,
                 assume_centered=self.assume_centered,
-                verbose=self.verbose - 1, debug=False, return_costs=False,
-                dtype=np.float64)
+                verbose=self.verbose - 1, debug=False,
+                return_costs=self.return_costs, dtype=np.float64)
+
+        if self.return_costs:
+            self.covariances_, self.precisions_, costs = ret
+            self.objective_, self.duality_gap_ = zip(*costs)
+        else:
+            self.covariances_, self.precisions_ = ret
 
         return self
