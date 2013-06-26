@@ -82,7 +82,7 @@ def region_signals(subject_n):
 if __name__ == "__main__":
     n_subjects = 40
     tasks = []
-    rho = 0.05
+    rho = 0.8
     mem = joblib.Memory(".")
 
     print("-- Computing covariance matrices ...")
@@ -91,20 +91,11 @@ if __name__ == "__main__":
 
     print("-- Computing precision matrices ...")
     from nilearn.group_sparse_covariance import GroupSparseCovariance
-    gsc = GroupSparseCovariance(rho, n_iter=5, verbose=2, return_costs=True)
+    gsc = GroupSparseCovariance(rho, n_iter=5, verbose=2)
     gsc.fit(tasks)
-
-    pl.figure()
-    pl.plot(gsc.duality_gap_, '+-')
-    pl.grid()
-
-    pl.figure()
-    pl.plot(gsc.objective_, '+-')
-    pl.grid()
 
     for n, value in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
                                   np.rollaxis(gsc.precisions_, -1))):
-        break
         emp_cov, prec = value
         plot_matrices(emp_cov, -prec,
                       title="Group sparse estimator", subject_n=n)

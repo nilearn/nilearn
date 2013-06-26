@@ -25,40 +25,28 @@ def symmetrize(M):
     M[...] /= 2.
 
 
-def _group_sparse_covariance_cost(n_tasks, n_samples, rho, omega,
-                                 emp_covs, display=False):
+def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
+                                   emp_covs, display=False):
     """Compute group sparse covariance cost during computation."""
     ll = 0  # log-likelihood
+    sps = 0  # scalar products
     for k in xrange(n_tasks):
         t = fast_logdet(omega[..., k])
-        t -= (omega[..., k] * emp_covs[..., k]).sum()
-        ll += n_samples[k] * t
+        sp = (omega[..., k] * emp_covs[..., k]).sum()
+        ll += n_samples[k] * (t - sp)
+        sps += n_samples[k] * sp
 
     # L(1,2)-norm
     l2 = np.sqrt((omega ** 2).sum(axis=-1))
     # Do not count diagonal terms
     l12 = l2.sum() - np.diag(l2).sum()
     cost = - (ll - rho * l12)
+    gap = sps + rho * l12 - n_var * n_samples.sum()
+
     if display:
-        print("cost: {cost:.8f}".format(cost=cost))
-    return cost
-
-
-def _group_sparse_covariance_duality_gap(n_tasks, n_var, n_samples, rho,
-                                      omega, emp_covs, display=False):
-    """Compute the primal-dual gap during computation"""
-    ll = 0
-    for k in xrange(n_tasks):
-        ll += n_samples[k] * (omega[..., k] * emp_covs[..., k]).sum()
-
-    # L(1,2)-norm
-    l2 = np.sqrt((omega ** 2).sum(axis=-1))
-    # Do not count diagonal terms
-    l12 = l2.sum() - np.diag(l2).sum()
-    gap = ll + rho * l12 - n_var * n_samples.sum()
-    if display:
-        print("duality gap: {gap:.8f}".format(gap=gap))
-    return gap
+        print("cost / duality gap: {cost: .8f} / {gap:.8f}".format(
+            gap=gap, cost=cost))
+    return (cost, gap)
 
 
 # The signatures of quad_trust_region and quad_trust_region_deriv are
@@ -370,14 +358,9 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
                     assert(is_spd(omega[..., k]))
 
             if return_costs or verbose >= 2:
-                duality_gap = _group_sparse_covariance_duality_gap(
+                costs.append(_group_sparse_covariance_costs(
                     n_tasks, n_var, n_samples, rho, omega, emp_covs,
-                    display=verbose >= 2)
-
-                cost = _group_sparse_covariance_cost(n_tasks, n_samples, rho,
-                                                     omega, emp_covs,
-                                                     display=verbose >= 2)
-                costs.append((cost, duality_gap))
+                    display=verbose >= 2))
 
     if return_costs:
         return emp_covs, omega, costs
