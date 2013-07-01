@@ -25,9 +25,53 @@ def symmetrize(M):
     M[...] /= 2.
 
 
+def rho_max(emp_covs, n_samples):
+    """
+    Parameters
+    ----------
+    emp_covs: numpy.ndarray
+        covariance matrix for each task.
+        shape (variable number, variable number, covariance matrix number)
+
+    n_samples: array-like
+        number of samples used in the computation of every covariance matrix.
+
+    Returns
+    -------
+    rho_max: Minimal value for regularization parameter that gives a
+        full-sparse matrix.
+    """
+    A = np.copy(emp_covs)
+
+    for k in range(emp_covs.shape[-1]):
+        # Set diagonal to zero
+        A[..., k].flat[::A.shape[0] + 1] = 0
+        A[..., k] *= n_samples[k]
+
+    return np.max(np.sqrt((A ** 2).sum(axis=-1)))
+
+
 def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
-                                   emp_covs, display=False):
-    """Compute group sparse covariance cost during computation."""
+                                   emp_covs, display=False, debug=False):
+    """Compute group sparse covariance costs during computation.
+
+    Returns
+    -------
+    primal_cost: float
+        value of primal cost at current point. This value is minimized by the
+        algorithm.
+    gap: float
+        value of duality gap at current point, with a feasible dual point. This
+        value is supposed to always be negative, and vanishing for the optimal
+        point.
+    """
+    # Signs for primal and dual costs are inverted compared to the H&S paper,
+    # to match scikit-learn usage of *minimizing* the primal problem.
+
+    # FIXME: duality gap is not always negative, there must be an
+    # error/instability somewhere. Not found so far (01 july 2013)
+
+    ## Primal cost
     ll = 0  # log-likelihood
     sps = 0  # scalar products
     for k in xrange(n_tasks):
@@ -38,13 +82,32 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
 
     # L(1,2)-norm
     l2 = np.sqrt((omega ** 2).sum(axis=-1))
-    # Do not count diagonal terms
-    l12 = l2.sum() - np.diag(l2).sum()
+    l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
     cost = - (ll - rho * l12)
-    gap = sps + rho * l12 - n_var * n_samples.sum()
+
+    ## Dual cost: rather heavy computation.
+    # Compute A(k)
+    A = np.empty(omega.shape, dtype=omega.dtype)  # TODO: allocate once
+    for k in xrange(n_tasks):
+        A[..., k] = n_samples[k] * (
+            np.linalg.inv(omega[..., k]) - emp_covs[..., k])
+        if debug:
+            np.testing.assert_almost_equal(A[..., k], A[..., k].T)
+    # Shrink A(k) if needed to get a feasible point.
+    rho_max = np.sqrt((A ** 2).sum(axis=-1)).max()
+    if rho_max > rho:
+        A *= rho / rho_max
+
+    dual_cost = 0
+    for k in xrange(n_tasks):
+        B = emp_covs[..., k] + A[..., k] / n_samples[k]
+        if debug:
+            assert is_spd(B)
+        dual_cost += n_samples[k] * (n_var + fast_logdet(B))
+    gap = dual_cost - cost
 
     if display:
-        print("cost / duality gap: {cost: .8f} / {gap:.8f}".format(
+        print("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
             gap=gap, cost=cost))
     return (cost, gap)
 
@@ -213,7 +276,7 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
     n_var = tasks[0].shape[1]
 
     n_samples = np.asarray([s.shape[0] for s in tasks], dtype=np.double)
-    n_samples /= n_samples.max()
+    n_samples /= n_samples.sum()
 
     emp_covs = np.empty((n_var, n_var, n_tasks), dtype=dtype)
     for k, s in enumerate(tasks):
@@ -222,7 +285,7 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
         symmetrize(emp_covs[..., k])
         if debug:
             assert(is_spd(emp_covs[..., k]))
-    del tasks  # reduce memory usage in some cases.
+    del tasks  # reduces memory usage in some cases.
 
     omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype)
     for k in xrange(n_tasks):
@@ -325,12 +388,13 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
                     cc = c * c
                     two_ccq = 2. * cc * q
                     # tolerance does not seem to be important for
-                    # numerical stability (tol=1e-2 works)
+                    # numerical stability (tol=1e-2 works) but has an
+                    # effect on final duality gap value.
                     alpha = scipy.optimize.newton(
                         quad_trust_region, 0,
                         fprime=quad_trust_region_deriv,
                         args=(q, two_ccq, cc, rho ** 2),
-                        maxiter=50)
+                        maxiter=50, tol=1.5e-6)
 
                     remainder = quad_trust_region(
                         alpha, q, two_ccq, cc, rho ** 2)
@@ -360,7 +424,7 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
             if return_costs or verbose >= 2:
                 costs.append(_group_sparse_covariance_costs(
                     n_tasks, n_var, n_samples, rho, omega, emp_covs,
-                    display=verbose >= 2))
+                    display=verbose >= 2, debug=debug))
 
     if return_costs:
         return emp_covs, omega, costs
