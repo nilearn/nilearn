@@ -19,7 +19,7 @@ from sklearn.utils.extmath import fast_logdet
 from sklearn.covariance import empirical_covariance
 from sklearn.base import BaseEstimator
 
-from sklearn.externals.joblib import Memory
+from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from ._utils import CacheMixin, LogMixin
 from .testing import is_spd
@@ -661,38 +661,26 @@ class GroupSparseCovarianceCV(object):
             rho_0 = 1e-2 * rho_1
             rhos = np.logspace(np.log10(rho_0), np.log10(rho_1),
                                  n_rhos)[::-1]
-#        covs_init = (None, None, None)
 
-#        t0 = time.time()
+#        covs_init = (None, None, None)
         for i in range(n_refinements):
-            #            with warnings.catch_warnings():
             # Compute the cross-validated loss on the current grid
-            this_path = []
+            train_test_tasks = []
             for train_test in zip(*cv):
                 assert(len(train_test) == n_tasks)
-                train_test_tasks = zip(*[(task[train, :], task[test, :])
-                                    for task, (train, test)
-                                    in zip(tasks, train_test)])
+                train_test_tasks.append(zip(*[(task[train, :], task[test, :])
+                                              for task, (train, test)
+                                              in zip(tasks, train_test)]))
 
-                this_path.append(group_sparse_covariance_path(
-                    train_test_tasks[0], train_test_tasks[1], rhos,
-                    n_iter=self.n_iter,
+            this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                delayed(group_sparse_covariance_path)(
+                    train_tasks, test_tasks, rhos, n_iter=self.n_iter,
                     assume_centered=self.assume_centered, verbose=self.verbose,
-                    dtype=self.dtype, debug=self.debug))
+                    dtype=self.dtype, debug=self.debug)
+                for train_tasks, test_tasks in train_test_tasks)
 
-                ## this_path = Parallel(
-                ##     n_jobs=self.n_jobs,
-                ##     verbose=self.verbose)(
-                ##         delayed(graph_lasso_path)(
-                ##             X[train], rhos=rhos,
-                ##             X_test=X[test], mode=self.mode,
-                ##             tol=self.tol,
-                ##             max_iter=int(.1 * self.max_iter),
-                ##             verbose=self.verbose - 1)
-                ##         for (train, test), cov_init in zip(cv, covs_init))
-
-            # this_path[0] is the scores obtained in the first fold,
-            # for various rho.
+            # this_path[i] is the scores obtained with the i-th folding,
+            # for varying rho.
             scores = [np.mean(sc) for sc in zip(*this_path)]
             # scores is the mean score obtained for a given value of rho.
             path.extend(zip(rhos, scores))

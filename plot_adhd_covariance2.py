@@ -91,7 +91,7 @@ def group_sparse_covariance_path_test(tasks):
                                        verbose=1))
 
 if __name__ == "__main__":
-    n_subjects = 40
+    n_subjects = 10
     tasks = []
 #    rho = .0252
     mem = joblib.Memory(".")
@@ -102,11 +102,16 @@ if __name__ == "__main__":
 
     print("-- Computing precision matrices ...")
     from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
-    gsc = GroupSparseCovarianceCV(4, n_iter=10, n_refinements=4, verbose=1)
+    gsc = GroupSparseCovarianceCV(4, n_iter=5, n_refinements=2, verbose=1,
+                                  n_jobs=4)
     gsc.fit(tasks)
     print("selected rho: {0:.4f}".format(gsc.rho_))
     ## print(gsc.cv_rhos)
     ## print(gsc.cv_scores)
+    pl.figure()
+    pl.plot(gsc.cv_rhos, gsc.cv_scores, '-+')
+    pl.xlabel("rho")
+    pl.ylabel("CV score")
 
     for n, (emp_cov, prec) in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
                                             np.rollaxis(gsc.precisions_, -1))):
