@@ -5,6 +5,7 @@ Computation of covariance matrix between brain regions
 This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
+import sys
 
 import numpy as np
 import pylab as pl
@@ -79,10 +80,20 @@ def region_signals(subject_n):
     return region_ts
 
 
+def group_sparse_covariance_path_test(tasks):
+    from nilearn.group_sparse_covariance import group_sparse_covariance_path
+
+    train_tasks = [task[:task.shape[0] // 2, :] for task in tasks]
+    test_tasks = [task[task.shape[0] // 2:, :] for task in tasks]
+
+    print(group_sparse_covariance_path(train_tasks, test_tasks,
+                                       [0.2, 0.1, 0.05, 0.01],
+                                       verbose=1))
+
 if __name__ == "__main__":
     n_subjects = 40
     tasks = []
-    rho = 0.8
+#    rho = .0252
     mem = joblib.Memory(".")
 
     print("-- Computing covariance matrices ...")
@@ -90,13 +101,15 @@ if __name__ == "__main__":
         tasks.append(mem.cache(region_signals)(n))
 
     print("-- Computing precision matrices ...")
-    from nilearn.group_sparse_covariance import GroupSparseCovariance
-    gsc = GroupSparseCovariance(rho, n_iter=5, verbose=2)
+    from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+    gsc = GroupSparseCovarianceCV(4, n_iter=10, n_refinements=4, verbose=1)
     gsc.fit(tasks)
+    print("selected rho: {0:.4f}".format(gsc.rho_))
+    ## print(gsc.cv_rhos)
+    ## print(gsc.cv_scores)
 
-    for n, value in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
-                                  np.rollaxis(gsc.precisions_, -1))):
-        emp_cov, prec = value
+    for n, (emp_cov, prec) in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
+                                            np.rollaxis(gsc.precisions_, -1))):
         plot_matrices(emp_cov, -prec,
                       title="Group sparse estimator", subject_n=n)
         if n == 2:
