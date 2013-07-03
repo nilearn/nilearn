@@ -34,11 +34,14 @@ def generate_multi_task_gg_model(n_tasks=5, n_var=30, density=0.1,
 
     Returns
     =======
-    tasks: list of signals
+    tasks: list of numpy.ndarray
         tasks[n] is the signals for task n. They are provided as a numpy array
         with shape (sample number, n_var). len(tasks) == n_tasks
 
-    topology: numpy.array
+    precisions: list of numpy.ndarray
+        precision matrices.
+
+    topology: numpy.ndarray
         binary array giving the graph topology used for generating covariances
         and signals.
     """

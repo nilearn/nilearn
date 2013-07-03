@@ -25,11 +25,6 @@ from ._utils import CacheMixin, LogMixin
 from .testing import is_spd
 
 
-def symmetrize(M):
-    M[...] = M + M.T
-    M[...] /= 2.
-
-
 def rho_max(emp_covs, n_samples):
     """
     Parameters
@@ -89,10 +84,11 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
 
     ## Dual cost: rather heavy computation.
     # Compute A(k)
-    A = np.empty(omega.shape, dtype=omega.dtype)  # TODO: allocate once
+    A = np.empty(omega.shape, dtype=omega.dtype, order="F")  # TODO: allocate once
     for k in xrange(n_tasks):
         omega_inv = np.linalg.inv(omega[..., k])
-        assert is_spd(omega_inv)
+        if debug:
+            assert is_spd(omega_inv)
         A[..., k] = n_samples[k] * (omega_inv - emp_covs[..., k])
         if debug:
             np.testing.assert_almost_equal(A[..., k], A[..., k].T)
@@ -283,13 +279,13 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
     del tasks  # reduces memory usage in some cases.
 
     if precisions_init is None:
-        omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype)
+        omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype,
+                           order="F")
         for k in xrange(n_tasks):
-            # Values on main diagonals should be far from zero, because they
+            # Values on main diagonals are far from zero, because they
             # are timeseries energy.
             omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
     else:
-        print("restart")
         omega = precisions_init.copy()
 
     # Preallocate arrays
@@ -301,11 +297,12 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
     c = np.ndarray(shape=(n_tasks,), dtype=emp_covs.dtype)
     W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
                           omega.shape[2]),
-                   dtype=emp_covs.dtype)
-    Winv = np.ndarray(shape=W.shape, dtype=emp_covs.dtype)
+                   dtype=emp_covs.dtype, order="F")
+    Winv = np.ndarray(shape=W.shape, dtype=emp_covs.dtype, order="F")
 
     # Optional.
     costs = []
+    tolerance_reached = False
 
     # Start optimization loop. Variables are named following (mostly) the
     # Honorio-Samaras paper notations.
@@ -429,7 +426,15 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
             costs.append((objective, duality_gap))
 
         if tol is not None and duality_gap < tol:
+            if verbose >= 1:
+                print("tolerance reached at iteration number {0:d}: {1:.9f}"
+                      "".format(n + 1, duality_gap))
+            tolerance_reached = True
             break
+
+    if tol is not None and not tolerance_reached:
+        warnings.warn("Maximum number of iterations reached without getting "
+                      "to the requested tolerance level.")
 
     if return_costs:
         return emp_covs, omega, costs
@@ -572,13 +577,16 @@ def empirical_covariances(tasks, assume_centered=False, dtype=np.float64,
     n_tasks = len(tasks)
     n_var = tasks[0].shape[1]
 
-    emp_covs = np.empty((n_var, n_var, n_tasks), dtype=dtype)
+    emp_covs = np.empty((n_var, n_var, n_tasks), dtype=dtype, order="F")
     for k, s in enumerate(tasks):
-        emp_covs[..., k] = empirical_covariance(
+        M = empirical_covariance(
             s, assume_centered=assume_centered)
-        symmetrize(emp_covs[..., k])
+
+        emp_covs[..., k] = M + M.T
         if debug:
             assert(is_spd(emp_covs[..., k]))
+
+    emp_covs /= 2
 
     n_samples = np.asarray([s.shape[0] for s in tasks], dtype=np.float64)
     n_samples /= n_samples.sum()
