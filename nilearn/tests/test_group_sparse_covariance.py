@@ -130,8 +130,8 @@ def test_group_sparse_covariance():
     assert_raises(ValueError, group_sparse_covariance,
                   [np.ones((2, 2)), np.ones((2, 3))], rho)
 
-    # Smoke test classes
-    gsc1 = GroupSparseCovarianceCV(rhos=4, tol=1e-5, max_iter=20, verbose=0,
+    # Check consistency between classes
+    gsc1 = GroupSparseCovarianceCV(rhos=4, tol=1e-5, max_iter=40, verbose=0,
                                    assume_centered=False, n_jobs=3)
     gsc1.fit(signals)
 
