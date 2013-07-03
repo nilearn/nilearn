@@ -71,10 +71,7 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
         point.
     """
     # Signs for primal and dual costs are inverted compared to the H&S paper,
-    # to match scikit-learn usage of *minimizing* the primal problem.
-
-    # FIXME: duality gap is not always negative, there must be an
-    # error/instability somewhere. Not found so far (01 july 2013)
+    # to match scikit-learn's usage of *minimizing* the primal problem.
 
     ## Primal cost
     ll = 0  # log-likelihood
@@ -201,7 +198,7 @@ def assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
-def group_sparse_covariance(tasks, rho, n_iter=10,
+def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
                             assume_centered=False, verbose=0, dtype=np.float64,
                             return_costs=False, debug=False,
                             precisions_init=None):
@@ -212,7 +209,7 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
     achieved by simultaneous computation of all precision matrices at the
     same time.
 
-    Running time is linear on n_iter, and number of tasks (len(tasks)), but
+    Running time is linear on max_iter, and number of tasks (len(tasks)), but
     cubic on number of signals (tasks[0].shape[1]).
 
     Parameters
@@ -228,25 +225,30 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    n_iter: int
-        number of iteration. The default value (10) is rather conservative.
+    tol: positive float or None, optional
+        The tolerance to declare convergence: if the dual gap goes below
+        this value, iterations are stopped. If None, no check is performed.
 
-    assume_centered: bool
+    max_iter: int, optional
+        maximum number of iterations. The default value (10) is rather
+        conservative.
+
+    assume_centered: bool, optional
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
 
-    verbose: int
+    verbose: int, optional
         verbosity level. Zero means "no message".
 
-    dtype: numpy dtype
+    dtype: numpy dtype, optional
         type of returned matrices. Defaults to 8-byte floats (double).
 
-    return_costs: bool
+    return_costs: bool, optional
         if True, return the value taken by the objective and the duality gap
         functions for each iteration in addition to the matrices.
         Default: False.
 
-    debug: bool
+    debug: bool, optional
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
 
@@ -305,12 +307,12 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
     # Optional.
     costs = []
 
-    # Start optimization loop. Variables are named following the
+    # Start optimization loop. Variables are named following (mostly) the
     # Honorio-Samaras paper notations.
-    for n in xrange(n_iter):
+    for n in xrange(max_iter):
         if verbose >= 1:
             print("* iteration {iter_n:d} ({percentage:.0f} %) ...".format(
-                iter_n=n, percentage=100. * n / n_iter))
+                iter_n=n, percentage=100. * n / max_iter))
 
         for p in xrange(n_var):
 
@@ -418,10 +420,16 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
                 if debug:
                     assert(is_spd(omega[..., k]))
 
-            if return_costs or verbose >= 2:
-                costs.append(_group_sparse_covariance_costs(
-                    n_tasks, n_var, n_samples, rho, omega, emp_covs,
-                    display=verbose >= 2, debug=debug))
+        if return_costs or tol is not None:
+            objective, duality_gap = _group_sparse_covariance_costs(
+                n_tasks, n_var, n_samples, rho, omega, emp_covs,
+                display=verbose >= 2, debug=debug)
+
+        if return_costs:
+            costs.append((objective, duality_gap))
+
+        if tol is not None and duality_gap < tol:
+            break
 
     if return_costs:
         return emp_covs, omega, costs
@@ -445,8 +453,13 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    n_iter: int
-        number of iteration. The default value (10) is rather conservative.
+    tol: positive float, optional
+        The tolerance to declare convergence: if the dual gap goes below
+        this value, iterations are stopped
+
+    max_iter: int
+        maximum number of iterations. The default value (10) is rather
+        conservative.
 
     verbose: int
         verbosity level. Zero means "no message".
@@ -477,11 +490,12 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         Shape: (n_features, n_features, n_tasks)
     """
 
-    def __init__(self, rho=0.1, n_iter=10, verbose=1, assume_centered=False,
-                 return_costs=False,
+    def __init__(self, rho=0.1, tol=1e-4, max_iter=10, verbose=1,
+                 assume_centered=False, return_costs=False,
                  memory=Memory(cachedir=None), memory_level=0):
         self.rho = rho
-        self.n_iter = n_iter
+        self.tol = tol
+        self.max_iter = max_iter
         self.assume_centered = assume_centered
         self.return_costs = return_costs
 
@@ -522,7 +536,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         self.log("Computing precision matrices")
         ret = self._cache(
             group_sparse_covariance, memory_level=1)(
-                tasks, self.rho, n_iter=self.n_iter,
+                tasks, self.rho, tol=self.tol, max_iter=self.max_iter,
                 assume_centered=self.assume_centered,
                 verbose=self.verbose - 1, debug=False,
                 return_costs=self.return_costs, dtype=np.float64)
@@ -572,7 +586,7 @@ def empirical_covariances(tasks, assume_centered=False, dtype=np.float64,
     return emp_covs, n_samples, n_tasks, n_var
 
 
-def group_sparse_covariance_path(train_tasks, test_tasks, rhos, n_iter=10,
+def group_sparse_covariance_path(train_tasks, test_tasks, rhos, max_iter=10,
                                  assume_centered=False, verbose=0,
                                  dtype=np.float64, debug=False):
 
@@ -587,7 +601,8 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, n_iter=10,
     precisions_init = None
     for rho in reversed(rhos):
         _, precisions = group_sparse_covariance(
-            train_tasks, rho, n_iter=n_iter, assume_centered=assume_centered,
+            train_tasks, rho, max_iter=max_iter,
+            assume_centered=assume_centered,
             verbose=verbose, return_costs=False, dtype=dtype, debug=debug,
             precisions_init=precisions_init)
 
@@ -610,14 +625,14 @@ class GroupSparseCovarianceCV(object):
     cv: integer
         number of folds in a K-fold cross-validation scheme.
     """
-    def __init__(self, rhos=4, n_refinements=4, cv=None, n_iter=10,
+    def __init__(self, rhos=4, n_refinements=4, cv=None, max_iter=10,
                  assume_centered=False, verbose=1,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, debug=False, dtype=np.float64):
         self.rhos = rhos
         self.n_refinements = n_refinements
         self.cv = cv
-        self.n_iter = n_iter
+        self.max_iter = max_iter
         self.assume_centered = assume_centered
         self.dtype = dtype
 
@@ -688,7 +703,7 @@ class GroupSparseCovarianceCV(object):
 
             this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(group_sparse_covariance_path)(
-                    train_tasks, test_tasks, rhos, n_iter=self.n_iter,
+                    train_tasks, test_tasks, rhos, max_iter=self.max_iter,
                     assume_centered=self.assume_centered, verbose=self.verbose,
                     dtype=self.dtype, debug=self.debug)
                 for train_tasks, test_tasks in train_test_tasks)
@@ -753,7 +768,7 @@ class GroupSparseCovarianceCV(object):
 
         # Finally fit the model with the selected rho
         self.covariances_, self.precisions_ = group_sparse_covariance(
-            tasks, self.rho_, n_iter=self.n_iter, verbose=self.verbose - 1,
+            tasks, self.rho_, max_iter=self.max_iter, verbose=self.verbose - 1,
             dtype=self.dtype, return_costs=False, debug=self.debug)
         return self
 

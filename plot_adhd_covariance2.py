@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
     print("-- Computing precision matrices ...")
     from nilearn.group_sparse_covariance import GroupSparseCovariance
-    gsc = GroupSparseCovariance(rho=rho, n_iter=4, verbose=2,
+    gsc = GroupSparseCovariance(rho=rho, max_iter=10, verbose=2, tol=0.01,
                                 return_costs=True)
     gsc.fit(tasks)
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     pl.grid()
 
     ## from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
-    ## gsc = GroupSparseCovarianceCV(4, n_iter=5, n_refinements=2, verbose=1,
+    ## gsc = GroupSparseCovarianceCV(4, max_iter=5, n_refinements=2, verbose=1,
     ##                               n_jobs=4)
     ## import phyx
     ## phyx.timeit(gsc.fit)(tasks)
