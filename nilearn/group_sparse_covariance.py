@@ -586,9 +586,9 @@ def empirical_covariances(tasks, assume_centered=False, dtype=np.float64,
     return emp_covs, n_samples, n_tasks, n_var
 
 
-def group_sparse_covariance_path(train_tasks, test_tasks, rhos, max_iter=10,
-                                 assume_centered=False, verbose=0,
-                                 dtype=np.float64, debug=False):
+def group_sparse_covariance_path(train_tasks, test_tasks, rhos, tol=1e-4,
+                                 max_iter=10, assume_centered=False,
+                                 verbose=0, dtype=np.float64, debug=False):
 
     # FIXME: Unoptimized version. Can do much better (see group_lasso_)
     test_covs, _, _, _ = empirical_covariances(
@@ -599,9 +599,9 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, max_iter=10,
 
     scores = []
     precisions_init = None
-    for rho in reversed(rhos):
+    for rho in rhos:
         _, precisions = group_sparse_covariance(
-            train_tasks, rho, max_iter=max_iter,
+            train_tasks, rho, tol=tol, max_iter=max_iter,
             assume_centered=assume_centered,
             verbose=verbose, return_costs=False, dtype=dtype, debug=debug,
             precisions_init=precisions_init)
@@ -614,7 +614,7 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, max_iter=10,
         scores.append(sum(task_score))
         precisions_init = precisions
 
-    return [s for s in reversed(scores)]
+    return scores
 
 
 class GroupSparseCovarianceCV(object):
@@ -625,13 +625,14 @@ class GroupSparseCovarianceCV(object):
     cv: integer
         number of folds in a K-fold cross-validation scheme.
     """
-    def __init__(self, rhos=4, n_refinements=4, cv=None, max_iter=10,
-                 assume_centered=False, verbose=1,
+    def __init__(self, rhos=4, n_refinements=4, cv=None,
+                 tol=1e-4, max_iter=10, assume_centered=False, verbose=1,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, debug=False, dtype=np.float64):
         self.rhos = rhos
         self.n_refinements = n_refinements
         self.cv = cv
+        self.tol = tol
         self.max_iter = max_iter
         self.assume_centered = assume_centered
         self.dtype = dtype
@@ -704,8 +705,8 @@ class GroupSparseCovarianceCV(object):
             this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(group_sparse_covariance_path)(
                     train_tasks, test_tasks, rhos, max_iter=self.max_iter,
-                    assume_centered=self.assume_centered, verbose=self.verbose,
-                    dtype=self.dtype, debug=self.debug)
+                    tol=self.tol, assume_centered=self.assume_centered,
+                    verbose=self.verbose, dtype=self.dtype, debug=self.debug)
                 for train_tasks, test_tasks in train_test_tasks)
 
             # this_path[i] is the scores obtained with the i-th folding,
@@ -768,7 +769,8 @@ class GroupSparseCovarianceCV(object):
 
         # Finally fit the model with the selected rho
         self.covariances_, self.precisions_ = group_sparse_covariance(
-            tasks, self.rho_, max_iter=self.max_iter, verbose=self.verbose - 1,
-            dtype=self.dtype, return_costs=False, debug=self.debug)
+            tasks, self.rho_, tol=self.tol, max_iter=self.max_iter,
+            verbose=self.verbose - 1, dtype=self.dtype, return_costs=False,
+            debug=self.debug)
         return self
 

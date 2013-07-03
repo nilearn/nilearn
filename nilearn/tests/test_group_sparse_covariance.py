@@ -2,7 +2,9 @@ import numpy as np
 
 from nose.tools import assert_equal, assert_true, assert_raises
 
-from .. group_sparse_covariance import group_sparse_covariance
+from .. group_sparse_covariance import (group_sparse_covariance,
+                                        GroupSparseCovariance,
+                                        GroupSparseCovarianceCV)
 
 
 def generate_multi_task_gg_model(n_tasks=5, n_var=30, density=0.1,
@@ -94,14 +96,24 @@ def test_group_sparse_covariance():
         density=0.1, n_tasks=5, n_var=10, min_samples=100, max_samples=151,
         rand_gen=np.random.RandomState(0))
 
-    rho = 0.8
+    rho = 0.1
 
-    emp_covs, omega, costs = group_sparse_covariance(signals, rho, n_iter=2,
-                                                     verbose=10, debug=True,
-                                                     return_costs=True)
-    # To increase coverage
-    emp_covs, omega = group_sparse_covariance(signals, rho, n_iter=2,
-                                              verbose=0, return_costs=False)
+    # These executions must hit the tolerance limit
+    emp_covs, omega = group_sparse_covariance(signals, rho, max_iter=20,
+                                              tol=1e-5, verbose=10, debug=True,
+                                              return_costs=False)
+    emp_covs, omega2 = group_sparse_covariance(signals, rho, max_iter=20,
+                                               tol=1e-5, verbose=0,
+                                               debug=True,
+                                               return_costs=False,
+                                               precisions_init=omega)
+    np.testing.assert_almost_equal(omega, omega2, decimal=4)
+
+    emp_covs, omega, costs = group_sparse_covariance(
+        signals, rho, max_iter=10, tol=None, verbose=0, return_costs=True)
+
+    # check number of iterations
+    assert_equal(len(costs), 10)
 
     ## np.testing.assert_array_less is a strict comparison.
     ## Zeros can occur in 'objective'.
@@ -114,3 +126,15 @@ def test_group_sparse_covariance():
     assert_raises(ValueError, group_sparse_covariance, 1, rho)
     assert_raises(ValueError, group_sparse_covariance,
                   [np.ones((2, 2)), np.ones((2, 3))], rho)
+
+    # Smoke test classes
+    gsc1 = GroupSparseCovarianceCV(rhos=4, tol=1e-5, max_iter=20, verbose=0,
+                                   assume_centered=False, n_jobs=3)
+    gsc1.fit(signals)
+
+    gsc2 = GroupSparseCovariance(rho=gsc1.rho_, tol=1e-5, max_iter=20,
+                                 verbose=0, assume_centered=False)
+    gsc2.fit(signals)
+
+    np.testing.assert_almost_equal(gsc1.precisions_, gsc2.precisions_,
+                                   decimal=4)
