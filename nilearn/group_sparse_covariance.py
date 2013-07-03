@@ -128,29 +128,7 @@ def quad_trust_region_deriv(alpha, q, two_ccq, cc, rho2):
     return (two_ccq / (1. + alpha * q) ** 3).sum()
 
 
-def update_vectors(full, n):
-    """full is a (N, N) matrix.
-
-    This function is a helper function for updating the submatrix equals to
-    "full" with row n + 1 and column n + 1 removed. The initial state of the
-    submatrix is supposed to be "full" with row and column n removed.
-
-    This functions returns the new value of row and column n in the submatrix.
-    Thus, if h, v are the return values of this function, the submatrix must
-    be updated this way: sub[n, :] = h ; sub[:, n] = v
-    """
-    v = np.ndarray((full.shape[0] - 1,), dtype=full.dtype)
-    v[:n + 1] = full[:n + 1, n]
-    v[n + 1:] = full[n + 2:, n]
-
-    h = np.ndarray((full.shape[1] - 1,), dtype=full.dtype)
-    h[:n + 1] = full[n, :n + 1]
-    h[n + 1:] = full[n, n + 2:]
-
-    return h, v
-
-
-def update_submatrix(full, sub, sub_inv, p):
+def update_submatrix(full, sub, sub_inv, p, h, v):
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
@@ -164,7 +142,10 @@ def update_submatrix(full, sub, sub_inv, p):
     """
 
     n = p - 1
-    h, v = update_vectors(full, n)
+    v[:n + 1] = full[:n + 1, n]
+    v[n + 1:] = full[n + 2:, n]
+    h[:n + 1] = full[n, :n + 1]
+    h[n + 1:] = full[n, n + 2:]
 
     # change row
     coln = sub_inv[:, n]
@@ -300,6 +281,10 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
                    dtype=emp_covs.dtype, order="F")
     Winv = np.ndarray(shape=W.shape, dtype=emp_covs.dtype, order="F")
 
+    # Auxilliary arrays.
+    v = np.ndarray((omega.shape[0] - 1,), dtype=omega.dtype)
+    h = np.ndarray((omega.shape[1] - 1,), dtype=omega.dtype)
+
     # Optional.
     costs = []
     tolerance_reached = False
@@ -332,7 +317,8 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
 
                 for k in xrange(n_tasks):
                     update_submatrix(omega[..., k],
-                                     W[..., k], Winv[..., k], p)
+                                     W[..., k], Winv[..., k], p, h, v)
+
                     if debug:
                         assert_submatrix(omega[..., k], W[..., k], p)
                         np.testing.assert_almost_equal(
