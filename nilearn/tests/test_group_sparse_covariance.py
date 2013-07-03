@@ -108,8 +108,7 @@ def test_group_sparse_covariance():
     emp_covs, omega2 = group_sparse_covariance(signals, rho, max_iter=20,
                                                tol=1e-5, verbose=0,
                                                debug=True,
-                                               return_costs=False,
-                                               precisions_init=omega)
+                                               return_costs=False)
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
     emp_covs, omega, costs = group_sparse_covariance(
