@@ -93,7 +93,7 @@ def group_sparse_covariance_path_test(tasks):
 if __name__ == "__main__":
     n_subjects = 10
     tasks = []
-#    rho = .0252
+    rho = .1
     mem = joblib.Memory(".")
 
     print("-- Computing covariance matrices ...")
@@ -101,23 +101,39 @@ if __name__ == "__main__":
         tasks.append(mem.cache(region_signals)(n))
 
     print("-- Computing precision matrices ...")
-    from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
-    gsc = GroupSparseCovarianceCV(4, n_iter=5, n_refinements=2, verbose=1,
-                                  n_jobs=4)
+    from nilearn.group_sparse_covariance import GroupSparseCovariance
+    gsc = GroupSparseCovariance(rho=rho, n_iter=4, verbose=2,
+                                return_costs=True)
     gsc.fit(tasks)
-    print("selected rho: {0:.4f}".format(gsc.rho_))
-    ## print(gsc.cv_rhos)
-    ## print(gsc.cv_scores)
-    pl.figure()
-    pl.plot(gsc.cv_rhos, gsc.cv_scores, '-+')
-    pl.xlabel("rho")
-    pl.ylabel("CV score")
 
-    for n, (emp_cov, prec) in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
-                                            np.rollaxis(gsc.precisions_, -1))):
-        plot_matrices(emp_cov, -prec,
-                      title="Group sparse estimator", subject_n=n)
-        if n == 2:
-            break
+    pl.figure()
+    pl.plot(gsc.objective_)
+    pl.grid()
+
+    # Check that duality gap is higher than estimated error.
+    pl.figure()
+    pl.semilogy(gsc.duality_gap_)  # duality gap
+    pl.semilogy(gsc.objective_ - gsc.objective_[-1])  # estimated error
+    pl.grid()
+
+    ## from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+    ## gsc = GroupSparseCovarianceCV(4, n_iter=5, n_refinements=2, verbose=1,
+    ##                               n_jobs=4)
+    ## import phyx
+    ## phyx.timeit(gsc.fit)(tasks)
+    ## print("selected rho: {0:.4f}".format(gsc.rho_))
+    ## ## print(gsc.cv_rhos)
+    ## ## print(gsc.cv_scores)
+    ## pl.figure()
+    ## pl.plot(gsc.cv_rhos, gsc.cv_scores, '-+')
+    ## pl.xlabel("rho")
+    ## pl.ylabel("CV score")
+
+    ## for n, (emp_cov, prec) in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
+    ##                                         np.rollaxis(gsc.precisions_, -1))):
+    ##     plot_matrices(emp_cov, -prec,
+    ##                   title="Group sparse estimator", subject_n=n)
+    ##     if n == 2:
+    ##         break
 
     pl.show()

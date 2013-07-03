@@ -94,26 +94,32 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
     # Compute A(k)
     A = np.empty(omega.shape, dtype=omega.dtype)  # TODO: allocate once
     for k in xrange(n_tasks):
-        A[..., k] = n_samples[k] * (
-            np.linalg.inv(omega[..., k]) - emp_covs[..., k])
+        omega_inv = np.linalg.inv(omega[..., k])
+        assert is_spd(omega_inv)
+        A[..., k] = n_samples[k] * (omega_inv - emp_covs[..., k])
         if debug:
             np.testing.assert_almost_equal(A[..., k], A[..., k].T)
-    # Shrink A(k) if needed to get a feasible point.
-    rho_max = np.sqrt((A ** 2).sum(axis=-1)).max()
-    if rho_max > rho:
-        A *= rho / rho_max
 
+    # Project A on the set of feasible points
+    rho_max = np.sqrt((A ** 2).sum(axis=-1))
+    mask = rho_max > rho
+    for k in range(A.shape[-1]):
+        A[mask, k] *= rho / rho_max[mask]
+        A[..., k].flat[::A.shape[0] + 1] = 0  # essential
+
+    rho_max = np.sqrt((A ** 2).sum(axis=-1)).max()
     dual_cost = 0
     for k in xrange(n_tasks):
         B = emp_covs[..., k] + A[..., k] / n_samples[k]
         if debug:
             assert is_spd(B)
         dual_cost += n_samples[k] * (n_var + fast_logdet(B))
-    gap = dual_cost - cost
+    gap = cost - dual_cost
 
     if display:
         print("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
             gap=gap, cost=cost))
+
     return (cost, gap)
 
 
@@ -197,7 +203,8 @@ def assert_submatrix(full, sub, n):
 
 def group_sparse_covariance(tasks, rho, n_iter=10,
                             assume_centered=False, verbose=0, dtype=np.float64,
-                            return_costs=False, debug=False):
+                            return_costs=False, debug=False,
+                            precisions_init=None):
     """Compute sparse precision matrices and covariance matrices.
 
     The precision matrices returned by this function are sparse, and share a
@@ -273,11 +280,15 @@ def group_sparse_covariance(tasks, rho, n_iter=10,
                                     dtype=dtype, debug=debug)
     del tasks  # reduces memory usage in some cases.
 
-    omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype)
-    for k in xrange(n_tasks):
-        # Values on main diagonals should be far from zero, because they
-        # are timeseries energy.
-        omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
+    if precisions_init is None:
+        omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype)
+        for k in xrange(n_tasks):
+            # Values on main diagonals should be far from zero, because they
+            # are timeseries energy.
+            omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
+    else:
+        print("restart")
+        omega = precisions_init.copy()
 
     # Preallocate arrays
     y = np.ndarray(shape=(n_tasks, n_var - 1), dtype=emp_covs.dtype)
@@ -573,10 +584,12 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, n_iter=10,
     n_samples /= n_samples.sum()
 
     scores = []
-    for rho in rhos:
+    precisions_init = None
+    for rho in reversed(rhos):
         _, precisions = group_sparse_covariance(
             train_tasks, rho, n_iter=n_iter, assume_centered=assume_centered,
-            verbose=verbose, return_costs=False, dtype=dtype, debug=debug)
+            verbose=verbose, return_costs=False, dtype=dtype, debug=debug,
+            precisions_init=precisions_init)
 
         # Compute score for current rho value
         task_score = []
@@ -584,8 +597,9 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, n_iter=10,
             task_score.append(n_samples[k] * sklearn.covariance.log_likelihood(
                 test_covs[..., k], precisions[..., k]))
         scores.append(sum(task_score))
+        precisions_init = precisions
 
-    return scores
+    return [s for s in reversed(scores)]
 
 
 class GroupSparseCovarianceCV(object):
