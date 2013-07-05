@@ -5,12 +5,14 @@ nilearn
 
 This projects contains a tutorial on how to process functional Magnetic Resonance Imaging (fMRI) data with the scikit-learn.
 
-This work is made available by the INRIA Parietal Project Team and the scikit-learn folks, among which V. Michel, A. Gramfort, G. Varoquaux, F. Pedregosa and B. Thirion.
+This work is made available by the INRIA Parietal Project Team and the
+scikit-learn folks, among which P. Gervais, A. Abraham, V. Michel, A.
+Gramfort, G. Varoquaux, F. Pedregosa and B. Thirion.
 
 Important links
 ===============
 
-- Official source code repo: https://github.com/nilearn/tutorial/
+- Official source code repo: https://github.com/nilearn/nilearn/
 - HTML documentation (stable release): http://nilearn.github.com/
 
 Dependencies
@@ -52,10 +54,10 @@ GIT
 
 You can check the latest sources with the command::
 
-    git clone git://github.com/nilearn/tutorial
+    git clone git://github.com/nilearn/nilearn
 
 or if you have write privileges::
 
-    git clone git@github.com:nilearn/tutorial
+    git clone git@github.com:nilearn/nilearn
 
 
