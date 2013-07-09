@@ -245,15 +245,11 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             # there will be no side effect
             copy = not isinstance(niimg, basestring)
 
-            if check_affine:
-                niimg = _utils.check_niimgs(niimg)
-
-                if (self.target_affine is None and affine is not None
-                        and np.all(niimg.get_affine() != affine)):
-                    warnings.warn('Affine is different across subjects.'
-                                  ' Realignement on first subject affine forced')
-                    self.target_affine = affine
-            
+            if (self.target_affine is None and affine is not None
+                    and np.all(niimg.get_affine() != affine)):
+                warnings.warn('Affine is different across subjects.'
+                              ' Realignement on first subject affine forced')
+                self.target_affine = affine
             if confounds is not None:
                 data.append(self.transform_single_niimgs(
                     niimg, confounds=confounds[index],
