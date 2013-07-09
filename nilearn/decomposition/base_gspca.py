@@ -16,9 +16,7 @@ from sklearn.utils.extmath import randomized_svd
 from sklearn.decomposition.dict_learning import _update_dict
 from ica_model import ICAModel
 
-from base_model import learn_time_series
-
-from joblib import Memory, MemorizedResult, NotMemorizedResult
+from joblib.memory import Memory, MemorizedResult, NotMemorizedResult
 
 
 def _load(data):
@@ -26,6 +24,22 @@ def _load(data):
             isinstance(data, NotMemorizedResult)):
         return data.get()
     return data
+
+
+def learn_time_series(maps, subject_data):
+    # For this, we do a ridge regression with a very small
+    # regularisation, corresponds to a least square with control on
+    # the conditioning
+    maps_cov = np.dot(maps, maps.T)
+    n_maps = len(maps_cov)
+    maps_cov.flat[::n_maps + 1] += .01 * np.trace(maps_cov) / n_maps
+    u = linalg.solve(maps_cov, np.dot(maps, subject_data.T),
+            sym_pos=True, overwrite_a=True, overwrite_b=True)
+    residuals = np.dot(u.T, maps)
+    residuals -= subject_data
+    residuals **= 2
+    residuals = np.mean(residuals, axis=0)
+    return u, residuals
 
 
 def _update_Vs(Ys_, Us_, V, mu, column_wise=False):
@@ -72,7 +86,7 @@ def _update_Vs(Ys_, Us_, V, mu, column_wise=False):
 def _update_V(Vs, prox, alpha, non_penalized=None):
     V_group = np.mean(Vs, axis=0)
     V_group[:non_penalized], V_norms = prox(V_group[:non_penalized], alpha)
-    return V_group, V_norms
+    return V_group, V_norms, [((Vs_ - V_group) ** 2).sum() for Vs_ in Vs]
 
 
 def _update_Vs_Us(Ys_, Us_, V, mu, id_subj=None, verbose=0):
@@ -109,17 +123,6 @@ def group_dictionary(Ys, n_atoms, prox, alpha, mu, maxit=100, minit=3,
         return (.5 * (sum(r2) + mu * sum(residuals_dV))
                 + alpha * np.sum(V_norms))
 
-    # left to understand the behavior of the preceding function (and test it)
-    def full_cost_function():
-        # The cost function not using precomputed quantities
-        y_uv_vs_v = 0
-        for Ys_, Us_, Vs_ in zip(Ys, Us, Vs):
-            Ys__ = _load(Ys_)
-            y_uv_vs_v += (np.sum((Ys__ - np.dot(Us_, Vs_)) ** 2)
-                          + mu * np.sum((Vs_ - V) ** 2))
-            del Ys__
-        return .5 * y_uv_vs_v + alpha * np.sum(V_norms)
-
     # There are 6 possible configurations:
     # - nothing is given, Vs_init is computed using PCA
     # - Vs_init is given (or computed above), V is computed using PCA
@@ -129,8 +132,6 @@ def group_dictionary(Ys, n_atoms, prox, alpha, mu, maxit=100, minit=3,
     #   step of the algorithm (update_V)
     # - Us_init and V_init are given, Vs_init is computed thanks to update_Vs
     # - everything is given, there is nothing to do
-
-    residuals_dV = np.zeros(n_group)
 
     if Us_init is None:
         # Either Vs_init and V_init are set, or none of them
@@ -174,7 +175,6 @@ def group_dictionary(Ys, n_atoms, prox, alpha, mu, maxit=100, minit=3,
     E = [np.inf]
     Vs = np.asarray(Vs)
     V_norms = np.zeros(n_atoms)
-    #residuals_dV is already set
     r2 = np.zeros(n_group)
     dVs = 1e-2
     # For stochastic mode: used to make a last iteration using all subjects
@@ -193,7 +193,7 @@ def group_dictionary(Ys, n_atoms, prox, alpha, mu, maxit=100, minit=3,
         if hasattr(prox, 'set_dVs'):
             prox.set_dVs(dVs)
         t0_ = time.time()
-        V, V_norms = _update_V(Vs, prox, alpha / (mu * n_group),
+        V, V_norms, residuals_dV = _update_V(Vs, prox, alpha / (mu * n_group),
                       non_penalized=non_penalized)
         t0 += time.time() - t0_
         dt = t0
@@ -229,16 +229,13 @@ def group_dictionary(Ys, n_atoms, prox, alpha, mu, maxit=100, minit=3,
 
         t0_ = time.time()
         VsUs = Parallel(n_jobs=n_jobs)(delayed(_update_Vs_Us)
-                (Ys_, Us_, V, mu, return_r2=True, id_subj=i, verbose=verbose)
-                for i, (Ys_, Us_, Vs_warm_restart) in
+                (Ys_, Us_, V, mu, id_subj=i, verbose=verbose)
+                for i, (Ys_, Us_) in
                     enumerate(zip(ys, us)))
         t0 += time.time() - t0_
         dt = t0
 
-        if Vs_warm_restart is None:
-            Vs_, residuals_dV_, Us_, r2_ = zip(*VsUs)
-        else:
-            Vs_, residuals_dV_, Vs_warm_restart, Us_, r2_ = zip(*VsUs)
+        Vs_, residuals_dV_, Us_, r2_ = zip(*VsUs)
 
         if n_shuffle_subjects is not None:
             dVs = 0.
@@ -339,9 +336,7 @@ class BaseGSPCAModel(BaseEstimator):
                         non_penalized=None,
                         do_ica=True,
                         tol=1e-4,
-                        Vs_method='solve',
                         max_iter=300,
-                        Vs_warm_restart=None,
                         n_shuffle_subjects=None,
                         n_jobs=1,
                         verbose=False):
@@ -380,8 +375,6 @@ class BaseGSPCAModel(BaseEstimator):
                 print '[%s] Computed V_init' % self.__class__.__name__
         Us = list()
         Ss = list()
-        if self.verbose > 1:
-            print '[%s] Finished learning U_init' % self.__class__.__name__
 
         if mu == 'auto':
             mu = self.mem.cache(estimate_group_regularization,
@@ -400,6 +393,8 @@ class BaseGSPCAModel(BaseEstimator):
             Ss.append(S)
             Us.append(U.T)
         V_init = (V_init * np.mean(Ss, axis=0)[:, np.newaxis])
+        if self.verbose > 1:
+            print '[%s] Finished learning U_init' % self.__class__.__name__
         if self.verbose > 1:
             print '[%s] Finished learning V_init' % self.__class__.__name__
 
