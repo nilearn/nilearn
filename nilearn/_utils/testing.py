@@ -371,3 +371,101 @@ def is_spd(M, decimal=15):
     eigvalsh = np.linalg.eigvalsh(M)
     return eigvalsh.min() > 0
 
+
+def generate_sparse_precision_matrices(n_tasks=5, n_var=30, density=0.1,
+                                       rand_gen=np.random.RandomState(0)):
+    """Generate several precision matrices with a common sparsity pattern.
+
+    Parameters
+    ----------
+    n_tasks: int
+        number of matrices to generate
+
+    n_var: int
+        number of variables
+
+    density: float
+        this number determines the sparsity of the output matrices. The lower
+        the sparser, but this is not the actual output sparsity (which also
+        depends on the particular outcome of the random generator).
+
+    Returns
+    -------
+    precisions: list of numpy.ndarray
+        precision matrices. All matrices have shape (n_var, n_var), length of
+        list is n_tasks.
+
+    topology: numpy.ndarray
+        boolean array giving the actual topology of precision matrices. Actual
+        sparsity can be obtained with this matrix. Shape: (n_var, n_var)
+    """
+
+    # Generate topology (upper triangular binary matrix, with zeros on the
+    # diagonal)
+    topology = np.ndarray((n_var, n_var))
+    topology[:, :] = np.triu((
+        rand_gen.randint(0, high=int(1. / density), size=n_var * n_var)
+        ).reshape(n_var, n_var) == 0, k=1)
+
+    # Randomize order to remove any asymmetry
+    permutation = rand_gen.permutation(n_var)
+    topology = topology[permutation].T[permutation]
+
+    # Generate edges weights on topology
+    precisions = []
+    mask = topology > 0
+    for _ in xrange(n_tasks):
+        # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
+        prec = topology.copy()
+        prec[mask] = rand_gen.uniform(low=-1., high=1., size=(mask.sum()))
+        prec += -np.eye(prec.shape[0])
+        prec = np.dot(prec.T, prec)
+
+        assert is_spd(prec)
+        precisions.append(prec)
+
+    # Returns the topology matrix of precision matrices.
+    topology += np.eye(*topology.shape)
+    topology = np.dot(topology.T, topology)
+    topology = topology > 0
+    assert(np.all(topology == topology.T))
+    print("Sparsity: {0:f}".format(
+        1. * topology.sum() / (topology.shape[0] * topology.shape[1])))
+
+    return precisions, topology
+
+
+def generate_signals_from_precisions(precisions,
+                                     min_samples=50, max_samples=100,
+                                     rand_gen=np.random.RandomState(0)):
+    """Generate timeseries according to some given precision matrices.
+
+    Signals all have zero mean.
+
+    Parameters
+    ----------
+    precisions: list of numpy.ndarray
+        list of precision matrices. Every matrix must be square (with the same
+        size) and positive definite. The output of
+        generate_sparse_precision_matrices() can be used here.
+
+    min_samples, max_samples: int
+        the number of samples drawn for each timeseries is taken at random
+        between these two numbers.
+
+    Returns
+    -------
+    signals: list of numpy.ndarray
+        output signals. signals[n] corresponds to precisions[n], and has shape
+        (sample number, precisions[n].shape[0]).
+    """
+
+    signals = []
+    n_samples = rand_gen.randint(min_samples, high=max_samples,
+                                 size=len(precisions))
+
+    for n, prec in zip(n_samples, precisions):
+        signals.append(rand_gen.multivariate_normal(np.zeros(prec.shape[0]),
+                                                    -np.linalg.inv(prec),
+                                                    (n,)))
+    return signals

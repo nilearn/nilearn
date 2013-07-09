@@ -8,6 +8,7 @@ graphical models.
 import warnings
 import collections
 import operator
+import itertools
 
 import numpy as np
 import scipy
@@ -62,7 +63,8 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
     primal_cost: float
         value of primal cost at current point. This value is minimized by the
         algorithm.
-    gap: float
+
+    duality_gap: float
         value of duality gap at current point, with a feasible dual point. This
         value is supposed to always be negative, and vanishing for the optimal
         point.
@@ -106,8 +108,9 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
     dual_cost = 0
     for k in xrange(n_tasks):
         B = emp_covs[..., k] + A[..., k] / n_samples[k]
-        if debug:
+        if debug:  # FIXME: B can be not spd.
             assert is_spd(B)
+
         dual_cost += n_samples[k] * (n_var + fast_logdet(B))
     gap = cost - dual_cost
 
@@ -311,13 +314,19 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
     # Optional.
     costs = []
     tolerance_reached = False
+    duality_gap = None
 
     # Start optimization loop. Variables are named following (mostly) the
     # Honorio-Samaras paper notations.
     for n in xrange(max_iter):
         if verbose >= 1:
-            print("* iteration {iter_n:d} ({percentage:.0f} %) ...".format(
-                iter_n=n, percentage=100. * n / max_iter))
+            if duality_gap is not None:
+                suffix = "duality_gap: %.3e" % duality_gap
+            else:
+                suffix = ""
+            print("* iteration {iter_n:d} ({percentage:.0f} %) {suffix} ..."
+                  "".format(iter_n=n, percentage=100. * n / max_iter,
+                            suffix=suffix))
 
         for p in xrange(n_var):
 
@@ -436,7 +445,7 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
 
         if tol is not None and duality_gap < tol:
             if verbose >= 1:
-                print("tolerance reached at iteration number {0:d}: {1:.9f}"
+                print("tolerance reached at iteration number {0:d}: {1:.3e}"
                       "".format(n + 1, duality_gap))
             tolerance_reached = True
             break
@@ -600,11 +609,12 @@ def empirical_covariances(tasks, assume_centered=False, dtype=np.float64,
 
     Returns
     -------
-    emp_covs:
-        empirical covariances
+    emp_covs: numpy.ndarray
+        empirical covariances.
+        shape: (feature number, feature number, task number)
 
     n_samples: numpy.ndarray
-        number of samples for each task.
+        number of samples for each task. shape: (task number,)
     """
     if not hasattr(tasks, "__iter__"):
         raise ValueError("'tasks' input argument must be an iterable. "
@@ -633,6 +643,38 @@ def empirical_covariances(tasks, assume_centered=False, dtype=np.float64,
     return emp_covs, n_samples, n_tasks, n_var
 
 
+def group_sparse_score(precisions, n_samples, emp_covs, rho):
+    """Compute the log-likelihood of a given list of empirical covariances /
+    precisions.
+
+    This is the loss function used by the group_sparse_covariance function,
+    without the regularization term.
+
+    Parameters
+    ----------
+    precisions: numpy.ndarray
+        estimated precisions. shape (n_var, n_var, n_tasks)
+
+    n_samples: array-like
+        number of samples used in estimating each task in "precisions".
+        shape: (n_tasks,)
+
+    Returns
+    -------
+    score: float
+        value of loss function.
+    """
+    ll = 0
+    for k in range(precisions.shape[2]):
+        ll += n_samples[k] * sklearn.covariance.log_likelihood(
+            emp_covs[..., k], precisions[..., k])
+
+    l2 = np.sqrt((precisions ** 2).sum(axis=-1))
+    l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
+
+    return (ll, ll - rho * l12)
+
+
 def group_sparse_covariance_path(train_tasks, test_tasks, rhos, tol=1e-4,
                                  max_iter=10, assume_centered=False,
                                  verbose=0, dtype=np.float64, debug=False,
@@ -644,6 +686,7 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, tol=1e-4,
         test_tasks, assume_centered=assume_centered, dtype=dtype, debug=debug)
 
     scores = []
+    precisions_list = []
     for rho in rhos:
         precisions = _group_sparse_covariance(
             train_covs, train_n_samples, rho, tol=tol, max_iter=max_iter,
@@ -651,17 +694,13 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, tol=1e-4,
             verbose=verbose, return_costs=False, dtype=dtype, debug=debug,
             precisions_init=precisions_init)
 
-        # Compute score for current rho value
-        task_score = []
-        for k in range(precisions.shape[2]):
-            task_score.append(train_n_samples[k]
-                              * sklearn.covariance.log_likelihood(
-                                  test_covs[..., k], precisions[..., k])
-                              )
-        scores.append(sum(task_score))
+        # Compute log-likelihood
+        scores.append(group_sparse_score(precisions, train_n_samples,
+                                         test_covs, 0))
+        ## precisions_list.append(None)
+        precisions_list.append(precisions)
         precisions_init = precisions
-
-    return scores
+    return scores, precisions_list
 
 
 class GroupSparseCovarianceCV(object):
@@ -739,7 +778,7 @@ class GroupSparseCovarianceCV(object):
             rhos = np.logspace(np.log10(rho_0), np.log10(rho_1),
                                  n_rhos)[::-1]
 
-#        covs_init = (None, None, None)
+        covs_init = itertools.repeat(None)
         for i in range(n_refinements):
             # Compute the cross-validated loss on the current grid
             train_test_tasks = []
@@ -753,14 +792,21 @@ class GroupSparseCovarianceCV(object):
                 delayed(group_sparse_covariance_path)(
                     train_tasks, test_tasks, rhos, max_iter=self.max_iter,
                     tol=self.tol, assume_centered=self.assume_centered,
-                    verbose=self.verbose, dtype=self.dtype, debug=self.debug)
-                for train_tasks, test_tasks in train_test_tasks)
+                    verbose=self.verbose, dtype=self.dtype, debug=self.debug,
+                    precisions_init=prec_init)
+                for (train_tasks, test_tasks), prec_init
+                in zip(train_test_tasks, covs_init))
 
-            # this_path[i] is the scores obtained with the i-th folding,
-            # for varying rho.
-            scores = [np.mean(sc) for sc in zip(*this_path)]
+            # this_path[i] is a tuple (scores, precisions_list)
+            # - scores: scores obtained with the i-th folding, for varying rho.
+            # - precisions_list: corresponding precisions matrices, for each
+            #   value of rho.
+            scores, precisions_list = zip(*this_path)
+            precisions_list = zip(*precisions_list)
+            scores = [np.mean(sc) for sc in zip(*scores)]
+
             # scores is the mean score obtained for a given value of rho.
-            path.extend(zip(rhos, scores))
+            path.extend(zip(rhos, scores, precisions_list))
             path = sorted(path, key=operator.itemgetter(0), reverse=True)
 
             # Find the maximum (avoid using the built-in 'max' function to
@@ -768,7 +814,7 @@ class GroupSparseCovarianceCV(object):
             # in case of equality)
             best_score = -np.inf
             last_finite_idx = 0
-            for index, (rho, this_score) in enumerate(path):
+            for index, (rho, this_score, _) in enumerate(path):
                 if this_score >= .1 / np.finfo(np.float).eps:
                     this_score = np.nan
                 if np.isfinite(this_score):
@@ -784,22 +830,22 @@ class GroupSparseCovarianceCV(object):
                 # non-zero coefficients
                 rho_1 = path[0][0]
                 rho_0 = path[1][0]
-#                covs_init = path[0][-1]
+                covs_init = path[0][2]
             elif (best_index == last_finite_idx
                     and not best_index == len(path) - 1):
                 # We have non-converged models on the upper bound of the
                 # grid, we need to refine the grid there
                 rho_1 = path[best_index][0]
                 rho_0 = path[best_index + 1][0]
-#                covs_init = path[best_index][-1]
+                covs_init = path[best_index][2]
             elif best_index == len(path) - 1:
                 rho_1 = path[best_index][0]
                 rho_0 = 0.01 * path[best_index][0]
-#                covs_init = path[best_index][-1]
+                covs_init = path[best_index][2]
             else:
                 rho_1 = path[best_index - 1][0]
                 rho_0 = path[best_index + 1][0]
-#                covs_init = path[best_index - 1][-1]
+                covs_init = path[best_index - 1][2]
             rhos = np.logspace(np.log10(rho_1), np.log10(rho_0), len(rhos) + 2)
             rhos = rhos[1:-1]
             if self.verbose and n_refinements > 1:

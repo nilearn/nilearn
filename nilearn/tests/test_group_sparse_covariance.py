@@ -8,7 +8,6 @@ from .. group_sparse_covariance import (group_sparse_covariance,
 
 
 def generate_multi_task_gg_model(n_tasks=5, n_var=30, density=0.1,
-                                 min_eigenvalue=0.1,
                                  min_samples=30, max_samples=50,
                                  rand_gen=np.random.RandomState(0)):
     """Generate signals drawn from a sparse gaussian graphical models.
@@ -23,10 +22,6 @@ def generate_multi_task_gg_model(n_tasks=5, n_var=30, density=0.1,
 
     density: float
         density of edges in graph topology
-
-    min_eigenvalue: float
-        To ensure positive definiteness of covariance matrices, make sure that
-        the smallest eigenvalue is greater than this number.
 
     min_samples, max_samples: int
         Each task have a different number of samples, between these two
