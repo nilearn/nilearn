@@ -466,6 +466,6 @@ def generate_signals_from_precisions(precisions,
 
     for n, prec in zip(n_samples, precisions):
         signals.append(rand_gen.multivariate_normal(np.zeros(prec.shape[0]),
-                                                    -np.linalg.inv(prec),
+                                                    np.linalg.inv(prec),
                                                     (n,)))
     return signals

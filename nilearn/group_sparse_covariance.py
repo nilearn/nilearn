@@ -294,6 +294,8 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
         function.
     """
 
+    if tol == -1:
+        tol = None
     if not isinstance(rho, (int, float)) or rho < 0:
         raise ValueError("Regularization parameter rho must be a "
                          "positive number.\n"
@@ -798,7 +800,7 @@ class GroupSparseCovarianceCV(object):
             rho_1 = rho_max(emp_covs, n_samples)
             rho_0 = 1e-2 * rho_1
             rhos = np.logspace(np.log10(rho_0), np.log10(rho_1),
-                                 n_rhos)[::-1]
+                               n_rhos)[::-1]
 
         covs_init = itertools.repeat(None)
         for i in range(n_refinements):
