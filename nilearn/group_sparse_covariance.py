@@ -90,6 +90,7 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
     # Compute A(k)
     A = np.empty(omega.shape, dtype=omega.dtype, order="F")  # TODO: allocate once
     for k in xrange(n_tasks):
+        # TODO: can be computed more efficiently using Winv (see Friedman 2008)
         omega_inv = np.linalg.inv(omega[..., k])
         if debug:
             assert is_spd(omega_inv)
@@ -108,10 +109,27 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
     dual_cost = 0
     for k in xrange(n_tasks):
         B = emp_covs[..., k] + A[..., k] / n_samples[k]
-        if debug:  # FIXME: B can be not spd.
-            assert is_spd(B)
-
         dual_cost += n_samples[k] * (n_var + fast_logdet(B))
+
+    # The previous computation can lead to a non-feasible point, because
+    # one of the Bs are not positive definite.
+    # Use another value in this case, that ensure positive definiteness of B.
+    # The upper bound on the duality gap is not tight in the following, but
+    # is smaller than infinity, which is better in any case.
+    if not np.isfinite(dual_cost):
+        for k in range(n_tasks):
+            A[..., k] = - n_samples[k] * emp_covs[..., k]
+            A[..., k].flat[::A.shape[0] + 1] = 0
+        rho_max = np.sqrt((A ** 2).sum(axis=-1)).max()
+        # the second value (0.05 is arbitrary: positive in ]0,1[)
+        alpha = min((rho / rho_max, 0.05))
+        dual_cost = 0
+        for k in range(n_tasks):
+            # add alpha on the diagonal
+            B = ((1. - alpha) * emp_covs[..., k]
+                 + alpha * np.eye(emp_covs.shape[0]))
+            dual_cost += n_samples[k] * (n_var + fast_logdet(B))
+
     gap = cost - dual_cost
 
     if display:
@@ -315,13 +333,17 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
     costs = []
     tolerance_reached = False
     duality_gap = None
+    objective = None
 
     # Start optimization loop. Variables are named following (mostly) the
     # Honorio-Samaras paper notations.
     for n in xrange(max_iter):
         if verbose >= 1:
             if duality_gap is not None:
-                suffix = "duality_gap: %.3e" % duality_gap
+                suffix = ("duality gap: {duality_gap:.3e} "
+                          "objective: {objective:.3e}".format(
+                              duality_gap=duality_gap,
+                              objective=objective))
             else:
                 suffix = ""
             print("* iteration {iter_n:d} ({percentage:.0f} %) {suffix} ..."
