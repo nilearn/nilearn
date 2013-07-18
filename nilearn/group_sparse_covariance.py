@@ -39,8 +39,10 @@ def rho_max(emp_covs, n_samples):
 
     Returns
     -------
-    rho_max: Minimal value for regularization parameter that gives a
+    rho_max: minimal value for regularization parameter that gives a
         full-sparse matrix.
+
+    rho_min: maximal value for rho that gives a fully dense matrix
     """
     A = np.copy(emp_covs)
     n_samples = np.asarray(n_samples).copy()
@@ -51,7 +53,9 @@ def rho_max(emp_covs, n_samples):
         A[..., k].flat[::A.shape[0] + 1] = 0
         A[..., k] *= n_samples[k]
 
-    return np.max(np.sqrt((A ** 2).sum(axis=-1)))
+    norms = np.sqrt((A ** 2).sum(axis=-1))
+
+    return np.max(norms), np.min(norms[norms > 0])
 
 
 def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
@@ -132,11 +136,13 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
 
     gap = cost - dual_cost
 
+    other = (omega.copy(),)
+
     if display:
         print("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
             gap=gap, cost=cost))
 
-    return (cost, gap)
+    return (cost, gap, other)
 
 
 # The signatures of quad_trust_region and quad_trust_region_deriv are
@@ -281,6 +287,7 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
         return emp_covs, ret
 
 
+@profile
 def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
                             assume_centered=False, verbose=0, dtype=np.float64,
                             return_costs=False, debug=False,
@@ -427,12 +434,13 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
                     two_ccq = 2. * cc * q
                     # tolerance does not seem to be important for
                     # numerical stability (tol=1e-2 works) but has an
-                    # effect on final duality gap value.
+                    # effect on overall convergence rate.
+                    # (often the tighter the better)
                     alpha = scipy.optimize.newton(
                         quad_trust_region, 0,
                         fprime=quad_trust_region_deriv,
                         args=(q, two_ccq, cc, rho ** 2),
-                        maxiter=50, tol=1.5e-6)
+                        maxiter=100, tol=1.5e-8)
 
                     remainder = quad_trust_region(
                         alpha, q, two_ccq, cc, rho ** 2)
@@ -460,12 +468,12 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
                     assert(is_spd(omega[..., k]))
 
         if return_costs or tol is not None:
-            objective, duality_gap = _group_sparse_covariance_costs(
+            objective, duality_gap, other = _group_sparse_covariance_costs(
                 n_tasks, n_var, n_samples, rho, omega, emp_covs,
                 display=verbose >= 2, debug=debug)
 
         if return_costs:
-            costs.append((objective, duality_gap))
+            costs.append((objective, duality_gap) + other)
 
         if tol is not None and duality_gap < tol:
             if verbose >= 1:
@@ -797,7 +805,7 @@ class GroupSparseCovarianceCV(object):
             n_refinements = 1
         else:
             n_refinements = self.n_refinements
-            rho_1 = rho_max(emp_covs, n_samples)
+            rho_1, _ = rho_max(emp_covs, n_samples)
             rho_0 = 1e-2 * rho_1
             rhos = np.logspace(np.log10(rho_0), np.log10(rho_1),
                                n_rhos)[::-1]
