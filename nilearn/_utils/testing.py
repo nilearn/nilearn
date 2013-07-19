@@ -373,7 +373,8 @@ def is_spd(M, decimal=15):
 
 
 def generate_sparse_precision_matrices(n_tasks=5, n_var=30, density=0.1,
-                                       rand_gen=np.random.RandomState(0)):
+                                       rand_gen=np.random.RandomState(0),
+                                       unit_variance=True):
     """Generate several precision matrices with a common sparsity pattern.
 
     Parameters
@@ -388,6 +389,10 @@ def generate_sparse_precision_matrices(n_tasks=5, n_var=30, density=0.1,
         this number determines the sparsity of the output matrices. The lower
         the sparser, but this is not the actual output sparsity (which also
         depends on the particular outcome of the random generator).
+
+    unit_variance: bool
+        if True, scale the precision matrix so that its inverse has only
+        ones on its diagonal. If False, no normalization is done.
 
     Returns
     -------
@@ -429,8 +434,15 @@ def generate_sparse_precision_matrices(n_tasks=5, n_var=30, density=0.1,
     topology = np.dot(topology.T, topology)
     topology = topology > 0
     assert(np.all(topology == topology.T))
+    np.testing.assert_equal(topology, precisions[0] != 0)
     print("Sparsity: {0:f}".format(
         1. * topology.sum() / (topology.shape[0] * topology.shape[1])))
+
+    if unit_variance:
+        for k, prec in enumerate(precisions):
+            cov = np.linalg.inv(prec)
+            d = np.diag(np.sqrt(np.diag(cov)))
+            precisions[k] = np.dot(d, np.dot(prec, d))
 
     return precisions, topology
 
