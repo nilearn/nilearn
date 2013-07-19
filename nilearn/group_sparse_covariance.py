@@ -147,6 +147,8 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
 
 # The signatures of quad_trust_region and quad_trust_region_deriv are
 # complicated, but this allows for some interesting optimizations.
+
+# inplace operation, merge with quad_trust_region_deriv
 def quad_trust_region(alpha, q, two_ccq, cc, rho2):
     """This value is optimized to zero by the Newton-Raphson step."""
     return rho2 - (cc / ((1. + alpha * q) ** 2)).sum()
@@ -167,7 +169,7 @@ def update_submatrix(full, sub, sub_inv, p, h, v):
     the inverse of the submatrix of "full" obtained by removing the n+1-th row
     and column.
 
-    This computation is based on Sherman-Woodbury-Morrison identity.
+    This computation is based on the Sherman-Woodbury-Morrison identity.
     """
 
     n = p - 1
@@ -287,7 +289,7 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
         return emp_covs, ret
 
 
-@profile
+#@profile
 def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
                             assume_centered=False, verbose=0, dtype=np.float64,
                             return_costs=False, debug=False,
@@ -436,18 +438,27 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
                     # numerical stability (tol=1e-2 works) but has an
                     # effect on overall convergence rate.
                     # (often the tighter the better)
-                    alpha = scipy.optimize.newton(
-                        quad_trust_region, 0,
-                        fprime=quad_trust_region_deriv,
-                        args=(q, two_ccq, cc, rho ** 2),
-                        maxiter=100, tol=1.5e-8)
 
-                    remainder = quad_trust_region(
-                        alpha, q, two_ccq, cc, rho ** 2)
+                    # Newton-Raphson loop
+                    alpha = 0.
+                    for _ in xrange(100):
+                        fder = quad_trust_region_deriv(alpha, q, two_ccq,
+                                                       cc, rho ** 2)
+                        if fder == 0:
+                            msg = "derivative was zero."
+                            warnings.warn(msg, RuntimeWarning)
+                            break
+                        fval = quad_trust_region(alpha, q, two_ccq,
+                                                 cc, rho ** 2)
+                        p1 = alpha - fval / fder
+                        remainder = abs(p1 - alpha)
+                        alpha = p1
+                        if remainder < 1.5e-8:
+                            break
 
-                    if abs(remainder) > 0.1:
+                    if remainder > 0.1:
                         warnings.warn("Newton-Raphson step did not converge.\n"
-                                      "This indicates a badly conditioned "
+                                      "This may indicate a badly conditioned "
                                       "system.")
 
                     if debug:
