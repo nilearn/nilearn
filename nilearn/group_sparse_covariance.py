@@ -11,8 +11,6 @@ import operator
 import itertools
 
 import numpy as np
-import scipy
-import scipy.optimize
 
 import sklearn.cross_validation
 import sklearn.covariance
@@ -92,7 +90,7 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
 
     ## Dual cost: rather heavy computation.
     # Compute A(k)
-    A = np.empty(omega.shape, dtype=omega.dtype, order="F")  # TODO: allocate once
+    A = np.empty(omega.shape, dtype=omega.dtype, order="F")
     for k in xrange(n_tasks):
         # TODO: can be computed more efficiently using Winv (see Friedman 2008)
         omega_inv = np.linalg.inv(omega[..., k])
@@ -911,4 +909,3 @@ class GroupSparseCovarianceCV(object):
             verbose=self.verbose - 1, dtype=self.dtype, return_costs=False,
             debug=self.debug)
         return self
-
