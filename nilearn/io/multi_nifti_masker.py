@@ -163,8 +163,10 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             if not isinstance(niimgs, collections.Iterable) \
                     or isinstance(niimgs, basestring):
                 raise ValueError("[%s.fit] For multiple processing, you should"
-                                 " provide a list of data."
-                                 % self.__class__.__name__)
+                                 " provide a list of data "
+                                 "(e.g. Nifti1Image objects or filenames)."
+                                 "%r is an invalid input"
+                                 % (self.__class__.__name__, niimgs))
             for niimg in niimgs:
                 # Note that data is not loaded into memory at this stage
                 # if niimg is a string
