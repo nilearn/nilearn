@@ -205,7 +205,7 @@ def assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
-def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
+def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
                             assume_centered=False, verbose=0, dtype=np.float64,
                             return_costs=False, debug=False):
     """Compute sparse precision matrices and covariance matrices.
@@ -231,12 +231,12 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
         no regularization: output is not sparse)
 
     tol: positive float or None, optional
-        The tolerance to declare convergence: if the dual gap goes below
-        this value, iterations are stopped. If None, no check is performed.
+        The tolerance to declare convergence: if the maximum change in
+        estimated precision matrices goes below this value, optimization is
+        stopped. If None, no check is performed.
 
     max_iter: int, optional
-        maximum number of iterations. The default value (10) is rather
-        conservative.
+        maximum number of iterations.
 
     verbose: int, optional
         verbosity level. Zero means "no message".
@@ -245,8 +245,8 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
         type of returned matrices. Defaults to 8-byte floats (double).
 
     return_costs: bool, optional
-        if True, return the value taken by the objective and the duality gap
-        functions for each iteration in addition to the matrices.
+        if True, return the value of the objective, the duality gap and the
+        maximum change between two values of precision matrices.
         Default: False.
 
     debug: bool, optional
@@ -261,9 +261,10 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
     precision: numpy.ndarray
         estimated precision matrices, as a 3D array (last index is task)
 
-    costs : list of (objective, duality_gap) pairs
-        The list of values of the objective function and the duality gap at
-        each iteration. Returned only if return_costs is True
+    costs : list of (objective, duality_gap, maximum change) triplet
+        The list of values of the objective function, the duality gap and the
+        maximum change in precision matrices between two iterations, for each
+        iteration. Returned only if return_costs is True.
 
     Notes
     =====
@@ -289,7 +290,7 @@ def group_sparse_covariance(tasks, rho, max_iter=10, tol=1e-4,
 
 
 #@profile
-def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
+def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                             assume_centered=False, verbose=0, dtype=np.float64,
                             return_costs=False, debug=False,
                             precisions_init=None):
@@ -301,6 +302,9 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
         initial value of the precision matrices. Used by the cross-validation
         function.
     """
+    ## initial value of the precision matrices, or way of computing it.
+    ## Possible values: "identity" (default), "ledoit-wolf" or numpy.ndarray
+    ## giving actual value.
 
     if tol == -1:
         tol = None
@@ -347,6 +351,7 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
 
     # Start optimization loop. Variables are named following (mostly) the
     # Honorio-Samaras paper notations.
+    omega_old = np.empty(omega.shape, dtype=omega.dtype)
     for n in xrange(max_iter):
         if verbose >= 1:
             if duality_gap is not None:
@@ -360,6 +365,7 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
                   "".format(iter_n=n, percentage=100. * n / max_iter,
                             suffix=suffix))
 
+        omega_old[...] = omega
         for p in xrange(n_var):
 
             if p == 0:
@@ -477,15 +483,18 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-4,
                 if debug:
                     assert(is_spd(omega[..., k]))
 
-        if return_costs or tol is not None:
+        # Compute max of variation
+        omega_old -= omega
+        max_norm = abs(omega_old).max()
+
+        if return_costs:
             objective, duality_gap, other = _group_sparse_covariance_costs(
                 n_tasks, n_var, n_samples, rho, omega, emp_covs,
                 display=verbose >= 2, debug=debug)
 
-        if return_costs:
-            costs.append((objective, duality_gap) + other)
+            costs.append((objective, duality_gap, max_norm) + other)
 
-        if tol is not None and duality_gap < tol:
+        if tol is not None and max_norm < tol:
             if verbose >= 1:
                 print("tolerance reached at iteration number {0:d}: {1:.3e}"
                       "".format(n + 1, duality_gap))
@@ -558,7 +567,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         Shape: (n_features, n_features, n_tasks)
     """
 
-    def __init__(self, rho=0.1, tol=1e-4, max_iter=10, verbose=1,
+    def __init__(self, rho=0.1, tol=1e-3, max_iter=10, verbose=1,
                  assume_centered=False, return_costs=False, dtype=np.float64,
                  memory=Memory(cachedir=None), memory_level=0):
         self.rho = rho
@@ -717,11 +726,45 @@ def group_sparse_score(precisions, n_samples, emp_covs, rho):
     return (ll, ll - rho * l12)
 
 
-def group_sparse_covariance_path(train_tasks, test_tasks, rhos, tol=1e-4,
+def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
                                  max_iter=10, assume_centered=False,
                                  verbose=0, dtype=np.float64, debug=False,
                                  precisions_init=None):
+    """Get estimated precision matrices for different values of rho.
 
+    Calling this function is faster than calling group_sparse_covariance()
+    repeatedly, because it makes use of the first result to initialize the
+    next computation.
+
+    Parameters
+    ----------
+    train_tasks : list of numpy.ndarray
+        list of signals.
+
+    rhos : list of float
+         values of rho to use. Best results for sorted values (decreasing)
+
+    test_tasks : list of numpy.ndarray
+        list of signals, independent from those in train_tasks, on which to
+        compute a score. If None, no score is computed.
+
+    verbose : int
+        verbosity level
+
+    tol, max_iter, assume_centered, debug, precisions_init :
+        Passed to group_sparse_covariance(). See the corresponding docstring
+        for details.
+
+    Returns
+    -------
+    precisions_list: list of numpy.ndarray
+        estimated precisions for each value of rho provided. The length on this
+        list is the same as that of parameter rhos.
+
+    scores: list of float
+        for each estimated precision, score obtained on the test set. Output
+        only if test_tasks is not None.
+    """
     train_covs, train_n_samples, _, _ = empirical_covariances(
         train_tasks, assume_centered=assume_centered, dtype=dtype, debug=debug)
     test_covs, _, _, _ = empirical_covariances(
@@ -737,12 +780,16 @@ def group_sparse_covariance_path(train_tasks, test_tasks, rhos, tol=1e-4,
             precisions_init=precisions_init)
 
         # Compute log-likelihood
-        scores.append(group_sparse_score(precisions, train_n_samples,
-                                         test_covs, 0))
-        ## precisions_list.append(None)
+        if test_tasks is not None:
+            scores.append(group_sparse_score(precisions, train_n_samples,
+                                             test_covs, 0))
         precisions_list.append(precisions)
         precisions_init = precisions
-    return scores, precisions_list
+
+    if test_tasks is not None:
+        return precisions_list, scores
+    else:
+        return precisions_list
 
 
 class GroupSparseCovarianceCV(object):
@@ -754,7 +801,7 @@ class GroupSparseCovarianceCV(object):
         number of folds in a K-fold cross-validation scheme.
     """
     def __init__(self, rhos=4, n_refinements=4, cv=None,
-                 tol=1e-4, max_iter=10, assume_centered=False, verbose=1,
+                 tol=1e-3, max_iter=10, assume_centered=False, verbose=1,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, debug=False, dtype=np.float64):
         self.rhos = rhos
@@ -805,8 +852,7 @@ class GroupSparseCovarianceCV(object):
             cv.append(sklearn.cross_validation.check_cv(
                 self.cv, tasks[k], None, classifier=False))
 
-        # List of (rho, scores, covs)
-        path = list()
+        path = list()  # List of (rho, scores, covs)
         n_rhos = self.rhos
 
         if isinstance(n_rhos, collections.Sequence):
@@ -832,18 +878,19 @@ class GroupSparseCovarianceCV(object):
 
             this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(group_sparse_covariance_path)(
-                    train_tasks, test_tasks, rhos, max_iter=self.max_iter,
-                    tol=self.tol, assume_centered=self.assume_centered,
+                    train_tasks, rhos, test_tasks=test_tasks,
+                    max_iter=self.max_iter, tol=self.tol,
+                    assume_centered=self.assume_centered,
                     verbose=self.verbose, dtype=self.dtype, debug=self.debug,
                     precisions_init=prec_init)
                 for (train_tasks, test_tasks), prec_init
                 in zip(train_test_tasks, covs_init))
 
-            # this_path[i] is a tuple (scores, precisions_list)
+            # this_path[i] is a tuple (precisions_list, scores)
             # - scores: scores obtained with the i-th folding, for varying rho.
             # - precisions_list: corresponding precisions matrices, for each
             #   value of rho.
-            scores, precisions_list = zip(*this_path)
+            precisions_list, scores = zip(*this_path)
             precisions_list = zip(*precisions_list)
             scores = [np.mean(sc) for sc in zip(*scores)]
 
