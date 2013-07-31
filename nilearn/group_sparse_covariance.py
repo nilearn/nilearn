@@ -497,7 +497,7 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
         if tol is not None and max_norm < tol:
             if verbose >= 1:
                 print("tolerance reached at iteration number {0:d}: {1:.3e}"
-                      "".format(n + 1, duality_gap))
+                      "".format(n + 1, max_norm))
             tolerance_reached = True
             break
 
