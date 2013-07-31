@@ -9,6 +9,7 @@ import warnings
 import collections
 import operator
 import itertools
+import time
 
 import numpy as np
 
@@ -134,7 +135,7 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
 
     gap = cost - dual_cost
 
-    other = (omega.copy(),)
+    other = (omega.copy(), time.time())
 
     if display:
         print("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
