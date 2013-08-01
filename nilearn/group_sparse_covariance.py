@@ -207,7 +207,9 @@ def assert_submatrix(full, sub, n):
 
 def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
                             assume_centered=False, verbose=0, dtype=np.float64,
-                            return_costs=False, debug=False):
+                            probe_function=None, return_costs=False,
+                            precisions_init=None,
+                            debug=False):
     """Compute sparse precision matrices and covariance matrices.
 
     The precision matrices returned by this function are sparse, and share a
@@ -281,7 +283,8 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
     ret = _group_sparse_covariance(
         emp_covs, n_samples, rho, max_iter=max_iter, tol=tol,
         assume_centered=assume_centered, verbose=verbose, dtype=dtype,
-        return_costs=return_costs, debug=debug)
+        precisions_init=precisions_init,
+        probe_function=probe_function, return_costs=return_costs, debug=debug)
 
     if isinstance(ret, tuple):
         return (emp_covs, ) + ret
@@ -289,15 +292,19 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
         return emp_covs, ret
 
 
-#@profile
 def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                             assume_centered=False, verbose=0, dtype=np.float64,
                             return_costs=False, debug=False,
-                            precisions_init=None):
+                            precisions_init=None, probe_function=None):
     """Internal version of group_sparse_covariance. See its doctype for details
 
     Parameters
     ----------
+    probe_function: callable
+        called at the end of each iteration. If the function returns
+        True, then optimization is stopped prematurely. It is also called
+        before the first iteration.
+
     precisions_init: numpy.ndarray
         initial value of the precision matrices. Used by the cross-validation
         function.
@@ -348,20 +355,24 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
     tolerance_reached = False
     duality_gap = None
     objective = None
+    max_norm = None
 
     # Start optimization loop. Variables are named following (mostly) the
     # Honorio-Samaras paper notations.
     omega_old = np.empty(omega.shape, dtype=omega.dtype)
+    if probe_function is not None:
+        # iteration number -1 means called before iteration loop.
+        probe_function(emp_covs, n_samples, rho, max_iter, tol,
+                       -1, omega, None)
+
     for n in xrange(max_iter):
         if verbose >= 1:
-            if duality_gap is not None:
-                suffix = ("duality gap: {duality_gap:.3e} "
-                          "objective: {objective:.3e}".format(
-                              duality_gap=duality_gap,
-                              objective=objective))
+            if max_norm is not None:
+                suffix = (" max norm: {max_norm:.3e} ".format(
+                    max_norm=max_norm))
             else:
                 suffix = ""
-            print("* iteration {iter_n:d} ({percentage:.0f} %) {suffix} ..."
+            print("* iteration {iter_n:d} ({percentage:.0f} %){suffix} ..."
                   "".format(iter_n=n, percentage=100. * n / max_iter,
                             suffix=suffix))
 
@@ -493,6 +504,12 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                 display=verbose >= 2, debug=debug)
 
             costs.append((objective, duality_gap, max_norm) + other)
+
+        if probe_function is not None:
+            if probe_function(emp_covs, n_samples, rho, max_iter, tol,
+                              n, omega, omega_old) is True:
+                print("probe_function interrupted loop")
+                break
 
         if tol is not None and max_norm < tol:
             if verbose >= 1:
