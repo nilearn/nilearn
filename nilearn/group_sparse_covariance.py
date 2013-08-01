@@ -207,8 +207,7 @@ def assert_submatrix(full, sub, n):
 
 def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
                             assume_centered=False, verbose=0, dtype=np.float64,
-                            probe_function=None, return_costs=False,
-                            precisions_init=None,
+                            probe_function=None, precisions_init=None,
                             debug=False):
     """Compute sparse precision matrices and covariance matrices.
 
@@ -246,11 +245,6 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
     dtype: numpy dtype, optional
         type of returned matrices. Defaults to 8-byte floats (double).
 
-    return_costs: bool, optional
-        if True, return the value of the objective, the duality gap and the
-        maximum change between two values of precision matrices.
-        Default: False.
-
     debug: bool, optional
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
@@ -262,11 +256,6 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
 
     precision: numpy.ndarray
         estimated precision matrices, as a 3D array (last index is task)
-
-    costs : list of (objective, duality_gap, maximum change) triplet
-        The list of values of the objective function, the duality gap and the
-        maximum change in precision matrices between two iterations, for each
-        iteration. Returned only if return_costs is True.
 
     Notes
     =====
@@ -283,8 +272,8 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
     ret = _group_sparse_covariance(
         emp_covs, n_samples, rho, max_iter=max_iter, tol=tol,
         assume_centered=assume_centered, verbose=verbose, dtype=dtype,
-        precisions_init=precisions_init,
-        probe_function=probe_function, return_costs=return_costs, debug=debug)
+        precisions_init=precisions_init, probe_function=probe_function,
+        debug=debug)
 
     if isinstance(ret, tuple):
         return (emp_covs, ) + ret
@@ -293,9 +282,9 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
 
 
 def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
-                            assume_centered=False, verbose=0, dtype=np.float64,
-                            return_costs=False, debug=False,
-                            precisions_init=None, probe_function=None):
+                             assume_centered=False, precisions_init=None,
+                             probe_function=None,
+                             dtype=np.float64, verbose=0, debug=False):
     """Internal version of group_sparse_covariance. See its doctype for details
 
     Parameters
@@ -498,13 +487,6 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
         omega_old -= omega
         max_norm = abs(omega_old).max()
 
-        if return_costs:
-            objective, duality_gap, other = _group_sparse_covariance_costs(
-                n_tasks, n_var, n_samples, rho, omega, emp_covs,
-                display=verbose >= 2, debug=debug)
-
-            costs.append((objective, duality_gap, max_norm) + other)
-
         if probe_function is not None:
             if probe_function(emp_covs, n_samples, rho, max_iter, tol,
                               n, omega, omega_old) is True:
@@ -522,10 +504,7 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
         warnings.warn("Maximum number of iterations reached without getting "
                       "to the requested tolerance level.")
 
-    if return_costs:
-        return omega, costs
-    else:
-        return omega
+    return omega
 
 
 class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
@@ -558,10 +537,6 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
     assume_centered: bool
         if True, assume that all signals passed to fit() are centered.
 
-    return_costs: bool
-        if True, objective and duality gap are computed for each iteration and
-        returned as self.objective_ and self.duality_gap_ respectively.
-
     dtype: numpy dtype, optional
         type of returned matrices. Defaults to 8-byte floats (double).
 
@@ -585,14 +560,13 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
     """
 
     def __init__(self, rho=0.1, tol=1e-3, max_iter=10, verbose=1,
-                 assume_centered=False, return_costs=False, dtype=np.float64,
+                 assume_centered=False, dtype=np.float64,
                  memory=Memory(cachedir=None), memory_level=0):
         self.rho = rho
         self.tol = tol
         self.max_iter = max_iter
         self.assume_centered = assume_centered
         self.dtype = dtype
-        self.return_costs = return_costs
 
         self.memory = memory
         self.memory_level = memory_level
@@ -618,10 +592,6 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         `precisions_`: numpy.ndarray
             precision matrices
 
-        `objective_`, `duality_gap`: list of floats
-            optimized value for each iteration (primal problem) and duality gap
-            values. These attribute are computed only if return_costs is True.
-
         Returns
         -------
         self: object
@@ -640,14 +610,9 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
                 tol=self.tol, max_iter=self.max_iter,
                 assume_centered=self.assume_centered,
                 verbose=self.verbose - 1, debug=False,
-                return_costs=self.return_costs, dtype=np.float64)
+                dtype=np.float64)
 
-        if self.return_costs:
-            self.precisions_, costs = ret
-            self.objective_, self.duality_gap_ = zip(*costs)
-        else:
-            self.precisions_ = ret
-
+        self.precisions_ = ret
         return self
 
 
@@ -740,7 +705,7 @@ def group_sparse_score(precisions, n_samples, emp_covs, rho):
     l2 = np.sqrt((precisions ** 2).sum(axis=-1))
     l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
 
-    return (ll, ll - rho * l12)
+    return (-ll, rho * l12 - ll)
 
 
 def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
@@ -793,7 +758,7 @@ def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
         precisions = _group_sparse_covariance(
             train_covs, train_n_samples, rho, tol=tol, max_iter=max_iter,
             assume_centered=assume_centered,
-            verbose=verbose, return_costs=False, dtype=dtype, debug=debug,
+            verbose=verbose, dtype=dtype, debug=debug,
             precisions_init=precisions_init)
 
         # Compute log-likelihood
@@ -971,6 +936,5 @@ class GroupSparseCovarianceCV(object):
         self.precisions_ = _group_sparse_covariance(
             emp_covs, n_samples, self.rho_, tol=self.tol,
             max_iter=self.max_iter,
-            verbose=self.verbose - 1, dtype=self.dtype, return_costs=False,
-            debug=self.debug)
+            verbose=self.verbose - 1, dtype=self.dtype, debug=self.debug)
         return self

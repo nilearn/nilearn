@@ -3,6 +3,7 @@ import numpy as np
 from nose.tools import assert_equal, assert_true, assert_raises
 
 from .. group_sparse_covariance import (group_sparse_covariance,
+                                        group_sparse_score,
                                         GroupSparseCovariance,
                                         GroupSparseCovarianceCV)
 
@@ -98,23 +99,32 @@ def test_group_sparse_covariance():
 
     # These executions must hit the tolerance limit
     emp_covs, omega = group_sparse_covariance(signals, rho, max_iter=20,
-                                              tol=1e-5, verbose=10, debug=True,
-                                              return_costs=False)
+                                              tol=1e-3, verbose=10, debug=True)
     emp_covs, omega2 = group_sparse_covariance(signals, rho, max_iter=20,
-                                               tol=1e-5, verbose=0,
-                                               debug=True,
-                                               return_costs=False)
+                                               tol=1e-3, verbose=0,
+                                               debug=True)
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
-    emp_covs, omega, costs = group_sparse_covariance(
-        signals, rho, max_iter=10, tol=None, verbose=0, return_costs=True)
+    class Probe(object):
+        def __init__(self):
+            self.objective = []
 
-    # check number of iterations
-    assert_equal(len(costs), 10)
+        def __call__(self, emp_covs, n_samples, rho, max_iter, tol, n, omega,
+                     omega_diff):
+            if n >= 0:
+                _, objective = group_sparse_score(omega, n_samples, emp_covs,
+                                                  rho)
+                self.objective.append(objective)
+    # Use a probe to test for number of iterations and decreasing objective.
+    probe = Probe()
+    emp_covs, omega = group_sparse_covariance(
+        signals, rho, max_iter=10, tol=None, verbose=0, probe_function=probe)
+    objective = probe.objective
+    ## # check number of iterations
+    assert_equal(len(objective), 10)
 
     ## np.testing.assert_array_less is a strict comparison.
     ## Zeros can occur in 'objective'.
-    objective, _ = zip(*costs)
     assert_true(np.all(np.diff(objective) <= 0))
     assert_equal(omega.shape, (10, 10, 5))
 
@@ -125,11 +135,11 @@ def test_group_sparse_covariance():
                   [np.ones((2, 2)), np.ones((2, 3))], rho)
 
     # Check consistency between classes
-    gsc1 = GroupSparseCovarianceCV(rhos=4, tol=1e-5, max_iter=40, verbose=0,
+    gsc1 = GroupSparseCovarianceCV(rhos=4, tol=1e-1, max_iter=40, verbose=0,
                                    assume_centered=False, n_jobs=3)
     gsc1.fit(signals)
 
-    gsc2 = GroupSparseCovariance(rho=gsc1.rho_, tol=1e-5, max_iter=20,
+    gsc2 = GroupSparseCovariance(rho=gsc1.rho_, tol=1e-1, max_iter=40,
                                  verbose=0, assume_centered=False)
     gsc2.fit(signals)
 
