@@ -164,17 +164,22 @@ def update_submatrix(full, sub, sub_inv, p, h, v):
     h[n + 1:] = full[n, n + 2:]
 
     # change row
-    coln = sub_inv[:, n]
+    coln = sub_inv[:, n:n + 1]  # 2d array, useful for sub_inv below
     V = h - sub[n, :]
     coln = coln / (1. + np.dot(V, coln))
-    sub_inv -= np.outer(coln, np.dot(V, sub_inv))
+    # The following line is equivalent to
+    # sub_inv -= np.outer(coln, np.dot(V, sub_inv))
+    sub_inv -= np.dot(coln, np.dot(V, sub_inv)[np.newaxis, :])
     sub[n, :] = h
 
     # change column
-    rown = sub_inv[n, :]
+    #    rown = sub_inv[n, :]
+    rown = sub_inv[n:n + 1, :]  # 2d array, useful for sub_inv below
     U = v - sub[:, n]
     rown = rown / (1. + np.dot(rown, U))
-    sub_inv -= np.outer(np.dot(sub_inv, U), rown)
+    # The following line is equivalent to
+    # sub_inv -= np.outer(np.dot(sub_inv, U), rown)
+    sub_inv -= np.dot(np.dot(sub_inv, U)[:, np.newaxis], rown)
     sub[:, n] = v   # equivalent to sub[n, :] += U
 
 
