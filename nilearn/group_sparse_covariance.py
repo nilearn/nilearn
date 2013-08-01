@@ -144,20 +144,6 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
     return (cost, gap, other)
 
 
-# The signatures of quad_trust_region and quad_trust_region_deriv are
-# complicated, but this allows for some interesting optimizations.
-
-# inplace operation, merge with quad_trust_region_deriv
-def quad_trust_region(alpha, q, two_ccq, cc, rho2):
-    """This value is optimized to zero by the Newton-Raphson step."""
-    return rho2 - (cc / ((1. + alpha * q) ** 2)).sum()
-
-
-def quad_trust_region_deriv(alpha, q, two_ccq, cc, rho2):
-    """Derivative of quad_trust_region."""
-    return (two_ccq / (1. + alpha * q) ** 3).sum()
-
-
 def update_submatrix(full, sub, sub_inv, p, h, v):
     """Update submatrix and its inverse.
 
@@ -322,6 +308,7 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
     y_1 = np.ndarray(shape=(n_tasks, n_var - 2), dtype=emp_covs.dtype)
     h_12 = np.ndarray(shape=(n_tasks, n_var - 2), dtype=emp_covs.dtype)
     q = np.ndarray(shape=(n_tasks,), dtype=emp_covs.dtype)
+    aq = np.ndarray(shape=(n_tasks,), dtype=emp_covs.dtype)  # temporary array
     c = np.ndarray(shape=(n_tasks,), dtype=emp_covs.dtype)
     W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
                           omega.shape[2]),
@@ -343,6 +330,9 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
         # iteration number -1 means called before iteration loop.
         probe_function(emp_covs, n_samples, rho, max_iter, tol,
                        -1, omega, None)
+
+    # Used in the innermost loop. Computed here to save some computation.
+    rho2 = rho ** 2
 
     for n in xrange(max_iter):
         if verbose >= 1:
@@ -422,43 +412,45 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                 else:
                     # q(k) -> T(k) * v(k) * h_22(k)
                     # \lambda -> alpha   (lambda is a Python keyword)
-                    q = n_samples * emp_covs[p, p, :] * Winv[m, m, :]
+                    q[:] = n_samples * emp_covs[p, p, :] * Winv[m, m, :]
                     if debug:
                         assert(np.all(q > 0))
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
+
+                    # Newton-Raphson loop. Loosely based on Scipy's.
+                    # tolerance does not seem to be important for numerical
+                    # stability (tolerance of 1e-2 works) but has an effect on
+                    # overall convergence rate. (often the tighter the better)
+
+                    alpha = 0.  # initial value
                     # Precompute some quantities
                     cc = c * c
                     two_ccq = 2. * cc * q
-                    # tolerance does not seem to be important for
-                    # numerical stability (tol=1e-2 works) but has an
-                    # effect on overall convergence rate.
-                    # (often the tighter the better)
-
-                    # Newton-Raphson loop
-                    alpha = 0.
                     for _ in xrange(100):
-                        fder = quad_trust_region_deriv(alpha, q, two_ccq,
-                                                       cc, rho ** 2)
+                        # Function whose zero must be determined (fval) and
+                        # its derivative (fder).
+                        # Written inplace to save some function calls.
+                        aq = 1. + alpha * q
+                        aq2 = aq * aq
+                        fder = (two_ccq / (aq2 * aq)).sum()
+
                         if fder == 0:
                             msg = "derivative was zero."
                             warnings.warn(msg, RuntimeWarning)
                             break
-                        fval = quad_trust_region(alpha, q, two_ccq,
-                                                 cc, rho ** 2)
-                        p1 = alpha - fval / fder
-                        remainder = abs(p1 - alpha)
-                        alpha = p1
-                        if remainder < 1.5e-8:
+                        p1 = - (rho2 - (cc / aq2).sum()) / fder
+                        alpha = p1 + alpha
+                        if abs(p1) < 1.5e-8:
                             break
 
-                    if remainder > 0.1:
+                    if abs(p1) > 0.1:
                         warnings.warn("Newton-Raphson step did not converge.\n"
                                       "This may indicate a badly conditioned "
                                       "system.")
 
                     if debug:
-                        assert alpha >= 0, alpha
-                    y[:, m] = (alpha * c) / (1. + alpha * q)  # x*
+                        assert alpha >= 0., alpha
+                    y[:, m] = (alpha * c) / aq  # x*
 
             # Copy back y in omega (column and row)
             omega[:p, p, :] = y[:, :p].T
