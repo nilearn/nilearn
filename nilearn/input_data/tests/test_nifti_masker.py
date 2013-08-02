@@ -44,8 +44,8 @@ def test_with_files():
     with testing.write_tmp_imgs(data_img, create_files=True)\
                 as filename:
         masker = NiftiMasker()
-        masker.fit(filename[0])
-        masker.transform(filename[0])
+        masker.fit(filename)
+        masker.transform(filename)
 
 
 def test_nan():
