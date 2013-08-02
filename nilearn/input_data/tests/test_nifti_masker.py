@@ -29,7 +29,10 @@ def test_auto_mask():
     # Smoke test the fit
     masker.fit(img)
     # Smoke test the transform
+    # With a 4D niimg
     masker.transform([img, ])
+    # With a 3D niimg
+    masker.transform(img)
 
 
 def test_nan():

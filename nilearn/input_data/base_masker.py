@@ -51,12 +51,11 @@ def filter_and_mask(niimgs, mask_img_,
             class_name,
             _utils._repr_niimgs(niimgs)[:200]))
 
-    niimgs = _utils.check_niimgs(niimgs)
+    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
 
     # Get series from data with optional smoothing
     if verbose > 1:
-        print("[%s] Masking and smoothing"
-              % class_name)
+        print("[%s] Masking and smoothing" % class_name)
     data = masking.apply_mask(niimgs, mask_img_,
                               smoothing_fwhm=parameters['smoothing_fwhm'])
 
