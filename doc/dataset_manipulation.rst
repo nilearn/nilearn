@@ -1,4 +1,4 @@
-. _data_manipulation:
+.. _data_manipulation:
 
 ===============================================================
 fMRI data manipulation: input/output, masking, visualization...
