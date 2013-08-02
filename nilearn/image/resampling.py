@@ -185,6 +185,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         if copy and not input_niimg_is_string:
             niimg = _utils.copy_niimg(niimg)
         return niimg
+    if target_affine is not None:
+        target_affine = np.asarray(target_affine)
 
     shape = _utils._get_shape(niimg)
     affine = niimg.get_affine()

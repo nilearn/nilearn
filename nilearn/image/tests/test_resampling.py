@@ -38,6 +38,10 @@ def test_identity_resample():
     rot_img = resample_img(Nifti1Image(data, affine),
                            target_affine=affine, interpolation='nearest')
     np.testing.assert_almost_equal(data, rot_img.get_data())
+    # Smoke-test with a list affine
+    rot_img = resample_img(Nifti1Image(data, affine),
+                           target_affine=affine.tolist(),
+                           interpolation='nearest')
     # Test with a 3x3 affine
     rot_img = resample_img(Nifti1Image(data, affine),
                            target_affine=affine[:3, :3],
