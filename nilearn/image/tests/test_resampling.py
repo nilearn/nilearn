@@ -8,7 +8,7 @@ import numpy as np
 from nibabel import Nifti1Image
 
 from ..resampling import resample_img
-from ... import testing
+from ..._utils import testing
 
 ###############################################################################
 # Helper function

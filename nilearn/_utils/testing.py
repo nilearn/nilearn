@@ -14,8 +14,8 @@ import scipy.signal
 from nibabel import Nifti1Image
 import nibabel
 
-from . import datasets
-from . import masking
+from .. import datasets
+from .. import masking
 
 
 @contextlib.contextmanager

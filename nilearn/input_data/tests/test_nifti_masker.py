@@ -14,7 +14,7 @@ import numpy as np
 from nibabel import Nifti1Image
 
 from ..nifti_masker import NiftiMasker
-from ... import testing
+from ..._utils import testing
 
 
 def test_auto_mask():
