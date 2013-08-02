@@ -61,10 +61,10 @@ Functions
 
 .. _io_ref:
 
-:mod:`nilearn.io`: Loading and Processing files easily
-======================================================
+:mod:`nilearn.input_dat`: Loading and Processing files easily
+==============================================================
 
-.. automodule:: nilearn.io
+.. automodule:: nilearn.input_data
    :no-members:
    :no-inherited-members:
 
@@ -72,7 +72,7 @@ Functions
 
 Classes
 -------
-.. currentmodule:: nilearn.io
+.. currentmodule:: nilearn.input_data
 
 .. autosummary::
    :toctree: generated/

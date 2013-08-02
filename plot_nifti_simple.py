@@ -9,7 +9,7 @@ The mask is computed and visualized.
 ### Load nyu_rest dataset #####################################################
 
 from nilearn import datasets
-from nilearn.io import NiftiMasker
+from nilearn.input_data import NiftiMasker
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 ### Compute the mask ##########################################################

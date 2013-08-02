@@ -99,7 +99,7 @@ samples and features.
 
 .. centered:: |niimgs|  |arrow|  |arrays|
 
-.. currentmodule:: nilearn.io
+.. currentmodule:: nilearn.input_data
 
 We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 (i.e. voxels over time). For this purpose, we use the
@@ -191,7 +191,7 @@ discriminating weight.
 Going further
 =============
 
-.. currentmodule:: nilearn.io
+.. currentmodule:: nilearn.input_data
 
 The :class:`NiftiMasker` is a very powerful object and we have only
 scratched the surface of its possibilities. It is described in more

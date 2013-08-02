@@ -1,4 +1,4 @@
-.. _data_manipulation:
+. _data_manipulation:
 
 ===============================================================
 fMRI data manipulation: input/output, masking, visualization...
@@ -193,7 +193,7 @@ array to a 2D array, `voxel` **x** `time`, as depicted below:
 Preprocessing functions
 ========================
 
-.. currentmodule:: nilearn.io.nifti_masker
+.. currentmodule:: nilearn.input_data.nifti_masker
 
 The :class:`NiftiMasker` automatically calls some preprocessing
 functions that are available if you want to set up your own

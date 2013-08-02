@@ -32,7 +32,7 @@ target = target[no_rest_indices]
 
 ### Load the mask #############################################################
 
-from nilearn.io import NiftiMasker
+from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
 
 # We give the nifti_masker a filename and retrieve a 2D array ready

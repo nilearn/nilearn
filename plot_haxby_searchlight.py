@@ -72,7 +72,7 @@ searchlight = nilearn.decoding.SearchLight(mask_img,
 searchlight.fit(fmri_img, y)
 
 ### F-scores computation ######################################################
-from nilearn.io import NiftiMasker
+from nilearn.input_data import NiftiMasker
 
 nifti_masker = NiftiMasker(mask=mask_img, sessions=session,
                            memory='nilearn_cache', memory_level=1)

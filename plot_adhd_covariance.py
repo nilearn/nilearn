@@ -14,7 +14,7 @@ from sklearn import covariance
 import nilearn.datasets
 import nilearn.image
 import nilearn.signal
-import nilearn.io
+import nilearn.input_data
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
@@ -60,7 +60,8 @@ print("-- Computing confounds ...")
 hv_confounds = nilearn.image.high_variance_confounds(filename)
 
 print("-- Computing region signals ...")
-masker = nilearn.io.NiftiMapsMasker(msdl_atlas["maps"], resampling_target="maps",
+masker = nilearn.input_data.NiftiMapsMasker(msdl_atlas["maps"],
+                                 resampling_target="maps",
                                  low_pass=None, high_pass=0.01, t_r=2.5,
                                  verbose=1)
 region_ts = masker.fit_transform(filename,

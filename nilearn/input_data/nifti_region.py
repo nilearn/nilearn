@@ -122,7 +122,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
 
     See also
     ========
-    nilearn.io.NiftiMasker
+    nilearn.input_data.NiftiMasker
     """
     # memory and memory_level are used by CacheMixin.
 
@@ -349,8 +349,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin, LogMixin):
 
     See also
     ========
-    nilearn.io.NiftiMasker
-    nilearn.io.NiftiLabelsMasker
+    nilearn.input_data.NiftiMasker
+    nilearn.input_data.NiftiLabelsMasker
     """
     # memory and memory_level are used by CacheMixin.
 
