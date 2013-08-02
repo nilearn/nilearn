@@ -31,7 +31,7 @@ dataset = datasets.fetch_adhd()
 func_files = dataset.func
 
 ### Filter and mask ###########################################################
-from nilearn.resampling import resample_img
+from nilearn.image import resample_img
 
 # This is a multi-subject method, thus we need to use the
 # MultiNiftiMasker, rather than the NiftiMasker

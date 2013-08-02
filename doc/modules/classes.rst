@@ -41,8 +41,8 @@ Functions
 
 .. _image_ref:
 
-:mod:`nilearn.image`: Image processing utilities
-=============================================
+:mod:`nilearn.image`: Image processing and resampling utilities
+================================================================
 
 .. automodule:: nilearn.image
    :no-members:
@@ -58,6 +58,8 @@ Functions
 
    high_variance_confounds
    smooth
+   resample_img
+
 
 .. _io_ref:
 
@@ -136,30 +138,6 @@ Functions
 
    :func:`nilearn.masking.apply_mask`,
    :func:`nilearn.masking.unmask`
-
-.. _resampling_ref:
-
-:mod:`nilearn.resampling`: Data Resampling Utilities
-=================================================
-
-.. automodule:: nilearn.resampling
-   :no-members:
-   :no-inherited-members:
-
-**User guide:** See the :ref:`resampling` section for further details.
-
-Functions
----------
-.. currentmodule:: nilearn.resampling
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   to_matrix_vector
-   from_matrix_vector
-   get_bounds
-   resample_img
 
 .. _decoding_ref:
 

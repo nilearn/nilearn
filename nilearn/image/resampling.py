@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage, linalg
 from nibabel import Nifti1Image
 
-from . import _utils
+from .. import _utils
 
 
 def to_matrix_vector(transform):

@@ -11,7 +11,6 @@ from sklearn.externals.joblib import Parallel, delayed
 from . import _utils
 from ._utils.ndimage import largest_connected_component
 from ._utils.cache_mixin import cache
-from . import resampling
 
 
 def _load_mask_img(mask_img, allow_empty=False):
@@ -138,11 +137,11 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         resliced with a large padding of zeros.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     memory: instance of joblib.Memory or string
@@ -160,7 +159,9 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
 
-    epi_img = cache(resampling.resample_img, memory, ignore=['copy'])(
+    # Delayed import to avoid circular imports
+    from . import image
+    epi_img = cache(image.resample_img, memory, ignore=['copy'])(
                                 epi_img,
                                 target_affine=target_affine,
                                 target_shape=target_shape)
@@ -298,11 +299,11 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
         resliced with a large padding of zeros.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     memory: instance of joblib.Memory or string

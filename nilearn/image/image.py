@@ -9,9 +9,9 @@ See also nilearn.signal.
 import numpy as np
 import nibabel
 
-from . import signal
-from _utils import check_niimgs, check_niimg
-from . import masking
+from .. import signal
+from .._utils import check_niimgs, check_niimg
+from .. import masking
 
 
 def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,

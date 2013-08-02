@@ -4,7 +4,7 @@ Test image pre-processing functions
 from nose.tools import assert_true
 
 from .. import image
-from .. import testing
+from ... import testing
 import nibabel
 
 

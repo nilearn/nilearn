@@ -201,7 +201,7 @@ preprocessing procedure:
 
 .. currentmodule:: nilearn
 
-* Resampling: :func:`nilearn.resampling.resample_img`
+* Resampling: :func:`nilearn.image.resample_img`
 * Masking:
 
   * compute: :func:`nilearn.masking.compute_epi_mask`
