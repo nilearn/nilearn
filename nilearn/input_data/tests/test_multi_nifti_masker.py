@@ -37,6 +37,8 @@ def test_auto_mask():
                        np.logical_or(data, data2))
     # Smoke test the transform
     masker.transform([[img, ]])
+    # It should also work with a 3D image
+    masker.transform(img)
 
 
 def test_nan():

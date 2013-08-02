@@ -20,6 +20,7 @@ import nibabel
 from nibabel import Nifti1Image
 
 from nilearn import _utils
+from nilearn._utils import testing
 
 
 class PhonyNiimage:
@@ -38,6 +39,14 @@ class PhonyNiimage:
 def test_check_niimg():
     assert_raises(TypeError, _utils.check_niimg, 0)
     assert_raises(TypeError, _utils.check_niimg, [])
+    # Check that a filename does not raise an error
+    data = np.zeros((40, 40, 40, 2))
+    data[20, 20, 20] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+
+    with testing.write_tmp_imgs(data_img, create_files=True)\
+                as filename:
+        _utils.check_niimg(filename)
 
 
 def test_check_niimgs():

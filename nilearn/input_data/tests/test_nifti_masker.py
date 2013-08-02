@@ -35,6 +35,19 @@ def test_auto_mask():
     masker.transform(img)
 
 
+def test_with_files():
+    # Standard masking
+    data = np.zeros((40, 40, 40, 2))
+    data[20, 20, 20] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+
+    with testing.write_tmp_imgs(data_img, create_files=True)\
+                as filename:
+        masker = NiftiMasker()
+        masker.fit(filename[0])
+        masker.transform(filename[0])
+
+
 def test_nan():
     data = np.ones((9, 9, 9))
     data[0] = np.nan

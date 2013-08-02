@@ -229,6 +229,9 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         """
         data = []
         affine = None
+        if not hasattr(niimgs, '__iter__')\
+                    or isinstance(niimgs, basestring):
+                return self.transform_single_niimgs(niimgs)
         for index, niimg in enumerate(niimgs):
             # If we have a string (filename), we won't need to copy, as
             # there will be no side effect
