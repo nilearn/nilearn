@@ -14,8 +14,8 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
-from ..io import MultiNiftiMasker, NiftiMapsMasker
-from ..io.base_masker import filter_and_mask
+from ..input_data import MultiNiftiMasker, NiftiMapsMasker
+from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
 
@@ -110,11 +110,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         PCA.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     low_pass: False or float, optional

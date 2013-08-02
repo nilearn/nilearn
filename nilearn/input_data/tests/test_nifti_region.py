@@ -11,7 +11,7 @@ import numpy as np
 import nibabel
 
 from ..nifti_region import NiftiLabelsMasker, NiftiMapsMasker
-from ... import testing
+from ..._utils import testing
 from ..._utils import as_ndarray
 
 

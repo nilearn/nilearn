@@ -6,7 +6,7 @@ import numpy as np
 
 import nose
 
-from nilearn.io import MultiNiftiMasker
+from nilearn.input_data import MultiNiftiMasker
 from nilearn.decomposition.multi_pca import MultiPCA
 
 

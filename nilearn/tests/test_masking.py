@@ -14,7 +14,7 @@ from .. import masking
 from ..masking import compute_epi_mask, compute_multi_epi_mask, \
     unmask, intersect_masks
 
-from ..testing import write_tmp_imgs
+from .._utils.testing import write_tmp_imgs
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)

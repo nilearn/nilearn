@@ -10,10 +10,10 @@ from nose.tools import assert_raises, assert_true
 import nibabel
 
 from .. import region
-from ..testing import generate_timeseries, generate_regions_ts
-from ..testing import generate_labeled_regions, generate_maps
-from ..testing import generate_fake_fmri
-from ..testing import write_tmp_imgs
+from .._utils.testing import generate_timeseries, generate_regions_ts
+from .._utils.testing import generate_labeled_regions, generate_maps
+from .._utils.testing import generate_fake_fmri
+from .._utils.testing import write_tmp_imgs
 
 
 def test_generate_regions_ts():

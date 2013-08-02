@@ -40,7 +40,7 @@ conditions = conditions[condition_mask]
 n_conditions = np.size(np.unique(y))
 
 ### Loading step ##############################################################
-from nilearn.io import NiftiMasker
+from nilearn.input_data import NiftiMasker
 from nibabel import Nifti1Image
 nifti_masker = NiftiMasker(mask=mask, sessions=session, smoothing_fwhm=4,
                            memory="nilearn_cache", memory_level=1)

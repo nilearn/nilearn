@@ -1,5 +1,5 @@
 """
-The :mod:`nilearn.io` module includes scikit-learn tranformers and
+The :mod:`nilearn.input_data` module includes scikit-learn tranformers and
 tools to preprocess neuro-imaging data.
 """
 from .nifti_masker import NiftiMasker

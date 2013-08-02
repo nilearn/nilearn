@@ -10,10 +10,9 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
-from nibabel import Nifti1Image
 
 from .. import masking
-from .. import resampling
+from .. import image
 from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
@@ -39,7 +38,7 @@ def filter_and_mask(niimgs, mask_img_,
     if verbose > 1:
         print("[%s] Resampling" % class_name)
 
-    niimgs = cache(resampling.resample_img, memory, ref_memory_level,
+    niimgs = cache(image.resample_img, memory, ref_memory_level,
                    memory_level=2, ignore=['copy'])(
                        niimgs,
                        target_affine=parameters['target_affine'],

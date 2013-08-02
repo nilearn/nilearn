@@ -193,7 +193,7 @@ array to a 2D array, `voxel` **x** `time`, as depicted below:
 Preprocessing functions
 ========================
 
-.. currentmodule:: nilearn.io.nifti_masker
+.. currentmodule:: nilearn.input_data.nifti_masker
 
 The :class:`NiftiMasker` automatically calls some preprocessing
 functions that are available if you want to set up your own
@@ -201,7 +201,7 @@ preprocessing procedure:
 
 .. currentmodule:: nilearn
 
-* Resampling: :func:`nilearn.resampling.resample_img`
+* Resampling: :func:`nilearn.image.resample_img`
 * Masking:
 
   * compute: :func:`nilearn.masking.compute_epi_mask`

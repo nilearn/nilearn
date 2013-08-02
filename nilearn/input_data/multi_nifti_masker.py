@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.externals.joblib import Memory
 
 from .. import masking
-from .. import resampling
+from .. import image
 from .. import _utils
 from .._utils import CacheMixin
 from .base_masker import BaseMasker
@@ -52,11 +52,11 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         documentation for details
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to resampling.resample_img. Please see the
+        This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
     mask_connected: boolean, optional
@@ -104,7 +104,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
 
     See Also
     ========
-    nilearn.resampling.resample_img: image resampling
+    nilearn.image.resample_img: image resampling
     nilearn.masking.compute_epi_mask: mask computation
     nilearn.masking.apply_mask: mask application on image
     nilearn.signal.clean: confounds removal and general filtering of signals
@@ -198,7 +198,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
             print "[%s.transform] Resampling mask" % self.__class__.__name__
-        self.mask_img_ = self._cache(resampling.resample_img,
+        self.mask_img_ = self._cache(image.resample_img,
                                     memory_level=1)(
             self.mask_img_,
             target_affine=self.target_affine,

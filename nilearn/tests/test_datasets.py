@@ -13,8 +13,8 @@ from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal
 
 from .. import datasets
-from ..testing import mock_urllib2, mock_chunk_read_, mock_uncompress_file, \
-    mock_get_dataset
+from .._utils.testing import mock_urllib2, mock_chunk_read_,\
+    mock_uncompress_file, mock_get_dataset
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')

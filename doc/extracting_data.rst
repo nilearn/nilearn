@@ -8,7 +8,7 @@ Before applying some complex machine learning algorithm, or perform
 sophisticated analysis, the first step is to read data from file and
 do some basic transformation on them. Nilearn offers several ways to do
 this. This part is concerned with only high-level classes (in
-modules :mod:`nilearn.io`), the description of
+modules :mod:`nilearn.input_data`), the description of
 low-level functions can be found in the reference documentation.
 
 The philosophy underlying these classes is similar to `scikit-learn
@@ -28,7 +28,7 @@ been designed to perform common operations. Users who want to make
 some specific processing may have to call low-level functions (see
 e.g. :mod:`nilearn.signal`, :mod:`nilearn.masking`.)
 
-.. currentmodule:: nilearn.io
+.. currentmodule:: nilearn.input_data
 
 .. _nifti_masker:
 
