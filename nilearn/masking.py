@@ -319,7 +319,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
         The brain mask.
     """
     if len(epi_imgs) == 0:
-        raise TypeError('An empty object %r was passed instead of an '
+        raise TypeError('An empty object - %r - was passed instead of an '
                         'image or a list of images' % epi_imgs)
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(compute_epi_mask)(epi_img,

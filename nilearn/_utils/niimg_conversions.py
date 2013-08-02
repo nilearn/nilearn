@@ -118,7 +118,7 @@ def check_niimg(niimg):
         result = nibabel.load(niimg)
     elif hasattr(niimg, "__iter__"):
         if hasattr(niimg, "__len__") and len(niimg) == 0:
-            raise TypeError('An empty object %r was passed instead of an '
+            raise TypeError('An empty object - %r - was passed instead of an '
                             'image or a list of images' % niimg)
         return concat_niimgs(niimg)
     else:
@@ -230,7 +230,7 @@ def check_niimgs(niimgs, accept_3d=False):
     while hasattr(first_img, "__iter__") \
             and not isinstance(first_img, basestring):
         if hasattr(first_img, '__len__') and len(first_img) == 0:
-            raise TypeError('An empty object %r was passed instead of an '
+            raise TypeError('An empty object - %r - was passed instead of an '
                             'image or a list of images' % niimgs)
         first_img = iter(first_img).next()
         depth += 1
