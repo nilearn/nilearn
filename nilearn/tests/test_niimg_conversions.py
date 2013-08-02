@@ -37,11 +37,12 @@ class PhonyNiimage:
 
 def test_check_niimg():
     assert_raises(TypeError, _utils.check_niimg, 0)
-    # Check that a list of 3D images is valid
+    assert_raises(TypeError, _utils.check_niimg, [])
 
 
 def test_check_niimgs():
     assert_raises(TypeError, _utils.check_niimgs, 0)
+    assert_raises(TypeError, _utils.check_niimgs, [])
     affine = np.eye(4)
     niimg = Nifti1Image(np.ones((10, 10, 10)), affine)
 
