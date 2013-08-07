@@ -28,8 +28,8 @@ def test_searchlight():
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
     # Define score function
-    from sklearn.metrics import precision_score
-    score_func = precision_score
+    from sklearn.metrics import accuracy_score
+    score_func = accuracy_score
 
     # Define cross validation
     from sklearn.cross_validation import KFold

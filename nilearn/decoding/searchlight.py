@@ -1,5 +1,8 @@
 """
-Decoding algorithms
+The searchlight is a widely used approach for the study of the
+fine-grained patterns of information in fMRI analysis, in which
+multivariate statistical relationships are iteratively tested in the
+neighborhood of each location of a domain.
 """
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
