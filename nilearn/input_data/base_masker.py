@@ -16,6 +16,7 @@ from .. import image
 from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
+from .._utils.shelving import unshelve
 from .._utils.class_inspect import enclosing_scope_name, get_params
 
 
@@ -28,6 +29,9 @@ def filter_and_mask(niimgs, mask_img_,
                     copy=True):
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
+
+    niimgs = unshelve(niimgs)
+
     if isinstance(niimgs, basestring):
         copy = False
 
