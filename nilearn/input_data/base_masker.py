@@ -104,7 +104,7 @@ def filter_and_mask(niimgs, mask_img_,
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
 
-    return data, niimgs.get_affine()
+    return data
 
 
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -118,17 +118,16 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              % self.__class__.__name__)
         from .nifti_masker import NiftiMasker
         params = get_params(NiftiMasker, self)
-        data, affine = \
-            self._cache(filter_and_mask, memory_level=1,
-                        ignore=['verbose', 'memory', 'copy'])(
-                            niimgs, self.mask_img_,
-                            params,
-                            ref_memory_level=self.memory_level,
-                            memory=self.memory,
-                            verbose=self.verbose,
-                            confounds=confounds,
-                            copy=copy
-                        )
+        data = self._cache(filter_and_mask, memory_level=1,
+                           ignore=['verbose', 'memory', 'copy'])(
+                              niimgs, self.mask_img_,
+                              params,
+                              ref_memory_level=self.memory_level,
+                              memory=self.memory,
+                              verbose=self.verbose,
+                              confounds=confounds,
+                              copy=copy
+        )
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):

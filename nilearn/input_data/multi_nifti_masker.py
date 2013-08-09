@@ -84,6 +84,11 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
+    memory_strategy: 'call' or 'call_ad_shelve', optional
+        Caching method. 'call' is the common transparent caching method.
+        'call_and_shelve' stores the result in a file and returns a proxy to
+        this file.
+
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
@@ -117,6 +122,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                  mask_connected=True, mask_opening=2,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
                  memory=Memory(cachedir=None), memory_level=0,
+                 memory_strategy='call',
                  n_jobs=1, verbose=0
                  ):
         # Mask is provided or computed
@@ -137,6 +143,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
 
         self.memory = memory
         self.memory_level = memory_level
+        self.memory_strategy = memory_strategy
         self.n_jobs = n_jobs
         self.verbose = verbose
 
