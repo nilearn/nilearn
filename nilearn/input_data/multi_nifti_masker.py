@@ -14,6 +14,7 @@ from .. import masking
 from .. import image
 from .. import _utils
 from .._utils import CacheMixin
+from .._utils.shelving import unshelve
 from .base_masker import BaseMasker
 
 
@@ -238,6 +239,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         """
         data = []
         affine = None
+        
         if not hasattr(niimgs, '__iter__')\
                     or isinstance(niimgs, basestring):
                 return self.transform_single_niimgs(niimgs)
