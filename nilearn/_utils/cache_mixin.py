@@ -128,6 +128,8 @@ class CacheMixin(object):
             self.memory_level = 0
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None)
+        if not hasattr(self, "memory_strategy"):
+            self.memory_strategy = 'call'
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
