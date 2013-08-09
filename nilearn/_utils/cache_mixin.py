@@ -95,7 +95,7 @@ class CacheMixin(object):
     parameter to self._cache(). See _cache() documentation for details.
     """
 
-    def _cache(self, func, memory_level=1, **kwargs):
+    def _cache(self, func, memory_level=1, memory_strategy='call', **kwargs):
         """ Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -128,8 +128,6 @@ class CacheMixin(object):
             self.memory_level = 0
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None)
-        if not hasattr(self, "memory_strategy"):
-            self.memory_strategy = 'call'
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
@@ -143,5 +141,5 @@ class CacheMixin(object):
         verbose = getattr(self, 'verbose', 0)
 
         return cache(func, self.memory, ref_memory_level=self.memory_level,
-                memory_level=memory_level,  memory_strategy=self.memory_strategy,
+                memory_level=memory_level,  memory_strategy=memory_strategy,
                 verbose=verbose, **kwargs)
