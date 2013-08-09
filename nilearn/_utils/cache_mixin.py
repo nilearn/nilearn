@@ -17,7 +17,8 @@ except ImportError:
     pass
 
 
-def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
+def cache(func, memory, ref_memory_level=2, memory_level=1,
+          memory_strategy='call', verbose=0, **kwargs):
     """ Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
@@ -43,6 +44,9 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
         The memory_level from which caching must be enabled for the wrapped
         function.
 
+    memory_strategy: 'call' or 'call_and_shelve'
+        Determine if call result must be shelved or not.
+
     kwargs: keyword arguments
         The keyword arguments passed to memory.cache
 
@@ -55,12 +59,11 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
         returned.
     """
 
-    if ref_memory_level <= memory_level or memory is None:
-        memory = Memory(cachedir=None)
+    if ref_memory_level < memory_level or memory is None:
+        memory = Memory(cachedir=None, verbose=verbose)
     else:
-        memory = memory
         if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory)
+            memory = Memory(cachedir=memory, verbose=verbose)
         if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
                             "joblib.Memory object. "
@@ -72,7 +75,12 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
                           "function %s." %
                           (ref_memory_level, func.func_name),
                           stacklevel=2)
-    return memory.cache(func, **kwargs)
+    if memory_strategy == 'call':
+        return memory.cache(func, **kwargs)
+    elif memory_strategy == 'call_and_shelve':
+        return memory.cache(func, **kwargs).call_and_shelve
+    else:
+        raise ValueError('Unknown memory strategy %s' % memory_strategy)
 
 
 class CacheMixin(object):
@@ -120,6 +128,8 @@ class CacheMixin(object):
             self.memory_level = 0
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None)
+        if not hasattr(self, "memory_strategy"):
+            self.memory_strategy = 'call'
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
@@ -132,20 +142,6 @@ class CacheMixin(object):
                 self.memory_level = 1
         verbose = getattr(self, 'verbose', 0)
 
-        if self.memory_level < memory_level:
-            mem = Memory(cachedir=None, verbose=verbose)
-            return mem.cache(func, **kwargs)
-        else:
-            memory = self.memory
-            if isinstance(memory, basestring):
-                memory = Memory(cachedir=memory, verbose=verbose)
-            if not isinstance(memory, memory_classes):
-                raise TypeError("'memory' argument must be a string or a "
-                                "joblib.Memory object.")
-            if memory.cachedir is None:
-                warnings.warn("Caching has been enabled (memory_level = %d) "
-                              "but no Memory object or path has been provided"
-                              " (parameter memory). Caching deactivated for "
-                              "function %s." %
-                              (self.memory_level, func.func_name))
-            return memory.cache(func, **kwargs)
+        return cache(func, self.memory, ref_memory_level=self.memory_level,
+                memory_level=memory_level,  memory_strategy=self.memory_strategy,
+                verbose=verbose, **kwargs)

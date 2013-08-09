@@ -65,7 +65,7 @@ def session_pca(niimgs, mask_img, parameters,
         Whether or not data should be copied
     """
 
-    data, affine = cache(
+    data = cache(
         filter_and_mask, memory=memory, ref_memory_level=ref_memory_level,
         memory_level=2,
         ignore=['verbose', 'memory', 'ref_memory_level', 'copy'])(
