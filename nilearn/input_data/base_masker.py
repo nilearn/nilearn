@@ -177,7 +177,5 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        mask_img = _utils.check_niimg(self.mask_img_)
-        data = X
-
-        return masking.unmask(data, mask_img)
+        return self._cache(masking.unmask, memory_level=1,
+            memory_strategy=self.memory_strategy)(X, self.mask_img_)
