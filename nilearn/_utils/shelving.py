@@ -2,6 +2,6 @@ from joblib import MemorizedResult
 
 
 def unshelve(data):
-    if isinstance(MemorizedResult):
+    if isinstance(data, MemorizedResult):
         data = data.get()
     return data
