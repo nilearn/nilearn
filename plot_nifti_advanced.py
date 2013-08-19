@@ -36,22 +36,22 @@ def display_mask(background, mask, title):
     pl.title(title)
 
 # Generate mask with default parameters
-from nilearn import io
-masker = io.NiftiMasker()
+from nilearn.input_data import NiftiMasker
+masker = NiftiMasker()
 masker.fit(haxby_img)
 default_mask = masker.mask_img_.get_data().astype(np.bool)
 pl.figure(figsize=(3, 5))
 display_mask(background, default_mask[..., 27], 'Default mask')
 
 # Generate mask with opening
-masker = io.NiftiMasker(mask_opening=0)
+masker = NiftiMasker(mask_opening=0)
 masker.fit(haxby_img)
 opening_mask = masker.mask_img_.get_data().astype(np.bool)
 pl.figure(figsize=(3, 5))
 display_mask(background, opening_mask[..., 27], 'Mask without opening')
 
 # Generate mask with upper cutoff
-masker = io.NiftiMasker(mask_opening=True, mask_upper_cutoff=0.8)
+masker = NiftiMasker(mask_opening=True, mask_upper_cutoff=0.8)
 masker.fit(haxby_img)
 cutoff_mask = masker.mask_img_.get_data().astype(np.bool)
 
@@ -70,8 +70,8 @@ pl.subplots_adjust(top=0.8)
 pl.show()
 
 # trended vs detrended
-trended = io.NiftiMasker(mask=haxby.mask)
-detrended = io.NiftiMasker(mask=haxby.mask, detrend=True)
+trended = NiftiMasker(mask=haxby.mask)
+detrended = NiftiMasker(mask=haxby.mask, detrend=True)
 trended_data = trended.fit_transform(haxby_img)
 detrended_data = detrended.fit_transform(haxby_img)
 
