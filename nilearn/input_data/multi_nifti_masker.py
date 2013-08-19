@@ -14,7 +14,6 @@ from .. import masking
 from .. import image
 from .. import _utils
 from .._utils import CacheMixin
-from .._utils.shelving import unshelve
 from .base_masker import BaseMasker
 
 
@@ -218,7 +217,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.mask_img_.get_affine()
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, check_affine=True):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -245,13 +244,16 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             # If we have a string (filename), we won't need to copy, as
             # there will be no side effect
             copy = not isinstance(niimg, basestring)
-            niimg = _utils.check_niimgs(niimg)
 
-            if (self.target_affine is None and affine is not None
-                    and np.all(niimg.get_affine() != affine)):
-                warnings.warn('Affine is different across subjects.'
-                              ' Realignement on first subject affine forced')
-                self.target_affine = affine
+            if check_affine:
+                niimg = _utils.check_niimgs(niimg)
+
+                if (self.target_affine is None and affine is not None
+                        and np.all(niimg.get_affine() != affine)):
+                    warnings.warn('Affine is different across subjects.'
+                                  ' Realignement on first subject affine forced')
+                    self.target_affine = affine
+            
             if confounds is not None:
                 data.append(self.transform_single_niimgs(
                     niimg, confounds=confounds[index],
@@ -259,6 +261,6 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             else:
                 data.append(self.transform_single_niimgs(niimg,
                                                          copy=copy))
-            if affine is None:
+            if check_affine and affine is None:
                 affine = self.affine_
         return data
