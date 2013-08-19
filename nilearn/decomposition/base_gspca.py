@@ -44,6 +44,9 @@ def learn_time_series(maps, subject_data):
 
 def _update_Vs(Ys_, Us_, V, mu, column_wise=False):
     n_samples, n_atoms = Us_.shape
+
+    # Depending of the call location, we may receive MemorizedResult
+    Ys_ = _load(Ys_)
     # XXX: Need to check with Vincent or Alex on the scaling of mu
     # mu = mu / n_samples
 
