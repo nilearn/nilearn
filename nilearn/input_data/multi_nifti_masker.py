@@ -208,6 +208,8 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.target_affine
         else:
             self.affine_ = self.mask_img_.get_affine()
+        # Load data in memory
+        self.mask_img_.get_data()
         return self
 
     def transform(self, niimgs, confounds=None):

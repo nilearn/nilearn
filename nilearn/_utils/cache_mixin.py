@@ -149,5 +149,3 @@ class CacheMixin(object):
                               "function %s." %
                               (self.memory_level, func.func_name))
             return memory.cache(func, **kwargs)
-
-

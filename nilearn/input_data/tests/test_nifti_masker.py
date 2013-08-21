@@ -91,3 +91,19 @@ def test_matrix_orientation():
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
     np.testing.assert_array_almost_equal(recovered.get_data(), fmri.get_data())
+
+
+def test_joblib_cache():
+    from joblib import hash
+    # Dummy mask
+    data = np.zeros((40, 40, 40, 2))
+    data[20, 20, 20] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+
+    with testing.write_tmp_imgs(data_img, create_files=True)\
+                as filename:
+        masker = NiftiMasker(mask=filename)
+        masker.fit()
+        mask_hash = hash(masker.mask_img_)
+        masker.mask_img_.get_data()
+        assert_true(mask_hash == hash(masker.mask_img_))
