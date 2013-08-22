@@ -229,7 +229,7 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
     # extra memory, and is as fast (if not faster).
     if detrend:
         series = _detrend(series)  # copy
-
+    
     # Retrieve the voxels|features with highest variance
 
     # Compute variance without mean removal.
@@ -239,6 +239,9 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
 
     var_thr = stats.scoreatpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)
+
+    if series.size == 0:
+        return np.zeros((series.shape[0], n_confounds))
     # Return the singular vectors with largest singular values
     u, _, _ = linalg.svd(series, full_matrices=False)
     u = u[:, :n_confounds].copy()
