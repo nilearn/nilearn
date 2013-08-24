@@ -125,30 +125,21 @@
 
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
 
-.. only:: html
+.. sidebar:: Download
 
- .. sidebar:: Download
-
-    * `PDF, 2 pages per side <./_downloads/nilearn.pdf>`_
-
-    * `HTML and example files <https://github.com/nilearn/nilearn.github.com/zipball/master>`_
-
-    * `Source code (github) <https://github.com/nilearn/tutorial>`_
+   * `Source code (github) <https://github.com/nilearn/tutorial>`_
 
 
- .. topic:: Learn machine learning for fMRI
+.. topic:: Nachine learning for NeuroImaging
 
-   This document compiles examples and tutorials to learn to apply
-   machine learning to fMRI using Python and the `scikit-learn
-   <http://scikit-learn.org>`__. It requires `nibabel
-   <htpp://nipy.org/nibabel>`__ and the `scikit-learn
-   <http://scikit-learn.org>`__.
+  NiLearn is a Python module to apply machine learning on NeuroImaging
+  using `scikit-learn <http://scikit-learn.org>`__. It requires only
+  `nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
+  <http://scikit-learn.org>`__.
 
 
 .. include:: includes/big_toc_css.rst
 
-Tutorial topics
-================
 
 .. toctree::
    :numbered:
@@ -166,15 +157,7 @@ Tutorial topics
  target directory.
 
 
-.. only:: html
-
- .. raw:: html
-
-   <div style='visibility: hidden ; height=0'>
-
- :download:`nilearn.pdf`
-
- .. raw:: html
+.. raw:: html
 
    </div>
 
