@@ -118,7 +118,7 @@ classifiers = [
         mask_img, process_mask_img=process_mask_img,
         radius=2.7,
         score_func=r2_score, estimator=svm.SVR(kernel="linear"),
-        cv=KFold(y_train.size, k=4),
+        cv=KFold(y_train.size, n_folds=4),
         verbose=1, n_jobs=1))
 ]
 
