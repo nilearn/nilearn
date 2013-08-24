@@ -124,7 +124,7 @@ pdf: latex
 	cp _build/latex/nilearn-nup.pdf nilearn.pdf
 	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
 
-install: html pdf
+install: html
 	rm -rf _build/nilearn.github.com
 	cd _build/ && \
         git clone git@github.com:nilearn/nilearn.github.com.git && \
