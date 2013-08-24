@@ -76,7 +76,7 @@ plot_gallery = True
 master_doc = 'index'
 
 # General information about the project.
-project = u'NILEARN'
+project = u'NiLearn'
 copyright = u'INRIA Parietal 2010'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -145,10 +145,10 @@ html_theme_path = ['themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "NeuroImaging with the scikit-learn"
+html_title = "Machine learning for NeuroImaging"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = 'Nilearn'
+html_short_title = 'NiLearn'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
