@@ -137,6 +137,9 @@
   `nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
   <http://scikit-learn.org>`__.
 
+.. warning::
+   
+   NiLearn is still a unrelease package in early development stages.
 
 .. include:: includes/big_toc_css.rst
 
