@@ -139,7 +139,7 @@
 
 .. warning::
    
-   NiLearn is still a unrelease package in early development stages.
+   NiLearn is still an unreleased package in early development stages.
 
 .. include:: includes/big_toc_css.rst
 
