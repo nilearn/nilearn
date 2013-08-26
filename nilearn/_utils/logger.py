@@ -4,21 +4,27 @@
 # License: simplified BSD
 
 import inspect
-import platform
 
 from sklearn.base import BaseEstimator
 
 
+# The technique used in the log() function only applies to CPython, because
+# it uses the inspect module to walk the call stack.
 def log(msg, verbose=1, object_classes=(BaseEstimator, ),
         stack_level=1, msg_level=1):
     """Display a message to the user, depending on the verbosity level.
 
+    This function allows to display some information that references an object
+    that is significant to the user, instead of a internal function. The goal
+    is to make user's code as simple to debug as possible.
+
     This function does tricky things to ensure that the proper object is
-    referenced in the message. If it is called inside a function that is
+    referenced in the message. If it is called e.g. inside a function that is
     called by a method of an object inheriting from any class in
     object_classes, then the name of the object (and the method) will be
     displayed to the user. If several matching objects exist in the call
-    stack, the highest one is used (first call chronologically).
+    stack, the highest one is used (first call chronologically), because this
+    is the one which is most likely to have been written in the user's script.
 
     Parameters
     ----------
@@ -42,11 +48,6 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
     """
 
     if verbose >= msg_level:
-        # The dirty tricks below work only on CPython
-        if platform.python_implementation() != "CPython":
-            print(msg)
-            return
-
         object_frame = None
         for n, f in enumerate(inspect.stack()):
             frame = f[0]
