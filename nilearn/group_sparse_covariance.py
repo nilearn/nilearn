@@ -22,7 +22,7 @@ from sklearn.base import BaseEstimator
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from ._utils import CacheMixin, LogMixin
-from .testing import is_spd
+from ._utils.testing import is_spd
 
 
 def rho_max(emp_covs, n_samples):
@@ -222,16 +222,34 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    tol: positive float or None, optional
-        The tolerance to declare convergence: if the maximum change in
-        estimated precision matrices goes below this value, optimization is
-        stopped. If None, no check is performed.
-
     max_iter: int, optional
         maximum number of iterations.
 
+    tol: positive float or None, optional
+        The tolerance to declare convergence: if the duality gap goes below
+        this value, optimization is stopped. If None, no check is performed.
+
     verbose: int, optional
         verbosity level. Zero means "no message".
+
+    probe_function: callable
+        This value is called before the first iteration and after each
+        iteration. If it returns True, then optimization is stopped
+        prematurely.
+        The function is given as arguments (in that order):
+
+        - empirical covariances (ndarray),
+        - number of samples for each task (ndarray),
+        - regularization parameter (float)
+        - maximum iteration number (integer)
+        - tolerance (float)
+        - current iteration number (integer). -1 means "before first iteration"
+        - current value of precisions (ndarray).
+        - previous value of precisions (ndarray). None before first iteration.
+
+    precisions_init: numpy.ndarray
+        initial value of the precision matrices. If not provided, a diagonal
+        matrix with the variances of each input signal is used.
 
     debug: bool, optional
         if True, perform checks during computation. It can help find
