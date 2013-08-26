@@ -124,6 +124,11 @@ add_function_parentheses = False
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# The style sheet to use for HTML and HTML Help pages. A file of that name
+# must exist either in Sphinx' static/ path, or in one of the custom paths
+# given in html_static_path.
+#html_style = 'nature.css_t'
+
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
@@ -132,12 +137,12 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'scikit-learn'
+html_theme = 'sphinxdoc'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'oldversion':False, 'collapsiblesidebar': True}
+#html_theme_options = {'oldversion':False, 'collapsiblesidebar': False}
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['themes']
