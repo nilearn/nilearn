@@ -32,8 +32,8 @@ def test_searchlight():
         from sklearn.metrics import accuracy_score
         score_func = accuracy_score
     except:
-        from sklearn.metrics import prediction_score
-        score_func = prediction_score
+        from sklearn.metrics import precision_score
+        score_func = precision_score
 
     # Define cross validation
     from sklearn.cross_validation import KFold
