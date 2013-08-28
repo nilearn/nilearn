@@ -300,10 +300,6 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
         initial value of the precision matrices. Used by the cross-validation
         function.
     """
-    ## initial value of the precision matrices, or way of computing it.
-    ## Possible values: "identity" (default), "ledoit-wolf" or numpy.ndarray
-    ## giving actual value.
-
     if tol == -1:
         tol = None
     if not isinstance(rho, (int, float)) or rho < 0:
@@ -360,8 +356,10 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
     for n in xrange(max_iter):
         if verbose >= 1:
             if max_norm is not None:
-                suffix = (" max norm: {max_norm:.3e} ".format(
-                    max_norm=max_norm))
+                suffix = (" variation (max norm): {max_norm:.3e} "
+                          "{median_norm:.3e} ".format(
+                              max_norm=max_norm,
+                              median_norm=median_norm))
             else:
                 suffix = ""
             print("* iteration {iter_n:d} ({percentage:.0f} %){suffix} ..."
@@ -488,15 +486,17 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                 if debug:
                     assert(is_spd(omega[..., k]))
 
-        # Compute max of variation
-        omega_old -= omega
-        max_norm = abs(omega_old).max()
-
         if probe_function is not None:
             if probe_function(emp_covs, n_samples, rho, max_iter, tol,
                               n, omega, omega_old) is True:
                 print("probe_function interrupted loop")
                 break
+
+        # Compute max of variation
+        omega_old -= omega
+        omega_old = abs(omega_old)
+        max_norm = omega_old.max()
+        median_norm = np.median(omega_old)
 
         if tol is not None and max_norm < tol:
             if verbose >= 1:
