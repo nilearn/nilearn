@@ -10,17 +10,17 @@ body {
     line-height: 150%;
     text-align: center;
     /*background-color: #AFC1C4; */
-    background-color: #BFD1D4;
+    background-color: #4eacc5;
     color: black;
     padding: 0;
     border: 1px solid #aaa;
 
-    margin: 0px 80px 0px 80px;
+    margin: 0px 115px 0px 115px;
     min-width: 740px;
 }
 
 a {
-    color: #CA7900;
+    color: #355F7C;
     text-decoration: none;
 }
 
@@ -91,7 +91,7 @@ a tt {
     background-color: transparent;
     font-weight: bold;
     border: 0;
-    color: #CA7900;
+    color: #333;
 }
 
 a tt:hover {
@@ -198,7 +198,7 @@ div.related ul li a {
     margin: 0;
     padding: 0 5px 0 5px;
     line-height: 1.75em;
-    color: #EE9816;
+    color: #355F7C;
 }
 
 div.related ul li a:hover {
@@ -211,18 +211,66 @@ div.body {
 }
 
 div.bodywrapper {
-    margin: 0 240px 0 0;
+    margin: 0 246px 0 0;
     border-right: 1px solid #ccc;
 }
 
 div.body a {
     text-decoration: underline;
+    line-height: 1.5em;
+}
+
+div.body h1 {
+    padding: 0.7em 0 1.3em 0;
+    font-size: 1.9em;
+}
+
+div.body h1.no-bg, div.body h2.no-bg, div.body h3.no-bg, div.body h4.no-bg {
+    background-color: transparent;
+}
+
+div.body h2.no-bg, div.body h3.no-bg{
+    padding: 0px 0px 0px 20px;
+}
+
+div.body h2,
+div.body h3,
+div.body h4,
+div.body h5,
+div.body h6 {
+    font-family: Arial, sans-serif;
+    background-color: #BED4EB;
+    font-weight: normal;
+    color: #212224;
+}
+
+div.body h1,
+div.body h2,
+div.body h3 {
+    padding: 10px;
+    text-align: center;
+    border-radius: 10px;
+    font-weight: bold;
+    word-wrap: break-word;
+}
+
+div.body h2,
+div.body h3 {
+    text-align: left;
+}
+
+div.body h3 {
+    font-size: 120%;
+    background-color: #eee;
+    padding: 5px;
+    border-radius: 10px;
+
 }
 
 div.sphinxsidebar {
     margin: 0;
     padding: 0.5em 15px 15px 0;
-    width: 210px;
+    width: 226px;
     float: right;
     text-align: left;
 /*    margin-left: -100%; */
@@ -234,7 +282,7 @@ div.sphinxsidebar h4, div.sphinxsidebar h3 {
     padding: 0.1em 0 0.1em 0.5em;
     color: white;
     border: 1px solid #86989B;
-    background-color: #AFC1C4;
+    background-color: #4EACC5;
 }
 
 div.sphinxsidebar ul {
@@ -352,6 +400,11 @@ div.sphinxsidebar ul.toc ul {
 
 div.sphinxsidebar ul.toc ul li {
     padding: 0;
+}
+
+div.sphinxsidebarwrapper ul li p {
+    line-height: 22px;
+    font-size: 14px;
 }
 
 div.admonition, div.warning {
@@ -504,4 +557,106 @@ ul.search li div.context {
 
 ul.keywordmatches li.goodmatch a {
     font-weight: bold;
+}
+
+div.green {
+    margin-top: 100px;
+    color: #468847;
+    background-color: #dff0d8;
+    border: 1px solid #d6e9c6;
+}
+
+
+div.warning {
+    color: #b94a48;
+    background-color: #F3E5E5;
+    border: 1px solid #eed3d7;
+}
+
+div#machine-learning-for-neuro-imaging h1 {
+    background: rgba(153, 153, 153, 0.02);
+    padding: 0.7em 0 1.3em 1.7em;
+}
+
+/* ------- tag cloud on the front page -------------------- */
+
+div.tags {
+    font-weight: bold;
+    font-size: 110%;
+    padding: 5px;
+    margin: 17px 7px 21px 7px;
+    background-color: #FFC588;
+    border-radius: 15px;
+    moz-border-radius: 15px;
+}
+
+div.tags ul {
+    display: inline;
+    width: 100%;
+}
+
+div.tags li {
+    margin-left: auto;
+    margin-right: auto;
+    display: inline-block;
+    min-width: 5em;
+    text-align: center;
+    vertical-align: middle;
+}
+
+div.tags a {
+    color: #333;
+}
+
+div.tags a:hover {
+    color: #000;
+}
+
+li.toctree-li {
+   padding: 0 0 1.0em 0;
+}
+
+/* ------- Zoom plots to make them fit in layout -------------------------- */
+div.body img.align-center {
+    max-width:805px;
+}
+
+/* ------- alternating colors in table rows -------------------------- */
+table.docutils tr:nth-child(even) {
+    background-color: #F3F3FF;
+}
+table.docutils tr:nth-child(odd) {
+    background-color: #FFFFEE;
+}
+
+table.docutils tr {
+    border-style: solid;
+    border-width: 1px 0 1px 0;
+    border-color: #AAAAAA;
+}
+
+table.docutils td {
+    border-color: #ddd;
+}
+
+/* ------- tighter layout in pre -------------------------- */
+pre {
+    padding: 5px 10px 5px 10px;
+    margin: .1em 0 .5em 0;
+}
+
+div.body p {
+    margin-top: 1.2em;
+    margin-bottom: .1em;
+}
+
+.float-right {
+  float: right;
+}
+
+span.example-links {
+  width: 100%;
+  margin-right: 20px;
+  padding-right: 15px;
+  display: block;
 }

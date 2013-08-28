@@ -2,13 +2,13 @@
 ..
     We are putting the title as a raw HTML so that it doesn't appear in
     the contents
-    
+
 .. raw:: html
 
-    <h1>NiLearn: Machine learning for NeuroImaging in Python</h1>
     <style type="text/css">
     p {
-        margin: 7px 0 7px 0 ;
+	font-size: 18px;
+	line-height: 2em;
     }
     span.linkdescr a {
         color:  #3E4349 ;
@@ -18,8 +18,8 @@
     }
     </style>
 
-..  
-   Here we are building a banner: a javascript selects randomly 4 images in 
+..
+   Here we are building a banner: a javascript selects randomly 4 images in
    the list
 
 .. only:: html
@@ -47,7 +47,7 @@
 
     .. |center-div| raw:: html
 
-        <div style="text-align: center; vertical-align: middle; margin: -7px 0 -10px 0;" id="banner" class="banner">
+        <div style="text-align: center; vertical-align: middle; margin: 40px;" id="banner" class="banner">
 
     .. |end-div| raw:: html
 
@@ -73,87 +73,35 @@
         }
         shuffle ($('#banner a.external'));
 
-	//Function to make the index toctree collapsible
-	$(function () {
-            $('.toctree-l2')
-                .click(function(event){
-                    if (event.target.tagName.toLowerCase() != "a") {
-		        if ($(this).children('ul').length > 0) {
-                            $(this).css('list-style-image',
-                            (!$(this).children('ul').is(':hidden')) ? 'url(_static/plusBoxHighlight.png)' : 'url(_static/minBoxHighlight.png)');
-                            $(this).children('ul').toggle();
-                        }
-                        var bodywrapper = $('.bodywrapper');
-                        var sidebarbutton = $('#sidebarbutton');
-                        sidebarbutton.height(bodywrapper.height());
-                        return true; //Makes links clickable
-                    }
-		})
-		.mousedown(function(event){ return false; }) //Firefox highlighting fix
-                .css({cursor:'pointer', 'list-style-image':'url(_static/plusBox.png)'})
-                .children('ul').hide();
-            $('ul li ul li:not(:has(ul))').css({cursor:'default', 'list-style-image':'url(_static/noneBox.png)'});
-	    $('.toctree-l3').css({cursor:'default', 'list-style-image':'url(_static/noneBox.png)'});
-
-	    $('.toctree-l2').hover(
-	        function () {
-		    if ($(this).children('ul').length > 0) {
-		        $(this).css('background-color', '#D0D0D0').children('ul').css('background-color', '#F0F0F0');
-		        $(this).css('list-style-image',
-                            (!$(this).children('ul').is(':hidden')) ? 'url(_static/minBoxHighlight.png)' : 'url(_static/plusBoxHighlight.png)');
-		    }
-		    else {
-		        $(this).css('background-color', '#F9F9F9');
-		    }
-                },
-                function () {
-                    $(this).css('background-color', 'white').children('ul').css('background-color', 'white');
-		    if ($(this).children('ul').length > 0) {
-		        $(this).css('list-style-image',
-                            (!$(this).children('ul').is(':hidden')) ? 'url(_static/minBox.png)' : 'url(_static/plusBox.png)');
-		    }
-                }
-            );
-
-            var bodywrapper = $('.bodywrapper');
-            var sidebarbutton = $('#sidebarbutton');
-            sidebarbutton.height(bodywrapper.height());
-
-	});
-
         </SCRIPT>
 
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
 
+
+
+Machine Learning for Neuro-Imaging
+----------------------------------
+
+   NiLearn is a software package to facilitate the use of statistical learning
+   on NeuroImaging data.
+
+   It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
+   for multivariate statistics with applications such as predictive modelling,
+   classification, decoding, or connectivity analysis.
+
+   It requires only
+   `nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
+   <http://scikit-learn.org>`__.
+
+
 .. sidebar:: Download
+   :class: green
 
-   * `Source code (github) <https://github.com/nilearn/tutorial>`_
-
-
-.. topic:: Nachine learning for NeuroImaging
-
-  NiLearn is a Python module to apply machine learning on NeuroImaging
-  using `scikit-learn <http://scikit-learn.org>`__. It requires only
-  `nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
-  <http://scikit-learn.org>`__.
+   * `Source code (github) <https://github.com/nilearn/nilearn>`_
 
 .. warning::
-   
+
    NiLearn is still an unreleased package in early development stages.
-
-.. include:: includes/big_toc_css.rst
-
-
-.. toctree::
-   :numbered:
-
-   introduction.rst
-   getting_started.rst
-   extracting_data.rst
-   supervised_learning.rst
-   unsupervised_learning.rst
-   dataset_manipulation.rst
-   Reference <modules/classes.rst>
 
 ..
  FIXME: I need the link below to make sure the banner gets copied to the

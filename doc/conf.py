@@ -124,10 +124,6 @@ add_function_parentheses = False
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-# The style sheet to use for HTML and HTML Help pages. A file of that name
-# must exist either in Sphinx' static/ path, or in one of the custom paths
-# given in html_static_path.
-#html_style = 'nature.css_t'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -137,7 +133,12 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'sphinxdoc'
+html_theme = 'scikit-learn'
+
+# The style sheet to use for HTML and HTML Help pages. A file of that name
+# must exist either in Sphinx' static/ path, or in one of the custom paths
+# given in html_static_path.
+html_style = 'nature.css'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -157,7 +158,7 @@ html_short_title = 'NiLearn'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'logos/nilearn-logo-small.png'
+html_logo = 'logos/nilearn.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
