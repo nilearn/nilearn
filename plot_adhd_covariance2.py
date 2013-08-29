@@ -9,16 +9,6 @@ and to estimate a covariance matrix based on these signals.
 import pylab as pl
 import matplotlib
 
-#from sklearn import covariance
-import joblib
-
-import nibabel
-
-import nilearn.datasets
-import nilearn.image
-import nilearn.signal
-import nilearn.input_data
-
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
 pl.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
@@ -37,71 +27,62 @@ def plot_matrices(cov, prec, title, subject_n=0):
 
     # Display covariance matrix
     pl.figure()
-    pl.imshow(cov, interpolation="nearest",
-#              vmin=-1, vmax=1,
+    pl.imshow(cov[..., subject_n], interpolation="nearest",
               cmap=pl.cm.get_cmap("bwr"))
     pl.colorbar()
-    pl.title(title + " / covariance")
+    pl.title("%s / covariance" % title)
 
     # Display precision matrix
     pl.figure()
-    pl.imshow(prec, interpolation="nearest",
+    pl.imshow(prec[..., subject_n], interpolation="nearest",
               vmin=-span, vmax=span,
               cmap=pl.cm.get_cmap("bwr"))
     pl.colorbar()
-    pl.title(title + " / precision")
+    pl.title("%s / precision" % title)
 
 
-def region_signals(subject_n):
-    dataset = nilearn.datasets.fetch_adhd()
+n_subjects = 10  # Number of subjects to consider
+
+
+print("-- Computing covariance matrices ...")
+import joblib
+mem = joblib.Memory(".")
+
+import nilearn.datasets
+msdl_atlas = nilearn.datasets.fetch_msdl_atlas()
+dataset = nilearn.datasets.fetch_adhd()
+
+import nilearn.image
+import nilearn.input_data
+
+subjects = []
+
+for subject_n in range(n_subjects):
     filename = dataset["func"][subject_n]
-    confound_file = dataset["confounds"][subject_n]
-
     print("Processing file %s" % filename)
 
-    print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-    msdl_atlas = nilearn.datasets.fetch_msdl_atlas()
-    niimgs = nibabel.load(filename)
-
     print("-- Computing confounds ...")
-    hv_confounds = nilearn.image.high_variance_confounds(niimgs)
+    confound_file = dataset["confounds"][subject_n]
+    hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(filename)
 
     print("-- Computing region signals ...")
-    masker = nilearn.input_data.NiftiMapsMasker(msdl_atlas["maps"],
-                                     resampling_target="maps",
-                                     low_pass=None, high_pass=0.01, t_r=2.5,
-                                     standardize=True,
-                                     verbose=1)
-    region_ts = masker.fit_transform(niimgs,
+    masker = nilearn.input_data.NiftiMapsMasker(
+        msdl_atlas["maps"], resampling_target="maps",
+        low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+        memory=mem, memory_level=1, verbose=1)
+    region_ts = masker.fit_transform(filename,
                                      confounds=[hv_confounds, confound_file])
+    subjects.append(region_ts)
 
-    return region_ts
+
+print("-- Computing precision matrices ...")
+from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+gsc = GroupSparseCovarianceCV(verbose=2)
+gsc.fit(subjects)
 
 
-if __name__ == "__main__":
-    n_subjects = 10
-    tasks = []
-    rho = .1
-    mem = joblib.Memory(".")
+print("-- Displaying results")
+plot_matrices(gsc.covariances_, gsc.precisions_,
+              "GroupSparseCovariance %.2e" % gsc.alpha_)
 
-    print("-- Computing covariance matrices ...")
-    for n in range(n_subjects):
-        tasks.append(mem.cache(region_signals)(n))
-
-    print("-- Computing precision matrices ...")
-    from nilearn.group_sparse_covariance import GroupSparseCovariance
-    gsc = GroupSparseCovariance(rho=rho, max_iter=10, verbose=2, tol=0.01,
-                                return_costs=True)
-    gsc.fit(tasks)
-
-    pl.figure()
-    pl.plot(gsc.objective_)
-    pl.grid()
-
-    # Check that duality gap is higher than estimated error.
-    pl.figure()
-    pl.semilogy(gsc.duality_gap_)  # duality gap
-    pl.semilogy(gsc.objective_ - gsc.objective_[-1])  # estimated error
-    pl.grid()
-
-    pl.show()
+pl.show()
