@@ -356,10 +356,8 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
     for n in xrange(max_iter):
         if verbose >= 1:
             if max_norm is not None:
-                suffix = (" variation (max norm): {max_norm:.3e} "
-                          "{median_norm:.3e} ".format(
-                              max_norm=max_norm,
-                              median_norm=median_norm))
+                suffix = (" variation (max norm): {max_norm:.3e} ".format(
+                    max_norm=max_norm))
             else:
                 suffix = ""
             print("* iteration {iter_n:d} ({percentage:.0f} %){suffix} ..."
@@ -496,7 +494,6 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
         omega_old -= omega
         omega_old = abs(omega_old)
         max_norm = omega_old.max()
-        median_norm = np.median(omega_old)
 
         if tol is not None and max_norm < tol:
             if verbose >= 1:
@@ -676,25 +673,28 @@ def empirical_covariances(tasks, assume_centered=False, dtype=np.float64,
 
 
 def group_sparse_score(precisions, n_samples, emp_covs, rho):
-    """Compute the log-likelihood of a given list of empirical covariances /
-    precisions.
+    """Compute scores used by group_sparse_covariance.
 
-    This is the loss function used by the group_sparse_covariance function,
-    without the regularization term.
+    The log-likelihood of a given list of empirical covariances /
+    precisions.
 
     Parameters
     ----------
-    precisions: numpy.ndarray
+    precisions : numpy.ndarray
         estimated precisions. shape (n_var, n_var, n_tasks)
 
-    n_samples: array-like
+    n_samples : array-like, shape: (n_tasks,)
         number of samples used in estimating each task in "precisions".
-        shape: (n_tasks,)
+        n_samples.sum() must be equal to 1.
 
     Returns
     -------
+    ll: float
+        log-likelihood of precisions on the given covariances. This is the
+        opposite of the loss function, without the regularization term.
+
     score: float
-        value of loss function.
+        value of loss function. This value is minimized by group_sparse_score.
     """
     ll = 0
     for k in range(precisions.shape[2]):
@@ -704,12 +704,13 @@ def group_sparse_score(precisions, n_samples, emp_covs, rho):
     l2 = np.sqrt((precisions ** 2).sum(axis=-1))
     l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
 
-    return (-ll, rho * l12 - ll)
+    return (ll, rho * l12 - ll)
 
 
 def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
                                  max_iter=10, assume_centered=False,
-                                 precisions_init=None, verbose=0, debug=False):
+                                 precisions_init=None, verbose=0, debug=False,
+                                 probe_function=None):
     """Get estimated precision matrices for different values of rho.
 
     Calling this function is faster than calling group_sparse_covariance()
@@ -735,6 +736,21 @@ def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
         Passed to group_sparse_covariance(). See the corresponding docstring
         for details.
 
+    probe_function: callable
+        This value is called before the first iteration and after each
+        iteration. If it returns True, then optimization is stopped
+        prematurely.
+        The function is given as arguments (in that order):
+
+        - empirical covariances (ndarray),
+        - number of samples for each task (ndarray),
+        - regularization parameter (float)
+        - maximum iteration number (integer)
+        - tolerance (float)
+        - current iteration number (integer). -1 means "before first iteration"
+        - current value of precisions (ndarray).
+        - previous value of precisions (ndarray). None before first iteration.
+
     Returns
     -------
     precisions_list: list of numpy.ndarray
@@ -756,12 +772,12 @@ def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
         precisions = _group_sparse_covariance(
             train_covs, train_n_samples, rho, tol=tol, max_iter=max_iter,
             assume_centered=assume_centered, precisions_init=precisions_init,
-            verbose=verbose, debug=debug)
+            verbose=verbose, debug=debug, probe_function=probe_function)
 
         # Compute log-likelihood
         if test_tasks is not None:
             scores.append(group_sparse_score(precisions, train_n_samples,
-                                             test_covs, 0))
+                                             test_covs, 0)[0])
         precisions_list.append(precisions)
         precisions_init = precisions
 
@@ -769,6 +785,26 @@ def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
         return precisions_list, scores
     else:
         return precisions_list
+
+
+class EarlyStopProbe(object):
+    """Probe for early stopping in GroupSparseCovarianceCV.
+
+    Stop optimizing as soon as the score on the test set starts decreasing."""
+    def __init__(self, test_tasks):
+        # TODO: this could be cached to avoid recomputing the same thing over
+        # and over (if significant in execution time).
+        self.test_emp_covs = empirical_covariances(test_tasks)[0]
+
+    def __call__(self, emp_covs, n_samples, rho, max_iter, tol,
+                 iter_n, omega, prev_omega):
+        score = group_sparse_score(
+            omega, n_samples, self.test_emp_covs, rho)[0]
+        if iter_n > -1 and self.last_score > score:
+            print("test score is decreasing. Stopping at iteration %d"
+                  % iter_n)
+            return True
+        self.last_score = score
 
 
 class GroupSparseCovarianceCV(object):
@@ -780,9 +816,9 @@ class GroupSparseCovarianceCV(object):
         number of folds in a K-fold cross-validation scheme.
     """
     def __init__(self, rhos=4, n_refinements=4, cv=None,
-                 tol=1e-3, max_iter=10, assume_centered=False, verbose=1,
+                 tol=1e-3, max_iter=50, assume_centered=False, verbose=1,
                  memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, debug=False):
+                 n_jobs=1, debug=False, early_stopping=True):
         self.rhos = rhos
         self.n_refinements = n_refinements
         self.cv = cv
@@ -795,6 +831,7 @@ class GroupSparseCovarianceCV(object):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.debug = debug
+        self.early_stopping = early_stopping
 
     def fit(self, tasks, y=None):
         """Compute cross-validated group-sparse precision.
@@ -810,7 +847,7 @@ class GroupSparseCovarianceCV(object):
         Attributes
         ----------
         `covariances_`: numpy.ndarray
-        `precision_`: numpy.ndarray
+        `precisions_`: numpy.ndarray
         `rho_`: selected value for penalization parameter
         `cv_rhos`: list of float
             All penalization values explored.
@@ -853,6 +890,11 @@ class GroupSparseCovarianceCV(object):
                 train_test_tasks.append(zip(*[(task[train, :], task[test, :])
                                               for task, (train, test)
                                               in zip(tasks, train_test)]))
+            if self.early_stopping:
+                probes = [EarlyStopProbe(test_tasks)
+                          for _, test_tasks in train_test_tasks]
+            else:
+                probes = itertools.repeat(None)
 
             this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(group_sparse_covariance_path)(
@@ -860,25 +902,30 @@ class GroupSparseCovarianceCV(object):
                     max_iter=self.max_iter, tol=self.tol,
                     assume_centered=self.assume_centered,
                     verbose=self.verbose, debug=self.debug,
-                    precisions_init=prec_init)
-                for (train_tasks, test_tasks), prec_init
-                in zip(train_test_tasks, covs_init))
+                    # Warm restart is only useful without early stopping.
+                    precisions_init=None if self.early_stopping else prec_init,
+                    probe_function=probe)
+                for (train_tasks, test_tasks), prec_init, probe
+                in zip(train_test_tasks, covs_init, probes))
 
             # this_path[i] is a tuple (precisions_list, scores)
-            # - scores: scores obtained with the i-th folding, for varying rho.
+            # - scores: scores obtained with the i-th folding, for each value
+            #   of rho.
             # - precisions_list: corresponding precisions matrices, for each
             #   value of rho.
             precisions_list, scores = zip(*this_path)
+            # now scores[i][j] is the score for the i-th folding, j-th value of
+            # rho (analoguous for precisions_list)
             precisions_list = zip(*precisions_list)
             scores = [np.mean(sc) for sc in zip(*scores)]
+            # scores[i] is the mean score obtained for the i-th value of rho.
 
-            # scores is the mean score obtained for a given value of rho.
             path.extend(zip(rhos, scores, precisions_list))
             path = sorted(path, key=operator.itemgetter(0), reverse=True)
 
-            # Find the maximum (avoid using the built-in 'max' function to
-            # have a fully-reproducible selection of the smallest rho
-            # in case of equality)
+            # Find the maximum score (avoid using the built-in 'max' function
+            # to have a fully-reproducible selection of the smallest rho in
+            # case of equality)
             best_score = -np.inf
             last_finite_idx = 0
             for index, (rho, this_score, _) in enumerate(path):
