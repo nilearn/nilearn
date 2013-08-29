@@ -5,9 +5,7 @@ Computation of covariance matrix between brain regions
 This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
-import sys
 
-import numpy as np
 import pylab as pl
 import matplotlib
 
@@ -19,7 +17,7 @@ import nibabel
 import nilearn.datasets
 import nilearn.image
 import nilearn.signal
-import nilearn.io
+import nilearn.input_data
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
@@ -69,7 +67,7 @@ def region_signals(subject_n):
     hv_confounds = nilearn.image.high_variance_confounds(niimgs)
 
     print("-- Computing region signals ...")
-    masker = nilearn.io.NiftiMapsMasker(msdl_atlas["maps"],
+    masker = nilearn.input_data.NiftiMapsMasker(msdl_atlas["maps"],
                                      resampling_target="maps",
                                      low_pass=None, high_pass=0.01, t_r=2.5,
                                      standardize=True,
@@ -80,16 +78,6 @@ def region_signals(subject_n):
     return region_ts
 
 
-def group_sparse_covariance_path_test(tasks):
-    from nilearn.group_sparse_covariance import group_sparse_covariance_path
-
-    train_tasks = [task[:task.shape[0] // 2, :] for task in tasks]
-    test_tasks = [task[task.shape[0] // 2:, :] for task in tasks]
-
-    print(group_sparse_covariance_path(train_tasks, test_tasks,
-                                       [0.2, 0.1, 0.05, 0.01],
-                                       verbose=1))
-
 if __name__ == "__main__":
     n_subjects = 10
     tasks = []
@@ -97,7 +85,7 @@ if __name__ == "__main__":
     mem = joblib.Memory(".")
 
     print("-- Computing covariance matrices ...")
-    for n in xrange(n_subjects):
+    for n in range(n_subjects):
         tasks.append(mem.cache(region_signals)(n))
 
     print("-- Computing precision matrices ...")
@@ -115,25 +103,5 @@ if __name__ == "__main__":
     pl.semilogy(gsc.duality_gap_)  # duality gap
     pl.semilogy(gsc.objective_ - gsc.objective_[-1])  # estimated error
     pl.grid()
-
-    ## from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
-    ## gsc = GroupSparseCovarianceCV(4, max_iter=5, n_refinements=2, verbose=1,
-    ##                               n_jobs=4)
-    ## import phyx
-    ## phyx.timeit(gsc.fit)(tasks)
-    ## print("selected rho: {0:.4f}".format(gsc.rho_))
-    ## ## print(gsc.cv_rhos)
-    ## ## print(gsc.cv_scores)
-    ## pl.figure()
-    ## pl.plot(gsc.cv_rhos, gsc.cv_scores, '-+')
-    ## pl.xlabel("rho")
-    ## pl.ylabel("CV score")
-
-    ## for n, (emp_cov, prec) in enumerate(zip(np.rollaxis(gsc.covariances_, -1),
-    ##                                         np.rollaxis(gsc.precisions_, -1))):
-    ##     plot_matrices(emp_cov, -prec,
-    ##                   title="Group sparse estimator", subject_n=n)
-    ##     if n == 2:
-    ##         break
 
     pl.show()

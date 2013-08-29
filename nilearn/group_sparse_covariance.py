@@ -9,7 +9,6 @@ import warnings
 import collections
 import operator
 import itertools
-import time
 
 import numpy as np
 
@@ -29,19 +28,22 @@ def rho_max(emp_covs, n_samples):
     """
     Parameters
     ----------
-    emp_covs: numpy.ndarray
+    emp_covs : array-like, shape (n_features, n_features, n_subjects)
         covariance matrix for each task.
-        shape (variable number, variable number, covariance matrix number)
 
-    n_samples: array-like
+    n_samples : array-like, shape (n_subjects,)
         number of samples used in the computation of every covariance matrix.
+        n_samples.sum() can be arbitrary.
 
     Returns
     -------
-    rho_max: minimal value for regularization parameter that gives a
+    rho_max : float
+        minimal value for the regularization parameter that gives a
         full-sparse matrix.
 
-    rho_min: maximal value for rho that gives a fully dense matrix
+    rho_min : float
+        maximal value for the regularization parameter that gives a fully
+        dense matrix.
     """
     A = np.copy(emp_covs)
     n_samples = np.asarray(n_samples).copy()
@@ -57,8 +59,8 @@ def rho_max(emp_covs, n_samples):
     return np.max(norms), np.min(norms[norms > 0])
 
 
-def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
-                                   emp_covs, display=False, debug=False):
+def _group_sparse_covariance_costs(n_samples, rho, omega, emp_covs, verbose=0,
+                                   debug=False):
     """Compute group sparse covariance costs during computation.
 
     Returns
@@ -72,27 +74,30 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
         value is supposed to always be negative, and vanishing for the optimal
         point.
     """
-    # Signs for primal and dual costs are inverted compared to the H&S paper,
+    # Signs for primal and dual costs are inverted compared to the
+    # Honorio & Samaras paper,
     # to match scikit-learn's usage of *minimizing* the primal problem.
 
+    n_var, _, n_tasks = emp_covs.shape
+
     ## Primal cost
-    ll = 0  # log-likelihood
+    log_likelihood = 0
     sps = 0  # scalar products
-    for k in xrange(n_tasks):
+    for k in range(n_tasks):
         t = fast_logdet(omega[..., k])
         sp = (omega[..., k] * emp_covs[..., k]).sum()
-        ll += n_samples[k] * (t - sp)
+        log_likelihood += n_samples[k] * (t - sp)
         sps += n_samples[k] * sp
 
     # L(1,2)-norm
     l2 = np.sqrt((omega ** 2).sum(axis=-1))
     l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
-    cost = - (ll - rho * l12)
+    cost = - (log_likelihood - rho * l12)
 
     ## Dual cost: rather heavy computation.
     # Compute A(k)
     A = np.empty(omega.shape, dtype=omega.dtype, order="F")
-    for k in xrange(n_tasks):
+    for k in range(n_tasks):
         # TODO: can be computed more efficiently using Winv (see Friedman 2008)
         omega_inv = np.linalg.inv(omega[..., k])
         if debug:
@@ -135,16 +140,14 @@ def _group_sparse_covariance_costs(n_tasks, n_var, n_samples, rho, omega,
 
     gap = cost - dual_cost
 
-    other = (omega.copy(), time.time())
-
-    if display:
+    if verbose > 0:
         print("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
             gap=gap, cost=cost))
 
-    return (cost, gap, other)
+    return (cost, gap)
 
 
-def update_submatrix(full, sub, sub_inv, p, h, v):
+def _update_submatrix(full, sub, sub_inv, p, h, v):
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
@@ -173,7 +176,6 @@ def update_submatrix(full, sub, sub_inv, p, h, v):
     sub[n, :] = h
 
     # change column
-    #    rown = sub_inv[n, :]
     rown = sub_inv[n:n + 1, :]  # 2d array, useful for sub_inv below
     U = v - sub[:, n]
     rown = rown / (1. + np.dot(rown, U))
@@ -183,7 +185,7 @@ def update_submatrix(full, sub, sub_inv, p, h, v):
     sub[:, n] = v   # equivalent to sub[n, :] += U
 
 
-def assert_submatrix(full, sub, n):
+def _assert_submatrix(full, sub, n):
     """Check that "sub" is the matrix obtained by removing the p-th col and row
     in "full". Used only for debugging.
     """
@@ -208,7 +210,7 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
     same time.
 
     Running time is linear on max_iter, and number of tasks (len(tasks)), but
-    cubic on number of signals (tasks[0].shape[1]).
+    cubic on number of features (tasks[0].shape[1]).
 
     Parameters
     ==========
@@ -232,7 +234,7 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
     verbose: int, optional
         verbosity level. Zero means "no message".
 
-    probe_function: callable
+    probe_function: callable or None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -378,18 +380,18 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                         np.testing.assert_almost_equal(
                             np.dot(Winv[..., k], W[..., k]),
                             np.eye(Winv[..., k].shape[0]), decimal=12)
-                        assert_submatrix(omega[..., k], W[..., k], p)
+                        _assert_submatrix(omega[..., k], W[..., k], p)
             else:
                 # Update W and Winv
                 if debug:
                     omega_orig = omega.copy()
 
-                for k in xrange(n_tasks):
-                    update_submatrix(omega[..., k],
-                                     W[..., k], Winv[..., k], p, h, v)
+                for k in range(n_tasks):
+                    _update_submatrix(omega[..., k],
+                                      W[..., k], Winv[..., k], p, h, v)
 
                     if debug:
-                        assert_submatrix(omega[..., k], W[..., k], p)
+                        _assert_submatrix(omega[..., k], W[..., k], p)
                         np.testing.assert_almost_equal(
                             np.dot(Winv[..., k], W[..., k]),
                             np.eye(Winv[..., k].shape[0]), decimal=12)
@@ -788,9 +790,10 @@ def group_sparse_covariance_path(train_tasks, rhos, test_tasks=None, tol=1e-3,
 
 
 class EarlyStopProbe(object):
-    """Probe for early stopping in GroupSparseCovarianceCV.
+    """Callable probe for early stopping in GroupSparseCovarianceCV.
 
-    Stop optimizing as soon as the score on the test set starts decreasing."""
+    Stop optimizing as soon as the score on the test set starts decreasing.
+    """
     def __init__(self, test_tasks):
         # TODO: this could be cached to avoid recomputing the same thing over
         # and over (if significant in execution time).

@@ -62,7 +62,7 @@ def _mean_of_squares(signals):
 
     but uses a lot less memory.
     """
-    var = np.ndarray(signals.shape[1])
+    var = np.empty(signals.shape[1])
     # TODO: set n_chunks to 1 when signals.shape[1] is small enough
     # n_chunks = 20 is very conservative: reduces a lot memory consumption for
     # large arrays, not affecting too much computation time for small ones.
