@@ -24,7 +24,7 @@ from ._utils import CacheMixin, LogMixin
 from ._utils.testing import is_spd
 
 
-def rho_max(emp_covs, n_samples):
+def compute_rho_max(emp_covs, n_samples):
     """
     Parameters
     ----------
@@ -65,11 +65,11 @@ def _group_sparse_covariance_costs(n_samples, rho, omega, emp_covs, verbose=0,
 
     Returns
     -------
-    primal_cost: float
+    primal_cost : float
         value of primal cost at current point. This value is minimized by the
         algorithm.
 
-    duality_gap: float
+    duality_gap : float
         value of duality gap at current point, with a feasible dual point. This
         value is supposed to always be negative, and vanishing for the optimal
         point.
@@ -130,12 +130,12 @@ def _group_sparse_covariance_costs(n_samples, rho, omega, emp_covs, verbose=0,
             A[..., k].flat[::A.shape[0] + 1] = 0
         rho_max = np.sqrt((A ** 2).sum(axis=-1)).max()
         # the second value (0.05 is arbitrary: positive in ]0,1[)
-        alpha = min((rho / rho_max, 0.05))
+        gamma = min((rho / rho_max, 0.05))
         dual_cost = 0
         for k in range(n_tasks):
-            # add alpha on the diagonal
-            B = ((1. - alpha) * emp_covs[..., k]
-                 + alpha * np.eye(emp_covs.shape[0]))
+            # add gamma on the diagonal
+            B = ((1. - gamma) * emp_covs[..., k]
+                 + gamma * np.eye(emp_covs.shape[0]))
             dual_cost += n_samples[k] * (n_var + fast_logdet(B))
 
     gap = cost - dual_cost
@@ -198,7 +198,7 @@ def _assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
-def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
+def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3,
                             assume_centered=False, verbose=0,
                             probe_function=None, precisions_init=None,
                             debug=False):
@@ -209,32 +209,31 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
     achieved by simultaneous computation of all precision matrices at the
     same time.
 
-    Running time is linear on max_iter, and number of tasks (len(tasks)), but
-    cubic on number of features (tasks[0].shape[1]).
+    Running time is linear on max_iter, and number of subjects (len(subjects)),
+    but cubic on number of features (subjects[0].shape[1]).
 
     Parameters
     ==========
-    tasks: list of numpy.ndarray
-        list of signals to process. Each element of the list must be a
-        2D array, with shape (sample number, feature number). The sample number
-        can vary from task to task, but not the feature number.
+    subjects : list of numpy.ndarray, shape of each array (n_samples, n_features)
+        list of signals to process. The number of samples can vary from subject
+        to subject, but not the number of features.
 
-    rho: float
+    alpha : float
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter: int, optional
+    max_iter : int, optional
         maximum number of iterations.
 
-    tol: positive float or None, optional
+    tol : positive float or None, optional
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
-    verbose: int, optional
+    verbose : int, optional
         verbosity level. Zero means "no message".
 
-    probe_function: callable or None
+    probe_function : callable or None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -253,16 +252,16 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 
-    debug: bool, optional
+    debug : bool, optional
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
 
     Returns
     =======
-    emp_covs: numpy.ndarray
+    emp_covs : numpy.ndarray
         empirical covariances matrices, as a 3D array (last index is task)
 
-    precisions: numpy.ndarray
+    precisions : numpy.ndarray
         estimated precision matrices, as a 3D array (last index is task)
 
     Notes
@@ -275,10 +274,10 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
     """
 
     emp_covs, n_samples, _, _ = empirical_covariances(
-        tasks, assume_centered=assume_centered, debug=debug)
+        subjects, assume_centered=assume_centered, debug=debug)
 
     precisions = _group_sparse_covariance(
-        emp_covs, n_samples, rho, max_iter=max_iter, tol=tol,
+        emp_covs, n_samples, alpha, max_iter=max_iter, tol=tol,
         assume_centered=assume_centered, verbose=verbose,
         precisions_init=precisions_init, probe_function=probe_function,
         debug=debug)
@@ -289,18 +288,8 @@ def group_sparse_covariance(tasks, rho, max_iter=50, tol=1e-3,
 def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                              assume_centered=False, precisions_init=None,
                              probe_function=None, verbose=0, debug=False):
-    """Internal version of group_sparse_covariance. See its doctype for details
-
-    Parameters
-    ----------
-    probe_function: callable
-        called at the end of each iteration. If the function returns
-        True, then optimization is stopped prematurely. It is also called
-        before the first iteration.
-
-    precisions_init: numpy.ndarray
-        initial value of the precision matrices. Used by the cross-validation
-        function.
+    """Internal version of group_sparse_covariance.
+    See its docstring for details.
     """
     if tol == -1:
         tol = None
@@ -432,26 +421,26 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                     y[:, m] = 0  # x* = 0
                 else:
                     # q(k) -> T(k) * v(k) * h_22(k)
-                    # \lambda -> alpha   (lambda is a Python keyword)
+                    # \lambda -> gamma   (lambda is a Python keyword)
                     q[:] = n_samples * emp_covs[p, p, :] * Winv[m, m, :]
                     if debug:
                         assert(np.all(q > 0))
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
 
                     # Newton-Raphson loop. Loosely based on Scipy's.
-                    # tolerance does not seem to be important for numerical
+                    # Tolerance does not seem to be important for numerical
                     # stability (tolerance of 1e-2 works) but has an effect on
-                    # overall convergence rate. (often the tighter the better)
+                    # overall convergence rate (the tighter the better.)
 
-                    alpha = 0.  # initial value
+                    gamma = 0.  # initial value
                     # Precompute some quantities
                     cc = c * c
                     two_ccq = 2. * cc * q
-                    for _ in xrange(100):
+                    for _ in itertools.repeat(None, 100):
                         # Function whose zero must be determined (fval) and
                         # its derivative (fder).
                         # Written inplace to save some function calls.
-                        aq = 1. + alpha * q
+                        aq = 1. + gamma * q
                         aq2 = aq * aq
                         fder = (two_ccq / (aq2 * aq)).sum()
 
@@ -460,7 +449,7 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                             warnings.warn(msg, RuntimeWarning)
                             break
                         p1 = - (rho2 - (cc / aq2).sum()) / fder
-                        alpha = p1 + alpha
+                        gamma = p1 + gamma
                         if abs(p1) < 1.5e-8:
                             break
 
@@ -470,8 +459,8 @@ def _group_sparse_covariance(emp_covs, n_samples, rho, max_iter=10, tol=1e-3,
                                       "system.")
 
                     if debug:
-                        assert alpha >= 0., alpha
-                    y[:, m] = (alpha * c) / aq  # x*
+                        assert gamma >= 0., gamma
+                    y[:, m] = (gamma * c) / aq  # x*
 
             # Copy back y in omega (column and row)
             omega[:p, p, :] = y[:, :p].T
@@ -522,42 +511,40 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
 
     Parameters
     ----------
-    rho: float
+    rho : float
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    tol: positive float, optional
+    tol : positive float, optional
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped
 
-    max_iter: int
+    max_iter : int, optional
         maximum number of iterations. The default value (10) is rather
         conservative.
 
-    verbose: int
+    verbose : int, optional
         verbosity level. Zero means "no message".
 
-    assume_centered: bool
+    assume_centered : bool
         if True, assume that all signals passed to fit() are centered.
 
-    memory: instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string, optional
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: int, optional
+    memory_level : int, optional
         Caching aggressiveness. Higher values mean more caching.
 
     Attributes
     ----------
-    `covariances_`: 3D numpy.ndarray
+    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_tasks)
         maximum likelihood covariance estimations.
-        Shape: (n_features, n_features, n_tasks)
 
-    `precisions_`: 3D numpy.ndarray
+    `precisions_` : numpy.ndarraye, shape (n_features, n_features, n_tasks)
         precisions matrices estimated using Antonio & Samaras algorithm.
-        Shape: (n_features, n_features, n_tasks)
     """
 
     def __init__(self, rho=0.1, tol=1e-3, max_iter=10, verbose=1,
@@ -578,7 +565,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
 
         Parameters
         ----------
-        tasks: list of numpy.ndarray
+        tasks : list of numpy.ndarray
             input tasks. Each task is a 2D array, whose columns contain
             signals. Each array shape must be (sample number, feature number).
             The sample number can vary from task to task, but all tasks must
@@ -586,15 +573,15 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
 
         Attributes
         ----------
-        `covariances_`: numpy.ndarray
+        `covariances_` : numpy.ndarray
             empirical covariances
 
-        `precisions_`: numpy.ndarray
+        `precisions_` : numpy.ndarray
             precision matrices
 
         Returns
         -------
-        self: object
+        self : GroupSparseCovariance instance
             the object itself. Useful for chaining operations.
         """
 
@@ -879,7 +866,7 @@ class GroupSparseCovarianceCV(object):
             n_refinements = 1
         else:
             n_refinements = self.n_refinements
-            rho_1, _ = rho_max(emp_covs, n_samples)
+            rho_1, _ = compute_rho_max(emp_covs, n_samples)
             rho_0 = 1e-2 * rho_1
             rhos = np.logspace(np.log10(rho_0), np.log10(rho_1),
                                n_rhos)[::-1]
