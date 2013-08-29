@@ -127,7 +127,7 @@
 
 .. sidebar:: Download
 
-   * `Source code (github) <https://github.com/nilearn/tutorial>`_
+   * `Source code (github) <https://github.com/nilearn/nilearn>`_
 
 
 .. topic:: Nachine learning for NeuroImaging
