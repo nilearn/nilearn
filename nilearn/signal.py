@@ -12,6 +12,7 @@ import distutils.version
 import numpy as np
 from scipy import signal, stats, linalg
 from sklearn.utils.fixes import qr_economic
+from sklearn.utils import gen_even_slices
 
 np_version = distutils.version.LooseVersion(np.version.short_version).version
 
@@ -52,7 +53,7 @@ def _standardize(signals, detrend=False, normalize=True):
     return signals
 
 
-def _mean_of_squares(signals):
+def _mean_of_squares(signals, n_batches=20):
     """Compute mean of squares for each signal.
     This function is equivalent to
 
@@ -61,30 +62,33 @@ def _mean_of_squares(signals):
         var = var.mean(axis=0)
 
     but uses a lot less memory.
+
+    Parameters
+    ==========
+    signals : numpy.ndarray, shape (n_samples, n_features)
+        signal whose mean of squares must be computed.
+
+    n_batches : int, optional
+        number of batches to use in the computation. Tweaking this value
+        can lead to variation of memory usage and computation time. The higher
+        the value, the lower the memory consumption.
+
     """
-    var = np.empty(signals.shape[1])
-    # TODO: set n_chunks to 1 when signals.shape[1] is small enough
-    # n_chunks = 20 is very conservative: reduces a lot memory consumption for
-    # large arrays, not affecting too much computation time for small ones.
-    # Adjusting this value can lead to significant speed improvements.
-    n_chunks = 20
-    chunk_size = max(signals.shape[1] // n_chunks, 1)
-    # Note: the last chunk may be incomplete
-    n_chunks = (signals.shape[1] - 1) // chunk_size + 1
-    assert n_chunks * chunk_size >= signals.shape[1]
+    # No batching for small arrays
+    if signals.shape[1] < 500:
+        n_batches = 1
 
     # Fastest for C order
-    for chunk in xrange(n_chunks):
-        sind = chunk * chunk_size
-        eind = (chunk + 1) * chunk_size
-        tvar = np.copy(signals[:, sind:eind])
+    var = np.empty(signals.shape[1])
+    for batch in gen_even_slices(signals.shape[1], n_batches):
+        tvar = np.copy(signals[:, batch])
         tvar **= 2
-        var[sind:eind] = tvar.mean(axis=0)
+        var[batch] = tvar.mean(axis=0)
 
     return var
 
 
-def _detrend(signals, inplace=False, type="linear"):
+def _detrend(signals, inplace=False, type="linear", n_batches=10):
     """Detrend columns of input array.
 
     Signals are supposed to be columns of `signals`.
@@ -93,17 +97,22 @@ def _detrend(signals, inplace=False, type="linear"):
 
     Parameters
     ==========
-    signals: numpy.ndarray
+    signals : numpy.ndarray
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
 
-    inplace: bool
+    inplace : bool, optional
         Tells if the computation must be made inplace or not (default
         False).
 
-    type: str
+    type : str, optional
         Detrending type ("linear" or "constant").
         See also scipy.signal.detrend.
+
+    n_batches : int, optional
+        number of batches to use in the computation. Tweaking this value
+        can lead to variation of memory usage and computation time. The higher
+        the value, the lower the memory consumption.
 
     Returns
     =======
@@ -122,26 +131,14 @@ def _detrend(signals, inplace=False, type="linear"):
         regressor /= np.sqrt((regressor ** 2).sum())
         regressor = regressor[:, np.newaxis]
 
-        # Remove slope by chunking. This slows down things a little
-        # but greatly reduces memory usage.
+        # No batching for small arrays
+        if signals.shape[1] < 500:
+            n_batches = 1
 
-        # Compute chunk_size based on n_chunks and update n_chunks.
-        # In that case, the initial value of n_chunks is a minimum
-        # number of chunks
-
-        # TODO: set n_chunks to 1 when signals.shape[1] is small enough
         # This is fastest for C order.
-        n_chunks = 10
-        chunk_size = max(signals.shape[1] // n_chunks, 1)
-        # Note: the last chunk may be incomplete
-        n_chunks = (signals.shape[1] - 1) // chunk_size + 1
-        assert n_chunks * chunk_size >= signals.shape[1]
-        for chunk in xrange(n_chunks):
-            sind = chunk * chunk_size
-            eind = (chunk + 1) * chunk_size
-            signals[:, sind:eind] -= np.dot(regressor[:, 0],
-                                            signals[:, sind:eind]
-                                            ) * regressor
+        for batch in gen_even_slices(signals.shape[1], n_batches):
+            signals[:, batch] -= np.dot(regressor[:, 0], signals[:, batch]
+                                        ) * regressor
     return signals
 
 

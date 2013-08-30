@@ -16,7 +16,7 @@ from ..signal import clean
 import scipy.signal
 
 
-def generate_signals(feature_number=17, n_confounds=5, length=41,
+def generate_signals(n_features=17, n_confounds=5, length=41,
                      same_variance=True, order="C"):
     """Generate test signals.
 
@@ -31,8 +31,8 @@ def generate_signals(feature_number=17, n_confounds=5, length=41,
     confounds[...] = scipy.signal.detrend(confounds, axis=0)
 
     # Compute noise based on confounds, with random factors
-    factors = rand_gen.randn(n_confounds, feature_number)
-    noises_shape = (length, feature_number)
+    factors = rand_gen.randn(n_confounds, n_features)
+    noises_shape = (length, n_features)
     noises = np.ndarray(noises_shape, order=order)
     noises[...] = np.dot(confounds, factors)
     noises[...] = scipy.signal.detrend(noises, axis=0)
@@ -50,18 +50,18 @@ def generate_signals(feature_number=17, n_confounds=5, length=41,
     return signals, noises, confounds
 
 
-def generate_trends(feature_number=17, length=41):
+def generate_trends(n_features=17, length=41):
     """Generate linearly-varying signals, with zero mean.
 
     Returns
     =======
     trends (numpy.ndarray)
-        shape: (length, feature_number)
+        shape: (length, n_features)
     """
     rand_gen = np.random.RandomState(0)
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
-    trends = np.repeat(np.atleast_2d(trends).T, feature_number, axis=1)
-    factors = rand_gen.randn(feature_number)
+    trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
+    factors = rand_gen.randn(n_features)
     return trends * factors
 
 
@@ -131,10 +131,10 @@ def test_detrend():
     """Test custom detrend implementation."""
     point_number = 703
     features = 17
-    signals, _, _ = generate_signals(feature_number=features,
+    signals, _, _ = generate_signals(n_features=features,
                                      length=point_number,
                                      same_variance=True)
-    trends = generate_trends(feature_number=features, length=point_number)
+    trends = generate_trends(n_features=features, length=point_number)
     x = signals + trends + 1
     original = x.copy()
 
@@ -165,10 +165,10 @@ def test_detrend():
 
 def test_mean_of_squares():
     """Test _mean_of_squares."""
-    point_number = 103
-    features = 171
-    signals, _, _ = generate_signals(feature_number=features,
-                                     length=point_number,
+    n_samples = 11
+    n_features = 501  # Higher than 500 required
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples,
                                      same_variance=True)
     # Reference computation
     var1 = np.copy(signals)
@@ -182,22 +182,22 @@ def test_mean_of_squares():
 
 # This test is inspired from scipy docstring of detrend function
 def test_clean_detrending():
-    point_number = 1000
-    feature_number = 1
-    signals, _, _ = generate_signals(feature_number=feature_number,
-                                     length=point_number)
-    trends = generate_trends(feature_number=feature_number,
-                             length=point_number)
+    n_samples = 21
+    n_features = 501
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+    trends = generate_trends(n_features=n_features,
+                             length=n_samples)
     x = signals + trends
 
     # This should remove trends
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
-                                  low_pass=None, high_pass=None)
+                                 low_pass=None, high_pass=None)
     np.testing.assert_almost_equal(x_detrended, signals, decimal=13)
 
     # This should does nothing
     x_undetrended = nisignal.clean(x, standardize=False, detrend=False,
-                                    low_pass=None, high_pass=None)
+                                   low_pass=None, high_pass=None)
     assert_false(abs(x_undetrended - signals).max() < 0.06)
 
 
@@ -214,7 +214,7 @@ def test_clean_frequencies():
 
 
 def test_clean_confounds():
-    signals, noises, confounds = generate_signals(feature_number=41,
+    signals, noises, confounds = generate_signals(n_features=41,
                                                   n_confounds=5, length=45)
     # No signal: output must be zero.
     eps = np.finfo(np.float).eps
@@ -261,7 +261,7 @@ def test_clean_confounds():
     # no meaning).
     current_dir = os.path.split(__file__)[0]
 
-    signals, _, confounds = generate_signals(feature_number=41,
+    signals, _, confounds = generate_signals(n_features=41,
                                                   n_confounds=3, length=20)
     filename1 = os.path.join(current_dir, "test_files", "spm_confounds.txt")
     filename2 = os.path.join(current_dir, "test_files",
@@ -295,12 +295,12 @@ def test_clean_confounds():
 def test_high_variance_confounds():
     # C and F order might take different paths in the function. Check that the
     # result is identical.
-    feature_number = 1001
+    n_features = 1001
     length = 20
     n_confounds = 5
-    seriesC, _, _ = generate_signals(feature_number=feature_number,
+    seriesC, _, _ = generate_signals(n_features=n_features,
                                      length=length, order="C")
-    seriesF, _, _ = generate_signals(feature_number=feature_number,
+    seriesF, _, _ = generate_signals(n_features=n_features,
                                      length=length, order="F")
 
     np.testing.assert_almost_equal(seriesC, seriesF, decimal=13)
@@ -335,7 +335,7 @@ def test_high_variance_confounds():
 
     # Adding a trend and detrending should give same results as with no trend.
     seriesG = seriesC
-    trends = generate_trends(feature_number=feature_number, length=length)
+    trends = generate_trends(n_features=n_features, length=length)
     seriesGt = seriesG + trends
 
     outG = nisignal.high_variance_confounds(seriesG, detrend=False,
