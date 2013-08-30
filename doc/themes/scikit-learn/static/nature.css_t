@@ -4,19 +4,37 @@
  */
 
 body {
-    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
-    font-size: 14px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 0.9em;
     letter-spacing: -0.01em;
     line-height: 150%;
     text-align: center;
     /*background-color: #AFC1C4; */
     background-color: #4eacc5;
-    color: black;
     padding: 0;
     border: 1px solid #aaa;
     margin: 0px 115px 0px 115px;
     min-width: 53em;
+    color: #3E4349;
 }
+
+div.content-wrapper {
+    background-color: #ffffff;
+    color: #3E4349;
+    max-width: 1024px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 15px;
+    -moz-border-radius: 15px;
+}
+
+div.content {
+    margin-left: 210px;
+    padding-bottom: 10px;
+}
+
+
 
 div.topic {
     background-color: #eee;
@@ -36,13 +54,29 @@ a:hover {
     text-decoration: underline;
 }
 
+ul.horizontal, ul.horizontal li {
+    display: inline;
+    list-style: none;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+
 pre {
     font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
-    font-size: 0.95em;
     letter-spacing: 0.015em;
-    padding: 0.5em;
-    border: 1px solid #ccc;
-    background-color: #f8f8f8;
+    padding: 10px;
+    background-color: White;
+    color: #222;
+    line-height: 1.2em;
+    border: 1px solid #C6C9CB;
+    font-size: 1.1em;
+    margin: 1.5em 0 1.5em 0;
+    -webkit-box-shadow: 1px 1px 1px #d8d8d8;
+    -moz-box-shadow: 1px 1px 1px #d8d8d8;
+}
+
+div.highlight-python pre {
+    overflow-y: hidden;
 }
 
 td.linenos pre {
@@ -61,6 +95,20 @@ div.viewcode-block:target {
     border-top: 1px solid #ac9;
     border-bottom: 1px solid #ac9;
 }
+
+/* ------- Fix maximum size of thumbnails in example gallery -------------- */
+div#examples.section .figure img {
+    max-width: 160px;
+    max-height: 160px;
+    display: block;
+    margin: auto;
+}
+
+/* ------- Zoom plots to make them fit in layout -------------------------- */
+div.body img {
+    max-width:805px;
+}
+
 
 
 table.highlighttable {
@@ -233,10 +281,36 @@ div.body {
     padding: 0.5em 20px 20px 20px;
 }
 
+a.headerlink {
+    color: #c60f0f;
+    font-size: 0.8em;
+    padding: 0 4px 0 4px;
+    text-decoration: none;
+}
+
+a.headerlink:hover {
+    background-color: #c60f0f;
+    color: white;
+}
+
+div.body p, div.body dd, div.body li {
+    line-height: 1.5em;
+}
+
 
 div.bodywrapper {
     margin: 0 246px 0 0;
     border-right: 1px solid #ccc;
+}
+
+div.bodywrapper h1 {
+    margin: 0 -10px 0 -10px;
+    text-align: center;
+    background-color: #cde8ef;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 190%;
+    border-radius: 0 15px 0 15px;
+    -moz-border-radius: 0 15px 0 15px;
 }
 
 div.body a {
@@ -579,6 +653,8 @@ ul.search li a {
     font-weight: bold;
 }
 
+
+
 ul.search li div.context {
     color: #888;
     margin: 2px 0 0 30px;
@@ -612,7 +688,7 @@ div#machine-learning-for-neuro-imaging h1 {
 
 div.tags {
     font-weight: bold;
-    font-size: 110%;
+    font-size: 95%;
     padding: 5px;
     margin: 17px 7px 21px 7px;
     background-color: #FFC588;
@@ -652,6 +728,11 @@ div.body img.align-center {
 }
 
 /* ------- alternating colors in table rows -------------------------- */
+table.docutils {
+    border: 0;
+    border-collapse: collapse;
+}
+
 table.docutils tr:nth-child(even) {
     background-color: #F3F3FF;
 }

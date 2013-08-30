@@ -155,6 +155,7 @@ def generate_example_rst(app):
         width: auto;
         height: 200px;
         width: 180px;
+        margin-bottom: 5em;
     }
 
     .figure img {
