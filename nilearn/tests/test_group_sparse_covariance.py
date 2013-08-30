@@ -17,21 +17,21 @@ def generate_group_sparse_gaussian_graphs(
 
     Parameters
     ==========
-    n_subjects : int
+    n_subjects : int, optional
         number of subjects
 
-    n_features : int
+    n_features : int, optional
         number of signals per subject to generate
 
-    density : float
+    density : float, optional
         density of edges in graph topology
 
-    min_n_samples, max_n_samples : int
+    min_n_samples, max_n_samples : int, optional
         Each subject have a different number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples.
 
-    random_state : int of numpy.random.RandomState instance
+    random_state : int or numpy.random.RandomState instance, optional
         random number generator, or seed.
 
     Returns
@@ -108,10 +108,10 @@ def test_group_sparse_covariance():
 
     # These executions must hit the tolerance limit
     emp_covs, omega = group_sparse_covariance(signals, alpha, max_iter=20,
-                                              tol=1e-3, verbose=10, debug=True)
+                                              tol=1e-2, debug=True, verbose=10)
     emp_covs, omega2 = group_sparse_covariance(signals, alpha, max_iter=20,
-                                               tol=1e-3, verbose=0,
-                                               debug=True)
+                                               tol=1e-2, debug=True, verbose=0)
+
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
     class Probe(object):
@@ -124,16 +124,17 @@ def test_group_sparse_covariance():
                 _, objective = group_sparse_scores(omega, n_samples, emp_covs,
                                                    alpha)
                 self.objective.append(objective)
+
     # Use a probe to test for number of iterations and decreasing objective.
     probe = Probe()
     emp_covs, omega = group_sparse_covariance(
         signals, alpha, max_iter=7, tol=None, verbose=0, probe_function=probe)
     objective = probe.objective
-    ## # check number of iterations
+    # check number of iterations
     assert_equal(len(objective), 7)
 
-    ## np.testing.assert_array_less is a strict comparison.
-    ## Zeros can occur in np.diff(objective).
+    # np.testing.assert_array_less is a strict comparison.
+    # Zeros can occur in np.diff(objective).
     assert_true(np.all(np.diff(objective) <= 0))
     assert_equal(omega.shape, (10, 10, 5))
 
@@ -144,11 +145,12 @@ def test_group_sparse_covariance():
                   [np.ones((2, 2)), np.ones((2, 3))], alpha)
 
     # Check consistency between classes
-    gsc1 = GroupSparseCovarianceCV(alphas=4, tol=1e-1, max_iter=40, verbose=0,
-                                   assume_centered=False, n_jobs=3)
+    gsc1 = GroupSparseCovarianceCV(alphas=4, tol=1e-1, max_iter=20, verbose=0,
+                                   assume_centered=False, n_jobs=3,
+                                   early_stopping=True)
     gsc1.fit(signals)
 
-    gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_, tol=1e-1, max_iter=40,
+    gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_, tol=1e-1, max_iter=20,
                                  verbose=0, assume_centered=False)
     gsc2.fit(signals)
 

@@ -344,13 +344,15 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     tolerance_reached = False
     max_norm = None
 
-    # Start optimization loop. Variables are named following (mostly) the
-    # Honorio-Samaras paper notations.
     omega_old = np.empty(omega.shape, dtype=omega.dtype)
     if probe_function is not None:
         # iteration number -1 means called before iteration loop.
         probe_function(emp_covs, n_samples, alpha, max_iter, tol,
                        -1, omega, None)
+    probe_interrupted = False
+
+    # Start optimization loop. Variables are named following (mostly) the
+    # Honorio-Samaras paper notations.
 
     # Used in the innermost loop. Computed here to save some computation.
     alpha2 = alpha ** 2
@@ -489,6 +491,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
         if probe_function is not None:
             if probe_function(emp_covs, n_samples, alpha, max_iter, tol,
                               n, omega, omega_old) is True:
+                probe_interrupted = True
                 print("probe_function interrupted loop")
                 break
 
@@ -504,7 +507,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             tolerance_reached = True
             break
 
-    if tol is not None and not tolerance_reached:
+    if tol is not None and not tolerance_reached and not probe_interrupted:
         warnings.warn("Maximum number of iterations reached without getting "
                       "to the requested tolerance level.")
 
@@ -621,20 +624,20 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
         signals. Sample number can vary from subject to subject, but all
         subjects must have the same number of features (i.e. of columns).
 
-    assume_centered: bool, optional
+    assume_centered : bool, optional
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
 
-    dtype: numpy dtype
+    dtype : numpy dtype
         dtype of output array. Default: numpy.float64
 
     Returns
     -------
-    emp_covs: numpy.ndarray
+    emp_covs : numpy.ndarray
         empirical covariances.
-        shape: (feature number, feature number, subject number)
+        shape : (feature number, feature number, subject number)
 
-    n_samples: numpy.ndarray
+    n_samples : numpy.ndarray
         number of samples for each subject. shape: (subject number,)
     """
     if not hasattr(subjects, "__iter__"):
@@ -729,7 +732,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         Passed to group_sparse_covariance(). See the corresponding docstring
         for details.
 
-    probe_function: callable
+    probe_function : callable
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -746,11 +749,11 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
 
     Returns
     -------
-    precisions_list: list of numpy.ndarray
+    precisions_list : list of numpy.ndarray
         estimated precisions for each value of alpha provided. The length of
         this list is the same as that of parameter "alphas".
 
-    scores: list of float
+    scores : list of float
         for each estimated precision, score obtained on the test set. Output
         only if test_subjs is not None.
     """
@@ -898,6 +901,11 @@ class GroupSparseCovarianceCV(BaseEstimator):
         cv_scores_ : numpy.ndarray with shape (n_alphas, n_folds)
             scores obtained on test set for each value of the penalization
             parameter explored.
+
+        Returns
+        =======
+        self: GroupSparseCovarianceCV
+            the object instance itself.
         """
         # Empirical covariances
         emp_covs, n_samples = \

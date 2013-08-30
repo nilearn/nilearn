@@ -20,7 +20,36 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
                      same_variance=True, order="C"):
     """Generate test signals.
 
-    Returned signals have no trends at all (to machine precision).
+    All returned signals have no trends at all (to machine precision).
+
+    Parameters
+    ==========
+    n_features, n_confounds : int, optional
+        respectively number of features to generate, and number of confounds
+        to use for generating noise signals.
+
+    length : int, optional
+        number of samples for every signal.
+
+    same_variance : bool, optional
+        if True, every column of "signals" have a unit variance. Otherwise,
+        a random amplitude is applied.
+
+    order : "C" or "F"
+        gives the contiguousness of the output arrays.
+
+    Returns
+    =======
+    signals : numpy.ndarray, shape (length, n_features)
+        unperturbed signals.
+
+    noises : numpy.ndarray, shape (length, n_features)
+        confound-based noises. Each column is a signal obtained by linear
+        combination of all confounds signals (below). The coefficients in
+        the linear combination are also random.
+
+    confounds : numpy.ndarray, shape (length, n_confounds)
+        random signals used as confounds.
     """
     rand_gen = np.random.RandomState(0)
 
@@ -53,10 +82,15 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
 def generate_trends(n_features=17, length=41):
     """Generate linearly-varying signals, with zero mean.
 
+    Parameters
+    ==========
+    n_features, length : int
+        respectively number of signals and number of samples to generate.
+
     Returns
     =======
-    trends (numpy.ndarray)
-        shape: (length, n_features)
+    trends : numpy.ndarray, shape (length, n_features)
+        output signals, one per column.
     """
     rand_gen = np.random.RandomState(0)
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
@@ -180,10 +214,10 @@ def test_mean_of_squares():
     np.testing.assert_almost_equal(var1, var2)
 
 
-# This test is inspired from scipy docstring of detrend function
+# This test is inspired from Scipy docstring of detrend function
 def test_clean_detrending():
     n_samples = 21
-    n_features = 501
+    n_features = 501  # Must be higher than 500
     signals, _, _ = generate_signals(n_features=n_features,
                                      length=n_samples)
     trends = generate_trends(n_features=n_features,
@@ -195,7 +229,7 @@ def test_clean_detrending():
                                  low_pass=None, high_pass=None)
     np.testing.assert_almost_equal(x_detrended, signals, decimal=13)
 
-    # This should does nothing
+    # This should do nothing
     x_undetrended = nisignal.clean(x, standardize=False, detrend=False,
                                    low_pass=None, high_pass=None)
     assert_false(abs(x_undetrended - signals).max() < 0.06)
@@ -330,8 +364,6 @@ def test_high_variance_confounds():
     out = nisignal.high_variance_confounds(seriesG, n_confounds=7,
                                             detrend=False)
     assert(out.shape == (length, 7))
-
-    # TODO: any other ideas?
 
     # Adding a trend and detrending should give same results as with no trend.
     seriesG = seriesC
