@@ -16,7 +16,7 @@ body {
     border: 1px solid #aaa;
 
     margin: 0px 115px 0px 115px;
-    min-width: 740px;
+    min-width: 53em;
 }
 
 a {
