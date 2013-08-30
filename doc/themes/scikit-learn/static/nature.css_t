@@ -660,3 +660,21 @@ span.example-links {
   padding-right: 15px;
   display: block;
 }
+
+div#logo-banner {
+    background-color: white;
+    padding: 10px 10px 15px 15px;
+    overflow: hidden;
+}
+
+div#logo-banner .logo {
+    background-color: white;
+    padding: 10px 10px 15px 15px;
+    float: left;
+}
+
+div#logo-banner .banner {
+    padding: 30px 10px 15px 30px;
+    font-size: 1.6em;
+    line-height: 1.7em;
+}
