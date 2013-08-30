@@ -1,98 +1,11 @@
 from nose.tools import assert_equal, assert_true, assert_raises
 
 import numpy as np
-import scipy.linalg
-from sklearn.utils import check_random_state
-
+from .._utils.testing import generate_group_sparse_gaussian_graphs
 from ..group_sparse_covariance import (group_sparse_covariance,
                                        group_sparse_scores,
                                        GroupSparseCovariance,
                                        GroupSparseCovarianceCV)
-
-
-def generate_group_sparse_gaussian_graphs(
-        n_subjects=5, n_features=30, min_n_samples=30, max_n_samples=50,
-        density=0.1, random_state=0):
-    """Generate signals drawn from a sparse Gaussian graphical model.
-
-    Parameters
-    ==========
-    n_subjects : int, optional
-        number of subjects
-
-    n_features : int, optional
-        number of signals per subject to generate
-
-    density : float, optional
-        density of edges in graph topology
-
-    min_n_samples, max_n_samples : int, optional
-        Each subject have a different number of samples, between these two
-        numbers. All signals for a given subject have the same number of
-        samples.
-
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
-
-    Returns
-    =======
-    subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
-        subjects[n] is the signals for subject n. They are provided as a numpy
-        len(subjects) == n_subjects. n_samples varies for array to array.
-
-    precisions : list of numpy.ndarray
-        precision matrices.
-
-    topology : numpy.ndarray
-        binary array giving the graph topology used for generating covariances
-        and signals.
-    """
-
-    random_state = check_random_state(random_state)
-    # Generate topology (upper triangular binary matrix, with zeros on the
-    # diagonal)
-    topology = np.empty((n_features, n_features))
-    topology[:, :] = np.triu((
-        random_state.randint(0, high=int(1. / density),
-                         size=n_features * n_features)
-        ).reshape(n_features, n_features) == 0, k=1)
-
-    # Generate edges weights on topology
-    precisions = []
-    mask = topology > 0
-    for _ in range(n_subjects):
-
-        # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
-        prec = topology.copy()
-        prec[mask] = random_state.uniform(low=0.1, high=.9, size=(mask.sum()))
-        prec += -np.eye(prec.shape[0])
-        prec = np.dot(prec.T, prec)
-
-        np.testing.assert_almost_equal(prec, prec.T)
-        eigenvalues = np.linalg.eigvalsh(prec)
-        if eigenvalues.min() < 0:
-            raise ValueError
-        precisions.append(prec)
-
-    # Returns the topology matrix of precision matrices.
-    topology += np.eye(*topology.shape)
-    topology = np.dot(topology.T, topology)
-    topology = topology > 0
-    assert(np.all(topology == topology.T))
-    print("Sparsity: {0:f}".format(
-        1. * topology.sum() / (topology.shape[0] ** 2)))
-
-    # Generate temporal signals
-    signals = []
-    mean = np.zeros(topology.shape[0])
-    n_samples = random_state.randint(min_n_samples, high=max_n_samples,
-                                 size=len(precisions))
-
-    for n, prec in zip(n_samples, precisions):
-        signals.append(random_state.multivariate_normal(
-            mean, -scipy.linalg.inv(prec), (n,)))
-
-    return signals, precisions, topology
 
 
 def test_group_sparse_covariance():
