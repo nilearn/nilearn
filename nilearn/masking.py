@@ -402,7 +402,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     niimgs_img = _utils.check_niimgs(niimgs)
     affine = niimgs_img.get_affine()[:3, :3]
 
-    if not np.all(mask_affine == niimgs_img.get_affine()):
+    if not np.allclose(mask_affine, niimgs_img.get_affine()):
         raise ValueError('Mask affine: \n%s\n is different from img affine:'
                          '\n%s' % (str(mask_affine),
                                    str(niimgs_img.get_affine())))
