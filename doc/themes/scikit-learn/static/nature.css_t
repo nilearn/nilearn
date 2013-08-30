@@ -14,18 +14,26 @@ body {
     color: black;
     padding: 0;
     border: 1px solid #aaa;
-
     margin: 0px 115px 0px 115px;
     min-width: 53em;
+}
+
+div.topic {
+    background-color: #eee;
+    border: 1px solid #CCC;
+    margin: 10px 0px;
+    padding: 7px 7px 0px;
 }
 
 a {
     color: #355F7C;
     text-decoration: none;
+    word-wrap: break-word;
 }
 
 a:hover {
     color: #2491CF;
+    text-decoration: underline;
 }
 
 pre {
@@ -43,6 +51,17 @@ td.linenos pre {
     background-color: transparent;
     color: #aaa;
 }
+
+.viewcode-back {
+    font-family: Arial, sans-serif;
+}
+
+div.viewcode-block:target {
+    background-color: #f4debf;
+    border-top: 1px solid #ac9;
+    border-bottom: 1px solid #ac9;
+}
+
 
 table.highlighttable {
     margin-left: 0.5em;
@@ -63,11 +82,15 @@ hr {
     margin: 2em;
 }
 
+
 tt {
-    background-color: #f2f2f2;
-    border-bottom: 1px solid #ddd;
-    color: #333;
+    background-color: #ecf0f3;
+    color: #222;
+    /* padding: 1px 2px; */
+    font-size: 1.1em;
+    font-family: monospace;
 }
+
 
 tt.descname {
     background-color: transparent;
@@ -210,13 +233,13 @@ div.body {
     padding: 0.5em 20px 20px 20px;
 }
 
+
 div.bodywrapper {
     margin: 0 246px 0 0;
     border-right: 1px solid #ccc;
 }
 
 div.body a {
-    text-decoration: underline;
     line-height: 1.5em;
 }
 
@@ -244,6 +267,7 @@ div.body h6 {
     color: #212224;
 }
 
+
 div.body h1,
 div.body h2,
 div.body h3 {
@@ -266,6 +290,12 @@ div.body h3 {
     border-radius: 10px;
 
 }
+
+div.body h4 { font-size: 110%; background-color: #D8DEE3; }
+div.body h5 { font-size: 100%; background-color: #D8DEE3; }
+div.body h6 { font-size: 100%; background-color: #D8DEE3; }
+
+
 
 div.sphinxsidebar {
     margin: 0;
