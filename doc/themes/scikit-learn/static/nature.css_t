@@ -666,7 +666,7 @@ ul.keywordmatches li.goodmatch a {
 }
 
 div.green {
-    margin-top: 100px;
+    margin-top: 2em;
     color: #468847;
     background-color: #dff0d8;
     border: 1px solid #d6e9c6;

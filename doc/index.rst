@@ -94,14 +94,14 @@ Machine Learning for Neuro-Imaging
    <http://scikit-learn.org>`__.
 
 
+.. warning::
+
+   NiLearn is still an unreleased package in early development stages.
+
 .. sidebar:: Download
    :class: green
 
    * `Source code (github) <https://github.com/nilearn/nilearn>`_
-
-.. warning::
-
-   NiLearn is still an unreleased package in early development stages.
 
 ..
  FIXME: I need the link below to make sure the banner gets copied to the
