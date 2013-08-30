@@ -99,7 +99,7 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
     # Compute A(k)
     A = np.empty(omega.shape, dtype=omega.dtype, order="F")
     for k in range(n_subjects):
-        # TODO: can be computed more efficiently using Winv (see Friedman 2008)
+        # TODO: can be computed more efficiently using W_inv (see Friedman 2008)
         omega_inv = scipy.linalg.inv(omega[..., k])
         if debug:
             assert is_spd(omega_inv)
@@ -326,7 +326,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
                           omega.shape[2]),
                    dtype=emp_covs.dtype, order="F")
-    Winv = np.ndarray(shape=W.shape, dtype=emp_covs.dtype, order="F")
+    W_inv = np.ndarray(shape=W.shape, dtype=emp_covs.dtype, order="F")
 
     # Auxilliary arrays.
     v = np.ndarray((omega.shape[0] - 1,), dtype=omega.dtype)
@@ -364,31 +364,31 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             if p == 0:
                 # Initial state: remove first col/row
                 W = omega[1:, 1:, :].copy()   # stack of W(k)
-                Winv = np.ndarray(shape=W.shape, dtype=np.float)
+                W_inv = np.ndarray(shape=W.shape, dtype=np.float)
                 for k in xrange(W.shape[2]):
                     # stack of W^-1(k)
-                    Winv[..., k] = scipy.linalg.inv(W[..., k])
+                    W_inv[..., k] = scipy.linalg.inv(W[..., k])
                     if debug:
                         np.testing.assert_almost_equal(
-                            np.dot(Winv[..., k], W[..., k]),
-                            np.eye(Winv[..., k].shape[0]), decimal=12)
+                            np.dot(W_inv[..., k], W[..., k]),
+                            np.eye(W_inv[..., k].shape[0]), decimal=12)
                         _assert_submatrix(omega[..., k], W[..., k], p)
             else:
-                # Update W and Winv
+                # Update W and W_inv
                 if debug:
                     omega_orig = omega.copy()
 
                 for k in range(n_subjects):
                     _update_submatrix(omega[..., k],
-                                      W[..., k], Winv[..., k], p, h, v)
+                                      W[..., k], W_inv[..., k], p, h, v)
 
                     if debug:
                         _assert_submatrix(omega[..., k], W[..., k], p)
                         np.testing.assert_almost_equal(
-                            np.dot(Winv[..., k], W[..., k]),
-                            np.eye(Winv[..., k].shape[0]), decimal=12)
+                            np.dot(W_inv[..., k], W[..., k]),
+                            np.eye(W_inv[..., k].shape[0]), decimal=12)
                         assert(is_spd(W[..., k]))
-                        assert(is_spd(Winv[..., k], decimal=14))
+                        assert(is_spd(W_inv[..., k], decimal=14))
                 if debug:
                     np.testing.assert_almost_equal(omega_orig, omega)
 
@@ -405,12 +405,12 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 
                 # T(k) -> n_samples[k]
                 # v(k) -> emp_covs[p, p, k]
-                # h_22(k) -> Winv[m, m, k]
-                # h_12(k) -> Winv[:m, m, k],  Winv[m+1:, m, k]
+                # h_22(k) -> W_inv[m, m, k]
+                # h_12(k) -> W_inv[:m, m, k],  W_inv[m+1:, m, k]
                 # y_1(k) -> y[k, :m], y[k, m+1:]
                 # u_2(k) -> u[k, m]
-                h_12[:, :m] = Winv[:m, m, :].T
-                h_12[:, m:] = Winv[m + 1:, m, :].T
+                h_12[:, :m] = W_inv[:m, m, :].T
+                h_12[:, m:] = W_inv[m + 1:, m, :].T
                 y_1[:, :m] = y[:, :m]
                 y_1[:, m:] = y[:, m + 1:]
 
@@ -425,7 +425,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                 else:
                     # q(k) -> T(k) * v(k) * h_22(k)
                     # \lambda -> gamma   (lambda is a Python keyword)
-                    q[:] = n_samples * emp_covs[p, p, :] * Winv[m, m, :]
+                    q[:] = n_samples * emp_covs[p, p, :] * W_inv[m, m, :]
                     if debug:
                         assert(np.all(q > 0))
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
@@ -473,7 +473,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 
             for k in xrange(n_subjects):
                 omega[p, p, k] = 1. / emp_covs[p, p, k] + np.dot(
-                    np.dot(y[k, :], Winv[..., k]), y[k, :])
+                    np.dot(y[k, :], W_inv[..., k]), y[k, :])
 
                 if debug:
                     assert(is_spd(omega[..., k]))
