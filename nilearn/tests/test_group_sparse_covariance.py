@@ -1,17 +1,18 @@
-import numpy as np
-import scipy.linalg
-
 from nose.tools import assert_equal, assert_true, assert_raises
 
+import numpy as np
+import scipy.linalg
+from sklearn.utils import check_random_state
+
 from ..group_sparse_covariance import (group_sparse_covariance,
-                                       group_sparse_score,
+                                       group_sparse_scores,
                                        GroupSparseCovariance,
                                        GroupSparseCovarianceCV)
 
 
 def generate_group_sparse_gaussian_graphs(
         n_subjects=5, n_features=30, min_n_samples=30, max_n_samples=50,
-        density=0.1, random_state=np.random.RandomState(0)):
+        density=0.1, random_state=0):
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
@@ -25,17 +26,19 @@ def generate_group_sparse_gaussian_graphs(
     density : float
         density of edges in graph topology
 
-    min_n_samples, max_n_samples: int
+    min_n_samples, max_n_samples : int
         Each subject have a different number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples.
 
+    random_state : int of numpy.random.RandomState instance
+        random number generator, or seed.
+
     Returns
     =======
-    subjects : list of numpy.ndarray
+    subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
         subjects[n] is the signals for subject n. They are provided as a numpy
-        array with shape (sample number, n_features).
-        len(subjects) == n_subjects
+        len(subjects) == n_subjects. n_samples varies for array to array.
 
     precisions : list of numpy.ndarray
         precision matrices.
@@ -45,6 +48,7 @@ def generate_group_sparse_gaussian_graphs(
         and signals.
     """
 
+    random_state = check_random_state(random_state)
     # Generate topology (upper triangular binary matrix, with zeros on the
     # diagonal)
     topology = np.empty((n_features, n_features))
@@ -117,8 +121,8 @@ def test_group_sparse_covariance():
         def __call__(self, emp_covs, n_samples, alpha, max_iter, tol, n, omega,
                      omega_diff):
             if n >= 0:
-                _, objective = group_sparse_score(omega, n_samples, emp_covs,
-                                                  alpha)
+                _, objective = group_sparse_scores(omega, n_samples, emp_covs,
+                                                   alpha)
                 self.objective.append(objective)
     # Use a probe to test for number of iterations and decreasing objective.
     probe = Probe()

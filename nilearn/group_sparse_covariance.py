@@ -26,7 +26,14 @@ from ._utils.testing import is_spd
 
 
 def compute_alpha_max(emp_covs, n_samples):
-    """
+    """Compute the critical value of the regularization parameter.
+
+    Above this value, the precisions matrices computed by
+    group_sparse_covariance are diagonal (complete sparsity)
+
+    This function also returns the value below which the precision
+    matrices are fully dense (i.e. minimal number of zero coefficients).
+
     Parameters
     ----------
     emp_covs : array-like, shape (n_features, n_features, n_subjects)
@@ -79,7 +86,7 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
     # Honorio & Samaras paper,
     # to match scikit-learn's usage of *minimizing* the primal problem.
 
-    n_var, _, n_subjects = emp_covs.shape
+    n_features, _, n_subjects = emp_covs.shape
 
     ## Primal cost
     log_likelihood = 0
@@ -99,7 +106,8 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
     # Compute A(k)
     A = np.empty(omega.shape, dtype=omega.dtype, order="F")
     for k in range(n_subjects):
-        # TODO: can be computed more efficiently using W_inv (see Friedman 2008)
+        # TODO: can be computed more efficiently using W_inv
+        # (see Friedman 2008)
         omega_inv = scipy.linalg.inv(omega[..., k])
         if debug:
             assert is_spd(omega_inv)
@@ -118,7 +126,7 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
     dual_cost = 0
     for k in xrange(n_subjects):
         B = emp_covs[..., k] + A[..., k] / n_samples[k]
-        dual_cost += n_samples[k] * (n_var + fast_logdet(B))
+        dual_cost += n_samples[k] * (n_features + fast_logdet(B))
 
     # The previous computation can lead to a non-feasible point, because
     # one of the Bs are not positive definite.
@@ -137,7 +145,7 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
             # add gamma on the diagonal
             B = ((1. - gamma) * emp_covs[..., k]
                  + gamma * np.eye(emp_covs.shape[0]))
-            dual_cost += n_samples[k] * (n_var + fast_logdet(B))
+            dual_cost += n_samples[k] * (n_features + fast_logdet(B))
 
     gap = cost - dual_cost
 
@@ -190,7 +198,7 @@ def _assert_submatrix(full, sub, n):
     """Check that "sub" is the matrix obtained by removing the p-th col and row
     in "full". Used only for debugging.
     """
-    true_sub = np.ndarray(shape=sub.shape, dtype=sub.dtype)
+    true_sub = np.empty_like(sub)
     true_sub[:n, :n] = full[:n, :n]
     true_sub[n:, n:] = full[n + 1:, n + 1:]
     true_sub[:n, n:] = full[:n, n + 1:]
@@ -276,8 +284,8 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3,
     Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
     """
 
-    emp_covs, n_samples, _, _ = empirical_covariances(
-        subjects, assume_centered=assume_centered, debug=debug)
+    emp_covs, n_samples = empirical_covariances(
+        subjects, assume_centered=assume_centered)
 
     precisions = _group_sparse_covariance(
         emp_covs, n_samples, alpha, max_iter=max_iter, tol=tol,
@@ -301,7 +309,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                          "positive number.\n"
                          "You provided: {0}".format(str(alpha)))
     n_subjects = emp_covs.shape[-1]
-    n_var = emp_covs[0].shape[0]
+    n_features = emp_covs[0].shape[0]
     n_samples = np.asarray(n_samples)
     n_samples /= n_samples.sum()  # essential for numerical stability
 
@@ -316,10 +324,10 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
         omega = precisions_init.copy()
 
     # Preallocate arrays
-    y = np.ndarray(shape=(n_subjects, n_var - 1), dtype=emp_covs.dtype)
-    u = np.ndarray(shape=(n_subjects, n_var - 1), dtype=emp_covs.dtype)
-    y_1 = np.ndarray(shape=(n_subjects, n_var - 2), dtype=emp_covs.dtype)
-    h_12 = np.ndarray(shape=(n_subjects, n_var - 2), dtype=emp_covs.dtype)
+    y = np.ndarray(shape=(n_subjects, n_features - 1), dtype=emp_covs.dtype)
+    u = np.ndarray(shape=(n_subjects, n_features - 1), dtype=emp_covs.dtype)
+    y_1 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=emp_covs.dtype)
+    h_12 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=emp_covs.dtype)
     q = np.ndarray(shape=(n_subjects,), dtype=emp_covs.dtype)
     aq = np.ndarray(shape=(n_subjects,), dtype=emp_covs.dtype)  # temp. array
     c = np.ndarray(shape=(n_subjects,), dtype=emp_covs.dtype)
@@ -359,7 +367,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                             suffix=suffix))
 
         omega_old[...] = omega
-        for p in xrange(n_var):
+        for p in xrange(n_features):
 
             if p == 0:
                 # Initial state: remove first col/row
@@ -400,7 +408,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             u[:, :p] = emp_covs[:p, p, :].T
             u[:, p:] = emp_covs[p + 1:, p, :].T
 
-            for m in xrange(n_var - 1):
+            for m in xrange(n_features - 1):
                 # Coordinate descent on y
 
                 # T(k) -> n_samples[k]
@@ -588,8 +596,8 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         """
 
         self.log("Computing covariance matrices")
-        self.covariances_, n_samples, _, _ = empirical_covariances(
-                subjects, assume_centered=self.assume_centered, debug=False)
+        self.covariances_, n_samples = empirical_covariances(
+                subjects, assume_centered=self.assume_centered)
 
         self.log("Computing precision matrices")
         ret = self._cache(
@@ -603,8 +611,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
         return self
 
 
-def empirical_covariances(subjects, assume_centered=False, dtype=np.float64,
-                          debug=False):
+def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
     """Compute empirical covariances for several signals.
 
     Parameters
@@ -620,10 +627,6 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64,
 
     dtype: numpy dtype
         dtype of output array. Default: numpy.float64
-
-    debug: bool, optional
-        if True, perform checks during computation. It can help find
-        numerical problems, but increases computation time a lot.
 
     Returns
     -------
@@ -644,26 +647,24 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64,
                          "features.\nYou provided: {0}".format(str(n_subjects))
                          )
     n_subjects = len(subjects)
-    n_var = subjects[0].shape[1]
+    n_features = subjects[0].shape[1]
 
     # Enable to change dtype here because depending on user conversion from
     # single precision to double will be required or not.
-    emp_covs = np.empty((n_var, n_var, n_subjects), dtype=dtype, order="F")
+    emp_covs = np.empty((n_features, n_features, n_subjects),
+                        dtype=dtype, order="F")
     for k, s in enumerate(subjects):
-        M = empirical_covariance(
-            s, assume_centered=assume_centered)
+        M = empirical_covariance(s, assume_centered=assume_centered)
 
         emp_covs[..., k] = M + M.T
-        if debug:
-            assert(is_spd(emp_covs[..., k]))
     emp_covs /= 2
 
     n_samples = np.asarray([s.shape[0] for s in subjects], dtype=np.float64)
 
-    return emp_covs, n_samples, n_subjects, n_var
+    return emp_covs, n_samples
 
 
-def group_sparse_score(precisions, n_samples, emp_covs, alpha):
+def group_sparse_scores(precisions, n_samples, emp_covs, alpha):
     """Compute scores used by group_sparse_covariance.
 
     The log-likelihood of a given list of empirical covariances /
@@ -671,8 +672,8 @@ def group_sparse_score(precisions, n_samples, emp_covs, alpha):
 
     Parameters
     ----------
-    precisions : numpy.ndarray
-        estimated precisions. shape (n_var, n_var, n_subjects)
+    precisions : numpy.ndarray, shape (n_features, n_features, n_subjects)
+        estimated precisions.
 
     n_samples : array-like, shape: (n_subjects,)
         number of samples used in estimating each subject in "precisions".
@@ -680,22 +681,23 @@ def group_sparse_score(precisions, n_samples, emp_covs, alpha):
 
     Returns
     -------
-    ll: float
+    log_lik : float
         log-likelihood of precisions on the given covariances. This is the
         opposite of the loss function, without the regularization term.
 
-    score: float
-        value of loss function. This value is minimized by group_sparse_score.
+    objective : float
+        value of objective function. This is the value minimized by
+        group_sparse_covariance().
     """
-    ll = 0
+    log_lik = 0
     for k in range(precisions.shape[2]):
-        ll += n_samples[k] * sklearn.covariance.log_likelihood(
+        log_lik += n_samples[k] * sklearn.covariance.log_likelihood(
             emp_covs[..., k], precisions[..., k])
 
     l2 = np.sqrt((precisions ** 2).sum(axis=-1))
     l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
 
-    return (ll, alpha * l12 - ll)
+    return (log_lik, alpha * l12 - log_lik)
 
 
 def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
@@ -752,10 +754,10 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         for each estimated precision, score obtained on the test set. Output
         only if test_subjs is not None.
     """
-    train_covs, train_n_samples, _, _ = empirical_covariances(
-        train_subjs, assume_centered=assume_centered, debug=debug)
-    test_covs, _, _, _ = empirical_covariances(
-        test_subjs, assume_centered=assume_centered, debug=debug)
+    train_covs, train_n_samples = empirical_covariances(
+        train_subjs, assume_centered=assume_centered)
+    test_covs, _ = empirical_covariances(
+        test_subjs, assume_centered=assume_centered)
 
     scores = []
     precisions_list = []
@@ -767,8 +769,8 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
 
         # Compute log-likelihood
         if test_subjs is not None:
-            scores.append(group_sparse_score(precisions, train_n_samples,
-                                             test_covs, 0)[0])
+            scores.append(group_sparse_scores(precisions, train_n_samples,
+                                              test_covs, 0)[0])
         precisions_list.append(precisions)
         precisions_init = precisions
 
@@ -786,13 +788,11 @@ class EarlyStopProbe(object):
     argument of group_sparse_covariance().
     """
     def __init__(self, test_subjs):
-        # TODO: this could be cached to avoid recomputing the same thing over
-        # and over (if significant in execution time).
-        self.test_emp_covs = empirical_covariances(test_subjs)[0]
+        self.test_emp_covs, _ = empirical_covariances(test_subjs)
 
     def __call__(self, emp_covs, n_samples, alpha, max_iter, tol,
                  iter_n, omega, prev_omega):
-        score = group_sparse_score(
+        score = group_sparse_scores(
             omega, n_samples, self.test_emp_covs, alpha)[0]
         if iter_n > -1 and self.last_score > score:
             print("test score is decreasing. Stopping at iteration %d"
@@ -801,7 +801,7 @@ class EarlyStopProbe(object):
         self.last_score = score
 
 
-class GroupSparseCovarianceCV(object):
+class GroupSparseCovarianceCV(BaseEstimator):
     # See also GraphLasso in scikit-learn.
     """
     Parameters
@@ -892,18 +892,18 @@ class GroupSparseCovarianceCV(object):
         alpha_ : float
             selected value for penalization parameter.
 
-        cv_alphas : list of float
+        cv_alphas_ : list of float
             all values explored for the penalization parameter.
 
-        cv_scores : numpy.ndarray with shape (n_alphas, n_folds)
+        cv_scores_ : numpy.ndarray with shape (n_alphas, n_folds)
             scores obtained on test set for each value of the penalization
             parameter explored.
         """
         # Empirical covariances
-        emp_covs, n_samples, n_subjects, _ = \
+        emp_covs, n_samples = \
                   empirical_covariances(subjects,
-                                        assume_centered=self.assume_centered,
-                                        debug=self.debug)
+                                        assume_centered=self.assume_centered)
+        n_subjects = emp_covs.shape[2]
 
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
@@ -1014,12 +1014,12 @@ class GroupSparseCovarianceCV(object):
                       "% 2i out of %i" % (i + 1, n_refinements))
 
         path = list(zip(*path))
-        cv_scores = list(path[1])
+        cv_scores_ = list(path[1])
         alphas = list(path[0])
 
-        self.cv_scores = np.array(cv_scores)
+        self.cv_scores_ = np.array(cv_scores_)
         self.alpha_ = alphas[best_index]
-        self.cv_alphas = alphas
+        self.cv_alphas_ = alphas
 
         # Finally fit the model with the selected alpha
         self.covariances_ = emp_covs
