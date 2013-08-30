@@ -789,3 +789,7 @@ div#logo-banner .banner {
     font-size: 1.6em;
     line-height: 1.7em;
 }
+
+div.toctree-wrapper.compound {
+    margin-top: 2em;
+}
