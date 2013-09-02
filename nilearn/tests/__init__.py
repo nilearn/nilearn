@@ -10,4 +10,5 @@ from . import test_ndimage
 from . import test_region
 from . import test_group_sparse_covariance
 from . import test_niimg_conversions
+from . import test_logger
 from . import test_signal
