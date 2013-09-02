@@ -21,7 +21,8 @@ from sklearn.base import BaseEstimator
 
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
-from ._utils import CacheMixin, LogMixin
+from ._utils import CacheMixin
+from ._utils import logger
 from ._utils.testing import is_spd
 
 
@@ -149,9 +150,8 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
 
     gap = cost - dual_cost
 
-    if verbose > 0:
-        print("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
-            gap=gap, cost=cost))
+    logger.log("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
+        gap=gap, cost=cost), verbose=verbose)
 
     return (cost, gap)
 
@@ -362,15 +362,14 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     alpha2 = alpha ** 2
 
     for n in xrange(max_iter):
-        if verbose >= 1:
-            if max_norm is not None:
-                suffix = (" variation (max norm): {max_norm:.3e} ".format(
-                    max_norm=max_norm))
-            else:
-                suffix = ""
-            print("* iteration {iter_n:d} ({percentage:.0f} %){suffix} ..."
-                  "".format(iter_n=n, percentage=100. * n / max_iter,
-                            suffix=suffix))
+        if max_norm is not None:
+            suffix = (" variation (max norm): {max_norm:.3e} ".format(
+                max_norm=max_norm))
+        else:
+            suffix = ""
+        logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix} ..."
+                   "".format(iter_n=n, percentage=100. * n / max_iter,
+                             suffix=suffix), verbose=verbose)
 
         omega_old[...] = omega
         for p in xrange(n_features):
@@ -497,7 +496,8 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             if probe_function(emp_covs, n_samples, alpha, max_iter, tol,
                               n, omega, omega_old) is True:
                 probe_interrupted = True
-                print("probe_function interrupted loop")
+                logger.log("probe_function interrupted loop", verbose=verbose,
+                           msg_level=2)
                 break
 
         # Compute max of variation
@@ -506,9 +506,8 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
         max_norm = omega_old.max()
 
         if tol is not None and max_norm < tol:
-            if verbose >= 1:
-                print("tolerance reached at iteration number {0:d}: {1:.3e}"
-                      "".format(n + 1, max_norm))
+            logger.log("tolerance reached at iteration number {0:d}: {1:.3e}"
+                       "".format(n + 1, max_norm), verbose=verbose)
             tolerance_reached = True
             break
 
@@ -519,7 +518,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     return omega
 
 
-class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
+class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """Covariance and precision matrix estimator.
 
     The algorithm used is based on what is described in:
@@ -603,11 +602,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin, LogMixin):
             the object itself. Useful for chaining operations.
         """
 
-        self.log("Computing covariance matrices")
+        logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
                 subjects, assume_centered=self.assume_centered)
 
-        self.log("Computing precision matrices")
+        logger.log("Computing precision matrices", verbose=self.verbose)
         ret = self._cache(
             _group_sparse_covariance, memory_level=1)(
                 self.covariances_, n_samples, self.alpha,
@@ -795,16 +794,17 @@ class EarlyStopProbe(object):
     An instance of this class is supposed to be passed in the probe_function
     argument of group_sparse_covariance().
     """
-    def __init__(self, test_subjs):
+    def __init__(self, test_subjs, verbose=1):
         self.test_emp_covs, _ = empirical_covariances(test_subjs)
+        self.verbose = verbose
 
     def __call__(self, emp_covs, n_samples, alpha, max_iter, tol,
                  iter_n, omega, prev_omega):
         score = group_sparse_scores(
             omega, n_samples, self.test_emp_covs, alpha)[0]
         if iter_n > -1 and self.last_score > score:
-            print("test score is decreasing. Stopping at iteration %d"
-                  % iter_n)
+            logger.log("test score is decreasing. Stopping at iteration %d"
+                       % iter_n, verbose=self.verbose)
             return True
         self.last_score = score
 
@@ -950,7 +950,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
                                             for subject, (train, test)
                                             in zip(subjects, train_test)]))
             if self.early_stopping:
-                probes = [EarlyStopProbe(test_subjs)
+                probes = [EarlyStopProbe(test_subjs, verbose=self.verbose - 1)
                           for _, test_subjs in train_test_subjs]
             else:
                 probes = itertools.repeat(None)
@@ -1022,9 +1022,10 @@ class GroupSparseCovarianceCV(BaseEstimator):
             alphas = np.logspace(np.log10(alpha_1), np.log10(alpha_0),
                                  len(alphas) + 2)
             alphas = alphas[1:-1]
-            if self.verbose and n_refinements > 1:
-                print("[GroupSparseCovarianceCV] Done refinement "
-                      "% 2i out of %i" % (i + 1, n_refinements))
+            if n_refinements > 1:
+                logger.log("[GroupSparseCovarianceCV] Done refinement "
+                           "% 2i out of %i" % (i + 1, n_refinements),
+                           verbose=self.verbose)
 
         path = list(zip(*path))
         cv_scores_ = list(path[1])
