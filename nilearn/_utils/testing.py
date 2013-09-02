@@ -369,9 +369,13 @@ def is_spd(M, decimal=15):
         True if matrix is symmetric positive definite, False otherwise.
     """
     if not np.allclose(M, M.T, atol=0.1 ** decimal):
+        print("matrix not symmetric to %d decimals" % decimal)
         return False
     eigvalsh = np.linalg.eigvalsh(M)
-    return eigvalsh.min() > 0
+    ispd = eigvalsh.min() > 0
+    if not ispd:
+        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
+    return ispd
 
 
 # Superseded by generate_group_sparse_gaussian_graphs()
@@ -450,10 +454,9 @@ def generate_sparse_precision_matrices(n_tasks=5, n_var=30, density=0.1,
     return precisions, topology
 
 
-# Superseded by generate_group_sparse_gaussian_graphs()
 def generate_signals_from_precisions(precisions,
-                                     min_samples=50, max_samples=100,
-                                     rand_gen=np.random.RandomState(0)):
+                                     min_n_samples=50, max_n_samples=100,
+                                     random_state=0):
     """Generate timeseries according to some given precision matrices.
 
     Signals all have zero mean.
@@ -463,7 +466,7 @@ def generate_signals_from_precisions(precisions,
     precisions: list of numpy.ndarray
         list of precision matrices. Every matrix must be square (with the same
         size) and positive definite. The output of
-        generate_sparse_precision_matrices() can be used here.
+        generate_group_sparse_gaussian_graphs() can be used here.
 
     min_samples, max_samples: int
         the number of samples drawn for each timeseries is taken at random
@@ -475,13 +478,15 @@ def generate_signals_from_precisions(precisions,
         output signals. signals[n] corresponds to precisions[n], and has shape
         (sample number, precisions[n].shape[0]).
     """
+    random_state = check_random_state(random_state)
 
     signals = []
-    n_samples = rand_gen.randint(min_samples, high=max_samples,
-                                 size=len(precisions))
+    n_samples = random_state.randint(min_n_samples, high=max_n_samples,
+                                     size=len(precisions))
 
+    mean = np.zeros(precisions[0].shape[0])
     for n, prec in zip(n_samples, precisions):
-        signals.append(rand_gen.multivariate_normal(np.zeros(prec.shape[0]),
+        signals.append(random_state.multivariate_normal(mean,
                                                     np.linalg.inv(prec),
                                                     (n,)))
     return signals
@@ -541,14 +546,18 @@ def generate_group_sparse_gaussian_graphs(
 
         # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
         prec = topology.copy()
-        prec[mask] = random_state.uniform(low=0.1, high=.9, size=(mask.sum()))
-        prec += -np.eye(prec.shape[0])
+        prec[mask] = random_state.uniform(low=.1, high=.8, size=(mask.sum()))
+        prec += np.eye(prec.shape[0])
         prec = np.dot(prec.T, prec)
 
+        # Assert precision matrix is spd
         np.testing.assert_almost_equal(prec, prec.T)
         eigenvalues = np.linalg.eigvalsh(prec)
         if eigenvalues.min() < 0:
-            raise ValueError
+            raise ValueError("Failed generating a positive definite precision "
+                             "matrix. Decreasing n_features can help solving "
+                             "this problem.")
+        print(np.linalg.cond(prec))
         precisions.append(prec)
 
     # Returns the topology matrix of precision matrices.
@@ -560,13 +569,8 @@ def generate_group_sparse_gaussian_graphs(
         1. * topology.sum() / (topology.shape[0] ** 2)))
 
     # Generate temporal signals
-    signals = []
-    mean = np.zeros(topology.shape[0])
-    n_samples = random_state.randint(min_n_samples, high=max_n_samples,
-                                 size=len(precisions))
-
-    for n, prec in zip(n_samples, precisions):
-        signals.append(random_state.multivariate_normal(
-            mean, -scipy.linalg.inv(prec), (n,)))
-
+    signals = generate_signals_from_precisions(precisions,
+                                               min_n_samples=min_n_samples,
+                                               max_n_samples=max_n_samples,
+                                               random_state=random_state)
     return signals, precisions, topology

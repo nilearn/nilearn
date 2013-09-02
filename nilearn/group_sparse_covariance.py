@@ -175,7 +175,7 @@ def _update_submatrix(full, sub, sub_inv, p, h, v):
     h[:n + 1] = full[n, :n + 1]
     h[n + 1:] = full[n, n + 2:]
 
-    # change row
+    # change row: first usage of SWM identity
     coln = sub_inv[:, n:n + 1]  # 2d array, useful for sub_inv below
     V = h - sub[n, :]
     coln = coln / (1. + np.dot(V, coln))
@@ -184,14 +184,18 @@ def _update_submatrix(full, sub, sub_inv, p, h, v):
     sub_inv -= np.dot(coln, np.dot(V, sub_inv)[np.newaxis, :])
     sub[n, :] = h
 
-    # change column
+    # change column: second usage of SWM identity
     rown = sub_inv[n:n + 1, :]  # 2d array, useful for sub_inv below
     U = v - sub[:, n]
     rown = rown / (1. + np.dot(rown, U))
-    # The following line is equivalent to
+    # The following line is equivalent to (but faster)
     # sub_inv -= np.outer(np.dot(sub_inv, U), rown)
     sub_inv -= np.dot(np.dot(sub_inv, U)[:, np.newaxis], rown)
     sub[:, n] = v   # equivalent to sub[n, :] += U
+
+    # Make sub_inv symmetric (overcome some numerical limitations)
+    sub_inv += sub_inv.T.copy()
+    sub_inv /= 2.
 
 
 def _assert_submatrix(full, sub, n):
@@ -381,8 +385,9 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                     if debug:
                         np.testing.assert_almost_equal(
                             np.dot(W_inv[..., k], W[..., k]),
-                            np.eye(W_inv[..., k].shape[0]), decimal=12)
+                            np.eye(W_inv[..., k].shape[0]), decimal=10)
                         _assert_submatrix(omega[..., k], W[..., k], p)
+                        assert(is_spd(W_inv[..., k]))
             else:
                 # Update W and W_inv
                 if debug:
@@ -394,12 +399,12 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 
                     if debug:
                         _assert_submatrix(omega[..., k], W[..., k], p)
-                        np.testing.assert_almost_equal(
-                            np.dot(W_inv[..., k], W[..., k]),
-                            np.eye(W_inv[..., k].shape[0]), decimal=12)
-                        assert(is_spd(W[..., k]))
                         assert(is_spd(W_inv[..., k], decimal=14))
+                        np.testing.assert_almost_equal(
+                            np.dot(W[..., k], W_inv[..., k]),
+                            np.eye(W_inv[..., k].shape[0]), decimal=10)
                 if debug:
+                    # Check that omega has not been modified.
                     np.testing.assert_almost_equal(omega_orig, omega)
 
             # In the following lines, implicit loop on k (subjects)
@@ -461,12 +466,12 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                             msg = "derivative was zero."
                             warnings.warn(msg, RuntimeWarning)
                             break
-                        p1 = - (alpha2 - (cc / aq2).sum()) / fder
-                        gamma = p1 + gamma
-                        if abs(p1) < 1.5e-8:
+                        fval = - (alpha2 - (cc / aq2).sum()) / fder
+                        gamma = fval + gamma
+                        if abs(fval) < 1.5e-8:
                             break
 
-                    if abs(p1) > 0.1:
+                    if abs(fval) > 0.1:
                         warnings.warn("Newton-Raphson step did not converge.\n"
                                       "This may indicate a badly conditioned "
                                       "system.")
