@@ -48,10 +48,10 @@ def compute_alpha_max(emp_covs, n_samples):
     -------
     alpha_max : float
         minimal value for the regularization parameter that gives a
-        full-sparse matrix.
+        fully sparse matrix.
 
     alpha_min : float
-        maximal value for the regularization parameter that gives a fully
+        minimal value for the regularization parameter that gives a fully
         dense matrix.
     """
     A = np.copy(emp_covs)
@@ -583,7 +583,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
+        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
@@ -656,7 +656,7 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
     n_subjects = len(subjects)
     n_features = subjects[0].shape[1]
 
-    # Enable to change dtype here because depending on user conversion from
+    # Enable to change dtype here because depending on user, conversion from
     # single precision to double will be required or not.
     emp_covs = np.empty((n_features, n_features, n_subjects),
                         dtype=dtype, order="F")
@@ -809,7 +809,7 @@ class EarlyStopProbe(object):
         self.last_score = score
 
 
-class GroupSparseCovarianceCV(BaseEstimator):
+class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     # See also GraphLasso in scikit-learn.
     """
     Parameters
@@ -837,13 +837,6 @@ class GroupSparseCovarianceCV(BaseEstimator):
     verbose : integer
         verbosity level. 0 means nothing is printed to the user.
 
-    memory : joblib.Memory instance.
-        joblib object used for caching.
-
-    memory_level : integer
-        caching aggressiveness. The larger, the more things are cached. Zero
-        means no caching.
-
     n_jobs : integer
         maximum number of cpu cores to use. The number of cores actually used
         at the same time cannot exceed the number of folds in folding strategy
@@ -861,7 +854,6 @@ class GroupSparseCovarianceCV(BaseEstimator):
     """
     def __init__(self, alphas=4, n_refinements=4, cv=None,
                  tol=1e-3, max_iter=50, assume_centered=False, verbose=1,
-                 memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, debug=False, early_stopping=True):
         self.alphas = alphas
         self.n_refinements = n_refinements
@@ -871,8 +863,6 @@ class GroupSparseCovarianceCV(BaseEstimator):
         self.assume_centered = assume_centered
 
         self.verbose = verbose
-        self.memory = memory
-        self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.debug = debug
         self.early_stopping = early_stopping
@@ -882,7 +872,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
+        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)
