@@ -215,6 +215,8 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.target_affine
         else:
             self.affine_ = self.mask_img_.get_affine()
+        # Load data in memory
+        self.mask_img_.get_data()
         return self
 
     def transform(self, niimgs, confounds=None, check_affine=True):
@@ -245,11 +247,15 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             # there will be no side effect
             copy = not isinstance(niimg, basestring)
 
-            if (self.target_affine is None and affine is not None
-                    and np.all(niimg.get_affine() != affine)):
-                warnings.warn('Affine is different across subjects.'
-                              ' Realignement on first subject affine forced')
-                self.target_affine = affine
+            if check_affine:
+                niimg = _utils.check_niimgs(niimg)
+
+                if (self.target_affine is None and affine is not None
+                        and np.all(niimg.get_affine() != affine)):
+                    warnings.warn('Affine is different across subjects.'
+                                  ' Realignement on first subject affine forced')
+                    self.target_affine = affine
+            
             if confounds is not None:
                 data.append(self.transform_single_niimgs(
                     niimg, confounds=confounds[index],

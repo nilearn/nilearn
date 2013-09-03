@@ -15,9 +15,9 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 # XXX: must get the code to run for more than 1 subject
 
 ### Preprocess ################################################################
-from nilearn import io
+from nilearn.input_data import NiftiMasker
 
-masker = io.NiftiMasker(smoothing_fwhm=8, memory='nilearn_cache', memory_level=1,
+masker = NiftiMasker(smoothing_fwhm=8, memory='nilearn_cache', memory_level=1,
                         standardize=False)
 data_masked = masker.fit_transform(dataset.func[0])
 
