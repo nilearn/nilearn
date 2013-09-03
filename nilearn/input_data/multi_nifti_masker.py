@@ -84,6 +84,11 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
+    memory_strategy: 'call' or 'call_ad_shelve', optional
+        Caching method. 'call' is the common transparent caching method.
+        'call_and_shelve' stores the result in a file and returns a proxy to
+        this file.
+
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
@@ -117,6 +122,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                  mask_connected=True, mask_opening=2,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
                  memory=Memory(cachedir=None), memory_level=0,
+                 memory_strategy='call',
                  n_jobs=1, verbose=0
                  ):
         # Mask is provided or computed
@@ -137,6 +143,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
 
         self.memory = memory
         self.memory_level = memory_level
+        self.memory_strategy = memory_strategy
         self.n_jobs = n_jobs
         self.verbose = verbose
 
@@ -212,7 +219,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         self.mask_img_.get_data()
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, check_affine=True):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -231,6 +238,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         """
         data = []
         affine = None
+        
         if not hasattr(niimgs, '__iter__')\
                     or isinstance(niimgs, basestring):
                 return self.transform_single_niimgs(niimgs)
@@ -238,12 +246,16 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             # If we have a string (filename), we won't need to copy, as
             # there will be no side effect
             copy = not isinstance(niimg, basestring)
-            niimg = _utils.check_niimgs(niimg)
 
-            if affine is not None and np.all(niimg.get_affine() != affine):
-                warnings.warn('Affine is different across subjects.'
-                              ' Realignement on first subject affine forced')
-                self.target_affine = affine
+            if check_affine:
+                niimg = _utils.check_niimgs(niimg)
+
+                if (self.target_affine is None and affine is not None
+                        and np.all(niimg.get_affine() != affine)):
+                    warnings.warn('Affine is different across subjects.'
+                                  ' Realignement on first subject affine forced')
+                    self.target_affine = affine
+            
             if confounds is not None:
                 data.append(self.transform_single_niimgs(
                     niimg, confounds=confounds[index],
@@ -251,6 +263,6 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             else:
                 data.append(self.transform_single_niimgs(niimg,
                                                          copy=copy))
-            if affine is None:
+            if check_affine and affine is None:
                 affine = self.affine_
         return data

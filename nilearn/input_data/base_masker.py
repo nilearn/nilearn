@@ -16,6 +16,7 @@ from .. import image
 from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
+from .._utils.shelving import unshelve
 from .._utils.class_inspect import enclosing_scope_name, get_params
 
 
@@ -28,6 +29,9 @@ def filter_and_mask(niimgs, mask_img_,
                     copy=True):
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
+
+    niimgs = unshelve(niimgs)
+
     if isinstance(niimgs, basestring):
         copy = False
 
@@ -104,7 +108,7 @@ def filter_and_mask(niimgs, mask_img_,
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
 
-    return data, niimgs.get_affine()
+    return data
 
 
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -118,17 +122,17 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              % self.__class__.__name__)
         from .nifti_masker import NiftiMasker
         params = get_params(NiftiMasker, self)
-        data, affine = \
-            self._cache(filter_and_mask, memory_level=1,
-                        ignore=['verbose', 'memory', 'copy'])(
-                            niimgs, self.mask_img_,
-                            params,
-                            ref_memory_level=self.memory_level,
-                            memory=self.memory,
-                            verbose=self.verbose,
-                            confounds=confounds,
-                            copy=copy
-                        )
+        data = self._cache(filter_and_mask, memory_level=1,
+                           memory_strategy=self.memory_strategy,
+                           ignore=['verbose', 'memory', 'copy'])(
+                              niimgs, self.mask_img_,
+                              params,
+                              ref_memory_level=self.memory_level,
+                              memory=self.memory,
+                              verbose=self.verbose,
+                              confounds=confounds,
+                              copy=copy
+        )
         return data
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
@@ -173,7 +177,5 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        mask_img = _utils.check_niimg(self.mask_img_)
-        data = X
-
-        return masking.unmask(data, mask_img)
+        return self._cache(masking.unmask, memory_level=1,
+            memory_strategy=self.memory_strategy)(X, self.mask_img_)
