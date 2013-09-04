@@ -12,9 +12,6 @@ This example reproduce the experiment presented in
 
 It reconstructs 10x10 binary images from functional MRI data. Random images
 are used as training set and structured images are used for reconstruction.
-
-Note: some warnings can pop due to the fact that some pixels in the
-reconstruction are always black.
 """
 
 ### Imports ###################################################################
@@ -127,8 +124,7 @@ clfs = []
 for i in range(y_train.shape[1]):
     print('Learning %d/%d' % (i, y_train.shape[1]))
     clf = Pipeline([('selection', SelectKBest(f_classif, 500)),
-                    ('clf', OMP(n_nonzero_coefs=4)
-                    )])
+                    ('clf', OMP(n_nonzero_coefs=10))])
     clfs.append(clf)
 
 clfs = [clf.fit(X_train, y_train[:, i]) for i, clf in enumerate(clfs)]
@@ -193,9 +189,6 @@ def _split_multi_scale(y, y_shape):
 
 ### Learn fusion params ######################################################
 
-# If fusion parameters must be learn, we learn them on the prediction of
-# X_train. 4 parameters are computed for each pixel of the image
-
 coefs = [clf.steps[1][1].coef_ for clf in clfs]
 coefs = np.asarray(coefs).T
 
@@ -206,13 +199,6 @@ yc, yc_tall, yc_large, yc_big = _split_multi_scale(coefs, y_shape)
 
 y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
     + .25 * y_pred_big)
-y_coef = (.25 * yc + .25 * yc_tall + .25 * yc_large + .25 * yc_big)
-
-y_coef = y_coef.T
-y_coef_ = []
-for clf, c in zip(clfs, y_coef):
-    y_coef_.append(clf.steps[0][1].inverse_transform(c))
-y_coef = np.vstack(y_coef_)
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
                             f1_score
@@ -222,26 +208,14 @@ all_white = np.ones_like(y_test)
 
 print "Scores"
 print "------"
-print "  - Percentage: %f (%f-%f)" % (
-        accuracy_score(y_test, y_pred > .5),
-        accuracy_score(y_test, all_black),
-        accuracy_score(y_test, all_white)
-)
-print "  - Precision: %f (%f-%f)" % (
-        precision_score(y_test, y_pred > .5, pos_label=None),
-        precision_score(y_test, all_black, pos_label=None),
-        precision_score(y_test, all_white, pos_label=None)
-)
-print "  - Recall: %f (%f-%f)" % (
-        recall_score(y_test, y_pred > .5, pos_label=None),
-        recall_score(y_test, all_black, pos_label=None),
-        recall_score(y_test, all_white, pos_label=None)
-)
-print "  - F1-score: %f (%f-%f)" % (
-        f1_score(y_test, y_pred > .5, pos_label=None),
-        f1_score(y_test, all_black, pos_label=None),
-        f1_score(y_test, all_white, pos_label=None)
-)
+print "  - Percentage: %f" % np.mean([
+        accuracy_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+print "  - Precision: %f" % np.mean([
+        precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+print "  - Recall: %f" % np.mean([
+        recall_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+print "  - F1-score: %f" % np.mean([
+        f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
 
 # Generate a video from the reconstitution
 
