@@ -41,6 +41,8 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('nilearn/input_data')
     config.add_subpackage('nilearn/decomposition')
     config.add_subpackage('nilearn/decoding')
+    config.add_subpackage('nilearn/external')
+    config.add_subpackage('nilearn/external/visvis')
     config.add_subpackage('nilearn/image')
     config.add_subpackage('nilearn/_utils')
     return config
