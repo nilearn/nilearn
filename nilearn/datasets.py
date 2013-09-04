@@ -1239,6 +1239,14 @@ def fetch_kamitani(data_dir=None, url=None, resume=True, verbose=0):
     See `additional information
     <http://www.cns.atr.jp/dni/en/downloads/
     fmri-data-set-for-visual-image-reconstruction/>`_
+
+    :Paper to cite:
+    `Visual image reconstruction from human brain activity
+    using a combination of multiscale local image decoders
+    <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
+    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
+    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
+    Neuron, 60(5), 915-929.
     """
 
     # Dataset files
