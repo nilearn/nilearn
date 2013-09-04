@@ -18,6 +18,41 @@ body {
     color: #3E4349;
 }
 
+@media (max-width: 360px) {
+    body {
+        margin: 0;
+	max-width: 100%;
+ 	max-height: 100%;
+	background: white;
+	min-width: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    body {
+        margin: 0;
+    }
+}
+
+form.gsc-search-box {
+    float: right;
+    max-width: 20%;
+}
+
+div.search_form {
+    margin: -1em -1em -0.9em 0;
+}
+
+table.gsc-branding {
+    display: none;
+}
+
+@media (max-width: 360px) {
+    div.search_form {
+        display: none;
+    }
+}
+
 div.content-wrapper {
     background-color: #ffffff;
     color: #3E4349;
@@ -77,6 +112,13 @@ pre {
 
 div.highlight-python pre {
     overflow-y: hidden;
+}
+
+@media (max-width: 360px) {
+    div.highlight-python pre {
+        font-size: 85%;
+	line-height: 1.5em;
+    }
 }
 
 td.linenos pre {
@@ -259,10 +301,27 @@ div.related ul li {
     height: 2em;
     float: left;
 }
+@media(max-width: 360px) {
+    div.related ul {
+        padding-bottom: 2em;
+    }
+}
 
 div.related ul li.right {
     float: right;
     margin-right: 5px;
+}
+
+@media (max-width: 360px) {
+    div.related ul li.right {
+        display: none;
+    }
+}
+
+@media (min-width: 360px) {
+    div.related ul li a#navbar-about {
+        display: none;
+    }
 }
 
 div.related ul li a {
@@ -301,6 +360,13 @@ div.body p, div.body dd, div.body li {
 div.bodywrapper {
     margin: 0 246px 0 0;
     border-right: 1px solid #ccc;
+}
+
+@media (max-width: 360px) {
+    div.bodywrapper {
+        margin: 0 0 0 0;
+	border-right: none;
+    }
 }
 
 div.bodywrapper h1 {
@@ -352,6 +418,12 @@ div.body h3 {
     word-wrap: break-word;
 }
 
+@media (max-width: 360px) {
+    div.body h1 {
+        font-size: 1.3em;
+    }
+}
+
 div.body h2,
 div.body h3 {
     text-align: left;
@@ -378,6 +450,12 @@ div.sphinxsidebar {
     float: right;
     text-align: left;
 /*    margin-left: -100%; */
+}
+
+@media (max-width: 360px) {
+    div.sphinxsidebar {
+        display: none !important;
+    }
 }
 
 div.sphinxsidebar h4, div.sphinxsidebar h3 {
@@ -669,7 +747,38 @@ div.green {
     margin-top: 2em;
     color: #468847;
     background-color: #dff0d8;
-    border: 1px solid #d6e9c6;
+    border: 0.3em solid rgba(79, 173, 117, 0.35);
+}
+
+div#download-container {
+    text-align: right;
+}
+
+@media (max-width: 360px) {
+    div#download-container {
+        text-align: center;
+    }
+}
+
+div#download-container .green {
+    text-align: left;
+    display: inline-block;
+    margin: 2em 0 1em 0;
+    color: #468847;
+    background-color: #dff0d8;
+    border: 0.3em solid rgba(79, 173, 117, 0.35);
+    min-width: 30%;
+}
+
+@media (max-width: 360px) {
+    div#download-container .green{
+        margin: 0.5em;
+    }
+}
+
+div#download-container .green p {
+    font-size: 1.5em;
+    margin-left: 0.5em;
 }
 
 
@@ -682,6 +791,28 @@ div.warning {
 div#machine-learning-for-neuro-imaging h1 {
     background: rgba(153, 153, 153, 0.02);
     padding: 0.7em 0 1.3em 1.7em;
+}
+
+@media (max-width: 360px) {
+    div#machine-learning-for-neuro-imaging h1 {
+        margin: 0;
+	font-size: 1.2em;
+	background: white;
+	text-align: center;
+    }
+}
+
+@media (max-width: 360px) {
+    div#machine-learning-for-neuro-imaging.section .admonition.warning {
+        text-align: center;
+	max-width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    blockquote {
+        margin: 0.1em;
+    }
 }
 
 /* ------- tag cloud on the front page -------------------- */
@@ -720,6 +851,13 @@ div.tags a:hover {
 
 li.toctree-li {
    padding: 0 0 1.0em 0;
+}
+
+@media (max-width: 360px) {
+    li.toctree-li {
+        font-size: 122%;
+	line-height: 2.5em;
+    }
 }
 
 /* ------- Zoom plots to make them fit in layout -------------------------- */
@@ -778,10 +916,36 @@ div#logo-banner {
     overflow: hidden;
 }
 
+
+@media (max-width: 360px) {
+    div#logo-banner {
+        max-width: 100%;
+    }
+}
+
 div#logo-banner .logo {
     background-color: white;
-    padding: 10px 10px 15px 15px;
+    padding: 10px 20px 15px 15px;
     float: left;
+    max-width: 14em;
+}
+
+@media (max-width: 360px) {
+    div#logo-banner .logo {
+        max-width: 26%;
+	padding: 0 0 0 0;
+    }
+}
+
+div#logo-banner .logo a img {
+        max-width: 100%;
+    }
+
+@media (max-width: 360px) {
+    div#logo-banner .logo a img {
+        max-width: 85%;
+	margin: 5px;
+    }
 }
 
 div#logo-banner .banner {
@@ -790,6 +954,54 @@ div#logo-banner .banner {
     line-height: 1.7em;
 }
 
+div#logo-banner .banner h1 {
+    text-align: left;
+    margin : -0.7em 0 0.3em 4.5em;
+}
+
+div#logo-banner .banner h2 {
+    text-align: left;
+    margin : -0.5em 0 0 6.5em;
+    font-size: 1.05em;
+    color: #11557C;
+}
+
+@media (max-width: 360px) {
+    div#logo-banner .banner {
+        font-size: 0.7em;
+	padding: 0 0 0 0;
+    }
+}
+
+
+@media (max-width: 360) {
+    div#logo-banner .banner h1 {
+         font-size: 190%;
+	 margin: -0.7em 0 0.3em 0;
+	 text-align: center;
+    }
+}
+
+@media (max-width: 360) {
+    div#logo-banner .banner h2 {
+         font-size: 118%;
+    }
+}
+
+@media (max-width: 360px) {
+    div#banner.banner {
+        display: none;
+    }
+}
+
+@media (max-width: 360px) {
+    ul.horizontal img {
+	width: 100% !important;
+	height: 100% !important;
+    }
+}
+
 div.toctree-wrapper.compound {
     margin-top: 2em;
 }
+

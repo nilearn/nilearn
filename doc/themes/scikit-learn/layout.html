@@ -11,11 +11,14 @@
 <li><a href="{{pathto('user_guide')}}">User Guide</a> |&nbsp;</li>
 <li><a href="{{pathto('auto_examples/index')}}">Examples</a> |&nbsp;</li>
 <li><a href="{{pathto('modules/classes')}}">Reference</a> |&nbsp;</li>
+<li><a href="{{pathto('AUTHORS')}}" id="navbar-about">About</a></li>
 {% endblock %}
 
 
 {% block extrahead %}
-  <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
 {% endblock %}
 
 {% block header %}
@@ -26,7 +29,22 @@
     </a>
   </div>
   <div class="banner">
-    <h1>NiLearn: Machine learning for NeuroImaging in Python</h1>
+    <h1>NiLearn:</h1>
+    <h2>Machine learning for Neuro-Imaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div id="cse" style="width: 100%;"></div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
+      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      var options = new google.search.DrawOptions();
+      options.setAutoComplete(true);
+      customSearchControl.draw('cse', options);
+      }, true);
+    </script>
   </div>
 </div>
 

@@ -93,15 +93,23 @@ Machine Learning for Neuro-Imaging
    `nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
    <http://scikit-learn.org>`__.
 
+.. raw:: html
 
-.. warning::
+    <div id="download-container">
 
-   NiLearn is still an unreleased package in early development stages.
 
 .. sidebar:: Download
    :class: green
 
    * `Source code (github) <https://github.com/nilearn/nilearn>`_
+
+.. raw:: html
+
+    </div>
+
+.. warning::
+
+   NiLearn is still an unreleased package in early development stages.
 
 ..
  FIXME: I need the link below to make sure the banner gets copied to the
