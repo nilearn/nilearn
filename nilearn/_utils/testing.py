@@ -18,6 +18,7 @@ import nibabel
 
 from .. import datasets
 from .. import masking
+from . import logger
 
 
 @contextlib.contextmanager
@@ -444,7 +445,7 @@ def generate_group_sparse_gaussian_graphs(
     =======
     subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
         subjects[n] is the signals for subject n. They are provided as a numpy
-        len(subjects) == n_subjects. n_samples varies for array to array.
+        len(subjects) = n_subjects. n_samples varies according to the subject.
 
     precisions : list of numpy.ndarray
         precision matrices.
@@ -481,7 +482,6 @@ def generate_group_sparse_gaussian_graphs(
             raise ValueError("Failed generating a positive definite precision "
                              "matrix. Decreasing n_features can help solving "
                              "this problem.")
-        print(np.linalg.cond(prec))
         precisions.append(prec)
 
     # Returns the topology matrix of precision matrices.
@@ -489,7 +489,7 @@ def generate_group_sparse_gaussian_graphs(
     topology = np.dot(topology.T, topology)
     topology = topology > 0
     assert(np.all(topology == topology.T))
-    print("Sparsity: {0:f}".format(
+    logger.log("Sparsity: {0:f}".format(
         1. * topology.sum() / (topology.shape[0] ** 2)))
 
     # Generate temporal signals

@@ -336,6 +336,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             break
 
     if precisions_init is None:
+        # Fortran order make omega[..., k] contiguous, which is often useful.
         omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype,
                            order="F")
         for k in range(n_subjects):
@@ -577,10 +578,10 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     Attributes
     ----------
     `covariances_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
-        maximum likelihood covariance estimations.
+        empirical covariance matrices.
 
     `precisions_` : numpy.ndarraye, shape (n_features, n_features, n_subjects)
-        precisions matrices estimated using Antonio & Samaras algorithm.
+        precisions matrices estimated using the group-sparse algorithm.
     """
 
     def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=1,
@@ -655,12 +656,11 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
 
     Returns
     -------
-    emp_covs : numpy.ndarray
+    emp_covs : numpy.ndarray, shape : (feature number, feature number, subject number)
         empirical covariances.
-        shape : (feature number, feature number, subject number)
 
-    n_samples : numpy.ndarray
-        number of samples for each subject. shape: (subject number,)
+    n_samples : numpy.ndarray, shape: (subject number,)
+        number of samples for each subject. dtype is np.float.
     """
     if not hasattr(subjects, "__iter__"):
         raise ValueError("'subjects' input argument must be an iterable. "
@@ -960,7 +960,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                                             for subject, (train, test)
                                             in zip(subjects, train_test)]))
             if self.early_stopping:
-                probes = [EarlyStopProbe(test_subjs, verbose=self.verbose - 1)
+                probes = [EarlyStopProbe(test_subjs, verbose=self.verbose)
                           for _, test_subjs in train_test_subjs]
             else:
                 probes = itertools.repeat(None)

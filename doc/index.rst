@@ -130,7 +130,7 @@
    * `Source code (github) <https://github.com/nilearn/nilearn>`_
 
 
-.. topic:: Nachine learning for NeuroImaging
+.. topic:: Machine learning for NeuroImaging
 
   NiLearn is a Python module to apply machine learning on NeuroImaging
   using `scikit-learn <http://scikit-learn.org>`__. It requires only
