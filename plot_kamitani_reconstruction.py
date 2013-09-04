@@ -2,21 +2,20 @@
 The Kamitani paper: reconstruction of visual stimuli
 ======================================================
 
+This example reproduce the experiment presented in
+    `Visual image reconstruction from human brain activity
+    using a combination of multiscale local image decoders
+    <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
+    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
+    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
+    Neuron, 60(5), 915-929.
+
+It reconstructs 10x10 binary images from functional MRI data. Random images
+are used as training set and structured images are used for reconstruction.
+
+Note: some warnings can pop due to the fact that some pixels in the
+reconstruction are always black.
 """
-
-### Init ######################################################################
-
-remove_rest_period = True
-multi_scale = False
-detrend = True
-standardize = False
-offset = 2
-threshold = 0.5
-
-learn_fusion_params = False  # Learn fusion params with LinearRegression
-
-generate_video = 'video.mp4'
-generate_gif = 'video.gif'
 
 ### Imports ###################################################################
 
@@ -31,20 +30,19 @@ y_random = dataset.label[12:]
 y_figure = dataset.label[:12]
 y_shape = (10, 10)
 
-### Preprocess data ###########################################################
+### Preprocess and mask #######################################################
 import numpy as np
 from nilearn.input_data import MultiNiftiMasker
 
 print "Preprocessing data"
 
 # Load and mask fMRI data
-masker = MultiNiftiMasker(mask=dataset.mask, detrend=detrend,
-                          standardize=standardize)
+masker = MultiNiftiMasker(mask=dataset.mask, detrend=True, standardize=False)
 masker.fit()
 X_train = masker.transform(X_random)
 X_test = masker.transform(X_figure)
 
-# Load target data
+# Load visual stimuli from csv files
 y_train = []
 for y in y_random:
     y_train.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
@@ -55,16 +53,10 @@ for y in y_figure:
     y_test.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
                              (-1,) + y_shape, order='F'))
 
-X_train = [x[offset:] for x in X_train]
-y_train = [y[:-offset] for y in y_train]
-X_test = [x[offset:] for x in X_test]
-y_test = [y[:-offset] for y in y_test]
-
-
-X_train = np.vstack(X_train)
-y_train = np.vstack(y_train).astype(np.float)
-X_test = np.vstack(X_test)
-y_test = np.vstack(y_test).astype(np.float)
+X_train = np.vstack([x[2:] for x in X_train])
+y_train = np.vstack([y[:-2] for y in y_train]).astype(float)
+X_test = np.vstack([x[2:] for x in X_test])
+y_test = np.vstack([y[:-2] for y in y_test]).astype(float)
 
 n_pixels = y_train.shape[1]
 n_features = X_train.shape[1]
@@ -77,50 +69,48 @@ def flatten(list_of_2d_array):
     return flattened
 
 
-# Compute scaled images
-if multi_scale:
-    y_rows, y_cols = y_shape
+# Build the design matrix for multiscale computation
+# Matrix is squared, y_rows == y_cols
+y_cols = y_shape[1]
 
-    # Height transform :
-    #
-    # 0.5 *
-    #
-    # 1 1 0 0 0 0 0 0 0 0
-    # 0 1 1 0 0 0 0 0 0 0
-    # 0 0 1 1 0 0 0 0 0 0
-    # 0 0 0 1 1 0 0 0 0 0
-    # 0 0 0 0 1 1 0 0 0 0
-    # 0 0 0 0 0 1 1 0 0 0
-    # 0 0 0 0 0 0 1 1 0 0
-    # 0 0 0 0 0 0 0 1 1 0
-    # 0 0 0 0 0 0 0 0 1 1
+# Original data
+design_matrix = np.eye(100)
 
-    height_tf = (np.eye(y_cols) + np.eye(y_cols, k=1))[:y_cols - 1] * .5
-    width_tf = (np.eye(y_cols) + np.eye(y_cols, k=-1))[:, :y_cols - 1] * .5
 
-    yt_tall = [np.dot(height_tf, m) for m in y_train]
-    yt_large = [np.dot(m, width_tf) for m in y_train]
-    yt_big = [np.dot(height_tf, np.dot(m, width_tf)) for m in y_train]
+# Example of matrix used for multiscale (sum pixels vertically)
+#
+# 0.5 *
+#
+# 1 1 0 0 0 0 0 0 0 0
+# 0 1 1 0 0 0 0 0 0 0
+# 0 0 1 1 0 0 0 0 0 0
+# 0 0 0 1 1 0 0 0 0 0
+# 0 0 0 0 1 1 0 0 0 0
+# 0 0 0 0 0 1 1 0 0 0
+# 0 0 0 0 0 0 1 1 0 0
+# 0 0 0 0 0 0 0 1 1 0
+# 0 0 0 0 0 0 0 0 1 1
 
-    # Add it to the training set
-    y_train = [np.concatenate((y.ravel(), t.ravel(), l.ravel(), b.ravel()),
-                              axis=1)
-               for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big)]
+height_tf = (np.eye(y_cols) + np.eye(y_cols, k=1))[:y_cols - 1] * .5
+width_tf = height_tf.T
 
-else:
-    # Simply flatten the array
-    y_train = flatten(y_train)
+yt_tall = [np.dot(height_tf, m) for m in y_train]
+yt_large = [np.dot(m, width_tf) for m in y_train]
+yt_big = [np.dot(height_tf, np.dot(m, width_tf)) for m in y_train]
+
+# Add it to the training set
+y_train = [np.concatenate(
+           (y.ravel(), t.ravel(), l.ravel(), b.ravel()), axis=1)
+           for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big)]
 
 y_test = np.asarray(flatten(y_test))
 y_train = np.asarray(y_train)
 
-
 # Remove rest period
-if remove_rest_period:
-    X_train = X_train[y_train[:, 0] != -1]
-    y_train = y_train[y_train[:, 0] != -1]
-    X_test = X_test[y_test[:, 0] != -1]
-    y_test = y_test[y_test[:, 0] != -1]
+X_train = X_train[y_train[:, 0] != -1]
+y_train = y_train[y_train[:, 0] != -1]
+X_test = X_test[y_test[:, 0] != -1]
+y_test = y_test[y_test[:, 0] != -1]
 
 
 ### Prediction function #######################################################
@@ -208,48 +198,15 @@ def _split_multi_scale(y, y_shape):
 
 coefs = [clf.steps[1][1].coef_ for clf in clfs]
 coefs = np.asarray(coefs).T
-if multi_scale:
-    y_pred, y_pred_tall, y_pred_large, y_pred_big = \
-            _split_multi_scale(y_pred, y_shape)
 
-    yc, yc_tall, yc_large, yc_big = _split_multi_scale(coefs, y_shape)
+y_pred, y_pred_tall, y_pred_large, y_pred_big = \
+        _split_multi_scale(y_pred, y_shape)
 
-    if learn_fusion_params:
+yc, yc_tall, yc_large, yc_big = _split_multi_scale(coefs, y_shape)
 
-        t_preds = []
-        for clf in clfs:
-            t_preds.append(clf.predict(X_train))
-        t_preds = np.asarray(t_preds).T
-        t_pred, t_pred_tall, t_pred_large, t_pred_big = \
-            _split_multi_scale(t_preds, y_shape)
-
-        yw, yh = y_shape
-        y_train_original = y_train[:yw * yh]
-
-        fusions = []
-        from sklearn.linear_model import LinearRegression
-        for i in range(yw * yh):
-            tX = np.column_stack((t_pred[:, i], t_pred_tall[:, i],
-                t_pred_large[:, i], t_pred_big[:, i]))
-            f = LinearRegression()
-            f.fit(tX, y_train[:, i])
-            fusions.append(f.coef_)
-
-        fusions = np.array(fusions)
-        fusions = (fusions.T / np.sum(fusions, axis=1)).T
-
-        y_pred = np.array([y_pred.T, y_pred_tall.T, y_pred_large.T,
-                y_pred_big.T])
-        y_pred = np.sum(y_pred.T * fusions, axis=2)
-        y_coef = np.array([yc.T, yc_tall.T, yc_large.T, yc_big.T])
-        y_coef = np.sum(y_coef.T * fusions, axis=2)
-
-    else:
-        y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
-            + .25 * y_pred_big)
-        y_coef = (.25 * yc + .25 * yc_tall + .25 * yc_large + .25 * yc_big)
-else:
-    y_coef = coefs
+y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
+    + .25 * y_pred_big)
+y_coef = (.25 * yc + .25 * yc_tall + .25 * yc_large + .25 * yc_big)
 
 y_coef = y_coef.T
 y_coef_ = []
@@ -266,88 +223,48 @@ all_white = np.ones_like(y_test)
 print "Scores"
 print "------"
 print "  - Percentage: %f (%f-%f)" % (
-        accuracy_score(y_test, y_pred > threshold),
+        accuracy_score(y_test, y_pred > .5),
         accuracy_score(y_test, all_black),
         accuracy_score(y_test, all_white)
 )
 print "  - Precision: %f (%f-%f)" % (
-        precision_score(y_test, y_pred > threshold, pos_label=None),
+        precision_score(y_test, y_pred > .5, pos_label=None),
         precision_score(y_test, all_black, pos_label=None),
         precision_score(y_test, all_white, pos_label=None)
 )
 print "  - Recall: %f (%f-%f)" % (
-        recall_score(y_test, y_pred > threshold, pos_label=None),
+        recall_score(y_test, y_pred > .5, pos_label=None),
         recall_score(y_test, all_black, pos_label=None),
         recall_score(y_test, all_white, pos_label=None)
 )
 print "  - F1-score: %f (%f-%f)" % (
-        f1_score(y_test, y_pred > threshold, pos_label=None),
+        f1_score(y_test, y_pred > .5, pos_label=None),
         f1_score(y_test, all_black, pos_label=None),
         f1_score(y_test, all_white, pos_label=None)
 )
 
-"""
-Show brains !
-"""
+# Generate a video from the reconstitution
 
-if generate_video:
-    from matplotlib import animation
-    fig = plt.figure()
-    sp1 = plt.subplot(131)
-    sp1.axis('off')
-    plt.title('Stimulus')
-    sp2 = plt.subplot(132)
-    sp2.axis('off')
-    plt.title('Reconstruction')
-    sp3 = plt.subplot(133)
-    sp3.axis('off')
-    plt.title('Thresholded')
-    ims = []
-    for i, t in enumerate(y_pred):
-        ims.append((
-            sp1.imshow(np.reshape(y_test[i], (10, 10)), cmap=plt.cm.gray,
-            interpolation='nearest'),
-            sp2.imshow(np.reshape(t, (10, 10)), cmap=plt.cm.gray,
-            interpolation='nearest'),
-            sp3.imshow(np.reshape(t > threshold, (10, 10)), cmap=plt.cm.gray,
-            interpolation='nearest')))
-
-    im_ani = animation.ArtistAnimation(fig, ims, interval=1000)
-    im_ani.save(generate_video)
-
-
-def fig2data(fig):
-    """ Convert a Matplotlib figure to a 3D numpy array with RGB channel
-    """
-    # draw the renderer
-    fig.canvas.draw()
-
-    # Get the RGB buffer from the figure
-    w, h = fig.canvas.get_width_height()
-    buf = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8)
-    buf.shape = (h, w, 3)
-    return buf
-
-
-if generate_gif:
-    ims = []
-    for i, t in enumerate(y_pred[:50]):
-        fig = plt.figure()
-        sp1 = plt.subplot(131)
-        sp1.axis('off')
-        plt.title('Stimulus')
-        sp2 = plt.subplot(132)
-        sp2.axis('off')
-        plt.title('Reconstruction')
-        sp3 = plt.subplot(133)
-        sp3.axis('off')
-        plt.title('Thresholded')
+from matplotlib import animation
+fig = plt.figure()
+sp1 = plt.subplot(131)
+sp1.axis('off')
+plt.title('Stimulus')
+sp2 = plt.subplot(132)
+sp2.axis('off')
+plt.title('Reconstruction')
+sp3 = plt.subplot(133)
+sp3.axis('off')
+plt.title('Thresholded')
+ims = []
+for i, t in enumerate(y_pred):
+    ims.append((
         sp1.imshow(np.reshape(y_test[i], (10, 10)), cmap=plt.cm.gray,
-            interpolation='nearest')
+        interpolation='nearest'),
         sp2.imshow(np.reshape(t, (10, 10)), cmap=plt.cm.gray,
-            interpolation='nearest')
-        sp3.imshow(np.reshape(t > threshold, (10, 10)), cmap=plt.cm.gray,
-            interpolation='nearest')
-        ims.append(fig2data(fig))
-    from nilearn.external.visvis.images2gif import writeGif
-    writeGif(generate_gif, np.asarray(ims), duration=0.5, repeat=True)
+        interpolation='nearest'),
+        sp3.imshow(np.reshape(t > .5, (10, 10)), cmap=plt.cm.gray,
+        interpolation='nearest')))
+
+im_ani = animation.ArtistAnimation(fig, ims, interval=1000)
+im_ani.save('video.mp4')
