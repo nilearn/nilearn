@@ -53,6 +53,14 @@ def compute_alpha_max(emp_covs, n_samples):
     alpha_min : float
         minimal value for the regularization parameter that gives a fully
         dense matrix.
+
+    See also
+    --------
+    The formula used in this function was derived using the same method as in:
+
+    Duchi, John, Stephen Gould, and Daphne Koller. 'Projected Subgradient
+    Methods for Learning Sparse Gaussians'. ArXiv E-prints 1206 (1 June
+    2012): 3249.
     """
     A = np.copy(emp_covs)
     n_samples = np.asarray(n_samples).copy()
@@ -89,7 +97,7 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
 
     n_features, _, n_subjects = emp_covs.shape
 
-    ## Primal cost
+    ## Primal cost (objective)
     log_likelihood = 0
     sps = 0  # scalar products
     for k in range(n_subjects):
@@ -130,7 +138,7 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
         dual_cost += n_samples[k] * (n_features + fast_logdet(B))
 
     # The previous computation can lead to a non-feasible point, because
-    # one of the Bs are not positive definite.
+    # one of the Bs may not be positive definite.
     # Use another value in this case, that ensure positive definiteness of B.
     # The upper bound on the duality gap is not tight in the following, but
     # is smaller than infinity, which is better in any case.
@@ -312,10 +320,20 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
         raise ValueError("Regularization parameter alpha must be a "
                          "positive number.\n"
                          "You provided: {0}".format(str(alpha)))
+
     n_subjects = emp_covs.shape[-1]
     n_features = emp_covs[0].shape[0]
     n_samples = np.asarray(n_samples)
     n_samples /= n_samples.sum()  # essential for numerical stability
+
+    # Check diagonal normalization.
+    ones = np.ones(emp_covs.shape[0])
+    for k in range(n_subjects):
+        if (abs(emp_covs[..., k].flat[::emp_covs.shape[0] + 1] - ones)
+                > 0.1).any():
+            warnings.warn("input signals do not all have unit variance. This "
+                          "can lead to numerical instability.")
+            break
 
     if precisions_init is None:
         omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype,
@@ -663,6 +681,8 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
     for k, s in enumerate(subjects):
         M = empirical_covariance(s, assume_centered=assume_centered)
 
+        # Force matrix symmetry, for numerical stability
+        # of _group_sparse_covariance
         emp_covs[..., k] = M + M.T
     emp_covs /= 2
 
