@@ -78,7 +78,6 @@
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
 
 
-
 Machine Learning for Neuro-Imaging
 ----------------------------------
 

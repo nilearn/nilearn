@@ -188,7 +188,7 @@ class SearchLight(BaseEstimator):
         mask of the data that will be processed by searchlight
 
     radius: float, optional
-        radius of the searchlight sphere
+        radius of the searchlight sphere, in millimeters.
 
     estimator: estimator object implementing 'fit'
         The object to use to fit the data
