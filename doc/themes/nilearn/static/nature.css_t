@@ -308,14 +308,12 @@ div.related ul li {
 }
 
 div.related ul li.right {
-    float: right;
-    margin-right: 5px;
+    display: none;
 }
 
-@media (max-width: 360px) {
-    div.related ul li.right {
-        display: none;
-    }
+div.related ul li#navbar-ecosystem {
+    float: right;
+    margin-right: 0.5em;
 }
 
 @media (min-width: 360px) {
