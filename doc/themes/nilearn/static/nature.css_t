@@ -506,7 +506,7 @@ h3 {
 }
 
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
-    color: black!important;
+    color: black;
 }
 
 h1 a.anchor, h2 a.anchor, h3 a.anchor, h4 a.anchor, h5 a.anchor, h6 a.anchor {
@@ -586,6 +586,10 @@ div.sphinxsidebar ul.toc ul li {
 div.sphinxsidebarwrapper ul li p {
     line-height: 22px;
     font-size: 14px;
+}
+
+div.sphinxsidebarwrapper h3 a {
+    color: white;
 }
 
 div.admonition, div.warning {
@@ -894,8 +898,7 @@ pre {
 }
 
 div.body p {
-    margin-top: 1.2em;
-    margin-bottom: .1em;
+    margin: 1.2em 2em .1em 2em;
 }
 
 .float-right {
