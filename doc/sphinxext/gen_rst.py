@@ -59,12 +59,12 @@ plot_rst_template = """
 
 %(image_list)s
 
-%(stdout)s
-
 **Python source code:** :download:`%(fname)s <%(fname)s>`
 
 .. literalinclude:: %(fname)s
     :lines: %(end_row)s-
+
+%(stdout)s
 
 **Total running time of the example:** %(time_elapsed) .2f seconds
     """
