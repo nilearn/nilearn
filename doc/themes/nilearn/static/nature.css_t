@@ -923,7 +923,7 @@ div#logo-banner {
 
 div#logo-banner .logo {
     background-color: white;
-    padding: 10px 20px 15px 15px;
+    padding: 27px 20px 0 15px;
     float: left;
     max-width: 14em;
 }
