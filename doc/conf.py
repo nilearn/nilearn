@@ -133,7 +133,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'scikit-learn'
+html_theme = 'nilearn'
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
@@ -230,7 +230,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = "logos/scikit-learn-logo.png"
+latex_logo = "logos/nilearn-logo.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
