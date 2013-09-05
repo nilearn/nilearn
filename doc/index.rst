@@ -96,13 +96,7 @@ Machine Learning for Neuro-Imaging
 
     <div id="download-container">
 
-
-.. sidebar:: Download
-   :class: green
-
-   * `Source code (github) <https://github.com/nilearn/nilearn>`_
-
-.. raw:: html
+        <a href="https://github.com/nilearn/nilearn" class="btn btn-primary">Download NiLearn</a>
 
     </div>
 
