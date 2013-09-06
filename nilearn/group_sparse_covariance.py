@@ -92,8 +92,8 @@ def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
         point.
     """
     # Signs for primal and dual costs are inverted compared to the
-    # Honorio & Samaras paper,
-    # to match scikit-learn's usage of *minimizing* the primal problem.
+    # Honorio & Samaras paper, to match Scikit-Learn's usage of *minimizing*
+    # the primal problem.
 
     n_features, _, n_subjects = emp_covs.shape
 
@@ -830,8 +830,8 @@ class EarlyStopProbe(object):
 
 
 class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
-    # See also GraphLasso in scikit-learn.
-    """
+    """Sparse inverse covariance w/ cross-validated choice of the parameter.
+
     Parameters
     ----------
     alphas : integer
@@ -842,7 +842,8 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         number of times the initial grid should be refined.
 
     cv : integer
-        number of folds in a K-fold cross-validation scheme.
+        number of folds in a K-fold cross-validation scheme. If None is passed,
+        defaults to 3.
 
     tol : float
         tolerance used for every optimization.
@@ -871,6 +872,39 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         number of iterations required to get the optimal value for alpha. Be
         aware that this can lead to slightly different values for the optimal
         alpha compared to early_stopping=False.
+
+    Attributes
+    ----------
+    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
+        covariance matrices, one per subject.
+
+    `precisions_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
+        precision matrices, one per subject. All matrices have the same
+        sparsity pattern (if a coefficient is zero for a given matrix, it
+        is also zero for every other.)
+
+    `alpha_` : float
+        penalization parameter value selected.
+
+    `cv_alphas_` : list of floats
+        all values of the penalization parameter explored.
+
+    `cv_scores_` : numpy.ndarray, shape (n_alphas, n_folds)
+        scores obtained on test set for each value of the penalization
+        parameter explored.
+
+    See also
+    --------
+    group_sparse_covariance, GroupSparseCovariance,
+    sklearn.covariance.GraphLassoCV
+
+    Notes
+    -----
+    The search for the optimal penalization parameter (alpha) is done on an
+    iteratively refined grid: first the cross-validated scores on a grid are
+    computed, then a new refined grid is centered around the maximum, and so
+    on.
+
     """
     def __init__(self, alphas=4, n_refinements=4, cv=None,
                  tol=1e-3, max_iter=50, assume_centered=False, verbose=1,
@@ -911,7 +945,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             selected value for penalization parameter.
 
         cv_alphas_ : list of float
-            all values explored for the penalization parameter.
+            all penalization parameter values explored.
 
         cv_scores_ : numpy.ndarray with shape (n_alphas, n_folds)
             scores obtained on test set for each value of the penalization
