@@ -76,94 +76,6 @@ def compute_alpha_max(emp_covs, n_samples):
     return np.max(norms), np.min(norms[norms > 0])
 
 
-def _group_sparse_covariance_costs(n_samples, alpha, omega, emp_covs,
-                                   verbose=0, debug=False):
-    """Compute group sparse covariance costs during computation.
-
-    Returns
-    -------
-    primal_cost : float
-        value of primal cost at current point. This value is minimized by the
-        algorithm.
-
-    duality_gap : float
-        value of duality gap at current point, with a feasible dual point. This
-        value is supposed to always be negative, and vanishing for the optimal
-        point.
-    """
-    # Signs for primal and dual costs are inverted compared to the
-    # Honorio & Samaras paper, to match Scikit-Learn's usage of *minimizing*
-    # the primal problem.
-
-    n_features, _, n_subjects = emp_covs.shape
-
-    ## Primal cost (objective)
-    log_likelihood = 0
-    sps = 0  # scalar products
-    for k in range(n_subjects):
-        t = fast_logdet(omega[..., k])
-        sp = (omega[..., k] * emp_covs[..., k]).sum()
-        log_likelihood += n_samples[k] * (t - sp)
-        sps += n_samples[k] * sp
-
-    # L(1,2)-norm
-    l2 = np.sqrt((omega ** 2).sum(axis=-1))
-    l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
-    cost = - (log_likelihood - alpha * l12)
-
-    ## Dual cost: rather heavy computation.
-    # Compute A(k)
-    A = np.empty(omega.shape, dtype=omega.dtype, order="F")
-    for k in range(n_subjects):
-        # TODO: can be computed more efficiently using W_inv
-        # (see Friedman 2008)
-        omega_inv = scipy.linalg.inv(omega[..., k])
-        if debug:
-            assert is_spd(omega_inv)
-        A[..., k] = n_samples[k] * (omega_inv - emp_covs[..., k])
-        if debug:
-            np.testing.assert_almost_equal(A[..., k], A[..., k].T)
-
-    # Project A on the set of feasible points
-    alpha_max = np.sqrt((A ** 2).sum(axis=-1))
-    mask = alpha_max > alpha
-    for k in range(A.shape[-1]):
-        A[mask, k] *= alpha / alpha_max[mask]
-        A[..., k].flat[::A.shape[0] + 1] = 0  # essential
-
-    alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
-    dual_cost = 0
-    for k in xrange(n_subjects):
-        B = emp_covs[..., k] + A[..., k] / n_samples[k]
-        dual_cost += n_samples[k] * (n_features + fast_logdet(B))
-
-    # The previous computation can lead to a non-feasible point, because
-    # one of the Bs may not be positive definite.
-    # Use another value in this case, that ensure positive definiteness of B.
-    # The upper bound on the duality gap is not tight in the following, but
-    # is smaller than infinity, which is better in any case.
-    if not np.isfinite(dual_cost):
-        for k in range(n_subjects):
-            A[..., k] = - n_samples[k] * emp_covs[..., k]
-            A[..., k].flat[::A.shape[0] + 1] = 0
-        alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
-        # the second value (0.05 is arbitrary: positive in ]0,1[)
-        gamma = min((alpha / alpha_max, 0.05))
-        dual_cost = 0
-        for k in range(n_subjects):
-            # add gamma on the diagonal
-            B = ((1. - gamma) * emp_covs[..., k]
-                 + gamma * np.eye(emp_covs.shape[0]))
-            dual_cost += n_samples[k] * (n_features + fast_logdet(B))
-
-    gap = cost - dual_cost
-
-    logger.log("primal cost / duality gap: {cost: .8f} / {gap:.8f}".format(
-        gap=gap, cost=cost), verbose=verbose)
-
-    return (cost, gap)
-
-
 def _update_submatrix(full, sub, sub_inv, p, h, v):
     """Update submatrix and its inverse.
 
@@ -337,7 +249,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 
     if precisions_init is None:
         # Fortran order make omega[..., k] contiguous, which is often useful.
-        omega = np.ndarray(shape=emp_covs.shape, dtype=emp_covs.dtype,
+        omega = np.ndarray(shape=emp_covs.shape, dtype=np.float,
                            order="F")
         for k in range(n_subjects):
             # Values on main diagonals are far from zero, because they
@@ -347,27 +259,27 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
         omega = precisions_init.copy()
 
     # Preallocate arrays
-    y = np.ndarray(shape=(n_subjects, n_features - 1), dtype=emp_covs.dtype)
-    u = np.ndarray(shape=(n_subjects, n_features - 1), dtype=emp_covs.dtype)
-    y_1 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=emp_covs.dtype)
-    h_12 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=emp_covs.dtype)
-    q = np.ndarray(shape=(n_subjects,), dtype=emp_covs.dtype)
-    aq = np.ndarray(shape=(n_subjects,), dtype=emp_covs.dtype)  # temp. array
-    c = np.ndarray(shape=(n_subjects,), dtype=emp_covs.dtype)
+    y = np.ndarray(shape=(n_subjects, n_features - 1), dtype=np.float)
+    u = np.ndarray(shape=(n_subjects, n_features - 1), dtype=np.float)
+    y_1 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=np.float)
+    h_12 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=np.float)
+    q = np.ndarray(shape=(n_subjects,), dtype=np.float)
+    aq = np.ndarray(shape=(n_subjects,), dtype=np.float)  # temp. array
+    c = np.ndarray(shape=(n_subjects,), dtype=np.float)
     W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
                           omega.shape[2]),
-                   dtype=emp_covs.dtype, order="F")
-    W_inv = np.ndarray(shape=W.shape, dtype=emp_covs.dtype, order="F")
+                   dtype=np.float, order="F")
+    W_inv = np.ndarray(shape=W.shape, dtype=np.float, order="F")
 
     # Auxilliary arrays.
-    v = np.ndarray((omega.shape[0] - 1,), dtype=omega.dtype)
-    h = np.ndarray((omega.shape[1] - 1,), dtype=omega.dtype)
+    v = np.ndarray((omega.shape[0] - 1,), dtype=np.float)
+    h = np.ndarray((omega.shape[1] - 1,), dtype=np.float)
 
     # Optional.
     tolerance_reached = False
     max_norm = None
 
-    omega_old = np.empty(omega.shape, dtype=omega.dtype)
+    omega_old = np.empty_like(omega)
     if probe_function is not None:
         # iteration number -1 means called before iteration loop.
         probe_function(emp_covs, n_samples, alpha, max_iter, tol,
@@ -637,8 +549,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         return self
 
 
-def empirical_covariances(subjects, assume_centered=False,
-                          standardize=False, dtype=np.float64):
+def empirical_covariances(subjects, assume_centered=False, standardize=False):
     """Compute empirical covariances for several signals.
 
     Parameters
@@ -655,9 +566,6 @@ def empirical_covariances(subjects, assume_centered=False,
     standardize : bool, optional
         if True, set every signal variance to one before computing their
         covariance matrix (i.e. compute a correlation matrix).
-
-    dtype : numpy dtype
-        dtype of output array. Default: numpy.float64
 
     Returns
     -------
@@ -681,8 +589,7 @@ def empirical_covariances(subjects, assume_centered=False,
 
     # Enable to change dtype here because depending on user, conversion from
     # single precision to double will be required or not.
-    emp_covs = np.empty((n_features, n_features, n_subjects),
-                        dtype=dtype, order="F")
+    emp_covs = np.empty((n_features, n_features, n_subjects), order="F")
     for k, s in enumerate(subjects):
         if standardize:
             s = s / s.std(axis=0)  # copy on purpose
@@ -693,12 +600,13 @@ def empirical_covariances(subjects, assume_centered=False,
         emp_covs[..., k] = M + M.T
     emp_covs /= 2
 
-    n_samples = np.asarray([s.shape[0] for s in subjects], dtype=np.float64)
+    n_samples = np.asarray([s.shape[0] for s in subjects], dtype=np.float)
 
     return emp_covs, n_samples
 
 
-def group_sparse_scores(precisions, n_samples, emp_covs, alpha):
+def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
+                        duality_gap=False, debug=False):
     """Compute scores used by group_sparse_covariance.
 
     The log-likelihood of a given list of empirical covariances /
@@ -709,29 +617,104 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha):
     precisions : numpy.ndarray, shape (n_features, n_features, n_subjects)
         estimated precisions.
 
-    n_samples : array-like, shape: (n_subjects,)
+    n_samples : array-like, shape (n_subjects,)
         number of samples used in estimating each subject in "precisions".
         n_samples.sum() must be equal to 1.
+
+    emp_covs : numpy.ndarray, shape (n_features, n_features, n_subjects)
+        empirical covariance matrix
+
+    alpha : float
+        regularization parameter
+
+    duality_gap : bool, optional
+        if True, also returns a duality gap upper bound.
+
+    debug : bool, optional
+        if True, some consistency checks are performed to help solving
+        numerical problems
 
     Returns
     -------
     log_lik : float
         log-likelihood of precisions on the given covariances. This is the
-        opposite of the loss function, without the regularization term.
+        opposite of the loss function, without the regularization term
 
     objective : float
         value of objective function. This is the value minimized by
-        group_sparse_covariance().
+        group_sparse_covariance()
+
+    duality_gap : float
+        duality gap upper bound. The returned bound is tight: it vanishes for
+        the optimal precision matrices
     """
+
+    n_features, _, n_subjects = emp_covs.shape
+
     log_lik = 0
-    for k in range(precisions.shape[2]):
+    for k in range(n_subjects):
         log_lik += n_samples[k] * sklearn.covariance.log_likelihood(
             emp_covs[..., k], precisions[..., k])
 
     l2 = np.sqrt((precisions ** 2).sum(axis=-1))
     l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
+    objective = alpha * l12 - log_lik
+    ret = (log_lik, objective)
 
-    return (log_lik, alpha * l12 - log_lik)
+    # Compute duality gap if requested
+    if duality_gap is True:
+        A = np.empty(precisions.shape, dtype=np.float, order="F")
+        for k in range(n_subjects):
+            # TODO: can be computed more efficiently using W_inv. See
+            # Friedman, Jerome, Trevor Hastie, and Robert Tibshirani.
+            # 'Sparse Inverse Covariance Estimation with the Graphical Lasso'.
+            # Biostatistics 9, no. 3 (1 July 2008): 432-441.
+            precisions_inv = scipy.linalg.inv(precisions[..., k])
+            if debug:
+                assert is_spd(precisions_inv)
+
+            A[..., k] = n_samples[k] * (precisions_inv - emp_covs[..., k])
+
+            if debug:
+                np.testing.assert_almost_equal(A[..., k], A[..., k].T)
+
+        # Project A on the set of feasible points
+        alpha_max = np.sqrt((A ** 2).sum(axis=-1))
+        mask = alpha_max > alpha
+        for k in range(A.shape[-1]):
+            A[mask, k] *= alpha / alpha_max[mask]
+            # Set zeros on diagonals. Essential to get a always positive
+            # duality gap.
+            A[..., k].flat[::A.shape[0] + 1] = 0
+
+        alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
+        dual_obj = 0  # dual objective
+        for k in range(n_subjects):
+            B = emp_covs[..., k] + A[..., k] / n_samples[k]
+            dual_obj += n_samples[k] * (n_features + fast_logdet(B))
+
+        # The previous computation can lead to a non-feasible point, because
+        # one of the Bs may not be positive definite.
+        # Use another value in this case, that ensure positive definiteness
+        # of B. The upper bound on the duality gap is not tight in the
+        # following, but is smaller than infinity, which is better in any case.
+        if not np.isfinite(dual_obj):
+            for k in range(n_subjects):
+                A[..., k] = - n_samples[k] * emp_covs[..., k]
+                A[..., k].flat[::A.shape[0] + 1] = 0
+            alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
+            # the second value (0.05 is arbitrary: positive in ]0,1[)
+            gamma = min((alpha / alpha_max, 0.05))
+            dual_obj = 0
+            for k in range(n_subjects):
+                # add gamma on the diagonal
+                B = ((1. - gamma) * emp_covs[..., k]
+                     + gamma * np.eye(emp_covs.shape[0]))
+                dual_obj += n_samples[k] * (n_features + fast_logdet(B))
+
+        gap = objective - dual_obj
+        ret = ret + (gap,)
+    return ret
 
 
 def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
@@ -827,13 +810,14 @@ class EarlyStopProbe(object):
 
     def __call__(self, emp_covs, n_samples, alpha, max_iter, tol,
                  iter_n, omega, prev_omega):
-        score = group_sparse_scores(
-            omega, n_samples, self.test_emp_covs, alpha)[0]
-        if iter_n > -1 and self.last_score > score:
-            logger.log("test score is decreasing. Stopping at iteration %d"
+        log_lik, _ = group_sparse_scores(
+            omega, n_samples, self.test_emp_covs, alpha)
+        if iter_n > -1 and self.last_log_lik > log_lik:
+            logger.log("log_lik on test set is decreasing. "
+                       "Stopping at iteration %d"
                        % iter_n, verbose=self.verbose)
             return True
-        self.last_score = score
+        self.last_log_lik = log_lik
 
 
 class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
