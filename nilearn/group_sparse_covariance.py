@@ -637,7 +637,8 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         return self
 
 
-def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
+def empirical_covariances(subjects, assume_centered=False,
+                          standardize=False, dtype=np.float64):
     """Compute empirical covariances for several signals.
 
     Parameters
@@ -650,6 +651,10 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
     assume_centered : bool, optional
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
+
+    standardize : bool, optional
+        if True, set every signal variance to one before computing their
+        covariance matrix (i.e. compute a correlation matrix).
 
     dtype : numpy dtype
         dtype of output array. Default: numpy.float64
@@ -679,6 +684,8 @@ def empirical_covariances(subjects, assume_centered=False, dtype=np.float64):
     emp_covs = np.empty((n_features, n_features, n_subjects),
                         dtype=dtype, order="F")
     for k, s in enumerate(subjects):
+        if standardize:
+            s = s / s.std(axis=0)  # copy on purpose
         M = empirical_covariance(s, assume_centered=assume_centered)
 
         # Force matrix symmetry, for numerical stability
@@ -782,9 +789,9 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         only if test_subjs is not None.
     """
     train_covs, train_n_samples = empirical_covariances(
-        train_subjs, assume_centered=assume_centered)
+        train_subjs, assume_centered=assume_centered, standardize=True)
     test_covs, _ = empirical_covariances(
-        test_subjs, assume_centered=assume_centered)
+        test_subjs, assume_centered=assume_centered, standardize=True)
 
     scores = []
     precisions_list = []
