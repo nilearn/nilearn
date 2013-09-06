@@ -80,6 +80,7 @@ The `debug` keyword in :func:`group_sparse_covariance` activates a set
 of numerical consistency checks (mainly that matrices are s.p.d.) that
 can be useful to track down numerical instability problems.
 
+
 Execution time
 ==============
 
@@ -110,6 +111,13 @@ iterations for NR, saving a lot of time. On the other hand, a loose
 tolerance increases the number of iterations in the coordinate descent
 loop, therefore increasing the overall execution time. Measurement
 proved that tight tolerances were leading to faster convergence rates.
+
+Care has been taken to use proper ordering of data in arrays. In
+particular, three-dimensional arrays containing precision matrices are
+in Fortran order, to get prec[..., k] contiguous for any k. This is
+important to avoid copies by lapack/atlas functions, such as matrix
+inverse or dot product. It is also consistent with arrays returned by
+`nibabel.load`.
 
 An optimization that can be performed, but couldn't be implemented
 short of having proper linalg functions for it is to process only half
@@ -272,7 +280,7 @@ tested: using a diagonal matrix (with variance of input signals), or
 using a Ledoit-Wolf estimate. It turned out that even if the
 Ledoit-Wolf initialization allows for starting with a better value for
 the objective, the difference with the diagonal matrix initialization
-dwindles rather fast. It does not allow any real significant speedup
+dwindles rather fast. It does not allow any significant speedup
 in practice.
 
 Only one initialization has been implemented (the diagonal matrix, as
@@ -356,21 +364,63 @@ coefficients *that can be non-zero* are non-zero in the optimal
 precision matrices.
 
 
-Grid refining
--------------
+Iterative grid search
+---------------------
 
 Getting the regularization parameter optimal value is equivalent to
 finding the location of the maximum on the curve log-likelihood vs
 regularization parameter. In practice this curve is rather smooth,
 with only a single maximum. This can be exploited to reduce the number
-of parameter values to try.
-
-..
-    reference to scikit-learn graph-lasso
+of parameter values to try. The strategy used in this implementation
+consists of a iterative grid search: the maximum value is searched on
+a very loose grid of parameter values (by default, only 4 values are
+used), then a tighter grid near the found maximum is computed, and so
+on. This allows for a very precise determination of the maximum
+location while reducing a lot the required evaluation number. The code
+is very close to what is done in
+:class:`sklearn.covariance.GraphLassoCV`.
 
 
 Warm restart
 ------------
+
+During each step of the grid search, a set of regularization
+parameters has to been tested. The straighforward strategy consists of
+running independently each fit, each optimization being started with
+basically the same initial value (diagonal matrices). Execution time
+can be reduced by running all optimizations sequentially, and using
+the final result of one as initial value for the next. This goes
+faster because it saves part of the optimization trajectory starting
+with the second one. However, there is a real gain in execution time
+only if the parameter values are ordered from the largest to the
+smallest (and not the other way).
+
+The usefulness of this scheme depends on several things. First, using
+warm restart does not gives exactly the same result as running
+independant optimizations, because optimization paths are not the
+same. This is not an issue for cross-validation, since there are many
+other larger sources of fluctuations. It has been checked that in
+practice, the selected value does not change. Second, using warm
+restart forces running all optimization one after another: there is no
+parallelism at all. However, this is true only for a given fold: when
+n folds are used, n such evaluations can be run in parallel. Thus, the
+fact that warm restart gives faster evaluation compared to fixed
+initialization depends on the number of folds, and the number of
+computation cores. No more cores that the number of folds can be used
+at the same time. Thus, if the number of folds is much smaller than
+the number of usable cores, warm restart slows down computation (note
+that if the goal is energy efficiency, not speed, warm restart is
+always a good idea.) This argument is also valid for the iterative
+grid search: if many cores are available, the brute-force grid search
+is faster than the iterative scheme, just because every point can be
+explored simultaneously, without waiting for the previous step to
+finish. Many more evaluations are performed, but the overall running
+time is limited of by the slowest evaluation. The choice of these
+schemes (iterative grid search and warm restart) has been made in the
+present implementation because the targeted hardware is a commodity
+computer, with a moderate number of cores (4 to 16). More cores (and
+memory) will probably be available in future years, these schemes
+could be removed easily.
 
 
 Stopping criterion
