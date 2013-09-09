@@ -813,7 +813,7 @@ class EarlyStopProbe(object):
         log_lik, _ = group_sparse_scores(
             omega, n_samples, self.test_emp_covs, alpha)
         if iter_n > -1 and self.last_log_lik > log_lik:
-            logger.log("log_lik on test set is decreasing. "
+            logger.log("Log-likelihood on test set is decreasing. "
                        "Stopping at iteration %d"
                        % iter_n, verbose=self.verbose)
             return True
@@ -822,6 +822,13 @@ class EarlyStopProbe(object):
 
 class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
+
+    A cross-validated value for the regularization parameter is first
+    determined using several calls to group_sparse_covariance. Then a final
+    optimization is run to get a value for the precision matrices, using the
+    selected value of the parameter. Different values of tolerance and of
+    maximum iteration number can be used in these two phases (see the tol
+    and tol_cv keyword below for example).
 
     Parameters
     ----------
@@ -836,11 +843,20 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         number of folds in a K-fold cross-validation scheme. If None is passed,
         defaults to 3.
 
+    tol_cv : float
+        tolerance used to get the optimal alpha value. It has the same meaning
+        as the `tol` parameter in :func:`group_sparse_covariance`.
+
+    max_iter_cv : integer
+        maximum number of iterations for each optimization, during the alpha-
+        selection phase.
+
     tol : float
-        tolerance used for every optimization.
+        tolerance used during the final optimization for determining precision
+        matrices value.
 
     max_iter : integer
-        maximum number of iterations for each optimization.
+        maximum number of iterations in the final optimization.
 
     assume_centered : bool
         if True, assume that every signal passed to fit() has zero mean. This
@@ -895,13 +911,16 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     iteratively refined grid: first the cross-validated scores on a grid are
     computed, then a new refined grid is centered around the maximum, and so
     on.
-
     """
     def __init__(self, alphas=4, n_refinements=4, cv=None,
-                 tol=1e-3, max_iter=50, assume_centered=False, verbose=1,
+                 tol_cv=1e-2, max_iter_cv=50,
+                 tol=1e-3, max_iter=100,
+                 assume_centered=False, verbose=1,
                  n_jobs=1, debug=False, early_stopping=True):
         self.alphas = alphas
         self.n_refinements = n_refinements
+        self.tol_cv = tol_cv
+        self.max_iter_cv = max_iter_cv
         self.cv = cv
         self.tol = tol
         self.max_iter = max_iter
@@ -993,10 +1012,10 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(group_sparse_covariance_path)(
                     train_subjs, alphas, test_subjs=test_subjs,
-                    max_iter=self.max_iter, tol=self.tol,
+                    max_iter=self.max_iter_cv, tol=self.tol_cv,
                     assume_centered=self.assume_centered,
                     verbose=self.verbose, debug=self.debug,
-                    # Warm restart is only useful without early stopping.
+                    # Warm restart is useless with early stopping.
                     precisions_init=None if self.early_stopping else prec_init,
                     probe_function=probe)
                 for (train_subjs, test_subjs), prec_init, probe
@@ -1070,10 +1089,11 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         self.alpha_ = alphas[best_index]
         self.cv_alphas_ = alphas
 
-        # Finally fit the model with the selected alpha
+        # Finally, fit the model with the selected alpha
+        logger.log("Final optimization", verbose=self.verbose)
         self.covariances_ = emp_covs
         self.precisions_ = _group_sparse_covariance(
             emp_covs, n_samples, self.alpha_, tol=self.tol,
             max_iter=self.max_iter,
-            verbose=self.verbose - 1, debug=self.debug)
+            verbose=self.verbose, debug=self.debug)
         return self
