@@ -3,84 +3,6 @@
     We are putting the title as a raw HTML so that it doesn't appear in
     the contents
 
-.. raw:: html
-
-    <style type="text/css">
-    p {
-	font-size: 18px;
-	line-height: 2em;
-    }
-    span.linkdescr a {
-        color:  #3E4349 ;
-    }
-    div.banner img {
-        vertical-align: middle;
-    }
-
-    .section {
-	padding: 0px;
-	margin: 2.5em 0.5em 14.5em 8em;
-    }
-
-    .col {
-	display: block;
-	float:left;
-	margin: 1% 0 1% 1.6%;
-    }
-    .col:first-child { margin-left: 0; }
-
-    .group:before,
-    .group:after {
-	/*content:"";*/
-	display:table;
-    }
-    .group:after {
-	clear:both;
-    }
-
-    div.section.group h3 {
-        background-color: white;
-	padding: 5px;
-        border-radius: 10px;
-        font-size: 170%;
-        margin-left: -0.2em;
-    }
-
-    div.section.group h3 a {
-	color: #355F7C;
-    }
-
-    /*  GRID OF THREE  */
-    .span_3_of_3 {
-	width: 100%;
-    }
-    .span_2_of_3 {
-	width: 66.1%;
-    }
-    .span_1_of_3 {
-	width: 32.2%;
-	margin: 0 0 5em 0;
-    }
-
-    @media only screen and (max-width: 480px) {
-	.col {
-		margin: 1% 0 1% 0%;
-	}
-    }
-
-    @media only screen and (max-width: 480px) {
-	.span_3_of_3 {
-		width: 100%;
-	}
-	.span_2_of_3 {
-		width: 100%;
-	}
-	.span_1_of_3 {
-		width: 100%;
-	}
-    }
-    </style>
-
 
 .. raw:: html
 
@@ -182,8 +104,8 @@ It requires only
 
    </div>
 
-
-   <div class="section group">
+   <div class="index-grid">
+     <div class="section group">
 	<div class="col span_1_of_3">
 	  <h3><a href="#">
 	  First Steps</a></h3>
@@ -199,4 +121,5 @@ It requires only
 	  User Guide</a></h3>
 	  <p>Description</p>
 	</div>
+     </div>
    </div>
