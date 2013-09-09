@@ -104,7 +104,7 @@ It requires only
 
    </div>
 
-     <div class="section group">
+     <div id="index-grid" class="section group">
 	<div class="col span_1_of_3">
 	  <h3><a href="#">
 	  First Steps</a></h3>

@@ -1116,7 +1116,7 @@ table.longtable.docutils {
 
 
 
-.section {
+div#index-grid.section.group {
     padding: 0px;
     margin: 2.5em 0.5em 14.5em 8em;
 }
