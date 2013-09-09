@@ -104,7 +104,6 @@ It requires only
 
    </div>
 
-   <div class="index-grid">
      <div class="section group">
 	<div class="col span_1_of_3">
 	  <h3><a href="#">
@@ -121,5 +120,4 @@ It requires only
 	  User Guide</a></h3>
 	  <p>Description</p>
 	</div>
-     </div>
    </div>

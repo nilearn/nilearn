@@ -1116,29 +1116,29 @@ table.longtable.docutils {
 
 
 
-div.index-grid .section {
+.section {
     padding: 0px;
-    margin: 2.5em 0.5em 1.5em 8em;
+    margin: 2.5em 0.5em 14.5em 8em;
 }
 
-div.index-grid .col {
+ .col {
     display: block;
     float:left;
     margin: 1% 0 1% 1.6%;
 }
 
-div.index-grid .col:first-child { margin-left: 0; }
+ .col:first-child { margin-left: 0; }
 
-div.index-grid .group:before,
-div.index-grid .group:after {
+ .group:before,
+ .group:after {
     /*content:"";*/
     display:table;
 }
-div.index-grid .group:after {
+ .group:after {
     clear:both;
 }
 
-div.index-grid .section.group h3 {
+ .section.group h3 {
     background-color: white;
     padding: 5px;
     border-radius: 10px;
@@ -1146,39 +1146,39 @@ div.index-grid .section.group h3 {
     margin-left: -0.2em;
 }
 
- div.index-grid .section.group h3 a {
+  .section.group h3 a {
     color: #355F7C;
  }
 
     /*  GRID OF THREE  */
-div.index-grid .span_3_of_3 {
+ .span_3_of_3 {
     width: 100%;
 }
-div.index-grid .span_2_of_3 {
+ .span_2_of_3 {
     width: 66.1%;
 }
-div.index-grid .span_1_of_3 {
+ .span_1_of_3 {
     width: 32.2%;
     margin: 0 0 4.5em 0;
 }
-div.index-grid .span_1_of_3 p {
+ .span_1_of_3 p {
     font-size: 1.2em;
 }
 
 @media only screen and (max-width: 480px) {
-    div.index-grid .col {
+     .col {
 	margin: 1% 0 1% 0%;
     }
 }
 
 @media only screen and (max-width: 480px) {
-    div.index-grid .span_3_of_3 {
+     .span_3_of_3 {
 	width: 100%;
     }
-    div.index-grid .span_2_of_3 {
+     .span_2_of_3 {
 	width: 100%;
     }
-    div.index-grid .span_1_of_3 {
+     .span_1_of_3 {
 	width: 100%;
     }
 }
