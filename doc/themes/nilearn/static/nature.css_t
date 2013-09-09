@@ -378,6 +378,14 @@ div.bodywrapper h1 {
     -moz-border-radius: 0 15px 0 15px;
 }
 
+div#index-paragraph {
+    margin: 3em 1.1em 2em 2em;
+}
+
+div#index-paragraph p {
+    font-size: 147%;
+}
+
 div.body a {
     line-height: 1.5em;
 }
@@ -597,11 +605,17 @@ div.admonition, div.warning {
     margin: 1em 0 0 0;
     border: 1px solid #86989B;
     background-color: #f7f7f7;
+    max-width: 100%;
+    margin: 4em 3em 0 3em;
 }
 
 div.admonition p, div.warning p {
-    margin: 0.5em 1em 0.5em 1em;
+    margin: 0.5em 1em 0.5em;
     padding: 0;
+}
+
+div.admonition.warning p.last {
+    margin: 0.5em 1em 0.5em;
 }
 
 div.admonition pre, div.warning pre {
@@ -812,6 +826,18 @@ div#machine-learning-for-neuro-imaging h1 {
     }
 }
 
+div.body blockquote {
+    background: none;
+    margin: 3em -2em;
+    border: solid lightgray;
+    border-width: 1px 0px;
+    background: whiteSmoke;
+    border-color: lightgray;
+    background-image: -webkit-linear-gradient(#F0F0F0, white 10%);
+    background-image: -moz-linear-gradient(top, #F0F0F0, white 10%);
+    background-image: -o-linear-gradient(top, #F0F0F0, white 10%);
+}
+
 @media (max-width: 360px) {
     blockquote {
         margin: 0.1em;
@@ -898,7 +924,7 @@ pre {
 }
 
 div.body p {
-    margin: 1.2em 2em .1em 2em;
+    margin: 1.2em 0 .1em 0;
 }
 
 .float-right {
@@ -990,6 +1016,10 @@ div#logo-banner .banner h2 {
     }
 }
 
+div#banner.banner img {
+    margin: 0 1em 0 1em;
+}
+
 @media (max-width: 360px) {
     div#banner.banner {
         display: none;
@@ -1012,7 +1042,7 @@ div.toctree-wrapper.compound {
     display: inline-block;
     padding: 4px 12px;
     margin: 0.5em;
-    font-size: 2.6em;
+    font-size: 130%;
     font-weight: bold;
     line-height: 20px;
     color: #333333;
@@ -1044,14 +1074,13 @@ div.toctree-wrapper.compound {
 .btn-primary {
     color: #ffffff;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    background-color: #006dcc;
-    background-image: -moz-linear-gradient(top, rgb(0, 204, 147), rgb(24, 204, 0));
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(0, 204, 147)), to(rgb(24, 204, 0)));
-    background-image: -webkit-linear-gradient(top, rgb(0, 204, 147), rgb(24, 204, 0));
-    background-image: -o-linear-gradient(top, rgb(0, 204, 147), rgb(24, 204, 0));
-    background-image: linear-gradient(to bottom, rgb(0, 204, 147), rgb(24, 204, 0));
+    background-image: -moz-linear-gradient(top, #FFC588, #F89939);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#FFC588), to(#F89939));
+    background-image: -webkit-linear-gradient(top, #FFC588, #F89939);
+    background-image: -o-linear-gradient(top, #FFC588, #F89939);
+    background-image: linear-gradient(to bottom, #FFC588, #F89939);
     background-repeat: repeat-x;
-    border-color: rgb(24, 204, 0) rgb(24, 204, 0) rgb(24, 204, 0);
+    border-color: #F89939 #F89939 #F89939;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0044cc', GradientType=0);
     filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
@@ -1059,7 +1088,7 @@ div.toctree-wrapper.compound {
 
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled] {
     color: rgb(223, 238, 234);
-    background-color: rgb(24, 204, 0);
+    background-color: #F89939;
 }
 
 .btn:hover, .btn:focus {
@@ -1074,7 +1103,7 @@ div.toctree-wrapper.compound {
     box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 5px rgba(0,0,0,.25);
 }
 
-div#reference.section table.longtable.docutils {
+table.longtable.docutils {
     max-width: 100%;
     margin: 0;
 }

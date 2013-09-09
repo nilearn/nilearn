@@ -16,7 +16,94 @@
     div.banner img {
         vertical-align: middle;
     }
+
+    .section {
+	padding: 0px;
+	margin: 2.5em 0.5em 14.5em 8em;
+    }
+
+    .col {
+	display: block;
+	float:left;
+	margin: 1% 0 1% 1.6%;
+    }
+    .col:first-child { margin-left: 0; }
+
+    .group:before,
+    .group:after {
+	/*content:"";*/
+	display:table;
+    }
+    .group:after {
+	clear:both;
+    }
+
+    div.section.group h3 {
+        background-color: white;
+	padding: 5px;
+        border-radius: 10px;
+        font-size: 170%;
+        margin-left: -0.2em;
+    }
+
+    div.section.group h3 a {
+	color: #355F7C;
+    }
+
+    /*  GRID OF THREE  */
+    .span_3_of_3 {
+	width: 100%;
+    }
+    .span_2_of_3 {
+	width: 66.1%;
+    }
+    .span_1_of_3 {
+	width: 32.2%;
+	margin: 0 0 5em 0;
+    }
+
+    @media only screen and (max-width: 480px) {
+	.col {
+		margin: 1% 0 1% 0%;
+	}
+    }
+
+    @media only screen and (max-width: 480px) {
+	.span_3_of_3 {
+		width: 100%;
+	}
+	.span_2_of_3 {
+		width: 100%;
+	}
+	.span_1_of_3 {
+		width: 100%;
+	}
+    }
     </style>
+
+
+.. raw:: html
+
+    <div id="index-paragraph">
+
+NiLearn is a software package to facilitate the use of statistical learning
+on NeuroImaging data.
+
+It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
+for multivariate statistics with applications such as predictive modelling,
+classification, decoding, or connectivity analysis.
+
+It requires only
+`nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
+<http://scikit-learn.org>`__.
+
+
+.. warning::
+
+   NiLearn is still an unreleased package in early development stages.
+
+
+
 
 ..
    Here we are building a banner: a javascript selects randomly 4 images in
@@ -47,6 +134,7 @@
 
     .. |center-div| raw:: html
 
+        <blockquote>
         <div style="text-align: center; vertical-align: middle; margin: 40px;" id="banner" class="banner">
 
     .. |end-div| raw:: html
@@ -78,31 +166,12 @@
     |center-div| |banner1| |banner2| |banner3| |banner4| |banner5| |end-div|
 
 
-
-
-
-   NiLearn is a software package to facilitate the use of statistical learning
-   on NeuroImaging data.
-
-   It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
-   for multivariate statistics with applications such as predictive modelling,
-   classification, decoding, or connectivity analysis.
-
-   It requires only
-   `nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
-   <http://scikit-learn.org>`__.
-
 .. raw:: html
 
-    <div id="download-container">
+    </blockquote>
 
-        <a href="https://github.com/nilearn/nilearn" class="btn btn-primary">Download NiLearn</a>
 
-    </div>
 
-.. warning::
-
-   NiLearn is still an unreleased package in early development stages.
 
 ..
  FIXME: I need the link below to make sure the banner gets copied to the
@@ -113,3 +182,21 @@
 
    </div>
 
+
+   <div class="section group">
+	<div class="col span_1_of_3">
+	  <h3><a href="#">
+	  First Steps</a></h3>
+	  <p>Getting started with NiLearn</p>
+	</div>
+	<div class="col span_1_of_3">
+	  <h3><a href="#">
+	  Examples</a></h3>
+	  <p>Visit our example gallery</p>
+	</div>
+	<div class="col span_1_of_3">
+	  <h3><a href="#">
+	  User Guide</a></h3>
+	  <p>Description</p>
+	</div>
+   </div>
