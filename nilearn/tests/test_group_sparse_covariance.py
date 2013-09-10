@@ -59,12 +59,11 @@ def test_group_sparse_covariance():
 
     # Check consistency between classes
     gsc1 = GroupSparseCovarianceCV(alphas=4, tol=1e-1, max_iter=20, verbose=0,
-                                   assume_centered=False, n_jobs=3,
-                                   early_stopping=True)
+                                   n_jobs=3, early_stopping=True)
     gsc1.fit(signals)
 
     gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_, tol=1e-1, max_iter=20,
-                                 verbose=0, assume_centered=False)
+                                 verbose=0)
     gsc2.fit(signals)
 
     np.testing.assert_almost_equal(gsc1.precisions_, gsc2.precisions_,

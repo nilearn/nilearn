@@ -131,8 +131,7 @@ def _assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
-def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3,
-                            assume_centered=False, verbose=0,
+def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
                             probe_function=None, precisions_init=None,
                             debug=False):
     """Compute sparse precision matrices and covariance matrices.
@@ -209,20 +208,19 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3,
     """
 
     emp_covs, n_samples = empirical_covariances(
-        subjects, assume_centered=assume_centered)
+        subjects, assume_centered=False)
 
     precisions = _group_sparse_covariance(
         emp_covs, n_samples, alpha, max_iter=max_iter, tol=tol,
-        assume_centered=assume_centered, verbose=verbose,
-        precisions_init=precisions_init, probe_function=probe_function,
-        debug=debug)
+        verbose=verbose, precisions_init=precisions_init,
+        probe_function=probe_function, debug=debug)
 
     return emp_covs, precisions
 
 
 def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
-                             assume_centered=False, precisions_init=None,
-                             probe_function=None, verbose=0, debug=False):
+                             precisions_init=None, probe_function=None,
+                             verbose=0, debug=False):
     """Internal version of group_sparse_covariance.
     See its docstring for details.
     """
@@ -476,9 +474,6 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     verbose : int, optional
         verbosity level. Zero means "no message".
 
-    assume_centered : bool
-        if True, assume that all signals passed to fit() are centered.
-
     memory : instance of joblib.Memory or string, optional
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -497,12 +492,10 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """
 
     def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=1,
-                 assume_centered=False,
                  memory=Memory(cachedir=None), memory_level=0):
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
-        self.assume_centered = assume_centered
 
         self.memory = memory
         self.memory_level = memory_level
@@ -535,14 +528,13 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
-                subjects, assume_centered=self.assume_centered)
+            subjects, assume_centered=False)
 
         logger.log("Computing precision matrices", verbose=self.verbose)
         ret = self._cache(
             _group_sparse_covariance, memory_level=1)(
                 self.covariances_, n_samples, self.alpha,
                 tol=self.tol, max_iter=self.max_iter,
-                assume_centered=self.assume_centered,
                 verbose=self.verbose - 1, debug=False)
 
         self.precisions_ = ret
@@ -718,9 +710,8 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
 
 
 def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
-                                 tol=1e-3, max_iter=10, assume_centered=False,
-                                 precisions_init=None, verbose=0, debug=False,
-                                 probe_function=None):
+                                 tol=1e-3, max_iter=10, precisions_init=None,
+                                 verbose=0, debug=False, probe_function=None):
     """Get estimated precision matrices for different values of alpha.
 
     Calling this function is faster than calling group_sparse_covariance()
@@ -742,7 +733,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
     verbose : int
         verbosity level
 
-    tol, max_iter, assume_centered, debug, precisions_init :
+    tol, max_iter, debug, precisions_init :
         Passed to group_sparse_covariance(). See the corresponding docstring
         for details.
 
@@ -772,17 +763,17 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         only if test_subjs is not None.
     """
     train_covs, train_n_samples = empirical_covariances(
-        train_subjs, assume_centered=assume_centered, standardize=True)
+        train_subjs, assume_centered=False, standardize=True)
     test_covs, _ = empirical_covariances(
-        test_subjs, assume_centered=assume_centered, standardize=True)
+        test_subjs, assume_centered=False, standardize=True)
 
     scores = []
     precisions_list = []
     for alpha in alphas:
         precisions = _group_sparse_covariance(
             train_covs, train_n_samples, alpha, tol=tol, max_iter=max_iter,
-            assume_centered=assume_centered, precisions_init=precisions_init,
-            verbose=verbose, debug=debug, probe_function=probe_function)
+            precisions_init=precisions_init, verbose=verbose, debug=debug,
+            probe_function=probe_function)
 
         # Compute log-likelihood
         if test_subjs is not None:
@@ -858,10 +849,6 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     max_iter : integer
         maximum number of iterations in the final optimization.
 
-    assume_centered : bool
-        if True, assume that every signal passed to fit() has zero mean. This
-        can avoid useless computation.
-
     verbose : integer
         verbosity level. 0 means nothing is printed to the user.
 
@@ -914,8 +901,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     """
     def __init__(self, alphas=4, n_refinements=4, cv=None,
                  tol_cv=1e-2, max_iter_cv=50,
-                 tol=1e-3, max_iter=100,
-                 assume_centered=False, verbose=1,
+                 tol=1e-3, max_iter=100, verbose=1,
                  n_jobs=1, debug=False, early_stopping=True):
         self.alphas = alphas
         self.n_refinements = n_refinements
@@ -924,7 +910,6 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         self.cv = cv
         self.tol = tol
         self.max_iter = max_iter
-        self.assume_centered = assume_centered
 
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -968,8 +953,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         """
         # Empirical covariances
         emp_covs, n_samples = \
-                  empirical_covariances(subjects,
-                                        assume_centered=self.assume_centered)
+                  empirical_covariances(subjects, assume_centered=False)
         n_subjects = emp_covs.shape[2]
 
         # One cv generator per subject must be created, because each subject
@@ -1013,7 +997,6 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                 delayed(group_sparse_covariance_path)(
                     train_subjs, alphas, test_subjs=test_subjs,
                     max_iter=self.max_iter_cv, tol=self.tol_cv,
-                    assume_centered=self.assume_centered,
                     verbose=self.verbose, debug=self.debug,
                     # Warm restart is useless with early stopping.
                     precisions_init=None if self.early_stopping else prec_init,
