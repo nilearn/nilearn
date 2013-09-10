@@ -39,6 +39,15 @@
 
    <div id="index-grid" class="section group">
     <div class="col span_1_of_2">
+        <h3><a href="introduction.html">First Steps</a></h3>
+        <p>Get started with NiLearn</p>
+
+        <h3><a href="auto_examples/index.html"> Examples</a></h3>
+        <p>Visit our example gallery</p>
+        <h3><a href="user_guide.html"> User Guide</a></h3>
+        <p>Browse the full documentation</p>
+    </div>
+    <div class="col span_1_of_2">
     <div class="jcarousel-wrapper">
      <div class="jcarousel">
 
@@ -66,15 +75,6 @@
         </div>
         </div>
 
-	<div class="col span_1_of_2">
-	  <h3><a href="introduction.html">First Steps</a></h3>
-	  <p>Get started with NiLearn</p>
-
-	  <h3><a href="auto_examples/index.html"> Examples</a></h3>
-	  <p>Visit our example gallery</p>
-	  <h3><a href="user_guide.html"> User Guide</a></h3>
-	  <p>Browse the full documentation</p>
-        </div>
    </div>
    <div style="clear: left"></div>
 
@@ -84,4 +84,5 @@
    NiLearn is still an unreleased package in early development stages.
 
 
+NiLearn is part of the `NiPy ecosystem <http://nipy.org>`_.
 

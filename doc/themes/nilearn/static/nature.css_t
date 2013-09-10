@@ -987,7 +987,7 @@ div#logo-banner .logo a img {
 }
 
 div#logo-banner .banner {
-    padding: 30px 10px 15px 30px;
+    padding: 20px 10px 15px 30px;
     font-size: 1.6em;
     line-height: 1.7em;
 }
@@ -1145,12 +1145,10 @@ table.longtable.docutils {
 
 /************ Layout of the index page **************/
 
-/*
-div#index-grid.section.group {
-    padding: 0px;
-    margin: 2.5em 0.5em 14.5em 4em;
+div#index-grid {
+    max-width: 45em;
+    margin: 1em auto;
 }
-*/
 
 div#index-grid p {
     margin: .2em 0;
@@ -1229,7 +1227,7 @@ div.index-paragraph {
     border-radius: 5px;
     padding: 0px 5px 0px 10px;
     background-color: #FFFBE8;
-    max-width: 50em;
+    max-width: 48em;
     margin: 15px auto 0px;
     color: #2C2C28;
 }
