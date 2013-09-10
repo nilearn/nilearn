@@ -8,16 +8,12 @@
 
     <div id="index-paragraph">
 
-NiLearn is a software package to facilitate the use of statistical learning
-on NeuroImaging data.
+NiLearn is a Python module for fast and easy statistical learning on
+NeuroImaging data.
 
 It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
 for multivariate statistics with applications such as predictive modelling,
 classification, decoding, or connectivity analysis.
-
-It requires only
-`nibabel <htpp://nipy.org/nibabel>`__ and `scikit-learn
-<http://scikit-learn.org>`__.
 
 
 .. warning::
@@ -118,6 +114,6 @@ It requires only
 	<div class="col span_1_of_3">
 	  <h3><a href="user_guide.html">
 	  User Guide</a></h3>
-	  <p>Description</p>
+	  <p>The full documentation</p>
 	</div>
    </div>
