@@ -145,7 +145,7 @@ high values by lowering *upper cutoff*. Default value is 0.9, so we try
 The resulting mask seems to be correct. Compared to the original one,
 it is very close.
 
-.. topic:: **Note**
+.. note::
 
     The full example described in this section can be found here:
     :doc:`plot_nifti_advanced.py <auto_examples/plot_nifti_advanced>`.
@@ -311,7 +311,7 @@ lasso algorithm
    :start-after: print("-- Computing covariance matrices ...")
    :end-before: plot_matrices(estimator.covariance_, -estimator.precision_,
 
-.. topic:: Note
+.. note::
 
    The full example can be found here: :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
 

@@ -14,7 +14,7 @@ body {
     border: 1px solid #aaa;
     margin: 0px auto;
     min-width: 40em;
-    max-width: 80em;
+    max-width: 83em;
     color: #3E4349;
 }
 
@@ -332,7 +332,7 @@ div.related ul li a:hover {
 
 div.body {
     margin: 0;
-    padding: 0.5em 20px 20px 20px;
+    padding: 1em 30px 30px 30px;
 }
 
 a.headerlink {
@@ -629,6 +629,7 @@ div.admonition, div.warning, div.topic {
     max-width: 100%;
     margin: 10px 0 10px 0;
     border-radius: 4px;
+    padding: 0 5px;
 }
 
 div.admonition p, div.warning p {
@@ -657,14 +658,18 @@ div.warning p.admonition-title {
     display: inline;
 }
 
-div.warning {
-    border: 1px solid #940000;
+div.admonition p.admonition-title + p {
+    display: inline;
 }
 
-div.warning p.admonition-title {
-    background-color: #CF0000;
-    border-bottom-color: #940000;
+div.warning {
+    border: 1px solid #940000;
+    /*color: #b94a48;*/
+    color: #940000;
+    background-color: #F3E5E5;
+    border: 1px solid #eed3d7;
 }
+
 
 div.admonition ul, div.admonition ol,
 div.warning ul, div.warning ol {
@@ -823,12 +828,6 @@ div#download-container .green p {
     margin-left: 0.5em;
 }
 
-
-div.warning {
-    color: #b94a48;
-    background-color: #F3E5E5;
-    border: 1px solid #eed3d7;
-}
 
 div#machine-learning-for-neuro-imaging h1 {
     background: rgba(153, 153, 153, 0.02);
@@ -1207,11 +1206,11 @@ div#index-grid p {
 }
 
  .section.group h3 {
-    background-color: white;
-    padding: 5px;
-    border-radius: 10px;
+    background-color: transparent;
+    padding: 0px;
     font-size: 170%;
-    margin-left: -0.2em;
+    margin: 1em 0px 0px;
+    border: none;
 }
 
   .section.group h3 a {
