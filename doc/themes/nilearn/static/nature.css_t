@@ -966,6 +966,7 @@ span.example-links {
 }
 
 div#logo-banner {
+    background-color: white;
     background-image: -webkit-linear-gradient(bottom, #F0F0F0, white 10%);
     padding: 10px 10px 15px 15px;
     overflow: hidden;
