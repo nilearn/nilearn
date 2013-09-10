@@ -364,16 +364,6 @@ div.bodywrapper {
     }
 }
 
-div.bodywrapper h1 {
-    margin: 0 -10px 0 -10px;
-    text-align: center;
-    background-color: #cde8ef;
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 190%;
-    border-radius: 0 15px 0 15px;
-    -moz-border-radius: 0 15px 0 15px;
-}
-
 @media (max-width: 800px) {
     div#index-paragraph {
         margin: 0;
@@ -403,9 +393,10 @@ div.body h4,
 div.body h5,
 div.body h6 {
     font-family: Arial, sans-serif;
-    background-color: #BED4EB;
+    background-color: #BFDCEC;
     font-weight: normal;
     color: #212224;
+    border-bottom: 1px solid #CCC;
 }
 
 
@@ -414,7 +405,6 @@ div.body h2,
 div.body h3 {
     padding: 10px;
     text-align: center;
-    border-radius: 10px;
     font-weight: bold;
     word-wrap: break-word;
 }
@@ -434,14 +424,37 @@ div.body h3 {
     font-size: 120%;
     background-color: #eee;
     padding: 5px;
-    border-radius: 10px;
-
 }
 
-div.body h4 { font-size: 110%; background-color: #D8DEE3; }
-div.body h5 { font-size: 100%; background-color: #D8DEE3; }
-div.body h6 { font-size: 100%; background-color: #D8DEE3; }
+div.body h4 { font-size: 110%; background-color: #eee; }
+div.body h5 { font-size: 100%; background-color: #eee; }
+div.body h6 { font-size: 100%; background-color: #eee; }
 
+/* more spacing for visual air */
+div.body h1, div.body h2, div.body h3, div.body h4, div.body h5, div.body
+h6 {
+    margin: 25px -10px 20px -10px;
+    padding: 6px 0px 3px 5px;
+}
+
+div.body h2 {
+    margin-top: 40px;
+}
+
+div.body h3, div.body hr {
+    margin-top: 35px;
+}
+
+div.body h2 {
+    margin-top: 30px;
+}
+
+div.bodywrapper h1 {
+    text-align: center;
+    /*background-color: #4EACC5;*/
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 200%;
+}
 
 
 div.sphinxsidebar {
@@ -480,6 +493,18 @@ div.sphinxsidebar ul {
 div.sphinxsidebar ul ul {
     list-style: square;
     margin-left: 20px;
+}
+
+div.sphinxsidebar ul ul li {
+    margin-top: 15px;
+}
+
+div.sphinxsidebar ul ul ul li {
+    margin-top: 5px;
+}
+
+div.sphinxsidebar ul ul ul ul {
+    display: none; /* Hide 3 level down in the contents */
 }
 
 p {
@@ -596,13 +621,14 @@ div.sphinxsidebarwrapper h3 a {
     color: white;
 }
 
-div.admonition, div.warning {
+div.admonition, div.warning, div.topic {
     font-size: 0.9em;
     margin: 1em 0 0 0;
-    border: 1px solid #86989B;
-    background-color: #f7f7f7;
+    border: 1px solid #CCC;
+    background-color: #EEE;
     max-width: 100%;
-    margin: 4em 3em 0 3em;
+    margin: 10px 0 10px 0;
+    border-radius: 4px;
 }
 
 div.admonition p, div.warning p {
@@ -626,12 +652,9 @@ div.admonition pre, div.warning pre {
 
 div.admonition p.admonition-title,
 div.warning p.admonition-title {
-    margin: 0;
-    padding: 0.1em 0 0.1em 0.5em;
-    color: white;
-    border-bottom: 1px solid #86989B;
+    margin-bottom: 3px;
     font-weight: bold;
-    background-color: #AFC1C4;
+    display: inline;
 }
 
 div.warning {

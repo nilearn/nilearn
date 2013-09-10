@@ -109,7 +109,7 @@ Applying a mask
 ................
 
 .. figure:: auto_examples/images/plot_haxby_simple_2.png
-    :target: ../auto_examples/plot_haxby_simple.html
+    :target: auto_examples/plot_haxby_simple.html
     :align: right
     :scale: 30%
 
