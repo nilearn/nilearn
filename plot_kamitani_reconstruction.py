@@ -219,26 +219,22 @@ print "  - F1-score: %f" % np.mean([
 
 # Generate a video from the reconstitution
 
-from matplotlib import animation
-fig = plt.figure()
-sp1 = plt.subplot(131)
-sp1.axis('off')
-plt.title('Stimulus')
-sp2 = plt.subplot(132)
-sp2.axis('off')
-plt.title('Reconstruction')
-sp3 = plt.subplot(133)
-sp3.axis('off')
-plt.title('Thresholded')
-ims = []
-for i, t in enumerate(y_pred):
-    ims.append((
-        sp1.imshow(np.reshape(y_test[i], (10, 10)), cmap=plt.cm.gray,
-        interpolation='nearest'),
-        sp2.imshow(np.reshape(t, (10, 10)), cmap=plt.cm.gray,
-        interpolation='nearest'),
-        sp3.imshow(np.reshape(t > .5, (10, 10)), cmap=plt.cm.gray,
-        interpolation='nearest')))
-
-im_ani = animation.ArtistAnimation(fig, ims, interval=1000)
-im_ani.save('video.mp4')
+for i in range(6):
+    j = 10 * i
+    fig = plt.figure()
+    sp1 = plt.subplot(131)
+    sp1.axis('off')
+    plt.title('Stimulus')
+    sp2 = plt.subplot(132)
+    sp2.axis('off')
+    plt.title('Reconstruction')
+    sp3 = plt.subplot(133)
+    sp3.axis('off')
+    plt.title('Binarized')
+    sp1.imshow(np.reshape(y_test[j], (10, 10)), cmap=plt.cm.gray,
+    interpolation='nearest'),
+    sp2.imshow(np.reshape(y_pred[j], (10, 10)), cmap=plt.cm.gray,
+    interpolation='nearest'),
+    sp3.imshow(np.reshape(y_pred[j] > .5, (10, 10)), cmap=plt.cm.gray,
+    interpolation='nearest')
+    plt.savefig('kamitani_reconstruction_%d' % i)
