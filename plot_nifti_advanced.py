@@ -5,7 +5,7 @@ Automatic mask computation with parameter tweaking
 In this example, the Nifti masker is used to automatically compute a mask.
 Using some visualization, one can see that the default parameters of the
 nifti masker are not suited for this dataset. They are consequently tweaked
-to obtained a decent mask.
+to obtain a decent mask.
 """
 
 import pylab as pl
