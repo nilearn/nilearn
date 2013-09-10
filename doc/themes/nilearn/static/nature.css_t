@@ -374,14 +374,6 @@ div.bodywrapper h1 {
     -moz-border-radius: 0 15px 0 15px;
 }
 
-div#index-paragraph {
-    margin: 3em 1.1em 2em 2em;
-}
-
-div#index-paragraph p {
-    font-size: 147%;
-}
-
 @media (max-width: 800px) {
     div#index-paragraph {
         margin: 0;
@@ -838,14 +830,14 @@ div#machine-learning-for-neuro-imaging h1 {
 
 div.body blockquote {
     background: none;
-    margin: 3em -2em;
-    border: solid lightgray;
+    margin: 2em -1em;
+/*    border: solid lightgray;
     border-width: 1px 0px;
     background: whiteSmoke;
     border-color: lightgray;
     background-image: -webkit-linear-gradient(#F0F0F0, white 10%);
     background-image: -moz-linear-gradient(top, #F0F0F0, white 10%);
-    background-image: -o-linear-gradient(top, #F0F0F0, white 10%);
+    background-image: -o-linear-gradient(top, #F0F0F0, white 10%);*/
 }
 
 @media (max-width: 800px) {
@@ -860,6 +852,7 @@ div.body blockquote {
 	margin-top: 0.5em;
     }
 }
+
 
 /* ------- tag cloud on the front page -------------------- */
 
@@ -970,9 +963,9 @@ div#logo-banner {
 
 div#logo-banner .logo {
     background-color: white;
-    padding: 27px 20px 0 15px;
+    padding: 7px 20px 0 15px;
     float: left;
-    max-width: 14em;
+    max-width: 16em;
 }
 
 @media (max-width: 800px) {
@@ -1150,12 +1143,18 @@ table.longtable.docutils {
 }
 
 
+/************ Layout of the index page **************/
 
+/*
 div#index-grid.section.group {
     padding: 0px;
     margin: 2.5em 0.5em 14.5em 4em;
 }
+*/
 
+div#index-grid p {
+    margin: .2em 0;
+}
 
 @media (max-width: 800px) {
     div#index-grid.section.group {
@@ -1199,19 +1198,9 @@ div#index-grid.section.group {
     font-size: 0.8em;
  }
 
-    /*  GRID OF THREE  */
- .span_3_of_3 {
-    width: 100%;
-}
- .span_2_of_3 {
-    width: 66.1%;
-}
- .span_1_of_3 {
-    width: 28.2%;
-    margin: 1.15em;
-}
- .span_1_of_3 p {
-    font-size: 1.0em;
+    /*  GRID OF TWO  */
+ .span_1_of_2 {
+    width: 49%;
 }
 
 
@@ -1222,13 +1211,7 @@ div#index-grid.section.group {
 }
 
 @media only screen and (max-width: 639px) {
-     .span_3_of_3 {
-	width: 100%;
-    }
-     .span_2_of_3 {
-	width: 100%;
-    }
-     .span_1_of_3 {
+     .span_1_of_2 {
 	width: 100%;
 	margin-top: 0;
 	margin-bottom: 2em;
@@ -1236,7 +1219,133 @@ div#index-grid.section.group {
 }
 
 @media (min-width: 801px) and (max-width: 1135px) {
-    .span_1_of_3 {
-	width: 27.2%
+    .span_1_of_2 {
+	width: 45%;
     }
+}
+
+div.index-paragraph {
+    border: 1px solid #FBEED5;
+    border-radius: 5px;
+    padding: 0px 5px 0px 10px;
+    background-color: #FFFBE8;
+    max-width: 50em;
+    margin: 15px auto 0px;
+    color: #2C2C28;
+}
+
+div.index-paragraph p {
+    font-size: 115%;
+    margin: .5em 0 .5em 0;
+}
+
+
+
+/************ The carrousel *******************/
+div.body .jcarousel-wrapper {
+    margin: 20px auto;
+    position: relative;
+    border: 10px solid #fff;
+    width: 250px;
+    -webkit-border-radius: 10px;
+       -moz-border-radius: 10px;
+            border-radius: 10px;
+    -webkit-box-shadow: 0 0 2px #999;
+       -moz-box-shadow: 0 0 2px #999;
+            box-shadow: 0 0 2px #999;
+}
+
+div.body .jcarousel {
+    position: relative;
+    overflow: hidden;
+    width: 250px;
+    height: 200px;
+}
+
+div.body .jcarousel ul {
+    width: 20000em;
+    position: absolute;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+div.body .jcarousel li {
+    float: left;
+    width: 250px;
+    line-height : 200px;
+}
+
+/** Carousel Controls **/
+
+div.body .jcarousel-control-prev,
+div.body .jcarousel-control-next {
+    position: absolute;
+    top: 90px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    background: #4E443C;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 0 1px #000;
+    font: 24px/27px Arial, sans-serif;
+    -webkit-border-radius: 30px;
+       -moz-border-radius: 30px;
+            border-radius: 30px;
+    -webkit-box-shadow: 0 0 2px #999;
+       -moz-box-shadow: 0 0 2px #999;
+            box-shadow: 0 0 2px #999;
+}
+
+div.body .jcarousel-control-prev {
+    left: -5px;
+}
+
+div.body .jcarousel-control-next {
+    right: -5px;
+}
+
+div.body .jcarousel-control-prev:hover span,
+div.body .jcarousel-control-next:hover span {
+    display: block;
+}
+
+div.body .jcarousel-control-prev.inactive,
+div.body .jcarousel-control-next.inactive {
+    opacity: .5;
+    cursor: default;
+}
+
+/** Carousel Pagination **/
+
+div.body .jcarousel-pagination {
+    position: absolute;
+    bottom: -10px;
+    left: 71px; /* This value must be adjusted with the number of imgs */
+}
+
+div.body .jcarousel-pagination a {
+    text-decoration: none;
+    display: inline-block;
+    
+    font-size: 11px;
+    line-height: 14px;
+    min-width: 14px;
+    
+    background: #fff;
+    color: #4E443C;
+    border-radius: 14px;
+    padding: 3px;
+    text-align: center;
+    
+    margin-right: 2px;
+    
+    opacity: .75;
+}
+
+div.body .jcarousel-pagination a.active {
+    background: #4E443C;
+    color: #fff;
+    opacity: 1;
 }
