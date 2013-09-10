@@ -106,17 +106,17 @@ It requires only
 
      <div id="index-grid" class="section group">
 	<div class="col span_1_of_3">
-	  <h3><a href="#">
+	  <h3><a href="introduction.html">
 	  First Steps</a></h3>
 	  <p>Getting started with NiLearn</p>
 	</div>
 	<div class="col span_1_of_3">
-	  <h3><a href="#">
+	  <h3><a href="auto_examples/index.html">
 	  Examples</a></h3>
 	  <p>Visit our example gallery</p>
 	</div>
 	<div class="col span_1_of_3">
-	  <h3><a href="#">
+	  <h3><a href="user_guide.html">
 	  User Guide</a></h3>
 	  <p>Description</p>
 	</div>
