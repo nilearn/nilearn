@@ -18,7 +18,7 @@ body {
     color: #3E4349;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 1010px) {
     body {
         margin: 0;
 	max-width: 100%;
@@ -28,15 +28,16 @@ body {
     }
 }
 
-@media (max-width: 640px) {
-    body {
-        margin: 0;
-    }
-}
 
 form.gsc-search-box {
     float: right;
     max-width: 20%;
+}
+
+@media (max-width: 1520px) {
+    form.gsc-search-box {
+        max-width: 33%;
+    }
 }
 
 div.search_form {
@@ -47,7 +48,7 @@ table.gsc-branding {
     display: none;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div.search_form {
         display: none;
     }
@@ -115,7 +116,7 @@ div.highlight-python pre {
     font-size: 90%;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div.highlight-python pre {
         font-size: 85%;
 	line-height: 1.5em;
@@ -306,7 +307,8 @@ div.related ul li {
     height: 2em;
     float: left;
 }
-@media(max-width: 360px) {
+
+@media (max-width: 800px) {
     div.related ul {
         padding-bottom: 2em;
     }
@@ -365,7 +367,7 @@ div.bodywrapper {
     border-right: 1px solid #ccc;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div.bodywrapper {
         margin: 0 0 0 0;
 	border-right: none;
@@ -388,6 +390,12 @@ div#index-paragraph {
 
 div#index-paragraph p {
     font-size: 147%;
+}
+
+@media (max-width: 800px) {
+    div#index-paragraph {
+        margin: 0;
+    }
 }
 
 div.body a {
@@ -429,7 +437,7 @@ div.body h3 {
     word-wrap: break-word;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div.body h1 {
         font-size: 1.3em;
     }
@@ -463,7 +471,7 @@ div.sphinxsidebar {
 /*    margin-left: -100%; */
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div.sphinxsidebar {
         display: none !important;
     }
@@ -618,6 +626,12 @@ div.admonition, div.warning {
 div.admonition p, div.warning p {
     margin: 0.5em 1em 0.5em;
     padding: 0;
+}
+
+@media (max-width: 800px) {
+    div.admonition.warning {
+        margin-top: 1em;
+    }
 }
 
 div.admonition.warning p.last {
@@ -777,7 +791,7 @@ div#download-container {
     text-align: center;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#download-container {
         text-align: center;
     }
@@ -793,7 +807,7 @@ div#download-container .green {
     min-width: 30%;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#download-container .green{
         margin: 0.5em;
     }
@@ -816,7 +830,7 @@ div#machine-learning-for-neuro-imaging h1 {
     padding: 0.7em 0 1.3em 1.7em;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#machine-learning-for-neuro-imaging h1 {
         margin: 0;
 	font-size: 1.2em;
@@ -825,7 +839,7 @@ div#machine-learning-for-neuro-imaging h1 {
     }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#machine-learning-for-neuro-imaging.section .admonition.warning {
         text-align: center;
 	max-width: 100%;
@@ -844,9 +858,16 @@ div.body blockquote {
     background-image: -o-linear-gradient(top, #F0F0F0, white 10%);
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     blockquote {
         margin: 0.1em;
+    }
+}
+
+@media (max-width: 800px) {
+    div.body blockquote {
+        border-top: none;
+	margin-top: 0.5em;
     }
 }
 
@@ -888,7 +909,7 @@ li.toctree-li {
    padding: 0 0 1.0em 0;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     li.toctree-li {
         font-size: 122%;
 	line-height: 2.5em;
@@ -951,7 +972,7 @@ div#logo-banner {
 }
 
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#logo-banner {
         max-width: 100%;
     }
@@ -964,7 +985,7 @@ div#logo-banner .logo {
     max-width: 14em;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#logo-banner .logo {
         max-width: 26%;
 	padding: 0 0 0 0;
@@ -975,7 +996,7 @@ div#logo-banner .logo a img {
         max-width: 100%;
     }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#logo-banner .logo a img {
         max-width: 85%;
 	margin: 5px;
@@ -1000,39 +1021,63 @@ div#logo-banner .banner h2 {
     color: #11557C;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     div#logo-banner .banner {
         font-size: 0.7em;
 	padding: 0 0 0 0;
     }
 }
 
-
-@media (max-width: 360) {
+@media (max-width: 800px) {
     div#logo-banner .banner h1 {
-         font-size: 190%;
+         font-size: 241%;
 	 margin: -0.7em 0 0.3em 0;
 	 text-align: center;
     }
 }
 
-@media (max-width: 360) {
+@media (max-width: 800px) {
     div#logo-banner .banner h2 {
-         font-size: 118%;
+   	 font-size: 168%;
+	 margin-left: 8em;
+	 text-align: center;
     }
 }
 
-div#banner.banner img {
-    margin: 0 1em 0 1em;
+@media (max-width: 360px) {
+    div#logo-banner .banner h1 {
+         font-size: 222%;
+	 margin: -0.7em 0 0.3em 0;
+	 text-align: center;
+    }
 }
 
 @media (max-width: 360px) {
+    div#logo-banner .banner h2 {
+   	 font-size: 134%;
+	 margin-left: 7em;
+	 text-align: left;
+    }
+}
+
+
+
+div#banner.banner {
+    margin: 20px !important;
+}
+
+div#banner.banner img {
+    margin: 0 0 0 0;
+}
+
+
+@media (max-width: 800px) {
     div#banner.banner {
         display: none;
     }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 800px) {
     ul.horizontal img {
 	width: 100% !important;
 	height: 100% !important;
@@ -1118,7 +1163,20 @@ table.longtable.docutils {
 
 div#index-grid.section.group {
     padding: 0px;
-    margin: 2.5em 0.5em 14.5em 8em;
+    margin: 2.5em 0.5em 14.5em 4em;
+}
+
+
+@media (max-width: 800px) {
+    div#index-grid.section.group {
+        margin: 0.5em 0.5em 14.5em 2em;
+    }
+}
+
+@media (min-width: 801px) and (max-width: 1135px) {
+    div#index-grid.section.group {
+        margin: 0.5em 0.5em 14.5em 0;
+    }
 }
 
  .col {
@@ -1148,6 +1206,7 @@ div#index-grid.section.group {
 
   .section.group h3 a {
     color: #355F7C;
+    font-size: 0.8em;
  }
 
     /*  GRID OF THREE  */
@@ -1158,20 +1217,21 @@ div#index-grid.section.group {
     width: 66.1%;
 }
  .span_1_of_3 {
-    width: 32.2%;
-    margin: 0 0 4.5em 0;
+    width: 28.2%;
+    margin: 1.15em;
 }
  .span_1_of_3 p {
-    font-size: 1.2em;
+    font-size: 1.0em;
 }
 
-@media only screen and (max-width: 480px) {
+
+@media only screen and (max-width: 639px) {
      .col {
 	margin: 1% 0 1% 0%;
     }
 }
 
-@media only screen and (max-width: 480px) {
+@media only screen and (max-width: 639px) {
      .span_3_of_3 {
 	width: 100%;
     }
@@ -1180,5 +1240,13 @@ div#index-grid.section.group {
     }
      .span_1_of_3 {
 	width: 100%;
+	margin-top: 0;
+	margin-bottom: 2em;
+    }
+}
+
+@media (min-width: 801px) and (max-width: 1135px) {
+    .span_1_of_3 {
+	width: 27.2%
     }
 }
