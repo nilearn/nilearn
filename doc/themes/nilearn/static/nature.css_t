@@ -1207,7 +1207,7 @@ div#index-grid p {
     background-color: transparent;
     padding: 0px;
     font-size: 170%;
-    margin: 1em 0px 0px;
+    margin: 1.25em 0px 0px;
     border: none;
 }
 
@@ -1264,7 +1264,7 @@ div.body .jcarousel-wrapper {
     margin: 20px auto;
     position: relative;
     border: 10px solid #fff;
-    width: 250px;
+    width: 300px;
     -webkit-border-radius: 10px;
        -moz-border-radius: 10px;
             border-radius: 10px;
@@ -1276,8 +1276,8 @@ div.body .jcarousel-wrapper {
 div.body .jcarousel {
     position: relative;
     overflow: hidden;
-    width: 250px;
-    height: 200px;
+    width: 300px;
+    height: 240px;
 }
 
 div.body .jcarousel ul {
@@ -1290,8 +1290,8 @@ div.body .jcarousel ul {
 
 div.body .jcarousel li {
     float: left;
-    width: 250px;
-    line-height : 200px;
+    width: 300px;
+    line-height : 240px;
 }
 
 /** Carousel Controls **/
@@ -1299,7 +1299,7 @@ div.body .jcarousel li {
 div.body .jcarousel-control-prev,
 div.body .jcarousel-control-next {
     position: absolute;
-    top: 90px;
+    top: 105px;
     width: 30px;
     height: 30px;
     text-align: center;
@@ -1340,7 +1340,7 @@ div.body .jcarousel-control-next.inactive {
 div.body .jcarousel-pagination {
     position: absolute;
     bottom: -10px;
-    left: 71px; /* This value must be adjusted with the number of imgs */
+    left: 96px; /* This value must be adjusted with the number of imgs */
 }
 
 div.body .jcarousel-pagination a {

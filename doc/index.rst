@@ -16,23 +16,23 @@
 .. Here we are building the carrousel
 
 .. |banner1| image:: auto_examples/images/plot_haxby_decoding_1.png
-   :width: 250
+   :width: 300
    :target: auto_examples/plot_haxby_decoding.html
 
 .. |banner2| image:: auto_examples/images/plot_haxby_simple_1.png
-   :width: 250
+   :width: 300
    :target: auto_examples/plot_haxby_simple.html
 
 .. |banner3| image:: auto_examples/images/plot_rest_clustering_1.png
-   :width: 250
+   :width: 300
    :target: auto_examples/plot_rest_clustering.html
 
 .. |banner4| image:: auto_examples/images/plot_canica_resting_state_1.png
-   :width: 250
+   :width: 300
    :target: auto_examples/plot_canica_resting_state.html
 
 .. |banner5| image:: auto_examples/images/plot_haxby_searchlight_1.png
-   :width: 250
+   :width: 300
    :target: auto_examples/plot_haxby_searchlight.html
 
 .. raw:: html
