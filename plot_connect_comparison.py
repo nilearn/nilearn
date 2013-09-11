@@ -5,8 +5,6 @@ Estimation of precision matrices in sparse gaussian graphical models
 This example shows a comparison of graph lasso and group-sparse covariance
 estimates for a synthetic dataset.
 """
-n_subjects = 20  # total number of subjects
-n_displayed = 3  # number of subjects displayed
 
 import pylab as pl
 
@@ -20,6 +18,8 @@ def plot_matrix(m, ylabel=""):
 # Generate synthetic data
 from nilearn._utils.testing import generate_group_sparse_gaussian_graphs
 
+n_subjects = 20  # number of subjects
+n_displayed = 3  # number of subjects displayed
 subjects, precisions, topology = generate_group_sparse_gaussian_graphs(
     n_subjects=n_subjects, n_features=10, min_n_samples=30, max_n_samples=50,
     density=0.1)

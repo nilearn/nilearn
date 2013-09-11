@@ -161,7 +161,7 @@ Classes
 .. _signal_ref:
 
 :mod:`nilearn.signal`: Preprocessing Time Series
-==============================================
+================================================
 
 .. automodule:: nilearn.signal
    :no-members:
@@ -183,10 +183,10 @@ Functions
 
 .. _utils_ref:
 
-:mod:`nilearn.utils`: Manipulating Niimgs
-======================================
+:mod:`nilearn._utils`: Manipulating Niimgs
+==========================================
 
-.. automodule:: nilearn.utils
+.. automodule:: nilearn._utils
    :no-members:
    :no-inherited-members:
 
@@ -194,7 +194,7 @@ Functions
 
 Functions
 ---------
-.. currentmodule:: nilearn.utils
+.. currentmodule:: nilearn._utils
 
 .. autosummary::
    :toctree: generated/

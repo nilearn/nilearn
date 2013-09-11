@@ -5,7 +5,7 @@ ICA of resting-state fMRI datasets
 ==================================
 
 Independent Analysis of resting-state fMRI data is useful to extract
-brain networks in an unsupervised maner (data-driven):
+brain networks in an unsupervised manner (data-driven):
 
 * `Kiviniemi et al, *Independent component analysis of nondeterministic
   fMRI signal sources*, Neuroimage 2009 <http://dx.doi.org/10.1016/S1053-8119(03)00097-1>`_
