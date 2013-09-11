@@ -41,10 +41,10 @@ def test_group_sparse_covariance():
     # Use a probe to test for number of iterations and decreasing objective.
     probe = Probe()
     emp_covs, omega = group_sparse_covariance(
-        signals, alpha, max_iter=7, tol=None, verbose=0, probe_function=probe)
+        signals, alpha, max_iter=4, tol=None, verbose=0, probe_function=probe)
     objective = probe.objective
     # check number of iterations
-    assert_equal(len(objective), 7)
+    assert_equal(len(objective), 4)
 
     # np.testing.assert_array_less is a strict comparison.
     # Zeros can occur in np.diff(objective).
