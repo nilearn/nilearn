@@ -13,8 +13,8 @@ body {
     padding: 0;
     border: 1px solid #aaa;
     margin: 0px auto;
-    min-width: 40em;
-    max-width: 83em;
+    min-width: 20em;
+    max-width: 84em;
     color: #3E4349;
 }
 
@@ -91,14 +91,12 @@ pre {
     font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
     letter-spacing: 0.015em;
     padding: 10px;
-    background-color: White;
-    color: #222;
+    background-color: #F9FDFF;
+    color: #111;
     line-height: 1.2em;
-    border: 1px solid #C6C9CB;
+    border: 1px solid #EEE;
     font-size: 1.1em;
     margin: 1.5em 0 1.5em 0;
-    -webkit-box-shadow: 1px 1px 1px #d8d8d8;
-    -moz-box-shadow: 1px 1px 1px #d8d8d8;
 }
 
 div.highlight-python pre {
@@ -332,7 +330,8 @@ div.related ul li a:hover {
 
 div.body {
     margin: 0;
-    padding: 1em 30px 30px 30px;
+    padding: 1em 20px 30px 20px;
+    max-width: 62em;
 }
 
 a.headerlink {
@@ -353,8 +352,9 @@ div.body p, div.body dd, div.body li {
 
 
 div.bodywrapper {
-    margin: 0 246px 0 0;
-    border-right: 1px solid #ccc;
+    margin: 0 246px 0 auto;
+    border-right: 1px solid #EEE;
+    max-width: 65.5em;
 }
 
 @media (max-width: 800px) {
@@ -433,7 +433,7 @@ div.body h6 { font-size: 100%; background-color: #eee; }
 /* more spacing for visual air */
 div.body h1, div.body h2, div.body h3, div.body h4, div.body h5, div.body
 h6 {
-    margin: 25px -10px 20px -10px;
+    margin: 25px -15px 20px -15px;
     padding: 6px 0px 3px 5px;
 }
 
@@ -622,7 +622,7 @@ div.sphinxsidebarwrapper h3 a {
 }
 
 div.admonition, div.warning, div.topic {
-    font-size: 0.9em;
+    /*font-size: 0.9em;*/
     margin: 1em 0 0 0;
     border: 1px solid #CCC;
     background-color: #EEE;
@@ -1016,7 +1016,7 @@ div#logo-banner .banner {
 
 div#logo-banner .banner h1 {
     text-align: left;
-    margin : -0.7em 0 0.3em 4.5em;
+    margin : -0.7em 0 0.3em 4.2em;
 }
 
 div#logo-banner .banner h2 {
@@ -1036,8 +1036,7 @@ div#logo-banner .banner h2 {
 @media (max-width: 800px) {
     div#logo-banner .banner h1 {
          font-size: 241%;
-	 margin: -0.7em 0 0.3em 0;
-	 text-align: center;
+	 margin: -0.7em 0 0.3em 4.2em;
     }
 }
 
@@ -1052,8 +1051,7 @@ div#logo-banner .banner h2 {
 @media (max-width: 360px) {
     div#logo-banner .banner h1 {
          font-size: 222%;
-	 margin: -0.7em 0 0.3em 0;
-	 text-align: center;
+	 margin: -0.7em 0 0.3em 4.2em;
     }
 }
 
