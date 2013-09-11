@@ -20,7 +20,7 @@ def test_searchlight():
     mask = np.ones((5, 5, 5), np.bool)
     mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
     # Create a condition array
-    cond = np.asarray([int(i > (frames / 2)) for i in range(frames)])
+    cond = np.arange(frames, dtype=int) > frames / 2
 
     # Create an activation pixel.
     data[2, 2, 2, :] = 0
@@ -36,9 +36,9 @@ def test_searchlight():
         score_func = precision_score
 
     # Define cross validation
-    from sklearn.cross_validation import KFold
-    cv = KFold(cond.size, k=4)
-
+    from sklearn.cross_validation import check_cv
+    # avoid using KFold for compatibility with sklearn 0.10-0.13
+    cv = check_cv(4, cond)
     n_jobs = 1
 
     # Run Searchlight with different radii
