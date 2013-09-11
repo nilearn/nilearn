@@ -77,7 +77,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'NiLearn'
-copyright = u'INRIA Parietal 2010'
+copyright = u'INRIA Parietal 2010-2013'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -124,6 +124,7 @@ add_function_parentheses = False
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
@@ -132,12 +133,17 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'scikit-learn'
+html_theme = 'nilearn'
+
+# The style sheet to use for HTML and HTML Help pages. A file of that name
+# must exist either in Sphinx' static/ path, or in one of the custom paths
+# given in html_static_path.
+html_style = 'nature.css'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'oldversion':False, 'collapsiblesidebar': True}
+#html_theme_options = {'oldversion':False, 'collapsiblesidebar': False}
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['themes']
@@ -152,7 +158,7 @@ html_short_title = 'NiLearn'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'logos/nilearn-logo-small.png'
+html_logo = 'logos/nilearn-logo.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -189,7 +195,7 @@ html_use_index = False
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -224,7 +230,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = "logos/scikit-learn-logo.png"
+latex_logo = "logos/nilearn-logo.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
