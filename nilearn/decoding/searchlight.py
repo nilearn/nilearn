@@ -32,39 +32,39 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
 
     Parameters
     ----------
-    X: array-like of shape at least 2D
+    X : array-like of shape at least 2D
         data to fit.
 
-    y: array-like
+    y : array-like
         target variable to predict.
 
-    estimator: estimator object implementing 'fit'
+    estimator : estimator object implementing 'fit'
         object to use to fit the data
 
-    A: numpy sparse matrix.
+    A : scipy sparse matrix.
         adjacency matrix. Defines for each sample the neigbhoring samples
         following a given structure of the data.
 
-    score_func: callable, optional
+    score_func : callable, optional
         callable taking as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv: cross-validation generator, optional
+    cv : cross-validation generator, optional
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-    n_jobs: int, optional
+    n_jobs : int, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose: int, optional
+    verbose : int, optional
         The verbosity level. Defaut is 0
 
     Returns
     -------
-    scores: array-like of shape (number of rows in A)
+    scores : array-like of shape (number of rows in A)
         search_light scores
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
@@ -85,10 +85,10 @@ class GroupIterator(object):
 
     Parameters
     ----------
-    n_features: int
+    n_features : int
         Total number of features
 
-    n_jobs: int, optional
+    n_jobs : int, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'. Defaut is 1
     """
@@ -110,40 +110,40 @@ def _group_iter_search_light(list_rows, estimator, X, y,
 
     Parameters
     -----------
-    list_rows: array of arrays of int
+    list_rows : array of arrays of int
         adjacency rows. For a voxel with index i in X, list_rows[i] is the list
         of neighboring voxels indices (in X).
 
-    estimator: estimator object implementing 'fit'
+    estimator : estimator object implementing 'fit'
         object to use to fit the data
 
-    X: array-like of shape at least 2D
+    X : array-like of shape at least 2D
         data to fit.
 
-    y: array-like
+    y : array-like
         target variable to predict.
 
-    score_func: callable, optional
+    score_func : callable, optional
         callable taking as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv: cross-validation generator, optional
+    cv : cross-validation generator, optional
         A cross-validation generator. If None, a 3-fold cross validation is
         used or 3-fold stratified cross-validation when y is supplied.
 
-    thread_id: int
+    thread_id : int
         process id, used for display.
 
-    total: int
+    total : int
         Total number of voxels, used for display
 
-    verbose: int, optional
+    verbose : int, optional
         The verbosity level. Defaut is 0
 
     Returns
     -------
-    par_scores: numpy.ndarray
+    par_scores : numpy.ndarray
         score for each voxel. dtype: float64.
     """
     par_scores = np.zeros(len(list_rows))
@@ -181,34 +181,35 @@ class SearchLight(BaseEstimator):
 
     Parameters
     -----------
-    mask: boolean matrix.
-        data mask
+    mask_img : niimg
+        boolean image giving location of voxels containing usable signals.
 
-    process_mask: boolean matrix, optional
-        mask of the data that will be processed by searchlight
+    process_mask_img : niimg, optional
+            boolean image giving voxels on which searchlight should be
+            computed.
 
-    radius: float, optional
-        radius of the searchlight sphere, in millimeters.
+    radius : float, optional
+        radius of the searchlight ball, in millimeters. Defaults to 2.
 
-    estimator: estimator object implementing 'fit'
+    estimator : estimator object implementing 'fit'
         The object to use to fit the data
 
-    n_jobs: int, optional. Default is -1.
+    n_jobs : int, optional. Default is -1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    score_func: callable, optional
+    score_func : callable, optional
         callable taking as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv: cross-validation generator, optional
+    cv : cross-validation generator, optional
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
 
-    verbose: int, optional
-        The verbosity level. Defaut is False
+    verbose : int, optional
+        Verbosity level. Defaut is False
 
     Notes
     ------
@@ -232,19 +233,6 @@ class SearchLight(BaseEstimator):
     def __init__(self, mask_img, process_mask_img=None, radius=2.,
                  estimator=LinearSVC(C=1), n_jobs=1, score_func=None, cv=None,
                  verbose=0):
-        """
-        Parameters
-        ==========
-        mask_img: niimg
-            boolean image giving location of voxels containing usable signals.
-
-        process_mask: niimg, optional
-            boolean image giving voxels on which searchlight should be
-            computed.
-
-        radius: float, optional
-            radius of searchlight ball, in millimeters. Defaults to 2.
-        """
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
         self.radius = radius
@@ -259,16 +247,16 @@ class SearchLight(BaseEstimator):
 
         Parameters
         ----------
-        niimg: niimg
+        niimg : niimg
             4D image.
 
-        y: 1D array-like
+        y : 1D array-like
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
         Attributes
         ----------
-        scores_: numpy.ndarray
+        scores_ : numpy.ndarray
             search_light scores. Same shape as input parameter
             process_mask_img.
         """

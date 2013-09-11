@@ -170,7 +170,6 @@ hr {
 tt {
     background-color: #ecf0f3;
     color: #222;
-    /* padding: 1px 2px; */
     font-size: 1.1em;
     font-family: monospace;
 }
@@ -217,10 +216,18 @@ dd ul, dd table {
     margin-bottom: 10px;
 }
 
+
 dd {
     margin-top: 3px;
     margin-bottom: 10px;
     margin-left: 30px;
+}
+
+@media (max-width: 800px) {
+    /* order is important: must be after general declaration for dd */
+    dd {
+        margin-left: 0.5em;
+    }
 }
 
 .refcount {
@@ -254,22 +261,12 @@ pre a {
     text-decoration: underline;
 }
 
-.first {
-    margin-top: 0 !important;
-}
-
 div.document {
     background-color: white;
     text-align: left;
     background-image: url(contents.png);
     background-repeat: repeat-x;
 }
-
-/*
-div.documentwrapper {
-    width: 100%;
-}
-*/
 
 div.clearer {
     clear: both;
@@ -369,6 +366,9 @@ div.body p, div.body dd, div.body li {
     line-height: 1.5em;
 }
 
+div.body p.first {
+    margin-top: 0;
+}
 
 div.bodywrapper {
     margin: 0 246px 0 auto;
@@ -470,7 +470,6 @@ div.body h2 {
 
 div.bodywrapper h1 {
     text-align: center;
-    /*background-color: #4EACC5;*/
     font-family: Helvetica, Arial, sans-serif;
     font-size: 200%;
 }
@@ -482,7 +481,6 @@ div.sphinxsidebar {
     width: 226px;
     float: right;
     text-align: left;
-/*    margin-left: -100%; */
 }
 
 @media (max-width: 800px) {
@@ -641,7 +639,6 @@ div.sphinxsidebarwrapper h3 a {
 }
 
 div.admonition, div.warning, div.topic {
-    /*font-size: 0.9em;*/
     margin: 1em 0 0 0;
     border: 1px solid #CCC;
     background-color: #EEE;
@@ -683,7 +680,6 @@ div.admonition p.admonition-title + p {
 
 div.warning {
     border: 1px solid #940000;
-    /*color: #b94a48;*/
     color: #940000;
     background-color: #F3E5E5;
     border: 1px solid #eed3d7;
@@ -869,32 +865,45 @@ div#machine-learning-for-neuro-imaging h1 {
     }
 }
 
-div.body blockquote {
+.body blockquote {
     background: none;
-    margin: 2em -1em;
-/*    border: solid lightgray;
-    border-width: 1px 0px;
-    background: whiteSmoke;
-    border-color: lightgray;
-    background-image: -webkit-linear-gradient(#F0F0F0, white 10%);
-    background-image: -moz-linear-gradient(top, #F0F0F0, white 10%);
-    background-image: -o-linear-gradient(top, #F0F0F0, white 10%);*/
+    margin: 0.5em;
 }
 
-@media (max-width: 800px) {
-    blockquote {
-        margin: 0.1em;
-    }
-}
-
+/* Tablets and phones */
 @media (max-width: 800px) {
     div.body blockquote {
-        border-top: none;
-	margin-top: 0.5em;
+        margin-top: 0.2em;
     }
 }
 
+/** Function and methods parameters **/
+@media (max-width: 800px) {
+    table.field-list td, table.field-list th {
+        display: inline-block;
+        width: 100%;
+    }
 
+    table.field-list th.field-name {
+        text-align: center;
+    }
+}
+/* Description of function/method parameters */
+table.field-list td.field-body blockquote p {
+    margin-top: 0;
+}
+
+table.field-list tr td.field-body blockquote {
+    margin-top: 0.2em;
+}
+
+table.field-list tr td.field-body p.first {
+    margin-top: 0;
+}
+
+table.field-list tr td.field-body p {
+    margin-top: 0.5em;
+}
 /* ------- tag cloud on the front page -------------------- */
 
 div.tags {
@@ -936,7 +945,7 @@ li.toctree-li {
 @media (max-width: 800px) {
     li.toctree-li {
         font-size: 122%;
-	line-height: 2.5em;
+        line-height: 2.5em;
     }
 }
 
@@ -1215,7 +1224,6 @@ div#index-grid p {
 
  .group:before,
  .group:after {
-    /*content:"";*/
     display:table;
 }
  .group:after {
@@ -1371,19 +1379,19 @@ div.body .jcarousel-pagination {
 div.body .jcarousel-pagination a {
     text-decoration: none;
     display: inline-block;
-    
+
     font-size: 11px;
     line-height: 14px;
     min-width: 14px;
-    
+
     background: #fff;
     color: #4E443C;
     border-radius: 14px;
     padding: 3px;
     text-align: center;
-    
+
     margin-right: 2px;
-    
+
     opacity: .75;
 }
 
