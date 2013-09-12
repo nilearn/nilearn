@@ -296,11 +296,6 @@ div.related ul li {
     float: left;
 }
 
-@media (max-width: 800px) {
-    div.related ul {
-        padding-bottom: 2em;
-    }
-}
 
 div.related ul li.right {
     display: none;
@@ -311,9 +306,33 @@ div.related ul li#navbar-ecosystem {
     margin-right: 0.5em;
 }
 
-@media (min-width: 360px) {
-    div.related ul li a#navbar-about {
+@media (min-width: 800px) {
+    div.related ul li#navbar-about {
         display: none;
+    }
+}
+
+@media (max-width: 569px) and (orientation: portrait){
+    div.related ul {
+        padding-bottom: 2em;
+    }
+}
+
+@media (max-width: 312px) and (orientation: portrait){
+    div.related ul {
+        padding-bottom: 4em;
+    }
+}
+
+@media (max-width: 569px) and (orientation: landscape){
+    div.related ul {
+        padding-bottom: 2em;
+    }
+}
+
+@media (max-width: 312px) and (orientation: landscape){
+    div.related ul {
+        padding-bottom: 4em;
     }
 }
 
@@ -1271,6 +1290,12 @@ div.body .jcarousel-wrapper {
     -webkit-box-shadow: 0 0 2px #999;
        -moz-box-shadow: 0 0 2px #999;
             box-shadow: 0 0 2px #999;
+}
+
+@media (max-width: 400px) {
+    div.body .jcarousel-wrapper {
+        display: none;
+    }
 }
 
 div.body .jcarousel {
