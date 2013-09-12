@@ -32,6 +32,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
 
+{%- if (pagename == 'index') %}
+<script type="text/javascript" src="_static/jquery.jcarousel.min.js"></script>
+<script type="text/javascript">
+(function($) {
+    $(function() {
+	$('.jcarousel').jcarousel();
+        $('.jcarousel-control-prev')
+            .on('active.jcarouselcontrol', function() {
+                $(this).removeClass('inactive');
+            })
+            .on('inactive.jcarouselcontrol', function() {
+                $(this).addClass('inactive');
+            })
+            .jcarouselControl({
+                target: '-=1'
+            });
+
+        $('.jcarousel-control-next')
+            .on('active.jcarouselcontrol', function() {
+                $(this).removeClass('inactive');
+            })
+            .on('inactive.jcarouselcontrol', function() {
+                $(this).addClass('inactive');
+            })
+            .jcarouselControl({
+                target: '+=1'
+            });
+
+        $('.jcarousel-pagination')
+            .on('active.jcarouselpagination', 'a', function() {
+                $(this).addClass('active');
+            })
+            .on('inactive.jcarouselpagination', 'a', function() {
+                $(this).removeClass('active');
+            })
+            .jcarouselPagination();
+    });
+})(jQuery);
+</script>
+{% endif %}
+
 <script type="text/javascript">
 
         var _gaq = _gaq || [];
@@ -120,21 +161,11 @@
       </div>
     </li>
   </ul>
-{% endif %}
-<h4> Developer </h4>
+<h4> Development </h4>
   <ul class="simple">
-    <li><a class="reference external"
-	href="https://github.com/nilearn/nilearn">NiLearn GitHub</a></li>
-  </ul>
-{%- if (pagename == 'index') %}
-
-<h4> Licensing </h4>
-  <ul class="simple">
+    <li><p><a class="reference external"
+	href="https://github.com/nilearn/nilearn">NiLearn on GitHub</a></p></li>
     <li><p>All material Free Software: <strong>BSD license</strong> (3 clause).</p></li>
-  </ul>
-
-<h4> About </h4>
-  <ul class="simple">
     <li><p><a href="{{pathto('AUTHORS')}}">Authors</a></p></li>
   </ul>
 {% endif %}
