@@ -149,7 +149,7 @@ It is visible that the group-sparse estimation outputs matrices with
 the same sparsity pattern, but different values for the non-zero
 coefficients. This is not the case for the graph lasso output, which
 all have similar but different structures. Note that the graph lasso
-applied to all subjects at once give a sparsity pattern close to that
+applied to all subjects at once gives a sparsity pattern close to that
 obtained with the group-sparse one, but cannot provide per-subject
 information.
 

@@ -197,7 +197,7 @@ number of iterations. This is simple but most of the time gives slow
 or bad results. The convergence rate highly depends on the number of
 features (size of one covariance matrix), and on the value of the
 regularization parameter (high values give fast convergence, and low
-values slow convergenc). If the requested iteration number is too low,
+values slow convergence). If the requested iteration number is too low,
 large or weakly regularized problems will be far from the optimum. On
 the other hand, if the requested iteration number is too large, a lot
 of time is wasted for almost no gain.
@@ -233,15 +233,11 @@ instead.
 In practice, using the duality gap value to stop iteration leads to
 guaranteed uncertainty on the objective value, in any case. No time is
 lost on over optimizing rapidly converging problems. However, the
-duality gap criteria can lead to prohibitive computation time on
-slowing converging cases. In practice, finding a proper value for the
+duality gap criterion can lead to prohibitive computation time on
+slowly converging cases. In practice, finding a proper value for the
 duality gap uncertainty can be tricky, because it is most easily given
 as an absolute uncertainty on an objective whose value highly depends
 on input data.
-
-..
-    implementing a relative stopping criterion should be done one way
-    or another.
 
 
 Variation of norm of estimate
