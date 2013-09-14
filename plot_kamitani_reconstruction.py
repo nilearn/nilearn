@@ -203,12 +203,9 @@ y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
                             f1_score
 
-all_black = np.zeros_like(y_test)
-all_white = np.ones_like(y_test)
-
 print "Scores"
 print "------"
-print "  - Percentage: %f" % np.mean([
+print "  - Accuracy (percent): %f" % np.mean([
         accuracy_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
 print "  - Precision: %f" % np.mean([
         precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
