@@ -17,9 +17,14 @@ are used as training set and structured images are used for reconstruction.
 ### Imports ###################################################################
 
 from matplotlib import pyplot as plt
+import time
+import sys
 
 ### Load Kamitani dataset #####################################################
 from nilearn import datasets
+print "Fetching dataset...",
+t0 = time.time()
+
 dataset = datasets.fetch_kamitani()
 X_random = dataset.func[12:]
 X_figure = dataset.func[:12]
@@ -27,11 +32,14 @@ y_random = dataset.label[12:]
 y_figure = dataset.label[:12]
 y_shape = (10, 10)
 
+print " Done (%.2fs)." % (time.time() - t0)
+
 ### Preprocess and mask #######################################################
 import numpy as np
 from nilearn.input_data import MultiNiftiMasker
 
-print "Preprocessing data"
+print "Preprocessing data...",
+t0 = time.time()
 
 # Load and mask fMRI data
 masker = MultiNiftiMasker(mask=dataset.mask, detrend=True, standardize=False)
@@ -109,10 +117,12 @@ y_train = y_train[y_train[:, 0] != -1]
 X_test = X_test[y_test[:, 0] != -1]
 y_test = y_test[y_test[:, 0] != -1]
 
+print " Done (%.2fs)." % (time.time() - t0)
 
 ### Prediction function #######################################################
 
-print "Learning"
+print "Training classifiers... \r",
+t0 = time.time()
 
 # OMP
 from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
@@ -121,15 +131,21 @@ from sklearn.pipeline import Pipeline
 
 # Create as many OMP as voxels to predict
 clfs = []
+n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
-    print('Learning %d/%d' % (i, y_train.shape[1]))
+    print "Training classifiers %03d/%d... \r" % (i + 1, n_clfs),
     clf = Pipeline([('selection', SelectKBest(f_classif, 500)),
                     ('clf', OMP(n_nonzero_coefs=10))])
     clfs.append(clf)
 
 clfs = [clf.fit(X_train, y_train[:, i]) for i, clf in enumerate(clfs)]
+print "Training classifiers %03d/%d... Done (%.2fs)." % (
+        n_clfs, n_clfs, time.time() - t0)
+
+
 ### Prediction ################################################################
-print "Calculating scores and outputs"
+print "Calculating scores and outputs..."
+t0 = time.time()
 
 y_pred = []
 for clf in clfs:
@@ -187,18 +203,13 @@ def _split_multi_scale(y, y_shape):
     return (y_pred, y_pred_tall, y_pred_large, y_pred_big)
 
 
-### Learn fusion params ######################################################
-
-coefs = [clf.steps[1][1].coef_ for clf in clfs]
-coefs = np.asarray(coefs).T
-
 y_pred, y_pred_tall, y_pred_large, y_pred_big = \
         _split_multi_scale(y_pred, y_shape)
 
-yc, yc_tall, yc_large, yc_big = _split_multi_scale(coefs, y_shape)
-
 y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
     + .25 * y_pred_big)
+
+print " Done (%.2fs)." % (time.time() - t0)
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
                             f1_score
