@@ -154,7 +154,7 @@ y_pred = np.asarray(y_pred).T
 
 
 ### Multi scale ###############################################################
-def _split_multi_scale(y, y_shape):
+def split_multi_scale(y, y_shape):
     """ Split data into 4 original multi_scale images
     """
     yw, yh = y_shape
@@ -204,7 +204,7 @@ def _split_multi_scale(y, y_shape):
 
 
 y_pred, y_pred_tall, y_pred_large, y_pred_big = \
-        _split_multi_scale(y_pred, y_shape)
+        split_multi_scale(y_pred, y_shape)
 
 y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
     + .25 * y_pred_big)
@@ -225,7 +225,7 @@ print "  - Recall: %f" % np.mean([
 print "  - F1-score: %f" % np.mean([
         f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
 
-# Generate a video from the reconstitution
+# Generate six images from reconstruction
 
 for i in range(6):
     j = 10 * i
