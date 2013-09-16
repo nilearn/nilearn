@@ -25,10 +25,10 @@ labels = np.loadtxt(dataset.session_target[0], dtype=np.str, skiprows=1,
 # With scikit-learn >= 0.14, replace this line by: target = labels
 _, target = sklearn.utils.fixes.unique(labels, return_inverse=True)
 
-### Remove resting state condition ############################################
+### Keep only data corresponding to faces or houses ###########################
+condition_mask = np.logical_or(labels == 'face', labels == 'house')
+target = target[condition_mask]
 
-no_rest_indices = (labels != 'rest')
-target = target[no_rest_indices]
 
 ### Load the mask #############################################################
 
@@ -41,8 +41,8 @@ fmri_masked = nifti_masker.fit_transform(dataset.func[0])
 
 ### Prediction function #######################################################
 
-# First, we remove rest condition
-fmri_masked = fmri_masked[no_rest_indices]
+# First, we narrow to the face vs house classification
+fmri_masked = fmri_masked[condition_mask]
 
 # Here we use a Support Vector Classification, with a linear kernel and C=1
 from sklearn.svm import SVC
@@ -55,10 +55,10 @@ y_pred = svc.predict(fmri_masked)
 ### Unmasking #################################################################
 
 # Look at the discriminating weights
-sv = svc.support_vectors_
+coef_ = svc.coef_
 
 # Reverse masking thanks to the Nifti Masker
-niimg = nifti_masker.inverse_transform(sv[0])
+niimg = nifti_masker.inverse_transform(coef_)
 
 ### Visualization #############################################################
 import pylab as pl
@@ -73,7 +73,7 @@ pl.axis('off')
 pl.title('SVM vectors')
 pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
           interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(np.rot90(act[..., 27]), cmap=pl.cm.hot,
+pl.imshow(np.rot90(act[..., 27, 0]), cmap=pl.cm.hot,
           interpolation='nearest')
 
 

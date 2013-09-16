@@ -218,7 +218,7 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
     for fname in sorted(os.listdir(src_dir), key=sort_key):
         if fname == 'setup.py':
             continue
-        if fname.endswith('py'):
+        if fname.endswith('.py'):
             link_name = generate_file_rst(fname, target_dir, src_dir,
                                        plot_gallery)
             thumb = os.path.join(dir, 'images', 'thumb', fname[:-3] + '.png')

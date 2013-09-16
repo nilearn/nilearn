@@ -59,13 +59,14 @@ These conditions are presented as string into a CSV file. The numpy function
 
 .. literalinclude:: ../plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################
-    :end-before: ### Remove resting state condition ############################################
+    :end-before: ### Keep only data corresponding to faces or houses ###########################
+
 
 For example, we will now remove the *rest* condition from our dataset.
 This can be done as follows:
 
 .. literalinclude:: ../plot_haxby_simple.py
-    :start-after: ### Remove resting state condition ############################################
+    :start-after: ### Keep only data corresponding to faces or houses ###########################
     :end-before: ### Load the mask #############################################################
 
 .. note::
