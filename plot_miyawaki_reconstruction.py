@@ -18,14 +18,13 @@ are used as training set and structured images are used for reconstruction.
 
 from matplotlib import pyplot as plt
 import time
-import sys
 
 ### Load Kamitani dataset #####################################################
 from nilearn import datasets
 print "Fetching dataset...",
 t0 = time.time()
 
-dataset = datasets.fetch_kamitani()
+dataset = datasets.fetch_miyawaki2008()
 X_random = dataset.func[12:]
 X_figure = dataset.func[:12]
 y_random = dataset.label[12:]
@@ -245,4 +244,4 @@ for i in range(6):
     interpolation='nearest'),
     sp3.imshow(np.reshape(y_pred[j] > .5, (10, 10)), cmap=plt.cm.gray,
     interpolation='nearest')
-    plt.savefig('kamitani_reconstruction_%d' % i)
+    plt.savefig('miyawaki2008_reconstruction_%d' % i)
