@@ -27,7 +27,7 @@
     }
 
     li.toctree-l2 {
-        font-size: 70% ;
+        font-size: 75% ;
         list-style-type: square;
 	font-weight: normal;
         }

@@ -1,0 +1,222 @@
+{#
+    nilearn/layout.html
+    ~~~~~~~~~~~~~~~~~
+
+    Layout for nilearn
+    (http://webylimonada.org)
+
+
+    :author: Jaques Grobler
+    :license: BSD
+#}
+{% extends "sphinxdoc/layout.html" %}
+
+{%- block doctype -%}
+<!DOCTYPE html>
+{%- endblock %}
+
+{% set title = 'NiLearn: Machine learning for NeuroImaging in Python' %}
+
+{% block rootrellink %}
+<li><a href="{{pathto('index')}}">NiLearn Home</a> |&nbsp;</li>
+<li><a href="{{pathto('user_guide')}}">User Guide</a> |&nbsp;</li>
+<li><a href="{{pathto('auto_examples/index')}}">Examples</a> |&nbsp;</li>
+<li><a href="{{pathto('modules/classes')}}">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="{{pathto('AUTHORS')}}">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+{% endblock %}
+
+
+{% block extrahead %}
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+{%- if (pagename == 'index') %}
+<script type="text/javascript" src="_static/jquery.jcarousel.min.js"></script>
+<script type="text/javascript">
+(function($) {
+    $(function() {
+	$('.jcarousel').jcarousel();
+        $('.jcarousel-control-prev')
+            .on('active.jcarouselcontrol', function() {
+                $(this).removeClass('inactive');
+            })
+            .on('inactive.jcarouselcontrol', function() {
+                $(this).addClass('inactive');
+            })
+            .jcarouselControl({
+                target: '-=1'
+            });
+
+        $('.jcarousel-control-next')
+            .on('active.jcarouselcontrol', function() {
+                $(this).removeClass('inactive');
+            })
+            .on('inactive.jcarouselcontrol', function() {
+                $(this).addClass('inactive');
+            })
+            .jcarouselControl({
+                target: '+=1'
+            });
+
+        $('.jcarousel-pagination')
+            .on('active.jcarouselpagination', 'a', function() {
+                $(this).addClass('active');
+            })
+            .on('inactive.jcarouselpagination', 'a', function() {
+                $(this).removeClass('active');
+            })
+            .jcarouselPagination();
+    });
+})(jQuery);
+</script>
+{% endif %}
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+{% endblock %}
+
+{% block header %}
+<div id="logo-banner">
+  <div class="logo">
+    <a href="{{pathto('index') }}">
+      <img src="{{ pathto('_static/' + logo, 1) }}" alt="NiLearn logo"  border="0" />
+    </a>
+  </div>
+  <div class="banner">
+    <h1>NiLearn:</h1>
+    <h2>Machine learning for Neuro-Imaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div id="cse" style="width: 100%;"></div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
+      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      var options = new google.search.DrawOptions();
+      options.setAutoComplete(true);
+      customSearchControl.draw('cse', options);
+      }, true);
+    </script>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{# This block gets put at the top of the sidebar #}
+{% block sidebarlogo %}
+
+
+{%- if (pagename == 'index') %}
+<!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="{{pathto('auto_examples/plot_haxby_decoding')}}">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="{{pathto('ward_clustering')}}">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="{{pathto('haxby_searchlight')}}">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="{{pathto('ica_resting_state')}}">ICA</a></big>
+    </li>
+    <li>
+      <a href="{{pathto('dataset_manipulation')}}">Nifti IO</a>
+    </li>
+    <li>
+      <a href="{{pathto('modules/classes')}}#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+<h4> News </h4>
+  <ul>
+    <li><p>Welcome to our new website!</p></li>
+  </ul>
+<h4> Software </h4>
+  <ul class="simple">
+    <li>
+      <div id="download-container">
+	<a href="https://github.com/nilearn/nilearn/archive/master.zip" class="btn btn-primary">Download</a>
+        <p>Please see our </p><a href="{{pathto('introduction')}}#installation-of-the-materials-useful-for-this-tutorial">Installation Instructions</a>
+      </div>
+    </li>
+  </ul>
+<h4> Development </h4>
+  <ul class="simple">
+    <li><p><a class="reference external"
+	href="https://github.com/nilearn/nilearn">NiLearn on GitHub</a></p></li>
+    <li><p>All material Free Software: <strong>BSD license</strong> (3 clause).</p></li>
+    <li><p><a href="{{pathto('AUTHORS')}}">Authors</a></p></li>
+  </ul>
+{% endif %}
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="{{pathto('AUTHORS')}}#citing">citing the
+                    scikit-learn</a> if you use it.</p></li>
+  </ul>
+{% endblock %}
+
+{# I had to copy the whole search block just to change the rendered text,
+   so it doesn't mention modules or classes #}
+{%- block sidebarsearch %}
+{%- if pagename != "search" %}
+
+<div class="navbar">
+</div> <!-- end navbar -->
+
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+{%- endif %}
+
+{# The sidebarsearch block is the last one available in the default sidebar()
+   macro, so the only way to add something to the bottom of the sidebar is to
+   put it here, at the end of the sidebarsearch block (before it closes).
+   #}
+
+{%- endblock %}
+
+{%- block footer %}
+    <div class="footer">
+        {%- if show_copyright %}
+          {%- if hasdoc('copyright') %}
+            {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; {{ copyright }}.{% endtrans %}
+          {%- else %}
+            {% trans copyright=copyright|e %}&copy; {{ copyright }}.{% endtrans %}
+          {%- endif %}
+        {%- endif %}
+        {%- if last_updated %}
+          {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+        {%- endif %}
+        {%- if show_sphinx %}
+          {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}{% endtrans %}.
+        {%- endif %}
+        {%- if has_source and sourcename %}
+        <span style="padding-left: 5ex;">
+          <a href="{{ pathto('_sources/' + sourcename, true)|e }}"
+        	 rel="nofollow">{{ _('Show this page source') }}</a>
+        </span>
+        {%- endif %}
+    </div>
+{%- endblock %}
