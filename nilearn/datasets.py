@@ -585,7 +585,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
         "Yeo2011_7Networks_ColorLUT.txt",
         "Yeo2011_17Networks_ColorLUT.txt",
         "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
-                 ]
+    ]
 
     try:
         sub_files = _get_dataset(dataset_name, filenames, data_dir=data_dir)
@@ -1215,7 +1215,7 @@ def load_harvard_oxford(atlas_name,
     return nibabel.Nifti1Image(regions, regions_img.get_affine())
 
 
-def fetch_kamitani(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
     """Download and loads kamitani dataset
     Returns
     -------
@@ -1230,6 +1230,12 @@ def fetch_kamitani(data_dir=None, url=None, resume=True, verbose=0):
 
     References
     ----------
+    `Visual image reconstruction from human brain activity
+    using a combination of multiscale local image decoders
+    <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
+    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
+    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
+    Neuron, 60(5), 915-929.
 
     Notes
     -----
@@ -1239,14 +1245,6 @@ def fetch_kamitani(data_dir=None, url=None, resume=True, verbose=0):
     See `additional information
     <http://www.cns.atr.jp/dni/en/downloads/
     fmri-data-set-for-visual-image-reconstruction/>`_
-
-    :Paper to cite:
-    `Visual image reconstruction from human brain activity
-    using a combination of multiscale local image decoders
-    <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
-    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-    Neuron, 60(5), 915-929.
     """
 
     # Dataset files
@@ -1329,14 +1327,14 @@ def fetch_kamitani(data_dir=None, url=None, resume=True, verbose=0):
     files = []
     try:
         # Try to load the dataset
-        files = _get_dataset("kamitani", file_names, data_dir=data_dir)
+        files = _get_dataset("miyawaki2008", file_names, data_dir=data_dir)
     except IOError:
         # If the dataset does not exists, we download it
         url = 'https://www.nitrc.org/frs/download.php' \
               '/5853/kamitani.tgz?i_agree=1&download_now=1'
         _fetch_dataset('kamitani', [url], data_dir=data_dir,
                            resume=resume, verbose=verbose)
-        files = _get_dataset("kamitani", file_names, data_dir=data_dir)
+        files = _get_dataset("miyawaki2008", file_names, data_dir=data_dir)
 
     # Return the data
     return Bunch(
