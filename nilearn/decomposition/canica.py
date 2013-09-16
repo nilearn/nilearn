@@ -148,12 +148,11 @@ class CanICA(MultiPCA, CacheMixin):
                 # random_state in fastica was added in 0.13
                 ica_maps_ = self._cache(fastica, memory_level=6)(
                     self.components_.T,
-                    whiten=False,
-                    fun='cube',
+                    whiten=True, fun='cube',
                     random_state=random_state)[2]
             else:
                 ica_maps_ = self._cache(fastica, memory_level=6)(
-                    self.components_.T, whiten=False,
+                    self.components_.T, whiten=True,
                     fun='cube')[2]
             ica_maps_ = ica_maps_.T
 
