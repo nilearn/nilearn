@@ -42,7 +42,7 @@ Functions
 .. _image_ref:
 
 :mod:`nilearn.image`: Image processing and resampling utilities
-================================================================
+===============================================================
 
 .. automodule:: nilearn.image
    :no-members:
@@ -63,7 +63,7 @@ Functions
 
 .. _io_ref:
 
-:mod:`nilearn.input_dat`: Loading and Processing files easily
+:mod:`nilearn.input_data`: Loading and Processing files easily
 ==============================================================
 
 .. automodule:: nilearn.input_data
@@ -88,7 +88,7 @@ Classes
 .. _masking_ref:
 
 :mod:`nilearn.masking`: Data Masking Utilities
-===========================================
+==============================================
 
 .. automodule:: nilearn.masking
    :no-members:
@@ -113,7 +113,7 @@ Functions
 .. _region_ref:
 
 :mod:`nilearn.region`: Regions Handling Utilities
-==============================================
+=================================================
 
 .. automodule:: nilearn.region
    :no-members:
@@ -142,7 +142,7 @@ Functions
 .. _decoding_ref:
 
 :mod:`nilearn.decoding`: Decoding
-==============================
+=================================
 
 .. automodule:: nilearn.decoding
    :no-members:
@@ -161,7 +161,7 @@ Classes
 .. _signal_ref:
 
 :mod:`nilearn.signal`: Preprocessing Time Series
-==============================================
+================================================
 
 .. automodule:: nilearn.signal
    :no-members:
@@ -184,9 +184,9 @@ Functions
 .. _utils_ref:
 
 :mod:`nilearn.utils`: Manipulating Niimgs
-======================================
+=========================================
 
-.. automodule:: nilearn.utils
+.. automodule:: nilearn._utils
    :no-members:
    :no-inherited-members:
 
@@ -194,7 +194,7 @@ Functions
 
 Functions
 ---------
-.. currentmodule:: nilearn.utils
+.. currentmodule:: nilearn._utils
 
 .. autosummary::
    :toctree: generated/
