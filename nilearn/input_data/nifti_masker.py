@@ -177,7 +177,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
-            print "[%s.transform] Resampling mask" % self.__class__.__name__
+            print "[%s.fit] Resampling mask" % self.__class__.__name__
         self.mask_img_ = self._cache(image.resample_img, memory_level=1)(
             self.mask_img_,
             target_affine=self.target_affine,

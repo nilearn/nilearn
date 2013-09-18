@@ -17,4 +17,4 @@ ____
 
    ward_clustering.rst
    ica_resting_state.rst
-
+   functional_connectivity.rst
