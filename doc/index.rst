@@ -49,7 +49,7 @@
     </div>
     <div class="col span_1_of_2">
     <div class="jcarousel-wrapper">
-     <div class="jcarousel">
+    <div class="jcarousel">
 
 * |banner1|
 

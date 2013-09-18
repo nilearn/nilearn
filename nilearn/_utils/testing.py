@@ -10,12 +10,15 @@ import warnings
 
 import numpy as np
 import scipy.signal
+from sklearn.utils import check_random_state
+import scipy.linalg
 
 from nibabel import Nifti1Image
 import nibabel
 
 from .. import datasets
 from .. import masking
+from . import logger
 
 
 @contextlib.contextmanager
@@ -348,3 +351,150 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
          shift[1]:shift[1] + width[1],
          shift[2]:shift[2] + width[2]] = 1
     return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
+
+
+def is_spd(M, decimal=15):
+    """Assert that input matrix is symmetric positive definite.
+
+    M must be symmetric down to specified decimal places.
+    The check is performed by checking that all eigenvalues are positive.
+
+    Parameters
+    ==========
+    M: numpy.ndarray
+        symmetric positive definite matrix.
+
+    Returns
+    =======
+    answer: boolean
+        True if matrix is symmetric positive definite, False otherwise.
+    """
+    if not np.allclose(M, M.T, atol=0.1 ** decimal):
+        print("matrix not symmetric to %d decimals" % decimal)
+        return False
+    eigvalsh = np.linalg.eigvalsh(M)
+    ispd = eigvalsh.min() > 0
+    if not ispd:
+        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
+    return ispd
+
+
+def generate_signals_from_precisions(precisions,
+                                     min_n_samples=50, max_n_samples=100,
+                                     random_state=0):
+    """Generate timeseries according to some given precision matrices.
+
+    Signals all have zero mean.
+
+    Parameters
+    ----------
+    precisions: list of numpy.ndarray
+        list of precision matrices. Every matrix must be square (with the same
+        size) and positive definite. The output of
+        generate_group_sparse_gaussian_graphs() can be used here.
+
+    min_samples, max_samples: int
+        the number of samples drawn for each timeseries is taken at random
+        between these two numbers.
+
+    Returns
+    -------
+    signals: list of numpy.ndarray
+        output signals. signals[n] corresponds to precisions[n], and has shape
+        (sample number, precisions[n].shape[0]).
+    """
+    random_state = check_random_state(random_state)
+
+    signals = []
+    n_samples = random_state.randint(min_n_samples, high=max_n_samples,
+                                     size=len(precisions))
+
+    mean = np.zeros(precisions[0].shape[0])
+    for n, prec in zip(n_samples, precisions):
+        signals.append(random_state.multivariate_normal(mean,
+                                                    np.linalg.inv(prec),
+                                                    (n,)))
+    return signals
+
+
+def generate_group_sparse_gaussian_graphs(
+        n_subjects=5, n_features=30, min_n_samples=30, max_n_samples=50,
+        density=0.1, random_state=0):
+    """Generate signals drawn from a sparse Gaussian graphical model.
+
+    Parameters
+    ==========
+    n_subjects : int, optional
+        number of subjects
+
+    n_features : int, optional
+        number of signals per subject to generate
+
+    density : float, optional
+        density of edges in graph topology
+
+    min_n_samples, max_n_samples : int, optional
+        Each subject have a different number of samples, between these two
+        numbers. All signals for a given subject have the same number of
+        samples.
+
+    random_state : int or numpy.random.RandomState instance, optional
+        random number generator, or seed.
+
+    Returns
+    =======
+    subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
+        subjects[n] is the signals for subject n. They are provided as a numpy
+        len(subjects) = n_subjects. n_samples varies according to the subject.
+
+    precisions : list of numpy.ndarray
+        precision matrices.
+
+    topology : numpy.ndarray
+        binary array giving the graph topology used for generating covariances
+        and signals.
+    """
+
+    random_state = check_random_state(random_state)
+    # Generate topology (upper triangular binary matrix, with zeros on the
+    # diagonal)
+    topology = np.empty((n_features, n_features))
+    topology[:, :] = np.triu((
+        random_state.randint(0, high=int(1. / density),
+                         size=n_features * n_features)
+        ).reshape(n_features, n_features) == 0, k=1)
+
+    # Generate edges weights on topology
+    precisions = []
+    mask = topology > 0
+    for _ in range(n_subjects):
+
+        # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
+        prec = topology.copy()
+        prec[mask] = random_state.uniform(low=.1, high=.8, size=(mask.sum()))
+        prec += np.eye(prec.shape[0])
+        prec = np.dot(prec.T, prec)
+
+        # Assert precision matrix is spd
+        np.testing.assert_almost_equal(prec, prec.T)
+        eigenvalues = np.linalg.eigvalsh(prec)
+        if eigenvalues.min() < 0:
+            raise ValueError("Failed generating a positive definite precision "
+                             "matrix. Decreasing n_features can help solving "
+                             "this problem.")
+        precisions.append(prec)
+
+    # Returns the topology matrix of precision matrices.
+    topology += np.eye(*topology.shape)
+    topology = np.dot(topology.T, topology)
+    topology = topology > 0
+    assert(np.all(topology == topology.T))
+    logger.log("Sparsity: {0:f}".format(
+        1. * topology.sum() / (topology.shape[0] ** 2)))
+
+    # Generate temporal signals
+    signals = generate_signals_from_precisions(precisions,
+                                               min_n_samples=min_n_samples,
+                                               max_n_samples=max_n_samples,
+                                               random_state=random_state)
+    return signals, precisions, topology
