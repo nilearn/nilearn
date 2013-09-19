@@ -18,10 +18,11 @@ are used as training set and structured images are used for reconstruction.
 
 from matplotlib import pyplot as plt
 import time
+import sys
 
 ### Load Kamitani dataset #####################################################
 from nilearn import datasets
-print "Fetching dataset...",
+sys.stderr.write("Fetching dataset...")
 t0 = time.time()
 
 dataset = datasets.fetch_miyawaki2008()
@@ -31,13 +32,13 @@ y_random = dataset.label[12:]
 y_figure = dataset.label[:12]
 y_shape = (10, 10)
 
-print " Done (%.2fs)." % (time.time() - t0)
+sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ### Preprocess and mask #######################################################
 import numpy as np
 from nilearn.input_data import MultiNiftiMasker
 
-print "Preprocessing data...",
+sys.stderr.write("Preprocessing data...")
 t0 = time.time()
 
 # Load and mask fMRI data
@@ -116,11 +117,11 @@ y_train = y_train[y_train[:, 0] != -1]
 X_test = X_test[y_test[:, 0] != -1]
 y_test = y_test[y_test[:, 0] != -1]
 
-print " Done (%.2fs)." % (time.time() - t0)
+sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ### Prediction function #######################################################
 
-print "Training classifiers... \r",
+sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
 # OMP
@@ -132,18 +133,18 @@ from sklearn.pipeline import Pipeline
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
-    print "Training classifiers %03d/%d... \r" % (i + 1, n_clfs),
+    sys.stderr.write("Training classifiers %03d/%d... \r" % (i + 1, n_clfs))
     clf = Pipeline([('selection', SelectKBest(f_classif, 500)),
                     ('clf', OMP(n_nonzero_coefs=10))])
+    clf.fit(X_train, y_train[:, i])
     clfs.append(clf)
 
-clfs = [clf.fit(X_train, y_train[:, i]) for i, clf in enumerate(clfs)]
-print "Training classifiers %03d/%d... Done (%.2fs)." % (
-        n_clfs, n_clfs, time.time() - t0)
+sys.stderr.write("Training classifiers %03d/%d... Done (%.2fs).\n" % (
+        n_clfs, n_clfs, time.time() - t0))
 
 
 ### Prediction ################################################################
-print "Calculating scores and outputs..."
+sys.stderr.write("Calculating scores and outputs...")
 t0 = time.time()
 
 y_pred = []
@@ -208,7 +209,7 @@ y_pred, y_pred_tall, y_pred_large, y_pred_big = \
 y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
     + .25 * y_pred_big)
 
-print " Done (%.2fs)." % (time.time() - t0)
+sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
                             f1_score
