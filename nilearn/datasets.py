@@ -1321,8 +1321,6 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
                  file_label_figure + file_label_random + \
                  file_mask
 
-    file_names = [os.path.join('kamitani', path) for path in file_names]
-
     # Load the dataset
     files = []
     try:
@@ -1331,8 +1329,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
     except IOError:
         # If the dataset does not exists, we download it
         url = 'https://www.nitrc.org/frs/download.php' \
-              '/5853/kamitani.tgz?i_agree=1&download_now=1'
-        _fetch_dataset('kamitani', [url], data_dir=data_dir,
+              '/5899/miyawaki2008.tgz?i_agree=1&download_now=1'
+        _fetch_dataset('miyawaki2008', [url], data_dir=data_dir,
                            resume=resume, verbose=verbose)
         files = _get_dataset("miyawaki2008", file_names, data_dir=data_dir)
 
