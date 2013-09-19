@@ -1216,7 +1216,7 @@ def load_harvard_oxford(atlas_name,
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
-    """Download and loads kamitani dataset
+    """Download and loads Miyawaki 2008 dataset
     Returns
     -------
     data: Bunch
