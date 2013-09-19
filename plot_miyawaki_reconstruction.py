@@ -1,6 +1,6 @@
 """
-The Kamitani paper: reconstruction of visual stimuli
-======================================================
+Reconstruction of visual stimuli from Miyawaki et al. 2008
+==========================================================
 
 This example reproduce the experiment presented in
     `Visual image reconstruction from human brain activity
@@ -104,8 +104,7 @@ yt_large = [np.dot(m, width_tf) for m in y_train]
 yt_big = [np.dot(height_tf, np.dot(m, width_tf)) for m in y_train]
 
 # Add it to the training set
-y_train = [np.concatenate(
-           (y.ravel(), t.ravel(), l.ravel(), b.ravel()), axis=1)
+y_train = [np.r_[y.ravel(), t.ravel(), l.ravel(), b.ravel()]
            for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big)]
 
 y_test = np.asarray(flatten(y_test))
