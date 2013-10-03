@@ -764,9 +764,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
     """
     train_covs, train_n_samples = empirical_covariances(
         train_subjs, assume_centered=False, standardize=True)
-    test_covs, _ = empirical_covariances(
-        test_subjs, assume_centered=False, standardize=True)
-
+ 
     scores = []
     precisions_list = []
     for alpha in alphas:
@@ -777,6 +775,8 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
 
         # Compute log-likelihood
         if test_subjs is not None:
+            test_covs, _ = empirical_covariances(
+                            test_subjs, assume_centered=False, standardize=True)
             scores.append(group_sparse_scores(precisions, train_n_samples,
                                               test_covs, 0)[0])
         precisions_list.append(precisions)
