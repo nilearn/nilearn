@@ -202,8 +202,11 @@ It's interactive::
    
         %doctest_mode
 
-Scientific computing
----------------------
+Scientific computing with Python
+---------------------------------
+
+Basic numerics
+...............
 
 In Python, to get scientific features, you need to import the relevant
 libraries:
