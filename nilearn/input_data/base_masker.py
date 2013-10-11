@@ -109,7 +109,7 @@ def filter_and_mask(niimgs, mask_img_,
     return data, niimgs.get_affine()
 
 
-def safe_filter_and_mask(niimgs, mask_img_,
+def _safe_filter_and_mask(niimgs, mask_img_,
                          parameters,
                          ref_memory_level=0,
                          memory=Memory(cachedir=None),
@@ -157,8 +157,26 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         return data
 
     def transform_niimgs(self, niimgs_list, confounds=None, copy=True, n_jobs=1):
-        # Transform several niimgs un parallel. This could replace the previous
-        # function
+        ''' Prepare multi subject data in parallel
+
+        Parameters
+        ----------
+
+        niimgs_list: list of niimgs
+            List of niimgs file to prepare. One item per subject.
+
+        confounds: list of confounds, optional
+            List of confounds. Must be of same length than niimgs_list.
+
+        copy: boolean, optional
+            If True, guarantees that output array has no memory in common with
+            input array.
+
+        n_jobs: integer, optional
+            The number of cpus to use to do the computation. -1 means
+            'all cpus'.
+        '''
+
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fit. '
                              'You must call fit() before calling transform().'
@@ -172,7 +190,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # subjects
             reference_affine = _utils.check_niimgs(niimgs_list[0]).get_affine()
 
-        func = self._cache(safe_filter_and_mask, memory_level=1,
+        func = self._cache(_safe_filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
         if confounds is None:
             confounds = itertools.repeat(None, len(niimgs_list))
