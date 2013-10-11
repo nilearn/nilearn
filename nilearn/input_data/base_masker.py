@@ -33,10 +33,10 @@ def filter_and_mask(niimgs, mask_img_,
     if isinstance(niimgs, basestring):
         copy = False
     
-    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
-
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
+    
+    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
