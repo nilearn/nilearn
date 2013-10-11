@@ -131,7 +131,7 @@ error prone.
 
 .. _EPD: http://www.enthought.com/products/epd.php
 
-.. _Anaconda: http://continuum.io
+.. _Anaconda: https://store.continuum.io/cshop/anaconda/
 
 Nibabel: reading neuroimaging files
 ....................................
