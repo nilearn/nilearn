@@ -7,9 +7,10 @@ Transformer used to apply basic transformations on MRI data.
 import warnings
 
 import numpy as np
+import itertools
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.externals.joblib import Memory
+from sklearn.externals.joblib import Memory, Parallel, delayed
 
 from .. import masking
 from .. import image
@@ -25,11 +26,24 @@ def filter_and_mask(niimgs, mask_img_,
                     memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
+                    reference_affine=None,
                     copy=True):
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
+
     if isinstance(niimgs, basestring):
         copy = False
+    
+    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
+
+    # If there is a reference affine, we may have to force resampling
+    target_affine = parameters['target_affine']
+    if (target_affine is None and reference_affine is not None
+                and reference_affine.shape == niimgs.get_affine().shape
+                and not np.allclose(niimgs.get_affine(), reference_affine)):
+        warnings.warn('Affine is different across subjects.'
+                      ' Realignement on first subject affine forced')
+        target_affine = reference_affine
 
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
@@ -41,7 +55,7 @@ def filter_and_mask(niimgs, mask_img_,
     niimgs = cache(image.resample_img, memory, ref_memory_level,
                    memory_level=2, ignore=['copy'])(
                        niimgs,
-                       target_affine=parameters['target_affine'],
+                       target_affine=target_affine,
                        target_shape=parameters['target_shape'],
                        copy=copy)
 
@@ -50,8 +64,6 @@ def filter_and_mask(niimgs, mask_img_,
         print("[%s] Loading data from %s" % (
             class_name,
             _utils._repr_niimgs(niimgs)[:200]))
-
-    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
 
     # Get series from data with optional smoothing
     if verbose > 1:
@@ -118,18 +130,49 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              % self.__class__.__name__)
         from .nifti_masker import NiftiMasker
         params = get_params(NiftiMasker, self)
-        data, affine = \
-            self._cache(filter_and_mask, memory_level=1,
-                        ignore=['verbose', 'memory', 'copy'])(
-                            niimgs, self.mask_img_,
-                            params,
-                            ref_memory_level=self.memory_level,
-                            memory=self.memory,
-                            verbose=self.verbose,
-                            confounds=confounds,
-                            copy=copy
-                        )
+        data, _ = self._cache(filter_and_mask, memory_level=1,
+                           ignore=['verbose', 'memory', 'copy'])(
+                              niimgs, self.mask_img_,
+                              params,
+                              ref_memory_level=self.memory_level,
+                              memory=self.memory,
+                              verbose=self.verbose,
+                              confounds=confounds,
+                              copy=copy
+        )
         return data
+
+    def transform_niimgs(self, niimgs_list, confounds=None, copy=True, n_jobs=1):
+        # Transform several niimgs un parallel. This could replace the previous
+        # function
+        if not hasattr(self, 'mask_img_'):
+            raise ValueError('It seems that %s has not been fit. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
+        from .nifti_masker import NiftiMasker
+        params = get_params(NiftiMasker, self)
+
+        reference_affine = None
+        if self.target_affine is None:
+            # Load the first image and use it as a reference for all other
+            # subjects
+            reference_affine = _utils.check_niimgs(niimgs_list[0]).get_affine()
+
+        func = self._cache(filter_and_mask, memory_level=1,
+                           ignore=['verbose', 'memory', 'copy'])
+        if confounds is None:
+            confounds = itertools.repeat(None, len(niimgs_list))
+        data = Parallel(n_jobs=n_jobs)(delayed(func)(
+                              niimgs, self.mask_img_,
+                              params,
+                              ref_memory_level=self.memory_level,
+                              memory=self.memory,
+                              verbose=self.verbose,
+                              confounds=confounds,
+                              reference_affine=reference_affine,
+                              copy=copy)
+                          for niimgs, confounds in zip(niimgs_list, confounds))
+        return zip(*data)[0]
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
         """Fit to data, then transform it
@@ -173,7 +216,5 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        mask_img = _utils.check_niimg(self.mask_img_)
-        data = X
-
-        return masking.unmask(data, mask_img)
+        return self._cache(masking.unmask, memory_level=1,
+            )(X, self.mask_img_)
