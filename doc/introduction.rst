@@ -83,43 +83,47 @@ Why is machine learning relevant NeuroImaging: a few examples
     the data (e.g. in `[Thirion 2009]
     <http://www.springerlink.com/content/7377x70p5515v778/>`_).
 
-Python and the scikit-learn: a primer
-=====================================
+.. _installation:
 
-.. topic:: What is the scikit-learn?
+Installation
+=============
 
-    `The scikit-learn <http://scikit-learn.org>`_ is a Python library for machine
-    learning. Its strong points are:
+.. warning::
 
-    - Easy to use and well documented
-    - Computationally efficient
-    - Provide wide variety standard machine learning methods for non-experts
+   nilearn is an un-released package. It lacks functionality and
+   documentation, may have bugs, and will change in the future.
+   Nonetheless, we strive to ensure its quality and hope that it may be
+   useful in its current state, for technically-savvy users.
 
-Installation of the materials useful for this tutorial
---------------------------------------------------------
+Installing the environment
+---------------------------
 
-Installing scientific packages for Python
-.........................................
+Python scientific stack
+........................
 
-The scientific Python tool stack is rich. Installing the different
-packages needed one after the other takes a lot of time and is not
-recommended. We recommend that you install a complete distribution:
+We recommend that you **install a complete scientific Python
+distribution**, and not download the bare Python.
+
+Indeed, the scientific Python tool stack is rich. Installing the
+different packages needed one after the other takes a lot of time and is
+error prone.
 
 :Windows:
-  EPD_ or `PythonXY <http://code.google.com/p/pythonxy/>`_: both of these
-  distributions come with the scikit-learn installed (do make sure to
-  install the full, non-free, EPD and not EPD-free to get scikit-learn).
+  EPD_, Anaconda_, or `PythonXY <http://code.google.com/p/pythonxy/>`_:
+  these distributions come with the scikit-learn installed (do make sure
+  to install the full, non-free, EPD and not EPD-free to get
+  scikit-learn).
 
 :MacOSX:
-  EPD_ is the only full scientific Python distribution for Mac (once again
-  you need to install the full, non-free, EPD and not EPD-free to
-  get scikit-learn).
+  EPD_ and Anaconda_ are the only full scientific Python distribution for
+  Mac (once again you need to install the full, non-free, EPD and not
+  EPD-free to get scikit-learn).
 
 :Linux:
-  While EPD_ is available for Linux, most recent linux distributions come
-  with the packages that are needed for this tutorial. Ask your system
-  administrator to install, using the distribution package manager, the
-  following packages:
+  While EPD_ and Anaconda_ are available for Linux, most recent linux
+  distributions come with the packages that are needed for this tutorial.
+  Ask your system administrator to install, using the distribution
+  package manager, the following packages:
 
     - scikit-learn (sometimes called `sklearn`)
     - matplotlib
@@ -127,9 +131,10 @@ recommended. We recommend that you install a complete distribution:
 
 .. _EPD: http://www.enthought.com/products/epd.php
 
+.. _Anaconda: http://continuum.io
 
-Nibabel
-.......
+Nibabel: reading neuroimaging files
+....................................
 
 `Nibabel <http://nipy.sourceforge.net/nibabel/>`_ is an easy to use
 reader of NeuroImaging data files. It is not included in scientific
@@ -138,21 +143,38 @@ You can install it with the following command::
 
   $ pip install -U --user nibabel
 
-Scikit-learn
-...............
+.. warning::
 
-If scikit-learn is not installed on your computer, and you have a
-working install of scientific Python packages (numpy, scipy) and a
-C compiler, you can add it to your scientific Python install using::
+   Note that this is a "shell" command, that you need to type in a
+   command prompt, and not a Python command.
 
-  $ pip install -U --user scikit-learn
+Installing nilearn
+-------------------
 
-Python for Science quickstart
-------------------------------
+Nilearn is unreleased. You can download the latest development snapshot
+from the following link:
 
-**Don't panic. Python is easy.**
-For a full blown introduction to using Python for science, see the 
-`scipy lecture notes <http://scipy-lectures.github.com/>`_.
+    https://github.com/nilearn/nilearn/archive/master.zip
+
+Unzip it, and run in the resulting directory (as a shell command, once
+again)::
+
+    $ python setup.py install --user    
+
+To test if you have done everything right, open IPython and try the
+following, in the Python prompt::
+
+    In [1]: import nilearn
+
+If you do not get any errors, you have installed nilearn right.
+
+Python for NeuroImaging: a quick-start
+==========================================
+
+If you don't know Python, **Don't panic. Python is easy**. Here, we give
+the basics to help you get started. For a full blown introduction to
+using Python for science, see the `scipy lecture notes
+<http://scipy-lectures.github.io/>`_.
 
 
 We will be using `IPython <http://ipython.org>`_, in pylab mode, that
@@ -181,7 +203,7 @@ It's interactive::
         %doctest_mode
 
 Scientific computing
-.....................
+---------------------
 
 In Python, to get scientific features, you need to import the relevant
 libraries:
@@ -257,8 +279,18 @@ libraries:
   `More documentation...
   <http://scipy-lectures.github.com/intro/scipy.html>`__
 
-Scikit-learn: machine learning
-..............................
+
+Scikit-learn: machine learning in Python
+.........................................
+
+.. topic:: What is scikit-learn?
+
+    `Scikit-learn <http://scikit-learn.org>`_ is a Python library for machine
+    learning. Its strong points are:
+
+    - Easy to use and well documented
+    - Computationally efficient
+    - Provide wide variety standard machine learning methods for non-experts
 
 The core concept in the `scikit-learn <http://scikit-learn.org>`_ is the
 estimator object, for instance an SVC (`support vector classifier
