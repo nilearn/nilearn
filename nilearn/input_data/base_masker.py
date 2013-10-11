@@ -26,7 +26,6 @@ def filter_and_mask(niimgs, mask_img_,
                     memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    reference_affine=None,
                     copy=True):
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
@@ -35,15 +34,6 @@ def filter_and_mask(niimgs, mask_img_,
         copy = False
     
     niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
-
-    # If there is a reference affine, we may have to force resampling
-    target_affine = parameters['target_affine']
-    if (target_affine is None and reference_affine is not None
-                and reference_affine.shape == niimgs.get_affine().shape
-                and not np.allclose(niimgs.get_affine(), reference_affine)):
-        warnings.warn('Affine is different across subjects.'
-                      ' Realignement on first subject affine forced')
-        target_affine = reference_affine
 
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
@@ -55,7 +45,7 @@ def filter_and_mask(niimgs, mask_img_,
     niimgs = cache(image.resample_img, memory, ref_memory_level,
                    memory_level=2, ignore=['copy'])(
                        niimgs,
-                       target_affine=target_affine,
+                       target_affine=parameters['target_affine'],
                        target_shape=parameters['target_shape'],
                        copy=copy)
 
@@ -119,6 +109,30 @@ def filter_and_mask(niimgs, mask_img_,
     return data, niimgs.get_affine()
 
 
+def safe_filter_and_mask(niimgs, mask_img_,
+                         parameters,
+                         ref_memory_level=0,
+                         memory=Memory(cachedir=None),
+                         verbose=0,
+                         confounds=None,
+                         reference_affine=None,
+                         copy=True):
+    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
+
+    # If there is a reference affine, we may have to force resampling
+    target_affine = parameters['target_affine']
+    if (target_affine is None and reference_affine is not None
+                and reference_affine.shape == niimgs.get_affine().shape
+                and not np.allclose(niimgs.get_affine(), reference_affine)):
+        warnings.warn('Affine is different across subjects.'
+                      ' Realignement on first subject affine forced')
+        parameters = parameters.copy()
+        parameters['target_affine'] = reference_affine
+
+    return filter_and_mask(niimgs, mask_img_, parameters, ref_memory_level,
+            memory, verbose, confounds, copy)
+
+
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
@@ -163,7 +177,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # subjects
             reference_affine = _utils.check_niimgs(niimgs_list[0]).get_affine()
 
-        func = self._cache(filter_and_mask, memory_level=1,
+        func = self._cache(safe_filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
         if confounds is None:
             confounds = itertools.repeat(None, len(niimgs_list))
