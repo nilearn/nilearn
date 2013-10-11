@@ -27,13 +27,6 @@ def test_searchlight():
     data[2, 2, 2][cond.astype(np.bool)] = 2
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    # Define score function
-    try:
-        from sklearn.metrics import accuracy_score
-        score_func = accuracy_score
-    except:
-        from sklearn.metrics import precision_score
-        score_func = precision_score
 
     # Define cross validation
     from sklearn.cross_validation import check_cv
@@ -45,7 +38,7 @@ def test_searchlight():
     # Small radius : only one pixel is selected
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img,
                                  radius=0.5, n_jobs=n_jobs,
-                                 score_func=score_func, cv=cv)
+                                 scoring='accuracy', cv=cv)
     sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
     assert_equal(sl.scores_[2, 2, 2], 1.)
@@ -53,7 +46,7 @@ def test_searchlight():
     # Medium radius : little ball selected
 
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
-                                 n_jobs=n_jobs, score_func=score_func, cv=cv)
+                                 n_jobs=n_jobs, scoring='accuracy', cv=cv)
     sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
     assert_equal(sl.scores_[2, 2, 2], 1.)
@@ -66,7 +59,7 @@ def test_searchlight():
 
     # Big radius : big ball selected
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=2,
-                                 n_jobs=n_jobs, score_func=score_func, cv=cv)
+                                 n_jobs=n_jobs, scoring='accuracy', cv=cv)
     sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
     assert_equal(sl.scores_[2, 2, 2], 1.)

@@ -26,7 +26,7 @@ from .. import masking
 from .._utils import as_ndarray
 
 
-def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
+def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
                  verbose=0):
     """Function for computing a search_light
 
@@ -45,8 +45,10 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
         adjacency matrix. Defines for each sample the neigbhoring samples
         following a given structure of the data.
 
-    score_func : callable, optional
-        callable taking as arguments the fitted estimator, the
+    scoring : string or callable, optional
+        The scoring strategy to use. See the scikit-learn documentation
+        for possible values.
+        If callable, it taks as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
@@ -71,7 +73,7 @@ def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
             A.rows[list_i],
-            estimator, X, y, score_func, cv,
+            estimator, X, y, scoring, cv,
             thread_id + 1, A.shape[0], verbose)
         for thread_id, list_i in enumerate(group_iter))
     return np.concatenate(scores)
@@ -105,7 +107,7 @@ class GroupIterator(object):
 
 
 def _group_iter_search_light(list_rows, estimator, X, y,
-                             score_func, cv, thread_id, total, verbose=0):
+                             scoring, cv, thread_id, total, verbose=0):
     """Function for grouped iterations of search_light
 
     Parameters
@@ -123,8 +125,9 @@ def _group_iter_search_light(list_rows, estimator, X, y,
     y : array-like
         target variable to predict.
 
-    score_func : callable, optional
-        callable taking as arguments the fitted estimator, the
+    scoring : string or callable, optional
+        Scoring strategy to use. See the scikit-learn documentation.
+        If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
@@ -150,7 +153,7 @@ def _group_iter_search_light(list_rows, estimator, X, y,
     t0 = time.time()
     for i, row in enumerate(list_rows):
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                                                y, score_func=score_func,
+                                                y, scoring=scoring,
                                                 cv=cv, n_jobs=1))
         if verbose > 0:
             # One can't print less than each 10 iterations
@@ -198,8 +201,9 @@ class SearchLight(BaseEstimator):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    score_func : callable, optional
-        callable taking as arguments the fitted estimator, the
+    scoring : string or callable, optional
+        The scoring strategy to use. See the scikit-learn documentation
+        If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
@@ -231,14 +235,14 @@ class SearchLight(BaseEstimator):
     """
 
     def __init__(self, mask_img, process_mask_img=None, radius=2.,
-                 estimator=LinearSVC(C=1), n_jobs=1, score_func=None, cv=None,
+                 estimator=LinearSVC(C=1), n_jobs=1, scoring=None, cv=None,
                  verbose=0):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
         self.radius = radius
         self.estimator = estimator
         self.n_jobs = n_jobs
-        self.score_func = score_func
+        self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
 
@@ -295,7 +299,7 @@ class SearchLight(BaseEstimator):
                                     mask_affine))
 
         scores = search_light(X, y, self.estimator, A,
-                              self.score_func, self.cv, self.n_jobs,
+                              self.scoring, self.cv, self.n_jobs,
                               self.verbose)
         scores_3D = np.zeros(process_mask.shape)
         scores_3D[process_mask] = scores

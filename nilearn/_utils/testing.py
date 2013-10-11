@@ -196,8 +196,8 @@ def generate_regions_ts(n_features, n_regions,
     overlap_end = int((overlap + 1) / 2)
     overlap_start = int(overlap / 2)
     for n in xrange(len(boundaries) - 1):
-        start = max(0, boundaries[n] - overlap_start)
-        end = min(n_features, boundaries[n + 1] + overlap_end)
+        start = int(max(0, boundaries[n] - overlap_start))
+        end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
         win /= win.mean()  # unity mean
         regions[n, start:end] = win
