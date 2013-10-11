@@ -256,7 +256,7 @@ class SearchLight(BaseEstimator):
 
         Attributes
         ----------
-        scores_ : numpy.ndarray
+        `scores_` : numpy.ndarray
             search_light scores. Same shape as input parameter
             process_mask_img.
         """
