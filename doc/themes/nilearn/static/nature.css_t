@@ -608,24 +608,22 @@ div.sphinxsidebar ul.toc {
     list-style: none;
 }
 
-div.sphinxsidebar ul.toc li {
-    margin: 0.5em 0 0.5em 0;
-    font-size: 0.9em;
-    line-height: 130%;
-}
+/*div.sphinxsidebar ul li {
+    font-weight: bold;
+}*/
 
-div.sphinxsidebar ul.toc li p {
+div.sphinxsidebar ul li p {
     margin: 0;
     padding: 0;
 }
 
-div.sphinxsidebar ul.toc ul {
-    margin: 0.2em 0 0.2em 0;
-    padding: 0 0 0 1.8em;
+div.sphinxsidebar ul ul ul {
+    font-size: 12px;
 }
 
-div.sphinxsidebar ul.toc ul li {
+div.sphinxsidebar ul ul li {
     padding: 0;
+    font-weight: normal;
 }
 
 div.sphinxsidebarwrapper ul li p {
