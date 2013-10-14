@@ -239,14 +239,16 @@ def check_niimgs(niimgs, accept_3d=False):
     first_img = check_niimg(first_img)
 
     # Check dimension and depth
-    dim = len(_get_shape(first_img))
+    shape = _get_shape(first_img)
+    dim = len(shape)
 
     if (dim + depth) != 4:
         # Detailed error message that tells exactly the user what
         # was provided and what should have been provided.
         raise TypeError("Data must be either a 4D Nifti image or a"
                         " list of 3D Nifti images. You provided a %s%dD"
-                        " image(s)." % ('list of ' * depth, dim))
+                        " image(s), of shape." % ('list of ' * depth,
+                        dim, shape))
 
     # Now, we load data as we know its format
     if dim == 4:

@@ -12,6 +12,7 @@ import distutils.version
 import numpy as np
 from scipy import signal, stats, linalg
 from sklearn.utils.fixes import qr_economic
+from sklearn.utils import gen_even_slices
 
 np_version = distutils.version.LooseVersion(np.version.short_version).version
 
@@ -52,25 +53,66 @@ def _standardize(signals, detrend=False, normalize=True):
     return signals
 
 
-def _detrend(signals, inplace=False, type="linear"):
-    """Detrend columns of input array.
+def _mean_of_squares(signals, n_batches=20):
+    """Compute mean of squares for each signal.
+    This function is equivalent to
 
-    Signals are supposed to be columns of `signals`.
-    This function is significantly faster than scipy.signal.detrend.
+        var = np.copy(signals)
+        var **= 2
+        var = var.mean(axis=0)
+
+    but uses a lot less memory.
 
     Parameters
     ==========
-    signals: numpy.ndarray
+    signals : numpy.ndarray, shape (n_samples, n_features)
+        signal whose mean of squares must be computed.
+
+    n_batches : int, optional
+        number of batches to use in the computation. Tweaking this value
+        can lead to variation of memory usage and computation time. The higher
+        the value, the lower the memory consumption.
+
+    """
+    # No batching for small arrays
+    if signals.shape[1] < 500:
+        n_batches = 1
+
+    # Fastest for C order
+    var = np.empty(signals.shape[1])
+    for batch in gen_even_slices(signals.shape[1], n_batches):
+        tvar = np.copy(signals[:, batch])
+        tvar **= 2
+        var[batch] = tvar.mean(axis=0)
+
+    return var
+
+
+def _detrend(signals, inplace=False, type="linear", n_batches=10):
+    """Detrend columns of input array.
+
+    Signals are supposed to be columns of `signals`.
+    This function is significantly faster than scipy.signal.detrend on this
+    case and uses a lot less memory.
+
+    Parameters
+    ==========
+    signals : numpy.ndarray
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
 
-    inplace: bool
+    inplace : bool, optional
         Tells if the computation must be made inplace or not (default
         False).
 
-    type: str
+    type : str, optional
         Detrending type ("linear" or "constant").
         See also scipy.signal.detrend.
+
+    n_batches : int, optional
+        number of batches to use in the computation. Tweaking this value
+        can lead to variation of memory usage and computation time. The higher
+        the value, the lower the memory consumption.
 
     Returns
     =======
@@ -82,10 +124,21 @@ def _detrend(signals, inplace=False, type="linear"):
 
     signals -= np.mean(signals, axis=0)
     if type == "linear":
-        regressor = np.arange(signals.shape[0]).astype(np.float)
+        # Keeping "signals" dtype avoids some type conversion further down,
+        # and can save a lot of memory if dtype is single-precision.
+        regressor = np.arange(signals.shape[0], dtype=signals.dtype)
         regressor -= regressor.mean()
         regressor /= np.sqrt((regressor ** 2).sum())
-        signals -= np.dot(regressor, signals) * regressor[:, np.newaxis]
+        regressor = regressor[:, np.newaxis]
+
+        # No batching for small arrays
+        if signals.shape[1] < 500:
+            n_batches = 1
+
+        # This is fastest for C order.
+        for batch in gen_even_slices(signals.shape[1], n_batches):
+            signals[:, batch] -= np.dot(regressor[:, 0], signals[:, batch]
+                                        ) * regressor
     return signals
 
 
@@ -224,18 +277,13 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
         nilearn.image.high_variance_confounds
     """
 
-    # FIXME: when detrend=True, two copies of "series" are made.  Variance
-    # computation below can be made chunk-by-chunk, which uses almost no
-    # extra memory, and is as fast (if not faster).
     if detrend:
         series = _detrend(series)  # copy
 
     # Retrieve the voxels|features with highest variance
 
     # Compute variance without mean removal.
-    var = np.copy(series)
-    var **= 2
-    var = var.mean(axis=0)
+    var = _mean_of_squares(series)
 
     var_thr = stats.scoreatpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)

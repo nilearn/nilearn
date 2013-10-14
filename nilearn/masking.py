@@ -161,6 +161,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     # Delayed import to avoid circular imports
     from . import image
+    input_repr = _utils._repr_niimgs(epi_img)
     epi_img = cache(image.resample_img, memory, ignore=['copy'])(
                                 epi_img,
                                 target_affine=target_affine,
@@ -168,6 +169,10 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
     mean_epi = epi_img.get_data()
+    if not mean_epi.ndim in (3, 4):
+        raise ValueError('compute_epi_mask expects 3D or 4D '
+            'images, but %i dimensions were given (%s)'
+            % (mean_epi.ndim, input_repr))
     if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:

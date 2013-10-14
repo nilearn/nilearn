@@ -132,7 +132,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     target_shape: tuple or list, optional
         If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3. 
+        len(target_shape) must be equal to 3.
         A target_affine has to be specified jointly with target_shape.
 
     interpolation: str, optional
@@ -219,9 +219,9 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         offset = np.array((xmin, ymin, zmin))
         offset = np.dot(target_affine, offset)
         target_affine = from_matrix_vector(target_affine, offset[:3])
-        target_shape = (np.ceil(xmax - xmin) + 1,
-                        np.ceil(ymax - ymin) + 1,
-                        np.ceil(zmax - zmin) + 1, )
+        target_shape = (int(np.ceil(xmax - xmin)) + 1,
+                        int(np.ceil(ymax - ymin)) + 1,
+                        int(np.ceil(zmax - zmin)) + 1, )
 
     if np.all(target_affine == affine):
         # Small trick to be more numerically stable

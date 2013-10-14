@@ -6,38 +6,40 @@ This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
 
+n_subjects = 10  # Number of subjects to consider for group-sparse covariance
+plotted_subject = 0  # subject to plot
+
+
 import pylab as pl
 import matplotlib
-
-from sklearn import covariance
-
-import nilearn.datasets
-import nilearn.image
-import nilearn.signal
-import nilearn.input_data
-
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
 pl.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
     "bwr", _bwr_data))
 
 
-def plot_matrices(cov, prec, title, subject_n=0):
+def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
+
+    prec = prec.copy()  # avoid side effects
+
+    # Display sparsity pattern
+    sparsity = prec == 0
+    pl.figure()
+    pl.imshow(sparsity, interpolation="nearest")
+    pl.title("%s / sparsity" % title)
 
     # Put zeros on the diagonal, for graph clarity.
     size = prec.shape[0]
     prec[range(size), range(size)] = 0
-
     span = max(abs(prec.min()), abs(prec.max()))
-    title = "{0:d} {1}".format(subject_n, title)
 
     # Display covariance matrix
     pl.figure()
     pl.imshow(cov, interpolation="nearest",
               vmin=-1, vmax=1, cmap=pl.cm.get_cmap("bwr"))
     pl.colorbar()
-    pl.title(title + " / covariance")
+    pl.title("%s / covariance" % title)
 
     # Display precision matrix
     pl.figure()
@@ -45,33 +47,57 @@ def plot_matrices(cov, prec, title, subject_n=0):
               vmin=-span, vmax=span,
               cmap=pl.cm.get_cmap("bwr"))
     pl.colorbar()
-    pl.title(title + " / precision")
+    pl.title("%s / precision" % title)
 
-subject_n = 1
 
+print("-- Fetching datasets ...")
+import nilearn.datasets
+atlas = nilearn.datasets.fetch_msdl_atlas()
 dataset = nilearn.datasets.fetch_adhd()
-filename = dataset["func"][subject_n]
-confound_file = dataset["confounds"][subject_n]
 
-print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-msdl_atlas = nilearn.datasets.fetch_msdl_atlas()
+import nilearn.image
+import nilearn.input_data
 
-print("-- Computing confounds ...")
-hv_confounds = nilearn.image.high_variance_confounds(filename)
+import joblib
+mem = joblib.Memory(".")
+subjects = []
 
-print("-- Computing region signals ...")
-masker = nilearn.input_data.NiftiMapsMasker(msdl_atlas["maps"],
-                                 resampling_target="maps",
-                                 low_pass=None, high_pass=0.01, t_r=2.5,
-                                 verbose=1)
-region_ts = masker.fit_transform(filename,
-                                 confounds=[hv_confounds, confound_file])
+for subject_n in range(n_subjects):
+    filename = dataset["func"][subject_n]
+    print("Processing file %s" % filename)
 
-print("-- Computing covariance matrices ...")
-estimator = covariance.GraphLassoCV()
-estimator.fit(region_ts)
+    print("-- Computing confounds ...")
+    confound_file = dataset["confounds"][subject_n]
+    hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(filename)
 
-plot_matrices(estimator.covariance_, -estimator.precision_,
-              title="Graph Lasso CV ({0:.3f})".format(estimator.alpha_),
-              subject_n=subject_n)
+    print("-- Computing region signals ...")
+    masker = nilearn.input_data.NiftiMapsMasker(
+        atlas["maps"], resampling_target="maps", detrend=True,
+        low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+        memory=mem, memory_level=1, verbose=1)
+    region_ts = masker.fit_transform(filename,
+                                     confounds=[hv_confounds, confound_file])
+    subjects.append(region_ts)
+
+
+print("-- Computing group-sparse precision matrices ...")
+from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+gsc = GroupSparseCovarianceCV(verbose=2, n_jobs=3)
+gsc.fit(subjects)
+
+print("-- Computing graph-lasso precision matrices ...")
+from sklearn import covariance
+gl = covariance.GraphLassoCV(n_jobs=3)
+gl.fit(subjects[plotted_subject])
+
+print("-- Displaying results")
+title = "{0:d} GroupSparseCovariance $\\alpha={1:.2e}$".format(plotted_subject,
+                                                     gsc.alpha_)
+plot_matrices(gsc.covariances_[..., plotted_subject],
+              gsc.precisions_[..., plotted_subject], title)
+
+title = "{0:d} GraphLasso $\\alpha={1:.2e}$".format(plotted_subject,
+                                                     gl.alpha_)
+plot_matrices(gl.covariance_, gl.precision_, title)
+
 pl.show()

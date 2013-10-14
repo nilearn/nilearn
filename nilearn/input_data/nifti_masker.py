@@ -19,83 +19,83 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     Parameters
     ----------
-    mask: filename or NiImage, optional
+    mask : filename or NiImage, optional
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters detailed below (mask_connected...) can be set to
         fine tune the mask extraction.
 
-    sessions: numpy array, optional
+    sessions : numpy array, optional
         Add a session level to the preprocessing. Each session will be
         detrended independently. Must be a 1D array of n_samples elements.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: boolean, optional
+    standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1.
 
-    detrend: boolean, optional
+    detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass: False or float, optional
+    low_pass : False or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional
+    high_pass : False or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r: float, optional
+    t_r : float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    target_affine: 3x3 or 4x4 matrix, optional
+    target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional
+    target_shape : 3-tuple of integers, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_connected: boolean, optional
+    mask_connected : boolean, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
-    mask_opening: int, optional
+    mask_opening : int, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
-    mask_lower_cutoff: float, optional
+    mask_lower_cutoff : float, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
-    mask_upper_cutoff: float, optional
+    mask_upper_cutoff : float, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
 
-    memory: instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional
+    memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    verbose: integer, optional
+    verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
     Attributes
     ----------
 
-    `mask_img_`: Nifti like image
+    `mask_img_` : Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
-    `affine_`: 4x4 numpy array
+    `affine_` : 4x4 numpy array
         Affine of the transformed NiImages.
 
     See also
@@ -177,7 +177,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
-            print "[%s.transform] Resampling mask" % self.__class__.__name__
+            print "[%s.fit] Resampling mask" % self.__class__.__name__
         self.mask_img_ = self._cache(image.resample_img, memory_level=1)(
             self.mask_img_,
             target_affine=self.target_affine,

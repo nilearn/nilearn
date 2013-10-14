@@ -272,21 +272,24 @@ the `MSDL one
 
 
 .. literalinclude:: ../plot_adhd_covariance.py
-    :start-after: print("-- Loading raw data ({0:d}) and masking ...".format(subject_n))
-    :end-before: print("-- Computing confounds ...")
+    :start-after: print("-- Fetching datasets ...")
+    :end-before: dataset = nilearn.datasets.fetch_adhd()
 
 This atlas defines its regions using maps. The path to the corresponding file
-can be found under the "maps" key. Assuming that a confounds file name is in the
-variable "confounds", extracting region signals can be performed like this:
-
+can be found under the "maps" key. Extracting region signals for
+several subjects can be performed like this:
 
 .. literalinclude:: ../plot_adhd_covariance.py
-   :start-after: print("-- Computing region signals ...")
-   :end-before: print("-- Computing covariance matrices ...")
+   :start-after: atlas = nilearn.datasets.fetch_msdl_atlas()
+   :end-before: print("-- Computing group-sparse precision matrices ...")
 
 `region_ts` is a `numpy.ndarray
 <http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html>`_,
-containing one signal per column.
+containing one signal per column. The `subjects` list contains signals
+for several subjects. In this example, confounds removal is performed,
+by both using a provided list of confounds, and by computing new ones
+using :func:`nilearn.image.high_variance_confounds`.
+
 
 One important thing that happens transparently during the execution of
 :meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
@@ -300,20 +303,22 @@ and affine as the `MSDL atlas
 See the reference documentation for :class:`NiftiMasker` for every
 possible option.
 
-`region_ts` can then be used as input to a `scikit-learn
-<http://scikit-learn.org>`_ transformer. In the present case,
-covariance between region signals can be obtained using the `graph
-lasso algorithm
+The :class:`NiftiMapsMasker` output can then be used as input to a
+`scikit-learn <http://scikit-learn.org>`_ transformer. In the present
+case, covariance between region signals can be obtained for each
+subject either using the `graph lasso
 <http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_
-(with cross-validation):
+or the `group-sparse covariance <http://arxiv.org/abs/1207.4255>`_
+algorithm:
 
 .. literalinclude:: ../plot_adhd_covariance.py
-   :start-after: print("-- Computing covariance matrices ...")
-   :end-before: plot_matrices(estimator.covariance_, -estimator.precision_,
+   :start-after: subjects.append(region_ts)
+   :end-before: print("-- Displaying results")
 
 .. note::
 
-   The full example can be found here: :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
+   The full example can be found here:
+   :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
 
 
 NiftiLabelsMasker Usage
