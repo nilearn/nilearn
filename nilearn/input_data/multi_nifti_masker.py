@@ -7,7 +7,6 @@ Transformer used to apply basic transformations on multi subject MRI data.
 import warnings
 import collections
 
-import numpy as np
 from sklearn.externals.joblib import Memory
 
 from .. import masking
@@ -229,30 +228,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         data: {list of numpy arrays}
             preprocessed images
         """
-        data = []
-        affine = None
         if not hasattr(niimgs, '__iter__')\
                     or isinstance(niimgs, basestring):
                 return self.transform_single_niimgs(niimgs)
-        for index, niimg in enumerate(niimgs):
-            # If we have a string (filename), we won't need to copy, as
-            # there will be no side effect
-            copy = not isinstance(niimg, basestring)
-            niimg = _utils.check_niimgs(niimg)
-
-            if (affine is not None
-                        and affine.shape == niimg.get_affine().shape
-                        and not np.allclose(niimg.get_affine(), affine)):
-                warnings.warn('Affine is different across subjects.'
-                              ' Realignement on first subject affine forced')
-                self.target_affine = affine
-            if confounds is not None:
-                data.append(self.transform_single_niimgs(
-                    niimg, confounds=confounds[index],
-                    copy=copy))
-            else:
-                data.append(self.transform_single_niimgs(niimg,
-                                                         copy=copy))
-            if affine is None:
-                affine = self.affine_
-        return data
+        return self.transform_niimgs(niimgs, confounds, n_jobs=self.n_jobs)
