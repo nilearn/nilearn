@@ -67,6 +67,7 @@ plot_rst_template = """
 %(stdout)s
 
 **Total running time of the example:** %(time_elapsed) .2f seconds
+(%(time_m) .0f minutes %(time_s) .2f seconds)
     """
 
 # The following strings are used when we have several pictures: we use
@@ -287,6 +288,8 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                                'time_%s.txt' % base_image_name)
     thumb_file = os.path.join(thumb_dir, fname[:-3] + '.png')
     time_elapsed = 0
+    time_m = 0
+    time_s = 0
     if plot_gallery and fname.startswith('plot'):
         # generate the plot as png images if file name
         # starts with "plot" and if it's more recent than an
@@ -400,6 +403,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         for figure_name in figure_list:
             image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
+    time_m, time_s = divmod(time_elapsed, 60)
     f = open(os.path.join(target_dir, fname[:-2] + 'rst'), 'w')
     f.write(this_template % locals())
     f.flush()
