@@ -118,6 +118,11 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              % self.__class__.__name__)
         from .nifti_masker import NiftiMasker
         params = get_params(NiftiMasker, self)
+        # Remove the mask-computing params: they are not useful and will
+        # just invalid the cache for no good reason
+        for name in ('mask', 'mask_connected', 'mask_lower_cutoff',
+                     'mask_opening', 'mask_upper_cutoff'):
+            params.pop(name, None)
         data, affine = \
             self._cache(filter_and_mask, memory_level=1,
                         ignore=['verbose', 'memory', 'copy'])(
