@@ -8,13 +8,13 @@ Machine Learning in NeuroImaging: what and why
 Machine learning problems and vocabulary
 -----------------------------------------
 
-Machine learning is interested in learning from data empirical rules to
+Machine learning is interested in learning empirical rules from data to
 make **predictions**. Two kinds of problems appear:
 
 :Supervised learning:
 
     :ref:`supervised_learning` is interested in predicting an **output
-    variable**, or **target**, `y` from **data** `X`. Typically, we start
+    variable**, or **target**, `y`, from **data** `X`. Typically, we start
     from labeled data (the **training set**) for which we know the `y`
     for each instance of `X` and train a model; this model is then
     applied to new unlabeled data (the **test set**) to predict the
@@ -23,8 +23,8 @@ make **predictions**. Two kinds of problems appear:
     * a **regression** problem: predicting a continuous quantity such 
       as age
     
-    * a **classification** problem: predicting to class each 
-      observation belongs to: patient or control
+    * a **classification** problem: predicting the class each 
+      observation belongs to, such as patient or control
 
     In neuroimaging, supervised learning is typically used to relate
     brain images to behavioral or clinical observations.
@@ -32,7 +32,7 @@ make **predictions**. Two kinds of problems appear:
 :Unsupervised learning:
 
     :ref:`unsupervised_learning` is concerned with data `X` without any
-    label. It analyzes the structure of a dataset, for instance
+    labels. It analyzes the structure of a dataset, for instance
     **clustering** or extracting latent factors such as independent
     components.
 
@@ -40,7 +40,7 @@ make **predictions**. Two kinds of problems appear:
     find sub-populations in diseases.
 
 
-Why is machine learning relevant NeuroImaging: a few examples
+Why is machine learning relevant to NeuroImaging: a few examples
 --------------------------------------------------------------
 
 :Diagnosis and prognosis:
@@ -53,7 +53,7 @@ Why is machine learning relevant NeuroImaging: a few examples
 
     * Information mapping: using the prediction accuracy of a classifier
       to test links between brain images and stimuli. (e.g.
-      :ref:`searchlight <searchlight>`) `[ Kriegeskorte 2005]
+      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2005]
       <http://www.pnas.org/content/103/10/3863.short>`_
 
     * Transfer learning: measuring how much an estimator trained on a
@@ -110,13 +110,13 @@ error prone.
 
 :Windows:
   EPD_, Anaconda_, or `PythonXY <http://code.google.com/p/pythonxy/>`_:
-  these distributions come with the scikit-learn installed (do make sure
+  these distributions come with scikit-learn installed (do make sure
   to install the full, non-free, EPD and not EPD-free to get
   scikit-learn).
 
 :MacOSX:
-  EPD_ and Anaconda_ are the only full scientific Python distribution for
-  Mac (once again you need to install the full, non-free, EPD and not
+  EPD_ and Anaconda_ are the only full scientific Python distributions for
+  Mac (once again, you need to install the full, non-free, EPD and not
   EPD-free to get scikit-learn).
 
 :Linux:
@@ -138,7 +138,7 @@ Nibabel: reading neuroimaging files
 
 `Nibabel <http://nipy.sourceforge.net/nibabel/>`_ is an easy to use
 reader of NeuroImaging data files. It is not included in scientific
-Python distributions but is required for all parts of this tutorial.
+Python distributions, but is required for all parts of this tutorial.
 You can install it with the following command::
 
   $ pip install -U --user nibabel
@@ -166,7 +166,7 @@ following, in the Python prompt::
 
     In [1]: import nilearn
 
-If you do not get any errors, you have installed nilearn right.
+If you do not get any errors, you have installed nilearn correctly.
 
 Python for NeuroImaging: a quick-start
 ==========================================
@@ -177,7 +177,7 @@ using Python for science, see the `scipy lecture notes
 <http://scipy-lectures.github.io/>`_.
 
 
-We will be using `IPython <http://ipython.org>`_, in pylab mode, that
+We will be using `IPython <http://ipython.org>`_, in pylab mode, which
 provides an interactive scientific environment. Start it with::
 
     $ ipython -pylab
@@ -293,7 +293,7 @@ Scikit-learn: machine learning in Python
 
     - Easy to use and well documented
     - Computationally efficient
-    - Provide wide variety standard machine learning methods for non-experts
+    - Provides a wide variety of standard machine learning methods for non-experts
 
 The core concept in the `scikit-learn <http://scikit-learn.org>`_ is the
 estimator object, for instance an SVC (`support vector classifier
@@ -321,7 +321,7 @@ the object: in IPython you can do::
     ...
 
 Once the object is created, you can fit it on data, for instance here we
-use a hand-written digits dataset, that comes with the scikit-learn::
+use a hand-written digits dataset, which comes with scikit-learn::
 
     >>> from sklearn import datasets
     >>> digits = datasets.load_digits()
@@ -352,19 +352,19 @@ Finding help
       be found in the 
       `scipy lecture notes <http://scipy-lectures.github.com/>`_.
 
-    * The documentation of the scikit-learn explains each method with tips on
+    * The documentation of scikit-learn explains each method with tips on
       practical use and examples: 
       `http://scikit-learn.org/ <http://scikit-learn.org/>`_
       While not specific to neuroimaging, it is often a recommended read.
       Be careful to consult the documentation relative to the version of
-      the scikit-learn that you are using.
+      scikit-learn that you are using.
 
 :Mailing lists:
 
     * You can find help with neuroimaging in Python (file I/O,
-      neuroimaging-specific questions) on the nipy user group:
+      neuroimaging-specific questions) via the nipy user group:
       https://groups.google.com/forum/?fromgroups#!forum/nipy-user
 
-    * For machine-learning and scikit-learn question, expertise can be
+    * For machine-learning and scikit-learn questions, expertise can be
       found on the scikit-learn mailing list:
       https://lists.sourceforge.net/lists/listinfo/scikit-learn-general
