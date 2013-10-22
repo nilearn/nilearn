@@ -41,7 +41,7 @@ make **predictions**. Two kinds of problems appear:
 
 
 Why is machine learning relevant to NeuroImaging: a few examples
---------------------------------------------------------------
+-----------------------------------------------------------------
 
 :Diagnosis and prognosis:
 
