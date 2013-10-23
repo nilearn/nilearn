@@ -261,6 +261,11 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
 :class:`NiftiMapsMasker` Usage
 ------------------------------
 
+.. note::
+
+   The full example in this section can be found here:
+   :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
+
 Usage of :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` is very close,
 and very close to the usage of :class:`NiftiMasker`. Only options specific to
 :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` are described
@@ -314,11 +319,6 @@ algorithm:
 .. literalinclude:: ../plot_adhd_covariance.py
    :start-after: subjects.append(region_ts)
    :end-before: print("-- Displaying results")
-
-.. note::
-
-   The full example can be found here:
-   :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
 
 
 NiftiLabelsMasker Usage
