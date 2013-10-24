@@ -26,7 +26,7 @@ from .. import masking
 from .._utils import as_ndarray
 
 
-def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
+def search_light(X, y, estimator, A, score_func=None, cv=None, n_jobs=-1,
                  verbose=0):
     """Function for computing a search_light
 
@@ -45,7 +45,7 @@ def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
         adjacency matrix. Defines for each sample the neigbhoring samples
         following a given structure of the data.
 
-    scoring : string or callable, optional
+    score_func : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
         If callable, it taks as arguments the fitted estimator, the
@@ -73,7 +73,7 @@ def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
             A.rows[list_i],
-            estimator, X, y, scoring, cv,
+            estimator, X, y, score_func, cv,
             thread_id + 1, A.shape[0], verbose)
         for thread_id, list_i in enumerate(group_iter))
     return np.concatenate(scores)
@@ -201,8 +201,8 @@ class SearchLight(BaseEstimator):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    scoring : string or callable, optional
-        The scoring strategy to use. See the scikit-learn documentation
+    score_func : string or callable, optional
+        The score_func strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
@@ -235,14 +235,14 @@ class SearchLight(BaseEstimator):
     """
 
     def __init__(self, mask_img, process_mask_img=None, radius=2.,
-                 estimator=LinearSVC(C=1), n_jobs=1, scoring=None, cv=None,
+                 estimator=LinearSVC(C=1), n_jobs=1, score_func=None, cv=None,
                  verbose=0):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
         self.radius = radius
         self.estimator = estimator
         self.n_jobs = n_jobs
-        self.scoring = scoring
+        self.score_func = score_func
         self.cv = cv
         self.verbose = verbose
 
@@ -299,7 +299,7 @@ class SearchLight(BaseEstimator):
                                     mask_affine))
 
         scores = search_light(X, y, self.estimator, A,
-                              self.scoring, self.cv, self.n_jobs,
+                              self.score_func, self.cv, self.n_jobs,
                               self.verbose)
         scores_3D = np.zeros(process_mask.shape)
         scores_3D[process_mask] = scores
