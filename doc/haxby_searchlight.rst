@@ -27,7 +27,7 @@ from internet and loading it can be done with the provided functions:
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: ### Load Haxby dataset ########################################################
-    :end-before: ### Preprocess data ###########################################################
+    :end-before: ### Restrict to faces and houses ##############################################
 
 Preparing data
 --------------
@@ -36,10 +36,11 @@ For this tutorial we need:
 
 - to put X in the form *n_samples* x *n_features*
 - compute a mean image for visualisation background
-
+- limit our analysis to the `face` and `house` conditions
+  (like in the :ref:`decoding <fmri_decoding>` example)
 .. literalinclude:: ../plot_haxby_searchlight.py
-    :start-after: ### Preprocess data ###########################################################
-    :end-before: ### Restrict to faces and houses ##############################################
+    :start-after: ### Restrict to faces and houses ##############################################
+    :end-before: ### Prepare masks #############################################################
 
 Masking
 -------
@@ -61,19 +62,9 @@ back of the brain. *mask* will ensure that no value outside the brain is
 taken into account when iterating with the sphere.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
-        :start-after: #   up computation)
-        :end-before: ### Searchlight ############################################################### 
+        :start-after: #   brain to speed up computation)
+        :end-before: ### Searchlight computation ###################################################
 
-Restricting the dataset
------------------------
-
-Like in the :ref:`decoding <fmri_decoding>` example, we limit our
-analysis to the `face` and `house` conditions:
-
-.. literalinclude:: ../plot_haxby_searchlight.py
-    :start-after: ### Restrict to faces and houses ##############################################
-    :end-before: ### Loading step ############################################################## 
-	
 Third Step: Setting up the searchlight
 =======================================
 
@@ -112,7 +103,7 @@ good compromise between running time and quality.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
     :start-after: # set once and the others as learning sets
-    :end-before: ### Fit #######################################################################
+    :end-before: import nilearn.decoding
 
 Running Searchlight
 ===================
@@ -123,8 +114,8 @@ Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
-    :start-after: ### Fit #######################################################################
-    :end-before: ### Visualization #############################################################
+    :start-after: # The radius is the one of the Searchlight sphere that will scan the volume
+    :end-before: ### F-scores computation ######################################################
 	
 Visualisation
 =============
