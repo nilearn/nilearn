@@ -25,7 +25,7 @@ Loading
 As seen in :ref:`previous sections <downloading_data>`, fetching the data
 from internet and loading it can be done with the provided functions:
 
-.. literalinclude:: ../plot_haxby_searchlight.py
+.. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Restrict to faces and houses ##############################################
 
@@ -38,7 +38,7 @@ For this tutorial we need:
 - compute a mean image for visualisation background
 - limit our analysis to the `face` and `house` conditions
   (like in the :ref:`decoding <fmri_decoding>` example)
-.. literalinclude:: ../plot_haxby_searchlight.py
+.. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### Restrict to faces and houses ##############################################
     :end-before: ### Prepare masks #############################################################
 
@@ -61,7 +61,7 @@ be used here :
 back of the brain. *mask* will ensure that no value outside the brain is
 taken into account when iterating with the sphere.
 
-.. literalinclude:: ../plot_haxby_searchlight.py
+.. literalinclude:: ../../plot_haxby_searchlight.py
         :start-after: #   brain to speed up computation)
         :end-before: ### Searchlight computation ###################################################
 
@@ -85,7 +85,7 @@ available in
 `scikit-learn documentation
 <http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics>`_.
 
-.. literalinclude:: ../plot_haxby_searchlight.py
+.. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: # all positives results for one class.
     :end-before: ### Define the cross-validation scheme used for validation.
 
@@ -113,7 +113,7 @@ parameter left is the radius of the ball that will run through the data.
 Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.
 
-.. literalinclude:: ../plot_haxby_searchlight.py
+.. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: # The radius is the one of the Searchlight sphere that will scan the volume
     :end-before: ### F-scores computation ######################################################
 	
@@ -128,12 +128,12 @@ background. We can see here that voxels in the visual cortex contains
 information to distinguish pictures showed to the volunteers, which was the
 expected result.
 
-.. figure:: auto_examples/images/plot_haxby_searchlight_1.png
-   :target: auto_examples/plot_haxby_searchlight.html
+.. figure:: ../auto_examples/images/plot_haxby_searchlight_1.png
+   :target: ../auto_examples/plot_haxby_searchlight.html
    :align: center
    :scale: 60
 
-.. literalinclude:: ../plot_haxby_searchlight.py
+.. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### Visualization #############################################################
     :end-before: ### Show the F_score
 
@@ -145,12 +145,12 @@ Parametric Mapping* (SPM), using ANOVA (analysis of variance), and
 F-tests. Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
 
-.. figure:: auto_examples/images/plot_haxby_searchlight_2.png
-   :target: auto_examples/plot_haxby_searchlight.html
+.. figure:: ../auto_examples/images/plot_haxby_searchlight_2.png
+   :target: ../auto_examples/plot_haxby_searchlight.html
    :align: center
    :scale: 60
 
-.. literalinclude:: ../plot_haxby_searchlight.py
+.. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### Show the F_score
 
 .. [1]

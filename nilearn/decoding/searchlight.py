@@ -198,8 +198,8 @@ class SearchLight(BaseEstimator):
         boolean image giving location of voxels containing usable signals.
 
     process_mask_img : niimg, optional
-            boolean image giving voxels on which searchlight should be
-            computed.
+        boolean image giving voxels on which searchlight should be
+        computed.
 
     radius : float, optional
         radius of the searchlight ball, in millimeters. Defaults to 2.
