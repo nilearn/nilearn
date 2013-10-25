@@ -12,6 +12,7 @@ neighborhood of each location of a domain.
 
 import time
 import sys
+import warnings
 from distutils.version import LooseVersion
 
 import numpy as np
@@ -158,6 +159,9 @@ def _group_iter_search_light(list_rows, estimator, X, y,
         kwargs = dict()
         if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
             kwargs['scoring'] = scoring
+        elif scoring is not None:
+            warnings.warn('Scikit-learn version is too old. '
+                          'scoring argument ignored', stacklevel=2)
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
                                                 y, cv=cv, n_jobs=1,
                                                 **kwargs))
