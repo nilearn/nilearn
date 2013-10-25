@@ -24,5 +24,5 @@ User guide: contents
    supervised_learning.rst
    unsupervised_learning.rst
    dataset_manipulation.rst
-   Reference <modules/classes.rst>
+   Reference <modules/reference.rst>
 
