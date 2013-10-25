@@ -12,8 +12,11 @@ neighborhood of each location of a domain.
 
 import time
 import sys
+from distutils.version import LooseVersion
+
 import numpy as np
 
+import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn.svm import LinearSVC
 from sklearn.cross_validation import cross_val_score
@@ -152,9 +155,12 @@ def _group_iter_search_light(list_rows, estimator, X, y,
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()
     for i, row in enumerate(list_rows):
+        kwargs = dict()
+        if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
+            kwargs['scoring'] = scoring
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                                                y, scoring=scoring,
-                                                cv=cv, n_jobs=1))
+                                                y, cv=cv, n_jobs=1,
+                                                **kwargs))
         if verbose > 0:
             # One can't print less than each 10 iterations
             step = 11 - min(verbose, 10)
