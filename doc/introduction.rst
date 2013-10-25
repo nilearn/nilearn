@@ -125,9 +125,10 @@ error prone.
   Ask your system administrator to install, using the distribution
   package manager, the following packages:
 
-    - scikit-learn (sometimes called `sklearn`)
-    - matplotlib
+    - scikit-learn (sometimes called `sklearn`, or `python-sklearn`)
+    - matplotlib (sometimes called `python-matplotlib`)
     - ipython
+    - nibabel (sometimes called `python-nibabel`)
 
 .. _EPD: http://www.enthought.com/products/epd.php
 
@@ -142,6 +143,9 @@ Python distributions, but is required for all parts of this tutorial.
 You can install it with the following command::
 
   $ pip install -U --user nibabel
+
+If you are under linux, your package manager might have nibabel, for
+instance called `python-nibabel`.
 
 .. warning::
 
