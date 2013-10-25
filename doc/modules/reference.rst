@@ -183,26 +183,3 @@ Functions
 
 .. _utils_ref:
 
-:mod:`nilearn._utils`: Manipulating Niimgs
-==========================================
-
-.. automodule:: nilearn._utils
-   :no-members:
-   :no-inherited-members:
-
-.. No relevant user manual section yet.
-
-Functions
----------
-.. currentmodule:: nilearn._utils
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   is_a_niimg
-   check_niimg
-   check_niimgs
-   concat_niimgs
-   copy_niimg
-
