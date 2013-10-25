@@ -70,7 +70,7 @@ def test_nan():
 def test_joblib_cache():
     if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
         # Old nibabel do not pickle
-        raise
+        raise SkipTest
     from sklearn.externals.joblib import hash
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
