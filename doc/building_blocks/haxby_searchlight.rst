@@ -68,10 +68,12 @@ taken into account when iterating with the sphere.
 Third Step: Setting up the searchlight
 =======================================
 
+.. currentmodule:: nilearn.decoding
+
 Classifier
 ----------
 
-The classifier used by default by Searchlight is LinearSVC with C=1 but
+The classifier used by default by :class:`SearchLight` is LinearSVC with C=1 but
 this can be customed easily by passing an estimator parameter to the
 cross validation. See scikit-learn documentation for `other classifiers
 <http://scikit-learn.org/stable/supervised_learning.html>`_.

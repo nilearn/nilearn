@@ -158,10 +158,6 @@ Classes
    
    SearchLight
 
-.. autosummary::
-   :toctree: generated/
-   :template: class.rst
-
 
 .. _signal_ref:
 
