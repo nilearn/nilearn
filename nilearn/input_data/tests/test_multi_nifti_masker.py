@@ -5,10 +5,13 @@ Test the multi_nifti_masker module
 # License: simplified BSD
 
 from nose.tools import assert_true, assert_false, assert_raises
+from nose import SkipTest
 import numpy as np
 from numpy.testing import assert_array_equal
 
 from nibabel import Nifti1Image
+import nibabel
+from distutils.version import LooseVersion
 
 from ..multi_nifti_masker import MultiNiftiMasker
 from ..._utils import testing
@@ -65,6 +68,9 @@ def test_nan():
 
 
 def test_joblib_cache():
+    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
+        # Old nibabel do not pickle
+        raise
     from sklearn.externals.joblib import hash
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))

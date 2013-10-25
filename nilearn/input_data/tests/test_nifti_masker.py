@@ -7,11 +7,14 @@ test_signal.py for this.
 """
 # Author: Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
+from distutils.version import LooseVersion
 
 from nose.tools import assert_true, assert_false, assert_raises
+from nose import SkipTest
 import numpy as np
 
 from nibabel import Nifti1Image
+import nibabel
 
 from ..nifti_masker import NiftiMasker
 from ..._utils import testing
@@ -94,7 +97,10 @@ def test_matrix_orientation():
 
 
 def test_joblib_cache():
-    from joblib import hash
+    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
+        # Old nibabel do not pickle
+        raise SkipTest
+    from sklearn.externals.joblib import hash
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
