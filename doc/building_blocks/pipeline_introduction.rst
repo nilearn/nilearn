@@ -1,8 +1,8 @@
 .. _getting_started:
 
-=======================================================
-Getting started: introduction to the decoding pipeline
-=======================================================
+============================================================
+Introduction to the neuroimaging machine-learning pipeline
+============================================================
 
 Nilearn comes with code to simplify the use of scikit-learn when dealing
 with neuroimaging data. For the moment, Nilearn is focused on functional MRI

@@ -1,8 +1,8 @@
 .. _nyu_rest:
 
-===============
-fMRI clustering
-===============
+==================================
+Parcellation the brain in regions
+==================================
 
 .. currentmodule:: nilearn.datasets
 
@@ -21,7 +21,7 @@ As seen in :ref:`previous sections <downloading_data>`, we
 fetch the data
 from internet and load it with a provided function:
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: ### Load nyu_rest dataset #####################################################
     :end-before: ### Ward ######################################################################
 
@@ -40,7 +40,7 @@ aka connectivity map. This is useful to constrain clusters to form
 contiguous parcels (see `the scikit-learn documentation
 <http://www.scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Compute connectivity matrix: which voxel is connected to which
     :end-before: # Computing the ward for the first time, this is long...
 
@@ -71,7 +71,7 @@ Apply the ward
 
 Here we simply launch Ward's algorithm to find 1000 clusters and we time it.
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Computing the ward for the first time, this is long...
     :end-before: # Compute the ward with more clusters, should be faster
 
@@ -79,7 +79,7 @@ This runs in about 10 seconds (depending on your computer configuration). Now,
 we are not satisfied of the result and we want to cluster the picture in 2000
 elements.
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Compute the ward with more clusters, should be faster
     :end-before: ### Show result ############################################################### 
 
@@ -94,7 +94,7 @@ Unmasking
 
 After applying the ward, we must unmask the data. This can be done simply :
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Unmask data
     :end-before: # Display the labels 
 
@@ -109,13 +109,13 @@ Label visualization
 To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Display the labels 
     :end-before: # Display the original data
 
 
-.. figure:: auto_examples/images/plot_rest_clustering_1.png
-   :target: auto_examples/plot_rest_clustering.html
+.. figure:: ../auto_examples/images/plot_rest_clustering_1.png
+   :target: ../auto_examples/plot_rest_clustering.html
    :align: center
    :scale: 60
 
@@ -132,15 +132,15 @@ representation thanks to a two-step procedure :
 - call *ward.inverse_transform* on the previous result to turn it back into
   the masked picture shape
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Display the original data
 
-.. |left_img| image:: auto_examples/images/plot_rest_clustering_2.png
-   :target: auto_examples/plot_rest_clustering.html
+.. |left_img| image:: ../auto_examples/images/plot_rest_clustering_2.png
+   :target: ../auto_examples/plot_rest_clustering.html
    :width: 49%
 
-.. |right_img| image:: auto_examples/images/plot_rest_clustering_3.png
-   :target: auto_examples/plot_rest_clustering.html
+.. |right_img| image:: ../auto_examples/images/plot_rest_clustering_3.png
+   :target: ../auto_examples/plot_rest_clustering.html
    :width: 49%
 
 |left_img| |right_img|

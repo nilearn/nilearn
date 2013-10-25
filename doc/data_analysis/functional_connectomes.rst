@@ -1,7 +1,7 @@
 .. _func_connect:
 
 ================================================================
- Gaussian graphical models for functional connectivity analysis
+Learning functional connectomes
 ================================================================
 
 Resting-state functional connectivity can be obtained by estimating a

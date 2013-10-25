@@ -12,7 +12,7 @@
 .. _fmri_decoding:
 
 ================================================================================
-fMRI decoding: predicting which object a subject is viewing
+Decoding: predicting behavior or phenotype from brain images
 ================================================================================
 
 .. topic:: Objectives
@@ -33,7 +33,7 @@ Launch ipython::
 First, load the data using the tutorial's data downloader,
 :func:`nilearn.datasets.fetch_haxby_simple`:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Preprocess data ########################################################### 
 
@@ -44,7 +44,7 @@ Then preprocess the data:
   (n_samples, n_features) (see :ref:`mask_4d_2_3d` for a discussion on using 
   masks)
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Preprocess data ########################################################### 
     :end-before: ### Restrict to faces and houses ##############################################
 
@@ -62,7 +62,7 @@ Then preprocess the data:
 
 Here, we limit our analysis to the `face` and `house` conditions:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Restrict to faces and houses ##############################################
     :end-before: ### Prediction function #######################################################
 
@@ -80,7 +80,7 @@ We define here a simple `Support Vector Classification
 linear kernel. We first import the correct module from scikit-learn and we
 define the classifier:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Prediction function #######################################################
     :end-before: ### Dimension reduction #######################################################
 
@@ -121,7 +121,7 @@ For this, we need to import the correct module and define a simple F-score
 based feature selection (a.k.a. 
 `Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_):
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Dimension reduction #######################################################
         :end-before: ### Fit and predict ###########################################################
 
@@ -136,7 +136,7 @@ In scikit-learn, the prediction objects (classifiers, regression) have a very si
   Here, we just have to give the new set of images (as the target should be
   unknown):
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Fit and predict ###########################################################
         :end-before: ### Visualisation #############################################################
 
@@ -158,12 +158,12 @@ We can visualize the result of our algorithm:
 - we remove the mask
 - then we overlay our previously-computed, mean image with our support vectors
 
-.. figure:: auto_examples/images/plot_haxby_decoding_1.png
+.. figure:: ../auto_examples/images/plot_haxby_decoding_1.png
    :target: auto_examples/plot_haxby_decoding.html
    :align: center
    :scale: 60
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Visualisation #############################################################
     :end-before: ### Cross validation ########################################################## 
 
@@ -180,7 +180,7 @@ the indices of the folds within a loop.
 Now, we can apply the previously defined *pipeline* with the
 cross-validation:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Cross validation ########################################################## 
         :end-before: ### Print results #############################################################
 
@@ -229,7 +229,7 @@ We have a total prediction accuracy of 99% across the different folds.
 
 We can add a line to print the results:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Print results #############################################################
 
 
