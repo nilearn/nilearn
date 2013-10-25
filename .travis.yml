@@ -6,10 +6,10 @@ python:
 
 before_install:
     - deactivate
-    - wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
+    - if test $(python --version 2>&1 | cut -d '.' -f 2) -eq 6; then wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
     - sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
     - sudo apt-get update -qq
-    - if test $(python --version 2>&1 | cut -d '.' -f 2) -eq 6; then sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn ; fi
+    - sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn ; fi
     - virtualenv --system-site-packages ~/virtualenv/this
     - source ~/virtualenv/this/bin/activate
 
