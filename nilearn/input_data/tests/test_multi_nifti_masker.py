@@ -65,7 +65,7 @@ def test_nan():
 
 
 def test_joblib_cache():
-    from joblib import hash
+    from sklearn.externals.joblib import hash
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
