@@ -1,10 +1,8 @@
 .. _nyu_rest:
 
 ==================================
-Parcellation the brain in regions
+Parcellating the brain in regions
 ==================================
-
-.. currentmodule:: nilearn.datasets
 
 .. topic:: **Page summary**
 
@@ -14,6 +12,8 @@ Parcellation the brain in regions
 
 A resting-state dataset
 ========================
+
+.. currentmodule:: nilearn.datasets
 
 Here, we use a `resting-state <http://www.nitrc.org/projects/nyu_trt/>`_ 
 dataset from test-retest study performed at NYU. Details on the data 
@@ -38,11 +38,9 @@ used to mask our original images.
 Applying Ward clustering
 ==========================
 
-Compute connectivity map
-------------------------
-
-Before applying Ward's method, we compute a spatial neighborhood map,
-aka connectivity map. This is useful to constrain clusters to form
+**Compute a connectivity matrix**
+Before applying Ward's method, we compute a spatial neighborhood matrix,
+aka connectivity matrix. This is useful to constrain clusters to form
 contiguous parcels (see `the scikit-learn documentation
 <http://www.scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
 
@@ -50,30 +48,23 @@ contiguous parcels (see `the scikit-learn documentation
     :start-after: # Compute connectivity matrix: which voxel is connected to which
     :end-before: # Computing the ward for the first time, this is long...
 
-Principle
----------
-
+**Ward clustering principle**
 Ward's algorithm is a hierarchical clustering algorithm: it
 recursively merges voxels, then clusters that have similar signal
 (parameters, measurements or time courses).
 
-Caching
--------
+**Caching** In practice the implementation of Ward clustering first
+computes a tree of possible merges, and then, given a requested number of
+clusters, breaks apart the tree at the right level.
 
-Note that in practice the scikit-learn implementation of Ward's
-clustering first computes a tree of possible merges, and then, given a
-requested number of clusters, breaks apart the tree at the right level.
-
-As no matter how many clusters we want, we do not need to compute the
-tree again, we can rely on caching to speed things up when varying the
-number of clusters. Scikit-learn integrates a transparent caching library
-(`joblib <http://packages.python.org/joblib/>`_). In Ward's clustering,
+As the tree is independent of the number of clusters, we can rely on caching to speed things up when varying the
+number of clusters. In Wards clustering,
 the *memory* parameter is used to cache the computed component tree. You
 can give it either a *joblib.Memory* instance or the name of a directory
 used for caching.
 
-Apply the ward
---------------
+Running the Ward algorithm
+---------------------------
 
 Here we simply launch Ward's algorithm to find 1000 clusters and we time it.
 

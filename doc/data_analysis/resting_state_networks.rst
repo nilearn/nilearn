@@ -50,8 +50,8 @@ Applying ICA
 Visualizing the results
 ========================
 
-Visualization follows similarly as in the previous examples. Remember
-that we use masked arrays (`np.ma`) to create transparency in the
+Visualization follows similarly as in the previous examples. As before,
+we use masked arrays (`np.ma`) to create transparency in the
 overlays.
 
 .. literalinclude:: ../../plot_ica_resting_state.py
