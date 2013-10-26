@@ -50,12 +50,6 @@ process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 #     information output.
 n_jobs = 1
 
-### Define the score function used to evaluate classifiers
-# Here we use precision which measures proportion of true positives among
-# all positives results for one class.
-from sklearn.metrics import precision_score
-score_func = precision_score
-
 ### Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the session, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
@@ -68,7 +62,7 @@ import nilearn.decoding
 searchlight = nilearn.decoding.SearchLight(mask_img,
                                       process_mask_img=process_mask_img,
                                       radius=5.6, n_jobs=n_jobs,
-                                      score_func=score_func, verbose=1, cv=cv)
+                                      verbose=1, cv=cv)
 searchlight.fit(fmri_img, y)
 
 ### F-scores computation ######################################################

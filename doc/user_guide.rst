@@ -1,11 +1,9 @@
-User guide: contents
-====================
+User guide: table of contents
+==============================
 
 ..
     We are putting the title as a raw HTML so that it doesn't appear in
     the contents
-
-.. _user_guide:
 
 
 

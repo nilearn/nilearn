@@ -38,6 +38,7 @@ For this tutorial we need:
 - compute a mean image for visualisation background
 - limit our analysis to the `face` and `house` conditions
   (like in the :ref:`decoding <fmri_decoding>` example)
+
 .. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### Restrict to faces and houses ##############################################
     :end-before: ### Prepare masks #############################################################

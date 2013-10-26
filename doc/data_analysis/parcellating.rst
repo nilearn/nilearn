@@ -6,7 +6,13 @@ Parcellation the brain in regions
 
 .. currentmodule:: nilearn.datasets
 
-Resting-state dataset
+.. topic:: **Page summary**
+
+    This page demonstrates how clustering can be used to parcellate the
+    brain into homogeneous regions from resting-state time series.
+
+
+A resting-state dataset
 ========================
 
 Here, we use a `resting-state <http://www.nitrc.org/projects/nyu_trt/>`_ 
@@ -86,8 +92,8 @@ elements.
 Now that the component tree has been computed, computation is must faster
 thanks to caching. You should have the result in less than 1 second.
 
-Post-Processing and visualization
-===================================
+Post-Processing and visualizing the parcels
+============================================
 
 Unmasking
 ---------

@@ -4,6 +4,14 @@
 Learning functional connectomes
 ================================================================
 
+.. topic:: **Page summary**
+
+   A *functional connectome* is a set of connections representing brain
+   interactions between regions.
+
+Sparse inverse covariance for functional connectomes
+=====================================================
+
 Resting-state functional connectivity can be obtained by estimating a
 covariance matrix **C** for signals from different brain regions. Each
 element of **C** gives the covariance between two brain regions. The
@@ -18,7 +26,7 @@ short path between any two regions), covariance matrices tend to be
 dense, and it is rather difficult to extract from them only the direct
 connections between two regions.
 
-This can be achieved using a precision matrix, which is the inverse of
+This can be achieved using a the inverse of
 the covariance matrix. It contains *partial covariances*, which are
 covariances between two regions conditioned on all the others. It thus
 gives only direct connections between regions. In the case of fMRI
@@ -28,22 +36,17 @@ to estimate is usually greater than the number of samples available.
 That leads to an even worse precision matrix. Thus cleverer schemes
 are required to get an usable result.
 
-One way to reduce the number of coefficients to estimate is to impose
-sparsity of the precision matrix. It is equivalent to limiting the
-number of edges in the graph. Finding the sparsity pattern that gives
-the maximum likelihood is a hard problem, since there is
-asymptotically 2**(p*p) possible sparsity patterns (where p is the
-number of brain regions), which is exponential with p. Thus,
-sub-optimal algorithms are used. Two are presented here:
-`graph lasso
-<http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_
-and `group-sparse covariance <http://arxiv.org/abs/1207.4255>`_. Both
-are based on maximizing the log-likelihood of the precision matrix,
-penalized with a non-smooth regularizer. Both are convex functions,
-for which efficient maximizing algorithms exist. The graph lasso
-processes one covariance matrix at a time, whereas the group-sparse
-covariance algorithm deals with several at the same time, imposing a
-common sparsity pattern on all precision matrices.
+The sparsity of the inverse covariance matrix is equivalent to limiting the
+number of edges in the connectome. It helps reducing noise in estimated
+connectome. They are different algorithms for sparse inverse covariance
+estimates. Here we use 2 option!
+
+* `graph lasso <http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_
+* `group-sparse covariance <http://arxiv.org/abs/1207.4255>`_.
+
+The graph lasso processes one covariance matrix at a time, whereas the
+group-sparse covariance algorithm deals with several at the same time,
+imposing a common sparsity pattern on all precision matrices.
 
 For more details on these algorithms, please see
 
@@ -65,10 +68,11 @@ And for a general overview of functional connectivity estimation, see
     <http://arxiv.org/abs/1008.5071>`_'. arXiv:1008.5071 (30 August
     2010).
 
-
+Testing the code on simulated data
+===================================
 
 Synthetic signals
-=================
+-----------------
 
 NiLearn provides a function to generate random signals drawn from a
 sparse gaussian graphical model. It can simulate several sets of
@@ -86,7 +90,7 @@ in the generation (ground truth). `topology` is a single array with
 only 0 and 1 giving the common sparsity pattern.
 
 Estimation
-==========
+----------
 
 The actual estimation is performed using a `cross-validation
 <http://scikit-learn.org/stable/modules/cross_validation.html>`
@@ -158,9 +162,11 @@ information.
    The complete source code for this example can be found here:
    :doc:`plot_connect_comparison.py <auto_examples/plot_connect_comparison>`
 
-.. seealso::
-   For a detailed example on real data:
-   :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
+A real-data example
+====================
+
+For a detailed example on real data:
+:doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
 
 ____
 

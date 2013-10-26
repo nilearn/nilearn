@@ -15,9 +15,11 @@
 Decoding: predicting behavior or phenotype from brain images
 ================================================================================
 
-.. topic:: Objectives
+.. topic:: **Page summary**
 
-   At the end of this tutorial you will be able to:
+    Decoding consists in learning a predictive model that can
+    predict external variables such as behavioral or phenotypic variables
+    from brain image. This page shows how to:
 
     1. Load fMRI volumes in Python.
     2. Perform a state-of-the-art decoding analysis of fMRI data.
