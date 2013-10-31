@@ -127,7 +127,32 @@ def smooth(niimgs, fwhm):
 
 
 def _crop_img_to(niimg, slices, copy=True):
-    """Crops niimg to size indicated by slices"""
+    """Crops niimg to a smaller size
+
+    Will crop niimg to size indicated by slices and adjust affine
+    accordingly
+
+    Parameters
+    ==========
+    niimg: niimg
+        niimg to be cropped. If slices has less entries than niimg
+        has dimensions, the slices will be applied to the first len(slices)
+        dimensions
+
+    slices: list of slices
+        Defines the range of the crop.
+        E.g. [slice(20, 200), slice(40, 150), slice(0, 100)]
+        defines a 3D cube
+
+    copy: boolean
+        Specifies whether cropped data is to be copied or not.
+        Default: True
+
+    Returns
+    =======
+    cropped_img: niimg
+        Cropped version of the input image
+    """
 
     niimg = check_niimg(niimg)
 
@@ -153,8 +178,26 @@ def _crop_img_to(niimg, slices, copy=True):
 
 
 def crop_img(niimg, copy=True):
-    """Crops niimg as much as possible in all three axes,
-    making sure to only remove zero-valued voxels"""
+    """Crops niimg as much as possible
+
+    Will crop niimg, removing as many zero entries as possible
+    without touching non-zero entries. Will leave one voxel of
+    zero padding around the obtained non-zero area in order to
+    avoid sampling issues later on.
+
+    Parameters
+    ==========
+    niimg: niimg
+        niimg to be cropped.
+
+    copy: boolean
+        Specifies whether cropped data is copied or not
+
+    Returns
+    =======
+    cropped_img: niimg
+        Cropped version of the input image
+    """
 
     niimg = check_niimg(niimg)
     data = niimg.get_data()
