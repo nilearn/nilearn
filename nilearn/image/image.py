@@ -124,3 +124,46 @@ def smooth(niimgs, fwhm):
         return ret[0]
     else:
         return ret
+
+
+def _crop_img_to(niimg, slices, copy=True):
+    """Crops niimg to size indicated by slices"""
+
+    niimg = check_niimg(niimg)
+
+    data = niimg.get_data()
+    affine = niimg.get_affine()
+
+    cropped_data = data[slices]
+    if copy:
+        cropped_data = cropped_data.copy()
+
+    linear_part = affine[:3, :3]
+    old_origin = affine[:3, 3]
+    new_origin_voxel = np.array([s.start for s in slices])
+    new_origin = old_origin + linear_part.dot(new_origin_voxel)
+
+    new_affine = np.eye(4)
+    new_affine[:3, :3] = linear_part
+    new_affine[:3, 3] = new_origin
+
+    new_niimg = nibabel.Nifti1Image(cropped_data, new_affine)
+
+    return new_niimg
+
+
+def crop_img(niimg, copy=True):
+    """Crops niimg as much as possible in all three axes,
+    making sure to only remove zero-valued voxels"""
+
+    niimg = check_niimg(niimg)
+    data = niimg.get_data()
+
+    coords = np.array(np.where(data != 0))
+    start = coords.min(axis=1)
+    end = coords.max(axis=1) + 1
+
+    slices = [slice(s, e) for s, e in zip(start, end)]
+
+    return _crop_img_to(niimg, slices, copy=copy)
+
