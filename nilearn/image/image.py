@@ -163,6 +163,10 @@ def crop_img(niimg, copy=True):
     start = coords.min(axis=1)
     end = coords.max(axis=1) + 1
 
+    # pad with one voxel to avoid resampling problems
+    start = np.maximum(start - 1, 0)
+    end = np.minimum(end + 1, data.shape)
+
     slices = [slice(s, e) for s, e in zip(start, end)]
 
     return _crop_img_to(niimg, slices, copy=copy)

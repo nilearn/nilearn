@@ -96,8 +96,11 @@ def test_crop_img():
 
     cropped_niimg = image.crop_img(niimg)
 
-    new_origin = np.array([4, 3, 2]) * np.array([2, 1, 3])
+    # correction for padding with "-1"
+    new_origin = np.array([4, 3, 2]) * np.array([2 - 1, 1 - 1, 3 - 1])
 
     # check that correct part was extracted:
-    assert_true((cropped_niimg.get_data() == 1).all())
-    assert_true(cropped_niimg.shape == (2, 4, 3))
+    # This also corrects for padding
+    assert_true((cropped_niimg.get_data()[1:-1, 1:-1, 1:-1] == 1).all())
+    assert_true(cropped_niimg.shape == (2 + 2, 4 + 2, 3 + 2))
+
