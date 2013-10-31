@@ -61,7 +61,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1.
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -290,7 +290,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1.
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
