@@ -124,3 +124,93 @@ def smooth(niimgs, fwhm):
         return ret[0]
     else:
         return ret
+
+
+def _crop_img_to(niimg, slices, copy=True):
+    """Crops niimg to a smaller size
+
+    Crop niimg to size indicated by slices and adjust affine
+    accordingly
+
+    Parameters
+    ==========
+    niimg: niimg
+        niimg to be cropped. If slices has less entries than niimg
+        has dimensions, the slices will be applied to the first len(slices)
+        dimensions
+
+    slices: list of slices
+        Defines the range of the crop.
+        E.g. [slice(20, 200), slice(40, 150), slice(0, 100)]
+        defines a 3D cube
+
+    copy: boolean
+        Specifies whether cropped data is to be copied or not.
+        Default: True
+
+    Returns
+    =======
+    cropped_img: niimg
+        Cropped version of the input image
+    """
+
+    niimg = check_niimg(niimg)
+
+    data = niimg.get_data()
+    affine = niimg.get_affine()
+
+    cropped_data = data[slices]
+    if copy:
+        cropped_data = cropped_data.copy()
+
+    linear_part = affine[:3, :3]
+    old_origin = affine[:3, 3]
+    new_origin_voxel = np.array([s.start for s in slices])
+    new_origin = old_origin + linear_part.dot(new_origin_voxel)
+
+    new_affine = np.eye(4)
+    new_affine[:3, :3] = linear_part
+    new_affine[:3, 3] = new_origin
+
+    new_niimg = nibabel.Nifti1Image(cropped_data, new_affine)
+
+    return new_niimg
+
+
+def crop_img(niimg, copy=True):
+    """Crops niimg as much as possible
+
+    Will crop niimg, removing as many zero entries as possible
+    without touching non-zero entries. Will leave one voxel of
+    zero padding around the obtained non-zero area in order to
+    avoid sampling issues later on.
+
+    Parameters
+    ==========
+    niimg: niimg
+        niimg to be cropped.
+
+    copy: boolean
+        Specifies whether cropped data is copied or not
+
+    Returns
+    =======
+    cropped_img: niimg
+        Cropped version of the input image
+    """
+
+    niimg = check_niimg(niimg)
+    data = niimg.get_data()
+
+    coords = np.array(np.where(data != 0))
+    start = coords.min(axis=1)
+    end = coords.max(axis=1) + 1
+
+    # pad with one voxel to avoid resampling problems
+    start = np.maximum(start - 1, 0)
+    end = np.minimum(end + 1, data.shape)
+
+    slices = [slice(s, e) for s, e in zip(start, end)]
+
+    return _crop_img_to(niimg, slices, copy=copy)
+

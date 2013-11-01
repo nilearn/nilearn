@@ -6,6 +6,7 @@ from nose.tools import assert_true
 from .. import image
 from ..._utils import testing
 import nibabel
+import numpy as np
 
 
 def test_high_variance_confounds():
@@ -56,3 +57,49 @@ def test_smooth():
             out = image.smooth(imgs[0], fwhm)
             assert_true(isinstance(out, nibabel.Nifti1Image))
             assert_true(out.shape == (shapes[0] + (lengths[0],)))
+
+
+def test__crop_img_to():
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    affine = np.diag((4, 3, 2, 1))
+    niimg = nibabel.Nifti1Image(data, affine=affine)
+
+    slices = [slice(2, 4), slice(1, 5), slice(3, 6)]
+    cropped_niimg = image._crop_img_to(niimg, slices, copy=False)
+
+    new_origin = np.array((4, 3, 2)) * np.array((2, 1, 3))
+
+    # check that correct part was extracted:
+    assert_true((cropped_niimg.get_data() == 1).all())
+    assert_true(cropped_niimg.shape == (2, 4, 3))
+
+    # check that affine was adjusted correctly
+    assert_true((cropped_niimg.get_affine()[:3, 3] == new_origin).all())
+
+    # check that data was really not copied
+    data[2:4, 1:5, 3:6] = 2
+    assert_true((cropped_niimg.get_data() == 2).all())
+
+    # check that copying works
+    copied_cropped_niimg = image._crop_img_to(niimg, slices)
+    data[2:4, 1:5, 3:6] = 1
+    assert_true((copied_cropped_niimg.get_data() == 2).all())
+
+
+def test_crop_img():
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    affine = np.diag((4, 3, 2, 1))
+    niimg = nibabel.Nifti1Image(data, affine=affine)
+
+    cropped_niimg = image.crop_img(niimg)
+
+    # correction for padding with "-1"
+    new_origin = np.array((4, 3, 2)) * np.array((2 - 1, 1 - 1, 3 - 1))
+
+    # check that correct part was extracted:
+    # This also corrects for padding
+    assert_true((cropped_niimg.get_data()[1:-1, 1:-1, 1:-1] == 1).all())
+    assert_true(cropped_niimg.shape == (2 + 2, 4 + 2, 3 + 2))
+
