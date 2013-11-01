@@ -60,16 +60,15 @@ def test_smooth():
 
 
 def test__crop_img_to():
-
-    data = np.zeros([5, 6, 7])
+    data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1
-    affine = np.diag([4, 3, 2, 1])
+    affine = np.diag((4, 3, 2, 1))
     niimg = nibabel.Nifti1Image(data, affine=affine)
 
     slices = [slice(2, 4), slice(1, 5), slice(3, 6)]
     cropped_niimg = image._crop_img_to(niimg, slices, copy=False)
 
-    new_origin = np.array([4, 3, 2]) * np.array([2, 1, 3])
+    new_origin = np.array((4, 3, 2)) * np.array((2, 1, 3))
 
     # check that correct part was extracted:
     assert_true((cropped_niimg.get_data() == 1).all())
@@ -89,15 +88,15 @@ def test__crop_img_to():
 
 
 def test_crop_img():
-    data = np.zeros([5, 6, 7])
+    data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1
-    affine = np.diag([4, 3, 2, 1])
+    affine = np.diag((4, 3, 2, 1))
     niimg = nibabel.Nifti1Image(data, affine=affine)
 
     cropped_niimg = image.crop_img(niimg)
 
     # correction for padding with "-1"
-    new_origin = np.array([4, 3, 2]) * np.array([2 - 1, 1 - 1, 3 - 1])
+    new_origin = np.array((4, 3, 2)) * np.array((2 - 1, 1 - 1, 3 - 1))
 
     # check that correct part was extracted:
     # This also corrects for padding

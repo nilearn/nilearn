@@ -129,7 +129,7 @@ def smooth(niimgs, fwhm):
 def _crop_img_to(niimg, slices, copy=True):
     """Crops niimg to a smaller size
 
-    Will crop niimg to size indicated by slices and adjust affine
+    Crop niimg to size indicated by slices and adjust affine
     accordingly
 
     Parameters
