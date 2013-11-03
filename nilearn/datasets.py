@@ -6,7 +6,7 @@ Utilities to download NeuroImaging datasets
 # License: simplified BSD
 
 import os
-import os.path
+from os.path import exists, join
 import urllib
 import urllib2
 import tarfile
@@ -196,12 +196,12 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
     data_dir = os.path.join(data_dir, dataset_name)
     if folder is not None:
         data_dir = os.path.join(data_dir, folder)
-    if not os.path.exists(data_dir) and create_dir:
+    if not exists(data_dir) and create_dir:
         os.makedirs(data_dir)
     return data_dir
 
 
-def _uncompress_file(file, delete_archive=True):
+def _uncompress_file(file_, delete_archive=True):
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -217,36 +217,39 @@ def _uncompress_file(file, delete_archive=True):
     -----
     This handles zip, tar, gzip and bzip files only.
     """
-    print 'extracting data from %s...' % file
-    data_dir = os.path.dirname(file)
+    print 'extracting data from %s...' % file_
+    data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
-        filename, ext = os.path.splitext(file)
+        filename, ext = os.path.splitext(file_)
         processed = False
         if ext == '.zip':
-            z = zipfile.ZipFile(file)
+            z = zipfile.ZipFile(file_)
             z.extractall(data_dir)
             z.close()
             processed = True
         elif ext == '.gz':
             import gzip
-            gz = gzip.open(file)
+            gz = gzip.open(file_)
             out = open(filename, 'wb')
             shutil.copyfileobj(gz, out, 8192)
             gz.close()
             out.close()
             # If file is .tar.gz, this will be handle in the next case
-            filename, ext = os.path.splitext(filename)
+            if delete_archive:
+                os.remove(file_)
+            file_ = filename
+            filename, ext = os.path.splitext(file_)
             processed = True
         if ext in ['.tar', '.tgz', '.bz2']:
-            tar = tarfile.open(file, "r")
+            tar = tarfile.open(file_, "r")
             tar.extractall(path=data_dir)
             tar.close()
             processed = True
         if not processed:
             raise IOError("Uncompress: unknown file extension: %s" % ext)
         if delete_archive:
-            os.remove(file)
+            os.remove(file_)
         print '   ...done.'
     except Exception as e:
         print 'Error uncompressing file: %s' % e
@@ -289,7 +292,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     removed.
     """
     # Determine data path
-    if not os.path.exists(data_dir):
+    if not exists(data_dir):
         os.makedirs(data_dir)
 
     file_name = os.path.basename(url)
@@ -298,12 +301,12 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
-    if os.path.exists(full_name):
+    if exists(full_name):
         if overwrite:
             os.remove(full_name)
         else:
             return full_name
-    if os.path.exists(temp_full_name):
+    if exists(temp_full_name):
         if overwrite:
             os.remove(temp_full_name)
     t0 = time.time()
@@ -312,7 +315,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     try:
         # Download data
         print 'Downloading data from %s ...' % url
-        if resume and os.path.exists(temp_full_name):
+        if resume and exists(temp_full_name):
             urlOpener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
@@ -423,6 +426,55 @@ def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
     return files
 
 
+def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
+                 verbose=0):
+    """Load requested dataset, downloading it if needed or requested.
+
+    Parameters
+    ----------
+    dataset_name: string
+        Unique dataset name
+
+    files: list of (string, string)
+        List of files and their corresponding url
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    resume: bool, optional
+        If true, try resuming download if possible
+
+    folder: string, optional
+        Folder in which the file must be fetched inside the dataset folder.
+
+    Returns
+    -------
+    files: list of string
+        Absolute paths of downloaded files on disk
+    """
+    # Determine data path
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
+
+    files_ = []
+    for file_, url, opts in files:
+        # Download the file if it exists
+        abs_file = os.path.join(data_dir, file_)
+        if not exists(abs_file):
+            dl_file = _fetch_file(url, data_dir, resume=resume,
+                                  verbose=verbose)
+            if 'rename' in opts:
+                os.rename(join(data_dir, dl_file),
+                          join(data_dir, opts['rename']))
+                dl_file = join(data_dir, opts['rename'])
+            if 'uncompress' in opts:
+                _uncompress_file(dl_file)
+        if not exists(abs_file):
+            raise IOError('An error occured while fetching %s' % file_)
+        files_.append(abs_file)
+    return files_
+
+
 def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     """Returns absolute paths of a dataset files if they exist.
 
@@ -455,7 +507,7 @@ def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
     file_paths = []
     for file_name in file_names:
         full_name = os.path.join(data_dir, file_name)
-        if not os.path.exists(full_name):
+        if not exists(full_name):
             raise IOError("No such file: '%s'" % full_name)
         file_paths.append(full_name)
     return file_paths
@@ -1030,18 +1082,62 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
             ADHD200_40sub_preprocessed.tgz
 
     """
-    file_names = ['%s_regressors.csv', '%s_rest_tshift_RPI_voreg_mni.nii.gz']
+    f1 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
+    f2 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
+    f3 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
+    f4 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
+    f1_opts = {'rename': 'adhd40_p1.tar.gz', 'uncompress': True}
+    f2_opts = {'rename': 'adhd40_p2.tar.gz', 'uncompress': True}
+    f3_opts = {'rename': 'adhd40_p3.tar.gz', 'uncompress': True}
+    f4_opts = {'rename': 'adhd40_p4.tar.gz', 'uncompress': True}
 
-    subjects = ['0010042', '0010128', '0023008', '0027011', '0027034',
-                '1019436', '1418396', '1552181', '1679142', '2497695',
-                '3007585', '3205761', '3624598', '3884955', '3994098',
-                '4046678', '4164316', '6115230', '8409791', '9744150',
-                '0010064', '0021019', '0023012', '0027018', '0027037',
-                '1206380', '1517058', '1562298', '2014113', '2950754',
-                '3154996', '3520880', '3699991', '3902469', '4016887',
-                '4134561', '4275075', '7774305', '8697774', '9750701']
+    subjects_files = [
+        ('data/3902469/3902469_rest_tshift_RPI_voreg_mni.nii.gz', f1, f1_opts),
+        ('data/7774305/7774305_rest_tshift_RPI_voreg_mni.nii.gz', f1, f1_opts),
+        ('data/3699991/3699991_rest_tshift_RPI_voreg_mni.nii.gz', f1, f1_opts),
 
-    max_subjects = len(subjects)
+        ('data/2014113/2014113_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/4275075/4275075_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/1019436/1019436_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/3154996/3154996_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/3884955/3884955_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/4134561/4134561_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/0027018/0027018_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/6115230/6115230_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/0027037/0027037_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/8409791/8409791_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        ('data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+
+        ('data/3007585/3007585_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/8697774/8697774_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/9750701/9750701_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/2497695/2497695_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/4164316/4164316_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/1552181/1552181_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/4046678/4046678_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        ('data/0023012/0023012_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+
+        ('data/1679142/1679142_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/1206380/1206380_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/4016887/4016887_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/1418396/1418396_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/2950754/2950754_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/3994098/3994098_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/3520880/3520880_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/1517058/1517058_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/9744150/9744150_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/1562298/1562298_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/3205761/3205761_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        ('data/3624598/3624598_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+    ]
+
+    max_subjects = len(subjects_files)
     # Check arguments
     if n_subjects is None:
         n_subjects = max_subjects
@@ -1049,32 +1145,13 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    tars = ['ADHD200_40sub_preprocessed.tgz']
-
-    path = os.path.join('ADHD200_40sub_preprocessed', 'data')
     func = []
-    confounds = []
-    subjects = subjects[:n_subjects]
+    # confounds = []
+    subjects_files = subjects_files[:n_subjects]
 
-    paths = [os.path.join(path, os.path.join(subject, file % subject))
-             for subject in subjects
-             for file in file_names]
-    try:
-        files = _get_dataset("adhd", paths, data_dir=data_dir)
-    except IOError:
-        if url is None:
-            url = 'ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/'
-        url += tars[0]
-        _fetch_dataset('adhd', [url], data_dir=data_dir, resume=resume,
-                       verbose=verbose)
-        files = _get_dataset("adhd", paths, data_dir=data_dir)
-    for i in range(len(subjects)):
-        # We are considering files 2 by 2
-        i *= 2
-        func.append(files[i + 1])
-        confounds.append(files[i])
+    func = _fetch_files('adhd2', subjects_files)
 
-    return Bunch(func=func, confounds=confounds)
+    return Bunch(func=func)
 
 
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
