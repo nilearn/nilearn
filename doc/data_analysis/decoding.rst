@@ -25,21 +25,21 @@ Decoding: predicting behavior or phenotype from brain images
     2. Perform a state-of-the-art decoding analysis of fMRI data.
     3. Perform even more sophisticated analyses of fMRI data.
 
-Data loading and preprocessing
+Data loading and preparation
 ================================
 
 Launch ipython::
 
   $ ipython -pylab
 
-First, load the data using the tutorial's data downloader,
+First, load the data using nilearn's data downloader,
 :func:`nilearn.datasets.fetch_haxby_simple`:
 
 .. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Preprocess data ########################################################### 
 
-Then preprocess the data:
+Then prepare the data:
 
 - compute the mean of the image to replace anatomic data
 - mask data X and transpose the matrix, so that its shape becomes
@@ -53,9 +53,9 @@ Then preprocess the data:
 .. topic:: **Exercise**
    :class: green
 
-   1. Extract the period of activity from the data (i.e. remove the remainder).
+   1. Remove the rest conditions from the data
 
-.. topic:: Solution
+.. topic:: **Solution**
 
     As 'y == 0' in rest, we want to keep only time points for which 
     `y != 0`::
@@ -155,14 +155,14 @@ Visualising the results
 
 We can visualize the result of our algorithm:
 
-- we first get the support vectors of the SVC and revert the feature
+- we first get the support vectors of the SVC and inverse the feature
   selection mechanism
 - we remove the mask
 - then we overlay our previously-computed, mean image with our support vectors
 
 .. figure:: ../auto_examples/images/plot_haxby_decoding_1.png
-   :target: auto_examples/plot_haxby_decoding.html
-   :align: center
+   :target: ../auto_examples/plot_haxby_decoding.html
+   :align: right
    :scale: 60
 
 .. literalinclude:: ../../plot_haxby_decoding.py
@@ -203,7 +203,7 @@ under Windows)::
 
  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
-**Prediction accuracy** We can take a look at the results of the
+**Prediction accuracy**: We can take a look at the results of the
 *cross_val_score* function::
 
   >>> cv_scores # doctest: +SKIP
@@ -218,7 +218,7 @@ correct predictions on the left-out data.
 .. topic:: **Exercise**
    :class: green
 
-   1. Compute the mean prediction accuracy using *cv_scores*
+   Compute the mean prediction accuracy using *cv_scores*
 
 .. topic:: Solution
 
