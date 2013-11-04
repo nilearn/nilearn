@@ -466,10 +466,10 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
                 md5sum = opts['md5sum']
             dl_file = _fetch_file(url, data_dir, resume=resume,
                                   verbose=verbose, md5sum=md5sum)
-            if 'rename' in opts:
-                os.rename(join(data_dir, dl_file),
-                          join(data_dir, opts['rename']))
-                dl_file = join(data_dir, opts['rename'])
+            if 'move' in opts:
+                shutil.move(join(data_dir, dl_file),
+                            join(data_dir, opts['move']))
+                dl_file = join(data_dir, opts['move'])
             if 'uncompress' in opts:
                 _uncompress_file(dl_file)
         if not exists(abs_file):
@@ -629,11 +629,15 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
 
     Licence: unknown.
     """
+    url = "ftp://surfer.nmr.mgh.harvard.edu/" \
+          "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
+    opts = {'uncompress': True}
+
     dataset_name = "yeo_2011"
     keys = ("tight_7", "liberal_7",
             "tight_17", "liberal_17",
             "colors_7", "colors_17", "anat")
-    filenames = [os.path.join("Yeo_JNeurophysiol11_MNI152", f) for f in (
+    filenames = [(join("Yeo_JNeurophysiol11_MNI152", f), url, opts) for f in (
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
         "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
@@ -643,16 +647,8 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
         "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
     ]
 
-    try:
-        sub_files = _get_dataset(dataset_name, filenames, data_dir=data_dir)
-    except IOError:
-        if url is None:
-            url = "ftp://surfer.nmr.mgh.harvard.edu/pub/data/"\
-                  "Yeo_JNeurophysiol11_MNI152.zip"
-            _fetch_dataset(dataset_name, [url], data_dir=data_dir,
-                           resume=resume, verbose=verbose)
-            sub_files = _get_dataset(dataset_name,
-                                     filenames, data_dir=data_dir)
+    sub_files = _fetch_files(dataset_name, filenames, data_dir=data_dir,
+                             resume=resume)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -702,10 +698,14 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
     """
 
+    url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
+          "mni_icbm152_nlin_sym_09a_nifti.zip"
+    opts = {'uncompress': True}
+
     keys = ("csf", "gm", "wm",
             "pd", "t1", "t2", "t2_relax",
             "eye_mask", "face_mask", "mask")
-    filenames = [os.path.join("mni_icbm152_nlin_sym_09a", name)
+    filenames = [(join("mni_icbm152_nlin_sym_09a", name), url, opts)
                  for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
                               "mni_icbm152_gm_tal_nlin_sym_09a.nii",
                               "mni_icbm152_wm_tal_nlin_sym_09a.nii",
@@ -719,16 +719,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
                               "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
-    try:
-        sub_files = _get_dataset("icbm152_2009", filenames, data_dir=data_dir)
-    except IOError:
-        if url is None:
-            url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/"\
-                  "mni_icbm152_nlin_sym_09a_nifti.zip"
-            _fetch_dataset("icbm152_2009", [url], data_dir=data_dir,
-                           resume=resume, verbose=verbose)
-            sub_files = _get_dataset("icbm152_2009",
-                                     filenames, data_dir=data_dir)
+    sub_files = _fetch_files('icbm152_2009', filenames, data_dir=data_dir,
+                             resume=resume)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -908,7 +900,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
         mask_house_little=mask_house_little)
 
 
-def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
+def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
+                   verbose=0):
     """Download and loads the NYU resting-state test-retest dataset.
 
     Parameters
@@ -986,66 +979,88 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, verbose=0):
           F.X. Castellanos, M.P. Milham
 
     """
-    file_names = [os.path.join('anat', 'mprage_anonymized.nii.gz'),
-                  os.path.join('anat', 'mprage_skullstripped.nii.gz'),
-                  os.path.join('func', 'lfo.nii.gz')]
 
-    subjects_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
-                  'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
-                  'sub36678', 'sub38579', 'sub39529']
-    subjects_b = ['sub45463', 'sub47000', 'sub49401', 'sub52738', 'sub55441',
-                  'sub58949', 'sub60624', 'sub76987', 'sub84403', 'sub86146',
-                  'sub90179', 'sub94293']
+    fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
+    fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
+    fa2 = 'http://www.nitrc.org/frs/download.php/1073/NYU_TRT_session2a.tar.gz'
+    fb2 = 'http://www.nitrc.org/frs/download.php/1074/NYU_TRT_session2b.tar.gz'
+    fa3 = 'http://www.nitrc.org/frs/download.php/1075/NYU_TRT_session3a.tar.gz'
+    fb3 = 'http://www.nitrc.org/frs/download.php/1076/NYU_TRT_session3b.tar.gz'
+    fa1_opts = {'uncompress': True,
+                'move': join('session1', 'NYU_TRT_session1a.tar.gz')}
+    fb1_opts = {'uncompress': True,
+                'move': join('session1', 'NYU_TRT_session1b.tar.gz')}
+    fa2_opts = {'uncompress': True,
+                'move': join('session2', 'NYU_TRT_session2a.tar.gz')}
+    fb2_opts = {'uncompress': True,
+                'move': join('session2', 'NYU_TRT_session2b.tar.gz')}
+    fa3_opts = {'uncompress': True,
+                'move': join('session3', 'NYU_TRT_session3a.tar.gz')}
+    fb3_opts = {'uncompress': True,
+                'move': join('session3', 'NYU_TRT_session3b.tar.gz')}
 
-    max_subjects = len(subjects_a) + len(subjects_b)
+    p_anon = join('anat', 'mprage_anonymized.nii.gz')
+    p_skull = join('anat', 'mprage_skullstripped.nii.gz')
+    p_func = join('func', 'lfo.nii.gz')
+
+    subs_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
+              'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
+              'sub36678', 'sub38579', 'sub39529']
+    subs_b = ['sub45463', 'sub47000', 'sub49401', 'sub52738', 'sub55441',
+              'sub58949', 'sub60624', 'sub76987', 'sub84403', 'sub86146',
+              'sub90179', 'sub94293']
+
+    # Generate the list of files by session
+    anat_anon_files = [
+        [(join('session1', sub, p_anon), fa1, fa1_opts) for sub in subs_a]
+        + [(join('session1', sub, p_anon), fb1, fb1_opts) for sub in subs_b],
+        [(join('session2', sub, p_anon), fa2, fa2_opts) for sub in subs_a]
+        + [(join('session2', sub, p_anon), fb2, fb2_opts) for sub in subs_b],
+        [(join('session3', sub, p_anon), fa3, fa3_opts) for sub in subs_a]
+        + [(join('session3', sub, p_anon), fb3, fb3_opts) for sub in subs_b]]
+
+    anat_skull_files = [
+        [(join('session1', sub, p_skull), fa1, fa1_opts) for sub in subs_a]
+        + [(join('session1', sub, p_skull), fb1, fb1_opts) for sub in subs_b],
+        [(join('session2', sub, p_skull), fa2, fa2_opts) for sub in subs_a]
+        + [(join('session2', sub, p_skull), fb2, fb2_opts) for sub in subs_b],
+        [(join('session3', sub, p_skull), fa3, fa3_opts) for sub in subs_a]
+        + [(join('session3', sub, p_skull), fb3, fb3_opts) for sub in subs_b]]
+
+    func_files = [
+        [(join('session1', sub, p_func), fa1, fa1_opts) for sub in subs_a]
+        + [(join('session1', sub, p_func), fb1, fb1_opts) for sub in subs_b],
+        [(join('session2', sub, p_func), fa2, fa2_opts) for sub in subs_a]
+        + [(join('session2', sub, p_func), fb2, fb2_opts) for sub in subs_b],
+        [(join('session3', sub, p_func), fa3, fa3_opts) for sub in subs_a]
+        + [(join('session3', sub, p_func), fb3, fb3_opts) for sub in subs_b]]
+
+    max_subjects = len(subs_a) + len(subs_b)
     # Check arguments
     if n_subjects is None:
-        n_subjects = len(subjects_a) + len(subjects_b)
+        n_subjects = len(subs_a) + len(subs_b)
     if n_subjects > max_subjects:
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
         n_subjects = 25
-
-    for i in sessions:
-        if not (i in [1, 2, 3]):
-            raise ValueError('NYU dataset session id must be in [1, 2, 3]')
-
-    tars = [['1071/NYU_TRT_session1a.tar.gz', '1072/NYU_TRT_session1b.tar.gz'],
-            ['1073/NYU_TRT_session2a.tar.gz', '1074/NYU_TRT_session2b.tar.gz'],
-            ['1075/NYU_TRT_session3a.tar.gz', '1076/NYU_TRT_session3b.tar.gz']]
 
     anat_anon = []
     anat_skull = []
     func = []
     session = []
-    # Loading session by session
-    for session_id in sessions:
-        session_path = "session" + str(session_id)
-        # Load subjects in two steps, as the files are splitted
-        for part in range(0, n_subjects / len(subjects_a) + 1):
-            if part == 0:
-                subjects = subjects_a[:min(len(subjects_a), n_subjects)]
-            else:  # part == 1
-                subjects = subjects_b[:min(len(subjects_b),
-                                      n_subjects - len(subjects_a))]
-            paths = [os.path.join(session_path, os.path.join(subject, file))
-                     for subject in subjects
-                     for file in file_names]
-            try:
-                files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
-            except IOError:
-                url = 'http://www.nitrc.org/frs/download.php/'
-                url += tars[session_id - 1][part]
-                # Determine files to be downloaded
-                _fetch_dataset('nyu_rest', [url], data_dir=data_dir,
-                               folder=session_path, verbose=verbose)
-                files = _get_dataset("nyu_rest", paths, data_dir=data_dir)
-            for i in range(len(subjects)):
-                # We are considering files 3 by 3
-                i *= 3
-                anat_anon.append(files[i])
-                anat_skull.append(files[i + 1])
-                func.append(files[i + 2])
-                session.append(session_id)
+    for i in sessions:
+        if not (i in [1, 2, 3]):
+            raise ValueError('NYU dataset session id must be in [1, 2, 3]')
+        anat_anon += anat_anon_files[i - 1][:n_subjects]
+        anat_skull += anat_skull_files[i - 1][:n_subjects]
+        func += func_files[i - 1][:n_subjects]
+        session += [i] * n_subjects
+
+    anat_anon = _fetch_files('nyu_rest', anat_anon, resume=resume,
+                             data_dir=data_dir)
+    anat_skull = _fetch_files('nyu_rest', anat_skull, resume=resume,
+                              data_dir=data_dir)
+    func = _fetch_files('nyu_rest', func, resume=resume,
+                        data_dir=data_dir)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                  session=session)
@@ -1087,10 +1102,10 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     f2 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
     f3 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
     f4 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
-    f1_opts = {'rename': 'adhd40_p1.tar.gz', 'uncompress': True}
-    f2_opts = {'rename': 'adhd40_p2.tar.gz', 'uncompress': True}
-    f3_opts = {'rename': 'adhd40_p3.tar.gz', 'uncompress': True}
-    f4_opts = {'rename': 'adhd40_p4.tar.gz', 'uncompress': True}
+    f1_opts = {'move': 'adhd40_p1.tar.gz', 'uncompress': True}
+    f2_opts = {'move': 'adhd40_p2.tar.gz', 'uncompress': True}
+    f3_opts = {'move': 'adhd40_p3.tar.gz', 'uncompress': True}
+    f4_opts = {'move': 'adhd40_p4.tar.gz', 'uncompress': True}
 
     fname = '%s_rest_tshift_RPI_voreg_mni.nii.gz'
 
@@ -1166,21 +1181,15 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
         Gaël Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
+    url = 'https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip'
+    opts = {'uncompress': True}
+
     dataset_name = "msdl_atlas"
-    file_names = ['msdl_rois_labels.csv', 'msdl_rois.nii']
-    tars = ['MSDL_rois.zip']
-    path = "MSDL_rois"  # created by unzipping the above archive.
+    files = [(join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
+             (join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
-    paths = [os.path.join(path, fname) for fname in file_names]
-
-    try:
-        files = _get_dataset(dataset_name, paths, data_dir=data_dir)
-    except IOError:
-        if url is None:
-            url = 'https://team.inria.fr/parietal/files/2013/05/' + tars[0]
-        _fetch_dataset(dataset_name, [url], data_dir=data_dir, resume=resume,
-                       verbose=verbose)
-        files = _get_dataset(dataset_name, paths, data_dir=data_dir)
+    files = _fetch_files(dataset_name, files, data_dir=data_dir,
+                         resume=resume)
 
     return Bunch(labels=files[0], maps=files[1])
 
