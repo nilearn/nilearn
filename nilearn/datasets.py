@@ -559,24 +559,25 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     See http://www.nitrc.org/projects/cluster_roi/ for more information
     on this parcellation.
     """
+
+    url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
+          "/Parcellations/craddock_2011_parcellations.tar.gz"
+    opts = {'uncompress': True}
+
     dataset_name = "craddock_2011"
     keys = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
             "random")
-    filenames = ["scorr05_mean_all.nii.gz", "tcorr05_mean_all.nii.gz",
-                 "scorr05_2level_all.nii.gz", "tcorr05_2level_all.nii.gz",
-                 "random_all.nii.gz"]
+    filenames = [
+            ("scorr05_mean_all.nii.gz", url, opts),
+            ("tcorr05_mean_all.nii.gz", url, opts),
+            ("scorr05_2level_all.nii.gz", url, opts),
+            ("tcorr05_2level_all.nii.gz", url, opts),
+            ("random_all.nii.gz", url, opts)
+    ]
 
-    try:
-        sub_files = _get_dataset(dataset_name, filenames, data_dir=data_dir)
-    except IOError:
-        if url is None:
-            url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs"\
-                  + "/Parcellations/craddock_2011_parcellations.tar.gz"
-            _fetch_dataset(dataset_name, [url], data_dir=data_dir,
-                           resume=resume, verbose=verbose)
-            sub_files = _get_dataset(dataset_name,
-                                     filenames, data_dir=data_dir)
+    sub_files = _fetch_files(dataset_name, filenames, data_dir=data_dir,
+                             resume=resume)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
