@@ -129,19 +129,3 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house_little), i)
         teardown_tmpdata()
         mock.reset()
-
-
-def test_fetch_adhd():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
-    datasets._get_dataset = mock_get_dataset
-
-    setup_tmpdata()
-    adhd = datasets.fetch_adhd(data_dir=tmpdir, n_subjects=12)
-    assert_equal(len(adhd.func), 12)
-    # assert_equal(len(adhd.confounds), 12)
-    assert_equal(len(mock.urls), 2)
-    teardown_tmpdata()
