@@ -768,24 +768,20 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
     <http://www.sciencemag.org/content/293/5539/2425>`_
     """
 
-    # definition of dataset files
-    file_names = ['attributes.txt', 'bold.nii.gz', 'mask.nii.gz',
-                  'attributes_literal.txt']
-    file_names = [os.path.join('pymvpa-exampledata', i) for i in file_names]
+    # URL of the dataset. It is optional because a test uses it to test dataset
+    # downloading
+    if url is None:
+        url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
 
-    # load the dataset
-    try:
-        # Try to load the dataset
-        files = _get_dataset("haxby2001_simple", file_names, data_dir=data_dir)
+    opts = {'uncompress': True}
+    files = [
+            (join('pymvpa-exampledata', 'attributes.txt'), url, opts),
+            (join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
+            (join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
+            (join('pymvpa-exampledata', 'attributes_literal.txt'), url, opts),
+    ]
 
-    except IOError:
-        # If the dataset does not exists, we download it
-        if url is None:
-            url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-        _fetch_dataset('haxby2001_simple', [url], data_dir=data_dir,
-                           resume=resume, verbose=verbose)
-        files = _get_dataset("haxby2001_simple", file_names,
-                             data_dir=data_dir)
+    files = _fetch_files('haxby2001_simple', files)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -1091,50 +1087,52 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     f3_opts = {'rename': 'adhd40_p3.tar.gz', 'uncompress': True}
     f4_opts = {'rename': 'adhd40_p4.tar.gz', 'uncompress': True}
 
+    fname = '%s_rest_tshift_RPI_voreg_mni.nii.gz'
+
     subjects_files = [
-        ('data/3902469/3902469_rest_tshift_RPI_voreg_mni.nii.gz', f1, f1_opts),
-        ('data/7774305/7774305_rest_tshift_RPI_voreg_mni.nii.gz', f1, f1_opts),
-        ('data/3699991/3699991_rest_tshift_RPI_voreg_mni.nii.gz', f1, f1_opts),
+        (join('data', '3902469', fname % '3902469'), f1, f1_opts),
+        (join('data', '7774305', fname % '7774305'), f1, f1_opts),
+        (join('data', '3699991', fname % '3699991'), f1, f1_opts),
 
-        ('data/2014113/2014113_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/4275075/4275075_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/1019436/1019436_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/3154996/3154996_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/3884955/3884955_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/4134561/4134561_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/0027018/0027018_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/6115230/6115230_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/0027037/0027037_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/8409791/8409791_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
-        ('data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz', f2, f2_opts),
+        (join('data', '2014113', fname % '2014113'), f2, f2_opts),
+        (join('data', '4275075', fname % '4275075'), f2, f2_opts),
+        (join('data', '1019436', fname % '1019436'), f2, f2_opts),
+        (join('data', '3154996', fname % '3154996'), f2, f2_opts),
+        (join('data', '3884955', fname % '3884955'), f2, f2_opts),
+        (join('data', '0027034', fname % '0027034'), f2, f2_opts),
+        (join('data', '4134561', fname % '4134561'), f2, f2_opts),
+        (join('data', '0027018', fname % '0027018'), f2, f2_opts),
+        (join('data', '6115230', fname % '6115230'), f2, f2_opts),
+        (join('data', '0027037', fname % '0027037'), f2, f2_opts),
+        (join('data', '8409791', fname % '8409791'), f2, f2_opts),
+        (join('data', '0027011', fname % '0027011'), f2, f2_opts),
 
-        ('data/3007585/3007585_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/8697774/8697774_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/9750701/9750701_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/2497695/2497695_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/4164316/4164316_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/1552181/1552181_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/4046678/4046678_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
-        ('data/0023012/0023012_rest_tshift_RPI_voreg_mni.nii.gz', f3, f3_opts),
+        (join('data', '3007585', fname % '3007585'), f3, f3_opts),
+        (join('data', '8697774', fname % '8697774'), f3, f3_opts),
+        (join('data', '9750701', fname % '9750701'), f3, f3_opts),
+        (join('data', '0010064', fname % '0010064'), f3, f3_opts),
+        (join('data', '0021019', fname % '0021019'), f3, f3_opts),
+        (join('data', '0010042', fname % '0010042'), f3, f3_opts),
+        (join('data', '0010128', fname % '0010128'), f3, f3_opts),
+        (join('data', '2497695', fname % '2497695'), f3, f3_opts),
+        (join('data', '4164316', fname % '4164316'), f3, f3_opts),
+        (join('data', '1552181', fname % '1552181'), f3, f3_opts),
+        (join('data', '4046678', fname % '4046678'), f3, f3_opts),
+        (join('data', '0023012', fname % '0023012'), f3, f3_opts),
 
-        ('data/1679142/1679142_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/1206380/1206380_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/4016887/4016887_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/1418396/1418396_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/2950754/2950754_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/3994098/3994098_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/3520880/3520880_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/1517058/1517058_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/9744150/9744150_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/1562298/1562298_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/3205761/3205761_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
-        ('data/3624598/3624598_rest_tshift_RPI_voreg_mni.nii.gz', f4, f4_opts),
+        (join('data', '1679142', fname % '1679142'), f4, f4_opts),
+        (join('data', '1206380', fname % '1206380'), f4, f4_opts),
+        (join('data', '0023008', fname % '0023008'), f4, f4_opts),
+        (join('data', '4016887', fname % '4016887'), f4, f4_opts),
+        (join('data', '1418396', fname % '1418396'), f4, f4_opts),
+        (join('data', '2950754', fname % '2950754'), f4, f4_opts),
+        (join('data', '3994098', fname % '3994098'), f4, f4_opts),
+        (join('data', '3520880', fname % '3520880'), f4, f4_opts),
+        (join('data', '1517058', fname % '1517058'), f4, f4_opts),
+        (join('data', '9744150', fname % '9744150'), f4, f4_opts),
+        (join('data', '1562298', fname % '1562298'), f4, f4_opts),
+        (join('data', '3205761', fname % '3205761'), f4, f4_opts),
+        (join('data', '3624598', fname % '3624598'), f4, f4_opts),
     ]
 
     max_subjects = len(subjects_files)
