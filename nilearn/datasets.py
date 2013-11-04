@@ -1325,29 +1325,31 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
     fmri-data-set-for-visual-image-reconstruction/>`_
     """
 
+    url = 'https://www.nitrc.org/frs/download.php' \
+          '/5899/miyawaki2008.tgz?i_agree=1&download_now=1'
+    opts = {'uncompress': True}
+
     # Dataset files
 
     # Functional MRI:
     #   * 20 random scans (usually used for training)
     #   * 12 figure scans (usually used for testing)
 
-    file_func_figure = [os.path.join('func', 'data_figure_run%02d.nii.gz' % i)
-                        for i in range(1, 13)]
+    func_figure = [(join('func', 'data_figure_run%02d.nii.gz' % i), url, opts)
+                   for i in range(1, 13)]
 
-    file_func_random = [os.path.join('func', 'data_random_run%02d.nii.gz' % i)
-                        for i in range(1, 21)]
+    func_random = [(join('func', 'data_random_run%02d.nii.gz' % i), url, opts)
+                   for i in range(1, 21)]
 
     # Labels, 10x10 patches, stimuli shown to the subject:
     #   * 20 random labels
     #   * 12 figure labels (letters and shapes)
 
-    file_label_figure = [os.path.join('label',
-                                      'data_figure_run%02d_label.csv' % i)
-                         for i in range(1, 13)]
+    label_figure = [(join('label', 'data_figure_run%02d_label.csv' % i), url,
+                     opts) for i in range(1, 13)]
 
-    file_label_random = [os.path.join('label',
-                                      'data_random_run%02d_label.csv' % i)
-                         for i in range(1, 21)]
+    label_random = [(join('label', 'data_random_run%02d_label.csv' % i), url,
+                     opts) for i in range(1, 21)]
 
     # Masks
 
@@ -1393,24 +1395,14 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
         'RHVP.nii.gz'
     ]
 
-    file_mask = [os.path.join('mask', m) for m in file_mask]
+    file_mask = [(join('mask', m), url, opts) for m in file_mask]
 
-    file_names = file_func_figure + file_func_random + \
-                 file_label_figure + file_label_random + \
+    file_names = func_figure + func_random + \
+                 label_figure + label_random + \
                  file_mask
 
-    # Load the dataset
-    files = []
-    try:
-        # Try to load the dataset
-        files = _get_dataset("miyawaki2008", file_names, data_dir=data_dir)
-    except IOError:
-        # If the dataset does not exists, we download it
-        url = 'https://www.nitrc.org/frs/download.php' \
-              '/5899/miyawaki2008.tgz?i_agree=1&download_now=1'
-        _fetch_dataset('miyawaki2008', [url], data_dir=data_dir,
-                           resume=resume, verbose=verbose)
-        files = _get_dataset("miyawaki2008", file_names, data_dir=data_dir)
+    files = _fetch_files('miyawaki2008', file_names, resume=resume,
+                         data_dir=data_dir)
 
     # Return the data
     return Bunch(
