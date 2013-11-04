@@ -781,7 +781,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
             (join('pymvpa-exampledata', 'attributes_literal.txt'), url, opts),
     ]
 
-    files = _fetch_files('haxby2001_simple', files)
+    files = _fetch_files('haxby2001_simple', files, data_dir=data_dir,
+                         resume=resume)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -1147,7 +1148,8 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     # confounds = []
     subjects_files = subjects_files[:n_subjects]
 
-    func = _fetch_files('adhd2', subjects_files)
+    func = _fetch_files('adhd2', subjects_files, data_dir=data_dir,
+                        resume=resume)
 
     return Bunch(func=func)
 
