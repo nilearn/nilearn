@@ -1098,16 +1098,17 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
             ADHD200_40sub_preprocessed.tgz
 
     """
-    f1 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
-    f2 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
-    f3 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
-    f4 = 'http://connectir.projects.nitrc.org/adhd40_p1.nii.gz'
-    f1_opts = {'move': 'adhd40_p1.tar.gz', 'uncompress': True}
-    f2_opts = {'move': 'adhd40_p2.tar.gz', 'uncompress': True}
-    f3_opts = {'move': 'adhd40_p3.tar.gz', 'uncompress': True}
-    f4_opts = {'move': 'adhd40_p4.tar.gz', 'uncompress': True}
+    f1 = 'http://connectir.projects.nitrc.org/adhd40_p1.tar.gz'
+    f2 = 'http://connectir.projects.nitrc.org/adhd40_p2.tar.gz'
+    f3 = 'http://connectir.projects.nitrc.org/adhd40_p3.tar.gz'
+    f4 = 'http://connectir.projects.nitrc.org/adhd40_p4.tar.gz'
+    f1_opts = {'uncompress': True}
+    f2_opts = {'uncompress': True}
+    f3_opts = {'uncompress': True}
+    f4_opts = {'uncompress': True}
 
     fname = '%s_rest_tshift_RPI_voreg_mni.nii.gz'
+    rname = '%s_regressors.csv'
 
     # Subjects ID per file
     sub1 = ['3902469', '7774305', '3699991']
@@ -1119,13 +1120,19 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
             '3994098', '3520880', '1517058', '9744150', '1562298', '3205761',
             '3624598']
 
-    subjects_files = \
+    subjects_funcs = \
         [(join('data', i, fname % i), f1, f1_opts) for i in sub1] + \
         [(join('data', i, fname % i), f2, f2_opts) for i in sub2] + \
         [(join('data', i, fname % i), f3, f3_opts) for i in sub3] + \
         [(join('data', i, fname % i), f4, f4_opts) for i in sub4]
 
-    max_subjects = len(subjects_files)
+    subjects_confounds = \
+        [(join('data', i, rname % i), f1, f1_opts) for i in sub1] + \
+        [(join('data', i, rname % i), f2, f2_opts) for i in sub2] + \
+        [(join('data', i, rname % i), f3, f3_opts) for i in sub3] + \
+        [(join('data', i, rname % i), f4, f4_opts) for i in sub4]
+
+    max_subjects = len(subjects_funcs)
     # Check arguments
     if n_subjects is None:
         n_subjects = max_subjects
@@ -1133,14 +1140,15 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    func = []
-    # confounds = []
-    subjects_files = subjects_files[:n_subjects]
+    subjects_funcs = subjects_funcs[:n_subjects]
+    subjects_confounds = subjects_confounds[:n_subjects]
 
-    func = _fetch_files('adhd2', subjects_files, data_dir=data_dir,
-                        resume=resume)
+    subjects_funcs = _fetch_files('adhd', subjects_funcs,
+            data_dir=data_dir, resume=resume)
+    subjects_confounds = _fetch_files('adhd', subjects_confounds,
+            data_dir=data_dir, resume=resume)
 
-    return Bunch(func=func)
+    return Bunch(func=subjects_funcs, confounds=subjects_confounds)
 
 
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
