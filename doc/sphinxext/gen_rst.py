@@ -411,7 +411,7 @@ def generate_example_rst(app):
         examples.
     """
     root_dir = os.path.join(app.builder.srcdir, 'auto_examples')
-    example_dir = os.path.abspath(app.builder.srcdir + '/../' + 'examples')
+    example_dir = os.path.abspath(app.builder.srcdir + '/..')
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
     except TypeError:
