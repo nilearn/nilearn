@@ -34,10 +34,20 @@ indirect connections. Covariance matrices tend to be dense, and it is
 rather difficult to extract from them only the direct connections between
 two regions.
 
-This can be achieved using a the inverse of the covariance matrix, ie the
+This can be achieved using the inverse of the covariance matrix, ie the
 *precision matrix*. It contains *partial covariances*, which are
 covariances between two regions conditioned on all the others. It thus
 gives only direct connections between regions.
+
+.. |covariance| image:: ../auto_examples/images/plot_adhd_covariance_5.png
+   :target: ../auto_examples/plot_adhd_covariance.html
+   :scale: 39
+
+.. |precision| image:: ../auto_examples/images/plot_adhd_covariance_6.png
+   :target: ../auto_examples/plot_adhd_covariance.html
+   :scale: 39
+
+.. centered:: |covariance| |precision|
 
 Sparsity in the inverse covariance matrix is important to reduce noise in
 the estimated connectome by limiting the number of edges (technicaly,

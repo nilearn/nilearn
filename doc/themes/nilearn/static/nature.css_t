@@ -532,6 +532,10 @@ p.rubric {
     font-weight: bold;
 }
 
+p.centered {
+    text-align: center;
+}
+
 h1 {
     margin: 0;
     padding: 0.7em 0 0.3em 0;
