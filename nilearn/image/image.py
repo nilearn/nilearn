@@ -14,7 +14,7 @@ from .._utils import check_niimgs, check_niimg, as_ndarray
 from .. import masking
 
 
-def high_variance_confounds(niimgs, n_confounds=10, percentile=2.,
+def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
     """ Return confounds signals extracted from input signals with highest
         variance.
