@@ -20,7 +20,6 @@ from scipy import linalg, ndimage
 
 from sklearn import linear_model, svm
 from sklearn.utils import check_random_state
-from sklearn.metrics import r2_score
 from sklearn.cross_validation import KFold
 from sklearn.feature_selection import f_regression
 
@@ -111,7 +110,8 @@ plot_slices(coefs, title="Ground truth")
 # Compute the results and estimated coef maps for different estimators
 classifiers = [
     ('bayesian_ridge', linear_model.BayesianRidge(normalize=True)),
-    ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1], rho=0.05)),
+    ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1],
+                                          l1_ratio=0.05)),
     ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
     ('svr', svm.SVR(kernel='linear', C=0.001)),
     ('searchlight', decoding.SearchLight(
