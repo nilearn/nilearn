@@ -15,6 +15,7 @@ import sys
 import shutil
 import time
 import hashlib
+import collections
 
 import numpy as np
 from scipy import ndimage
@@ -414,6 +415,56 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
             raise IOError('An error occured while fetching %s' % file_)
         files_.append(abs_file)
     return files_
+
+
+def _filter_column(array, col, criteria):
+    """ Return index array matching criteria
+
+    Parameters
+    ----------
+
+    array: numpy array with columns
+        Array in which data will be filtered
+
+    col: string
+        Name of the column
+
+    criteria: integer (or float), pair of integers, string or list of these
+        if integer, select elements in column matching integer
+        if a tuple, select elements between the limits given by the tuple
+        if a string, select elements that match the string
+    """
+    # Raise an error if the column does not exist
+    array[col]
+
+    if not isinstance(criteria, basestring) and \
+            not isinstance(criteria, tuple) and \
+            isinstance(criteria, collections.Iterable):
+        filter = np.zeros(array.shape, dtype=np.bool)
+        for criterion in criteria:
+            filter = np.logical_or(filter,
+                        _filter_column(array, col, criterion))
+        return filter
+
+    if isinstance(criteria, tuple):
+        if len(criteria) != 2:
+            raise ValueError("An interval must have 2 values")
+        if criteria[0] is None:
+            return array[col] <= criteria[1]
+        if criteria[1] is None:
+            return array[col] >= criteria[0]
+        filter = array[col] <= criteria[1]
+        return np.logical_and(filter, array[col] >= criteria[0])
+
+    return array[col] == criteria
+
+
+def _filter_columns(array, filters):
+    filter = np.ones(array.shape, dtype=np.bool)
+    for column in filters:
+        filter = np.logical_and(filter,
+                _filter_column(array, column, filters[column]))
+    return filter
 
 
 ###############################################################################
@@ -994,6 +1045,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     sub4 = ['1679142', '1206380', '0023008', '4016887', '1418396', '2950754',
             '3994098', '3520880', '1517058', '9744150', '1562298', '3205761',
             '3624598']
+    subs = sub1 + sub2 + sub3 + sub4
 
     subjects_funcs = \
         [(join('data', i, fname % i), f1, f1_opts) for i in sub1] + \
@@ -1007,6 +1059,9 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
         [(join('data', i, rname % i), f3, f3_opts) for i in sub3] + \
         [(join('data', i, rname % i), f4, f4_opts) for i in sub4]
 
+    phenotypic = [('ADHD200_40subs_motion_parameters_and_phenotypics.csv', f1,
+        f1_opts)]
+
     max_subjects = len(subjects_funcs)
     # Check arguments
     if n_subjects is None:
@@ -1015,6 +1070,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
         sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
+    subs = subs[:n_subjects]
     subjects_funcs = subjects_funcs[:n_subjects]
     subjects_confounds = subjects_confounds[:n_subjects]
 
@@ -1022,8 +1078,19 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
             data_dir=data_dir, resume=resume)
     subjects_confounds = _fetch_files('adhd', subjects_confounds,
             data_dir=data_dir, resume=resume)
+    phenotypic = _fetch_files('adhd', phenotypic,
+            data_dir=data_dir, resume=resume)[0]
 
-    return Bunch(func=subjects_funcs, confounds=subjects_confounds)
+    # Load phenotypic data
+    phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
+                               dtype=None)
+    # Keep phenotypic information for selected subjects
+    isubs = np.asarray(subs, dtype=int)
+    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
+                             for i in isubs]]
+
+    return Bunch(func=subjects_funcs, confounds=subjects_confounds,
+                 phenotypic=phenotypic)
 
 
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
