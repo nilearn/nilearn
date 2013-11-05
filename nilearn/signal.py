@@ -232,7 +232,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     return signals
 
 
-def high_variance_confounds(series, n_confounds=10, percentile=1.,
+def high_variance_confounds(series, n_confounds=10, percentile=2.,
                             detrend=True):
     """ Return confounds time series extracted from series with highest
         variance.
