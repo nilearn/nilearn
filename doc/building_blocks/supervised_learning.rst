@@ -11,12 +11,11 @@ It may also be useful for diagnostic.
 
 ____
 
-.. include:: includes/big_toc_css.rst
+.. include:: ../includes/big_toc_css.rst
 
 .. toctree::
 
-   simulations.rst
-   haxby_decoding.rst
-   haxby_searchlight.rst
+   decoding_simulated.rst
+   searchlight.rst
 
 

@@ -116,8 +116,7 @@ classifiers = [
     ('svr', svm.SVR(kernel='linear', C=0.001)),
     ('searchlight', decoding.SearchLight(
         mask_img, process_mask_img=process_mask_img,
-        radius=2.7,
-        score_func=r2_score, estimator=svm.SVR(kernel="linear"),
+        radius=2.7, scoring='r2', estimator=svm.SVR(kernel="linear"),
         cv=KFold(y_train.size, n_folds=4),
         verbose=1, n_jobs=1))
 ]

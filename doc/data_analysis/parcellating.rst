@@ -1,13 +1,19 @@
 .. _nyu_rest:
 
-===============
-fMRI clustering
-===============
+==================================
+Parcellating the brain in regions
+==================================
+
+.. topic:: **Page summary**
+
+    This page demonstrates how clustering can be used to parcellate the
+    brain into homogeneous regions from resting-state time series.
+
+
+A resting-state dataset
+========================
 
 .. currentmodule:: nilearn.datasets
-
-Resting-state dataset
-========================
 
 Here, we use a `resting-state <http://www.nitrc.org/projects/nyu_trt/>`_ 
 dataset from test-retest study performed at NYU. Details on the data 
@@ -21,7 +27,7 @@ As seen in :ref:`previous sections <downloading_data>`, we
 fetch the data
 from internet and load it with a provided function:
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: ### Load nyu_rest dataset #####################################################
     :end-before: ### Ward ######################################################################
 
@@ -32,46 +38,37 @@ used to mask our original images.
 Applying Ward clustering
 ==========================
 
-Compute connectivity map
-------------------------
-
-Before applying Ward's method, we compute a spatial neighborhood map,
-aka connectivity map. This is useful to constrain clusters to form
+**Compute a connectivity matrix**
+Before applying Ward's method, we compute a spatial neighborhood matrix,
+aka connectivity matrix. This is useful to constrain clusters to form
 contiguous parcels (see `the scikit-learn documentation
 <http://www.scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Compute connectivity matrix: which voxel is connected to which
     :end-before: # Computing the ward for the first time, this is long...
 
-Principle
----------
-
+**Ward clustering principle**
 Ward's algorithm is a hierarchical clustering algorithm: it
 recursively merges voxels, then clusters that have similar signal
 (parameters, measurements or time courses).
 
-Caching
--------
+**Caching** In practice the implementation of Ward clustering first
+computes a tree of possible merges, and then, given a requested number of
+clusters, breaks apart the tree at the right level.
 
-Note that in practice the scikit-learn implementation of Ward's
-clustering first computes a tree of possible merges, and then, given a
-requested number of clusters, breaks apart the tree at the right level.
-
-As no matter how many clusters we want, we do not need to compute the
-tree again, we can rely on caching to speed things up when varying the
-number of clusters. Scikit-learn integrates a transparent caching library
-(`joblib <http://packages.python.org/joblib/>`_). In Ward's clustering,
+As the tree is independent of the number of clusters, we can rely on caching to speed things up when varying the
+number of clusters. In Wards clustering,
 the *memory* parameter is used to cache the computed component tree. You
 can give it either a *joblib.Memory* instance or the name of a directory
 used for caching.
 
-Apply the ward
---------------
+Running the Ward algorithm
+---------------------------
 
 Here we simply launch Ward's algorithm to find 1000 clusters and we time it.
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Computing the ward for the first time, this is long...
     :end-before: # Compute the ward with more clusters, should be faster
 
@@ -79,22 +76,22 @@ This runs in about 10 seconds (depending on your computer configuration). Now,
 we are not satisfied of the result and we want to cluster the picture in 2000
 elements.
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Compute the ward with more clusters, should be faster
     :end-before: ### Show result ############################################################### 
 
 Now that the component tree has been computed, computation is must faster
 thanks to caching. You should have the result in less than 1 second.
 
-Post-Processing and visualization
-===================================
+Post-Processing and visualizing the parcels
+============================================
 
 Unmasking
 ---------
 
 After applying the ward, we must unmask the data. This can be done simply :
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Unmask data
     :end-before: # Display the labels 
 
@@ -109,13 +106,13 @@ Label visualization
 To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Display the labels 
     :end-before: # Display the original data
 
 
-.. figure:: auto_examples/images/plot_rest_clustering_1.png
-   :target: auto_examples/plot_rest_clustering.html
+.. figure:: ../auto_examples/images/plot_rest_clustering_1.png
+   :target: ../auto_examples/plot_rest_clustering.html
    :align: center
    :scale: 60
 
@@ -132,15 +129,15 @@ representation thanks to a two-step procedure :
 - call *ward.inverse_transform* on the previous result to turn it back into
   the masked picture shape
 
-.. literalinclude:: ../plot_rest_clustering.py
+.. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Display the original data
 
-.. |left_img| image:: auto_examples/images/plot_rest_clustering_2.png
-   :target: auto_examples/plot_rest_clustering.html
+.. |left_img| image:: ../auto_examples/images/plot_rest_clustering_2.png
+   :target: ../auto_examples/plot_rest_clustering.html
    :width: 49%
 
-.. |right_img| image:: auto_examples/images/plot_rest_clustering_3.png
-   :target: auto_examples/plot_rest_clustering.html
+.. |right_img| image:: ../auto_examples/images/plot_rest_clustering_3.png
+   :target: ../auto_examples/plot_rest_clustering.html
    :width: 49%
 
 |left_img| |right_img|

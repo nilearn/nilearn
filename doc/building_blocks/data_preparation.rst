@@ -1,8 +1,8 @@
 .. _extracting_data:
 
-======================================================
-Extracting data: input/output and basic transformation
-======================================================
+=========================================================
+Data preparation: input/output and basic transformation
+=========================================================
 
 Before applying some complex machine learning algorithm, or perform
 sophisticated analysis, the first step is to read data from file and

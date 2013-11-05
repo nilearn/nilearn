@@ -155,8 +155,9 @@ Classes
 .. autosummary::
    :toctree: generated/
    :template: class.rst
-
+   
    SearchLight
+
 
 .. _signal_ref:
 
@@ -181,5 +182,4 @@ Functions
    high_variance_confounds
    butterworth
 
-.. _utils_ref:
 

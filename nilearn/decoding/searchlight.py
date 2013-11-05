@@ -19,7 +19,7 @@ import numpy as np
 
 import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
-from sklearn.svm import LinearSVC
+from sklearn import svm
 from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
 from sklearn import neighbors
@@ -29,6 +29,7 @@ import nibabel
 from .. import masking
 from .._utils import as_ndarray
 
+ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
                  verbose=0):
@@ -198,13 +199,13 @@ class SearchLight(BaseEstimator):
         boolean image giving location of voxels containing usable signals.
 
     process_mask_img : niimg, optional
-            boolean image giving voxels on which searchlight should be
-            computed.
+        boolean image giving voxels on which searchlight should be
+        computed.
 
     radius : float, optional
         radius of the searchlight ball, in millimeters. Defaults to 2.
 
-    estimator : estimator object implementing 'fit'
+    estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data
 
     n_jobs : int, optional. Default is -1.
@@ -245,7 +246,8 @@ class SearchLight(BaseEstimator):
     """
 
     def __init__(self, mask_img, process_mask_img=None, radius=2.,
-                 estimator=LinearSVC(C=1), n_jobs=1, scoring=None, cv=None,
+                 estimator='svc',
+                 n_jobs=1, scoring=None, cv=None,
                  verbose=0):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
@@ -308,7 +310,11 @@ class SearchLight(BaseEstimator):
                 nibabel.Nifti1Image(as_ndarray(mask, dtype=np.int8),
                                     mask_affine))
 
-        scores = search_light(X, y, self.estimator, A,
+        estimator = self.estimator
+        if isinstance(estimator, basestring):
+            estimator = ESTIMATOR_CATALOG[estimator]()
+
+        scores = search_light(X, y, estimator, A,
                               self.scoring, self.cv, self.n_jobs,
                               self.verbose)
         scores_3D = np.zeros(process_mask.shape)

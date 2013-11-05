@@ -12,48 +12,50 @@
 .. _fmri_decoding:
 
 ================================================================================
-fMRI decoding: predicting which object a subject is viewing
+Decoding: predicting behavior or phenotype from brain images
 ================================================================================
 
-.. topic:: Objectives
+.. topic:: **Page summary**
 
-   At the end of this tutorial you will be able to:
+    Decoding consists in learning a predictive model that can
+    predict external variables such as behavioral or phenotypic variables
+    from brain image. This page shows how to:
 
     1. Load fMRI volumes in Python.
     2. Perform a state-of-the-art decoding analysis of fMRI data.
     3. Perform even more sophisticated analyses of fMRI data.
 
-Data loading and preprocessing
+Data loading and preparation
 ================================
 
 Launch ipython::
 
   $ ipython -pylab
 
-First, load the data using the tutorial's data downloader,
+First, load the data using nilearn's data downloader,
 :func:`nilearn.datasets.fetch_haxby_simple`:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Preprocess data ########################################################### 
 
-Then preprocess the data:
+Then prepare the data:
 
 - compute the mean of the image to replace anatomic data
 - mask data X and transpose the matrix, so that its shape becomes
   (n_samples, n_features) (see :ref:`mask_4d_2_3d` for a discussion on using 
   masks)
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Preprocess data ########################################################### 
     :end-before: ### Restrict to faces and houses ##############################################
 
 .. topic:: **Exercise**
    :class: green
 
-   1. Extract the period of activity from the data (i.e. remove the remainder).
+   1. Remove the rest conditions from the data
 
-.. topic:: Solution
+.. topic:: **Solution**
 
     As 'y == 0' in rest, we want to keep only time points for which 
     `y != 0`::
@@ -62,7 +64,7 @@ Then preprocess the data:
 
 Here, we limit our analysis to the `face` and `house` conditions:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Restrict to faces and houses ##############################################
     :end-before: ### Prediction function #######################################################
 
@@ -80,7 +82,7 @@ We define here a simple `Support Vector Classification
 linear kernel. We first import the correct module from scikit-learn and we
 define the classifier:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Prediction function #######################################################
     :end-before: ### Dimension reduction #######################################################
 
@@ -121,7 +123,7 @@ For this, we need to import the correct module and define a simple F-score
 based feature selection (a.k.a. 
 `Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_):
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Dimension reduction #######################################################
         :end-before: ### Fit and predict ###########################################################
 
@@ -136,7 +138,7 @@ In scikit-learn, the prediction objects (classifiers, regression) have a very si
   Here, we just have to give the new set of images (as the target should be
   unknown):
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Fit and predict ###########################################################
         :end-before: ### Visualisation #############################################################
 
@@ -153,17 +155,17 @@ Visualising the results
 
 We can visualize the result of our algorithm:
 
-- we first get the support vectors of the SVC and revert the feature
+- we first get the support vectors of the SVC and inverse the feature
   selection mechanism
 - we remove the mask
 - then we overlay our previously-computed, mean image with our support vectors
 
-.. figure:: auto_examples/images/plot_haxby_decoding_1.png
-   :target: auto_examples/plot_haxby_decoding.html
-   :align: center
+.. figure:: ../auto_examples/images/plot_haxby_decoding_1.png
+   :target: ../auto_examples/plot_haxby_decoding.html
+   :align: right
    :scale: 60
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Visualisation #############################################################
     :end-before: ### Cross validation ########################################################## 
 
@@ -180,7 +182,7 @@ the indices of the folds within a loop.
 Now, we can apply the previously defined *pipeline* with the
 cross-validation:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Cross validation ########################################################## 
         :end-before: ### Print results #############################################################
 
@@ -201,7 +203,7 @@ under Windows)::
 
  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
-**Prediction accuracy** We can take a look at the results of the
+**Prediction accuracy**: We can take a look at the results of the
 *cross_val_score* function::
 
   >>> cv_scores # doctest: +SKIP
@@ -216,7 +218,7 @@ correct predictions on the left-out data.
 .. topic:: **Exercise**
    :class: green
 
-   1. Compute the mean prediction accuracy using *cv_scores*
+   Compute the mean prediction accuracy using *cv_scores*
 
 .. topic:: Solution
 
@@ -229,15 +231,21 @@ We have a total prediction accuracy of 99% across the different folds.
 
 We can add a line to print the results:
 
-.. literalinclude:: ../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_decoding.py
         :start-after: ### Print results #############################################################
 
 
-.. topic:: Final script
+.. topic:: **Final script**
 
     The complete script can be found as 
     :ref:`an example <example_tutorial_plot_haxby_decoding.py>`.
     Now, all you have to do is publish the results :)
+
+
+.. seealso::
+
+   * :ref:`searchlight`
+   * :ref:`decoding_simulated`
 
 Going further with scikit-learn
 ===================================
@@ -247,7 +255,7 @@ interesting to explore the `wide variety of supervised learning
 algorithms in the scikit-learn
 <http://scikit-learn.org/stable/supervised_learning.html>`_.
 
-Changing the prediction function
+Changing the prediction engine
 --------------------------------
 
 .. for doctest:
@@ -255,15 +263,15 @@ Changing the prediction function
     >>> feature_selection = SelectKBest(f_classif, k=4)
     >>> clf = LinearSVC()
 
-We now see how one can easily change the prediction function, if needed.
-We can try the `Linear Discriminant Analysis (LDA) 
+We now see how one can easily change the prediction engine, if needed.
+We can try Fisher's `Linear Discriminant Analysis (LDA) 
 <http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
 
 Import the module::
 
     >>> from sklearn.lda import LDA
 
-Construct the new prediction function and use it in a pipeline::
+Construct the new estimator object and use it in a pipeline::
 
     >>> from sklearn.pipeline import Pipeline
     >>> lda = LDA()

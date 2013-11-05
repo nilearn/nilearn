@@ -1,12 +1,5 @@
-User guide: contents
-====================
-
-..
-    We are putting the title as a raw HTML so that it doesn't appear in
-    the contents
-
-.. _user_guide:
-
+User guide: table of contents
+==============================
 
 
 .. include:: includes/big_toc_css.rst
@@ -19,10 +12,7 @@ User guide: contents
    :numbered:
 
    introduction.rst
-   getting_started.rst
-   extracting_data.rst
-   supervised_learning.rst
-   unsupervised_learning.rst
-   dataset_manipulation.rst
-   Reference <modules/reference.rst>
+   data_analysis/index.rst
+   building_blocks/index.rst
+   modules/reference.rst
 

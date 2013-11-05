@@ -532,6 +532,10 @@ p.rubric {
     font-weight: bold;
 }
 
+p.centered {
+    text-align: center;
+}
+
 h1 {
     margin: 0;
     padding: 0.7em 0 0.3em 0;
@@ -644,6 +648,12 @@ div.admonition, div.warning, div.topic {
     margin: 10px 0 10px 0;
     border-radius: 4px;
     padding: 0 5px;
+}
+
+div.seealso {
+    background-color: rgb(255, 251, 232);
+    border: 1px solid rgb(251, 238, 213);
+    color: rgb(175, 138, 75);
 }
 
 div.admonition p, div.warning p {

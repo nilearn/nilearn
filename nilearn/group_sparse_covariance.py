@@ -450,12 +450,6 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """Covariance and precision matrix estimator.
 
-    The algorithm used is based on what is described in:
-
-    Jean Honorio and Dimitris Samaras.
-    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-    Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
-
     Parameters
     ----------
     alpha : float
@@ -489,6 +483,23 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     `precisions_` : numpy.ndarraye, shape (n_features, n_features, n_subjects)
         precisions matrices estimated using the group-sparse algorithm.
+
+    Notes
+    ------
+
+    The model used has been introduced in:
+
+    Gael Varoquaux, et al. `Brain Covariance Selection: Better Individual
+    Functional Connectivity Models Using Population Prior
+    <http://arxiv.org/abs/1008.5071>`_'.
+
+    The algorithm used is based on what is described in:
+
+    Jean Honorio and Dimitris Samaras.
+    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
+    Models". http://arxiv.org/abs/1207.4255.
+
+
     """
 
     def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=1,
