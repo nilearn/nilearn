@@ -353,7 +353,7 @@ def test_high_variance_confounds():
 
     # Changing percentile changes the result
     seriesG = seriesC
-    outG = nisignal.high_variance_confounds(seriesG, percentile=2.,
+    outG = nisignal.high_variance_confounds(seriesG, percentile=1.,
                                              n_confounds=n_confounds,
                                              detrend=False)
     assert_raises(AssertionError, np.testing.assert_almost_equal,
