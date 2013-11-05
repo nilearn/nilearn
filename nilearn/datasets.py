@@ -364,68 +364,6 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     return full_name
 
 
-def _fetch_dataset(dataset_name, urls, data_dir=None, uncompress=True,
-                   resume=True, folder=None, md5sums=None, verbose=0):
-    """Load requested dataset, downloading it if needed or requested.
-
-    Parameters
-    ----------
-    dataset_name: string
-        Unique dataset name
-
-    urls: iterable of strings
-        Contains the urls of files to be downloaded.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    uncompress: bool, optional
-        Ask for uncompression of the dataset. The type of the archive is
-        determined automatically.
-
-    resume: bool, optional
-        If true, try resuming download if possible
-
-    folder: string, optional
-        Folder in which the file must be fetched inside the dataset folder.
-
-    md5sums: dict, optional
-        Dictionary of MD5 sums of files to download
-
-    Returns
-    -------
-    files: list of string
-        Absolute paths of downloaded files on disk
-
-    Notes
-    -----
-    If, for any reason, the download procedure fails, all downloaded files are
-    removed.
-    """
-    # Determine data path
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
-
-    files = []
-    for url in urls:
-        try:
-            md5sum = None
-            file_name = os.path.basename(url)
-            if md5sums is not None and file_name in md5sums:
-                md5sum = md5sums[file_name]
-            full_name = _fetch_file(url, data_dir, resume=resume,
-                                    md5sum=md5sum, verbose=verbose)
-            if uncompress:
-                _uncompress_file(full_name)
-            files.append(full_name)
-        except Exception:
-            print ('An error occured, fetching aborted.' +
-                   ' Please see the full log above.')
-            shutil.rmtree(data_dir)
-            raise
-    return files
-
-
 def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
                  verbose=0):
     """Load requested dataset, downloading it if needed or requested.
@@ -476,44 +414,6 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
             raise IOError('An error occured while fetching %s' % file_)
         files_.append(abs_file)
     return files_
-
-
-def _get_dataset(dataset_name, file_names, data_dir=None, folder=None):
-    """Returns absolute paths of a dataset files if they exist.
-
-    Parameters
-    ----------
-    dataset_name: string
-        Unique dataset name
-
-    file_names: iterable of strings
-        File that compose the dataset to be retrieved on the disk.
-
-    folder: string, optional
-        Folder in which the file must be fetched inside the dataset folder.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    Returns
-    -------
-    files: list of string
-        List of dataset files on disk
-
-    Notes
-    -----
-    If at least one file is missing, an IOError is raised.
-    """
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
-
-    file_paths = []
-    for file_name in file_names:
-        full_name = os.path.join(data_dir, file_name)
-        if not exists(full_name):
-            raise IOError("No such file: '%s'" % full_name)
-        file_paths.append(full_name)
-    return file_paths
 
 
 ###############################################################################
@@ -831,73 +731,48 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
     <http://www.sciencemag.org/content/293/5539/2425>`
     """
 
+    if n_subjects > 6:
+        sys.stderr.write('Warning: there are only 6 subjects')
+        n_subjects = 6
+
+    # Dataset files
+    url = 'http://data.pymvpa.org/datasets/haxby2001/'
+    md5sums = _fetch_file(url + 'MD5SUMS',
+                          data_dir=_get_dataset_dir("haxby2001", data_dir))
+    md5sums = _read_md5_sum_file(md5sums)
+
+    'subj%d-2010.01.14.tar.gz'
+
     # definition of dataset files
-    file_names = ['anat.nii.gz', 'bold.nii.gz', 'labels.txt',
+    sub_files = ['anat.nii.gz', 'bold.nii.gz', 'labels.txt',
                   'mask4_vt.nii.gz', 'mask8b_face_vt.nii.gz',
                   'mask8b_house_vt.nii.gz', 'mask8_face_vt.nii.gz',
                   'mask8_house_vt.nii.gz']
+    n_files = len(sub_files)
 
-    if n_subjects > 5:
-        sys.stderr.write('Warning: there are only 5 subjects')
-        n_subjects = 5
+    files = [
+            (join('subj%d' % i, sub_file),
+             url + 'subj%d-2010.01.14.tar.gz' % i,
+             {'uncompress': True,
+              'md5sum': md5sums['subj%d-2010.01.14.tar.gz' % i]})
+            for i in range(1, n_subjects + 1)
+            for sub_file in sub_files
+    ]
 
-    # load the dataset
-    anat = []
-    func = []
-    session_target = []
-    mask_vt = []
-    mask_face = []
-    mask_house = []
-    mask_face_little = []
-    mask_house_little = []
-
-    md5sums = None
-
-    for i in range(1, n_subjects + 1):
-        file_paths = [os.path.join('subj%d' % i, name)
-                      for name in file_names]
-
-        try:
-            # Try to load the dataset
-            sub_files = _get_dataset("haxby2001", file_paths,
-                                     data_dir=data_dir)
-        except IOError:
-            # If the dataset does not exists, we download it
-            if url is None:
-                url = 'http://data.pymvpa.org/datasets/haxby2001/'
-            # Get the MD5sums file
-            if md5sums is None:
-                md5sums = _fetch_file(url + 'MD5SUMS',
-                                      data_dir=_get_dataset_dir("haxby2001",
-                                                                data_dir))
-                if md5sums:
-                    md5sums = _read_md5_sum_file(md5sums)
-
-            _fetch_dataset('haxby2001',
-                           ["%ssubj%d-2010.01.14.tar.gz" % (url, i)],
-                           data_dir=data_dir, resume=resume, verbose=verbose)
-            sub_files = _get_dataset("haxby2001", file_paths,
-                                     data_dir=data_dir)
-
-        anat.append(sub_files[0])
-        func.append(sub_files[1])
-        session_target.append(sub_files[2])
-        mask_vt.append(sub_files[3])
-        mask_face.append(sub_files[4])
-        mask_house.append(sub_files[5])
-        mask_face_little.append(sub_files[6])
-        mask_house_little.append(sub_files[7])
+    files = files[:n_files * n_subjects]
+    files = _fetch_files('haxby2001', files, data_dir=data_dir,
+                         resume=resume)
 
     # return the data
     return Bunch(
-        anat=anat,
-        func=func,
-        session_target=session_target,
-        mask_vt=mask_vt,
-        mask_face=mask_face,
-        mask_house=mask_house,
-        mask_face_little=mask_face_little,
-        mask_house_little=mask_house_little)
+            anat=files[0::n_files],
+            func=files[1::n_files],
+            session_target=files[2::n_files],
+            mask_vt=files[3::n_files],
+            mask_face=files[4::n_files],
+            mask_house=files[5::n_files],
+            mask_face_little=files[6::n_files],
+            mask_house_little=files[7::n_files])
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
