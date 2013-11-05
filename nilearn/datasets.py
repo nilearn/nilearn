@@ -16,6 +16,7 @@ import shutil
 import time
 import hashlib
 import collections
+import fnmatch
 
 import numpy as np
 from scipy import ndimage
@@ -440,9 +441,9 @@ def _filter_column(array, col, criteria):
     if not isinstance(criteria, basestring) and \
             not isinstance(criteria, tuple) and \
             isinstance(criteria, collections.Iterable):
-        filter = np.zeros(array.shape, dtype=np.bool)
+        filter_ = np.zeros(array.shape, dtype=np.bool)
         for criterion in criteria:
-            filter = np.logical_or(filter,
+            filter = np.logical_or(filter_,
                         _filter_column(array, col, criterion))
         return filter
 
@@ -453,18 +454,32 @@ def _filter_column(array, col, criteria):
             return array[col] <= criteria[1]
         if criteria[1] is None:
             return array[col] >= criteria[0]
-        filter = array[col] <= criteria[1]
-        return np.logical_and(filter, array[col] >= criteria[0])
+        filter_ = array[col] <= criteria[1]
+        return np.logical_and(filter_, array[col] >= criteria[0])
 
     return array[col] == criteria
 
 
 def _filter_columns(array, filters):
-    filter = np.ones(array.shape, dtype=np.bool)
+    filter_ = np.ones(array.shape, dtype=np.bool)
     for column in filters:
-        filter = np.logical_and(filter,
+        filter_ = np.logical_and(filter_,
                 _filter_column(array, column, filters[column]))
     return filter
+
+
+def _tree(path, pattern=None):
+    """ Return a directory tree under the form of a list. Dirs are dictionaries
+    """
+    files = []
+    for file_ in os.listdir(path):
+        file_path = join(path, file_)
+        if os.path.isdir(file_path):
+            files.append({file_: _tree(file_path, pattern)})
+        else:
+            if pattern is None or fnmatch.fnmatch(file_, pattern):
+                files.append(file_)
+    return files
 
 
 ###############################################################################
@@ -736,7 +751,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
                  conditions_target=files[3])
 
 
-def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
+def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False, url=None,
+                resume=True, verbose=0):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -746,7 +762,11 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
         location. Default: None
 
     n_subjects: int, optional
-        Number of subjects, from 1 to 5.
+        Number of subjects, from 1 to 6.
+
+    fetch_stimuli: boolean, optional
+        Indicate if stimuli images must be downloaded. They will be presented
+        as a dictionnary of categories.
 
     Returns
     -------
@@ -792,8 +812,6 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
                           data_dir=_get_dataset_dir("haxby2001", data_dir))
     md5sums = _read_md5_sum_file(md5sums)
 
-    'subj%d-2010.01.14.tar.gz'
-
     # definition of dataset files
     sub_files = ['anat.nii.gz', 'bold.nii.gz', 'labels.txt',
                   'mask4_vt.nii.gz', 'mask8b_face_vt.nii.gz',
@@ -814,6 +832,13 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
     files = _fetch_files('haxby2001', files, data_dir=data_dir,
                          resume=resume)
 
+    kwargs = {}
+    if fetch_stimuli:
+        readme = _fetch_files('haxby2001',
+                [(join('stimuli', 'README'), url + 'stimuli-2010.01.14.tar.gz',
+                  {'uncompress': True})], data_dir=data_dir, resume=resume)[0]
+        kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg')
+
     # return the data
     return Bunch(
             anat=files[0::n_files],
@@ -823,7 +848,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, url=None, resume=True, verbose=0):
             mask_face=files[4::n_files],
             mask_house=files[5::n_files],
             mask_face_little=files[6::n_files],
-            mask_house_little=files[7::n_files])
+            mask_house_little=files[7::n_files],
+            **kwargs)
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
