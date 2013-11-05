@@ -1126,8 +1126,20 @@ def load_harvard_oxford(atlas_name,
     filename = os.path.join(dirname, "HarvardOxford-") + atlas_name + ".nii.gz"
     regions_img = nibabel.load(filename)
 
+    # Load atlas name
+    if atlas_name[0] == 'c':
+        name_map = os.path.join(dirname, '..', 'HarvardOxford-Cortical.xml')
+    else:
+        name_map = os.path.join(dirname, '..', 'HarvardOxford-SubCortical.xml')
+    names = {}
+    from lxml import etree
+    names[0] = 'Background'
+    for label in etree.parse(name_map).findall('.//label'):
+        names[int(label.get('index')) + 1] = label.text
+    names = np.asarray(names.values())
+
     if not symmetric_split:
-        return regions_img
+        return regions_img, names
 
     if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm"):
@@ -1155,7 +1167,14 @@ def load_harvard_oxford(atlas_name,
         regions[np.logical_and(regions == label, half)] = new_label
         new_label += 1
 
-    return nibabel.Nifti1Image(regions, regions_img.get_affine())
+    # Duplicate labels for right and left
+    new_names = [names[0]]
+    for n in names[1:]:
+        new_names.append(n + ', right part')
+    for n in names[1:]:
+        new_names.append(n + ', left part')
+
+    return nibabel.Nifti1Image(regions, regions_img.get_affine()), new_names
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
