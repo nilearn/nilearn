@@ -478,10 +478,10 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     Attributes
     ----------
-    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
+    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_datasets)
         empirical covariance matrices.
 
-    `precisions_` : numpy.ndarraye, shape (n_features, n_features, n_subjects)
+    `precisions_` : numpy.ndarray, shape (n_features, n_features, n_datasets)
         precisions matrices estimated using the group-sparse algorithm.
 
     Notes
@@ -686,7 +686,7 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
         mask = alpha_max > alpha
         for k in range(A.shape[-1]):
             A[mask, k] *= alpha / alpha_max[mask]
-            # Set zeros on diagonals. Essential to get a always positive
+            # Set zeros on diagonals. Essential to get an always positive
             # duality gap.
             A[..., k].flat[::A.shape[0] + 1] = 0
 
