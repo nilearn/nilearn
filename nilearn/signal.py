@@ -248,8 +248,8 @@ def high_variance_confounds(series, n_confounds=10, percentile=1.,
 
         percentile: float
             Highest-variance series percentile to keep before computing the
-            singular value decomposition.
-            series.shape[0] * percentile must be greater than n_confounds.
+            singular value decomposition, 0. <= `percentile` <= 100.
+            series.shape[0] * percentile / 100 must be greater than n_confounds.
 
         detrend: bool
             If True, detrend timeseries before processing.
