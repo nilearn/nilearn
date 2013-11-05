@@ -637,6 +637,8 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
+            if not os.path.exists(os.path.join(dir, 'images', 'thumb')):
+                os.makedirs(os.path.join(dir, 'images', 'thumb'))
             generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, fdocstring, _ = extract_docstring(new_fname, True)
