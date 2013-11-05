@@ -4,10 +4,10 @@
 Searchlight : finding voxels containing information
 ===========================================================
 
-.. currentmodule:: nilearn.searchlight
+.. currentmodule:: nilearn.decoding
 
-Searchlight principle
-=====================
+Principle of the Searchlight
+============================
 
 Searchlight was introduced in `Information-based functional brain mapping
 <http://www.pnas.org/content/103/10/3863>`_, Nikolaus Kriegeskorte,
@@ -16,8 +16,8 @@ images volume with a *searchlight*. Briefly, a ball of given radius is
 scanned across the brain volume and the prediction accuracy of a
 classifier trained on the corresponding voxels is measured.
 
-Preprocessing
-=============
+Preparing the data
+====================
 
 Loading
 -------
@@ -29,10 +29,10 @@ from internet and loading it can be done with the provided functions:
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Restrict to faces and houses ##############################################
 
-Preparing data
---------------
+Reshaping the data
+-------------------
 
-For this tutorial we need:
+For this example we need:
 
 - to put X in the form *n_samples* x *n_features*
 - compute a mean image for visualisation background
@@ -69,8 +69,6 @@ taken into account when iterating with the sphere.
 Third Step: Setting up the searchlight
 =======================================
 
-.. currentmodule:: nilearn.decoding
-
 Classifier
 ----------
 
@@ -83,24 +81,20 @@ Score function
 --------------
 
 Here we use precision as metrics to measure the proportion of true
-positives among all positive results for one class. Many others are
-available in
-`scikit-learn documentation
-<http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics>`_.
-
-.. literalinclude:: ../../plot_haxby_searchlight.py
-    :start-after: # all positives results for one class.
-    :end-before: ### Define the cross-validation scheme used for validation.
+positives among all positive results for one class. Others metrics can be
+specified by the "scoring" argument to the :class:`SearchLight`, as
+detailed in the `scikit-learn documentation
+<http://scikit-learn.org/dev/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`_
 
 Cross validation
 ----------------
 
-Searchlight will iterate on the volume and give a score to each voxel. This
+:class:`SearchLight` will iterate on the volume and give a score to each voxel. This
 score is computed by running a classifier on selected voxels. In order to make
 this score as accurate as possible (and avoid overfitting), a cross validation
 is made.
 
-As Searchlight is costly, we have chosen a cross validation
+As :class:`SearchLight` is computationally costly, we have chosen a cross validation
 method that does not take too much time. *K*-Fold along with *K* = 4 is a
 good compromise between running time and quality.
 
@@ -111,7 +105,7 @@ good compromise between running time and quality.
 Running Searchlight
 ===================
 
-Running Searchlight is straightforward now that everything is set. The only
+Running :class:`SearchLight` is straightforward now that everything is set. The only
 parameter left is the radius of the ball that will run through the data.
 Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.

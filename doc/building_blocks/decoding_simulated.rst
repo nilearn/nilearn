@@ -9,6 +9,7 @@
     >>> session = np.ones_like(y)
     >>> n_samples = len(y)
 
+.. _decoding_simulated:
 
 ==========================
 Decoding on simulated data

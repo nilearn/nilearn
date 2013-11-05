@@ -11,7 +11,7 @@ clustering and finding meaningful components (e.g. using ICA).
 
 ____
 
-.. include:: includes/big_toc_css.rst
+.. include:: ../includes/big_toc_css.rst
 
 .. toctree::
 

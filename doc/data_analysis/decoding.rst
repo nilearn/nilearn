@@ -235,11 +235,17 @@ We can add a line to print the results:
         :start-after: ### Print results #############################################################
 
 
-.. topic:: Final script
+.. topic:: **Final script**
 
     The complete script can be found as 
     :ref:`an example <example_tutorial_plot_haxby_decoding.py>`.
     Now, all you have to do is publish the results :)
+
+
+.. seealso::
+
+   * :ref:`searchlight`
+   * :ref:`decoding_simulated`
 
 Going further with scikit-learn
 ===================================
@@ -249,7 +255,7 @@ interesting to explore the `wide variety of supervised learning
 algorithms in the scikit-learn
 <http://scikit-learn.org/stable/supervised_learning.html>`_.
 
-Changing the prediction function
+Changing the prediction engine
 --------------------------------
 
 .. for doctest:
@@ -257,15 +263,15 @@ Changing the prediction function
     >>> feature_selection = SelectKBest(f_classif, k=4)
     >>> clf = LinearSVC()
 
-We now see how one can easily change the prediction function, if needed.
-We can try the `Linear Discriminant Analysis (LDA) 
+We now see how one can easily change the prediction engine, if needed.
+We can try Fisher's `Linear Discriminant Analysis (LDA) 
 <http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
 
 Import the module::
 
     >>> from sklearn.lda import LDA
 
-Construct the new prediction function and use it in a pipeline::
+Construct the new estimator object and use it in a pipeline::
 
     >>> from sklearn.pipeline import Pipeline
     >>> lda = LDA()
