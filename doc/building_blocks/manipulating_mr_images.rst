@@ -47,10 +47,10 @@ downloading the data twice.
 Understanding MRI data 
 =======================
 
-Nifti or analyze files
------------------------
+Nifti and analyze files
+------------------------
 
-.. topic:: NIfTI and Analyse file structures
+.. topic:: **NIfTI and Analyse file structures**
 
     `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are
     the standard way of sharing data in neuroimaging. We may be
@@ -73,7 +73,7 @@ downloaded, a single line is needed to load it.
      :start-after: # Fetch data ################################################################
      :end-before: # Visualization #############################################################
 
-.. topic:: Dataset formatting: data shape
+.. topic:: **Dataset formatting: data shape**
 
     We can find two main representations for MRI scans:
 
@@ -111,6 +111,7 @@ data, which we call Niimgs, or Niimg-4D. Accepted inputs are then:
    If you provide a sequence of Nifti images, all of them must have the same
    affine.
 
+.. _visualizing:
 
 Visualizing brain images
 ========================
@@ -124,8 +125,8 @@ counter-clockwise.
      :start-after: # Visualization #############################################################
      :end-before: # Extracting a brain mask ###################################################
 
-.. figure:: auto_examples/images/plot_visualization_1.png
-    :target: auto_examples/plot_visualization.html
+.. figure:: ../auto_examples/images/plot_visualization_1.png
+    :target: ../auto_examples/plot_visualization.html
     :align: center
     :scale: 60
 
@@ -152,8 +153,8 @@ can be easily extracted from the fMRI data using the
      :start-after: # Extracting a brain mask ###################################################
      :end-before: # Applying the mask #########################################################
 
-.. figure:: auto_examples/images/plot_visualization_2.png
-    :target: auto_examples/plot_visualization.html
+.. figure:: ../auto_examples/images/plot_visualization_2.png
+    :target: ../auto_examples/plot_visualization.html
     :align: center
     :scale: 50%
 
@@ -168,23 +169,17 @@ interested in working only on the time-series of the voxels in the
 brain. It is thus convenient to apply a brain mask and go from a 4D
 array to a 2D array, `voxel` **x** `time`, as depicted below:
 
-.. only:: html
+.. image:: images/masking.jpg
+    :align: center
+    :width: 100%
 
-    .. image:: images/masking.jpg
-        :align: center
-        :width: 100%
-
-.. only:: latex
-
-    .. image:: images/masking.jpg
-        :align: center
 
 .. literalinclude:: ../plot_visualization.py
      :start-after: # Applying the mask #########################################################
 
 
-.. figure:: auto_examples/images/plot_visualization_3.png
-    :target: auto_examples/plot_visualization.html
+.. figure:: ../auto_examples/images/plot_visualization_3.png
+    :target: ../auto_examples/plot_visualization.html
     :align: center
     :scale: 50
 

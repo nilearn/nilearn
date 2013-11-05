@@ -134,6 +134,11 @@ expected result.
     :start-after: ### Visualization #############################################################
     :end-before: ### Show the F_score
 
+
+.. seealso::
+
+   * :ref:`visualizing`
+
 Comparing to standard-analysis: F_score or SPM
 ------------------------------------------------
 

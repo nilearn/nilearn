@@ -38,12 +38,16 @@ clean:
 	-rm -rf modules/generated/*
 
 html:
+	-rm -rf $(BUILDDIR)/html/_images/*.png
+	-rm -rf $(BUILDDIR)/html/auto_examples
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-noplot:
+	-rm -rf $(BUILDDIR)/html/_images/*.png
+	-rm -rf $(BUILDDIR)/html/auto_examples
 	$(SPHINXBUILD) -D plot_gallery=False -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll
 	@echo

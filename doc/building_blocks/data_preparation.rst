@@ -133,12 +133,12 @@ high values by lowering *upper cutoff*. Default value is 0.9, so we try
 0.8 to lower a bit the threshold and get a larger mask.
 
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: # Generate mask with upper cutoff
     :end-before: # trended vs detrended
 
-.. figure:: auto_examples/images/plot_nifti_advanced_3.png
-    :target: auto_examples/plot_nifti_advanced.html
+.. figure:: ../auto_examples/images/plot_nifti_advanced_3.png
+    :target: ../auto_examples/plot_nifti_advanced.html
     :align: center
     :scale: 50%
 
@@ -148,9 +148,9 @@ it is very close.
 .. note::
 
     The full example described in this section can be found here:
-    :doc:`plot_nifti_advanced.py <auto_examples/plot_nifti_advanced>`.
+    :doc:`plot_nifti_advanced.py <../auto_examples/plot_nifti_advanced>`.
     This one can be relevant too:
-    :doc:`plot_nifti_simple.py <auto_examples/plot_nifti_simple>`.
+    :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
 
 Preprocessing
@@ -264,7 +264,7 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
 .. note::
 
    The full example in this section can be found here:
-   :doc:`plot_adhd_covariance.py <auto_examples/plot_adhd_covariance>`
+   :doc:`plot_adhd_covariance.py <../auto_examples/plot_adhd_covariance>`
 
 Usage of :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` is very close,
 and very close to the usage of :class:`NiftiMasker`. Only options specific to

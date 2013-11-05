@@ -150,7 +150,7 @@ sanity check.
     >>> from sklearn.svm import LinearSVC, SVC
     >>> anova_svc = LinearSVC()
 
-Visualising the results
+Visualizing the results
 -------------------------
 
 We can visualize the result of our algorithm:
@@ -168,6 +168,10 @@ We can visualize the result of our algorithm:
 .. literalinclude:: ../../plot_haxby_decoding.py
     :start-after: ### Visualisation #############################################################
     :end-before: ### Cross validation ########################################################## 
+
+.. seealso::
+
+   * :ref:`visualizing`
 
 
 Cross-validation: measuring prediction performance
