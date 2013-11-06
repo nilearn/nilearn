@@ -484,11 +484,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     Attributes
     ----------
-    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_datasets)
+    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariance matrices.
 
-    `precisions_` : numpy.ndarray, shape (n_features, n_features, n_datasets)
-        precisions matrices estimated using the group-sparse algorithm.
+    `precisions_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
+        precision matrices estimated using the group-sparse algorithm.
     """
 
     def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=1,
