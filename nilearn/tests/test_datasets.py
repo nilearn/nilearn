@@ -72,41 +72,6 @@ def test_fetch_haxby_simple():
         assert_true(os.path.exists(os.path.join(datasetdir, file)))
 
 
-def test_fetch_nyu_rest():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
-    datasets._get_dataset = mock_get_dataset
-
-    # First session, all subjects
-    setup_tmpdata()
-    nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
-    assert_equal(len(mock.urls), 2)
-    assert_equal(len(nyu.func), 25)
-    assert_equal(len(nyu.anat_anon), 25)
-    assert_equal(len(nyu.anat_skull), 25)
-    assert_true(np.all(np.asarray(nyu.session) == 1))
-    teardown_tmpdata()
-
-    # All sessions, 12 subjects
-    setup_tmpdata()
-    mock.reset()
-    nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
-                                  n_subjects=12)
-    assert_equal(len(mock.urls), 3)
-    assert_equal(len(nyu.func), 36)
-    assert_equal(len(nyu.anat_anon), 36)
-    assert_equal(len(nyu.anat_skull), 36)
-    s = np.asarray(nyu.session)
-    assert_true(np.all(s[:12] == 1))
-    assert_true(np.all(s[12:24] == 2))
-    assert_true(np.all(s[24:] == 3))
-    teardown_tmpdata()
-    return
-
-
 def test_fetch_haxby():
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
