@@ -70,27 +70,3 @@ def test_fetch_haxby_simple():
             ('conditions_target', 'attributes_literal.txt')]:
         assert_equal(haxby[key], os.path.join(datasetdir, file))
         assert_true(os.path.exists(os.path.join(datasetdir, file)))
-
-
-def test_fetch_haxby():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
-    datasets._get_dataset = mock_get_dataset
-
-    for i in range(1, 6):
-        setup_tmpdata()
-        haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)
-        assert_equal(len(mock.urls), i + 1)  # i subjects + md5
-        assert_equal(len(haxby.func), i)
-        assert_equal(len(haxby.anat), i)
-        assert_equal(len(haxby.session_target), i)
-        assert_equal(len(haxby.mask_vt), i)
-        assert_equal(len(haxby.mask_face), i)
-        assert_equal(len(haxby.mask_house), i)
-        assert_equal(len(haxby.mask_face_little), i)
-        assert_equal(len(haxby.mask_house_little), i)
-        teardown_tmpdata()
-        mock.reset()
