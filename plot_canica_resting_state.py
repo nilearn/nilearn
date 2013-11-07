@@ -35,21 +35,18 @@ from nilearn.image import resample_img
 
 # This is a multi-subject method, thus we need to use the
 # MultiNiftiMasker, rather than the NiftiMasker
-# We specify the target_affine to downsample to 3mm isotropic
-# resolution
 
-target_affine = np.diag((3, 3, 3))
 epi_img = nibabel.load(func_files[0])
 mean_epi = epi_img.get_data().mean(axis=-1)
 mean_epi_img = nibabel.Nifti1Image(mean_epi, epi_img.get_affine())
-mean_epi = resample_img(mean_epi_img, target_affine=target_affine).get_data()
+mean_epi = resample_img(mean_epi_img).get_data()
 
 ### Apply CanICA ##############################################################
 from nilearn.decomposition.canica import CanICA
 
 n_components = 20
 canica = CanICA(n_components=n_components,
-                smoothing_fwhm=6., target_affine=target_affine,
+                smoothing_fwhm=6.,
                 memory="nilearn_cache", memory_level=5,
                 threshold=3., verbose=10)
 canica.fit(func_files)
