@@ -14,7 +14,7 @@ from .._utils import check_niimgs, check_niimg, as_ndarray
 from .. import masking
 
 
-def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
+def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
     """ Return confounds signals extracted from input signals with highest
         variance.
@@ -33,8 +33,8 @@ def high_variance_confounds(niimgs, n_confounds=10, percentile=1.,
 
         percentile: float
             Highest-variance signals percentile to keep before computing the
-            singular value decomposition.
-            mask_img.sum() * percentile must be greater than n_confounds.
+            singular value decomposition, 0. <= `percentile` <= 100.
+            mask_img.sum() * percentile / 100. must be greater than n_confounds.
 
         detrend: bool
             If True, detrend signals before processing.
