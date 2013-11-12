@@ -9,6 +9,7 @@ visualisation tools.
 See http://nilearn.github.com for complete documentation.
 """
 
+__version__ = "0.1a"
 
 def _check_dependencies():
     try:
@@ -29,7 +30,5 @@ def _check_dependencies():
         print ('Scikit-learn could not be found,'
                ' please install it properly to use nilearn.')
 
-__version__ = 0.1
 _check_dependencies()
 
-import input_data
