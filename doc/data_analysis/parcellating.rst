@@ -1,4 +1,4 @@
-.. _nyu_rest:
+.. _parcellating_brain:
 
 ==================================
 Parcellating the brain in regions

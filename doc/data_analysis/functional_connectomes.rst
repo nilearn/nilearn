@@ -1,4 +1,4 @@
-.. _func_connect:
+.. _functional_connectomes:
 
 ================================================================
 Learning functional connectomes

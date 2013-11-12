@@ -9,12 +9,18 @@ Unsupervised learning
 finding structure in a given data. In NeuroImaging two common tasks are
 clustering and finding meaningful components (e.g. using ICA).
 
-____
+The technical documentation on unsupervised-learning with nilearn is not
+written yet. In the mean time, you can have a look at the relevant
+sections in the high-level part of the documentation on neuroimaging
+applications:
 
-.. include:: ../includes/big_toc_css.rst
+* :ref:`parcellating_brain`
 
-.. toctree::
+* :ref:`extracting_rsn`
 
-   ward_clustering.rst
-   ica_resting_state.rst
-   functional_connectivity.rst
+* :ref:`functional_connectomes`
+
+Also, the `scikit-learn unsupervised learning documentation
+<http://scikit-learn.com/stable/unsupervised_learning.html>`_ is a useful
+reference.
+

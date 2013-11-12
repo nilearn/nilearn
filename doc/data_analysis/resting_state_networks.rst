@@ -1,4 +1,4 @@
-.. _ica_rest:
+.. _extracting_rsn:
 
 =========================================
 Extracting resting-state networks
