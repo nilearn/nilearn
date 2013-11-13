@@ -118,34 +118,33 @@ def mock_uncompress_file(file, delete_archive=True):
     return
 
 
-def mock_get_dataset(dataset_name, file_names, data_dir=None, folder=None):
-    """ Mock the original _get_dataset function
+def mock_fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
+                 verbose=0):
+    """Load requested dataset, downloading it if needed or requested.
 
-    For test purposes, this function acts as a two-pass function. During the
-    first run (normally, the fetching function is checking if the dataset
-    already exists), the function will throw an error and create the files
-    to prepare the second pass. After this first call, any other call will
-    succeed as the files have been created.
+    For test purpose, instead of actually fetching the dataset, this function
+    creates empty files and return their paths.
 
-    This behavior is made to force downloading of the dataset.
+    TODO: make mock files for each dataset and use this function to fetch them.
+
     """
-    data_dir = datasets._get_dataset_dir(dataset_name, data_dir=data_dir)
-    if not (folder is None):
-        data_dir = os.path.join(data_dir, folder)
-    file_paths = []
-    error = None
-    for file_name in file_names:
-        full_name = os.path.join(data_dir, file_name)
-        if not os.path.exists(full_name):
-            error = IOError("No such file: '%s'" % full_name)
-            dirname = os.path.dirname(full_name)
-            if not os.path.exists(dirname):
-                os.makedirs(dirname)
-            open(full_name, 'w').close()
-        file_paths.append(full_name)
-    if error is not None:
-        raise error
-    return file_paths
+    # Determine data path
+    data_dir = datasets._get_dataset_dir(dataset_name,
+                                         data_dir=data_dir, folder=folder)
+    urls = set()
+
+    files_ = []
+    for file_, url, opts in files:
+        # Download the file if it exists
+        if not url in urls:
+            datasets._fetch_file(url, data_dir, resume=resume)
+            urls.add(url)
+        abs_file = os.path.join(data_dir, file_)
+        if not os.path.exists(os.path.dirname(abs_file)):
+            os.makedirs(os.path.dirname(abs_file))
+        open(abs_file, 'w').close()
+        files_.append(abs_file)
+    return files_
 
 
 def generate_timeseries(n_instants, n_features,

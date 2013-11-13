@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# *- encoding: utf-8 -*-
 """
 Utilities to download NeuroImaging datasets
 """
@@ -751,8 +751,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
                  conditions_target=files[3])
 
 
-def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False, url=None,
-                resume=True, verbose=0):
+def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
+                check_md5sums=True, url=None, resume=True, verbose=0):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -808,9 +808,10 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False, url=None,
 
     # Dataset files
     url = 'http://data.pymvpa.org/datasets/haxby2001/'
-    md5sums = _fetch_file(url + 'MD5SUMS',
-                          data_dir=_get_dataset_dir("haxby2001", data_dir))
-    md5sums = _read_md5_sum_file(md5sums)
+    if check_md5sums:
+        md5sums = _fetch_files("haxby2001", [('MD5SUMS', url + 'MD5SUMS', {})],
+                               data_dir=data_dir)[0]
+        md5sums = _read_md5_sum_file(md5sums)
 
     # definition of dataset files
     sub_files = ['anat.nii.gz', 'bold.nii.gz', 'labels.txt',
@@ -819,14 +820,23 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False, url=None,
                   'mask8_house_vt.nii.gz']
     n_files = len(sub_files)
 
-    files = [
-            (join('subj%d' % i, sub_file),
-             url + 'subj%d-2010.01.14.tar.gz' % i,
-             {'uncompress': True,
-              'md5sum': md5sums['subj%d-2010.01.14.tar.gz' % i]})
-            for i in range(1, n_subjects + 1)
-            for sub_file in sub_files
-    ]
+    if check_md5sums:
+        files = [
+                (join('subj%d' % i, sub_file),
+                 url + 'subj%d-2010.01.14.tar.gz' % i,
+                 {'uncompress': True,
+                  'md5sum': md5sums['subj%d-2010.01.14.tar.gz' % i]})
+                for i in range(1, n_subjects + 1)
+                for sub_file in sub_files
+        ]
+    else:
+        files = [
+                (join('subj%d' % i, sub_file),
+                 url + 'subj%d-2010.01.14.tar.gz' % i,
+                 {'uncompress': True})
+                for i in range(1, n_subjects + 1)
+                for sub_file in sub_files
+        ]
 
     files = files[:n_files * n_subjects]
     files = _fetch_files('haxby2001', files, data_dir=data_dir,
