@@ -14,7 +14,7 @@ from nose.tools import assert_true, assert_false, assert_equal
 
 from .. import datasets
 from .._utils.testing import mock_urllib2, mock_chunk_read_,\
-    mock_uncompress_file, mock_get_dataset
+    mock_uncompress_file, mock_fetch_files
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -70,3 +70,79 @@ def test_fetch_haxby_simple():
             ('conditions_target', 'attributes_literal.txt')]:
         assert_equal(haxby[key], os.path.join(datasetdir, file))
         assert_true(os.path.exists(os.path.join(datasetdir, file)))
+
+
+def test_fetch_haxby():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._fetch_files = mock_fetch_files
+
+    for i in range(1, 6):
+        setup_tmpdata()
+        haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i,
+                check_md5sums=False)
+        assert_equal(len(mock.urls), i)  # md5 is not fetched
+        assert_equal(len(haxby.func), i)
+        assert_equal(len(haxby.anat), i)
+        assert_equal(len(haxby.session_target), i)
+        assert_equal(len(haxby.mask_vt), i)
+        assert_equal(len(haxby.mask_face), i)
+        assert_equal(len(haxby.mask_house), i)
+        assert_equal(len(haxby.mask_face_little), i)
+        assert_equal(len(haxby.mask_house_little), i)
+        teardown_tmpdata()
+        mock.reset()
+
+
+def test_fetch_nyu_rest():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._fetch_files = mock_fetch_files
+
+    # First session, all subjects
+    setup_tmpdata()
+    nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
+    assert_equal(len(mock.urls), 2)
+    assert_equal(len(nyu.func), 25)
+    assert_equal(len(nyu.anat_anon), 25)
+    assert_equal(len(nyu.anat_skull), 25)
+    assert_true(np.all(np.asarray(nyu.session) == 1))
+    teardown_tmpdata()
+
+    # All sessions, 12 subjects
+    setup_tmpdata()
+    mock.reset()
+    nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
+                                  n_subjects=12)
+    assert_equal(len(mock.urls), 3)
+    assert_equal(len(nyu.func), 36)
+    assert_equal(len(nyu.anat_anon), 36)
+    assert_equal(len(nyu.anat_skull), 36)
+    s = np.asarray(nyu.session)
+    assert_true(np.all(s[:12] == 1))
+    assert_true(np.all(s[12:24] == 2))
+    assert_true(np.all(s[24:] == 3))
+    teardown_tmpdata()
+    return
+
+def test_fetch_adhd():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._fetch_files = mock_fetch_files
+
+    # Disabled: cannot be tested without actually fetching the phenotypic file
+    # setup_tmpdata()
+    # adhd = datasets.fetch_adhd(data_dir=tmpdir, n_subjects=12)
+    # assert_equal(len(adhd.func), 12)
+    # assert_equal(len(adhd.confounds), 12)
+    # assert_equal(len(mock.urls), 1)
+    # teardown_tmpdata()
