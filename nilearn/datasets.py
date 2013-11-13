@@ -375,8 +375,13 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     dataset_name: string
         Unique dataset name
 
-    files: list of (string, string)
-        List of files and their corresponding url
+    files: list of (string, string, dict)
+        List of files and their corresponding url. The dictionary contains
+        options regarding the files. Options supported are 'uncompress' to
+        indicates that the file is an archive, 'md5sum' to check the md5 sum of
+        the file and 'rename' if a renaming of the file is needed (this is
+        sometimes the case when the extension of the file does not match the
+        real filetype).
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
