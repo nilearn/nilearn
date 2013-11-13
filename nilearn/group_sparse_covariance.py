@@ -654,8 +654,9 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
 
     log_lik = 0
     for k in range(n_subjects):
-        log_lik += n_samples[k] * sklearn.covariance.log_likelihood(
-            emp_covs[..., k], precisions[..., k])
+        log_lik_k = - np.sum(emp_covs[...,  k] * precisions[..., k]) 
+        log_lik_k += fast_logdet(precisions[..., k])
+        log_lik += n_samples[k] * log_lik_k
 
     l2 = np.sqrt((precisions ** 2).sum(axis=-1))
     l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
