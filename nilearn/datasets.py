@@ -14,8 +14,8 @@ import sys
 import shutil
 import time
 import hashlib
-import collections
 import fnmatch
+import warnings
 
 import numpy as np
 from scipy import ndimage
@@ -317,13 +317,13 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         # Download data
         print 'Downloading data from %s ...' % url
         if resume and os.path.exists(temp_full_name):
-            urlOpener = ResumeURLOpener()
+            url_opener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            urlOpener.addheader("Range", "bytes=%s-" % (local_file_size))
+            url_opener.addheader("Range", "bytes=%s-" % (local_file_size))
             try:
-                data = urlOpener.open(url)
+                data = url_opener.open(url)
             except urllib2.HTTPError:
                 # There is a problem that may be due to resuming. Switch back
                 # to complete download method
@@ -404,9 +404,7 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
         # Download the file if it exists
         abs_file = os.path.join(data_dir, file_)
         if not os.path.exists(abs_file):
-            md5sum = None
-            if 'md5sum' in opts:
-                md5sum = opts['md5sum']
+            md5sum = opts.get('md5sum', None)
             dl_file = _fetch_file(url, data_dir, resume=resume,
                                   verbose=verbose, md5sum=md5sum)
             if 'move' in opts:
@@ -419,56 +417,6 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
             raise IOError('An error occured while fetching %s' % file_)
         files_.append(abs_file)
     return files_
-
-
-def _filter_column(array, col, criteria):
-    """ Return index array matching criteria
-
-    Parameters
-    ----------
-
-    array: numpy array with columns
-        Array in which data will be filtered
-
-    col: string
-        Name of the column
-
-    criteria: integer (or float), pair of integers, string or list of these
-        if integer, select elements in column matching integer
-        if a tuple, select elements between the limits given by the tuple
-        if a string, select elements that match the string
-    """
-    # Raise an error if the column does not exist
-    array[col]
-
-    if not isinstance(criteria, basestring) and \
-            not isinstance(criteria, tuple) and \
-            isinstance(criteria, collections.Iterable):
-        filter_ = np.zeros(array.shape, dtype=np.bool)
-        for criterion in criteria:
-            filter = np.logical_or(filter_,
-                        _filter_column(array, col, criterion))
-        return filter
-
-    if isinstance(criteria, tuple):
-        if len(criteria) != 2:
-            raise ValueError("An interval must have 2 values")
-        if criteria[0] is None:
-            return array[col] <= criteria[1]
-        if criteria[1] is None:
-            return array[col] >= criteria[0]
-        filter_ = array[col] <= criteria[1]
-        return np.logical_and(filter_, array[col] >= criteria[0])
-
-    return array[col] == criteria
-
-
-def _filter_columns(array, filters):
-    filter_ = np.ones(array.shape, dtype=np.bool)
-    for column in filters:
-        filter_ = np.logical_and(filter_,
-                _filter_column(array, column, filters[column]))
-    return filter
 
 
 def _tree(path, pattern=None):
@@ -808,7 +756,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     """
 
     if n_subjects > 6:
-        sys.stderr.write('Warning: there are only 6 subjects')
+        warnings.warn('Warning: there are only 6 subjects')
         n_subjects = 6
 
     # Dataset files
@@ -825,23 +773,14 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                   'mask8_house_vt.nii.gz']
     n_files = len(sub_files)
 
-    if check_md5sums:
-        files = [
-                (os.path.join('subj%d' % i, sub_file),
-                 url + 'subj%d-2010.01.14.tar.gz' % i,
-                 {'uncompress': True,
-                  'md5sum': md5sums['subj%d-2010.01.14.tar.gz' % i]})
-                for i in range(1, n_subjects + 1)
-                for sub_file in sub_files
-        ]
-    else:
-        files = [
-                (os.path.join('subj%d' % i, sub_file),
-                 url + 'subj%d-2010.01.14.tar.gz' % i,
-                 {'uncompress': True})
-                for i in range(1, n_subjects + 1)
-                for sub_file in sub_files
-        ]
+    files = [
+            (os.path.join('subj%d' % i, sub_file),
+             url + 'subj%d-2010.01.14.tar.gz' % i,
+             {'uncompress': True,
+              'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
+            for i in range(1, n_subjects + 1)
+            for sub_file in sub_files
+    ]
 
     files = files[:n_files * n_subjects]
     files = _fetch_files('haxby2001', files, data_dir=data_dir,
@@ -1026,7 +965,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     if n_subjects is None:
         n_subjects = len(subs_a) + len(subs_b)
     if n_subjects > max_subjects:
-        sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = 25
 
     anat_anon = []
@@ -1127,7 +1066,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
-        sys.stderr.write('Warning: there is only %d subjects' % max_subjects)
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
     subs = subs[:n_subjects]
