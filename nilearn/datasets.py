@@ -6,7 +6,6 @@ Utilities to download NeuroImaging datasets
 # License: simplified BSD
 
 import os
-from os.path import exists, join
 import urllib
 import urllib2
 import tarfile
@@ -198,7 +197,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
     data_dir = os.path.join(data_dir, dataset_name)
     if folder is not None:
         data_dir = os.path.join(data_dir, folder)
-    if not exists(data_dir) and create_dir:
+    if not os.path.exists(data_dir) and create_dir:
         os.makedirs(data_dir)
     return data_dir
 
@@ -294,7 +293,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     removed.
     """
     # Determine data path
-    if not exists(data_dir):
+    if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     file_name = os.path.basename(url)
@@ -303,12 +302,12 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
-    if exists(full_name):
+    if os.path.exists(full_name):
         if overwrite:
             os.remove(full_name)
         else:
             return full_name
-    if exists(temp_full_name):
+    if os.path.exists(temp_full_name):
         if overwrite:
             os.remove(temp_full_name)
     t0 = time.time()
@@ -317,7 +316,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     try:
         # Download data
         print 'Downloading data from %s ...' % url
-        if resume and exists(temp_full_name):
+        if resume and os.path.exists(temp_full_name):
             urlOpener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
@@ -379,9 +378,8 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
         List of files and their corresponding url. The dictionary contains
         options regarding the files. Options supported are 'uncompress' to
         indicates that the file is an archive, 'md5sum' to check the md5 sum of
-        the file and 'rename' if a renaming of the file is needed (this is
-        sometimes the case when the extension of the file does not match the
-        real filetype).
+        the file and 'move' if renaming the file or moving it to a subfolder is
+        needed.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
@@ -405,19 +403,19 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     for file_, url, opts in files:
         # Download the file if it exists
         abs_file = os.path.join(data_dir, file_)
-        if not exists(abs_file):
+        if not os.path.exists(abs_file):
             md5sum = None
             if 'md5sum' in opts:
                 md5sum = opts['md5sum']
             dl_file = _fetch_file(url, data_dir, resume=resume,
                                   verbose=verbose, md5sum=md5sum)
             if 'move' in opts:
-                shutil.move(join(data_dir, dl_file),
-                            join(data_dir, opts['move']))
-                dl_file = join(data_dir, opts['move'])
+                shutil.move(os.path.join(data_dir, dl_file),
+                            os.path.join(data_dir, opts['move']))
+                dl_file = os.path.join(data_dir, opts['move'])
             if 'uncompress' in opts:
                 _uncompress_file(dl_file)
-        if not exists(abs_file):
+        if not os.path.exists(abs_file):
             raise IOError('An error occured while fetching %s' % file_)
         files_.append(abs_file)
     return files_
@@ -478,7 +476,7 @@ def _tree(path, pattern=None):
     """
     files = []
     for file_ in os.listdir(path):
-        file_path = join(path, file_)
+        file_path = os.path.join(path, file_)
         if os.path.isdir(file_path):
             files.append({file_: _tree(file_path, pattern)})
         else:
@@ -608,7 +606,8 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     keys = ("tight_7", "liberal_7",
             "tight_17", "liberal_17",
             "colors_7", "colors_17", "anat")
-    filenames = [(join("Yeo_JNeurophysiol11_MNI152", f), url, opts) for f in (
+    filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
+        for f in (
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
         "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
@@ -676,7 +675,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
     keys = ("csf", "gm", "wm",
             "pd", "t1", "t2", "t2_relax",
             "eye_mask", "face_mask", "mask")
-    filenames = [(join("mni_icbm152_nlin_sym_09a", name), url, opts)
+    filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
                  for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
                               "mni_icbm152_gm_tal_nlin_sym_09a.nii",
                               "mni_icbm152_wm_tal_nlin_sym_09a.nii",
@@ -742,10 +741,11 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
 
     opts = {'uncompress': True}
     files = [
-            (join('pymvpa-exampledata', 'attributes.txt'), url, opts),
-            (join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
-            (join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
-            (join('pymvpa-exampledata', 'attributes_literal.txt'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
+             url, opts),
     ]
 
     files = _fetch_files('haxby2001_simple', files, data_dir=data_dir,
@@ -827,7 +827,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
     if check_md5sums:
         files = [
-                (join('subj%d' % i, sub_file),
+                (os.path.join('subj%d' % i, sub_file),
                  url + 'subj%d-2010.01.14.tar.gz' % i,
                  {'uncompress': True,
                   'md5sum': md5sums['subj%d-2010.01.14.tar.gz' % i]})
@@ -836,7 +836,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         ]
     else:
         files = [
-                (join('subj%d' % i, sub_file),
+                (os.path.join('subj%d' % i, sub_file),
                  url + 'subj%d-2010.01.14.tar.gz' % i,
                  {'uncompress': True})
                 for i in range(1, n_subjects + 1)
@@ -850,8 +850,9 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     kwargs = {}
     if fetch_stimuli:
         readme = _fetch_files('haxby2001',
-                [(join('stimuli', 'README'), url + 'stimuli-2010.01.14.tar.gz',
-                  {'uncompress': True})], data_dir=data_dir, resume=resume)[0]
+                [(os.path.join('stimuli', 'README'),
+                  url + 'stimuli-2010.01.14.tar.gz', {'uncompress': True})],
+                data_dir=data_dir, resume=resume)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg')
 
     # return the data
@@ -954,21 +955,21 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     fa3 = 'http://www.nitrc.org/frs/download.php/1075/NYU_TRT_session3a.tar.gz'
     fb3 = 'http://www.nitrc.org/frs/download.php/1076/NYU_TRT_session3b.tar.gz'
     fa1_opts = {'uncompress': True,
-                'move': join('session1', 'NYU_TRT_session1a.tar.gz')}
+                'move': os.path.join('session1', 'NYU_TRT_session1a.tar.gz')}
     fb1_opts = {'uncompress': True,
-                'move': join('session1', 'NYU_TRT_session1b.tar.gz')}
+                'move': os.path.join('session1', 'NYU_TRT_session1b.tar.gz')}
     fa2_opts = {'uncompress': True,
-                'move': join('session2', 'NYU_TRT_session2a.tar.gz')}
+                'move': os.path.join('session2', 'NYU_TRT_session2a.tar.gz')}
     fb2_opts = {'uncompress': True,
-                'move': join('session2', 'NYU_TRT_session2b.tar.gz')}
+                'move': os.path.join('session2', 'NYU_TRT_session2b.tar.gz')}
     fa3_opts = {'uncompress': True,
-                'move': join('session3', 'NYU_TRT_session3a.tar.gz')}
+                'move': os.path.join('session3', 'NYU_TRT_session3a.tar.gz')}
     fb3_opts = {'uncompress': True,
-                'move': join('session3', 'NYU_TRT_session3b.tar.gz')}
+                'move': os.path.join('session3', 'NYU_TRT_session3b.tar.gz')}
 
-    p_anon = join('anat', 'mprage_anonymized.nii.gz')
-    p_skull = join('anat', 'mprage_skullstripped.nii.gz')
-    p_func = join('func', 'lfo.nii.gz')
+    p_anon = os.path.join('anat', 'mprage_anonymized.nii.gz')
+    p_skull = os.path.join('anat', 'mprage_skullstripped.nii.gz')
+    p_func = os.path.join('func', 'lfo.nii.gz')
 
     subs_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
               'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
@@ -979,28 +980,46 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
 
     # Generate the list of files by session
     anat_anon_files = [
-        [(join('session1', sub, p_anon), fa1, fa1_opts) for sub in subs_a]
-        + [(join('session1', sub, p_anon), fb1, fb1_opts) for sub in subs_b],
-        [(join('session2', sub, p_anon), fa2, fa2_opts) for sub in subs_a]
-        + [(join('session2', sub, p_anon), fb2, fb2_opts) for sub in subs_b],
-        [(join('session3', sub, p_anon), fa3, fa3_opts) for sub in subs_a]
-        + [(join('session3', sub, p_anon), fb3, fb3_opts) for sub in subs_b]]
+        [(os.path.join('session1', sub, p_anon), fa1, fa1_opts)
+            for sub in subs_a]
+        + [(os.path.join('session1', sub, p_anon), fb1, fb1_opts)
+            for sub in subs_b],
+        [(os.path.join('session2', sub, p_anon), fa2, fa2_opts)
+            for sub in subs_a]
+        + [(os.path.join('session2', sub, p_anon), fb2, fb2_opts)
+            for sub in subs_b],
+        [(os.path.join('session3', sub, p_anon), fa3, fa3_opts)
+            for sub in subs_a]
+        + [(os.path.join('session3', sub, p_anon), fb3, fb3_opts)
+            for sub in subs_b]]
 
     anat_skull_files = [
-        [(join('session1', sub, p_skull), fa1, fa1_opts) for sub in subs_a]
-        + [(join('session1', sub, p_skull), fb1, fb1_opts) for sub in subs_b],
-        [(join('session2', sub, p_skull), fa2, fa2_opts) for sub in subs_a]
-        + [(join('session2', sub, p_skull), fb2, fb2_opts) for sub in subs_b],
-        [(join('session3', sub, p_skull), fa3, fa3_opts) for sub in subs_a]
-        + [(join('session3', sub, p_skull), fb3, fb3_opts) for sub in subs_b]]
+        [(os.path.join('session1', sub, p_skull), fa1, fa1_opts)
+            for sub in subs_a]
+        + [(os.path.join('session1', sub, p_skull), fb1, fb1_opts)
+            for sub in subs_b],
+        [(os.path.join('session2', sub, p_skull), fa2, fa2_opts)
+            for sub in subs_a]
+        + [(os.path.join('session2', sub, p_skull), fb2, fb2_opts)
+            for sub in subs_b],
+        [(os.path.join('session3', sub, p_skull), fa3, fa3_opts)
+            for sub in subs_a]
+        + [(os.path.join('session3', sub, p_skull), fb3, fb3_opts)
+            for sub in subs_b]]
 
     func_files = [
-        [(join('session1', sub, p_func), fa1, fa1_opts) for sub in subs_a]
-        + [(join('session1', sub, p_func), fb1, fb1_opts) for sub in subs_b],
-        [(join('session2', sub, p_func), fa2, fa2_opts) for sub in subs_a]
-        + [(join('session2', sub, p_func), fb2, fb2_opts) for sub in subs_b],
-        [(join('session3', sub, p_func), fa3, fa3_opts) for sub in subs_a]
-        + [(join('session3', sub, p_func), fb3, fb3_opts) for sub in subs_b]]
+        [(os.path.join('session1', sub, p_func), fa1, fa1_opts)
+            for sub in subs_a]
+        + [(os.path.join('session1', sub, p_func), fb1, fb1_opts)
+            for sub in subs_b],
+        [(os.path.join('session2', sub, p_func), fa2, fa2_opts)
+            for sub in subs_a]
+        + [(os.path.join('session2', sub, p_func), fb2, fb2_opts)
+            for sub in subs_b],
+        [(os.path.join('session3', sub, p_func), fa3, fa3_opts)
+            for sub in subs_a]
+        + [(os.path.join('session3', sub, p_func), fb3, fb3_opts)
+            for sub in subs_b]]
 
     max_subjects = len(subs_a) + len(subs_b)
     # Check arguments
@@ -1089,16 +1108,16 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subs = sub1 + sub2 + sub3 + sub4
 
     subjects_funcs = \
-        [(join('data', i, fname % i), f1, f1_opts) for i in sub1] + \
-        [(join('data', i, fname % i), f2, f2_opts) for i in sub2] + \
-        [(join('data', i, fname % i), f3, f3_opts) for i in sub3] + \
-        [(join('data', i, fname % i), f4, f4_opts) for i in sub4]
+        [(os.path.join('data', i, fname % i), f1, f1_opts) for i in sub1] + \
+        [(os.path.join('data', i, fname % i), f2, f2_opts) for i in sub2] + \
+        [(os.path.join('data', i, fname % i), f3, f3_opts) for i in sub3] + \
+        [(os.path.join('data', i, fname % i), f4, f4_opts) for i in sub4]
 
     subjects_confounds = \
-        [(join('data', i, rname % i), f1, f1_opts) for i in sub1] + \
-        [(join('data', i, rname % i), f2, f2_opts) for i in sub2] + \
-        [(join('data', i, rname % i), f3, f3_opts) for i in sub3] + \
-        [(join('data', i, rname % i), f4, f4_opts) for i in sub4]
+        [(os.path.join('data', i, rname % i), f1, f1_opts) for i in sub1] + \
+        [(os.path.join('data', i, rname % i), f2, f2_opts) for i in sub2] + \
+        [(os.path.join('data', i, rname % i), f3, f3_opts) for i in sub3] + \
+        [(os.path.join('data', i, rname % i), f4, f4_opts) for i in sub4]
 
     phenotypic = [('ADHD200_40subs_motion_parameters_and_phenotypics.csv', f1,
         f1_opts)]
@@ -1176,8 +1195,8 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
     opts = {'uncompress': True}
 
     dataset_name = "msdl_atlas"
-    files = [(join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
-             (join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
+    files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
+             (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
     files = _fetch_files(dataset_name, files, data_dir=data_dir,
                          resume=resume)
@@ -1328,21 +1347,22 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
     #   * 20 random scans (usually used for training)
     #   * 12 figure scans (usually used for testing)
 
-    func_figure = [(join('func', 'data_figure_run%02d.nii.gz' % i), url, opts)
-                   for i in range(1, 13)]
+    func_figure = [(os.path.join('func', 'data_figure_run%02d.nii.gz' % i),
+                    url, opts) for i in range(1, 13)]
 
-    func_random = [(join('func', 'data_random_run%02d.nii.gz' % i), url, opts)
-                   for i in range(1, 21)]
+    func_random = [(os.path.join('func', 'data_random_run%02d.nii.gz' % i),
+                    url, opts) for i in range(1, 21)]
 
     # Labels, 10x10 patches, stimuli shown to the subject:
     #   * 20 random labels
     #   * 12 figure labels (letters and shapes)
 
-    label_figure = [(join('label', 'data_figure_run%02d_label.csv' % i), url,
-                     opts) for i in range(1, 13)]
+    label_filename = 'data_%s_run%02d_label.csv'
+    label_figure = [(os.path.join('label', label_filename % ('figure', i)),
+                     url, opts) for i in range(1, 13)]
 
-    label_random = [(join('label', 'data_random_run%02d_label.csv' % i), url,
-                     opts) for i in range(1, 21)]
+    label_random = [(os.path.join('label', label_filename % ('random', i)),
+                     url, opts) for i in range(1, 21)]
 
     # Masks
 
@@ -1388,7 +1408,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
         'RHVP.nii.gz'
     ]
 
-    file_mask = [(join('mask', m), url, opts) for m in file_mask]
+    file_mask = [(os.path.join('mask', m), url, opts) for m in file_mask]
 
     file_names = func_figure + func_random + \
                  label_figure + label_random + \
