@@ -430,7 +430,7 @@ def _tree(path, pattern=None):
         else:
             if pattern is None or fnmatch.fnmatch(file_, pattern):
                 files.append(file_)
-    return files
+    return np.sort(files)
 
 
 ###############################################################################
@@ -705,7 +705,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
 
 
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
-                check_md5sums=True, url=None, resume=True, verbose=0):
+                url=None, resume=True, verbose=0):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -761,10 +761,9 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
     # Dataset files
     url = 'http://data.pymvpa.org/datasets/haxby2001/'
-    if check_md5sums:
-        md5sums = _fetch_files("haxby2001", [('MD5SUMS', url + 'MD5SUMS', {})],
-                               data_dir=data_dir)[0]
-        md5sums = _read_md5_sum_file(md5sums)
+    md5sums = _fetch_files("haxby2001", [('MD5SUMS', url + 'MD5SUMS', {})],
+                           data_dir=data_dir)[0]
+    md5sums = _read_md5_sum_file(md5sums)
 
     # definition of dataset files
     sub_files = ['anat.nii.gz', 'bold.nii.gz', 'labels.txt',
