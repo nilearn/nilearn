@@ -30,5 +30,21 @@ def _check_dependencies():
         print ('Scikit-learn could not be found,'
                ' please install it properly to use nilearn.')
 
+    try:
+        import nibabel
+    except ImportError:
+        print ('nibabel could not be found,'
+               ' please install it properly to use nilearn.')
+    try:
+        import gzip
+        if hasattr(gzip.GzipFile, 'max_read_chunk'):
+            # Monkey-patch gzip to have faster reads on large
+            # gzip files
+            gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024 # 100Mb
+    except ImportError:
+        print ('Python has been compiled without gzip,'
+               ' reading nii.gz files will be impossible.')
+
+
 _check_dependencies()
 
