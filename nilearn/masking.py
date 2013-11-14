@@ -421,7 +421,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
-    if hasattr(niimgs_img, 'data_cache') and niimgs_img._data_cache is None:
+    if hasattr(niimgs_img, '_data_cache') and niimgs_img._data_cache is None:
         # Copy localy the niimgs_img to avoid the side effect of data
         # loading
         niimgs_img = copy.deepcopy(niimgs_img)
