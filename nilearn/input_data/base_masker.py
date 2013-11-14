@@ -53,12 +53,12 @@ def filter_and_mask(niimgs, mask_img_,
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
 
-    niimgs = cache(image.resample_img, memory, ref_memory_level,
-                   memory_level=2, ignore=['copy'])(
-                       niimgs,
-                       target_affine=mask_img_.get_affine(),
-                       target_shape=mask_img_.shape,
-                       copy=copy)
+        niimgs = cache(image.resample_img, memory, ref_memory_level,
+                    memory_level=2, ignore=['copy'])(
+                        niimgs,
+                        target_affine=mask_img_.get_affine(),
+                        target_shape=mask_img_.shape,
+                        copy=copy)
 
     # Load data (if filenames are given, load them)
     if verbose > 0:
