@@ -3,6 +3,8 @@ Utilities to compute a brain mask from EPI images
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
+import copy
+
 import numpy as np
 from scipy import ndimage
 from nibabel import Nifti1Image
@@ -419,10 +421,13 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
-    data = niimgs_img.get_data()
-    series = _utils.as_ndarray(data, dtype=dtype, order="C",
-                                          copy=True)
-    del data, niimgs_img  # frees a lot of memory
+    if niimgs_img._data_cache is None:
+        # Copy localy the niimgs_img to avoid the side effect of data
+        # loading
+        niimgs_img = copy.deepcopy(niimgs_img)
+    series = _utils.as_ndarray(niimgs_img.get_data(), dtype=dtype, order="C",
+                               copy=True)
+    del niimgs_img  # frees a lot of memory
 
     _smooth_array(series, affine, fwhm=smoothing_fwhm,
                   ensure_finite=ensure_finite, copy=False)
