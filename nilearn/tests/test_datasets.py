@@ -207,3 +207,37 @@ def test_fetch_adhd():
     # assert_equal(len(adhd.confounds), 12)
     # assert_equal(len(mock.urls), 1)
     # teardown_tmpdata()
+
+
+def test_miyawaki2008():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._fetch_files = mock_fetch_files
+
+    setup_tmpdata()
+    dataset = datasets.fetch_miyawaki2008(data_dir=tmpdir)
+    assert_equal(len(dataset.func), 32)
+    assert_equal(len(dataset.label), 32)
+    assert_true(isinstance(dataset.mask, basestring))
+    assert_equal(len(dataset.mask_roi), 38)
+    assert_equal(len(mock.urls), 1)
+    teardown_tmpdata()
+
+
+def test_fetch_msdl_atlas():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._fetch_files = mock_fetch_files
+
+    setup_tmpdata()
+    dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir)
+    assert_true(isinstance(dataset.labels, basestring))
+    assert_true(isinstance(dataset.maps, basestring))
+    assert_equal(len(mock.urls), 1)
+    teardown_tmpdata()
