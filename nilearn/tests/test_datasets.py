@@ -241,3 +241,48 @@ def test_fetch_msdl_atlas():
     assert_true(isinstance(dataset.maps, basestring))
     assert_equal(len(mock.urls), 1)
     teardown_tmpdata()
+
+
+def test_fetch_icbm152_2009():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._fetch_files = mock_fetch_files
+
+    setup_tmpdata()
+    dataset = datasets.fetch_icbm152_2009(data_dir=tmpdir)
+    assert_true(isinstance(dataset.csf, basestring))
+    assert_true(isinstance(dataset.eye_mask, basestring))
+    assert_true(isinstance(dataset.face_mask, basestring))
+    assert_true(isinstance(dataset.gm, basestring))
+    assert_true(isinstance(dataset.mask, basestring))
+    assert_true(isinstance(dataset.pd, basestring))
+    assert_true(isinstance(dataset.t1, basestring))
+    assert_true(isinstance(dataset.t2, basestring))
+    assert_true(isinstance(dataset.t2_relax, basestring))
+    assert_true(isinstance(dataset.wm, basestring))
+    assert_equal(len(mock.urls), 1)
+    teardown_tmpdata()
+
+
+def test_fetch_yeo_2011_atlas():
+    # Mock urllib2 of the dataset fetcher
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = mock_chunk_read_
+    datasets._uncompress_file = mock_uncompress_file
+    datasets._fetch_files = mock_fetch_files
+
+    setup_tmpdata()
+    dataset = datasets.fetch_yeo_2011_atlas(data_dir=tmpdir)
+    assert_true(isinstance(dataset.anat, basestring))
+    assert_true(isinstance(dataset.colors_17, basestring))
+    assert_true(isinstance(dataset.colors_7, basestring))
+    assert_true(isinstance(dataset.liberal_17, basestring))
+    assert_true(isinstance(dataset.liberal_7, basestring))
+    assert_true(isinstance(dataset.tight_17, basestring))
+    assert_true(isinstance(dataset.tight_7, basestring))
+    assert_equal(len(mock.urls), 1)
+    teardown_tmpdata()
