@@ -1022,10 +1022,13 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
             ADHD200_40sub_preprocessed.tgz
 
     """
-    f1 = 'http://connectir.projects.nitrc.org/adhd40_p1.tar.gz'
-    f2 = 'http://connectir.projects.nitrc.org/adhd40_p2.tar.gz'
-    f3 = 'http://connectir.projects.nitrc.org/adhd40_p3.tar.gz'
-    f4 = 'http://connectir.projects.nitrc.org/adhd40_p4.tar.gz'
+
+    if url is None:
+        url = 'http://connectir.projects.nitrc.org'
+    f1 = url + '/adhd40_p1.tar.gz'
+    f2 = url + '/adhd40_p2.tar.gz'
+    f3 = url + '/adhd40_p3.tar.gz'
+    f4 = url + '/adhd40_p4.tar.gz'
     f1_opts = {'uncompress': True}
     f2_opts = {'uncompress': True}
     f3_opts = {'uncompress': True}

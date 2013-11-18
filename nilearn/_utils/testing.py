@@ -84,7 +84,7 @@ class mock_urllib2(object):
     def __init__(self):
         """Object that mocks the urllib2 module to store downloaded filenames.
 
-        `downloaded_files` is the list of the files whose download has been
+        `urls` is the list of the files whose download has been
         requested.
         """
         self.urls = []
@@ -97,15 +97,27 @@ class mock_urllib2(object):
 
     def urlopen(self, url):
         self.urls.append(url)
+        # If the file is local, we try to open it
+        if url.startswith('file://'):
+            try:
+                return urllib2.urlopen(url)
+            except:
+                pass
         return url
 
     def reset(self):
         self.urls = []
 
 
-def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
-                     report_hook=None, verbose=0):
-    return
+def wrap_chunk_read_(_chunk_read_):
+    def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
+                         report_hook=None, verbose=0):
+        if not isinstance(response, basestring):
+            return _chunk_read_(response, local_file,
+                    initial_size=initial_size, chunk_size=chunk_size,
+                    report_hook=report_hook, verbose=verbose)
+        return response
+    return mock_chunk_read_
 
 
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
@@ -114,12 +126,8 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
     raise urllib2.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
-def mock_uncompress_file(file, delete_archive=True):
-    return
-
-
-def mock_fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
-                 verbose=0):
+def mock_fetch_files(dataset_name, files, data_dir=None, resume=True,
+                     folder=None, verbose=0):
     """Load requested dataset, downloading it if needed or requested.
 
     For test purpose, instead of actually fetching the dataset, this function
@@ -132,17 +140,21 @@ def mock_fetch_files(dataset_name, files, data_dir=None, resume=True, folder=Non
     data_dir = datasets._get_dataset_dir(dataset_name,
                                          data_dir=data_dir, folder=folder)
     urls = set()
-
     files_ = []
     for file_, url, opts in files:
         # Download the file if it exists
         if not url in urls:
-            datasets._fetch_file(url, data_dir, resume=resume)
             urls.add(url)
+            dl_file = datasets._fetch_file(url, data_dir, resume=resume)
+            if os.path.getsize(dl_file) != 0 and 'uncompress' in opts:
+                datasets._uncompress_file(dl_file)
+            else:
+                os.remove(dl_file)
         abs_file = os.path.join(data_dir, file_)
         if not os.path.exists(os.path.dirname(abs_file)):
             os.makedirs(os.path.dirname(abs_file))
-        open(abs_file, 'w').close()
+        if not os.path.exists(abs_file):
+            open(abs_file, 'w').close()
         files_.append(abs_file)
     return files_
 
@@ -461,7 +473,7 @@ def generate_group_sparse_gaussian_graphs(
     topology[:, :] = np.triu((
         random_state.randint(0, high=int(1. / density),
                          size=n_features * n_features)
-        ).reshape(n_features, n_features) == 0, k=1)
+    ).reshape(n_features, n_features) == 0, k=1)
 
     # Generate edges weights on topology
     precisions = []
