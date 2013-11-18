@@ -87,7 +87,7 @@ class mock_urllib2(object):
         `urls` is the list of the files whose download has been
         requested.
         """
-        self.urls = []
+        self.urls = set()
 
     class HTTPError(urllib2.URLError):
         code = 404
@@ -96,7 +96,7 @@ class mock_urllib2(object):
         pass
 
     def urlopen(self, url):
-        self.urls.append(url)
+        self.urls.add(url)
         # If the file is local, we try to open it
         if url.startswith('file://'):
             try:
@@ -106,7 +106,7 @@ class mock_urllib2(object):
         return url
 
     def reset(self):
-        self.urls = []
+        self.urls = set()
 
 
 def wrap_chunk_read_(_chunk_read_):

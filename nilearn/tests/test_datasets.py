@@ -19,16 +19,23 @@ from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 tmpdir = None
+mock = None
 
 
 def setup_tmpdata():
     # create temporary dir
     global tmpdir
     tmpdir = mkdtemp()
+    global mock
+    mock = mock_urllib2()
+    datasets.urllib2 = mock
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
+    datasets._fetch_files = mock_fetch_files
 
 
 def teardown_tmpdata():
     # remove temporary dir
+    global tmpdir
     if tmpdir is not None:
         shutil.rmtree(tmpdir)
 
@@ -109,13 +116,8 @@ def test_fetch_haxby_simple():
 # Smoke tests for the rest of the fetchers
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_craddock_2011_atlas():
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    # datasets._chunk_read_ = mock_chunk_read_
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
     bunch = datasets.fetch_craddock_2011_atlas(data_dir=tmpdir)
 
     keys = ("scorr_mean", "tcorr_mean",
@@ -131,21 +133,13 @@ def test_fetch_craddock_2011_atlas():
     assert_equal(len(mock.urls), 1)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
-    teardown_tmpdata()
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    # datasets._chunk_read_ = mock_chunk_read_
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
     for i in range(1, 6):
-        setup_tmpdata()
         haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)
-        assert_equal(len(mock.urls), i + 1)  # n_subjects + md5 file
+        assert_equal(len(mock.urls), i + (i == 1))  # n_subjects + md5 file
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
         assert_equal(len(haxby.session_target), i)
@@ -154,34 +148,24 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house), i)
         assert_equal(len(haxby.mask_face_little), i)
         assert_equal(len(haxby.mask_house_little), i)
-        teardown_tmpdata()
         mock.reset()
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_nyu_rest():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    # datasets._chunk_read_ = mock_chunk_read_
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
     # First session, all subjects
-    setup_tmpdata()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
-    assert_equal(len(mock.urls), 6)
+    assert_equal(len(mock.urls), 2)
     assert_equal(len(nyu.func), 25)
     assert_equal(len(nyu.anat_anon), 25)
     assert_equal(len(nyu.anat_skull), 25)
     assert_true(np.all(np.asarray(nyu.session) == 1))
-    teardown_tmpdata()
 
     # All sessions, 12 subjects
-    setup_tmpdata()
     mock.reset()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
                                   n_subjects=12)
-    assert_equal(len(mock.urls), 9)
+    assert_equal(len(mock.urls), 3)
     assert_equal(len(nyu.func), 36)
     assert_equal(len(nyu.anat_anon), 36)
     assert_equal(len(nyu.anat_skull), 36)
@@ -189,70 +173,38 @@ def test_fetch_nyu_rest():
     assert_true(np.all(s[:12] == 1))
     assert_true(np.all(s[12:24] == 2))
     assert_true(np.all(s[24:] == 3))
-    teardown_tmpdata()
-    return
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_adhd():
     local_url = "file://" + datadir
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
     # Disabled: cannot be tested without actually fetching the phenotypic file
-    setup_tmpdata()
     adhd = datasets.fetch_adhd(data_dir=tmpdir, url=local_url, n_subjects=12)
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
-    assert_equal(len(mock.urls), 5)
-    teardown_tmpdata()
+    assert_equal(len(mock.urls), 2)
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_miyawaki2008():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    # datasets._chunk_read_ = mock_chunk_read_
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
-    setup_tmpdata()
     dataset = datasets.fetch_miyawaki2008(data_dir=tmpdir)
     assert_equal(len(dataset.func), 32)
     assert_equal(len(dataset.label), 32)
     assert_true(isinstance(dataset.mask, basestring))
     assert_equal(len(dataset.mask_roi), 38)
     assert_equal(len(mock.urls), 1)
-    teardown_tmpdata()
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_msdl_atlas():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    # datasets._chunk_read_ = mock_chunk_read_
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
-    setup_tmpdata()
     dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir)
     assert_true(isinstance(dataset.labels, basestring))
     assert_true(isinstance(dataset.maps, basestring))
     assert_equal(len(mock.urls), 1)
-    teardown_tmpdata()
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_icbm152_2009():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    # datasets._chunk_read_ = mock_chunk_read_
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
-    setup_tmpdata()
     dataset = datasets.fetch_icbm152_2009(data_dir=tmpdir)
     assert_true(isinstance(dataset.csf, basestring))
     assert_true(isinstance(dataset.eye_mask, basestring))
@@ -265,18 +217,10 @@ def test_fetch_icbm152_2009():
     assert_true(isinstance(dataset.t2_relax, basestring))
     assert_true(isinstance(dataset.wm, basestring))
     assert_equal(len(mock.urls), 1)
-    teardown_tmpdata()
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_yeo_2011_atlas():
-    # Mock urllib2 of the dataset fetcher
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
-    # datasets._chunk_read_ = mock_chunk_read_
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
-
-    setup_tmpdata()
     dataset = datasets.fetch_yeo_2011_atlas(data_dir=tmpdir)
     assert_true(isinstance(dataset.anat, basestring))
     assert_true(isinstance(dataset.colors_17, basestring))
@@ -286,4 +230,3 @@ def test_fetch_yeo_2011_atlas():
     assert_true(isinstance(dataset.tight_17, basestring))
     assert_true(isinstance(dataset.tight_7, basestring))
     assert_equal(len(mock.urls), 1)
-    teardown_tmpdata()
