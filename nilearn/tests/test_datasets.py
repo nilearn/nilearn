@@ -13,8 +13,8 @@ from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal
 
 from .. import datasets
-from .._utils.testing import mock_urllib2, mock_chunk_read_,\
-    mock_uncompress_file, mock_fetch_files
+from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
+    mock_fetch_files
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -112,8 +112,8 @@ def test_fetch_haxby_simple():
 def test_fetch_craddock_2011_atlas():
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    # datasets._chunk_read_ = mock_chunk_read_
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     bunch = datasets.fetch_craddock_2011_atlas(data_dir=tmpdir)
@@ -131,14 +131,15 @@ def test_fetch_craddock_2011_atlas():
     assert_equal(len(mock.urls), 1)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
+    teardown_tmpdata()
 
 
 def test_fetch_haxby():
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    # datasets._chunk_read_ = mock_chunk_read_
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     for i in range(1, 6):
@@ -161,14 +162,14 @@ def test_fetch_nyu_rest():
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    # datasets._chunk_read_ = mock_chunk_read_
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     # First session, all subjects
     setup_tmpdata()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
-    assert_equal(len(mock.urls), 2)
+    assert_equal(len(mock.urls), 6)
     assert_equal(len(nyu.func), 25)
     assert_equal(len(nyu.anat_anon), 25)
     assert_equal(len(nyu.anat_skull), 25)
@@ -180,7 +181,7 @@ def test_fetch_nyu_rest():
     mock.reset()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
                                   n_subjects=12)
-    assert_equal(len(mock.urls), 3)
+    assert_equal(len(mock.urls), 9)
     assert_equal(len(nyu.func), 36)
     assert_equal(len(nyu.anat_anon), 36)
     assert_equal(len(nyu.anat_skull), 36)
@@ -193,28 +194,28 @@ def test_fetch_nyu_rest():
 
 
 def test_fetch_adhd():
+    local_url = "file://" + datadir
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     # Disabled: cannot be tested without actually fetching the phenotypic file
-    # setup_tmpdata()
-    # adhd = datasets.fetch_adhd(data_dir=tmpdir, n_subjects=12)
-    # assert_equal(len(adhd.func), 12)
-    # assert_equal(len(adhd.confounds), 12)
-    # assert_equal(len(mock.urls), 1)
-    # teardown_tmpdata()
+    setup_tmpdata()
+    adhd = datasets.fetch_adhd(data_dir=tmpdir, url=local_url, n_subjects=12)
+    assert_equal(len(adhd.func), 12)
+    assert_equal(len(adhd.confounds), 12)
+    assert_equal(len(mock.urls), 5)
+    teardown_tmpdata()
 
 
 def test_miyawaki2008():
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    # datasets._chunk_read_ = mock_chunk_read_
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     setup_tmpdata()
@@ -231,8 +232,8 @@ def test_fetch_msdl_atlas():
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    # datasets._chunk_read_ = mock_chunk_read_
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     setup_tmpdata()
@@ -247,8 +248,8 @@ def test_fetch_icbm152_2009():
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    # datasets._chunk_read_ = mock_chunk_read_
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     setup_tmpdata()
@@ -271,8 +272,8 @@ def test_fetch_yeo_2011_atlas():
     # Mock urllib2 of the dataset fetcher
     mock = mock_urllib2()
     datasets.urllib2 = mock
-    datasets._chunk_read_ = mock_chunk_read_
-    datasets._uncompress_file = mock_uncompress_file
+    # datasets._chunk_read_ = mock_chunk_read_
+    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     datasets._fetch_files = mock_fetch_files
 
     setup_tmpdata()
