@@ -707,6 +707,80 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
                 my_stdout = my_buffer.getvalue()
 
+                # get variables so we can later add links to the documentation
+                example_code_obj = {}
+                for var_name, var in my_globals.iteritems():
+                    if not hasattr(var, '__module__'):
+                        continue
+                    if not isinstance(var.__module__, basestring):
+                        continue
+                    if var.__module__.split('.')[0] not in DOCMODULES:
+                        continue
+
+                    # get the type as a string with other things stripped
+                    tstr = str(type(var))
+                    tstr = (tstr[tstr.find('\'')
+                            + 1:tstr.rfind('\'')].split('.')[-1])
+                    # get shortened module name
+                    module_short = get_short_module_name(var.__module__,
+                                                         tstr)
+                    cobj = {'name': tstr, 'module': var.__module__,
+                            'module_short': module_short,
+                            'obj_type': 'object'}
+                    example_code_obj[var_name] = cobj
+
+                # find functions so we can later add links to the documentation
+                funregex = re.compile('[\w.]+\(')
+                with open(src_file, 'rt') as fid:
+                    for line in fid.readlines():
+                        if line.startswith('#'):
+                            continue
+                        for match in funregex.findall(line):
+                            fun_name = match[:-1]
+
+                            try:
+                                exec('this_fun = %s' % fun_name, my_globals)
+                            except Exception as err:
+                                # Here, we were not able to execute the
+                                # previous statement, either because the
+                                # fun_name was not a function but a statement
+                                # (print), or because the regexp didn't
+                                # catch the whole function name :
+                                #    eg:
+                                #       X = something().blah()
+                                # will work for something, but not blah.
+
+                                continue
+                            this_fun = my_globals['this_fun']
+                            if not callable(this_fun):
+                                continue
+                            if not hasattr(this_fun, '__module__'):
+                                continue
+                            if not isinstance(this_fun.__module__, basestring):
+                                continue
+                            if (this_fun.__module__.split('.')[0]
+                                    not in DOCMODULES):
+                                continue
+
+                            # get shortened module name
+                            fun_name_short = fun_name.split('.')[-1]
+                            module_short = get_short_module_name(
+                                this_fun.__module__, fun_name_short)
+                            cobj = {'name': fun_name_short,
+                                    'module': this_fun.__module__,
+                                    'module_short': module_short,
+                                    'obj_type': 'function'}
+                            example_code_obj[fun_name] = cobj
+                fid.close()
+
+                if len(example_code_obj) > 0:
+                    # save the dictionary, so we can later add hyperlinks
+                    codeobj_fname = example_file[:-3] + '_codeobj.pickle'
+                    with open(codeobj_fname, 'wb') as fid:
+                        cPickle.dump(example_code_obj, fid,
+                                     cPickle.HIGHEST_PROTOCOL)
+                    fid.close()
+
                 if '__doc__' in my_globals:
                     # The __doc__ is often printed in the example, so we
                     # don't echo it
