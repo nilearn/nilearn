@@ -3,7 +3,7 @@
 Example of pattern recognition on simulated data
 =================================================
 
-This examples simulates data according to a very simple sketch of brain
+This example simulates data according to a very simple sketch of brain
 imaging data and applies machine learning techniques to predict output
 values.
 """
