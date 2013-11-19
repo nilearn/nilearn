@@ -860,12 +860,8 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                             #for f in glob.glob(image_path % '*')]
 
         # generate thumb file
-        print '#' * 160
         this_template = plot_rst_template
         car_thumb_path =  os.path.join(os.path.split(root_dir)[0], '_build/html/_images/')
-        print '*' * 80
-        print root_dir
-        print root_dir[0]
         # Note: normaly, make_thumbnail is used to write to the path contained in `thumb_file`
         # which is within `auto_examples/../images/thumbs` depending on the example.
         # Because the carousel has different dimensions than those of the examples gallery,
