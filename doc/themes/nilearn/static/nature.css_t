@@ -1123,10 +1123,6 @@ div#banner.banner img {
     }
 }
 
-div.toctree-wrapper.compound {
-    margin-top: 2em;
-}
-
 
 .btn {
     display: inline-block;
@@ -1407,4 +1403,26 @@ div.body .jcarousel-pagination a.active {
     background: #4E443C;
     color: #fff;
     opacity: 1;
+}
+
+
+*[tooltip] {
+    position: relative;
+    float: left;
+}
+
+
+*[tooltip]:hover:before {
+    content: attr(tooltip);
+    background-color: black;
+    color: white;
+    top: 1em;
+    position: absolute;
+    z-index: 99;
+    border: solid;
+    border-color: #333 transparent;
+    border-width: 6px 6px 0 6px;
+    left: 87%;
+    width: 11em;
+    padding: 4px;
 }
