@@ -2,7 +2,7 @@
 Reconstruction of visual stimuli from Miyawaki et al. 2008
 ==========================================================
 
-This example reproduce the experiment presented in
+This example reproduces the experiment presented in
     `Visual image reconstruction from human brain activity
     using a combination of multiscale local image decoders
     <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
