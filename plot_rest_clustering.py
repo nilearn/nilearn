@@ -1,5 +1,5 @@
 """
-Hierarchical clustering to learn a brain parcellation from rest fMRI
+Ward clustering to learn a brain parcellation from rest fMRI
 ====================================================================
 
 We use spatial-constrained Ward-clustering to create a set of

@@ -1,6 +1,6 @@
 """
-Estimation of precision matrices in sparse gaussian graphical models
-====================================================================
+Sparse inverse covariance estimation
+=====================================
 
 This example shows a comparison of graph lasso and group-sparse covariance
 estimates for a synthetic dataset.
