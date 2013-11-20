@@ -984,7 +984,7 @@ pre {
 }
 
 div.body p {
-    margin: 1.2em 0 .1em 0;
+    margin: 1.2em 0 .5em 0;
 }
 
 .float-right {

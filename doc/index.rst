@@ -27,7 +27,7 @@
    :width: 300
    :target: auto_examples/plot_rest_clustering.html
 
-.. |banner4| image:: auto_examples/images/plot_canica_resting_state_1.png
+.. |banner4| image:: auto_examples/images/plot_canica_resting_state_9.png
    :width: 300
    :target: auto_examples/plot_canica_resting_state.html
 
