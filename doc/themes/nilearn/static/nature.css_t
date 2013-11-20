@@ -1123,10 +1123,6 @@ div#banner.banner img {
     }
 }
 
-div.toctree-wrapper.compound {
-    margin-top: 2em;
-}
-
 
 .btn {
     display: inline-block;
@@ -1407,4 +1403,35 @@ div.body .jcarousel-pagination a.active {
     background: #4E443C;
     color: #fff;
     opacity: 1;
+}
+
+
+*[tooltip] {
+    position: relative;
+    float: left;
+}
+
+*[tooltip]:hover:after{
+    background: rgba(0,0,0,.8);
+    border-radius: 5px;
+    color: white;
+    content: attr(tooltip);
+    left: 95%;
+    padding: 5px 15px;
+    position: absolute;
+    z-index: 98;
+    width: 220px;
+    bottom: 52%
+}
+
+
+*[tooltip]:hover:before {
+    content: "";
+    position: absolute;
+    z-index: 99;
+    border: solid;
+    border-color: #333 transparent;
+    border-width: 18px 0px 0px 20px;
+    left: 85%;
+    bottom: 58%
 }
