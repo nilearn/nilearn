@@ -139,7 +139,7 @@ from NiLearn this time:
 The results are shown on the following figure:
 
 .. image:: ../auto_examples/images/plot_connect_comparison_1.png
-    :target: auto_examples/plot_connect_comparison.html
+    :target: ../auto_examples/plot_connect_comparison.html
     :scale: 60
 
 The group-sparse estimation outputs matrices with

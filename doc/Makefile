@@ -38,6 +38,7 @@ clean:
 	-rm -rf modules/generated/*
 
 html:
+	rm -rf $(BUILDDIR)/html/_images
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll
 	@echo
