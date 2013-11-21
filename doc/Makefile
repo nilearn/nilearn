@@ -38,7 +38,6 @@ clean:
 	-rm -rf modules/generated/*
 
 html:
-	rm -rf $(BUILDDIR)/html/_images
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll
 	@echo
@@ -125,7 +124,10 @@ pdf: latex
 	cp _build/latex/nilearn-nup.pdf nilearn.pdf
 	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
 
-install: html
+install:
+	rm -rf $(BUILDDIR)/html/_images
+	make html
+	find . -name \*.rst -exec touch {} \;
 	rm -rf _build/nilearn.github.com
 	cd _build/ && \
         git clone git@github.com:nilearn/nilearn.github.com.git && \
