@@ -62,7 +62,7 @@ your data in a file to pass it to a :class:`NiftiMasker`. Simply use
 :ref:`Niimg <niimg>` in memory:
 
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: from nilearn import datasets
     :end-before: # Display helper
 
@@ -82,7 +82,7 @@ masks. This function will display a background (composed of a mean of
 epi scans) and a mask as a red layer over this background.
 
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: haxby_img = nibabel.Nifti1Image(haxby_func, haxby_img.get_affine())
     :end-before: # Generate mask with default parameters
 
@@ -100,7 +100,7 @@ As an example, we will now try to build a mask based on a dataset from
 scratch. The Haxby dataset will be used since it provides a mask that we
 can use as a reference.
 
-.. figure:: auto_examples/images/plot_nifti_advanced_1.png
+.. figure:: ../auto_examples/images/plot_nifti_advanced_1.png
     :target: auto_examples/plot_nifti_advanced.html
     :align: right
     :scale: 50%
@@ -109,7 +109,7 @@ The first step is to generate a mask with default parameters and take
 a look at it. As an indicator, we can, for example, compare the mask
 to original data.
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: # Generate mask with default parameters
     :end-before: # Generate mask with opening
 
@@ -117,12 +117,12 @@ With naked eyes, we can see that the outline of the mask is not very
 smooth. To make it less smooth, bypass the opening step
 (*mask_opening=0*).
 
-.. figure:: auto_examples/images/plot_nifti_advanced_2.png
+.. figure:: ../auto_examples/images/plot_nifti_advanced_2.png
     :target: auto_examples/plot_nifti_advanced.html
     :align: right
     :scale: 50%
 
-.. literalinclude:: ../plot_nifti_advanced.py
+.. literalinclude:: ../../plot_nifti_advanced.py
     :start-after: # Generate mask with opening
     :end-before: # Generate mask with upper cutoff
 
@@ -222,8 +222,8 @@ mask as for masking). This step is present in almost all the
 :doc:`examples <auto_examples/index>` provided in Nilearn.
 
 
-.. literalinclude:: ../plot_haxby_decoding.py
-    :start-after: svc = feature_selection.inverse_transform(svc)
+.. literalinclude:: ../../plot_haxby_decoding.py
+    :start-after: ### Look at the discriminating weights
     :end-before: # We use a masked array so that the voxels at '-1' are displayed
 
 
@@ -276,7 +276,7 @@ the `MSDL one
 <https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_:
 
 
-.. literalinclude:: ../plot_adhd_covariance.py
+.. literalinclude:: ../../plot_adhd_covariance.py
     :start-after: print("-- Fetching datasets ...")
     :end-before: dataset = nilearn.datasets.fetch_adhd()
 
@@ -284,7 +284,7 @@ This atlas defines its regions using maps. The path to the corresponding file
 can be found under the "maps" key. Extracting region signals for
 several subjects can be performed like this:
 
-.. literalinclude:: ../plot_adhd_covariance.py
+.. literalinclude:: ../../plot_adhd_covariance.py
    :start-after: atlas = nilearn.datasets.fetch_msdl_atlas()
    :end-before: print("-- Computing group-sparse precision matrices ...")
 
@@ -316,7 +316,7 @@ subject either using the `graph lasso
 or the `group-sparse covariance <http://arxiv.org/abs/1207.4255>`_
 algorithm:
 
-.. literalinclude:: ../plot_adhd_covariance.py
+.. literalinclude:: ../../plot_adhd_covariance.py
    :start-after: subjects.append(region_ts)
    :end-before: print("-- Displaying results")
 
