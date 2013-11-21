@@ -38,6 +38,10 @@ clean:
 	-rm -rf modules/generated/*
 
 html:
+	# These two lines make the build a bit more lengthy, and the
+	# the embedding of images more robust
+	rm -rf $(BUILDDIR)/html/_images
+	find . -name \*.rst -exec touch {} \;
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll
 	@echo
@@ -125,9 +129,6 @@ pdf: latex
 	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
 
 install:
-	rm -rf $(BUILDDIR)/html/_images
-	make html
-	find . -name \*.rst -exec touch {} \;
 	rm -rf _build/nilearn.github.com
 	cd _build/ && \
         git clone git@github.com:nilearn/nilearn.github.com.git && \
