@@ -207,7 +207,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                             high_pass=self.high_pass,
                                             t_r=self.t_r,
                                             memory=self.memory,
-                                            memory_level=self.memory_level)
+                                            memory_level=self.memory_level,
+                                            n_jobs=self.n_jobs)
         else:
             try:
                 self.masker_ = clone(self.mask)
