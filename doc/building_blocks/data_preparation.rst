@@ -161,7 +161,7 @@ Preprocessing
 Resampling
 ..........
 
-:class:`NiftiMasker` makes it possible to resample images. 
+:class:`NiftiMasker` and many similar classes enable resampling images.
        The resampling procedure takes as input the
        *target_affine* to resample (resize, rotate...) images in order
        to match the spatial configuration defined by the new
@@ -171,7 +171,7 @@ Resampling
 
 Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
-resampled in order to allow image fusion.
+resampled to display overlays.
 
 
 Smoothing
