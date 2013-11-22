@@ -77,7 +77,7 @@ with different precision matrices, but sharing a common sparsity pattern:
 
 .. literalinclude:: ../../plot_connect_comparison.py
    :
-   start-after: import matplotlib.pyplot as plt# Generate synthetic data
+   start-after: # Generate synthetic data
    :end-before: fig = plt.figure(figsize=(10, 7))
 
 `subjects` and `precisions` are lists containing respectively each
