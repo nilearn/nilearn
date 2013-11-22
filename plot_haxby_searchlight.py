@@ -80,29 +80,29 @@ p_values[p_values > 10] = 10
 p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
 ### Visualization #############################################################
-import pylab as pl
+import matplotlib.pyplot as plt
 
 # Use the fmri mean image as a surrogate of anatomical data
 mean_fmri = fmri_img.get_data().mean(axis=-1)
 
 # Searchlight results
-pl.figure(1)
+plt.figure(1)
 # searchlight.scores_ contains per voxel cross validation scores
 s_scores = np.ma.array(searchlight.scores_, mask=np.logical_not(process_mask))
-pl.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.imshow(np.rot90(s_scores[..., 37]), interpolation='nearest',
-          cmap=pl.cm.hot, vmax=1)
-pl.axis('off')
-pl.title('Searchlight')
+plt.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
+          cmap=plt.cm.gray)
+plt.imshow(np.rot90(s_scores[..., 37]), interpolation='nearest',
+          cmap=plt.cm.hot, vmax=1)
+plt.axis('off')
+plt.title('Searchlight')
 
 ### F_score results
-pl.figure(2)
+plt.figure(2)
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-pl.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.imshow(np.rot90(p_ma[..., 37]), interpolation='nearest',
-          cmap=pl.cm.hot)
-pl.title('F-scores')
-pl.axis('off')
-pl.show()
+plt.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
+          cmap=plt.cm.gray)
+plt.imshow(np.rot90(p_ma[..., 37]), interpolation='nearest',
+          cmap=plt.cm.hot)
+plt.title('F-scores')
+plt.axis('off')
+plt.show()

@@ -8,7 +8,7 @@ nifti masker are not suited for this dataset. They are consequently tweaked
 to obtain a decent mask.
 """
 
-import pylab as pl
+import matplotlib.pyplot as plt
 import numpy as np
 
 import nibabel
@@ -28,26 +28,26 @@ background = np.mean(haxby_func, axis=-1)[..., 27]
 
 
 def display_mask(background, mask, title):
-    pl.axis('off')
-    pl.imshow(np.rot90(background), interpolation='nearest', cmap=pl.cm.gray)
+    plt.axis('off')
+    plt.imshow(np.rot90(background), interpolation='nearest', cmap=plt.cm.gray)
     ma = np.ma.masked_equal(mask, False)
-    pl.imshow(np.rot90(ma), interpolation='nearest',
-              cmap=pl.cm.autumn, alpha=0.5)
-    pl.title(title)
+    plt.imshow(np.rot90(ma), interpolation='nearest',
+              cmap=plt.cm.autumn, alpha=0.5)
+    plt.title(title)
 
 # Generate mask with default parameters
 from nilearn.input_data import NiftiMasker
 masker = NiftiMasker()
 masker.fit(haxby_img)
 default_mask = masker.mask_img_.get_data().astype(np.bool)
-pl.figure(figsize=(3, 5))
+plt.figure(figsize=(3, 5))
 display_mask(background, default_mask[..., 27], 'Default mask')
 
 # Generate mask with opening
 masker = NiftiMasker(mask_opening=0)
 masker.fit(haxby_img)
 opening_mask = masker.mask_img_.get_data().astype(np.bool)
-pl.figure(figsize=(3, 5))
+plt.figure(figsize=(3, 5))
 display_mask(background, opening_mask[..., 27], 'Mask without opening')
 
 # Generate mask with upper cutoff
@@ -60,14 +60,14 @@ cutoff_mask = masker.mask_img_.get_data().astype(np.bool)
 # Load mask provided by Haxby
 haxby_mask = nibabel.load(haxby.mask).get_data().astype(np.bool)
 
-pl.figure(figsize=(6, 5))
-pl.subplot(1, 2, 1)
+plt.figure(figsize=(6, 5))
+plt.subplot(1, 2, 1)
 display_mask(background, haxby_mask[..., 27], 'Haxby mask')
 
-pl.subplot(1, 2, 2)
+plt.subplot(1, 2, 2)
 display_mask(background, cutoff_mask[..., 27], 'Mask with cutoff')
-pl.subplots_adjust(top=0.8)
-pl.show()
+plt.subplots_adjust(top=0.8)
+plt.show()
 
 # trended vs detrended
 trended = NiftiMasker(mask=haxby.mask)

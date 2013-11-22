@@ -11,5 +11,5 @@ import numpy as np
 t = np.linspace(1, 10, 2000)
 
 # import pylab: the module for scientific plotting
-import pylab as pl
-pl.plot(t, np.cos(t))
+import matplotlib.pyplot as plt
+plt.plot(t, np.cos(t))

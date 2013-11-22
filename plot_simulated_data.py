@@ -15,7 +15,7 @@ print __doc__
 from time import time
 
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as plt
 from scipy import linalg, ndimage
 
 from sklearn import linear_model, svm
@@ -74,17 +74,17 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
 
 
 def plot_slices(data, title=None):
-    pl.figure(figsize=(5.5, 2.2))
+    plt.figure(figsize=(5.5, 2.2))
     vmax = np.abs(data).max()
     for i in (0, 6, 11):
-        pl.subplot(1, 3, i / 5 + 1)
-        pl.imshow(data[:, :, i], vmin=-vmax, vmax=vmax,
-                  interpolation="nearest", cmap=pl.cm.RdBu_r)
-        pl.xticks(())
-        pl.yticks(())
-    pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97, top=.9)
+        plt.subplot(1, 3, i / 5 + 1)
+        plt.imshow(data[:, :, i], vmin=-vmax, vmax=vmax,
+                  interpolation="nearest", cmap=plt.cm.RdBu_r)
+        plt.xticks(())
+        plt.yticks(())
+    plt.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97, top=.9)
     if title is not None:
-        pl.suptitle(title, y=.95)
+        plt.suptitle(title, y=.95)
 
 
 ###############################################################################
@@ -159,4 +159,4 @@ p_values[np.isnan(p_values)] = 0
 p_values[p_values > 10] = 10
 plot_slices(p_values, title="f_regress")
 
-pl.show()
+plt.show()

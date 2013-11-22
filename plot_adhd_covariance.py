@@ -9,11 +9,11 @@ and to estimate a covariance matrix based on these signals.
 plotted_subject = 0  # subject to plot
 
 
-import pylab as pl
+import matplotlib.pyplot as plt
 import matplotlib
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
-pl.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
+plt.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
     "bwr", _bwr_data))
 
 
@@ -24,9 +24,9 @@ def plot_matrices(cov, prec, title):
 
     # Display sparsity pattern
     sparsity = prec == 0
-    pl.figure()
-    pl.imshow(sparsity, interpolation="nearest")
-    pl.title("%s / sparsity" % title)
+    plt.figure()
+    plt.imshow(sparsity, interpolation="nearest")
+    plt.title("%s / sparsity" % title)
 
     # Put zeros on the diagonal, for graph clarity.
     size = prec.shape[0]
@@ -34,19 +34,19 @@ def plot_matrices(cov, prec, title):
     span = max(abs(prec.min()), abs(prec.max()))
 
     # Display covariance matrix
-    pl.figure()
-    pl.imshow(cov, interpolation="nearest",
-              vmin=-1, vmax=1, cmap=pl.cm.get_cmap("bwr"))
-    pl.colorbar()
-    pl.title("%s / covariance" % title)
+    plt.figure()
+    plt.imshow(cov, interpolation="nearest",
+              vmin=-1, vmax=1, cmap=plt.cm.get_cmap("bwr"))
+    plt.colorbar()
+    plt.title("%s / covariance" % title)
 
     # Display precision matrix
-    pl.figure()
-    pl.imshow(prec, interpolation="nearest",
+    plt.figure()
+    plt.imshow(prec, interpolation="nearest",
               vmin=-span, vmax=span,
-              cmap=pl.cm.get_cmap("bwr"))
-    pl.colorbar()
-    pl.title("%s / precision" % title)
+              cmap=plt.cm.get_cmap("bwr"))
+    plt.colorbar()
+    plt.title("%s / precision" % title)
 
 
 print("-- Fetching datasets ...")
@@ -102,4 +102,4 @@ title = "{0:d} GraphLasso $\\alpha={1:.2e}$".format(plotted_subject,
                                                      gl.alpha_)
 plot_matrices(gl.covariance_, gl.precision_, title)
 
-pl.show()
+plt.show()
