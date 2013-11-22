@@ -445,15 +445,6 @@ def generate_example_rst(app):
     </style>
 
 
-.. raw:: html
-
-
-        <script type="text/javascript">
-
-        
-        </script>
-
-
 Examples
 ========
 
@@ -788,11 +779,19 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                         '')
                 my_stdout = my_stdout.strip()
                 if my_stdout:
-                    stdout = '**Script output**::\n\n  %s\n\n' % (
+                    stdout = """**Script output**:
+
+.. rst-class:: max_height
+
+ ::
+
+    %s
+
+""" % (
                         '\n  '.join(my_stdout.split('\n')))
+                os.chdir(cwd)
                 open(stdout_path, 'w').write(stdout)
                 open(time_path, 'w').write('%f' % time_elapsed)
-                os.chdir(cwd)
 
                 # In order to save every figure we have two solutions :
                 # * iterate from 1 to infinity and call plt.fignum_exists(n)

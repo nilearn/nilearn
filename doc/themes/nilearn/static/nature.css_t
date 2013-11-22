@@ -983,6 +983,12 @@ pre {
     margin: .1em 0 .5em 0;
 }
 
+div.max-height pre {
+    /* For very long outpt: restrict the max height */
+    overflow-y: scroll;
+    max-height: 30em;
+}
+
 div.body p {
     margin: 1.2em 0 .5em 0;
 }
