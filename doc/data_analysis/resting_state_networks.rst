@@ -6,70 +6,89 @@ Extracting resting-state networks
 
 .. topic:: **Page summary**
    
-   This page demonstrates the use of Independent Component Analysis (ICA)
-   of resting-state fMRI data to extract brain networks in an
-   unsupervised manner (data-driven).
+   This page demonstrates the use of multi-subject Independent Component
+   Analysis (ICA) of resting-state fMRI data to extract brain networks in
+   an data-driven way. Here we use the 'CanICA' approach, that implements
+   a multivariate random effects model across subjects.
 
 .. topic:: **References**
 
-   * `Kiviniemi et al, *Independent component analysis of nondeterministic
-     fMRI signal sources*, Neuroimage 2009 <http://dx.doi.org/10.1016/S1053-8119(03)00097-1>`_
-      
-   * `Beckmann et al, *Investigations into resting-state connectivity using
-     independent component analysis*, Philos Trans R Soc Lond B 2005
-     <http://dx.doi.org/10.1098/rstb.2005.1634>`_
+    * G. Varoquaux et al. "A group model for stable multi-subject ICA on
+      fMRI datasets", `NeuroImage Vol 51 (2010) <http://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
+
+
+.. currentmodule:: nilearn.decomposition
 
 Data preparation
 ==================
 
-Retrieving the example data
-----------------------------
+Retrieving example data
+------------------------
 
-As seen in :ref:`previous sections <downloading_data>`, we fetch data from
-internet and get the filenames with a provided function:
+We will use sample data from the `ADHD 200 resting-state dataset
+<http://fcon_1000.projects.nitrc.org>`. We use nilearn functions to fetch
+data from Internet and get the filenames (:ref:`more on data downloading
+<downloading_data>`):
 
 
-.. literalinclude:: ../../plot_ica_resting_state.py
-    :start-after: ### Load nyu_rest dataset #####################################################
-    :end-before: ### Preprocess ################################################################
+.. literalinclude:: ../../plot_canica_resting_state.py
+    :start-after: ### Load ADHD rest dataset ####################################################
+    :end-before: ### Compute a mean epi ########################################################
 
-Concatenating, smoothing, and masking
---------------------------------------
 
-.. literalinclude:: ../../plot_ica_resting_state.py
-    :start-after: ### Preprocess ################################################################
-    :end-before: ### Apply ICA #################################################################
+Computing a mean EPI image
+---------------------------
 
-Applying ICA
-==============
+To visualize the results, a mean EPI image is useful:
 
-.. literalinclude:: ../../plot_ica_resting_state.py
-    :start-after: ### Apply ICA #################################################################
+.. literalinclude:: ../../plot_canica_resting_state.py
+    :start-after: ### Compute a mean epi ########################################################
+    :end-before: ### Apply CanICA ##############################################################
+ 
+
+Applying CanICA
+================
+
+:class:`CanICA` is a ready-to-use object that can be applied to
+multi-subject Nifti data, for instance presented as filenames, and will
+perform a multi-subject ICA decomposition following the CanICA model.
+As with every object in nilearn, we give it's parameters at construction,
+and then fit it on the data.
+
+.. literalinclude:: ../../plot_canica_resting_state.py
+    :start-after: ### Apply CanICA ##############################################################
     :end-before: ### Visualize the results #####################################################
+
+The components estimated are found as the `components_` attribute of the
+object.
 
 Visualizing the results
 ========================
 
-Visualization follows similarly as in the previous examples. As before,
-we use masked arrays (`np.ma`) to create transparency in the
-overlays.
+We can visualize the components as in the previous examples. As before,
+we use masked arrays (`np.ma`) to create transparency in the overlays.
 
-.. literalinclude:: ../../plot_ica_resting_state.py
+.. literalinclude:: ../../plot_canica_resting_state.py
     :start-after: ### Visualize the results #####################################################
 
-.. |left_img| image:: ../auto_examples/images/plot_ica_resting_state_1.png
-   :target: ../auto_examples/plot_ica_resting_state.html
+.. |left_img| image:: ../auto_examples/images/plot_canica_resting_state_2.png
+   :target: ../auto_examples/plot_canica_resting_state.html
    :width: 48%
 
-.. |right_img| image:: ../auto_examples/images/plot_ica_resting_state_2.png
-   :target: ../auto_examples/plot_ica_resting_state.html
+.. |right_img| image:: ../auto_examples/images/plot_canica_resting_state_3.png
+   :target: ../auto_examples/plot_canica_resting_state.html
    :width: 48%
 
 |left_img| |right_img|
 
+.. seealso::
+
+   The full code can be found as an example:
+   :ref:`example_plot_canica_resting_state.py`
+
 .. note::
 
    Note that as the ICA components are not ordered, the two components
-   displayed on your computer might not match those of the tutorial. For
+   displayed on your computer might not match those of the documentation. For
    a fair representation, you should display all components and
    investigate which one resemble those displayed above.

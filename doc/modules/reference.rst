@@ -39,6 +39,26 @@ Functions
    fetch_yeo_2011_atlas
    load_harvard_oxford
 
+.. _decomposition_ref:
+
+:mod:`nilearn.decompositon`: Multivariate decompositions
+=========================================================
+
+.. automodule:: nilearn.decomposition
+   :no-members:
+   :no-inherited-members:
+
+Classes
+-------
+
+.. currentmodule:: nilearn.decomposition
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   CanICA
+
 .. _image_ref:
 
 :mod:`nilearn.image`: Image processing and resampling utilities

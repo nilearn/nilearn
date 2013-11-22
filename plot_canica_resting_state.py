@@ -24,17 +24,12 @@ import nibabel
 
 ### Load ADHD rest dataset ####################################################
 from nilearn import datasets
-# Here we use a limited number of subjects to get faster-running code. For
-# better results, simply increase the number.
 
 dataset = datasets.fetch_adhd()
-func_files = dataset.func
+func_files = dataset.func # The list of 4D nifti files for each subject
 
-### Filter and mask ###########################################################
+### Compute a mean epi ########################################################
 from nilearn.image import resample_img
-
-# This is a multi-subject method, thus we need to use the
-# MultiNiftiMasker, rather than the NiftiMasker
 
 epi_img = nibabel.load(func_files[0])
 mean_epi = epi_img.get_data().mean(axis=-1)
@@ -51,12 +46,19 @@ canica = CanICA(n_components=n_components,
                 threshold=3., verbose=10, random_state=0)
 canica.fit(func_files)
 
-components = canica.masker_.inverse_transform(canica.components_).get_data()
+# Retrieve the independent components in brain space
+components_img = canica.masker_.inverse_transform(canica.components_)
+# components_img is a Nifti Image object, and can be saved to a file with
+# the following line:
+components_img.to_filename('canica_resting_state.nii.gz')
 
 ### Visualize the results #####################################################
 # Show some interesting components
 import pylab as pl
 from scipy import ndimage
+
+# First retrieve the numpy array from the Nifti image
+components = components_img.get_data()
 
 # Using a masked array is important to have transparency in the figures
 components = np.ma.masked_equal(components, 0, copy=False)

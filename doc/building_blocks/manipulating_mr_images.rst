@@ -69,7 +69,7 @@ Nifti and analyze files
 Neuroimaging data can be loaded simply thanks to nibabel_. Once the file is
 downloaded, a single line is needed to load it.
 
-.. literalinclude:: ../plot_visualization.py
+.. literalinclude:: ../../plot_visualization.py
      :start-after: # Fetch data ################################################################
      :end-before: # Visualization #############################################################
 
