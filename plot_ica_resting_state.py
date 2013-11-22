@@ -53,20 +53,20 @@ components = np.ma.masked_equal(components, 0, copy=False)
 ### Visualize the results #####################################################
 # Show some interesting components
 mean_epi = mean_img.get_data()
-import pylab as pl
-pl.figure()
-pl.axis('off')
+import matplotlib.pyplot as plt
+plt.figure()
+plt.axis('off')
 vmax = np.max(np.abs(components[:, :, 25, 5]))
-pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 25, 5]), interpolation='nearest',
-          cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
+plt.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
+          cmap=plt.cm.gray)
+plt.imshow(np.rot90(components[:, :, 25, 5]), interpolation='nearest',
+          cmap=plt.cm.jet, vmax=vmax, vmin=-vmax)
 
-pl.figure()
-pl.axis('off')
+plt.figure()
+plt.axis('off')
 vmax = np.max(np.abs(components[:, :, 23, 12]))
-pl.imshow(np.rot90(mean_epi[:, :, 23]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 23, 12]), interpolation='nearest',
-          cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
-pl.show()
+plt.imshow(np.rot90(mean_epi[:, :, 23]), interpolation='nearest',
+          cmap=plt.cm.gray)
+plt.imshow(np.rot90(components[:, :, 23, 12]), interpolation='nearest',
+          cmap=plt.cm.jet, vmax=vmax, vmin=-vmax)
+plt.show()

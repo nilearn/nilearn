@@ -54,7 +54,7 @@ components_img.to_filename('canica_resting_state.nii.gz')
 
 ### Visualize the results #####################################################
 # Show some interesting components
-import pylab as pl
+import matplotlib.pyplot as plt
 from scipy import ndimage
 
 # First retrieve the numpy array from the Nifti image
@@ -64,13 +64,13 @@ components = components_img.get_data()
 components = np.ma.masked_equal(components, 0, copy=False)
 
 for i in range(n_components):
-    pl.figure()
-    pl.axis('off')
+    plt.figure()
+    plt.axis('off')
     cut_coord = ndimage.maximum_position(np.abs(components[..., i]))[2]
     vmax = np.max(np.abs(components[:, :, cut_coord, i]))
-    pl.imshow(np.rot90(mean_epi[:, :, cut_coord]), interpolation='nearest',
-              cmap=pl.cm.gray)
-    pl.imshow(np.rot90(components[:, :, cut_coord, i]),
-              interpolation='nearest', cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
+    plt.imshow(np.rot90(mean_epi[:, :, cut_coord]), interpolation='nearest',
+              cmap=plt.cm.gray)
+    plt.imshow(np.rot90(components[:, :, cut_coord, i]),
+              interpolation='nearest', cmap=plt.cm.jet, vmax=vmax, vmin=-vmax)
 
-pl.show()
+plt.show()

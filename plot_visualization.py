@@ -20,39 +20,39 @@ fmri_affine = nifti_img.get_affine()
 
 # Visualization #############################################################
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as plt
 
 # Compute the mean EPI: we do the mean along the axis 3, which is time
 mean_img = np.mean(fmri_data, axis=3)
 
-# pl.figure() creates a new figure
-pl.figure(figsize=(7, 4))
+# plt.figure() creates a new figure
+plt.figure(figsize=(7, 4))
 
 # First subplot: coronal view
 # subplot: 1 line, 3 columns and use the first subplot
-pl.subplot(1, 3, 1)
+plt.subplot(1, 3, 1)
 # Turn off the axes, we don't need it
-pl.axis('off')
-# We use pl.imshow to display an image, and use a 'gray' colormap
+plt.axis('off')
+# We use plt.imshow to display an image, and use a 'gray' colormap
 # we also use np.rot90 to rotate the image
-pl.imshow(np.rot90(mean_img[:, 32, :]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.title('Coronal')
+plt.imshow(np.rot90(mean_img[:, 32, :]), interpolation='nearest',
+          cmap=plt.cm.gray)
+plt.title('Coronal')
 
 # Second subplot: sagittal view
-pl.subplot(1, 3, 2)
-pl.axis('off')
-pl.title('Sagittal')
-pl.imshow(np.rot90(mean_img[15, :, :]), interpolation='nearest',
-          cmap=pl.cm.gray)
+plt.subplot(1, 3, 2)
+plt.axis('off')
+plt.title('Sagittal')
+plt.imshow(np.rot90(mean_img[15, :, :]), interpolation='nearest',
+          cmap=plt.cm.gray)
 
 # Third subplot: axial view
-pl.subplot(1, 3, 3)
-pl.axis('off')
-pl.title('Axial')
-pl.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
-          cmap=pl.cm.gray)
-pl.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95,
+plt.subplot(1, 3, 3)
+plt.axis('off')
+plt.title('Axial')
+plt.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
+          cmap=plt.cm.gray)
+plt.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95,
                    hspace=.02, wspace=.02)
 
 # Extracting a brain mask ###################################################
@@ -63,12 +63,12 @@ mask_img = compute_epi_mask(nifti_img)
 mask_data = mask_img.get_data().astype(bool)
 
 # We create a new figure
-pl.figure(figsize=(3, 4))
+plt.figure(figsize=(3, 4))
 # A plot the axial view of the mask to compare with the axial
 # view of the raw data displayed previously
-pl.axis('off')
-pl.imshow(np.rot90(mask_data[:, :, 32]), interpolation='nearest')
-pl.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95)
+plt.axis('off')
+plt.imshow(np.rot90(mask_data[:, :, 32]), interpolation='nearest')
+plt.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95)
 
 # Applying the mask #########################################################
 
@@ -78,10 +78,10 @@ masked_data = apply_mask(nifti_img, mask_img)
 # masked_data shape is (instant number, voxel number). We can plot the first 10
 # lines: they correspond to timeseries of 10 voxels on the side of the
 # brain
-pl.figure(figsize=(7, 5))
-pl.plot(masked_data[:10].T)
-pl.xlabel('Time', fontsize=16)
-pl.ylabel('Voxel', fontsize=16)
-pl.xlim(0, 22200)
-pl.subplots_adjust(bottom=.12, top=.95, right=.95, left=.12)
-pl.show()
+plt.figure(figsize=(7, 5))
+plt.plot(masked_data[:10].T)
+plt.xlabel('Time', fontsize=16)
+plt.ylabel('Voxel', fontsize=16)
+plt.xlim(0, 22200)
+plt.subplots_adjust(bottom=.12, top=.95, right=.95, left=.12)
+plt.show()

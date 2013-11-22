@@ -88,14 +88,14 @@ niimg = nifti_masker.inverse_transform(coef)
 act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
 
 ### Create the figure
-import pylab as pl
-pl.axis('off')
-pl.title('SVM vectors')
-pl.imshow(np.rot90(mean_img[..., 27]), cmap=pl.cm.gray,
+import matplotlib.pyplot as plt
+plt.axis('off')
+plt.title('SVM vectors')
+plt.imshow(np.rot90(mean_img[..., 27]), cmap=plt.cm.gray,
           interpolation='nearest')
-pl.imshow(np.rot90(act[..., 27, 0]), cmap=pl.cm.hot,
+plt.imshow(np.rot90(act[..., 27, 0]), cmap=plt.cm.hot,
           interpolation='nearest')
-pl.show()
+plt.show()
 
 # Saving the results as a Nifti file may also be important
 import nibabel

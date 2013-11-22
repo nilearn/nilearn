@@ -76,8 +76,9 @@ with different precision matrices, but sharing a common sparsity pattern:
 10 brain regions, for 20 subjects:
 
 .. literalinclude:: ../../plot_connect_comparison.py
-   :start-after: # Generate synthetic data
-   :end-before: fig = pl.figure(figsize=(10, 7))
+   :
+   start-after: # Generate synthetic data
+   :end-before: fig = plt.figure(figsize=(10, 7))
 
 `subjects` and `precisions` are lists containing respectively each
 subject's signals and the corresponding true precision matrices used
@@ -114,7 +115,7 @@ symmetric range, so that zero values are just in the middle of the
 colormap (white in that case):
 
 .. literalinclude:: ../../plot_connect_comparison.py
-   :start-after: import pylab as pl
+   :start-after: import matplotlib.pyplot as plt
    :end-before: # Generate synthetic data
 
 

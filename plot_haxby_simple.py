@@ -61,19 +61,19 @@ coef_ = svc.coef_
 niimg = nifti_masker.inverse_transform(coef_)
 
 ### Visualization #############################################################
-import pylab as pl
+import matplotlib.pyplot as plt
 import nibabel
 
 # We use a masked array so that the voxels at '-1' are displayed transparently
 act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
 
 ### Create the figure
-pl.figure()
-pl.axis('off')
-pl.title('SVM vectors')
-pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
-          interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(np.rot90(act[..., 27, 0]), cmap=pl.cm.hot,
+plt.figure()
+plt.axis('off')
+plt.title('SVM vectors')
+plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
+          interpolation='nearest', cmap=plt.cm.gray)
+plt.imshow(np.rot90(act[..., 27, 0]), cmap=plt.cm.hot,
           interpolation='nearest')
 
 
@@ -81,13 +81,13 @@ pl.imshow(np.rot90(act[..., 27, 0]), cmap=pl.cm.hot,
 
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
-pl.figure()
-pl.axis('off')
-pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
-          interpolation='nearest', cmap=pl.cm.gray)
+plt.figure()
+plt.axis('off')
+plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
+          interpolation='nearest', cmap=plt.cm.gray)
 ma = np.ma.masked_equal(mask, False)
-pl.imshow(np.rot90(ma[..., 27]), interpolation='nearest', cmap=pl.cm.autumn,
+plt.imshow(np.rot90(ma[..., 27]), interpolation='nearest', cmap=plt.cm.autumn,
           alpha=0.5)
-pl.title("Mask")
-pl.show()
+plt.title("Mask")
+plt.show()
 

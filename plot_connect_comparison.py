@@ -6,12 +6,12 @@ This example shows a comparison of graph lasso and group-sparse covariance
 estimates for a synthetic dataset.
 """
 
-import pylab as pl
+import matplotlib.pyplot as plt
 
 
 def plot_matrix(m, ylabel=""):
     abs_max = abs(m).max()
-    pl.imshow(m, cmap=pl.cm.RdBu_r, interpolation="nearest",
+    plt.imshow(m, cmap=plt.cm.RdBu_r, interpolation="nearest",
               vmin=-abs_max, vmax=abs_max)
 
 
@@ -24,14 +24,14 @@ subjects, precisions, topology = generate_group_sparse_gaussian_graphs(
     n_subjects=n_subjects, n_features=10, min_n_samples=30, max_n_samples=50,
     density=0.1)
 
-fig = pl.figure(figsize=(10, 7))
-pl.subplots_adjust(hspace=0.4)
+fig = plt.figure(figsize=(10, 7))
+plt.subplots_adjust(hspace=0.4)
 for n in range(n_displayed):
-    pl.subplot(n_displayed, 4, 4 * n + 1)
+    plt.subplot(n_displayed, 4, 4 * n + 1)
     plot_matrix(precisions[n])
     if n == 0:
-        pl.title("ground truth")
-    pl.ylabel("subject %d" % n)
+        plt.title("ground truth")
+    plt.ylabel("subject %d" % n)
 
 
 # Run group-sparse covariance on all subjects
@@ -40,10 +40,10 @@ gsc = GroupSparseCovarianceCV(max_iter=50, verbose=1)
 gsc.fit(subjects)
 
 for n in range(n_displayed):
-    pl.subplot(n_displayed, 4, 4 * n + 2)
+    plt.subplot(n_displayed, 4, 4 * n + 2)
     plot_matrix(gsc.precisions_[..., n])
     if n == 0:
-        pl.title("group-sparse\n$\\alpha=%.2f$" % gsc.alpha_)
+        plt.title("group-sparse\n$\\alpha=%.2f$" % gsc.alpha_)
 
 
 # Fit one graph lasso per subject
@@ -53,19 +53,19 @@ gl = GraphLassoCV(verbose=True)
 for n, subject in enumerate(subjects[:n_displayed]):
     gl.fit(subject)
 
-    pl.subplot(n_displayed, 4, 4 * n + 3)
+    plt.subplot(n_displayed, 4, 4 * n + 3)
     plot_matrix(gl.precision_)
     if n == 0:
-        pl.title("graph lasso")
-    pl.ylabel("$\\alpha=%.2f$" % gl.alpha_)
+        plt.title("graph lasso")
+    plt.ylabel("$\\alpha=%.2f$" % gl.alpha_)
 
 
 # Fit one graph lasso for all subjects at once
 import numpy as np
 gl.fit(np.concatenate(subjects))
 
-pl.subplot(n_displayed, 4, 4)
+plt.subplot(n_displayed, 4, 4)
 plot_matrix(gl.precision_)
-pl.title("graph lasso, all subjects\n$\\alpha=%.2f$" % gl.alpha_)
+plt.title("graph lasso, all subjects\n$\\alpha=%.2f$" % gl.alpha_)
 
-pl.show()
+plt.show()
