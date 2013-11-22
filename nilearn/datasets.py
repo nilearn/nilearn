@@ -1012,14 +1012,13 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-        - 'func': string list. Paths to functional images
-        - 'parameters': string list. Parameters of preprocessing steps
+         - 'func': string list. Paths to functional images
+         - 'parameters': string list. Parameters of preprocessing steps
 
     References
     ----------
     :Download:
-        ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/
-            ADHD200_40sub_preprocessed.tgz
+        ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/ADHD200_40sub_preprocessed.tgz
 
     """
 
