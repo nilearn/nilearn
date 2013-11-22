@@ -59,7 +59,7 @@ labels = nifti_masker.inverse_transform(labels).get_data()
 labels = labels - 1
 
 # Display the labels
-import pylab as pl
+import matplotlib.pyplot as plt
 
 # Cut at z=20
 cut = labels[:, :, 20].astype(int)
@@ -70,23 +70,23 @@ import numpy as np
 colors = np.random.random(size=(ward.n_clusters + 1, 3))
 # Cluster '-1' should be black (it's outside the brain)
 colors[-1] = 0
-pl.figure()
-pl.axis('off')
-pl.imshow(colors[np.rot90(cut)], interpolation='nearest')
-pl.title('Ward parcellation')
+plt.figure()
+plt.axis('off')
+plt.imshow(colors[np.rot90(cut)], interpolation='nearest')
+plt.title('Ward parcellation')
 
 # Display the original data
-pl.figure()
+plt.figure()
 first_epi = nifti_masker.inverse_transform(fmri_masked[0]).get_data()
 first_epi = np.ma.masked_array(first_epi, first_epi == 0)
 # Outside the mask: a uniform value, smaller than inside the mask
 first_epi[np.logical_not(mask)] = 0.9 * first_epi[mask].min()
 vmax = first_epi[..., 20].max()
 vmin = first_epi[..., 20].min()
-pl.imshow(np.rot90(first_epi[..., 20]),
-          interpolation='nearest', cmap=pl.cm.spectral, vmin=vmin, vmax=vmax)
-pl.axis('off')
-pl.title('Original (%i voxels)' % fmri_masked.shape[1])
+plt.imshow(np.rot90(first_epi[..., 20]),
+          interpolation='nearest', cmap=plt.cm.spectral, vmin=vmin, vmax=vmax)
+plt.axis('off')
+plt.title('Original (%i voxels)' % fmri_masked.shape[1])
 
 # A reduced data can be create by taking the parcel-level average:
 # Note that, as many objects in the scikit-learn, the ward object exposes
@@ -101,9 +101,9 @@ compressed = nifti_masker.inverse_transform(
 compressed = np.ma.masked_equal(compressed, 0)
 
 
-pl.figure()
-pl.imshow(np.rot90(compressed[:, :, 20]),
-          interpolation='nearest', cmap=pl.cm.spectral, vmin=vmin, vmax=vmax)
-pl.title('Compressed representation (2000 parcels)')
-pl.axis('off')
-pl.show()
+plt.figure()
+plt.imshow(np.rot90(compressed[:, :, 20]),
+          interpolation='nearest', cmap=plt.cm.spectral, vmin=vmin, vmax=vmax)
+plt.title('Compressed representation (2000 parcels)')
+plt.axis('off')
+plt.show()

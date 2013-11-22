@@ -20,17 +20,17 @@ nifti_masker.fit(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data()
 
 ### Visualize the mask ########################################################
-import pylab as pl
+import matplotlib.pyplot as plt
 import numpy as np
 import nibabel
-pl.figure()
-pl.axis('off')
-pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
-          interpolation='nearest', cmap=pl.cm.gray)
+plt.figure()
+plt.axis('off')
+plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
+          interpolation='nearest', cmap=plt.cm.gray)
 ma = np.ma.masked_equal(mask, False)
-pl.imshow(np.rot90(ma[..., 20]), interpolation='nearest', cmap=pl.cm.autumn,
+plt.imshow(np.rot90(ma[..., 20]), interpolation='nearest', cmap=plt.cm.autumn,
           alpha=0.5)
-pl.title("Mask")
+plt.title("Mask")
 
 ### Preprocess data ###########################################################
 nifti_masker.fit(dataset.func[0])
@@ -47,10 +47,10 @@ components = nifti_masker.inverse_transform(components_masked)
 
 ### Show results ##############################################################
 components_data = np.ma.masked_equal(components.get_data(), 0)
-pl.figure()
-pl.axis('off')
-pl.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
-          interpolation='nearest', cmap=pl.cm.gray)
-pl.imshow(np.rot90(components_data[..., 20, 7]), interpolation='nearest',
-          cmap=pl.cm.hot)
-pl.show()
+plt.figure()
+plt.axis('off')
+plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
+          interpolation='nearest', cmap=plt.cm.gray)
+plt.imshow(np.rot90(components_data[..., 20, 7]), interpolation='nearest',
+          cmap=plt.cm.hot)
+plt.show()
