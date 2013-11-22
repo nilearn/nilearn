@@ -245,7 +245,7 @@ libraries:
 
  :: 
 
-    >>> import pylab as pl
+    >>> import matplotlib.pyplot as plt
     >>> pl.plot(t, np.cos(t))       # doctest: +ELLIPSIS
     [<matplotlib.lines.Line2D object at ...>]
 
