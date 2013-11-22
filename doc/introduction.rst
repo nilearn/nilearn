@@ -218,14 +218,11 @@ It's interactive::
     In [1]: 1 + 2*3
     Out[1]: 7
 
-.. topic:: **Prompt**
+.. topic:: **`>>>` Prompt**
    
-   Below we'll be using `>>>` to indicate input lines If you wish to copy
-   these input lines directly into your *IPython* console without
-   manually excluding each `>>>`, you can enable `Doctest Mode` with the
-   command ::
-   
-        %doctest_mode
+   Below we'll be using `>>>` to indicate input lines. If you wish to copy
+   these input lines directly into *IPython*, click on the `>>>` located
+   at the top right of the code block
 
 Scientific computing with Python
 ---------------------------------

@@ -263,3 +263,8 @@ latex_show_pagerefs = True
 latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
+
+# Add the 'copybutton' javascript, to hide/show the prompt in code
+# examples
+def setup(app):
+    app.add_javascript('copybutton.js')

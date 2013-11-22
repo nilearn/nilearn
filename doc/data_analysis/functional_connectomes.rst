@@ -76,8 +76,7 @@ with different precision matrices, but sharing a common sparsity pattern:
 10 brain regions, for 20 subjects:
 
 .. literalinclude:: ../../plot_connect_comparison.py
-   :
-   start-after: # Generate synthetic data
+   :start-after: # Generate synthetic data
    :end-before: fig = plt.figure(figsize=(10, 7))
 
 `subjects` and `precisions` are lists containing respectively each
