@@ -155,13 +155,34 @@ instance called `python-nibabel`.
 Installing nilearn
 -------------------
 
-Nilearn is unreleased. You can download the latest development snapshot
-from the following link:
+Downloading the development version
+....................................
 
-    https://github.com/nilearn/nilearn/archive/master.zip
+* Nilearn is unreleased. We advise that you track it's development using
+  git. Under Windows or Max OSX, you can easily to that by going to
+  https://github.com/nilearn/nilearn and clicking the 'Clone in Desktop'
+  button on the lower right of the page. This will install a software
+  that will download nilearn and that you can use to update nilearn as we
+  move forward.
+  
+* Under Linux, run the following command (as a shell command, not a
+  Python command)::
 
-Unzip it, and run in the resulting directory (as a shell command, once
-again)::
+    $ git clone https://github.com/nilearn/nilearn.git
+
+  As time goes, you can update you copy of nilearn by doing "git pull" in
+  this directory.
+
+* If you really don't want to use git, you download the latest
+  development snapshot from the following link and unziping it:
+  https://github.com/nilearn/nilearn/archive/master.zip
+
+
+Setting up
+..........
+
+In the ``nilearn`` directory created by the previous steps, run (as a
+shell command, once again)::
 
     $ python setup.py install --user    
 
@@ -184,9 +205,9 @@ using Python for science, see the `scipy lecture notes
 We will be using `IPython <http://ipython.org>`_, in pylab mode, which
 provides an interactive scientific environment. Start it with::
 
-    $ ipython -pylab
+    $ ipython --pylab
 
-(depending on your ipython version, you may need to use the ``--pylab``
+(depending on your ipython version, you may need to use the ``-pylab``
 flag instead).
 
 It's interactive::
