@@ -1406,7 +1406,7 @@ div.body .jcarousel-pagination a.active {
 /******** For the gallery **************/
 
 /* ------- Fix maximum size of thumbnails in example gallery -------------- */
-div#examples.section .figure img {
+div.thumbnailContainer img {
     max-width: 160px;
     max-height: 160px;
     /*display: block;*/
@@ -1414,7 +1414,7 @@ div#examples.section .figure img {
     display: inline;
 }
 
-div#examples.section div.figure {
+div.thumbnailContainer div.figure {
     float: left;
     margin: 10px 11px 7em 11px;
     -webkit-border-radius: 10px;
