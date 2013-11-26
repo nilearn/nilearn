@@ -704,5 +704,4 @@ def unmask(X, mask_img, order="F"):
         raise TypeError(
             "Masked data X must be 2D or 1D array; got shape: %s" % str(
                 X.shape))
-
     return Nifti1Image(unmasked, affine)
