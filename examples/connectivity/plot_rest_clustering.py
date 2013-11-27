@@ -45,7 +45,7 @@ from sklearn.cluster import WardAgglomeration
 import time
 start = time.time()
 ward = WardAgglomeration(n_clusters=1000, connectivity=connectivity,
-                         memory='nilearn_cache')
+                         memory='nilearn_cache', compute_full_tree=True)
 ward.fit(fmri_masked)
 print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
@@ -53,7 +53,7 @@ print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 # the caching mechanism
 start = time.time()
 ward = WardAgglomeration(n_clusters=2000, connectivity=connectivity,
-                         memory='nilearn_cache')
+                         memory='nilearn_cache', compute_full_tree=True)
 ward.fit(fmri_masked)
 print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
