@@ -41,7 +41,7 @@ from nilearn.decomposition.canica import CanICA
 
 n_components = 20
 canica = CanICA(n_components=n_components,
-                smoothing_fwhm=6.,
+                smoothing_fwhm=6., standardize=True,
                 memory="nilearn_cache", memory_level=5,
                 threshold=3., verbose=10, random_state=0)
 canica.fit(func_files)

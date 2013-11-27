@@ -45,6 +45,10 @@ class CanICA(MultiPCA, CacheMixin):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
+    standardize : boolean, optional
+        If standardize is True, the time-series are centered and normed:
+        their variance is put to 1 in the time dimension.
+
     threshold: None, 'auto' or float
         If None, no thresholding is applied. If 'auto',
         then we apply a thresholding that will keep the n_voxels,
@@ -106,6 +110,7 @@ class CanICA(MultiPCA, CacheMixin):
     def __init__(self, mask=None, n_components=20,
                  smoothing_fwhm=6, do_cca=True,
                  threshold='auto', n_init=10,
+                 standardize=True,
                  random_state=0,
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
@@ -124,6 +129,7 @@ class CanICA(MultiPCA, CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
         self.n_init = n_init
+        self.standardize = standardize
 
     def fit(self, niimgs, y=None, confounds=None):
         """Compute the mask and the ICA maps across subjects

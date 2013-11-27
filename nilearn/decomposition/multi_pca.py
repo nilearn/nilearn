@@ -109,6 +109,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
+    standardize : boolean, optional
+        If standardize is True, the time-series are centered and normed:
+        their variance is put to 1 in the time dimension.
+
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
@@ -163,9 +167,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
-                 do_cca=True, target_affine=None, target_shape=None,
-                 low_pass=None, high_pass=None, t_r=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 do_cca=True, standardize=True, target_affine=None,
+                 target_shape=None, low_pass=None, high_pass=None,
+                 t_r=None, memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
                  ):
         self.mask = mask
@@ -182,6 +186,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.smoothing_fwhm = smoothing_fwhm
         self.target_affine = target_affine
         self.target_shape = target_shape
+        self.standardize = standardize
 
     def fit(self, niimgs=None, y=None, confounds=None):
         """Compute the mask and the components
@@ -203,6 +208,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                             smoothing_fwhm=self.smoothing_fwhm,
                                             target_affine=self.target_affine,
                                             target_shape=self.target_shape,
+                                            standardize=self.standardize,
                                             low_pass=self.low_pass,
                                             high_pass=self.high_pass,
                                             t_r=self.t_r,
@@ -240,8 +246,12 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(MultiNiftiMasker, self)
+        # Remove non specific and redudent parameters
+        for param_name in ['memory', 'memory_level', 'confounds',
+                           'verbose', 'n_jobs']:
+            parameters.pop(param_name, None)
+
         parameters['detrend'] = True
-        parameters['standardize'] = True
 
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
@@ -275,8 +285,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                      'data size.' % self.n_components)
                 data[index * self.n_components:
                      (index + 1) * self.n_components] = subject_pca
-            data, variance, _ = randomized_svd(
-                data.T, n_components=self.n_components)
+            data, variance, _ = cache(randomized_svd,
+                                memory=self.memory,
+                                ref_memory_level=3,
+                                memory_level=self.memory_level)(
+                        data.T, n_components=self.n_components)
             data = data.T
         else:
             data = subject_pcas[0]
