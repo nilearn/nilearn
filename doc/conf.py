@@ -264,6 +264,29 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
+_python_doc_base = 'http://docs.python.org/2.7'
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {
+    _python_doc_base: None,
+    'http://docs.scipy.org/doc/numpy': None,
+    'http://docs.scipy.org/doc/scipy/reference': None,
+    'http://matplotlib.org/': None,
+    'http://scikit-learn.org/stable': None,
+    'http://nipy.org/nibabel': None,
+    #'http://scikit-image.org/docs/0.8.0/': None,
+    #'http://docs.enthought.com/mayavi/mayavi/': None,
+    #'http://statsmodels.sourceforge.net/': None,
+    #'http://pandas.pydata.org': None,
+}
+
+extlinks = {
+    'simple': (_python_doc_base + '/reference/simple_stmts.html#%s', ''),
+    'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
+}
+
+
+
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples
 def setup(app):
