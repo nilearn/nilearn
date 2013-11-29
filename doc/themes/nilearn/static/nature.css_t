@@ -914,10 +914,10 @@ div.tags {
     font-weight: bold;
     font-size: 95%;
     padding: 5px;
-    margin: 22px 5px 0px 7px;
-    background-color: #FFC588;
+    margin: 12px 5px 0px 7px;
+    /*background-color: #FFC588;
     border-radius: 15px;
-    moz-border-radius: 15px;
+    moz-border-radius: 15px;*/
 }
 
 div.tags ul {
@@ -935,7 +935,7 @@ div.tags li {
 }
 
 div.tags a {
-    color: #333;
+    color: #888;
 }
 
 div.tags a:hover {
