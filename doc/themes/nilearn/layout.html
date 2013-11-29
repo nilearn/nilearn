@@ -94,6 +94,32 @@
       <img src="{{ pathto('_static/' + logo, 1) }}" alt="NiLearn logo"  border="0" />
     </a>
   </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="{{pathto('auto_examples/plot_haxby_decoding')}}">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="{{pathto('data_analysis/parcellating')}}">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="{{pathto('building_blocks/haxby_searchlight')}}">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="{{pathto('data_analysis/resting_state_networks')}}">ICA</a></big>
+    </li>
+    <li>
+      <a href="{{pathto('building_blocks/data_preparation')}}">Nifti IO</a>
+    </li>
+    <li>
+      <a href="{{pathto('modules/reference')}}#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
   <div class="banner">
     <h1>NiLearn:</h1>
     <h2>Machine learning for Neuro-Imaging in Python</h2>
@@ -122,31 +148,6 @@
 
 
 {%- if (pagename == 'index') %}
-<!-- A tag cloud to make it easy for people to find what they are
-                         looking for -->
- <div class="tags">
-  <ul>
-    <li>
-      <big><a href="{{pathto('auto_examples/plot_haxby_decoding')}}">SVM</a></big>
-    </li>
-    <li>
-      <small><a href="{{pathto('data_analysis/parcellating')}}">Ward
-          clustering</a></small>
-    </li>
-    <li>
-      <a href="{{pathto('building_blocks/haxby_searchlight')}}">Searchlight</a>
-    </li>
-    <li>
-      <big><a href="{{pathto('data_analysis/resting_state_networks')}}">ICA</a></big>
-    </li>
-    <li>
-      <a href="{{pathto('building_blocks/data_preparation')}}">Nifti IO</a>
-    </li>
-    <li>
-      <a href="{{pathto('modules/reference')}}#module-nilearn.datasets">Datasets</a>
-    </li>
-  </ul>
- </div>
 
 <h4> News </h4>
   <ul>

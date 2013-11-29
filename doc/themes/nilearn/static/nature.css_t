@@ -907,10 +907,14 @@ table.field-list tr td.field-body p {
 /* ------- tag cloud on the front page -------------------- */
 
 div.tags {
+    display: block;
+    max-width: 15em;
+    max-height: 7em;
+    float: right;
     font-weight: bold;
     font-size: 95%;
     padding: 5px;
-    margin: 17px 7px 21px 7px;
+    margin: 22px 5px 0px 7px;
     background-color: #FFC588;
     border-radius: 15px;
     moz-border-radius: 15px;
@@ -936,6 +940,12 @@ div.tags a {
 
 div.tags a:hover {
     color: #000;
+}
+
+@media (max-width: 900px) {
+    div.tags {
+        display: none;
+    }
 }
 
 li.toctree-li {
