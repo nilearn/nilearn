@@ -83,6 +83,7 @@ for subject_id in subject_ids:
     # ['bottle' 'cat' 'chair' 'face' 'house' 'rest'
     # 'scissors' 'scrambledpix' 'shoe']
 
+    # @@@@@@ Michael: If I understand the paper correctly, they work on the BOLD data. But maybe I am wrong. In the following, I will remove resting state by hand and divide into conditions. However, the design is orthogonal, and would almost stay that way even after convolution with an HRF, so maybe the way to go for this tutorial would rather be via Beta maps?
     # find non resting state episodes
     non_rest = labels["labels"] != "rest"
 
@@ -94,7 +95,7 @@ for subject_id in subject_ids:
                                             vt_timecourses.shape[-1])
 
     # thus reshaped we can detrend and standardize the timecourses
-    # @@@@@ Michael: It may be useful to teach how this is done explicitely. Then again, the NiftiMasker could probably also be made to be able to do this easily
+    # @@@@@ Michael: It may be useful to teach how this is done explicitly. Then again, the NiftiMasker could probably also be made to be able to do this easily
     from scipy.signal import detrend
     vt_timecourses = detrend(vt_timecourses, axis=1)
     vt_timecourses = ((vt_timecourses
@@ -136,5 +137,16 @@ for subject_id in subject_ids:
 
     print "Active labels"
     print active_labels
-    
-    
+
+    # We exploit the inner block structure of the runs by reshaping our
+    # data once more: 12 runs of 8 blocks each consisting of 9 TRs.
+    active_timecourses = active_timecourses.reshape(12, 8, 9,
+                                          active_timecourses.shape[-1])
+
+    # In reshaping the label array according to this same structure, 
+    # we can extract the label pertaining to each block
+
+    block_labels = active_labels.reshape(12, 8, 9)[..., 0]
+    # @@@@@ Michael: I am realizing more and more, that I may be doing too much acrobatics with ndarrays. More and more convinced that Beta maps are the way to go.
+
+    # According to the paper, BOLD activity is 
