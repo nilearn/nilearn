@@ -84,7 +84,13 @@ for subject_id in subject_ids:
     # 'scissors' 'scrambledpix' 'shoe']
 
     # Citing the paper:
-    """ To identify object-selective cortex, we used an eight-regressor model. The first regressor was the contrast between stimulus blocks and rest. The remaining seven regressors modeled the response to each meaningful category."""
+    ########################################################################
+    # "To identify object-selective cortex, we used an eight-regressor model.
+    # The first regressor was the contrast between stimulus blocks and rest.
+    # The remaining seven regressors modeled the response to each meaningful
+    # category."
+    ########################################################################
+
     # Let's do it:
     unique_conditions = np.unique(labels)
     # We first make a design matrix containing a regressor for each
@@ -120,8 +126,16 @@ for subject_id in subject_ids:
 
     beta_maps = ventral_temporal_mask.inverse_transform(glm_eight.coef_.T)
 
-    # Citing the paper again
-    """To determine the patterns of response to each category on even-numbered and odd-numbered runs, we used a 16-regressor model - eight regressors to model the response to  each category relative to rest on even runs and eight regressors to model the response to each category on odd runs with no regressor that contrasteed all stimulus blocks to rest"""
+    # Citing the paper
+    ########################################################################
+    # "To determine the patterns of response to each category on even-
+    # numbered and odd-numbered runs, we used a 16-regressor model - eight 
+    # regressors to model the response to  each category relative to rest on 
+    # even runs  and eight regressors to model the response to each category 
+    # on odd runs with no regressor that contrasteed all stimulus blocks to
+    # rest"
+    #########################################################################
+
     # As unclear as this paragraph is, let us still try to make this matrix
     even_runs = labels["chunks"] % 2 == 0
     odd_runs = labels["chunks"] % 2 == 1
@@ -148,9 +162,16 @@ for subject_id in subject_ids:
     activations = glm_sixteen.coef_
     # as indicated in the paper, normalize activations across categories,
     # (but not across even/odd runs)
+
+    # Citing the paper
+    ########################################################################
+    # "Mean response in each voxel across categories was subtracted from the 
+    # response to each individual category in each half of the data before 
+    # calculating correlations"
+    ########################################################################
     normalized_activations = ((activations.reshape(-1, 2, 8)
            - activations.reshape(-1, 2, 8).mean(-1)[..., np.newaxis])
-           / activations.reshape(-1, 2, 8).std(-1)[..., np.newaxis]
+           # / activations.reshape(-1, 2, 8).std(-1)[..., np.newaxis]
                               ).reshape(-1, 16)
 
     correlation_matrix = np.corrcoef(normalized_activations.T)
@@ -160,7 +181,8 @@ for subject_id in subject_ids:
     import pylab as plt
     plt.figure()
     plt.imshow(correlation_matrix, interpolation="nearest")
-    plt.title("Full correlation matrix, \nodd/even correlation on off diagonal blocks")
+    plt.title("Full correlation matrix, \n"
+              "odd/even correlation on off diagonal blocks")
     plt.yticks(range(16), plot_labels * 2)
     plt.xticks(range(16), plot_labels * 2, rotation=90)
     plt.jet()
