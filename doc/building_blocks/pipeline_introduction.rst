@@ -57,7 +57,7 @@ to the subjects from the brain activation.
 These conditions are presented as string into a CSV file. The numpy function
 `loadtxt` is very useful to load this kind of data.
 
-.. literalinclude:: ../plot_haxby_simple.py
+.. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################
     :end-before: ### Keep only data corresponding to faces or houses ###########################
 
@@ -65,7 +65,7 @@ These conditions are presented as string into a CSV file. The numpy function
 For example, we will now remove the *rest* condition from our dataset.
 This can be done as follows:
 
-.. literalinclude:: ../plot_haxby_simple.py
+.. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Keep only data corresponding to faces or houses ###########################
     :end-before: ### Load the mask #############################################################
 
@@ -88,10 +88,10 @@ coordinate space (which we will call :ref:`Niimgs <niimg>`). For use with
 the scikit-learn, they need to be converted into 2D arrays of
 samples and features.
 
-.. |niimgs| image:: images/niimgs.jpg
+.. |niimgs| image:: ../images/niimgs.jpg
     :scale: 50%
 
-.. |arrays| image:: images/feature_array.jpg
+.. |arrays| image:: ../images/feature_array.jpg
     :scale: 35%
 
 .. |arrow| raw:: html
@@ -109,8 +109,8 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
-.. figure:: auto_examples/images/plot_haxby_simple_2.png
-    :target: auto_examples/plot_haxby_simple.html
+.. figure:: ../auto_examples/images/plot_haxby_simple_2.png
+    :target: ../auto_examples/plot_haxby_simple.html
     :align: right
     :scale: 30%
 
@@ -123,7 +123,7 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
-.. literalinclude:: ../plot_haxby_simple.py
+.. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Load the mask #############################################################
     :end-before: ### Prediction function #######################################################
 
@@ -150,7 +150,7 @@ scikit-learn, using its `fit`, `predict` or `transform` methods.
 Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
-.. literalinclude:: ../plot_haxby_simple.py
+.. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Prediction function #######################################################
     :end-before: ### Unmasking #################################################################
 
@@ -167,7 +167,7 @@ masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
 
-.. literalinclude:: ../plot_haxby_simple.py
+.. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualization #############################################################
 
@@ -180,12 +180,12 @@ Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 
-.. literalinclude:: ../plot_haxby_simple.py
+.. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Visualization #############################################################
     :end-before: ### Visualize the mask ########################################################
 
-.. figure:: auto_examples/images/plot_haxby_simple_1.png
-    :target: auto_examples/plot_haxby_simple.html
+.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
+    :target: ../auto_examples/plot_haxby_simple.html
     :align: center
     :scale: 50%
 
