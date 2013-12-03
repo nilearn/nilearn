@@ -419,18 +419,40 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     return files_
 
 
-def _tree(path, pattern=None):
-    """ Return a directory tree under the form of a list. Dirs are dictionaries
+def _tree(path, pattern=None, dictionary=False):
+    """ Return a directory tree under the form of a dictionaries and list
+
+    Parameters:
+    -----------
+    path: string
+        Path browsed
+
+    pattern: string, optional
+        Pattern used to filter files (see fnmatch)
+
+    dict: boolean, optional
+        If True, the function will return a dict instead of a list
     """
     files = []
+    dirs = [] if not dictionary else {}
     for file_ in os.listdir(path):
         file_path = os.path.join(path, file_)
         if os.path.isdir(file_path):
-            files.append({file_: _tree(file_path, pattern)})
+            if not dictionary:
+                dirs.append((file_, _tree(file_path, pattern)))
+            else:
+                dirs[file_] = _tree(file_path, pattern)
         else:
             if pattern is None or fnmatch.fnmatch(file_, pattern):
-                files.append(file_)
-    return np.sort(files)
+                files.append(file_path)
+    files = sorted(files)
+    if not dictionary:
+        return sorted(dirs) + files
+    if len(dirs) == 0:
+        return files
+    if len(files) > 0:
+        dirs['.'] = files
+    return dirs
 
 
 ###############################################################################
@@ -791,8 +813,9 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                 [(os.path.join('stimuli', 'README'),
                   url + 'stimuli-2010.01.14.tar.gz', {'uncompress': True})],
                 data_dir=data_dir, resume=resume)[0]
-        kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg')
-
+        kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
+                                  dictionary=True)
+        
     # return the data
     return Bunch(
             anat=files[0::n_files],
