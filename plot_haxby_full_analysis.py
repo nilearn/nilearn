@@ -23,34 +23,8 @@ data_dir = os.path.dirname(os.path.dirname(data_files.anat[0]))
 take_a_look_at_stimuli = False
 
 if take_a_look_at_stimuli:
-    import Image
-    import pylab as pl
-    main_stimuli_dir = os.path.join(data_dir, "stimuli")
-    for file_dictionary in data_files.stimuli:
-        if "controls" in file_dictionary.keys():
-            # skip control images, there are too many
-            continue
-
-        stim_type = file_dictionary.keys()[0]
-        file_names = file_dictionary[stim_type]
-        stim_dir = os.path.join(main_stimuli_dir, stim_type)
-
-        pl.figure()
-        for i in range(48):
-            pl.subplot(6, 8, i + 1)
-            try:
-                pl.imshow(Image.open(
-                    os.path.join(stim_dir, file_names[i])),
-                    origin="lower")
-
-                pl.gray()
-                pl.axis("off")
-            except:
-                # just go to the next one if the file is not present
-                continue
-        pl.title(stim_type)
-    pl.show()
-
+    from plot_haxby_stimuli import plot_stimuli
+    plot_stimuli(data_files.stimuli)
 ### Do first similarity analysis for all subjects in subjects list ##########
 subject_ids = [1]
 
