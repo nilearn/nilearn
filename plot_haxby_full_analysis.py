@@ -209,6 +209,3 @@ for subject_id in subject_ids:
 
     # mean score around .8, chance level is at around .11111
     # Note that I didn't even remove resting state here.
-
-
-
