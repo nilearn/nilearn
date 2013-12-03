@@ -788,10 +788,10 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     md5sums = _read_md5_sum_file(md5sums)
 
     # definition of dataset files
-    sub_files = ['anat.nii.gz', 'bold.nii.gz', 'labels.txt',
+    sub_files = ['bold.nii.gz', 'labels.txt',
                   'mask4_vt.nii.gz', 'mask8b_face_vt.nii.gz',
                   'mask8b_house_vt.nii.gz', 'mask8_face_vt.nii.gz',
-                  'mask8_house_vt.nii.gz']
+                  'mask8_house_vt.nii.gz', 'anat.nii.gz']
     n_files = len(sub_files)
 
     files = [
@@ -801,11 +801,14 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
               'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
             for i in range(1, n_subjects + 1)
             for sub_file in sub_files
+            if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
-    files = files[:n_files * n_subjects]
     files = _fetch_files('haxby2001', files, data_dir=data_dir,
                          resume=resume)
+
+    if n_subjects == 6:
+        files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
     if fetch_stimuli:
@@ -818,14 +821,14 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         
     # return the data
     return Bunch(
-            anat=files[0::n_files],
-            func=files[1::n_files],
-            session_target=files[2::n_files],
-            mask_vt=files[3::n_files],
-            mask_face=files[4::n_files],
-            mask_house=files[5::n_files],
-            mask_face_little=files[6::n_files],
-            mask_house_little=files[7::n_files],
+            anat=files[7::n_files],
+            func=files[0::n_files],
+            session_target=files[1::n_files],
+            mask_vt=files[2::n_files],
+            mask_face=files[3::n_files],
+            mask_house=files[4::n_files],
+            mask_face_little=files[5::n_files],
+            mask_house_little=files[6::n_files],
             **kwargs)
 
 
