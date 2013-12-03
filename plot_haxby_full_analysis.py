@@ -66,12 +66,12 @@ for subject_id in subject_ids:
     # We could take a look at some BOLD time courses
     take_a_look_at_bold = False
     if take_a_look_at_bold:
-        import pylab as pl
-        pl.figure()
-        pl.plot(vt_timecourses[:121])
-        pl.xlabel("TRs")
-        pl.ylabel("Normalized BOLD")
-        pl.title("Some BOLD time courses.")
+        import pylab as plt
+        plt.figure()
+        plt.plot(vt_timecourses[:121])
+        plt.xlabel("TRs")
+        plt.ylabel("Normalized BOLD")
+        plt.title("Some BOLD time courses.")
 
     # load labels
     labels = np.recfromcsv(data_files.session_target[subject_id],
@@ -157,15 +157,15 @@ for subject_id in subject_ids:
 
     plot_labels = list(unique_categories[unique_categories != "rest"])
 
-    import pylab as pl
-    pl.figure()
-    pl.imshow(correlation_matrix, interpolation="nearest")
-    pl.title("Full correlation matrix, \nodd/even correlation on off diagonal blocks")
-    pl.yticks(range(16), plot_labels * 2)
-    pl.xticks(range(16), plot_labels * 2, rotation=90)
-    pl.jet()
-    pl.colorbar()
-    pl.show()
+    import pylab as plt
+    plt.figure()
+    plt.imshow(correlation_matrix, interpolation="nearest")
+    plt.title("Full correlation matrix, \nodd/even correlation on off diagonal blocks")
+    plt.yticks(range(16), plot_labels * 2)
+    plt.xticks(range(16), plot_labels * 2, rotation=90)
+    plt.jet()
+    plt.colorbar()
+    plt.show()
 
 
 
@@ -183,3 +183,5 @@ for subject_id in subject_ids:
 
     # mean score around .8, chance level is at around .11111
     # Note that I didn't even remove resting state here.
+    print scores
+    print "Mean score: %1.2f" % scores.mean()
