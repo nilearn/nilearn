@@ -430,7 +430,7 @@ def _tree(path, pattern=None, dictionary=False):
     pattern: string, optional
         Pattern used to filter files (see fnmatch)
 
-    dict: boolean, optional
+    dictionary: boolean, optional
         If True, the function will return a dict instead of a list
     """
     files = []
