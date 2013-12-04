@@ -80,121 +80,11 @@ for subject_id in subject_ids:
     # ['bottle' 'cat' 'chair' 'face' 'house' 'rest'
     # 'scissors' 'scrambledpix' 'shoe']
 
-    # Citing the paper:
-    ########################################################################
-    # "To identify object-selective cortex, we used an eight-regressor model.
-    # The first regressor was the contrast between stimulus blocks and rest.
-    # The remaining seven regressors modeled the response to each meaningful
-    # category."
-    ########################################################################
 
-    # Let's do it:
-    unique_conditions = np.unique(labels)
-    # We first make a design matrix containing a regressor for each
-    # condition per run [e.g. ("shoe", 3), ("face", 12) and so on]
-    independent_design = (labels[:, np.newaxis]
-                  == unique_conditions[np.newaxis, :]).astype(np.float64)
-
-    # now we merge the regressors of the same category over different runs
-    unique_categories = np.unique(unique_conditions["labels"])
-    merge_table = (unique_conditions["labels"][:, np.newaxis]
-                   == unique_categories[np.newaxis, :])
-
-    category_design = independent_design.dot(merge_table)
-
-    # category_design is almost what we want. We need to modify one 
-    # regressor, rest to rest_vs_active, and drop the scrambled regressor
-
-    rest_vs_active = (category_design[:, unique_categories == "rest"] -
-                      category_design[:, unique_categories != "rest"
-                                         ].sum(axis=1)[:, np.newaxis])
-
-    active_categories = np.array([s not in ["rest", "scrambledpix"] 
-                                  for s in unique_categories])
-
-    eight_regressor_design = np.hstack([rest_vs_active,
-                             category_design[:, active_categories]])
-
-    # Fit a GLM using this matrix
-    from sklearn.linear_model import LinearRegression
-    glm_eight = LinearRegression(fit_intercept=True)
-
-    glm_eight.fit(eight_regressor_design, vt_timecourses)
-
-    beta_maps = ventral_temporal_mask.inverse_transform(glm_eight.coef_.T)
-
-    # Citing the paper
-    ########################################################################
-    # "To determine the patterns of response to each category on even-
-    # numbered and odd-numbered runs, we used a 16-regressor model - eight 
-    # regressors to model the response to  each category relative to rest on 
-    # even runs  and eight regressors to model the response to each category 
-    # on odd runs with no regressor that contrasteed all stimulus blocks to
-    # rest"
-    #########################################################################
-
-    # As unclear as this paragraph is, let us still try to make this matrix
-    even_runs = labels["chunks"] % 2 == 0
-    odd_runs = labels["chunks"] % 2 == 1
-
-    even_design = (even_runs[:, np.newaxis] * 
-                   independent_design).dot(merge_table)
-    odd_design = (odd_runs[:, np.newaxis] * 
-                   independent_design).dot(merge_table)
-
-    # now subtract the rest regressor from all the others
-    even_category_vs_rest = (even_design[:, unique_categories != "rest"] -
-                even_design[:, unique_categories == "rest"])
-    odd_category_vs_rest = (odd_design[:, unique_categories != "rest"] -
-                odd_design[:, unique_categories == "rest"])
-
-    sixteen_regressor_design = np.hstack([even_category_vs_rest,
-                                          odd_category_vs_rest])
-
-
-    # use this matrix in a GLM
-    glm_sixteen = LinearRegression(fit_intercept=True)
-    glm_sixteen.fit(sixteen_regressor_design, vt_timecourses)
-
-    activations = glm_sixteen.coef_
-    # as indicated in the paper, normalize activations across categories,
-    # (but not across even/odd runs)
-
-    # Citing the paper
-    ########################################################################
-    # "Mean response in each voxel across categories was subtracted from the 
-    # response to each individual category in each half of the data before 
-    # calculating correlations"
-    ########################################################################
-    normalized_activations = ((activations.reshape(-1, 2, 8)
-           - activations.reshape(-1, 2, 8).mean(-1)[..., np.newaxis])
-           # / activations.reshape(-1, 2, 8).std(-1)[..., np.newaxis]
-                              ).reshape(-1, 16)
-
-    correlation_matrix = np.corrcoef(normalized_activations.T)
-
-    plot_labels = list(unique_categories[unique_categories != "rest"])
-
-    import pylab as plt
-    plt.figure()
-    plt.imshow(correlation_matrix, interpolation="nearest")
-    plt.title("Full correlation matrix, \n"
-              "odd/even correlation on off diagonal blocks")
-    plt.yticks(range(16), plot_labels * 2)
-    plt.xticks(range(16), plot_labels * 2, rotation=90)
-    plt.jet()
-    plt.colorbar()
-    plt.show()
-
-
-
-    # Now try a quick and dirty SVM on the whole thing
+    # Now try a quick and dirty SVM on the ROI
     from sklearn.svm import SVC
-    # from sklearn.feature_selection import f_classif, SelectKBest
-    # from sklearn.pipeline import Pipeline
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.cross_validation import cross_val_score
-    # feature_selection = SelectKBest(f_classif, 500)
     classifier = OneVsRestClassifier(SVC(C=1.))
 
     scores = cross_val_score(classifier, vt_timecourses, labels['labels'],
@@ -202,5 +92,28 @@ for subject_id in subject_ids:
 
     # mean score around .8, chance level is at around .11111
     # Note that I didn't even remove resting state here.
+    print "SVM C=1 on ROI"
     print scores
     print "Mean score: %1.2f" % scores.mean()
+
+    # Now full brain ANOVA+SVM
+
+    # need to extract full brain mask
+    from nilearn.masking import compute_epi_mask
+    brain_mask = compute_epi_mask(data_files.func[subject_id])
+    brain_masker = NiftiMasker(brain_mask)
+    all_timecourses = brain_masker.fit_transform(data_files.func[subject_id])
+    from sklearn.feature_selection import f_classif, SelectKBest
+    from sklearn.pipeline import Pipeline
+    feature_selection = SelectKBest(f_classif, 500)
+    pipeline = Pipeline([("Feature selection", feature_selection),
+                         ("Classifier", classifier)])
+
+    scores_anova_svm = cross_val_score(pipeline, all_timecourses, 
+                                       labels['labels'], cv=12, n_jobs=12,
+                                       verbose=True)
+    # at the moment, this scores at around .63
+    # probably improvable
+    print "ANOVA + SVM C=1 on full brain"
+    print scores_anova_svm
+    print "Mean score: %1.2f" % scores_anova_svm.mean()
