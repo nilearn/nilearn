@@ -33,11 +33,9 @@ from nilearn.input_data import NiftiMasker
 import numpy as np
 
 
-# @@@@@ Michael: Maybe we should only work with one subject? This outer loop is easily removed
 for subject_id in subject_ids:
 
     # create masker object
-    # @@@@@ Michael: Do we detrend and standardize here? Data loaded goes across 12 runs, so ideally it should be broken apart. Scipy.signal.detrend has this breakpoint option. The paper does normalization across conditions (subtracting the condition mean), but I don't know if it does detrending and standardizing before this. Subtracting timecourse means definitely makes the data look a lot better - one can distinguish rest from activation times. I will do the detrending and standardizing by block later on
     ventral_temporal_mask = NiftiMasker(data_files.mask_vt[subject_id])
                                         # detrend=True,
                                         # standardize=True)
@@ -55,7 +53,6 @@ for subject_id in subject_ids:
                                             vt_timecourses.shape[-1])
 
     # thus reshaped we can detrend and standardize the timecourses
-    # @@@@@ Michael: It may be useful to teach how this is done explicitly. Then again, the NiftiMasker could probably also be made to be able to do this easily
     from scipy.signal import detrend
     vt_timecourses = detrend(vt_timecourses, axis=1)
     vt_timecourses = ((vt_timecourses
