@@ -85,7 +85,7 @@ for subject_id in subject_ids:
     from sklearn.svm import SVC
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.cross_validation import cross_val_score
-    classifier = OneVsRestClassifier(SVC(C=1.))
+    classifier = OneVsRestClassifier(SVC(C=1., kernel="linear"))
 
     scores = cross_val_score(classifier, vt_timecourses, labels['labels'],
                              cv=12, n_jobs=12, verbose=True)
