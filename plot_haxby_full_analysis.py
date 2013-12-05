@@ -63,7 +63,7 @@ for subject_id in subject_ids:
     # We could take a look at some BOLD time courses
     take_a_look_at_bold = False
     if take_a_look_at_bold:
-        import pylab as plt
+        import matplotlib.pylab as plt
         plt.figure()
         plt.plot(vt_timecourses[:121])
         plt.xlabel("TRs")
