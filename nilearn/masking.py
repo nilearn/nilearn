@@ -94,7 +94,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
-                     connected=True, opening=2, exclude_zeros=False,
+                     connected=True, opening=2, closing=0, exclude_zeros=False,
                      ensure_finite=True,
                      target_affine=None, target_shape=None,
                      memory=None, verbose=0,):
@@ -123,11 +123,19 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         if connected is True, only the largest connect component is kept.
 
     opening: bool or int, optional
-        if opening is True, an morphological opening is performed, to keep
+        if opening is True, a morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
         If opening is an integer 'n', it is performed via 'n' erosion
         followed by 'n' dilations.
+
+    closing: bool or int, optional
+        if closing is True, a morphological closing is performed after the
+        morphological opening, closing possible gaps left by the thresholding.
+        The morphological closing should be True only if opening is True 
+        (otherwise it will not be performed). 
+        The 'n_closing' closing operations should be lower than the 
+        'n_opening' opening operations.
 
     ensure_finite: bool
         If ensure_finite is True, the non-finite values (NaNs and infs)
@@ -200,7 +208,13 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     if connected and mask.any():
         mask = largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask, iterations=opening)
+        closing = int(closing)
+        if closing > opening:
+            warning.warn("The number of closing operations will be reduced\
+            to match the number of opening operations")
+            closing = opening
+        mask = ndimage.binary_dilation(mask, iterations=opening+closing)
+        mask = ndimage.binary_erosion(mask, iterations=closing)
     return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
                        epi_img.get_affine())
 
