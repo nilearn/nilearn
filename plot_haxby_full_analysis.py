@@ -92,11 +92,11 @@ for subject_id in subject_ids:
 
     # mean score around .8, chance level is at around .11111
     # Note that I didn't even remove resting state here.
-    print "SVM C=1 on ROI"
+    print "Linear SVM C=1 on ROI"
     print scores
     print "Mean score: %1.2f" % scores.mean()
 
-    # Now full brain ANOVA+SVM
+    # Now full brain ANOVA + Linear SVM
 
     # need to extract full brain mask
     from nilearn.masking import compute_epi_mask
@@ -114,6 +114,6 @@ for subject_id in subject_ids:
                                        verbose=True)
     # at the moment, this scores at around .63
     # probably improvable
-    print "ANOVA + SVM C=1 on full brain"
+    print "ANOVA + Linear SVM C=1 on full brain"
     print scores_anova_svm
     print "Mean score: %1.2f" % scores_anova_svm.mean()
