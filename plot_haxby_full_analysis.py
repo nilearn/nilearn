@@ -1,7 +1,8 @@
 """In this script we reproduce the original data analysis conducted by
 Haxby et al. in 
 
-"Distributed and Overlapping Representations of Faces and Objects in Ventral Temporal Cortex"
+"Distributed and Overlapping Representations of Faces and Objects
+    in Ventral Temporal Cortex"
 
 (Science 2001)
 
