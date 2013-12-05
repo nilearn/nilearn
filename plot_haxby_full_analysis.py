@@ -90,7 +90,7 @@ for subject_id in subject_ids:
     scores = cross_val_score(classifier, vt_timecourses, labels['labels'],
                              cv=12, n_jobs=12, verbose=True)
 
-    # mean score around .8, chance level is at around .11111
+    # mean score around .86, chance level is at around .11111
     # Note that I didn't even remove resting state here.
     print "Linear SVM C=1 on ROI"
     print scores
@@ -112,7 +112,7 @@ for subject_id in subject_ids:
     scores_anova_svm = cross_val_score(pipeline, all_timecourses, 
                                        labels['labels'], cv=12, n_jobs=12,
                                        verbose=True)
-    # at the moment, this scores at around .63
+    # at the moment, this scores at around .87
     # probably improvable
     print "ANOVA + Linear SVM C=1 on full brain"
     print scores_anova_svm
