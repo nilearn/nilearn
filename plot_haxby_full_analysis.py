@@ -13,12 +13,8 @@ Haxby et al. in
 # specify how many subjects we want to load
 n_subjects = 2
 
-import os
 from nilearn import datasets
 data_files = datasets.fetch_haxby(n_subjects=n_subjects, fetch_stimuli=True)
-# get root folder from first entry in data files
-data_dir = os.path.dirname(os.path.dirname(data_files.anat[0]))
-
 
 ### Take a quick look at stimuli if option is set to True ###################
 take_a_look_at_stimuli = False
