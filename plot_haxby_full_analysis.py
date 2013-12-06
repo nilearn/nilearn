@@ -35,31 +35,6 @@ for subject_id in subject_ids:
     vt_timecourses = ventral_temporal_mask.transform(
         data_files.func[subject_id])
 
-    # The data consist of 12 concatenated runs of 121 timepoints each,
-    # and we will reshape the data to reflect this. This is important, since
-    # detrending and standardizing needs to respect this structure
-
-    vt_timecourses = vt_timecourses.reshape(12, 121, 
-                                            vt_timecourses.shape[-1])
-
-    # thus reshaped we can detrend and standardize the timecourses
-    from scipy.signal import detrend
-    vt_timecourses = detrend(vt_timecourses, axis=1)
-    vt_timecourses = ((vt_timecourses
-                       - vt_timecourses.mean(axis=1)[:, np.newaxis, :])
-                       / vt_timecourses.std(axis=1)[:, np.newaxis, :])
-    # reshape back
-    vt_timecourses = vt_timecourses.reshape(12 * 121, -1)
-    # We could take a look at some BOLD time courses
-    take_a_look_at_bold = False
-    if take_a_look_at_bold:
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(vt_timecourses[:121])
-        plt.xlabel("TRs")
-        plt.ylabel("Normalized BOLD")
-        plt.title("Some BOLD time courses.")
-
     # load labels
     labels = np.recfromcsv(data_files.session_target[subject_id],
                            delimiter=" ")
@@ -111,3 +86,15 @@ for subject_id in subject_ids:
     print "ANOVA + Linear SVM C=1 on full brain"
     print "Score: %1.2f +- %1.2f" % (scores_anova_svm.mean(),
                                      scores_anova_svm.std())
+
+    ### Let us now check the other provided masks and do decoding
+    # in the spirit of the original article
+
+    mask_names = ['mask_face', 'mask_face_little',
+                  'mask_house', 'mask_house_little']
+
+    # for mask_name in mask_names:
+    #     print "Working on mask %s" % mask_name
+    #     masker = NiftiMasker(data_files[mask_name][subject_id])
+    #     masked_data = masker.fit_transform(data_files[mask_name][subject_id])
+
