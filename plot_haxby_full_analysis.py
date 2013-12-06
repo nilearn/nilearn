@@ -16,12 +16,6 @@ n_subjects = 2
 from nilearn import datasets
 data_files = datasets.fetch_haxby(n_subjects=n_subjects, fetch_stimuli=True)
 
-### Take a quick look at stimuli if option is set to True ###################
-take_a_look_at_stimuli = False
-
-if take_a_look_at_stimuli:
-    from plot_haxby_stimuli import plot_stimuli
-    plot_stimuli(data_files.stimuli)
 ### Do first similarity analysis for all subjects in subjects list ##########
 subject_ids = [1]
 
@@ -76,6 +70,8 @@ for subject_id in subject_ids:
     # ['bottle' 'cat' 'chair' 'face' 'house' 'rest'
     # 'scissors' 'scrambledpix' 'shoe']
 
+    # identify resting state labels in order to be able to remove them
+    resting_state = labels['labels'] == "rest"
 
     # Now try a quick and dirty SVM on the ROI
     from sklearn.svm import SVC
@@ -83,11 +79,13 @@ for subject_id in subject_ids:
     from sklearn.cross_validation import cross_val_score
     classifier = OneVsRestClassifier(SVC(C=1., kernel="linear"))
 
-    scores = cross_val_score(classifier, vt_timecourses, labels['labels'],
+    scores = cross_val_score(classifier,
+                             vt_timecourses[resting_state == False],
+                             labels['labels'][resting_state == False],
                              cv=12, n_jobs=1, verbose=True)
 
-    # mean score around .86, chance level is at around .11111
-    # Note that I didn't even remove resting state here.
+    # After removing resting state:
+    # mean score around .82 (.86 with RS), chance level is .125
     print "Linear SVM C=1 on ROI"
     print "Score: %1.2f +- %1.2f" % (scores.mean(), scores.std())
 
@@ -104,11 +102,12 @@ for subject_id in subject_ids:
     pipeline = Pipeline([("Feature selection", feature_selection),
                          ("Classifier", classifier)])
 
-    scores_anova_svm = cross_val_score(pipeline, all_timecourses, 
-                                       labels['labels'], cv=12, n_jobs=1,
+    scores_anova_svm = cross_val_score(pipeline,
+                                       all_timecourses[resting_state == False], 
+                                       labels['labels'][resting_state == False],
+                                       cv=12, n_jobs=1,
                                        verbose=True)
-    # at the moment, this scores at around .87
-    # probably improvable
+    # With resting removed state this scores at .91 (with RS: .87)
     print "ANOVA + Linear SVM C=1 on full brain"
     print "Score: %1.2f +- %1.2f" % (scores_anova_svm.mean(),
                                      scores_anova_svm.std())
