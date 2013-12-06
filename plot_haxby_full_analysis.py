@@ -93,8 +93,16 @@ for subject_id in subject_ids:
     mask_names = ['mask_face', 'mask_face_little',
                   'mask_house', 'mask_house_little']
 
-    # for mask_name in mask_names:
-    #     print "Working on mask %s" % mask_name
-    #     masker = NiftiMasker(data_files[mask_name][subject_id])
-    #     masked_data = masker.fit_transform(data_files[mask_name][subject_id])
+    mask_scores = {}
+    for mask_name in mask_names:
+        print "Working on mask %s" % mask_name
+        masker = NiftiMasker(data_files[mask_name][subject_id])
+        masked_timecourses = masker.fit_transform(
+            data_files.func[subject_id])
 
+        mask_scores[mask_name] = cross_val_score(classifier,
+                             masked_timecourses[resting_state == False],
+                             labels['labels'][resting_state == False],
+                             cv=12, n_jobs=1, verbose=True)
+        print "Scores: %1.2f +- %1.2f" % (mask_scores[mask_name].mean(),
+                                          mask_scores[mask_name].std())
