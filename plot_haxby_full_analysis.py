@@ -34,8 +34,7 @@ for subject_id in subject_ids:
 
     # create masker object
     ventral_temporal_mask = NiftiMasker(data_files.mask_vt[subject_id])
-                                        # detrend=True,
-                                        # standardize=True)
+
     # initialize it
     ventral_temporal_mask.fit()
     # mask the BOLD data
@@ -60,7 +59,7 @@ for subject_id in subject_ids:
     # We could take a look at some BOLD time courses
     take_a_look_at_bold = False
     if take_a_look_at_bold:
-        import matplotlib.pylab as plt
+        import matplotlib.pyplot as plt
         plt.figure()
         plt.plot(vt_timecourses[:121])
         plt.xlabel("TRs")
@@ -85,13 +84,12 @@ for subject_id in subject_ids:
     classifier = OneVsRestClassifier(SVC(C=1., kernel="linear"))
 
     scores = cross_val_score(classifier, vt_timecourses, labels['labels'],
-                             cv=12, n_jobs=12, verbose=True)
+                             cv=12, n_jobs=1, verbose=True)
 
     # mean score around .86, chance level is at around .11111
     # Note that I didn't even remove resting state here.
     print "Linear SVM C=1 on ROI"
-    print scores
-    print "Mean score: %1.2f" % scores.mean()
+    print "Score: %1.2f +- %1.2f" % (scores.mean(), scores.std())
 
     # Now full brain ANOVA + Linear SVM
 
@@ -107,10 +105,10 @@ for subject_id in subject_ids:
                          ("Classifier", classifier)])
 
     scores_anova_svm = cross_val_score(pipeline, all_timecourses, 
-                                       labels['labels'], cv=12, n_jobs=12,
+                                       labels['labels'], cv=12, n_jobs=1,
                                        verbose=True)
     # at the moment, this scores at around .87
     # probably improvable
     print "ANOVA + Linear SVM C=1 on full brain"
-    print scores_anova_svm
-    print "Mean score: %1.2f" % scores_anova_svm.mean()
+    print "Score: %1.2f +- %1.2f" % (scores_anova_svm.mean(),
+                                     scores_anova_svm.std())
