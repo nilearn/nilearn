@@ -28,18 +28,9 @@ This tutorial shows how to run a typical preliminary study. We will show how to
 select features and build our own mask using simple functions and nilearn
 primitives. 
 
-As usual, nibabel is used to load the data.
-
-.. literalinclude:: ../../todo.py
-    :start-after: # Fetch dataset and restrict labels to face and houses
+.. literalinclude:: ../plot_image_manipulation.py
+    :start-after: # Fetch dataset
     :end-before: # Create a function to display an axial slice
-
-.. Perhaps this is the occasion to go deeper in explaining the affine?
- 
-The affine matrix is a transformation matrix used to retrieve voxel coordinates
-in their original space. Diagonal values in the affine matrix are the spatial
-resolutions along each axis. Different values means that the data array is
-anisotropic, which is important for the smooting step.
 
 Visualization
 -------------
@@ -47,11 +38,9 @@ Visualization
 In this example, we will focus on a single slice of the brain. For convenience,
 we define a function to display a slice easily.
 
-.. literalinclude:: ../../todo.py
+.. literalinclude:: ../plot_image_manipulation.py
     :start-after: # Create a function to display an axial slice
     :end-before: # Smoothing
-
-.. Put the mean raw map here
 
 Smoothing
 ---------
@@ -61,55 +50,118 @@ that are not robust to noise, it is necessary to smooth the data. Smoothing is
 usually applied using a gaussian function with 4mm to 8mm full-width at
 half-maximum. Even if scipy provides functions, like `gaussian_filter1d`,
 to perform gaussian smoothing, it does not take into account the potential
-anisotropy of data express in the affine. The function
-`nilearn.masking._smooth_array` has been made to 
+anisotropy of data expressed in the affine. The function
+`nilearn.image.smooth` takes care of that for you and can even take the path to
+the file as a parameter.
 
 
-.. literalinclude:: ../../todo.py
+.. literalinclude:: ../plot_image_manipulation.py
     :start-after: # Smoothing
     :end-before: # Run a T-test for face and houses
 
-.. Put the mean smoothed raw map here
+.. figure:: auto_examples/images/plot_image_manipulation_1.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
 
 Selecting features
 ------------------
 
-.. literalinclude:: ../../todo.py
+Functional MRI data are high dimensional comparend to the number of samples
+(usually 50000 voxels for 1000 samples). In this setting, machine learning
+algorithm can perform poorly. However, a simple statistical test can help
+reducing the number of voxels.
+
+The Student's t-test performs a simple statistical test that determines if two
+distributions are statistically different. It can be used to compare voxel
+timeseries in two different conditions (when houses or faces are shown in our
+case). If the timeserie distribution is similar in the two conditions, then the
+voxel is not very interesting to discriminate the condition.
+
+This test returns p-values that represents probabilities that the two
+timeseries are drawn from the same distribution. The lower is the p-value, the
+more discriminative is the voxel.
+
+.. literalinclude:: ../plot_image_manipulation.py
     :start-after: # Run a T-test for face and houses
     :end-before: # Thresholding
+
+.. figure:: auto_examples/images/plot_image_manipulation_2.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+This feature selection method is available in the scikit-learn where it has been
+extended to several classes (TODO: put ref to f_classif).
 
 Thresholding
 ------------
 
-ICA maps are continuous. Interesting voxels are usually the voxels with higher
-value. In order to extract them, we simply put voxels with lower value to 0.
+Higher p-values are kept as voxels of interest. Applying a threshold to an array
+is easy thanks to numpy indexing a la Matlab.
 
-
-.. literalinclude:: ../../todo.py
+.. literalinclude:: ../plot_image_manipulation.py
     :start-after: # Thresholding
     :end-before: # Binarization and intersection with VT mask
 
-.. Put the thresholded maps here
-
-There is no absolute rule to chose the right theshold. A rule of thumb could be
-to keep the highest 10% voxels.
+.. figure:: auto_examples/images/plot_image_manipulation_3.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
 
 Mask intersection
 -----------------
 
-.. literalinclude:: ../../todo.py
+We now want to restrict our study to the ventral temporal area. The
+corresponding mask is provided in `haxby.mask_vt`. We want to compute the
+intersection of this mask with our mask. The first step is to load it with
+nibabel. We then use a logical and to keep only voxels that are selected in both
+masks.
+
+.. literalinclude:: ../plot_image_manipulation.py
     :start-after: # Binarization and intersection with VT mask
     :end-before: # Dilation
+
+.. figure:: auto_examples/images/plot_image_manipulation_4.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
 
 Dilation
 --------
 
-.. literalinclude:: ../../todo.py
+We observe that our voxels are a bit scattered across the brain. To obtain more
+compact shape, we use a morphological dilation. This is a common step to be sure
+not to forget voxels located on the edge of a ROI.
+
+.. literalinclude:: ../plot_image_manipulation.py
     :start-after: # Dilation
     :end-before: # Identification of connected components
+
+.. figure:: auto_examples/images/plot_image_manipulation_5.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
 
 Extracting connected components
 -------------------------------
 
-.. literalinclude:: ../../todo.py
+Scipy function `ndimage.label` identify connected components in our final mask.
+
+.. literalinclude:: ../plot_image_manipulation.py
     :start-after: # Identification of connected components
+    :end-before: # Save the result
+
+.. figure:: auto_examples/images/plot_image_manipulation_6.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+Save the result
+---------------
+
+The final result is saved using nibabel for further consultation with a software
+like FSLview for example.
+
+.. literalinclude:: ../plot_image_manipulation.py
+    :start-after: # Save the result

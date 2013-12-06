@@ -1,57 +1,52 @@
 # Fetch dataset and load data
 from nilearn import datasets
 import nibabel
-import numpy as np
+import numpy
 
 
 z = 26
 
-# Fetch dataset and restrict labels to face and houses
+# Fetch dataset
 haxby = datasets.fetch_haxby(n_subjects=1)
-img = nibabel.load(haxby.func[0])
-data = img.get_data()
-affine = img.get_affine()
-labels = np.loadtxt(haxby.session_target[0], delimiter=' ',
-                    usecols=[0], dtype=basestring, skiprows=1)
+labels = numpy.genfromtxt(haxby.session_target[0], skip_header=1, usecols=[0],
+                          dtype=basestring)
 
 # Create a function to display an axial slice
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 def display_axial(brain, i, cmap='hot'):
     plt.figure()
-    plt.imshow(brain[:, :, i].T, origin='lower', interpolation='nearest',
+    plt.imshow(brain[:, :, i].T.copy(), origin='lower', interpolation='nearest',
                cmap=cmap)
     plt.axis('off')
-    plt.show()
+    plt.tight_layout()
 
-
-# Show mean slice
-display_axial(data.mean(axis=-1), z)
 
 # Smoothing
-from nilearn.masking import _smooth_array
-data = _smooth_array(data, affine, fwhm=6)
+from nilearn.image import smooth
+img = smooth(haxby.func[0], fwhm=6)
+data = img.get_data()
+affine = img.get_affine()
 display_axial(data.mean(axis=-1), z)
 
 # Run a T-test for face and houses
 from scipy import stats
 tv, pv = stats.ttest_ind(data[..., labels == 'face'],
                          data[..., labels == 'house'], axis=-1)
-pv = - np.log10(pv)
-pv[np.isnan(pv)] = 0.
+pv = - numpy.log10(pv)
+pv[numpy.isnan(pv)] = 0.
 pv[pv > 10] = 10
 display_axial(pv, z)
 
 # Thresholding
-pv[pv < 4] = 0
+pv[pv < 5] = 0
 display_axial(pv, z)
 
 # Binarization and intersection with VT mask
 pv = (pv != 0)
 vt = nibabel.load(haxby.mask_vt[0]).get_data().astype(bool)
-pv = np.logical_and(pv, vt)
+pv = numpy.logical_and(pv, vt)
 display_axial(pv, z)
 
 # Dilation
@@ -61,5 +56,9 @@ display_axial(pv, z)
 
 # Identification of connected components
 from scipy.ndimage import label
-labels, _ = label(pv)
+labels, n_labels = label(pv)
 display_axial(labels, z, 'gnuplot')
+
+# Save the result
+nibabel.save(nibabel.Nifti1Image(labels, affine), 'mask.nii')
+plt.show()
