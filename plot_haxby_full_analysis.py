@@ -29,34 +29,27 @@ for subject_id in subject_ids:
     # load labels
     labels = np.recfromcsv(data_files.session_target[subject_id],
                            delimiter=" ")
-    # Possibly take a quick look at them
-    print "Label names in dataset:"
-    print np.unique(labels['labels'])
-    # This outputs:
-    # ['bottle' 'cat' 'chair' 'face' 'house' 'rest'
-    # 'scissors' 'scrambledpix' 'shoe']
-
     # identify resting state labels in order to be able to remove them
     resting_state = labels['labels'] == "rest"
 
-    # Now try a quick and dirty SVM on the ROI
-    from sklearn.svm import SVC
-    from sklearn.multiclass import OneVsRestClassifier
-    from sklearn.cross_validation import cross_val_score
-    classifier = OneVsRestClassifier(SVC(C=1., kernel="linear"))
+    # find names of remaining active labels
+    unique_labels = np.unique(labels['labels'][resting_state == False])
 
-    ### Let us now check the other provided masks and do decoding
-    # in the spirit of the original article
+    # extract tags indicating to which acquisition run a tag belongs
+    session_labels = labels["chunks"][resting_state == False]
+
+
+    ### Let us now check the provided masks and do decoding on them
 
     # Make a data splitting object for cross validation
-    session_labels = labels["chunks"][resting_state == False]
     from sklearn.cross_validation import LeaveOneLabelOut
     cv = LeaveOneLabelOut(session_labels)
 
-    import sklearn.metrics
-    f1_scorer = sklearn.metrics.SCORERS['f1']
+    from sklearn.svm import SVC
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.cross_validation import cross_val_score
+    classifier = OneVsRestClassifier(SVC(C=.1, kernel="linear"))
 
-    unique_labels = np.unique(labels['labels'][resting_state == False])
 
     mask_names = ['mask_vt', 'mask_face', 'mask_face_little',
                   'mask_house', 'mask_house_little']
@@ -66,21 +59,37 @@ for subject_id in subject_ids:
         print "Working on mask %s" % mask_name
         masker = NiftiMasker(data_files[mask_name][subject_id])
         masked_timecourses = masker.fit_transform(
-            data_files.func[subject_id])
+            data_files.func[subject_id])[resting_state == False]
 
         mask_scores[mask_name] = {}
 
         for label in unique_labels:
             print "Treating %s %s" % (mask_name, label)
-            mask_scores[mask_name][label] = cross_val_score(classifier, 
-                  masked_timecourses[resting_state == False],
-                  labels['labels'][resting_state == False] == label,
-                                                            cv=cv,
-                                                            n_jobs=1,
-                                                            verbose=True,
-                                                            scoring=f1_scorer)
+            classification_target = \
+                labels['labels'][resting_state == False] == label
+            mask_scores[mask_name][label] = cross_val_score(
+                classifier, 
+                masked_timecourses,
+                classification_target,
+                cv=cv,
+                n_jobs=1,
+                verbose=True,
+                scoring="f1")
 
             print "Scores: %1.2f +- %1.2f" % (
                 mask_scores[mask_name][label].mean(),
                 mask_scores[mask_name][label].std())
+
+    # make a rudimentary diagram
+    import matplotlib.pyplot as plt
+    score_means = np.array([[mask_scores[mask_name][label].mean()
+                for label in unique_labels] 
+                for mask_name in mask_names])
+    plt.matshow(score_means)
+    plt.xticks(range(len(unique_labels)), unique_labels, rotation=90)
+    plt.yticks(range(len(mask_names)), mask_names)
+    plt.colorbar()
+    plt.hot()
+    plt.show()
+
 
