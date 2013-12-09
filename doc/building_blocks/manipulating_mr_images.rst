@@ -47,10 +47,10 @@ downloading the data twice.
 Understanding MRI data 
 =======================
 
-Nifti and analyze files
+Nifti and Analyze files
 ------------------------
 
-.. topic:: **NIfTI and Analyse file structures**
+.. topic:: **NIfTI and Analyze file structures**
 
     `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are
     the standard way of sharing data in neuroimaging. We may be
