@@ -67,7 +67,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     mask_opening : int, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
-    
+
     mask_lower_cutoff : float, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
