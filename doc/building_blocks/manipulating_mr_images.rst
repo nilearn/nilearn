@@ -4,25 +4,40 @@
 fMRI data manipulation: input/output, masking, visualization...
 ===============================================================
 
+Neuroimaging data, as indicated by its name, is composed of images. But, as any
+domain specific data, it holds particular properties and can be manipulated
+using specific tools.
+
+This example introduces the Nifti image type and shows how to extract a mask
+using:
+
+  * pure geometrical information
+  * experiment-based knowledge
+
+Numpy as Scipy packages provides several functions that can be used as-is on
+neuroimaging data. However, some advanced operations, like smoothing, require
+particular preliminary operations. For those, we will rely on nilearn
+primitives.
+
+As a last resort, if you are still not satisfied of your mask, you can use
+specific software to edit Nifti images like FSLview.
+For advanced users, scikits-image provides more complicated image processing
+algorithms that may be used on brain maps and masks.
+
 .. _downloading_data:
 
-Downloading example datasets
-============================
+Fetching datasets
+=================
 
 .. currentmodule:: nilearn.datasets
 
-This tutorial package embeds tools to download and load datasets. They
-can be imported from :mod:`nilearn.datasets`::
+Nilearn package embeds a dataset fetching utility to download reference
+datasets and atlases. Dataset fetching functions can be imported from
+:mod:`nilearn.datasets`.
 
-    >>> from nilearn import datasets
-    >>> haxby_files = datasets.fetch_haxby_simple()
-    >>> # The structures contains paths to haxby dataset files:
-    >>> haxby_files.keys() # doctest: +SKIP
-    ['data', 'session_target', 'mask', 'conditions_target']
-    >>> import nibabel
-    >>> haxby_data = nibabel.load(haxby_files.func)
-    >>> haxby_data.get_data().shape # 1452 time points and a spatial size of 40x64x64
-    (40, 64, 64, 1452)
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: ### Fetch data ################################################################
+     :end-before: ### Load an fMRI file #########################################################
 
 .. autosummary::
    :toctree: generated/
@@ -32,6 +47,7 @@ can be imported from :mod:`nilearn.datasets`::
    fetch_haxby_simple
    fetch_nyu_rest
    fetch_adhd
+   fetch_miyawaki2008
 
 The data are downloaded only once and stored locally, in one of the
 following directories (in order of priority):
@@ -44,8 +60,8 @@ following directories (in order of priority):
 Note that you can copy that folder across computers to avoid
 downloading the data twice.
 
-Understanding MRI data 
-=======================
+Understanding Neuroimaging data 
+===============================
 
 Nifti and Analyze files
 ------------------------
@@ -70,8 +86,8 @@ Neuroimaging data can be loaded simply thanks to nibabel_. Once the file is
 downloaded, a single line is needed to load it.
 
 .. literalinclude:: ../../plot_visualization.py
-     :start-after: # Fetch data ################################################################
-     :end-before: # Visualization #############################################################
+     :start-after: ### Load an fMRI file #########################################################
+     :end-before: ### Load a text file ##########################################################
 
 .. topic:: **Dataset formatting: data shape**
 
@@ -111,6 +127,21 @@ data, which we call Niimgs, or Niimg-4D. Accepted inputs are then:
    If you provide a sequence of Nifti images, all of them must have the same
    affine.
 
+Text files
+----------
+
+Phenotypic data are furnished as text or CSV (Comma Separated Values) file. They
+can be loaded with `numpy.genfromtxt` but you may have to specify some options
+(typically `skip_header` ignores column titles if needed).
+
+For this example, we load the categories of the images presented to the subject.
+
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: ### Load a text file ##########################################################
+     :end-before: ### Visualization #############################################################
+
+
+
 .. _visualizing:
 
 Visualizing brain images
@@ -129,6 +160,13 @@ counter-clockwise.
     :target: ../auto_examples/plot_visualization.html
     :align: center
     :scale: 60
+
+For convenience, further visualizations will be made thanks to a helper
+function.
+
+.. literalinclude:: ../plot_visualization.py
+     :start-after: # Visualization #############################################################
+     :end-before: # Extracting a brain mask ###################################################
 
 
 Masking data manually
