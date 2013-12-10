@@ -4,25 +4,40 @@
 fMRI data manipulation: input/output, masking, visualization...
 ===============================================================
 
+Neuroimaging data, as indicated by its name, is composed of images. But, as any
+domain specific data, it holds particular properties and can be manipulated
+using specific tools.
+
+This example introduces the Nifti image type and shows how to extract a mask
+using:
+
+  * pure geometrical information
+  * experiment-based knowledge
+
+Numpy as Scipy packages provides several functions that can be used as-is on
+neuroimaging data. However, some advanced operations, like smoothing, require
+particular preliminary operations. For those, we will rely on nilearn
+primitives.
+
+As a last resort, if you are still not satisfied of your mask, you can use
+specific software to edit Nifti images like FSLview.
+For advanced users, scikits-image provides more complicated image processing
+algorithms that may be used on brain maps and masks.
+
 .. _downloading_data:
 
-Downloading example datasets
-============================
+Fetching datasets
+=================
 
 .. currentmodule:: nilearn.datasets
 
-This tutorial package embeds tools to download and load datasets. They
-can be imported from :mod:`nilearn.datasets`::
+Nilearn package embeds a dataset fetching utility to download reference
+datasets and atlases. Dataset fetching functions can be imported from
+:mod:`nilearn.datasets`.
 
-    >>> from nilearn import datasets
-    >>> haxby_files = datasets.fetch_haxby_simple()
-    >>> # The structures contains paths to haxby dataset files:
-    >>> haxby_files.keys() # doctest: +SKIP
-    ['data', 'session_target', 'mask', 'conditions_target']
-    >>> import nibabel
-    >>> haxby_data = nibabel.load(haxby_files.func)
-    >>> haxby_data.get_data().shape # 1452 time points and a spatial size of 40x64x64
-    (40, 64, 64, 1452)
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: ### Fetch data ################################################################
+     :end-before: ### Load an fMRI file #########################################################
 
 .. autosummary::
    :toctree: generated/
@@ -32,6 +47,7 @@ can be imported from :mod:`nilearn.datasets`::
    fetch_haxby_simple
    fetch_nyu_rest
    fetch_adhd
+   fetch_miyawaki2008
 
 The data are downloaded only once and stored locally, in one of the
 following directories (in order of priority):
@@ -44,13 +60,13 @@ following directories (in order of priority):
 Note that you can copy that folder across computers to avoid
 downloading the data twice.
 
-Understanding MRI data 
-=======================
+Understanding Neuroimaging data 
+===============================
 
-Nifti and analyze files
+Nifti and Analyze files
 ------------------------
 
-.. topic:: **NIfTI and Analyse file structures**
+.. topic:: **NIfTI and Analyze file structures**
 
     `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are
     the standard way of sharing data in neuroimaging. We may be
@@ -70,8 +86,8 @@ Neuroimaging data can be loaded simply thanks to nibabel_. Once the file is
 downloaded, a single line is needed to load it.
 
 .. literalinclude:: ../../plot_visualization.py
-     :start-after: # Fetch data ################################################################
-     :end-before: # Visualization #############################################################
+     :start-after: ### Load an fMRI file #########################################################
+     :end-before: ### Load a text file ##########################################################
 
 .. topic:: **Dataset formatting: data shape**
 
@@ -111,6 +127,21 @@ data, which we call Niimgs, or Niimg-4D. Accepted inputs are then:
    If you provide a sequence of Nifti images, all of them must have the same
    affine.
 
+Text files
+----------
+
+Phenotypic data are furnished as text or CSV (Comma Separated Values) file. They
+can be loaded with `numpy.genfromtxt` but you may have to specify some options
+(typically `skip_header` ignores column titles if needed).
+
+For this example, we load the categories of the images presented to the subject.
+
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: ### Load a text file ##########################################################
+     :end-before: ### Visualization #############################################################
+
+
+
 .. _visualizing:
 
 Visualizing brain images
@@ -121,14 +152,17 @@ desired slice (the first three dimensions) at a desired time point (fourth
 dimension). For *haxby*, data is rotated so we have to turn each image
 counter-clockwise.
 
-.. literalinclude:: ../plot_visualization.py
-     :start-after: # Visualization #############################################################
-     :end-before: # Extracting a brain mask ###################################################
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: ### Visualization #############################################################
+     :end-before: ### Visualization function ####################################################
 
 .. figure:: ../auto_examples/images/plot_visualization_1.png
     :target: ../auto_examples/plot_visualization.html
     :align: center
     :scale: 60
+
+For convenience, further visualizations will be made thanks to a helper
+function `plot_brain`.
 
 
 Masking data manually
@@ -149,9 +183,9 @@ can be easily extracted from the fMRI data using the
 
    compute_epi_mask
 
-.. literalinclude:: ../plot_visualization.py
-     :start-after: # Extracting a brain mask ###################################################
-     :end-before: # Applying the mask #########################################################
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: ### Extracting a brain mask ###################################################
+     :end-before: ### Applying the mask #########################################################
 
 .. figure:: ../auto_examples/images/plot_visualization_2.png
     :target: ../auto_examples/plot_visualization.html
@@ -174,9 +208,9 @@ array to a 2D array, `voxel` **x** `time`, as depicted below:
     :width: 100%
 
 
-.. literalinclude:: ../plot_visualization.py
-     :start-after: # Applying the mask #########################################################
-
+.. literalinclude:: ../../plot_visualization.py
+     :start-after: ### Applying the mask #########################################################
+     :end-before: ### Find voxels of interest ###################################################
 
 .. figure:: ../auto_examples/images/plot_visualization_3.png
     :target: ../auto_examples/plot_visualization.html
@@ -197,6 +231,7 @@ preprocessing procedure:
 .. currentmodule:: nilearn
 
 * Resampling: :func:`nilearn.image.resample_img`
+* Smoothing: :func:`nilearn.image.smooth_img`
 * Masking:
 
   * compute: :func:`nilearn.masking.compute_epi_mask`
@@ -207,4 +242,134 @@ preprocessing procedure:
 
 * Cleaning signals: :func:`nilearn.signal.clean`
 
-.. _nibabel: http://nipy.sourceforge.net/nibabel/
+
+Create a ROI mask
+=================
+
+Previous section presents a method to extract a mask based on 
+
+Smoothing
+---------
+
+Functional MRI data has a low signal-to-noise ratio. When using simple methods
+that are not robust to noise, it is necessary to smooth the data. Smoothing is
+usually applied using a gaussian function with 4mm to 8mm full-width at
+half-maximum. Even if scipy provides functions, like `gaussian_filter1d`,
+to perform gaussian smoothing, it does not take into account the potential
+anisotropy of data expressed in the affine. The function
+`nilearn.image.smooth` takes care of that for you and can even take the path to
+the file as a parameter.
+
+
+.. literalinclude:: ../../plot_visualization.py
+    :start-after: # Smooth the data
+    :end-before: # Run a T-test for face and houses
+
+.. figure:: ../auto_examples/images/plot_visualization_4.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+Selecting features
+------------------
+
+Functional MRI data are high dimensional comparend to the number of samples
+(usually 50000 voxels for 1000 samples). In this setting, machine learning
+algorithm can perform poorly. However, a simple statistical test can help
+reducing the number of voxels.
+
+The Student's t-test performs a simple statistical test that determines if two
+distributions are statistically different. It can be used to compare voxel
+timeseries in two different conditions (when houses or faces are shown in our
+case). If the timeserie distribution is similar in the two conditions, then the
+voxel is not very interesting to discriminate the condition.
+
+This test returns p-values that represents probabilities that the two
+timeseries are drawn from the same distribution. The lower is the p-value, the
+more discriminative is the voxel.
+
+.. literalinclude:: ../../plot_visualization.py
+    :start-after: # Run a T-test for face and houses
+    :end-before: ### Build a mask ##############################################################
+
+.. figure:: ../auto_examples/images/plot_visualization_5.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+This feature selection method is available in the scikit-learn where it has been
+extended to several classes (TODO: put ref to f_classif).
+
+Thresholding
+------------
+
+Higher p-values are kept as voxels of interest. Applying a threshold to an array
+is easy thanks to numpy indexing a la Matlab.
+
+.. literalinclude:: ../../plot_visualization.py
+    :start-after: # Thresholding
+    :end-before: # Binarization and intersection with VT mask
+
+.. figure:: ../auto_examples/images/plot_visualization_6.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+Mask intersection
+-----------------
+
+We now want to restrict our study to the ventral temporal area. The
+corresponding mask is provided in `haxby.mask_vt`. We want to compute the
+intersection of this mask with our mask. The first step is to load it with
+nibabel. We then use a logical and to keep only voxels that are selected in both
+masks.
+
+.. literalinclude:: ../../plot_visualization.py
+    :start-after: # Binarization and intersection with VT mask
+    :end-before: # Dilation
+
+.. figure:: ../auto_examples/images/plot_visualization_7.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+Dilation
+--------
+
+We observe that our voxels are a bit scattered across the brain. To obtain more
+compact shape, we use a morphological dilation. This is a common step to be sure
+not to forget voxels located on the edge of a ROI.
+
+.. literalinclude:: ../../plot_visualization.py
+    :start-after: # Dilation
+    :end-before: # Identification of connected components
+
+.. figure:: ../auto_examples/images/plot_visualization_8.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+Extracting connected components
+-------------------------------
+
+Scipy function `ndimage.label` identify connected components in our final mask.
+
+.. literalinclude:: ../../plot_visualization.py
+    :start-after: # Identification of connected components
+    :end-before: # Save the result
+
+.. figure:: ../auto_examples/images/plot_visualization_9.png
+    :target: auto_examples/plot_image_manipulation.html
+    :align: center
+    :scale: 50%
+
+Saving the result
+-----------------
+
+The final result is saved using nibabel for further consultation with a software
+like FSLview for example.
+
+.. literalinclude:: ../../plot_visualization.py
+    :start-after: # Save the result
+
+ .. _nibabel: http://nipy.sourceforge.net/nibabel/
