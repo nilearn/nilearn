@@ -138,8 +138,6 @@ plt.xlabel('Time', fontsize=16)
 plt.ylabel('Voxel', fontsize=16)
 plt.xlim(0, 22200)
 plt.subplots_adjust(bottom=.12, top=.95, right=.95, left=.12)
-plt.show()
-
 
 ### Find voxels of interest ###################################################
 
