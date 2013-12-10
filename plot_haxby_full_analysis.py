@@ -49,7 +49,7 @@ for subject_id in subject_ids:
     from sklearn.svm import SVC
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.cross_validation import cross_val_score
-    classifier = OneVsRestClassifier(SVC(C=.1, kernel="linear"))
+    classifier = OneVsRestClassifier(SVC(C=1., kernel="linear"))
 
 
     mask_names = ['mask_vt', 'mask_face', 'mask_face_little',
@@ -88,8 +88,8 @@ for subject_id in subject_ids:
                 for mask_name in mask_names])
     plt.figure(figsize=(10, 6))
     plt.imshow(score_means, interpolation="nearest")
-    plt.xticks(np.arange(len(unique_labels)) + 1, unique_labels, rotation=45)
-    plt.yticks(np.arange(len(mask_names)), mask_names, rotation=45)
+    plt.xticks(np.arange(len(unique_labels)), unique_labels, rotation=45)
+    plt.yticks(np.arange(len(mask_names)) + .5, mask_names, rotation=45)
     plt.colorbar()
     plt.hot()
     plt.show()
