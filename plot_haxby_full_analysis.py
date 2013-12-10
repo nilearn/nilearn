@@ -1,11 +1,12 @@
-"""In this script we reproduce the original data analysis conducted by
-Haxby et al. in 
+"""
+ROI based SVM analysis in Haxby et al. dataset
+===============================================================================
 
-"Distributed and Overlapping Representations of Faces and Objects
-    in Ventral Temporal Cortex"
+In this script we reproduce the original data analysis conducted by
+Haxby et al. in "Distributed and Overlapping Representations of Faces and
+    Objects in Ventral Temporal Cortex"
 
 (Science 2001)
-
 """
 
 
