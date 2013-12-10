@@ -86,9 +86,10 @@ for subject_id in subject_ids:
     score_means = np.array([[mask_scores[mask_name][label].mean()
                 for label in unique_labels] 
                 for mask_name in mask_names])
-    plt.matshow(score_means)
-    plt.xticks(range(len(unique_labels)), unique_labels, rotation=90)
-    plt.yticks(range(len(mask_names)), mask_names)
+    plt.figure(figsize=(10, 6))
+    plt.imshow(score_means, interpolation="nearest")
+    plt.xticks(np.arange(len(unique_labels)) + 1, unique_labels, rotation=45)
+    plt.yticks(np.arange(len(mask_names)), mask_names, rotation=45)
     plt.colorbar()
     plt.hot()
     plt.show()
