@@ -68,10 +68,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
     
-    mask_closing : int, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
     mask_lower_cutoff : float, optional
         If mask is None, this parameter is passed to masking.compute_epi_mask
         for mask computation. Please see the related documentation for details.
@@ -113,7 +109,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  standardize=True, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
-                 mask_connected=True, mask_opening=2, mask_closing=2,
+                 mask_connected=True, mask_opening=2,
                  mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
                  memory_level=0, memory=Memory(cachedir=None),
                  verbose=0
@@ -132,7 +128,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_connected = mask_connected
         self.mask_opening = mask_opening
-        self.mask_closing = mask_closing
         self.mask_lower_cutoff = mask_lower_cutoff
         self.mask_upper_cutoff = mask_upper_cutoff
 
@@ -168,7 +163,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 niimgs,
                 connected=self.mask_connected,
                 opening=self.mask_opening,
-                closing=self.mask_closing,
                 lower_cutoff=self.mask_lower_cutoff,
                 upper_cutoff=self.mask_upper_cutoff,
                 verbose=(self.verbose - 1))
