@@ -1,12 +1,11 @@
 """
-ROI based SVM analysis in Haxby et al. dataset
-===============================================================================
+ROI-based decoding analysis in Haxby et al. dataset
+=====================================================
 
 In this script we reproduce the original data analysis conducted by
 Haxby et al. in "Distributed and Overlapping Representations of Faces and
-    Objects in Ventral Temporal Cortex"
+Objects in Ventral Temporal Cortex"
 
-(Science 2001)
 """
 
 
@@ -84,7 +83,7 @@ for subject_id in subject_ids:
     # make a rudimentary diagram
     import matplotlib.pyplot as plt
     score_means = np.array([[mask_scores[mask_name][label].mean()
-                for label in unique_labels] 
+                for label in unique_labels]
                 for mask_name in mask_names])
     plt.figure(figsize=(10, 6))
     plt.imshow(score_means, interpolation="nearest")
@@ -92,6 +91,6 @@ for subject_id in subject_ids:
     plt.yticks(np.arange(len(mask_names)) + .5, mask_names, rotation=45)
     plt.colorbar()
     plt.hot()
-    plt.show()
 
+plt.show()
 
