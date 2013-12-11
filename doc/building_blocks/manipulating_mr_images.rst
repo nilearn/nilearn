@@ -219,14 +219,14 @@ array to a 2D array, `voxel` **x** `time`, as depicted below:
 
 .. _preprocessing_functions:
 
-Preprocessing functions
-========================
+Functions for data preparation steps
+=====================================
 
 .. currentmodule:: nilearn.input_data.nifti_masker
 
-The :class:`NiftiMasker` automatically calls some preprocessing
-functions that are available if you want to set up your own
-preprocessing procedure:
+The :class:`NiftiMasker` automatically does some important data preparion
+steps. These steps are also available as simple functions if you want to
+set up your own data preparation procedure:
 
 .. currentmodule:: nilearn
 
@@ -243,22 +243,22 @@ preprocessing procedure:
 * Cleaning signals: :func:`nilearn.signal.clean`
 
 
-Create a ROI mask
-=================
+Image operations: creating a ROI mask manually
+===============================================
 
-Previous section presents a method to extract a mask based on 
+This section shows manual steps to create and finally control an ROI
+mask. They are a good example of using basic image manipulation on Nifti
+images.
 
 Smoothing
 ---------
 
 Functional MRI data has a low signal-to-noise ratio. When using simple methods
-that are not robust to noise, it is necessary to smooth the data. Smoothing is
-usually applied using a gaussian function with 4mm to 8mm full-width at
-half-maximum. Even if scipy provides functions, like `gaussian_filter1d`,
-to perform gaussian smoothing, it does not take into account the potential
-anisotropy of data expressed in the affine. The function
-`nilearn.image.smooth` takes care of that for you and can even take the path to
-the file as a parameter.
+that are not robust to noise, it is useful to smooth the data. Smoothing is
+usually applied using a Gaussian function with 4mm to 8mm full-width at
+half-maximum. The function `nilearn.image.smooth` accounts for potential
+anisotropy in the image affine. As many nilearn functions, it can also 
+use file names as input parameters.
 
 
 .. literalinclude:: ../../plot_visualization.py
@@ -298,7 +298,8 @@ more discriminative is the voxel.
     :scale: 50%
 
 This feature selection method is available in the scikit-learn where it has been
-extended to several classes (TODO: put ref to f_classif).
+extended to several classes, using the 
+:func:`sklearn.feature_selection.f_classif` function.
 
 Thresholding
 ------------
@@ -372,4 +373,4 @@ like FSLview for example.
 .. literalinclude:: ../../plot_visualization.py
     :start-after: # Save the result
 
- .. _nibabel: http://nipy.sourceforge.net/nibabel/
+.. _nibabel: http://nipy.sourceforge.net/nibabel/

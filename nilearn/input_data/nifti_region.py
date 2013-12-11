@@ -230,7 +230,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
-            niimgs = self._cache(image.smooth, memory_level=1)(
+            niimgs = self._cache(image.smooth_img, memory_level=1)(
                 niimgs, fwhm=self.smoothing_fwhm)
 
         logger.log("extracting region signals", verbose=self.verbose)
@@ -481,7 +481,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
-            niimgs = self._cache(image.smooth, memory_level=1)(
+            niimgs = self._cache(image.smooth_img, memory_level=1)(
                 niimgs, fwhm=self.smoothing_fwhm)
 
         logger.log("extracting region signals", verbose=self.verbose)

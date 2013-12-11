@@ -31,7 +31,7 @@ def test_high_variance_confounds():
     assert_true(confounds2.shape == (length, n_confounds))
 
 
-def test_smooth():
+def test_smooth_img():
     # This function only checks added functionalities compared
     # to _smooth_array()
     shapes = ((10, 11, 12), (13, 14, 15))
@@ -47,14 +47,14 @@ def test_smooth():
         with testing.write_tmp_imgs(img1, img2,
                                     create_files=create_files) as imgs:
             # List of images as input
-            out = image.smooth(imgs, fwhm)
+            out = image.smooth_img(imgs, fwhm)
             assert_true(isinstance(out, list))
             assert_true(len(out) == 2)
             for o, s, l in zip(out, shapes, lengths):
                 assert_true(o.shape == (s + (l,)))
 
             # Single image as input
-            out = image.smooth(imgs[0], fwhm)
+            out = image.smooth_img(imgs[0], fwhm)
             assert_true(isinstance(out, nibabel.Nifti1Image))
             assert_true(out.shape == (shapes[0] + (lengths[0],)))
 

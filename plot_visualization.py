@@ -2,7 +2,7 @@
 Simple NeuroImaging data visualization and manipulation
 ========================================================
 
-Simple example to show data manipulation and visualization.
+Simple example to show Nifti data manipulation and visualization.
 """
 
 ### Coordinates of the selected slice #########################################
@@ -142,8 +142,8 @@ plt.subplots_adjust(bottom=.12, top=.95, right=.95, left=.12)
 ### Find voxels of interest ###################################################
 
 # Smooth the data
-from nilearn.image import smooth
-fmri_img = smooth(haxby_files.func[0], fwhm=6)
+from nilearn.image import smooth_img
+fmri_img = smooth_img(haxby_files.func[0], fwhm=6)
 fmri_data = fmri_img.get_data()
 plot_brain(fmri_data.mean(axis=-1), c, s, a, 'Smoothed mean EPI')
 
