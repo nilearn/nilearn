@@ -119,7 +119,7 @@ downloaded, a single line is needed to load it.
 
 .. literalinclude:: ../../plot_visualization.py
      :start-after: ### Load an fMRI file #########################################################
-     :end-before: ### Load a text file ##########################################################
+     :end-before: ### Visualization #############################################################
 
 .. topic:: **Dataset formatting: data shape**
 
@@ -139,8 +139,10 @@ downloaded, a single line is needed to load it.
 Niimg-like objects
 -------------------
 
-**Niimg:** Niimg (pronounce ni-image) is a common term used in Nilearn. A
-Niimg-like object can either be:
+Often, nilearn functions take as input parameters what we call
+"Niimg-like objects:
+
+**Niimg:** A Niimg-like object can either be:
 
   * a file path to a Nifti or Analyse image
   * any object exposing ``get_data()`` and ``get_affine()`` methods, for
@@ -159,20 +161,27 @@ data, which we call Niimgs, or Niimg-4D. Accepted inputs are then:
    If you provide a sequence of Nifti images, all of them must have the same
    affine.
 
-Text files
-----------
+Text files: phenotype or behavior
+----------------------------------
 
-Phenotypic data are furnished as text or CSV (Comma Separated Values) file. They
+Phenotypic or behavioral data are often provided as text or CSV
+(Comma Separated Values) file. They
 can be loaded with `numpy.genfromtxt` but you may have to specify some options
 (typically `skip_header` ignores column titles if needed).
 
-For this example, we load the categories of the images presented to the subject.
+For the Haxby datasets, we can load the categories of the images
+presented to the subject::
 
-.. literalinclude:: ../../plot_visualization.py
-     :start-after: ### Load a text file ##########################################################
-     :end-before: ### Visualization #############################################################
+    >>> from nilearn import datasets
+    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)
+    >>> import numpy as np
+    >>> labels = np.genfromtxt(haxby_files.session_target[0], skip_header=1,
+                               usecols=[0], dtype=basestring)
+    >>> print np.unique(labels)
+    ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
+     'shoe']
 
-
+|
 
 .. _visualizing:
 
@@ -288,17 +297,17 @@ Smoothing
 Functional MRI data has a low signal-to-noise ratio. When using simple methods
 that are not robust to noise, it is useful to smooth the data. Smoothing is
 usually applied using a Gaussian function with 4mm to 8mm full-width at
-half-maximum. The function :func:`nilearn.image.smooth` accounts for potential
+half-maximum. The function :func:`nilearn.image.smooth_img` accounts for potential
 anisotropy in the image affine. As many nilearn functions, it can also 
 use file names as input parameters.
 
 
-.. literalinclude:: ../../plot_visualization.py
+.. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Smooth the data
     :end-before: # Run a T-test for face and houses
 
-.. figure:: ../auto_examples/images/plot_visualization_4.png
-    :target: auto_examples/plot_image_manipulation.html
+.. figure:: ../auto_examples/images/plot_roi_extraction_1.png
+    :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -320,12 +329,12 @@ This test returns p-values that represents probabilities that the two
 timeseries are drawn from the same distribution. The lower is the p-value, the
 more discriminative is the voxel.
 
-.. literalinclude:: ../../plot_visualization.py
+.. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Run a T-test for face and houses
     :end-before: ### Build a mask ##############################################################
 
-.. figure:: ../auto_examples/images/plot_visualization_5.png
-    :target: auto_examples/plot_image_manipulation.html
+.. figure:: ../auto_examples/images/plot_roi_extraction_2.png
+    :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -339,12 +348,12 @@ Thresholding
 Higher p-values are kept as voxels of interest. Applying a threshold to an array
 is easy thanks to numpy indexing a la Matlab.
 
-.. literalinclude:: ../../plot_visualization.py
+.. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Thresholding
     :end-before: # Binarization and intersection with VT mask
 
-.. figure:: ../auto_examples/images/plot_visualization_6.png
-    :target: auto_examples/plot_image_manipulation.html
+.. figure:: ../auto_examples/images/plot_roi_extraction_3.png
+    :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -357,12 +366,12 @@ intersection of this mask with our mask. The first step is to load it with
 nibabel. We then use a logical and to keep only voxels that are selected in both
 masks.
 
-.. literalinclude:: ../../plot_visualization.py
+.. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Binarization and intersection with VT mask
     :end-before: # Dilation
 
-.. figure:: ../auto_examples/images/plot_visualization_7.png
-    :target: auto_examples/plot_image_manipulation.html
+.. figure:: ../auto_examples/images/plot_roi_extraction_4.png
+    :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -373,26 +382,26 @@ We observe that our voxels are a bit scattered across the brain. To obtain more
 compact shape, we use a morphological dilation. This is a common step to be sure
 not to forget voxels located on the edge of a ROI.
 
-.. literalinclude:: ../../plot_visualization.py
+.. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Dilation
     :end-before: # Identification of connected components
 
-.. figure:: ../auto_examples/images/plot_visualization_8.png
-    :target: auto_examples/plot_image_manipulation.html
+.. figure:: ../auto_examples/images/plot_roi_extraction_5.png
+    :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
 Extracting connected components
 -------------------------------
 
-Scipy function :func:`scipy.ndimage.label` identify connected components in our final mask.
+Scipy function :func:`scipy.ndimage.label` identifies connected components in our final mask.
 
-.. literalinclude:: ../../plot_visualization.py
+.. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Identification of connected components
     :end-before: # Save the result
 
-.. figure:: ../auto_examples/images/plot_visualization_9.png
-    :target: auto_examples/plot_image_manipulation.html
+.. figure:: ../auto_examples/images/plot_roi_extraction_6.png
+    :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -402,7 +411,7 @@ Saving the result
 The final result is saved using nibabel for further consultation with a software
 like FSLview for example.
 
-.. literalinclude:: ../../plot_visualization.py
+.. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Save the result
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/

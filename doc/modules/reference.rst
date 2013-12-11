@@ -77,7 +77,7 @@ Functions
    :template: function.rst
 
    high_variance_confounds
-   smooth
+   smooth_img
    resample_img
 
 
