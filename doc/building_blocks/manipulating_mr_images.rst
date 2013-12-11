@@ -66,32 +66,30 @@ Note that you can copy that folder across computers to avoid
 downloading the data twice.
 
 
-Loading custom data
--------------------
+Loading your own data
+----------------------
 
-Using your own experiment in nilearn is as simple as declaring a list of your files
-::
+Using your own experiment in nilearn is as simple as declaring a list of
+your files ::
 
     # dataset folder contains subject1.nii and subject2.nii
     my_data = ['dataset/subject1.nii', 'dataset/subject2.nii']
 
-Your data will now be accepted by most of nilearn primitives. Python also
-provides helpers to work with filepaths. `glob.glob` is most famous and allows
-the use of shell style wildcards.
+Python also provides helpers to work with filepaths. In particular,
+:func:`glob.glob` is useful to
+list many files with a "wild-card": \*.nii
 
 .. warning:: 
-   There is no guarantee that the result of `glob.glob` is sorted. A good
-   practice is to sort the output of glob to be sure to get the files in
-   the same order at each call. Random file order could mess up with the
-   caching system.
+   The result of :func:`glob.glob` is not sorted. For neuroimaging, you
+   should always sort the output of glob using the :func:`sorted`
+   function.
 
 ::
 
-   # dataset folder contains subject1.nii and subject2.nii
-   import glob
-   my_data = sorted(glob.glob('dataset/subject*.nii'))
-   print my_data
-   # ['dataset/subject1.nii', 'dataset/subject2.nii']
+   >>> # dataset folder contains subject1.nii and subject2.nii
+   >>> import glob
+   >>> sorted(glob.glob('dataset/subject*.nii')) # doctest: +SKIP
+   ['dataset/subject1.nii', 'dataset/subject2.nii']
 
 
 Understanding Neuroimaging data 
