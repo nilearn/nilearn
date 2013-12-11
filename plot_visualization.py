@@ -11,11 +11,6 @@ from nilearn import datasets
 
 haxby_files = datasets.fetch_haxby(n_subjects=1)
 
-# Take a look at the files proposed for this dataset
-print 'Haxby files:', haxby_files.keys()
-
-print 'Path to first functional file', haxby_files.func[0]
-
 ### Load an fMRI file #########################################################
 
 import nibabel
@@ -23,14 +18,6 @@ import nibabel
 fmri_img = nibabel.load(haxby_files.func[0])
 fmri_data = fmri_img.get_data()
 fmri_affine = fmri_img.get_affine()
-
-### Load a text file ##########################################################
-
-import numpy as np
-
-labels = np.genfromtxt(haxby_files.session_target[0], skip_header=1,
-                          usecols=[0], dtype=basestring)
-print 'Unique labels', np.unique(labels)
 
 ### Visualization #############################################################
 

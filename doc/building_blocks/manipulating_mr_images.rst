@@ -4,25 +4,15 @@
 fMRI data manipulation: input/output, masking, visualization...
 ===============================================================
 
-Neuroimaging data, as indicated by its name, is composed of images. But, as any
-domain specific data, it holds particular properties and can be manipulated
-using specific tools.
+This chapter presents the structure of brain image data and tools to
+manipulation them.
 
-This example introduces the Nifti image type and shows how to extract a mask
-using:
 
-  * pure geometrical information
-  * experiment-based knowledge
+.. contents:: **Chapters contents**
+    :local:
+    :depth: 1
 
-Numpy as Scipy packages provides several functions that can be used as-is on
-neuroimaging data. However, some advanced operations, like smoothing, require
-particular preliminary operations. For those, we will rely on nilearn
-primitives.
 
-As a last resort, if you are still not satisfied of your mask, you can use
-specific software to edit Nifti images like FSLview.
-For advanced users, scikits-image provides more complicated image processing
-algorithms that may be used on brain maps and masks.
 
 .. _downloading_data:
 
@@ -36,11 +26,23 @@ Fetching datasets
 
 Nilearn package embeds a dataset fetching utility to download reference
 datasets and atlases. Dataset fetching functions can be imported from
-:mod:`nilearn.datasets`.
+:mod:`nilearn.datasets`::
 
-.. literalinclude:: ../../plot_visualization.py
-     :start-after: ### Fetch data ################################################################
-     :end-before: ### Load an fMRI file #########################################################
+    >>> from nilearn import datasets
+    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)
+
+They return a structure that contains the different file names::
+
+    >>> # The different files
+    >>> print haxby_files.keys()
+    ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
+    >>> #  Path to first functional file
+    >>> print haxby_files.func[0] # doctest: +ELLIPSIS
+    /.../nilearn_data/haxby2001/subj1/bold.nii.gz
+
+|
+
+**The different data fetching functions**
 
 .. autosummary::
    :toctree: generated/
@@ -104,14 +106,14 @@ Nifti and Analyze files
     the standard way of sharing data in neuroimaging. We may be
     interested in the following three main components:
 
-    :data: 
-        raw scans bundled in a numpy array: `data = img.get_data()`
-    :affine: 
-        gives the correspondance between voxel index and spatial location: 
-        `affine = img.get_affine()`
-    :header: 
-        informations about the data (slice duration...):
-        `header = img.get_header()`
+     :data: 
+         raw scans bundled in a numpy array: ``data = img.get_data()``
+     :affine: 
+         gives the correspondance between voxel index and spatial location: 
+         ``affine = img.get_affine()``
+     :header: 
+         informations about the data (slice duration...):
+         ``header = img.get_header()``
 
 
 Neuroimaging data can be loaded simply thanks to nibabel_. Once the file is
@@ -375,11 +377,11 @@ masks.
     :align: center
     :scale: 50%
 
-Dilation
---------
+Mask dilation
+--------------
 
 We observe that our voxels are a bit scattered across the brain. To obtain more
-compact shape, we use a morphological dilation. This is a common step to be sure
+compact shape, we use a `morphological dilation <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_. This is a common step to be sure
 not to forget voxels located on the edge of a ROI.
 
 .. literalinclude:: ../../plot_roi_extraction.py
@@ -394,7 +396,9 @@ not to forget voxels located on the edge of a ROI.
 Extracting connected components
 -------------------------------
 
-Scipy function :func:`scipy.ndimage.label` identifies connected components in our final mask.
+Scipy function :func:`scipy.ndimage.label` identifies connected
+components in our final mask: it assigns a separate integer label to each
+one of them.
 
 .. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Identification of connected components
