@@ -26,10 +26,13 @@ algorithms that may be used on brain maps and masks.
 
 .. _downloading_data:
 
-Fetching datasets
-=================
+Loading data
+============
 
 .. currentmodule:: nilearn.datasets
+
+Fetching datasets
+-----------------
 
 Nilearn package embeds a dataset fetching utility to download reference
 datasets and atlases. Dataset fetching functions can be imported from
@@ -59,6 +62,35 @@ following directories (in order of priority):
    
 Note that you can copy that folder across computers to avoid
 downloading the data twice.
+
+
+Loading custom data
+-------------------
+
+Using your own experiment in nilearn is as simple as declaring a list of your files
+::
+
+    # dataset folder contains subject1.nii and subject2.nii
+    my_data = ['dataset/subject1.nii', 'dataset/subject2.nii']
+
+Your data will now be accepted by most of nilearn primitives. Python also
+provides helpers to work with filepaths. `glob.glob` is most famous and allows
+the use of shell style wildcards.
+
+.. warning:: 
+   There is no guarantee that the result of `glob.glob` is sorted. A good
+   practice is to sort the output of glob to be sure to get the files in
+   the same order at each call. Random file order could mess up with the
+   caching system.
+
+::
+
+   # dataset folder contains subject1.nii and subject2.nii
+   import glob
+   my_data = sorted(glob.glob('dataset/subject*.nii'))
+   print my_data
+   # ['dataset/subject1.nii', 'dataset/subject2.nii']
+
 
 Understanding Neuroimaging data 
 ===============================
@@ -203,7 +235,7 @@ interested in working only on the time-series of the voxels in the
 brain. It is thus convenient to apply a brain mask and go from a 4D
 array to a 2D array, `voxel` **x** `time`, as depicted below:
 
-.. image:: images/masking.jpg
+.. image:: ../images/masking.jpg
     :align: center
     :width: 100%
 
@@ -256,7 +288,7 @@ Smoothing
 Functional MRI data has a low signal-to-noise ratio. When using simple methods
 that are not robust to noise, it is useful to smooth the data. Smoothing is
 usually applied using a Gaussian function with 4mm to 8mm full-width at
-half-maximum. The function `nilearn.image.smooth` accounts for potential
+half-maximum. The function :func:`nilearn.image.smooth` accounts for potential
 anisotropy in the image affine. As many nilearn functions, it can also 
 use file names as input parameters.
 
@@ -353,7 +385,7 @@ not to forget voxels located on the edge of a ROI.
 Extracting connected components
 -------------------------------
 
-Scipy function `ndimage.label` identify connected components in our final mask.
+Scipy function :func:`scipy.ndimage.label` identify connected components in our final mask.
 
 .. literalinclude:: ../../plot_visualization.py
     :start-after: # Identification of connected components
