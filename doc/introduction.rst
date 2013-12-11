@@ -102,25 +102,15 @@ Python scientific stack
 ........................
 
 We recommend that you **install a complete scientific Python
-distribution**, and not download the bare Python.
+distribution**, and not download the bare Python. Indeed, the scientific
+Python tool stack is rich. Installing the different packages needed one
+after is time-comsuming and error prone. error prone.
 
-Indeed, the scientific Python tool stack is rich. Installing the
-different packages needed one after the other takes a lot of time and is
-error prone.
-
-:Windows:
-  EPD_, Anaconda_, or `PythonXY <http://code.google.com/p/pythonxy/>`_:
-  these distributions come with scikit-learn installed (do make sure
-  to install the full, non-free, EPD and not EPD-free to get
-  scikit-learn).
-
-:MacOSX:
-  EPD_ and Anaconda_ are the only full scientific Python distributions for
-  Mac (once again, you need to install the full, non-free, EPD and not
-  EPD-free to get scikit-learn).
+:Windows and MacOSX:
+  We suggest that you install Anaconda_. [1]
 
 :Linux:
-  While EPD_ and Anaconda_ are available for Linux, most recent linux
+  While Anaconda_ is available for Linux, most recent linux
   distributions come with the packages that are needed for this tutorial.
   Ask your system administrator to install, using the distribution
   package manager, the following packages:
@@ -133,6 +123,14 @@ error prone.
 .. _EPD: http://www.enthought.com/products/epd.php
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda/
+
+|
+
+.. [1]
+
+  EPD_,  `PythonXY <http://code.google.com/p/pythonxy/>`_ are other
+  options, do make sure to install the full, non-free, EPD and not
+  EPD-free.
 
 Nibabel: reading neuroimaging files
 ....................................
@@ -158,24 +156,26 @@ Installing nilearn
 Downloading the development version
 ....................................
 
-* Nilearn is unreleased. We advise that you track it's development using
-  git. Under Windows or Max OSX, you can easily to that by going to
+Nilearn is unreleased. We advise that you track it's development using
+git.
+  
+* **Under Windows or Max OSX**, you can easily to that by going to
   https://github.com/nilearn/nilearn and clicking the 'Clone in Desktop'
   button on the lower right of the page. This will install a software
   that will download nilearn and that you can use to update nilearn as we
   move forward.
   
-* Under Linux, run the following command (as a shell command, not a
+* **Under Linux**, run the following command (as a shell command, not a
   Python command)::
 
     $ git clone https://github.com/nilearn/nilearn.git
 
-  As time goes, you can update you copy of nilearn by doing "git pull" in
-  this directory.
+As time goes, you can update you copy of nilearn by doing "git pull" in
+this directory.
 
-* If you really don't want to use git, you download the latest
-  development snapshot from the following link and unziping it:
-  https://github.com/nilearn/nilearn/archive/master.zip
+If you really don't want to use git, you download the latest development
+snapshot from the following link and unziping it:
+https://github.com/nilearn/nilearn/archive/master.zip
 
 
 Setting up
