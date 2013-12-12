@@ -100,7 +100,7 @@ pre {
 }
 
 div.highlight {
-    background-color: none;
+    background: none;
 }
 
 div.highlight-python pre {
@@ -637,6 +637,10 @@ div.sphinxsidebar ul ul ul {
 div.sphinxsidebar ul ul li {
     padding: 0;
     font-weight: normal;
+}
+
+div.sphinxsidebarwrapper {
+    width: 227px;
 }
 
 div.sphinxsidebarwrapper ul li p {

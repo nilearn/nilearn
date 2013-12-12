@@ -71,6 +71,26 @@
     });
 })(jQuery);
 </script>
+{% else %}
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 95 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+
+    $(window).scroll(function(event) {
+	if($(window).scrollTop() > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -95);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+    });
+});
+</script>
 {% endif %}
 
 <script type="text/javascript">
