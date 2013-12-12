@@ -46,10 +46,10 @@ for subject_id in subject_ids:
     from sklearn.cross_validation import LeaveOneLabelOut
     cv = LeaveOneLabelOut(session_labels)
 
-    from sklearn.svm import SVC
+    from sklearn.linear_model import LogisticRegression
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.cross_validation import cross_val_score
-    classifier = OneVsRestClassifier(SVC(C=1., kernel="linear"))
+    classifier = OneVsRestClassifier(LogisticRegression(C=1., penalty="l1"))
 
 
     mask_names = ['mask_vt', 'mask_face', 'mask_face_little',
@@ -86,7 +86,7 @@ for subject_id in subject_ids:
     score_means = np.array([[mask_scores[mask_name][label].mean()
                 for label in unique_labels] 
                 for mask_name in mask_names])
-    plt.title('Haxby Analysis with l2-penalized SVM')
+    plt.title('Haxby Analysis with l1-penalized Logistic Regression')
     plt.figure(figsize=(10, 6))
     plt.imshow(score_means, interpolation="nearest", vmax=0.9)
     plt.xticks(np.arange(len(unique_labels)), unique_labels, rotation=45)
