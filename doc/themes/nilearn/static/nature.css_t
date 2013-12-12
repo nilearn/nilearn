@@ -156,7 +156,15 @@ cite, code, tt {
 hr {
     border: 1px solid #abc;
     margin: 2em;
+    clear: both;
 }
+
+/* clear after section titles, but only on the left, to avoid pb in
+ * sidebar */
+div.body h1, div.body h2, div.body h3, div.body h4 {
+    clear: left;
+}
+
 
 
 tt {
@@ -362,6 +370,10 @@ div.body p.first {
     margin-top: 0;
 }
 
+div.body p.caption {
+    text-align: center;
+}
+
 div.bodywrapper {
     margin: 0 246px 0 auto;
     border-right: 1px solid #EEE;
@@ -527,6 +539,7 @@ p.rubric {
 p.centered {
     text-align: center;
 }
+
 
 h1 {
     margin: 0;
@@ -810,6 +823,14 @@ div.green {
     color: #468847;
     background-color: #dff0d8;
     border: 0.3em solid rgba(79, 173, 117, 0.35);
+}
+
+div.align-right {
+    float: right;
+}
+
+div.align-left {
+    float: left;
 }
 
 div#download-container {

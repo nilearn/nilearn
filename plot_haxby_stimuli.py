@@ -2,20 +2,20 @@
 Show stimuli of Haxby et al. dataset
 ===============================================================================
 
-In this script we plot an overview of the stimuli used in
-"Distributed and Overlapping Representations of Faces and
-    Objects in Ventral Temporal Cortex"
-
-(Science 2001)
+In this script we plot an overview of the stimuli used in "Distributed
+and Overlapping Representations of Faces and Objects in Ventral Temporal
+Cortex" (Science 2001)
 """
 
 from scipy.misc import imread
+import matplotlib.pyplot as plt
 
 from nilearn.datasets import fetch_haxby
+
 stimulus_information = fetch_haxby(n_subjects=0,
                                    fetch_stimuli=True).stimuli
-import matplotlib.pyplot as plt
-for stim_type in stimulus_information.keys():
+
+for stim_type in sorted(stimulus_information.keys()):
     if stim_type == "controls":
         # skip control images, there are too many
         continue
@@ -29,10 +29,11 @@ for stim_type in stimulus_information.keys():
             plt.imshow(imread(file_names[i]))
 
             plt.gray()
-            plt.axis("off")
         except:
             # just go to the next one if the file is not present
-            continue
+            pass
+        plt.axis("off")
     plt.suptitle(stim_type)
+
 plt.show()
 

@@ -17,9 +17,10 @@ Decoding: predicting behavior or phenotype from brain images
 
 .. topic:: **Page summary**
 
-    Decoding consists in learning a predictive model that can
-    predict external variables such as behavioral or phenotypic variables
-    from brain image. This page shows how to:
+    Decoding consists in predicting external variables such as behavioral
+    or phenotypic variables from brain image. This page is a tutorial
+    articulated on the analysis of the Haxby 2001 dataset. It shows how
+    to:
 
     1. Load fMRI volumes in Python.
     2. Perform a state-of-the-art decoding analysis of fMRI data.
@@ -28,11 +29,52 @@ Decoding: predicting behavior or phenotype from brain images
 Data loading and preparation
 ================================
 
+The Haxby 2001 experiment
+-------------------------
+
+Subjects are presented visual stimuli from different categories. We are
+going to predict which category the subject is seeing from the fMRI
+activity recorded in masks of the ventral stream. Significant prediction
+shows that the signal in the region contains information on the
+corresponding category.
+
+.. figure:: ../auto_examples/images/plot_haxby_stimuli_4.png
+   :target: ../auto_examples/plot_haxby_stimuli.html
+   :scale: 30
+   :align: left
+
+   Face stimuli
+
+.. figure:: ../auto_examples/images/plot_haxby_stimuli_5.png
+   :target: ../auto_examples/plot_haxby_stimuli.html
+   :scale: 30
+   :align: left
+
+   House stimuli
+
+.. figure:: ../auto_examples/images/plot_haxby_masks_1.png
+   :target: ../auto_examples/plot_haxby_masks.html
+   :scale: 30
+   :align: left
+
+   Masks
+
+.. figure:: ../auto_examples/images/plot_haxby_full_analysis_1.png
+   :target: ../auto_examples/plot_haxby_full_analysis.html
+   :scale: 35
+   :align: left
+
+   Decoding scores per mask
+
+
+Loading the data into Python
+-----------------------------
+
 Launch ipython::
 
   $ ipython -pylab
 
-First, load the data using nilearn's data downloader,
+First, load the data using nilearn's data downloading function,
 :func:`nilearn.datasets.fetch_haxby_simple`:
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py

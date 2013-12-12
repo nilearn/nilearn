@@ -35,10 +35,13 @@ categories = np.unique(stimuli[resting_state == False])
 # extract tags indicating to which acquisition run a tag belongs
 session_labels = labels["chunks"][resting_state == False]
 
-
+# The classifier: a support vector classifier
 from sklearn.svm import SVC
 classifier = SVC(C=1., kernel="linear")
 
+# A classifier to set the chance level
+from sklearn.dummy import DummyClassifier
+dummy_classifier = DummyClassifier()
 
 # Make a data splitting object for cross validation
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
@@ -47,6 +50,8 @@ cv = LeaveOneLabelOut(session_labels)
 mask_names = ['mask_vt', 'mask_face', 'mask_house']
 
 mask_scores = {}
+mask_chance_scores = {}
+
 for mask_name in mask_names:
     print "Working on mask %s" % mask_name
     masker = NiftiMasker(mask=data_files[mask_name][0])
@@ -54,12 +59,19 @@ for mask_name in mask_names:
         data_files.func[0])[resting_state == False]
 
     mask_scores[mask_name] = {}
+    mask_chance_scores[mask_name] = {}
 
     for category in categories:
         print "Processing %s %s" % (mask_name, category)
         classification_target = stimuli[resting_state == False] == category
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
+            masked_timecourses,
+            classification_target,
+            cv=cv, scoring="f1")
+
+        mask_chance_scores[mask_name][category] = cross_val_score(
+            dummy_classifier,
             masked_timecourses,
             classification_target,
             cv=cv, scoring="f1")
@@ -75,11 +87,17 @@ plt.figure()
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
-for color, (mask_name, mask_score) in zip('rgb', mask_scores.items()):
-    score_means = [mask_score[category].mean()
+for color, mask_name in zip('rgb', mask_names):
+    score_means = [mask_scores[mask_name][category].mean()
                 for category in categories]
     plt.bar(tick_position, score_means, label=mask_name,
             width=.25, color=color)
+
+    score_chance = [mask_chance_scores[mask_name][category].mean()
+                for category in categories]
+    plt.bar(tick_position, score_chance,
+            width=.25, edgecolor='k', facecolor='none')
+
     tick_position = tick_position + .2
 
 plt.ylabel('Classification accurancy (f1 score)')
