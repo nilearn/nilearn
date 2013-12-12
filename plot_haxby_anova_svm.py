@@ -50,9 +50,9 @@ X = nifti_masker.fit_transform(niimg)
 ### Prediction function #######################################################
 
 ### Define the prediction function to be used.
-# Here we use a Support Vector Classification, with a linear kernel and C=1
+# Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
-svc = SVC(kernel='linear', C=1.)
+svc = SVC(kernel='linear')
 
 ### Dimension reduction #######################################################
 
@@ -115,8 +115,8 @@ cv = LeaveOneLabelOut(session // 2)
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
-    y_pred = anova_svc.fit(X[train], y[train]) \
-        .predict(X[test])
+    anova_svc.fit(X[train], y[train])
+    y_pred = anova_svc.predict(X[test])
     cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
 
 ### Print results #############################################################

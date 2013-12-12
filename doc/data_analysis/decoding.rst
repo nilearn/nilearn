@@ -3,11 +3,10 @@
     >>> import numpy as np
     >>> from sklearn import datasets
     >>> iris = datasets.load_iris()
-    >>> X = iris.data
-    >>> y = iris.target
-    >>> y += 1
-    >>> session = np.ones_like(y)
-    >>> n_samples = len(y)
+    >>> fmri_masked  = iris.data
+    >>> target = iris.target
+    >>> session = np.ones_like(target)
+    >>> n_samples = len(target)
 
 .. _fmri_decoding:
 
@@ -96,7 +95,6 @@ downloaded on the disk::
     'mask_vt': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask4_vt.nii.gz'],
     'session_target': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/labels.txt']}
 
-    
 
 We load the behavioral labels from the corresponding text file and limit
 our analysis to the `face` and `house` conditions:
@@ -114,30 +112,37 @@ n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks)
 
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Prepare the data: apply the mask ##########################################
-    :end-before: ### Prediction function #######################################################
+    :end-before: ### Prediction ################################################################
+
+
+
 
 Performing the decoding analysis
 ====================================
 
-Prediction function: the estimator
------------------------------------
+The prediction engine
+-----------------------
+
+An estimator object
+....................
 
 To perform decoding we construct an estimator, predicting a condition
 label **y** given a set **X** of images.
 
-We define here a simple `Support Vector Classification
-<http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with C=1, and a
+We use here a simple `Support Vector Classification
+<http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
 linear kernel. We first import the correct module from scikit-learn and we
 define the classifier:
 
 .. literalinclude:: ../../plot_haxby_simple.py
-    :start-after: ### Prediction function #######################################################
-    :end-before: ### Unmasking #################################################################
+    :start-after: # Here we use a Support Vector Classification, with a linear kernel
+    :end-before: # And we run it
 
 
-Need some doc ?
+The documentation of the object details all parameters. In IPython, it
+can be displayed as follows::
 
-    >>> svc ? # doctest: +SKIP
+    In [10]: svc?
     Type:             SVC
     Base Class:       <class 'sklearn.svm.libsvm.SVC'>
     String Form:
@@ -152,17 +157,16 @@ Need some doc ?
             penalty parameter C of the error term.
     ...
 
-Or go to the `scikit-learn
-documentation <http://scikit-learn.org/modules/svm.html>`_
-We use a SVC here, but we can use
-`many other
-classifiers <http://scikit-learn.org/stable/supervised_learning.html>`_
+.. seealso::
+
+   the `scikit-learn documentation on SVMs
+   <http://scikit-learn.org/modules/svm.html>`_
 
 
-Launching it on real data: fit (train) and predict (test)
-----------------------------------------------------------
+Applying it to data: fit (train) and predict (test)
+....................................................
 
-In scikit-learn, the prediction objects (classifiers, regression) have a very simple API:
+In scikit-learn, the prediction objects have two important methods:
 
 - a *fit* function that "learns" the parameters of the model from the data.
   Thus, we need to give some training data to *fit*.
@@ -170,50 +174,57 @@ In scikit-learn, the prediction objects (classifiers, regression) have a very si
   Here, we just have to give the new set of images (as the target should be
   unknown):
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-        :start-after: ### Fit and predict ###########################################################
-        :end-before: ### Visualisation #############################################################
+.. literalinclude:: ../../plot_haxby_simple.py
+    :start-after: # And we run it
+    :end-before: ### Cross-validation ##########################################################
 
-**Warning ! Do not do this at home:** the prediction that we obtain here
-is to good to be true (see next paragraph). Here we are just doing a
-sanity check.
+.. warning:: 
+
+    **Do predict on data used by the fit:** the prediction that we obtain here
+    is to good to be true (see next paragraph). Here we are just doing a sanity
+    check.
 
 .. for doctests (smoke testing):
-    >>> from sklearn.svm import LinearSVC, SVC
-    >>> anova_svc = LinearSVC()
+    >>> from sklearn.svm import SVC
+    >>> svc = SVC()
 
-Cross-validation: measuring prediction performance
----------------------------------------------------
+Measuring prediction performance
+---------------------------------
+
+Cross-validation
+.................
 
 However, the last analysis is *wrong*, as we have learned and tested on
 the same set of data. We need to use a cross-validation to split the data
-into different sets.
+into different sets, called "folds", in a `K-Fold strategy
+<http://en.wikipedia.org/wiki/Cross-validation_(statistics)#K-fold_cross-validation>`_.
 
-In scikit-learn, a cross-validation is simply a function that generates
-the indices of the folds within a loop.
-Now, we can apply the previously defined *pipeline* with the
-cross-validation:
+We use a cross-validation object,
+:class:`sklearn.cross_validation.KFold`, that simply generates the
+indices of the folds within a loop.
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-        :start-after: ### Cross validation ########################################################## 
-        :end-before: ### Print results #############################################################
+.. literalinclude:: ../../plot_haxby_simple.py
+    :start-after: ### Cross-validation ##########################################################
+    :end-before: ### Unmasking #################################################################
+
 
 .. for doctests:
    >>> cv = 2
 
-But we are lazy people, so there is a specific
-function, *cross_val_score* that computes for you the results for the
-different folds of cross-validation::
+There is a specific function,
+:func:`sklearn.cross_validation.cross_val_score` that computes for you
+the score for the different folds of cross-validation::
 
   >>> from sklearn.cross_validation import cross_val_score
-  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv)
+  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
 
-If you are the happy owner of a multiple-processor computer you can
-speed up the computation by using n_jobs=-1, which will spread the
-computation equally across all processors (but will probably not work
+You can speed up the computation by using n_jobs=-1, which will spread
+the computation equally across all processors (but will probably not work
 under Windows)::
 
- >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
+ >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
+
+**TODO:** leave one session out
 
 **Prediction accuracy**: We can take a look at the results of the
 *cross_val_score* function::
@@ -239,6 +250,14 @@ correct predictions on the left-out data.
     0.99537037037037035
 
 We have a total prediction accuracy of 99% across the different folds.
+
+Measuring the chance level
+...........................
+
+**Dummy estimators** The simplest way to measure prediction performance 
+at chance, is to use a dummy classifier::
+
+    >>> from sklearn.dummy import DummyClassifier
 
 Visualizing the decoder's weights
 ---------------------------------
@@ -285,8 +304,8 @@ based feature selection (a.k.a.
 that we will put before the SVC in a `pipeline`:
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
-        :start-after: ### Dimension reduction #######################################################
-        :end-before: ### Fit and predict ###########################################################
+    :start-after: ### Dimension reduction #######################################################
+    :end-before: ### Fit and predict ###########################################################
 
 
 Visualizing the results

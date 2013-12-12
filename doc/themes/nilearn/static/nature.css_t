@@ -1377,7 +1377,14 @@ div.body .jcarousel li {
     float: left;
     width: 300px;
     line-height : 240px;
+    text-align: center;
 }
+
+div.body div.jcarousel img {
+    max-width: 300px;
+    max-height: 250px;
+}
+
 
 /** Carousel Controls **/
 

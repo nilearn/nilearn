@@ -40,16 +40,30 @@ fmri_masked = nifti_masker.fit_transform(data.func[0])
 # Restrict the classification to the face vs house discrimination
 fmri_masked = fmri_masked[condition_mask]
 
-### Prediction function #######################################################
+### Prediction ################################################################
 
-# Here we use a Support Vector Classification, with a linear kernel and C=1
+# Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
-svc = SVC(kernel='linear', C=1.)
+svc = SVC(kernel='linear')
 
 # And we run it
 svc.fit(fmri_masked, target)
-y_pred = svc.predict(fmri_masked)
+prediction = svc.predict(fmri_masked)
 
+### Cross-validation ##########################################################
+
+from sklearn.cross_validation import KFold
+
+cv = KFold(n=len(fmri_masked), n_folds=5)
+cv_scores = []
+
+for train, test in cv:
+    svc.fit(fmri_masked[train], target[train])
+    prediction = svc.predict(fmri_masked[test])
+    cv_scores.append(np.sum(prediction == target[test])
+                     / float(np.size(target[test])))
+
+print cv_scores
 
 ### Unmasking #################################################################
 
