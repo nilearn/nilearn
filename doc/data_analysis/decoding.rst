@@ -79,37 +79,41 @@ Launch ipython::
 First, load the data using nilearn's data downloading function,
 :func:`nilearn.datasets.fetch_haxby_simple`:
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Load Haxby dataset ########################################################
-    :end-before: ### Preprocess data ########################################################### 
+.. literalinclude:: ../../plot_haxby_simple.py
+    :start-after: ### Load haxby dataset ########################################################
+    :end-before: ### Load Target labels ########################################################
 
-Then prepare the data:
+The ``data`` object has several entries that contain paths to the files
+downloaded on the disk::
 
-- compute the mean of the image to replace anatomic data
-- mask data X and transpose the matrix, so that its shape becomes
-  (n_samples, n_features) (see :ref:`mask_4d_2_3d` for a discussion on using 
-  masks)
+    >>> print data # doctest: +SKIP
+    {'anat': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/anat.nii.gz'],
+    'func': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/bold.nii.gz'],
+    'mask_face': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8b_face_vt.nii.gz'],
+    'mask_face_little': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8_face_vt.nii.gz'],
+    'mask_house': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8b_house_vt.nii.gz'],
+    'mask_house_little': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8_house_vt.nii.gz'],
+    'mask_vt': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask4_vt.nii.gz'],
+    'session_target': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/labels.txt']}
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Preprocess data ########################################################### 
-    :end-before: ### Restrict to faces and houses ##############################################
+    
 
-.. topic:: **Exercise**
-   :class: green
+We load the behavioral labels from the corresponding text file and limit
+our analysis to the `face` and `house` conditions:
 
-   1. Remove the rest conditions from the data
+.. literalinclude:: ../../plot_haxby_simple.py
+    :start-after: ### Load Target labels ########################################################
+    :end-before: ### Prepare the data: apply the mask ##########################################
 
-.. topic:: **Solution**
+.. currentmodule:: nilearn.input_data
 
-    As 'y == 0' in rest, we want to keep only time points for which 
-    `y != 0`::
+Then we prepare the fMRI data: we use the :class:`NiftiMasker` to apply the
+`mask_vt` mask to the 4D fMRI data, so that its shape becomes (n_samples,
+n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks)
 
-     >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
 
-Here, we limit our analysis to the `face` and `house` conditions:
-
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Restrict to faces and houses ##############################################
+.. literalinclude:: ../../plot_haxby_simple.py
+    :start-after: ### Prepare the data: apply the mask ##########################################
     :end-before: ### Prediction function #######################################################
 
 Performing the decoding analysis
@@ -126,13 +130,14 @@ We define here a simple `Support Vector Classification
 linear kernel. We first import the correct module from scikit-learn and we
 define the classifier:
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
+.. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Prediction function #######################################################
-    :end-before: ### Dimension reduction #######################################################
+    :end-before: ### Unmasking #################################################################
+
 
 Need some doc ?
 
-    >>> clf ? # doctest: +SKIP
+    >>> svc ? # doctest: +SKIP
     Type:             SVC
     Base Class:       <class 'sklearn.svm.libsvm.SVC'>
     String Form:
@@ -153,23 +158,6 @@ We use a SVC here, but we can use
 `many other
 classifiers <http://scikit-learn.org/stable/supervised_learning.html>`_
 
-
-Dimension reduction
--------------------
-
-As there are a very large number of voxels and not all are useful for
-face vs house prediction, we add a `feature selection
-<http://scikit-learn.org/stable/modules/feature_selection.html>`_
-procedure. The idea is to select the `k` voxels most correlated to the
-task.
-
-For this, we need to import the correct module and define a simple F-score
-based feature selection (a.k.a. 
-`Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_):
-
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-        :start-after: ### Dimension reduction #######################################################
-        :end-before: ### Fit and predict ###########################################################
 
 Launching it on real data: fit (train) and predict (test)
 ----------------------------------------------------------
@@ -193,30 +181,6 @@ sanity check.
 .. for doctests (smoke testing):
     >>> from sklearn.svm import LinearSVC, SVC
     >>> anova_svc = LinearSVC()
-
-Visualizing the results
--------------------------
-
-We can visualize the result of our algorithm:
-
-- we first get the support vectors of the SVC and inverse the feature
-  selection mechanism
-- we remove the mask
-- then we overlay our previously-computed, mean image with our support vectors
-
-.. figure:: ../auto_examples/images/plot_haxby_anova_svm_1.png
-   :target: ../auto_examples/plot_haxby_anova_svm.html
-   :align: right
-   :scale: 60
-
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Visualisation #############################################################
-    :end-before: ### Cross validation ########################################################## 
-
-.. seealso::
-
-   * :ref:`visualizing`
-
 
 Cross-validation: measuring prediction performance
 ---------------------------------------------------
@@ -275,6 +239,79 @@ correct predictions on the left-out data.
     0.99537037037037035
 
 We have a total prediction accuracy of 99% across the different folds.
+
+Visualizing the decoder's weights
+---------------------------------
+
+We can visualize the weights of the decoder:
+
+- we first inverse the masking operation, to retrieve a 3D brain volume
+  of the SVC's weights.
+- we then create a figure and plot as a background the first EPI image
+- we plot the SVC's weights after masking the zero values
+
+.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
+   :target: ../auto_examples/plot_haxby_simple.html
+   :align: right
+   :scale: 65
+
+.. literalinclude:: ../../plot_haxby_simple.py
+    :start-after: ### Unmasking #################################################################
+    :end-before: ### Visualize the mask ########################################################
+
+
+.. seealso::
+
+   * :ref:`visualizing`
+
+
+Decoding without a mask: Anova-SVM
+===================================
+
+Dimension reduction
+-------------------
+
+If we do not start from a mask of the relevant regions, there is a very
+large number of voxels and not all are useful for
+face vs house prediction. We thus add a `feature selection
+<http://scikit-learn.org/stable/modules/feature_selection.html>`_
+procedure. The idea is to select the `k` voxels most correlated to the
+task.
+
+For this, we need to import the `feature_selection` module and define a
+simple F-score
+based feature selection (a.k.a. 
+`Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
+that we will put before the SVC in a `pipeline`:
+
+.. literalinclude:: ../../plot_haxby_anova_svm.py
+        :start-after: ### Dimension reduction #######################################################
+        :end-before: ### Fit and predict ###########################################################
+
+
+Visualizing the results
+-------------------------
+
+We can visualize the result of our algorithm:
+
+- we first get the support vectors of the SVC and inverse the feature
+  selection mechanism
+- we remove the mask
+- then we overlay our previously-computed, mean image with our support vectors
+
+.. figure:: ../auto_examples/images/plot_haxby_anova_svm_1.png
+   :target: ../auto_examples/plot_haxby_anova_svm.html
+   :align: right
+   :scale: 65
+
+.. literalinclude:: ../../plot_haxby_anova_svm.py
+    :start-after: ### Visualisation #############################################################
+    :end-before: ### Cross validation ########################################################## 
+
+.. seealso::
+
+   * :ref:`visualizing`
+
 
 
 We can add a line to print the results:

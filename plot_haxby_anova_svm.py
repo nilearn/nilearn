@@ -52,7 +52,7 @@ X = nifti_masker.fit_transform(niimg)
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
 from sklearn.svm import SVC
-clf = SVC(kernel='linear', C=1.)
+svc = SVC(kernel='linear', C=1.)
 
 ### Dimension reduction #######################################################
 
@@ -67,7 +67,7 @@ feature_selection = SelectKBest(f_classif, k=500)
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
-anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
+anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 
 ### Fit and predict ###########################################################
 
@@ -76,31 +76,32 @@ y_pred = anova_svc.predict(X)
 
 ### Visualisation #############################################################
 
-### Look at the discriminating weights
-coef = clf.coef_
+### Look at the SVC's discriminating weights
+coef = svc.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
 # reverse masking
-niimg = nifti_masker.inverse_transform(coef)
+weight_niimg = nifti_masker.inverse_transform(coef)
 
 # We use a masked array so that the voxels at '-1' are displayed
 # transparently
-act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
+weights = np.ma.masked_array(weight_niimg.get_data(),
+                             weight_niimg.get_data() == 0)
 
 ### Create the figure
 import matplotlib.pyplot as plt
-plt.axis('off')
-plt.title('SVM vectors')
+plt.figure(figsize=(3, 5))
 plt.imshow(np.rot90(mean_img[..., 27]), cmap=plt.cm.gray,
           interpolation='nearest')
-plt.imshow(np.rot90(act[..., 27, 0]), cmap=plt.cm.hot,
+plt.imshow(np.rot90(weights[..., 27, 0]), cmap=plt.cm.hot,
           interpolation='nearest')
+plt.axis('off')
+plt.title('SVM weights')
 plt.show()
 
-# Saving the results as a Nifti file may also be important
+### Saving the results as a Nifti file may also be important
 import nibabel
-img = nibabel.Nifti1Image(act, affine)
-nibabel.save(img, 'haxby_face_vs_house.nii')
+nibabel.save(weight_niimg, 'haxby_face_vs_house.nii')
 
 ### Cross validation ##########################################################
 
