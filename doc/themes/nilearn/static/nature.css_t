@@ -99,6 +99,10 @@ pre {
     margin: 1.5em 0 1.5em 0;
 }
 
+div.highlight {
+    background-color: none;
+}
+
 div.highlight-python pre {
     overflow-y: hidden;
     font-size: 90%;
