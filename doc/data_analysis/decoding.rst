@@ -15,16 +15,18 @@
 Decoding: predicting behavior or phenotype from brain images
 ================================================================================
 
-.. topic:: **Page summary**
+Decoding consists in predicting external variables such as behavioral or
+phenotypic variables from brain image. This page is a tutorial articulated on
+the analysis of the Haxby 2001 dataset. It shows how to:
 
-    Decoding consists in predicting external variables such as behavioral
-    or phenotypic variables from brain image. This page is a tutorial
-    articulated on the analysis of the Haxby 2001 dataset. It shows how
-    to:
+1. Load fMRI volumes in Python.
+2. Perform a state-of-the-art decoding analysis of fMRI data.
+3. Perform even more sophisticated analyses of fMRI data.
 
-    1. Load fMRI volumes in Python.
-    2. Perform a state-of-the-art decoding analysis of fMRI data.
-    3. Perform even more sophisticated analyses of fMRI data.
+.. contents:: **Chapters contents**
+    :local:
+    :depth: 1
+
 
 Data loading and preparation
 ================================
@@ -110,7 +112,7 @@ Here, we limit our analysis to the `face` and `house` conditions:
     :start-after: ### Restrict to faces and houses ##############################################
     :end-before: ### Prediction function #######################################################
 
-Down to business: decoding analysis
+Performing the decoding analysis
 ====================================
 
 Prediction function: the estimator

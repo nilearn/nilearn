@@ -661,6 +661,7 @@ div.seealso {
     color: rgb(175, 138, 75);
 }
 
+
 div.admonition p, div.warning p {
     margin: 0.5em 1em 0.5em;
     padding: 0;
@@ -712,6 +713,16 @@ div.versioninfo {
     padding: 8px;
     line-height: 1.3em;
     font-size: 0.9em;
+}
+
+div.contents {
+    border: 1px solid #FBEED5;
+    border-radius: 5px;
+    padding: 0px 5px 0px 10px;
+    background-color: #FFFBE8;
+    max-width: 48em;
+    margin: 15px auto 0px;
+    color: #2C2C28;
 }
 
 
