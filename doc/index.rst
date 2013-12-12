@@ -15,9 +15,9 @@
 
 .. Here we are building the carrousel
 
-.. |banner1| image:: auto_examples/images/plot_haxby_decoding_1.png
+.. |banner1| image:: auto_examples/images/plot_haxby_anova_svm_1.png
    :width: 300
-   :target: auto_examples/plot_haxby_decoding.html
+   :target: auto_examples/plot_haxby_anova_svm.html
 
 .. |banner2| image:: auto_examples/images/plot_haxby_simple_1.png
    :width: 300

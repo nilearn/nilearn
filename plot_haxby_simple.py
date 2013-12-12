@@ -3,7 +3,8 @@ Simple example of decoding: the Haxby dataset
 ==============================================
 
 Here is a simple example of decoding, reproducing the Haxby 2001
-study.
+study on a face vs house discrimination task in a mask of the ventral
+stream.
 """
 
 ### Load haxby dataset ########################################################
@@ -14,19 +15,16 @@ dataset = datasets.fetch_haxby()
 ### Load Target labels ########################################################
 
 import numpy as np
-import sklearn.utils.fixes
 # Load target information as string and give a numerical identifier to each
-labels = np.loadtxt(dataset.session_target[0], dtype=np.str, skiprows=1,
-                    usecols=(0,))
+labels = np.recfromcsv(dataset.session_target[0], delimiter=" ")
 
-# For compatibility with numpy 1.3 and scikit-learn 0.12
-# "return_inverse" option appeared in numpy 1.4, scikit-learn >= 0.14 supports
-# text labels.
-# With scikit-learn >= 0.14, replace this line by: target = labels
-_, target = sklearn.utils.fixes.unique(labels, return_inverse=True)
+# scikit-learn >= 0.14 supports text labels. You can replace this line by:
+# target = labels['labels']
+_, target = np.unique(labels['labels'], return_inverse=True)
 
 ### Keep only data corresponding to faces or houses ###########################
-condition_mask = np.logical_or(labels == 'face', labels == 'house')
+condition_mask = np.logical_or(labels['labels'] == 'face',
+                               labels['labels'] == 'house')
 target = target[condition_mask]
 
 
@@ -41,7 +39,7 @@ fmri_masked = nifti_masker.fit_transform(dataset.func[0])
 
 ### Prediction function #######################################################
 
-# First, we narrow to the face vs house classification
+# Restrict the classification to the face vs house discrimination
 fmri_masked = fmri_masked[condition_mask]
 
 # Here we use a Support Vector Classification, with a linear kernel and C=1
@@ -51,6 +49,7 @@ svc = SVC(kernel='linear', C=1.)
 # And we run it
 svc.fit(fmri_masked, target)
 y_pred = svc.predict(fmri_masked)
+
 
 ### Unmasking #################################################################
 
@@ -79,13 +78,13 @@ plt.imshow(np.rot90(act[..., 27, 0]), cmap=plt.cm.hot,
 
 ### Visualize the mask ########################################################
 
-mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+mask = nifti_masker.mask_img_.get_data()
 
 plt.figure()
 plt.axis('off')
 plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
           interpolation='nearest', cmap=plt.cm.gray)
-ma = np.ma.masked_equal(mask, False)
+ma = np.ma.masked_equal(mask, 0)
 plt.imshow(np.rot90(ma[..., 27]), interpolation='nearest', cmap=plt.cm.autumn,
           alpha=0.5)
 plt.title("Mask")

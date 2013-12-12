@@ -2,9 +2,14 @@
 ROI-based decoding analysis in Haxby et al. dataset
 =====================================================
 
-In this script we reproduce the original data analysis conducted by
+In this script we reproduce the data analysis conducted by
 Haxby et al. in "Distributed and Overlapping Representations of Faces and
-Objects in Ventral Temporal Cortex"
+Objects in Ventral Temporal Cortex".
+
+Specifically, we look at decoding accuracy for different objects in
+three different masks: the full ventral stream (mask_vt), the house
+selective areas (mask_house) and the face selective areas (mask_face),
+that have been defined via a standard GLM-based analysis.
 
 """
 
@@ -20,11 +25,12 @@ from nilearn.input_data import NiftiMasker
 # load labels
 import numpy as np
 labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
+stimuli = labels['labels']
 # identify resting state labels in order to be able to remove them
-resting_state = labels['labels'] == "rest"
+resting_state = stimuli == "rest"
 
 # find names of remaining active labels
-categories = np.unique(labels['labels'][resting_state == False])
+categories = np.unique(stimuli[resting_state == False])
 
 # extract tags indicating to which acquisition run a tag belongs
 session_labels = labels["chunks"][resting_state == False]
@@ -51,8 +57,7 @@ for mask_name in mask_names:
 
     for category in categories:
         print "Processing %s %s" % (mask_name, category)
-        classification_target = \
-            labels['labels'][resting_state == False] == category
+        classification_target = stimuli[resting_state == False] == category
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
             masked_timecourses,
@@ -78,6 +83,7 @@ for color, (mask_name, mask_score) in zip('rgb', mask_scores.items()):
     tick_position = tick_position + .2
 
 plt.ylabel('Classification accurancy (f1 score)')
+plt.xlabel('Visual stimuli category')
 plt.legend(loc='best')
 plt.title('Category-specific classification accuracy for different masks')
 plt.tight_layout()
