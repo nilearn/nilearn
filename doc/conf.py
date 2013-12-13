@@ -44,7 +44,7 @@ except:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['gen_rst',
               'sphinx.ext.autodoc', 'sphinx.ext.autosummary',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
               ]
 try:
     import numpy_ext.numpydoc
