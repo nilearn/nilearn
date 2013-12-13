@@ -224,14 +224,14 @@ can be easily extracted from the fMRI data using the
 
    compute_epi_mask
 
+.. figure:: ../auto_examples/images/plot_visualization_2.png
+    :target: ../auto_examples/plot_visualization.html
+    :align: right
+    :scale: 50%
+
 .. literalinclude:: ../../plot_visualization.py
      :start-after: ### Extracting a brain mask ###################################################
      :end-before: ### Applying the mask #########################################################
-
-.. figure:: ../auto_examples/images/plot_visualization_2.png
-    :target: ../auto_examples/plot_visualization.html
-    :align: center
-    :scale: 50%
 
 .. _mask_4d_2_3d:
 

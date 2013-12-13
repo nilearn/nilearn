@@ -22,9 +22,9 @@ labels = np.recfromcsv(data.session_target[0], delimiter=" ")
 # target = labels['labels']
 _, target = np.unique(labels['labels'], return_inverse=True)
 
-### Keep only data corresponding to faces or houses ###########################
+### Keep only data corresponding to faces or cat ##############################
 condition_mask = np.logical_or(labels['labels'] == 'face',
-                               labels['labels'] == 'house')
+                               labels['labels'] == 'cat')
 target = target[condition_mask]
 
 

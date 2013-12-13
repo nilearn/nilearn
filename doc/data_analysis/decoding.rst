@@ -46,12 +46,12 @@ corresponding category.
 
    Face stimuli
 
-.. figure:: ../auto_examples/images/plot_haxby_stimuli_5.png
+.. figure:: ../auto_examples/images/plot_haxby_stimuli_2.png
    :target: ../auto_examples/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
-   House stimuli
+   Cat stimuli
 
 .. figure:: ../auto_examples/images/plot_haxby_masks_1.png
    :target: ../auto_examples/plot_haxby_masks.html
@@ -97,7 +97,7 @@ downloaded on the disk::
 
 
 We load the behavioral labels from the corresponding text file and limit
-our analysis to the `face` and `house` conditions:
+our analysis to the `face` and `cat` conditions:
 
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################
@@ -228,19 +228,42 @@ under Windows)::
 
  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
-**TODO:** leave one session out
-
 **Prediction accuracy**: We can take a look at the results of the
 *cross_val_score* function::
 
-  >>> cv_scores # doctest: +SKIP
-  array([ 1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
-          1.        ,  1.        ,  0.94444444,  1.        ,  1.        ,
-          1.        ,  1.        ])
+  >>> print cv_scores # doctest: +SKIP
+  [0.72727272727272729, 0.46511627906976744, 0.72093023255813948, 0.58139534883720934, 0.7441860465116279]
 
 This is simply the prediction score for each fold, i.e. the fraction of
 correct predictions on the left-out data.
 
+Choosing a good cross-validation strategy
+.........................................
+
+There are many cross-validation strategies possible, including K-Fold or
+leave-one-out. When choosing a strategy, keep in mind that:
+
+* The test set should be as litte correlated as possible with the train
+  set
+* The test set needs to have enough samples to enable a good measure of
+  the prediction error (a rule of thumb is to use 10 to 20% of the data).
+
+In these regards, leave one out is often one of the worst options.
+
+Here, in the Haxby example, we are going to leave a session out, in order
+to have a test set independent from the train set. For this, we are going
+to use the session label, present in the behavioral data file, and
+:class:`sklearn.cross_validation.LeaveOneLabelOut`::
+
+    >>> from sklearn.cross_validation import LeaveOneLabelOut
+    >>> session_label = labels['chunks'] # doctest: +SKIP
+    >>> # We need to remember to remove the rest conditions
+    >>> session_label = session_label[condition_mask] # doctest: +SKIP
+    >>> cv = LeaveOneLabelOut(labels=session_label) # doctest: +SKIP
+    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
+    >>> print cv_scores
+    [ 1.          0.61111111  0.94444444  0.88888889  0.88888889  0.94444444
+      0.72222222  0.94444444  0.5         0.72222222  0.5         0.55555556]
 
 .. topic:: **Exercise**
    :class: green
@@ -251,9 +274,9 @@ correct predictions on the left-out data.
 
     >>> classification_accuracy = np.mean(cv_scores)
     >>> classification_accuracy # doctest: +SKIP
-    0.99537037037037035
+    0.76851851851851849
 
-We have a total prediction accuracy of 99% across the different folds.
+We have a total prediction accuracy of 77% across the different folds.
 
 Measuring the chance level
 ...........................
@@ -299,12 +322,12 @@ We can visualize the weights of the decoder:
 Decoding without a mask: Anova-SVM
 ===================================
 
-Dimension reduction
--------------------
+Dimension reduction with feature selection
+-------------------------------------------
 
 If we do not start from a mask of the relevant regions, there is a very
 large number of voxels and not all are useful for
-face vs house prediction. We thus add a `feature selection
+face vs cat prediction. We thus add a `feature selection
 <http://scikit-learn.org/stable/modules/feature_selection.html>`_
 procedure. The idea is to select the `k` voxels most correlated to the
 task.
