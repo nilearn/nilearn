@@ -305,11 +305,12 @@ face vs house prediction. We thus add a `feature selection
 procedure. The idea is to select the `k` voxels most correlated to the
 task.
 
-For this, we need to import the `feature_selection` module and define a
-simple F-score
+For this, we need to import the :mod:`sklearn.feature_selection` module and use 
+:func:`sklearn.feature_selection.f_classif`, a simple F-score
 based feature selection (a.k.a. 
 `Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
-that we will put before the SVC in a `pipeline`:
+that we will put before the SVC in a `pipeline`
+(:class:`sklearn.pipeline.Pipeline`):
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Dimension reduction #######################################################
@@ -338,13 +339,6 @@ We can visualize the result of our algorithm:
 .. seealso::
 
    * :ref:`visualizing`
-
-
-
-We can add a line to print the results:
-
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-        :start-after: ### Print results #############################################################
 
 
 .. topic:: **Final script**
