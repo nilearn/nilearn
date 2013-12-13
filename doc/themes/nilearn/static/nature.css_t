@@ -508,7 +508,6 @@ div.sphinxsidebar h4, div.sphinxsidebar h3 {
 }
 
 div.sphinxsidebar ul {
-    padding-left: 1.5em;
     margin-top: 7px;
     list-style: none;
     padding: 0;
@@ -516,8 +515,8 @@ div.sphinxsidebar ul {
 }
 
 div.sphinxsidebar ul ul {
-    list-style: square;
-    margin-left: 20px;
+    list-style: none;
+    margin-left: 5px;
 }
 
 div.sphinxsidebar ul ul li {
@@ -525,7 +524,7 @@ div.sphinxsidebar ul ul li {
 }
 
 div.sphinxsidebar ul ul ul li {
-    margin-top: 5px;
+    margin-top: 1px;
 }
 
 div.sphinxsidebar ul ul ul ul {
@@ -651,6 +650,21 @@ div.sphinxsidebarwrapper ul li p {
 
 div.sphinxsidebarwrapper h3 a {
     color: white;
+}
+
+div.sphinxsidebarwrapper ul ul a {
+    display: block;
+    padding: 2px 2px 2px 10px;
+}
+
+div.sphinxsidebarwrapper ul ul a:hover {
+    text-decoration: none;
+    background-color: #E4F2FC;
+}
+
+div.sphinxsidebarwrapper ul ul a.active {
+    color: white;
+    background-color: #355F7C;
 }
 
 div.admonition, div.warning, div.topic {
