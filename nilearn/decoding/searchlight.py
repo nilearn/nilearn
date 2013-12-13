@@ -164,8 +164,8 @@ def _group_iter_search_light(list_rows, estimator, X, y,
             warnings.warn('Scikit-learn version is too old. '
                           'scoring argument ignored', stacklevel=2)
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                                                y, cv=cv, n_jobs=1,
-                                                **kwargs))
+                                                y, scoring=scoring, cv=cv,
+                                                n_jobs=1, **kwargs))
         if verbose > 0:
             # One can't print less than each 10 iterations
             step = 11 - min(verbose, 10)
