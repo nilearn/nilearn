@@ -276,7 +276,24 @@ to use the session label, present in the behavioral data file, and
     >>> classification_accuracy # doctest: +SKIP
     0.76851851851851849
 
-We have a total prediction accuracy of 77% across the different folds.
+We have a total prediction accuracy of 77% across the different sessions.
+
+Choice of the prediction accuracy measure
+..........................................
+
+The default metric used for measuring errors is the accuracy score, ie
+the number of total errors. It is not always a sensible metric,
+especially in the case of very imbalance classes, as in such situation
+choosing the dominant class can achieve a low number of errors.
+
+Other metrics, such as the f1-score, can be used::
+
+    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='f1')
+
+.. seealso::
+
+   the `list of scoring options
+   <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
 Measuring the chance level
 ...........................
@@ -292,7 +309,36 @@ at chance, is to use a dummy classifier,
 permutation testing on the labels, with
 :func:`sklearn.cross_validation.permutation_test_score`::
 
-  >>> null_cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
+  >>> from sklearn.cross_validation import permutation_test_score
+  >>> null_cv_scores = permutation_test_score(svc, fmri_masked, target, cv=cv)
+
+|
+
+.. topic:: **Putting it all together**
+
+    The :ref:`ROI-based decoding example
+    <example_plot_haxby_full_analysis.py>` does a decoding analysis per
+    mask, giving the f1-score of the prediction for each object.
+
+    It uses all the notions presented above, with ``for`` loop to iterate
+    over masks and categories and Python dictionnaries to store the
+    scores.
+
+
+.. figure:: ../auto_examples/images/plot_haxby_masks_1.png
+   :target: ../auto_examples/plot_haxby_masks.html
+   :scale: 60
+   :align: left
+
+   Masks
+
+
+.. figure:: ../auto_examples/images/plot_haxby_full_analysis_1.png
+   :target: ../auto_examples/plot_haxby_full_analysis.html
+   :scale: 78
+   :align: left
+
+
 
 Visualizing the decoder's weights
 ---------------------------------
@@ -341,18 +387,19 @@ that we will put before the SVC in a `pipeline`
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Dimension reduction #######################################################
-    :end-before: ### Fit and predict ###########################################################
-
+    :end-before: ### Visualisation #############################################################
+We can use our ``anova_svc`` object exactly as we were using our ``svc``
+object previously.
 
 Visualizing the results
 -------------------------
 
-We can visualize the result of our algorithm:
+To visualize the results, we need to:
 
-- we first get the support vectors of the SVC and inverse the feature
+- first get the support vectors of the SVC and inverse the feature
   selection mechanism
-- we remove the mask
-- then we overlay our previously-computed, mean image with our support vectors
+- then, as before, inverse the masking process to retrieve the weights
+  and plot them.
 
 .. figure:: ../auto_examples/images/plot_haxby_anova_svm_1.png
    :target: ../auto_examples/plot_haxby_anova_svm.html
@@ -443,4 +490,14 @@ and recompute the cross-validation score::
     ...     verbose=True) # doctest: +SKIP
 
 But, be aware that this can take A WHILE...
+
+|
+
+.. seealso::
+
+    The `scikit-learn documentation <http://scikit-learn.org>`_
+    has very detailed explanations on a large variety of estimators and
+    machine learning techniques. To become better at decoding, you need
+    to study it.
+
 
