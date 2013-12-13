@@ -30,7 +30,7 @@ Data preparation
 Retrieving the example data
 ----------------------------
 
-As seen in :ref:`downloading_data`, we fetch data from Internet and get
+As seen in :ref:`loading_data`, we fetch data from Internet and get
 the filenames with a function provided by nilearn:
 
 

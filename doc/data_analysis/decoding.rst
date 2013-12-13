@@ -114,6 +114,10 @@ n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks)
     :start-after: ### Prepare the data: apply the mask ##########################################
     :end-before: ### Prediction ################################################################
 
+.. seealso::
+
+   * :ref:`loading_data`
+   * :ref:`masking`
 
 
 

@@ -14,7 +14,7 @@ manipulation them.
 
 
 
-.. _downloading_data:
+.. _loading_data:
 
 Loading data
 ============

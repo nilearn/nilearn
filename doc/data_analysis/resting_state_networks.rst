@@ -29,7 +29,7 @@ We will use sample data from the `ADHD 200 resting-state dataset
 <http://fcon_1000.projects.nitrc.org/indi/adhd200/>`, that has been
 preprocessed using `CPAC <http://fcp-indi.github.io/>`. We use nilearn
 functions to fetch data from Internet and get the filenames (:ref:`more
-on data downloading <downloading_data>`):
+on data loading <loading_data>`):
 
 
 .. literalinclude:: ../../plot_canica_resting_state.py

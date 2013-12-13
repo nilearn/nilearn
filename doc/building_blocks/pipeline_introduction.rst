@@ -29,7 +29,7 @@ Downloading the data
 
 To run demos, data are retrieved using a function provided by Nilearn
 which downloads a dataset and returns a bunch of paths to the dataset
-files (more details in :ref:`downloading_data`). We can then proceed
+files (more details in :ref:`loading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
 example, we can download the data from the
 `Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ ::
@@ -67,7 +67,8 @@ This can be done as follows:
 
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Keep only data corresponding to faces or houses ###########################
-    :end-before: ### Load the mask #############################################################
+    :end-before: ### Prepare the data: apply the mask ##########################################
+
 
 .. note::
 
@@ -124,8 +125,9 @@ from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
 .. literalinclude:: ../../plot_haxby_simple.py
-    :start-after: ### Load the mask #############################################################
-    :end-before: ### Prediction function #######################################################
+    :start-after: ### Prepare the data: apply the mask ##########################################
+    :end-before: ### Prediction ################################################################
+
 
 Note that you can call `nifti_masker.transform(dataset.func[1])` on new
 data to mask it in a similar way as the data that was used during the
@@ -151,8 +153,9 @@ Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
 .. literalinclude:: ../../plot_haxby_simple.py
-    :start-after: ### Prediction function #######################################################
-    :end-before: ### Unmasking #################################################################
+    :start-after: ### Prediction ################################################################
+    :end-before: ### Cross-validation ##########################################################
+
 
 We will not detail it here since there is a very good documentation about it in the
 `scikit-learn documentation <http://scikit-learn.org/stable/modules/svm.html#classification>`__
@@ -180,14 +183,14 @@ Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 
+.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
+    :target: ../auto_examples/plot_haxby_simple.html
+    :align: right
+    :scale: 50%
+
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Visualization #############################################################
     :end-before: ### Visualize the mask ########################################################
-
-.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
-    :target: ../auto_examples/plot_haxby_simple.html
-    :align: center
-    :scale: 50%
 
 Going further
 =============
