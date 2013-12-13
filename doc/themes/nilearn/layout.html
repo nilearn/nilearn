@@ -78,11 +78,12 @@ $(function () {
     var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
         sections = {},
         i        = 0,
+	url	 = document.URL.replace(/#.*$/, ""),
 	current_section = 0;
 
     // Grab positions of our sections 
     $('.headerlink').each(function(){
-        sections[this.href.replace(document.URL, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
     });
 
     $(window).scroll(function(event) {
