@@ -132,7 +132,7 @@ label **y** given a set **X** of images.
 We use here a simple `Support Vector Classification
 <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
 linear kernel. We first import the correct module from scikit-learn and we
-define the classifier:
+define the classifier, :class:`sklearn.svm.SVC`:
 
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: # Here we use a Support Vector Classification, with a linear kernel
@@ -254,10 +254,18 @@ We have a total prediction accuracy of 99% across the different folds.
 Measuring the chance level
 ...........................
 
-**Dummy estimators** The simplest way to measure prediction performance 
-at chance, is to use a dummy classifier::
+**Dummy estimators**: The simplest way to measure prediction performance 
+at chance, is to use a dummy classifier,
+:class:`sklearn.dummy.DummyClassifier`::
 
     >>> from sklearn.dummy import DummyClassifier
+    >>> null_cv_scores = cross_val_score(DummyClassifier(), fmri_masked, target, cv=cv)
+
+**Permutation testing**: A more controlled way, but slower, is to do
+permutation testing on the labels, with
+:func:`sklearn.cross_validation.permutation_test_score`::
+
+  >>> null_cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
 
 Visualizing the decoder's weights
 ---------------------------------
@@ -267,7 +275,7 @@ We can visualize the weights of the decoder:
 - we first inverse the masking operation, to retrieve a 3D brain volume
   of the SVC's weights.
 - we then create a figure and plot as a background the first EPI image
-- we plot the SVC's weights after masking the zero values
+- finally we plot the SVC's weights after masking the zero values
 
 .. figure:: ../auto_examples/images/plot_haxby_simple_1.png
    :target: ../auto_examples/plot_haxby_simple.html
@@ -341,9 +349,8 @@ We can add a line to print the results:
 
 .. topic:: **Final script**
 
-    The complete script can be found as 
+    The complete script to do an SVM-Anova analysis can be found as 
     :ref:`an example <example_plot_haxby_anova_svm.py>`.
-    Now, all you have to do is publish the results :)
 
 
 .. seealso::
