@@ -327,7 +327,7 @@ permutation testing on the labels, with
 
 .. figure:: ../auto_examples/images/plot_haxby_masks_1.png
    :target: ../auto_examples/plot_haxby_masks.html
-   :scale: 60
+   :scale: 55
    :align: left
 
    Masks
@@ -335,7 +335,7 @@ permutation testing on the labels, with
 
 .. figure:: ../auto_examples/images/plot_haxby_full_analysis_1.png
    :target: ../auto_examples/plot_haxby_full_analysis.html
-   :scale: 78
+   :scale: 70
    :align: left
 
 
