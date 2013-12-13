@@ -75,14 +75,14 @@
 <script type="text/javascript">
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 95 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
+    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
         sections = {},
         i        = 0,
 	current_section = 0;
 
     // Grab positions of our sections 
     $('.headerlink').each(function(){
-        sections[this.href.replace(document.URL, '')] = $(this).offset().top;
+        sections[this.href.replace(document.URL, '')] = $(this).offset().top - 50;
     });
 
     $(window).scroll(function(event) {
@@ -91,7 +91,7 @@ $(function () {
 	if(pos > top){
 	    //begin to scroll
 	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -95);
+	    $('.sphinxsidebarwrapper').css("top", -105);
 	}
 	else{
 	    //lock it back into place

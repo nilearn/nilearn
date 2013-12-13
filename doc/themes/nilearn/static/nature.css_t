@@ -517,14 +517,15 @@ div.sphinxsidebar ul {
 div.sphinxsidebar ul ul {
     list-style: none;
     margin-left: 5px;
+    margin-top: 0px;
 }
 
 div.sphinxsidebar ul ul li {
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 div.sphinxsidebar ul ul ul li {
-    margin-top: 1px;
+    margin: 0px;
 }
 
 div.sphinxsidebar ul ul ul ul {
@@ -654,7 +655,7 @@ div.sphinxsidebarwrapper h3 a {
 
 div.sphinxsidebarwrapper ul ul a {
     display: block;
-    padding: 2px 2px 2px 10px;
+    padding: 1px 1px 1px 10px;
 }
 
 div.sphinxsidebarwrapper ul ul a:hover {
