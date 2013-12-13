@@ -100,7 +100,7 @@ plot_brain(pvalues, coronal, sagittal, axial, 'Dilated mask')
 labels, n_labels = ndimage.label(pvalues)
 plot_brain(labels, coronal, sagittal, axial, 'Connected components',
            cmap='jet')
+plt.show()
 
 # Save the result
 nibabel.save(nibabel.Nifti1Image(labels, fmri_affine), 'mask.nii')
-plt.show()
