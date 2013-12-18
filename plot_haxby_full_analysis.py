@@ -21,7 +21,6 @@ data_files = datasets.fetch_haxby(n_subjects=1)
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
 from nilearn.input_data import NiftiMasker
 
-
 # load labels
 import numpy as np
 labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
