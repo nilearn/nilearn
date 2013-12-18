@@ -247,7 +247,7 @@ def check_niimgs(niimgs, accept_3d=False):
         # was provided and what should have been provided.
         raise TypeError("Data must be either a 4D Nifti image or a"
                         " list of 3D Nifti images. You provided a %s%dD"
-                        " image(s), of shape." % ('list of ' * depth,
+                        " image(s), of shape %s." % ('list of ' * depth,
                         dim, shape))
 
     # Now, we load data as we know its format

@@ -12,7 +12,7 @@ import os
 import tempfile
 
 import nose
-from nose.tools import assert_raises, assert_equal
+from nose.tools import assert_raises, assert_equal, assert_true
 
 import numpy as np
 
@@ -37,8 +37,15 @@ class PhonyNiimage:
 
 
 def test_check_niimg():
-    assert_raises(TypeError, _utils.check_niimg, 0)
-    assert_raises(TypeError, _utils.check_niimg, [])
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg(0)
+    assert_true('image' in cm.exception.message
+                or 'affine' in cm.exception.message)
+
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg([])
+    assert_true('image' in cm.exception.message
+                or 'affine' in cm.exception.message)
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -50,14 +57,24 @@ def test_check_niimg():
 
 
 def test_check_niimgs():
-    assert_raises(TypeError, _utils.check_niimgs, 0)
-    assert_raises(TypeError, _utils.check_niimgs, [])
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimgs(0)
+    assert_true('image' in cm.exception.message
+                or 'affine' in cm.exception.message)
+
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimgs([])
+    assert_true('image' in cm.exception.message
+                or 'affine' in cm.exception.message)
+
     affine = np.eye(4)
     niimg = Nifti1Image(np.ones((10, 10, 10)), affine)
 
     _utils.check_niimgs([niimg, niimg])
-    # This should raise an error: a 3D niimg is given and we want a 4D
-    assert_raises(TypeError, _utils.check_niimgs, niimg)
+    with assert_raises(TypeError) as cm:
+        # This should raise an error: a 3D niimg is given and we want a 4D
+        _utils.check_niimgs(niimg)
+    assert_true('image' in cm.exception.message)
     # This shouldn't raise an error
     _utils.check_niimgs(niimg, accept_3d=True)
 
@@ -75,7 +92,7 @@ def test_repr_niimgs():
     shape = (10, 10, 10)
     niimg1 = Nifti1Image(np.ones(shape), affine)
     assert_equal(
-            _utils._repr_niimgs(niimg1), 
+            _utils._repr_niimgs(niimg1),
             ("%s(\nshape=%s,\naffine=%s\n)" % (niimg1.__class__.__name__,
                             repr(shape), repr(affine))))
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
