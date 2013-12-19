@@ -58,9 +58,6 @@ logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
                            param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
                       scoring='f1')
 
-from sklearn.naive_bayes import GaussianNB
-gnb = GaussianNB()
-
 
 # Make a data splitting object for cross validation
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
@@ -92,6 +89,7 @@ for classifier_name, classifier in sorted(classifiers.items()):
             classifiers_scores[classifier_name][category].mean(),
             classifiers_scores[classifier_name][category].std())
 
+###############################################################################
 # make a rudimentary diagram
 import matplotlib.pyplot as plt
 plt.figure()
@@ -104,12 +102,6 @@ for color, classifier_name in zip('bcmgykr', sorted(classifiers)):
                 for category in categories]
     plt.bar(tick_position, score_means, label=classifier_name,
             width=.15, color=color)
-
-    #score_chance = [mask_chance_scores[mask_name][category].mean()
-    #            for category in categories]
-    #plt.bar(tick_position, score_chance,
-    #        width=.25, edgecolor='k', facecolor='none')
-
     tick_position = tick_position + .12
 
 plt.ylabel('Classification accurancy (f1 score)')
@@ -118,10 +110,45 @@ plt.legend(loc='best', frameon=False)
 plt.title('Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
+###############################################################################
+# Plot the face vs house map for the different estimators
+import nibabel
+
+# use the average EPI as a background
+epi_img = nibabel.load(data_files.func[0])
+mean_epi = epi_img.get_data().mean(axis=-1)
+
+# Restrict the decoding to face vs house
+condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')
+masked_timecourses = masked_timecourses[condition_mask[resting_state == False]]
+stimuli = stimuli[condition_mask]
+# Transform the stimuli to binary values
+stimuli = (stimuli == 'face').astype(np.int)
+
+for classifier_name, classifier in sorted(classifiers.items()):
+    classifier.fit(masked_timecourses, stimuli)
+
+    if hasattr(classifier, 'coef_'):
+        weights = classifier.coef_[0]
+    elif hasattr(classifier, 'best_estimator_'):
+        weights = classifier.best_estimator_.coef_[0]
+    else:
+        continue
+    weight_img = masker.inverse_transform(weights)
+    weight_map = weight_img.get_data()
+
+    plt.figure(figsize=(3, 5))
+    plt.imshow(np.rot90(mean_epi[..., 27]), interpolation='nearest',
+            cmap=plt.cm.gray)
+    vmax = max(-weight_map.min(), weight_map.max())
+    plt.imshow(np.rot90(
+               np.ma.masked_inside(weight_map[..., 27], -.001*vmax, .001*vmax)),
+               interpolation='nearest', vmax=vmax, vmin=-vmax)
+    plt.axis('off')
+    plt.title('%s: face vs house' % classifier_name)
+    plt.tight_layout()
 
 plt.show()
-
-
 
 
 

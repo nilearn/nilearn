@@ -97,6 +97,7 @@ plt.imshow(np.rot90(weights[..., 27, 0]), cmap=plt.cm.hot,
 
 plt.axis('off')
 plt.title('SVM weights')
+plt.tight_layout()
 
 
 ### Visualize the mask ########################################################
@@ -111,5 +112,7 @@ ma = np.ma.masked_equal(mask, 0)
 plt.imshow(np.rot90(ma[..., 27]), interpolation='nearest', cmap=plt.cm.autumn,
           alpha=0.5)
 plt.title("Mask")
+plt.tight_layout()
+
 plt.show()
 

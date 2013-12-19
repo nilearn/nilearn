@@ -97,6 +97,7 @@ plt.imshow(np.rot90(weights[..., 27, 0]), cmap=plt.cm.hot,
           interpolation='nearest')
 plt.axis('off')
 plt.title('SVM weights')
+plt.tight_layout()
 plt.show()
 
 ### Saving the results as a Nifti file may also be important

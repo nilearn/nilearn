@@ -70,7 +70,7 @@ print 'OvA', cv_scores_ova.mean()
 plt.figure(figsize=(4, 3))
 plt.boxplot([cv_scores_ova, cv_scores_ovo])
 plt.xticks([1, 2], ['One vs All', 'One vs One'])
-plt.ylabel('Prediction: accuracy score')
+plt.title('Prediction: accuracy score')
 
 ### Plot a confusion matrix ###################################################
 # Fit on the the first 10 sessions and plot a confusion matrix on the
@@ -84,7 +84,6 @@ plt.matshow(confusion_matrix(y_pred_ovo, y[session >= 10]))
 plt.title('Confusion matrix: One vs One')
 plt.xticks(np.arange(len(unique_conditions)), unique_conditions)
 plt.yticks(np.arange(len(unique_conditions)), unique_conditions)
-plt.tight_layout()
 
 svc_ova.fit(X[session < 10], y[session < 10])
 y_pred_ova = svc_ova.predict(X[session >= 10])
