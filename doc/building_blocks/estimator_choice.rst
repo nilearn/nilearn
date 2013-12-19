@@ -144,9 +144,13 @@ Here we apply a few linear models to fMRI data:
 
    * The SVC is fairly insensitive to the choice of the regularization
      parameter
-   * The ridge and ridge cv are fast, but will work only on
-      well-separated classes
+   * cross-validation (CV) takes time
+   * The ridge and ridge CV are fast, but will not work well on 
+      ill-separated classes, and, most importantly give ugly weights maps
+      (see below)
    * Parameter selection is difficult with sparse models
+   * **There is no free lunch**: no estimator will work uniformely better
+     on every situation.
 
 
 .. figure:: ../auto_examples/images/plot_haxby_different_estimators_1.png
@@ -155,6 +159,11 @@ Here we apply a few linear models to fMRI data:
    :scale: 80
 
 ____
+
+The corresponding weight maps (below) differ widely from one estimator to
+the other, althought the prediction scores are fairly similar. In other
+terms, a well-performing estimator in terms of prediction error gives us
+little garanties on the brain maps.
 
 .. figure:: ../auto_examples/images/plot_haxby_different_estimators_7.png
    :target: ../auto_examples/plot_haxby_different_estimators.html
@@ -187,6 +196,16 @@ ____
    :scale: 70
 
 .. figure:: ../auto_examples/images/plot_haxby_different_estimators_3.png
+   :target: ../auto_examples/plot_haxby_different_estimators.html
+   :align: left
+   :scale: 70
+
+.. figure:: ../auto_examples/images/plot_haxby_different_estimators_9.png
+   :target: ../auto_examples/plot_haxby_different_estimators.html
+   :align: left
+   :scale: 70
+
+.. figure:: ../auto_examples/images/plot_haxby_different_estimators_10.png
    :target: ../auto_examples/plot_haxby_different_estimators.html
    :align: left
    :scale: 70

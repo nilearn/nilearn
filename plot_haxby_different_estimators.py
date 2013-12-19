@@ -6,6 +6,7 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
+import time
 
 ### Fetch data using nilearn dataset fetcher ################################
 from nilearn import datasets
@@ -35,13 +36,13 @@ masked_timecourses = masker.fit_transform(
 
 # A support vector classifier
 from sklearn.svm import SVC
-svn = SVC(C=1., kernel="linear")
+svm = SVC(C=1., kernel="linear")
 
 from sklearn.grid_search import GridSearchCV
 # GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
 # can significantly speed up the fitting process on computers with
 # multiple cores
-svn_cv = GridSearchCV(SVC(C=1., kernel="linear"),
+svm_cv = GridSearchCV(SVC(C=1., kernel="linear"),
                       param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
                       scoring='f1')
 
@@ -67,8 +68,8 @@ ridge_cv = RidgeClassifierCV()
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 cv = LeaveOneLabelOut(session_labels)
 
-classifiers = {'svn': svn,
-               'svn_cv': svn_cv,
+classifiers = {'SVC': svm,
+               'SVC cv': svm_cv,
                'log l1': logistic,
                'log l1 50': logistic_50,
                'log l1 cv': logistic_cv,
@@ -81,19 +82,22 @@ classifiers_scores = {}
 
 for classifier_name, classifier in sorted(classifiers.items()):
     classifiers_scores[classifier_name] = {}
+    print 70 * '_'
 
     for category in categories:
-        print "Processing %s %s" % (classifier_name, category)
         classification_target = stimuli[resting_state == False] == category
+        t0 = time.time()
         classifiers_scores[classifier_name][category] = cross_val_score(
             classifier,
             masked_timecourses,
             classification_target,
             cv=cv, scoring="f1")
 
-        print "Scores: %1.2f +- %1.2f" % (
+        print "%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
+            classifier_name, category,
             classifiers_scores[classifier_name][category].mean(),
-            classifiers_scores[classifier_name][category].std())
+            classifiers_scores[classifier_name][category].std(),
+            time.time() - t0)
 
 ###############################################################################
 # make a rudimentary diagram
@@ -104,18 +108,18 @@ tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
 for color, classifier_name in zip(
-                    ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#F99'],
+                    ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#ffaaaa'],
                     sorted(classifiers)):
     score_means = [classifiers_scores[classifier_name][category].mean()
                 for category in categories]
     plt.bar(tick_position, score_means, label=classifier_name,
-            width=.15, color=color)
-    tick_position = tick_position + .12
+            width=.11, color=color)
+    tick_position = tick_position + .09
 
 plt.ylabel('Classification accurancy (f1 score)')
 plt.xlabel('Visual stimuli category')
 plt.ylim(ymin=0)
-plt.legend(loc='lower center', ncols=3)
+plt.legend(loc='lower center', ncol=3)
 plt.title('Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
