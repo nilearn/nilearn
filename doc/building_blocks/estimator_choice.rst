@@ -56,6 +56,10 @@ There are two noteworthy strategies:
     and during prediction, the final decision is taken by a vote across
     the different estimators.
 
+The "One vs One" strategy is more computationaly costly than the "One vs
+All" (it scales as the square of the number of classes, whereas OvA is
+linear with the number of classes).
+
 .. seealso::
    
     `Multi-class prediction in scikit-learn's documenation
@@ -85,10 +89,65 @@ understand the classifier's errors in a multiclass problem.
 Setting estimator parameters
 =============================
 
+Most estimators have parameters that can be set to optimize their
+performance. Importantly, this must be done via **nested**
+cross-validation.
 
+Indeed, there is noise in the cross-validation score, and when we vary
+the parameter, the curve showing the score as a function of the parameter
+will have bumps and peaks due to this noise. These will not generalize to
+new data and chances are that the corresponding choice of parameter will
+not perform as well on new data.
+
+.. figure:: ../auto_examples/images/plot_haxby_grid_search_1.png
+   :target: ../auto_examples/plot_haxby_grid_search.html
+   :align: center
+   :scale: 60
+
+With scikit-learn nested cross-validation is done via
+:class:`sklearn.grid_search.GridSearchCV`. It is unfortunately time
+consuming, but the ``n_jobs`` argument can spread the load on multiple
+CPUs.
+
+
+.. seealso::
+
+   * `The scikit-learn documentation on parameter selection
+     <http://scikit-learn.org/stable/modules/grid_search.html>`_
+
+   * The example :ref:`example_plot_haxby_grid_search.py`
 
 Different linear models
 ========================
+
+There is a wide variety of classifiers available in scikit-learn (see the
+`scikit-learn documentation on supervised learning
+<http://scikit-learn.org/stable/supervised_learning.html>`_).
+Here we apply a few linear models to fMRI data:
+
+* SVC: the support vector classifier
+* SVC cv: the support vector classifier with its parameter C set by
+  cross-validation
+* log l2: the logistic regression with l2 penalty
+* log l2 cv: the logistic regression with l2 penalty with its parameter
+  set by cross-validation
+* log l1: the logistic regression with l1 penalty: **sparse model**
+* log l1 50: the logistic regression with l1 penalty and a high sparsity
+  parameter
+* log l1 cv: the logistic regression with l1 penalty with its parameter
+  (controlling the sparsity) set by cross-validation
+* ridge: the ridge classifier
+* ridge cv: the ridge classifier with its parameter set by
+  cross-validation
+
+.. note::
+
+   * The SVC is fairly insensitive to the choice of the regularization
+     parameter
+   * The ridge and ridge cv are fast, but will work only on
+      well-separated classes
+   * Parameter selection is difficult with sparse models
+
 
 .. figure:: ../auto_examples/images/plot_haxby_different_estimators_1.png
    :target: ../auto_examples/plot_haxby_different_estimators.html

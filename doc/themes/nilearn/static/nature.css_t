@@ -867,6 +867,13 @@ div.align-left {
     float: left;
 }
 
+div.align-center {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    text-align: center;
+}
+
 div#download-container {
     text-align: center;
 }

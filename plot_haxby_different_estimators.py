@@ -46,7 +46,8 @@ svn_cv = GridSearchCV(SVC(C=1., kernel="linear"),
                       scoring='f1')
 
 # The logistic regression
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, RidgeClassifier, \
+    RidgeClassifierCV
 logistic = LogisticRegression(C=1., penalty="l1")
 logistic_50 = LogisticRegression(C=50., penalty="l1")
 logistic_l2 = LogisticRegression(C=1., penalty="l2")
@@ -57,6 +58,9 @@ logistic_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
 logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
                            param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
                       scoring='f1')
+
+ridge = RidgeClassifier()
+ridge_cv = RidgeClassifierCV()
 
 
 # Make a data splitting object for cross validation
@@ -69,7 +73,9 @@ classifiers = {'svn': svn,
                'log l1 50': logistic_50,
                'log l1 cv': logistic_cv,
                'log l2': logistic_l2,
-               'log l2 cv': logistic_l2_cv}
+               'log l2 cv': logistic_l2_cv,
+               'ridge': ridge,
+               'ridge cv': ridge_cv}
 
 classifiers_scores = {}
 
@@ -97,7 +103,9 @@ plt.figure()
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
-for color, classifier_name in zip('bcmgykr', sorted(classifiers)):
+for color, classifier_name in zip(
+                    ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#F99'],
+                    sorted(classifiers)):
     score_means = [classifiers_scores[classifier_name][category].mean()
                 for category in categories]
     plt.bar(tick_position, score_means, label=classifier_name,
@@ -106,7 +114,8 @@ for color, classifier_name in zip('bcmgykr', sorted(classifiers)):
 
 plt.ylabel('Classification accurancy (f1 score)')
 plt.xlabel('Visual stimuli category')
-plt.legend(loc='best', frameon=False)
+plt.ylim(ymin=0)
+plt.legend(loc='lower center', ncols=3)
 plt.title('Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
