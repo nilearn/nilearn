@@ -106,7 +106,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.signal.clean
     """
     def __init__(self, mask=None, sessions=None, smoothing_fwhm=None,
-                 standardize=True, detrend=False,
+                 standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_connected=True, mask_opening=2,
