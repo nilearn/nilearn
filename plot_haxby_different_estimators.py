@@ -28,7 +28,8 @@ session_labels = labels["chunks"][resting_state == False]
 # Load the fMRI data
 from nilearn.input_data import NiftiMasker
 
-masker = NiftiMasker(mask=data_files['mask_vt'][0])
+# For decoding, standardizing is often very important
+masker = NiftiMasker(mask=data_files['mask_vt'][0], standardize=True)
 masked_timecourses = masker.fit_transform(
     data_files.func[0])[resting_state == False]
 

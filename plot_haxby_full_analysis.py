@@ -53,7 +53,8 @@ mask_chance_scores = {}
 
 for mask_name in mask_names:
     print "Working on mask %s" % mask_name
-    masker = NiftiMasker(mask=data_files[mask_name][0])
+    # For decoding, standardizing is often very important
+    masker = NiftiMasker(mask=data_files[mask_name][0], standardize=True)
     masked_timecourses = masker.fit_transform(
         data_files.func[0])[resting_state == False]
 

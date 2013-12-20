@@ -42,8 +42,10 @@ n_conditions = np.size(np.unique(y))
 ### Loading step ##############################################################
 from nilearn.input_data import NiftiMasker
 from nibabel import Nifti1Image
+# For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(mask=mask, sessions=session, smoothing_fwhm=4,
-                           memory="nilearn_cache", memory_level=1)
+                           standardize=True, memory="nilearn_cache",
+                           memory_level=1)
 niimg = Nifti1Image(X, affine)
 X = nifti_masker.fit_transform(niimg)
 

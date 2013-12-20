@@ -31,7 +31,8 @@ target = target[condition_mask]
 ### Prepare the data: apply the mask ##########################################
 
 from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker(mask=data.mask_vt[0])
+# For decoding, standardizing is often very important
+nifti_masker = NiftiMasker(mask=data.mask_vt[0], standardize=True)
 
 # We give the nifti_masker a filename and retrieve a 2D array ready
 # for machine learning with scikit-learn

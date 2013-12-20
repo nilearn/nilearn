@@ -146,8 +146,8 @@ Here we apply a few linear models to fMRI data:
      parameter
    * cross-validation (CV) takes time
    * The ridge and ridge CV are fast, but will not work well on 
-      ill-separated classes, and, most importantly give ugly weights maps
-      (see below)
+     ill-separated classes, and, most importantly give ugly weights maps
+     (see below)
    * Parameter selection is difficult with sparse models
    * **There is no free lunch**: no estimator will work uniformely better
      on every situation.
@@ -157,6 +157,12 @@ Here we apply a few linear models to fMRI data:
    :target: ../auto_examples/plot_haxby_different_estimators.html
    :align: center
    :scale: 80
+
+
+Note that what is done to the data before applying the estimator is often
+more important than the choice of estimator. Typically: standardizing the
+data is important, smoothing can often be useful, and removing
+confounding effects.
 
 ____
 

@@ -107,7 +107,13 @@ our analysis to the `face` and `cat` conditions:
 
 Then we prepare the fMRI data: we use the :class:`NiftiMasker` to apply the
 `mask_vt` mask to the 4D fMRI data, so that its shape becomes (n_samples,
-n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks)
+n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks).
+
+
+.. note::
+   
+   simingly-minor data preparation can matter a lot on the final score,
+   for instance standardizing the data.
 
 
 .. literalinclude:: ../../plot_haxby_simple.py

@@ -31,7 +31,8 @@ unique_conditions = unique_conditions[np.argsort(order)]
 
 ### Loading step ##############################################################
 from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker(mask=dataset_files.mask,
+# For decoding, standardizing is often very important
+nifti_masker = NiftiMasker(mask=dataset_files.mask, standardize=True,
                            sessions=session, smoothing_fwhm=4,
                            memory="nilearn_cache", memory_level=1)
 X = nifti_masker.fit_transform(dataset_files.func)
