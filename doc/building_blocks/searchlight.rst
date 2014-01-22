@@ -22,8 +22,8 @@ Preparing the data
 Loading
 -------
 
-As seen in :ref:`previous sections <downloading_data>`, fetching the data
-from internet and loading it can be done with the provided functions:
+Fetching the data from internet and loading it can be done with the
+provided functions (see :ref:`loading_data`):
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### Load Haxby dataset ########################################################

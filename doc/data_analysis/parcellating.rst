@@ -23,9 +23,8 @@ can be found in the documentation for the downloading function
 Preprocessing: loading and masking
 ==================================
 
-As seen in :ref:`previous sections <downloading_data>`, we
-fetch the data
-from internet and load it with a provided function:
+We fetch the data from Internet and load it with a dedicated function
+(see :ref:`loading data`):
 
 .. literalinclude:: ../../plot_rest_clustering.py
     :start-after: ### Load nyu_rest dataset #####################################################

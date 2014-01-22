@@ -71,6 +71,50 @@
     });
 })(jQuery);
 </script>
+{% else %}
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
+        sections = {},
+        i        = 0,
+	url	 = document.URL.replace(/#.*$/, ""),
+	current_section = 0;
+
+    // Grab positions of our sections 
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+    });
+
+    $(window).scroll(function(event) {
+	var pos   = $(window).scrollTop();
+	// Lock the table of content to a fixed position once we scroll enough
+	if(pos > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -105);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+            
+	// Highlight the current section
+	$('a.internal').removeClass('active');
+        for(i in sections){
+            if(sections[i] > pos){
+		break;
+            };
+	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+		current_section = i;
+	    };
+        }
+	$('a.internal[href$="' + current_section + '"]').addClass('active');
+    });
+
+});
+</script>
 {% endif %}
 
 <script type="text/javascript">
@@ -99,7 +143,7 @@
  <div class="tags">
   <ul>
     <li>
-      <big><a href="{{pathto('auto_examples/plot_haxby_decoding')}}">SVM</a></big>
+      <big><a href="{{pathto('auto_examples/plot_haxby_anova_svm')}}">SVM</a></big>
     </li>
     <li>
       <small><a href="{{pathto('data_analysis/parcellating')}}">Ward

@@ -87,13 +87,20 @@ def test_tree():
     tree_ = datasets._tree(parent)
 
     # Check the tree
-    assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
-    assert_equal(len(tree_[0]['dir1'][1]['dir12']), 0)
-    assert_equal(tree_[0]['dir1'][2], 'file11')
-    assert_equal(tree_[0]['dir1'][3], 'file12')
-    assert_equal(tree_[1]['dir2'][0], 'file21')
-    assert_equal(tree_[2], 'file1')
-    assert_equal(tree_[3], 'file2')
+    #assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
+    #assert_equal(len(tree_[0]['dir1'][1]['dir12']), 0)
+    #assert_equal(tree_[0]['dir1'][2], 'file11')
+    #assert_equal(tree_[0]['dir1'][3], 'file12')
+    #assert_equal(tree_[1]['dir2'][0], 'file21')
+    #assert_equal(tree_[2], 'file1')
+    #assert_equal(tree_[3], 'file2')
+    assert_equal(tree_[0][1][0][1][0], os.path.join(dir11, 'file111'))
+    assert_equal(len(tree_[0][1][1][1]), 0)
+    assert_equal(tree_[0][1][2], os.path.join(dir1, 'file11'))
+    assert_equal(tree_[0][1][3], os.path.join(dir1, 'file12'))
+    assert_equal(tree_[1][1][0], os.path.join(dir2, 'file21'))
+    assert_equal(tree_[2], os.path.join(parent, 'file1'))
+    assert_equal(tree_[3], os.path.join(parent, 'file2'))
 
     # Clean
     shutil.rmtree(parent)

@@ -77,7 +77,7 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                                            detrend=detrend)
 
 
-def smooth(niimgs, fwhm):
+def smooth_img(niimgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of arr.

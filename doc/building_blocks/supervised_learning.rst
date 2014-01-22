@@ -21,7 +21,8 @@ ____
 
 .. toctree::
 
-   decoding_simulated.rst
+   estimator_choice.rst
    searchlight.rst
+   decoding_simulated.rst
 
 

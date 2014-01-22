@@ -222,7 +222,7 @@ mask as for masking). This step is present in almost all the
 :doc:`examples <auto_examples/index>` provided in Nilearn.
 
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Look at the discriminating weights
     :end-before: # We use a masked array so that the voxels at '-1' are displayed
 

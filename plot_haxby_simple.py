@@ -1,93 +1,119 @@
 """
-Simple example of decoding: the Haxby dataset
+Simple example of decoding: the Haxby data
 ==============================================
 
 Here is a simple example of decoding, reproducing the Haxby 2001
-study.
+study on a face vs house discrimination task in a mask of the ventral
+stream.
 """
 
 ### Load haxby dataset ########################################################
 
 from nilearn import datasets
-dataset = datasets.fetch_haxby()
+data = datasets.fetch_haxby()
 
 ### Load Target labels ########################################################
 
 import numpy as np
-import sklearn.utils.fixes
 # Load target information as string and give a numerical identifier to each
-labels = np.loadtxt(dataset.session_target[0], dtype=np.str, skiprows=1,
-                    usecols=(0,))
+labels = np.recfromcsv(data.session_target[0], delimiter=" ")
 
-# For compatibility with numpy 1.3 and scikit-learn 0.12
-# "return_inverse" option appeared in numpy 1.4, scikit-learn >= 0.14 supports
-# text labels.
-# With scikit-learn >= 0.14, replace this line by: target = labels
-_, target = sklearn.utils.fixes.unique(labels, return_inverse=True)
+# scikit-learn >= 0.14 supports text labels. You can replace this line by:
+# target = labels['labels']
+_, target = np.unique(labels['labels'], return_inverse=True)
 
-### Keep only data corresponding to faces or houses ###########################
-condition_mask = np.logical_or(labels == 'face', labels == 'house')
+### Keep only data corresponding to faces or cat ##############################
+condition_mask = np.logical_or(labels['labels'] == 'face',
+                               labels['labels'] == 'cat')
 target = target[condition_mask]
 
 
-### Load the mask #############################################################
+### Prepare the data: apply the mask ##########################################
 
 from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
+# For decoding, standardizing is often very important
+nifti_masker = NiftiMasker(mask=data.mask_vt[0], standardize=True)
 
 # We give the nifti_masker a filename and retrieve a 2D array ready
 # for machine learning with scikit-learn
-fmri_masked = nifti_masker.fit_transform(dataset.func[0])
+fmri_masked = nifti_masker.fit_transform(data.func[0])
 
-### Prediction function #######################################################
-
-# First, we narrow to the face vs house classification
+# Restrict the classification to the face vs house discrimination
 fmri_masked = fmri_masked[condition_mask]
 
-# Here we use a Support Vector Classification, with a linear kernel and C=1
+### Prediction ################################################################
+
+# Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
-svc = SVC(kernel='linear', C=1.)
+svc = SVC(kernel='linear')
 
 # And we run it
 svc.fit(fmri_masked, target)
-y_pred = svc.predict(fmri_masked)
+prediction = svc.predict(fmri_masked)
+
+### Cross-validation ##########################################################
+
+from sklearn.cross_validation import KFold
+
+cv = KFold(n=len(fmri_masked), n_folds=5)
+cv_scores = []
+
+for train, test in cv:
+    svc.fit(fmri_masked[train], target[train])
+    prediction = svc.predict(fmri_masked[test])
+    cv_scores.append(np.sum(prediction == target[test])
+                     / float(np.size(target[test])))
+
+print cv_scores
 
 ### Unmasking #################################################################
 
-# Look at the discriminating weights
+# Retrieve the SVC discriminating weights
 coef_ = svc.coef_
 
 # Reverse masking thanks to the Nifti Masker
-niimg = nifti_masker.inverse_transform(coef_)
+coef_niimg = nifti_masker.inverse_transform(coef_)
+
+# Use nibabel to save the coefficients as a Nifti image
+import nibabel
+nibabel.save(coef_niimg, 'haxby_svc_weights.nii')
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
-import nibabel
 
-# We use a masked array so that the voxels at '-1' are displayed transparently
-act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
+### Create the figure and plot the first EPI image as a background
+plt.figure(figsize=(3, 5))
 
-### Create the figure
-plt.figure()
-plt.axis('off')
-plt.title('SVM vectors')
-plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
+epi_img = nibabel.load(data.func[0])
+plt.imshow(np.rot90(epi_img.get_data()[..., 27, 0]),
           interpolation='nearest', cmap=plt.cm.gray)
-plt.imshow(np.rot90(act[..., 27, 0]), cmap=plt.cm.hot,
+
+### Plot the SVM weights
+weights = coef_niimg.get_data()
+# We use a masked array so that the voxels at '-1' are displayed transparently
+weights = np.ma.masked_array(weights, weights == 0)
+
+plt.imshow(np.rot90(weights[..., 27, 0]), cmap=plt.cm.hot,
           interpolation='nearest')
+
+plt.axis('off')
+plt.title('SVM weights')
+plt.tight_layout()
 
 
 ### Visualize the mask ########################################################
 
-mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+mask = nifti_masker.mask_img_.get_data()
 
 plt.figure()
 plt.axis('off')
-plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 27, 0]),
+plt.imshow(np.rot90(nibabel.load(data.func[0]).get_data()[..., 27, 0]),
           interpolation='nearest', cmap=plt.cm.gray)
-ma = np.ma.masked_equal(mask, False)
+ma = np.ma.masked_equal(mask, 0)
 plt.imshow(np.rot90(ma[..., 27]), interpolation='nearest', cmap=plt.cm.autumn,
           alpha=0.5)
 plt.title("Mask")
+plt.tight_layout()
+
 plt.show()
 

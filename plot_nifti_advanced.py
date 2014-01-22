@@ -42,6 +42,7 @@ masker.fit(haxby_img)
 default_mask = masker.mask_img_.get_data().astype(np.bool)
 plt.figure(figsize=(3, 5))
 display_mask(background, default_mask[..., 27], 'Default mask')
+plt.tight_layout()
 
 # Generate mask with opening
 masker = NiftiMasker(mask_opening=0)
@@ -49,6 +50,7 @@ masker.fit(haxby_img)
 opening_mask = masker.mask_img_.get_data().astype(np.bool)
 plt.figure(figsize=(3, 5))
 display_mask(background, opening_mask[..., 27], 'Mask without opening')
+plt.tight_layout()
 
 # Generate mask with upper cutoff
 masker = NiftiMasker(mask_opening=True, mask_upper_cutoff=0.8)

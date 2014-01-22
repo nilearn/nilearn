@@ -99,6 +99,10 @@ pre {
     margin: 1.5em 0 1.5em 0;
 }
 
+div.highlight {
+    background: none;
+}
+
 div.highlight-python pre {
     overflow-y: hidden;
     font-size: 90%;
@@ -156,7 +160,15 @@ cite, code, tt {
 hr {
     border: 1px solid #abc;
     margin: 2em;
+    clear: both;
 }
+
+/* clear after section titles, but only on the left, to avoid pb in
+ * sidebar */
+div.body h1, div.body h2, div.body h3, div.body h4 {
+    clear: left;
+}
+
 
 
 tt {
@@ -362,6 +374,10 @@ div.body p.first {
     margin-top: 0;
 }
 
+div.body p.caption {
+    text-align: center;
+}
+
 div.bodywrapper {
     margin: 0 246px 0 auto;
     border-right: 1px solid #EEE;
@@ -492,7 +508,6 @@ div.sphinxsidebar h4, div.sphinxsidebar h3 {
 }
 
 div.sphinxsidebar ul {
-    padding-left: 1.5em;
     margin-top: 7px;
     list-style: none;
     padding: 0;
@@ -500,16 +515,17 @@ div.sphinxsidebar ul {
 }
 
 div.sphinxsidebar ul ul {
-    list-style: square;
-    margin-left: 20px;
+    list-style: none;
+    margin-left: 5px;
+    margin-top: 0px;
 }
 
 div.sphinxsidebar ul ul li {
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 div.sphinxsidebar ul ul ul li {
-    margin-top: 5px;
+    margin: 0px;
 }
 
 div.sphinxsidebar ul ul ul ul {
@@ -527,6 +543,7 @@ p.rubric {
 p.centered {
     text-align: center;
 }
+
 
 h1 {
     margin: 0;
@@ -622,6 +639,10 @@ div.sphinxsidebar ul ul li {
     font-weight: normal;
 }
 
+div.sphinxsidebarwrapper {
+    width: 227px;
+}
+
 div.sphinxsidebarwrapper ul li p {
     line-height: 22px;
     font-size: 14px;
@@ -630,6 +651,21 @@ div.sphinxsidebarwrapper ul li p {
 
 div.sphinxsidebarwrapper h3 a {
     color: white;
+}
+
+div.sphinxsidebarwrapper ul ul a {
+    display: block;
+    padding: 1px 1px 1px 10px;
+}
+
+div.sphinxsidebarwrapper ul ul a:hover {
+    text-decoration: none;
+    background-color: #E4F2FC;
+}
+
+div.sphinxsidebarwrapper ul ul a.active {
+    color: white;
+    background-color: #355F7C;
 }
 
 div.admonition, div.warning, div.topic {
@@ -647,6 +683,7 @@ div.seealso {
     border: 1px solid rgb(251, 238, 213);
     color: rgb(175, 138, 75);
 }
+
 
 div.admonition p, div.warning p {
     margin: 0.5em 1em 0.5em;
@@ -699,6 +736,16 @@ div.versioninfo {
     padding: 8px;
     line-height: 1.3em;
     font-size: 0.9em;
+}
+
+div.contents {
+    border: 1px solid #FBEED5;
+    border-radius: 5px;
+    padding: 0px 5px 0px 10px;
+    background-color: #FFFBE8;
+    max-width: 48em;
+    margin: 15px auto 0px;
+    color: #2C2C28;
 }
 
 
@@ -810,6 +857,21 @@ div.green {
     color: #468847;
     background-color: #dff0d8;
     border: 0.3em solid rgba(79, 173, 117, 0.35);
+}
+
+div.align-right {
+    float: right;
+}
+
+div.align-left {
+    float: left;
+}
+
+div.align-center {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    text-align: center;
 }
 
 div#download-container {
@@ -1337,7 +1399,14 @@ div.body .jcarousel li {
     float: left;
     width: 300px;
     line-height : 240px;
+    text-align: center;
 }
+
+div.body div.jcarousel img {
+    max-width: 300px;
+    max-height: 250px;
+}
+
 
 /** Carousel Controls **/
 

@@ -42,17 +42,19 @@ n_conditions = np.size(np.unique(y))
 ### Loading step ##############################################################
 from nilearn.input_data import NiftiMasker
 from nibabel import Nifti1Image
+# For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(mask=mask, sessions=session, smoothing_fwhm=4,
-                           memory="nilearn_cache", memory_level=1)
+                           standardize=True, memory="nilearn_cache",
+                           memory_level=1)
 niimg = Nifti1Image(X, affine)
 X = nifti_masker.fit_transform(niimg)
 
 ### Prediction function #######################################################
 
 ### Define the prediction function to be used.
-# Here we use a Support Vector Classification, with a linear kernel and C=1
+# Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
-clf = SVC(kernel='linear', C=1.)
+svc = SVC(kernel='linear')
 
 ### Dimension reduction #######################################################
 
@@ -67,7 +69,7 @@ feature_selection = SelectKBest(f_classif, k=500)
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
-anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
+anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 
 ### Fit and predict ###########################################################
 
@@ -76,31 +78,33 @@ y_pred = anova_svc.predict(X)
 
 ### Visualisation #############################################################
 
-### Look at the discriminating weights
-coef = clf.coef_
+### Look at the SVC's discriminating weights
+coef = svc.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
 # reverse masking
-niimg = nifti_masker.inverse_transform(coef)
+weight_niimg = nifti_masker.inverse_transform(coef)
 
 # We use a masked array so that the voxels at '-1' are displayed
 # transparently
-act = np.ma.masked_array(niimg.get_data(), niimg.get_data() == 0)
+weights = np.ma.masked_array(weight_niimg.get_data(),
+                             weight_niimg.get_data() == 0)
 
 ### Create the figure
 import matplotlib.pyplot as plt
-plt.axis('off')
-plt.title('SVM vectors')
+plt.figure(figsize=(3, 5))
 plt.imshow(np.rot90(mean_img[..., 27]), cmap=plt.cm.gray,
           interpolation='nearest')
-plt.imshow(np.rot90(act[..., 27, 0]), cmap=plt.cm.hot,
+plt.imshow(np.rot90(weights[..., 27, 0]), cmap=plt.cm.hot,
           interpolation='nearest')
+plt.axis('off')
+plt.title('SVM weights')
+plt.tight_layout()
 plt.show()
 
-# Saving the results as a Nifti file may also be important
+### Saving the results as a Nifti file may also be important
 import nibabel
-img = nibabel.Nifti1Image(act, affine)
-nibabel.save(img, 'haxby_face_vs_house.nii')
+nibabel.save(weight_niimg, 'haxby_face_vs_house.nii')
 
 ### Cross validation ##########################################################
 
@@ -114,8 +118,8 @@ cv = LeaveOneLabelOut(session // 2)
 ### Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
-    y_pred = anova_svc.fit(X[train], y[train]) \
-        .predict(X[test])
+    anova_svc.fit(X[train], y[train])
+    y_pred = anova_svc.predict(X[test])
     cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
 
 ### Print results #############################################################
