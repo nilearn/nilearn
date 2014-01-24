@@ -48,3 +48,13 @@ def _check_dependencies():
 
 _check_dependencies()
 
+
+del _check_dependencies
+
+# Boolean controling whether the joblib caches should be
+# flushed if the version of certain modules changes (eg nibabel, as it
+# does not respect the backward compatibility in some of its internal
+# structures
+# This  is used in nilearn._utils.cache_mixin
+check_cache_version = True
+

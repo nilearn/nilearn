@@ -5,7 +5,12 @@ Mixin for cache with joblib
 # License: simplified BSD
 
 import warnings
+import os
+import shutil
+from distutils.version import LooseVersion
+import json
 
+import nibabel
 from sklearn.externals.joblib import Memory
 
 memory_classes = (Memory, )
@@ -15,6 +20,78 @@ try:
     memory_classes = (Memory, JoblibMemory)
 except ImportError:
     pass
+
+import nilearn
+
+__cache_checked = dict()
+
+
+
+def _safe_cache(memory, func, **kwargs):
+    """ A wrapper for mem.cache that flushes the cache if the version
+        number of nibabel has changed.
+    """
+    cachedir = memory.cachedir
+    if cachedir is not None and not cachedir in __cache_checked:
+        version_file = os.path.join(cachedir, 'module_versions.json')
+        if not os.path.exists(version_file):
+            versions = dict()
+        else:
+            with open(version_file, 'r') as _version_file:
+                versions = json.load(_version_file)
+
+        write_file = False
+        flush_cache = False
+
+        for module in (nibabel, ):
+            # Keep only the major + minor version numbers
+            this_version = LooseVersion(module.__version__).version[:2]
+            this_name = module.__name__
+            if not this_name in versions:
+                versions[this_name] = this_version
+                write_file = True
+            else:
+                previous_version = versions[this_name]
+                if previous_version != this_version:
+                    flush_cache = True
+                    write_file = True
+                    versions[this_name] = this_version
+
+        if flush_cache:
+            if nilearn.check_cache_version:
+                warnings.warn("Incompatible cache in %s: "
+                              "old version of nibabel. Deleting "
+                              "the cache. Put nilearn.check_cache_version "
+                              "to false to avoid this behavior."
+                              % cachedir)
+                try:
+                    tmp_dir = (os.path.split(cachedir)[:-1]
+                                + ('old_%i' % os.getpid(), ))
+                    tmp_dir = os.path.join(*tmp_dir)
+                    # We use rename + unlink to be more robust to race
+                    # conditions
+                    os.rename(cachedir, tmp_dir)
+                    shutil.rmtree(tmp_dir)
+                except OSError:
+                    # Another process could have removed this dir
+                    pass
+
+                try:
+                    os.makedirs(cachedir)
+                except OSError:
+                    # File exists?
+                    pass
+            else:
+                warnings.warn("Incompatible cache in %s: "
+                              "old version of nibabel." % cachedir)
+
+        if write_file:
+            with open(version_file, 'w') as _version_file:
+                versions = json.dump(versions, _version_file)
+
+        __cache_checked[cachedir] = True
+
+    return memory.cache(func, **kwargs)
 
 
 def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
@@ -72,7 +149,7 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
                           "function %s." %
                           (ref_memory_level, func.func_name),
                           stacklevel=2)
-    return memory.cache(func, **kwargs)
+    return _safe_cache(memory, func, **kwargs)
 
 
 class CacheMixin(object):
@@ -134,7 +211,7 @@ class CacheMixin(object):
 
         if self.memory_level < memory_level:
             mem = Memory(cachedir=None, verbose=verbose)
-            return mem.cache(func, **kwargs)
+            return _safe_cache(mem, func, **kwargs)
         else:
             memory = self.memory
             if isinstance(memory, basestring):
@@ -148,4 +225,4 @@ class CacheMixin(object):
                               " (parameter memory). Caching deactivated for "
                               "function %s." %
                               (self.memory_level, func.func_name))
-            return memory.cache(func, **kwargs)
+            return _safe_cache(mem, func, **kwargs)
