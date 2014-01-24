@@ -348,7 +348,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
 # Time series extraction
 ###############################################################################
 
-def apply_mask(niimgs, mask_img, dtype=np.float32,
+def apply_mask(niimgs, mask_img, dtype='f',
                smoothing_fwhm=None, ensure_finite=True):
     """Extract signals from images using specified mask.
 
@@ -362,6 +362,11 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
 
     mask_img: niimg
         3D mask array: True where a voxel should be used.
+
+    dtype: numpy dtype or 'f'
+        The dtype of the output, if 'f', any float output is acceptable
+        and if the data is stored on the disk as floats the data type
+        will not be changed.
 
     smoothing_fwhm: float
         (optional) Gives the size of the spatial smoothing to apply to
@@ -389,7 +394,7 @@ def apply_mask(niimgs, mask_img, dtype=np.float32,
                             ensure_finite=ensure_finite)
 
 
-def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
+def _apply_mask_fmri(niimgs, mask_img, dtype='f',
                      smoothing_fwhm=None, ensure_finite=True):
     """Same as apply_mask().
 
@@ -425,7 +430,13 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
         # Copy localy the niimgs_img to avoid the side effect of data
         # loading
         niimgs_img = copy.deepcopy(niimgs_img)
-    series = _utils.as_ndarray(niimgs_img.get_data(), dtype=dtype, order="C",
+    series = niimgs_img.get_data()
+    if dtype == 'f':
+        if series.dtype.kind == 'f':
+            dtype = series.dtype
+        else:
+            dtype = np.float32
+    series = _utils.as_ndarray(series, dtype=dtype, order="C",
                                copy=True)
     del niimgs_img  # frees a lot of memory
 
