@@ -210,8 +210,8 @@ class CacheMixin(object):
         verbose = getattr(self, 'verbose', 0)
 
         if self.memory_level < memory_level:
-            mem = Memory(cachedir=None, verbose=verbose)
-            return _safe_cache(mem, func, **kwargs)
+            memory = Memory(cachedir=None, verbose=verbose)
+            return _safe_cache(memory, func, **kwargs)
         else:
             memory = self.memory
             if isinstance(memory, basestring):
@@ -225,4 +225,4 @@ class CacheMixin(object):
                               " (parameter memory). Caching deactivated for "
                               "function %s." %
                               (self.memory_level, func.func_name))
-            return _safe_cache(mem, func, **kwargs)
+            return _safe_cache(memory, func, **kwargs)
