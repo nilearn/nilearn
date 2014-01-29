@@ -54,7 +54,13 @@ print "Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start)
 # Unmask data
 # Avoid 0 label
 labels = ward.labels_ + 1
-labels = nifti_masker.inverse_transform(labels).get_data()
+labels_img = nifti_masker.inverse_transform(labels)
+# labels_img is a Nifti1Image object, it can be saved to file with the
+# following code:
+labels_img.to_filename('parcellation.nii')
+
+# Retrieve the matrix data behind it
+labels = labels_img.get_data()
 # 0 is the background, putting it to -1
 labels = labels - 1
 
