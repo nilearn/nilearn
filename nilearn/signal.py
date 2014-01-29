@@ -243,16 +243,21 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
             Timeseries. A timeseries is a column in the "series" array.
             shape (sample number, feature number)
 
-        n_confounds: int
+        n_confounds: int, optional
             Number of confounds to return
 
-        percentile: float
+        percentile: float, optional
             Highest-variance series percentile to keep before computing the
             singular value decomposition, 0. <= `percentile` <= 100.
             series.shape[0] * percentile / 100 must be greater than n_confounds.
 
-        detrend: bool
+        detrend: bool, optional
             If True, detrend timeseries before processing.
+
+        confounds: numpy.ndarray, optional
+            the high variance confounds are to be computed from the data that has
+            been corrected for every other physiological or physical confound,
+            especially movement confounds, and linear and constant trends.
 
         Returns
         =======
@@ -288,8 +293,10 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     var_thr = stats.scoreatpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)
     # Return the singular vectors with largest singular values
-    u, _, _ = linalg.svd(series, full_matrices=False)
-    u = u[:, :n_confounds].copy()
+    # We solve the symmetric eigenvalue problem here, increasing stability
+    s, u = linalg.eigh( series.dot( series.T) / series.shape[0])
+    ix_ = np.argsort( s)
+    u = u[:,ix_[-1:-n_confounds-1:-1]].copy()
     return u
 
 
