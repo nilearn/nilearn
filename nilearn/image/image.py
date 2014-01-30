@@ -62,11 +62,11 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
         nilearn.signal.high_variance_confounds
     """
 
-    niimgs = check_niimgs(niimgs)
     if mask_img is not None:
-        mask_img = check_niimg(mask_img)
         sigs = masking.apply_mask(niimgs, mask_img)
     else:
+        # Load the data only if it doesn't need to be masked
+        niimgs = check_niimgs(niimgs)
         sigs = as_ndarray(niimgs.get_data())
         # Not using apply_mask here saves memory in most cases.
         del niimgs  # help reduce memory consumption
