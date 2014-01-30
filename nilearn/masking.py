@@ -88,9 +88,9 @@ def extrapolate_out_mask(data, mask, iterations=1):
     return new_data[1:-1, 1:-1, 1:-1], new_mask
 
 
-###############################################################################
+#
 # Utilities to compute masks
-###############################################################################
+#
 
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
@@ -126,10 +126,11 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         if opening is True, a morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
-        If opening is an integer 'n', it is performed via 'n' erosions
-        followed by 'n' dilations. After estimation of the largest connected
-        constituent, 'n' closing operations are performed, consisting of
-        'n' dilations followed by 'n' erosions
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
 
     ensure_finite: bool
         If ensure_finite is True, the non-finite values (NaNs and infs)
@@ -167,16 +168,16 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     from . import image
     input_repr = _utils._repr_niimgs(epi_img)
     epi_img = cache(image.resample_img, memory, ignore=['copy'])(
-                                epi_img,
-                                target_affine=target_affine,
-                                target_shape=target_shape)
+        epi_img,
+        target_affine=target_affine,
+        target_shape=target_shape)
 
     epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
     mean_epi = epi_img.get_data()
     if not mean_epi.ndim in (3, 4):
         raise ValueError('compute_epi_mask expects 3D or 4D '
-            'images, but %i dimensions were given (%s)'
-            % (mean_epi.ndim, input_repr))
+                         'images, but %i dimensions were given (%s)'
+                         % (mean_epi.ndim, input_repr))
     if mean_epi.ndim == 4:
         mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
@@ -347,9 +348,9 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
     return mask
 
 
-###############################################################################
+#
 # Time series extraction
-###############################################################################
+#
 
 def apply_mask(niimgs, mask_img, dtype=np.float32,
                smoothing_fwhm=None, ensure_finite=True):
@@ -404,7 +405,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype=np.float32,
     mask_img = _utils.check_niimg(mask_img)
     mask_affine = mask_img.get_affine()
     mask_data = _utils.as_ndarray(mask_img.get_data(),
-                                             dtype=np.bool)
+                                  dtype=np.bool)
 
     if smoothing_fwhm is not None:
         ensure_finite = True
