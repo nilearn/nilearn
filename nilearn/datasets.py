@@ -408,8 +408,12 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
             dl_file = _fetch_file(url, data_dir, resume=resume,
                                   verbose=verbose, md5sum=md5sum)
             if 'move' in opts:
+                target = os.path.join(data_dir, opts['move'])
+                target_dir = os.path.dirname(target)
+                if not os.path.exists(target_dir):
+                    os.makedirs(target_dir)
                 shutil.move(os.path.join(data_dir, dl_file),
-                            os.path.join(data_dir, opts['move']))
+                            target)
                 dl_file = os.path.join(data_dir, opts['move'])
             if 'uncompress' in opts:
                 _uncompress_file(dl_file)
