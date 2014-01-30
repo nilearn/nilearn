@@ -249,15 +249,10 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
         percentile: float, optional
             Highest-variance series percentile to keep before computing the
             singular value decomposition, 0. <= `percentile` <= 100.
-            series.shape[0] * percentile / 100 must be greater than n_confounds.
+            series.shape[0] * percentile / 100 must be greater than n_confounds
 
         detrend: bool, optional
             If True, detrend timeseries before processing.
-
-        confounds: numpy.ndarray, optional
-            the high variance confounds are to be computed from the data that has
-            been corrected for every other physiological or physical confound,
-            especially movement confounds, and linear and constant trends.
 
         Returns
         =======
