@@ -295,8 +295,8 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     # Return the singular vectors with largest singular values
     # We solve the symmetric eigenvalue problem here, increasing stability
     s, u = linalg.eigh( series.dot( series.T) / series.shape[0])
-    ix_ = np.argsort( s)
-    u = u[:,ix_[-1:-n_confounds-1:-1]].copy()
+    ix_ = np.argsort( s)[::-1]
+    u = u[:,ix_[:n_confounds]].copy()
     return u
 
 
