@@ -124,11 +124,13 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         if connected is True, only the largest connect component is kept.
 
     opening: bool or int, optional
-        if opening is True, an morphological opening is performed, to keep
+        if opening is True, a morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
-        If opening is an integer 'n', it is performed via 'n' erosion
-        followed by 'n' dilations.
+        If opening is an integer 'n', it is performed via 'n' erosions
+        followed by 'n' dilations. After estimation of the largest connected
+        constituent, 'n' closing operations are performed, consisting of
+        'n' dilations followed by 'n' erosions
 
     ensure_finite: bool
         If ensure_finite is True, the non-finite values (NaNs and infs)
@@ -201,7 +203,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     if connected and mask.any():
         mask = largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask, iterations=opening)
+        mask = ndimage.binary_dilation(mask, iterations=2*opening)
+        mask = ndimage.binary_erosion(mask, iterations=opening)
     return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
                        epi_img.get_affine())
 
