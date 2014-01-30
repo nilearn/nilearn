@@ -431,7 +431,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype='f',
         # Copy locally the niimgs_img to avoid the side effect of data
         # loading
         niimgs_img = copy.deepcopy(niimgs_img)
-	# typically the line series = ... is doubling memory usage
+    # typically the line series = ... is doubling memory usage
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
     series = niimgs_img.get_data()
