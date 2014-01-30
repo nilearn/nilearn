@@ -188,7 +188,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             return signal
 
     if low_pass is not None and high_pass is not None \
-                            and high_pass >= low_pass:
+            and high_pass >= low_pass:
         raise ValueError(
             "High pass cutoff frequency (%f) is greater or equal"
             "to low pass filter frequency (%f). This case is not handled "
@@ -294,9 +294,9 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     series = series[:, var > var_thr]  # extract columns (i.e. features)
     # Return the singular vectors with largest singular values
     # We solve the symmetric eigenvalue problem here, increasing stability
-    s, u = linalg.eigh( series.dot( series.T) / series.shape[0])
-    ix_ = np.argsort( s)[::-1]
-    u = u[:,ix_[:n_confounds]].copy()
+    s, u = linalg.eigh(series.dot(series.T) / series.shape[0])
+    ix_ = np.argsort(s)[::-1]
+    u = u[:, ix_[:n_confounds]].copy()
     return u
 
 
