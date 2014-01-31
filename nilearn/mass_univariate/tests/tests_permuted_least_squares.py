@@ -22,7 +22,7 @@ class TestPermutedLeastSquares(unittest.TestCase):
     imaging_vars = np.vstack((data['y_1'], data['y_2']))
     confounding_vars = data['z']
 
-    def test_MULM_OLS(self):
+    def test_permuted_ols(self):
         pvals, h1, h0, params = permuted_ols(
             self.tested_vars, self.imaging_vars, self.confounding_vars,
             self.n_perm)
@@ -38,7 +38,7 @@ class TestPermutedLeastSquares(unittest.TestCase):
         for param_name, param_value in params.iteritems():
             assert_equal(param_value, ar['param'].tolist()[param_name])
 
-    def test_MULM_OLS_intercept(self):
+    def test_permuted_ols_intercept(self):
         pvals, h1, h0, params = permuted_ols(
             self.tested_vars_intercept, self.imaging_vars,
             self.confounding_vars, self.n_perm)

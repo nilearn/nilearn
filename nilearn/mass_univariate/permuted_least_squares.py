@@ -61,20 +61,19 @@ def orthonormalize_matrix(m, tol=1.e-12):
     return ret
 
 
-class MULMSparseArray(object):
+class GrowableSparseArray(object):
     """Data structure to contain permutations data.
 
-    Memory is pre-allocated to store the large number of data produced by
-    the permutation scheme. The structure is indexed efficiently to add
-    new scores fast. Would more space be needed, the allocated space would
-    need to be extended, which is costly.
-    Only sparse results are stored because we look forward using a max-type
-    correction on the scores to ensure family-wise error control on false
-    detections. Therefore, scores are relevant only if they have a chance to
-    correspond to the maximum value accross all tests on all targets for the
-    same permutation (the standard assumption in neuroimaging is to consider
-    that all the image descriptors --i.e. the targets variables-- have the
-    same distribution under the null hypothesis).
+    GrowableSparseArray can be seen as a three-dimensional array that contains
+    scores associated with three position indices corresponding to
+    (i) a permutation, (ii) a test variable and (iii) a target variable.
+    Memory is pre-allocated to store a large number of scores. The structure
+    can be indexed efficiently according to three dimensions to add new
+    scores at the right position fast.
+    The allocated space can be extended if needed, but we want to avoid this
+    because it is costly. User should carefully initialize the structure.
+    Only scores above a predetermined threshold are actually stored, others
+    are ignored.
 
     Attributes
     ----------
@@ -87,6 +86,12 @@ class MULMSparseArray(object):
     data: array-like, own-designed dtype
       The actual scores corresponding to all the tests performed under
       permutation.
+      dtype is built so that every score is associated to three position
+      GrowableSparseArray can be seen as a three-dimensional array so every
+      score is associated with three position indices corresponding to
+      (i) a permutation ('perm_id'),
+      (ii) a test variable ('x_id') and
+      (iii) a target variable ('y_id').
     sizes: array-like, shape=(n_perm, )
       The number of scores stored for each permutation.
       Useful to select a range of values from permutation ids.
@@ -112,22 +117,22 @@ class MULMSparseArray(object):
         return self.data[:self.n_elts]
 
     def merge(self, l):
-        """Copy one or several MULMSparseArray into the current structure.
+        """Copy one or several GrowableSparseArray into the current structure.
 
         Parameters
         ----------
-        l: list of MULMSparseArray or MULMSparseArray
+        l: list of GrowableSparseArray or GrowableSparseArray
           The structures to be merged into the current structure.
 
         """
-        if isinstance(l, MULMSparseArray):
+        if isinstance(l, GrowableSparseArray):
             return self.merge([l])
         if not isinstance(l, list) and not isinstance(l, tuple):
-            raise Exception('l is not a list/tuple of MULMSparseArray '
-                            'or a MULMSparseArray.')
+            raise Exception('l is not a list/tuple of GrowableSparseArray '
+                            'or a GrowableSparseArray.')
         for msarray in l:
-            if not isinstance(msarray, MULMSparseArray):
-                raise Exception('msarray is not a MULMSparseArray.')
+            if not isinstance(msarray, GrowableSparseArray):
+                raise Exception('msarray is not a GrowableSparseArray.')
 
         self.sizes = np.array([self.sizes] +
                                [msa.sizes for msa in l]).sum(axis=0)
@@ -135,8 +140,7 @@ class MULMSparseArray(object):
                                     [msa.get_data() for msa in l])
         self.n_elts = self.sizes.sum()
         self.max_elts = self.n_elts
-        self.data = np.sort(self.data,
-                             order=['perm_id', 'x_id', 'y_id'])
+        self.data = np.sort(self.data, order=['perm_id', 'x_id', 'y_id'])
 
         return
 
@@ -173,7 +177,7 @@ class MULMSparseArray(object):
             new_data['y_id'][:] = y_idx + y_offset
             new_data['score'][:] = perm_data[y_idx, x_idx]
             new_data['perm_id'][:] = perm_id
-            msarray = MULMSparseArray(self.n_perm)
+            msarray = GrowableSparseArray(self.n_perm)
             msarray.data = new_data
             msarray.sizes = np.zeros((msarray.n_perm))
             msarray.sizes[perm_id] = score_size
@@ -235,9 +239,9 @@ def f_score(vars1, vars2, covars, lost_dof):
 
 
 def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
-                           confounding_vars, n_perm,
-                           target_vars_chunk_position=0, random_state=0,
-                           intercept_test=True):
+                           confounding_vars, n_perm, sparsity_threshold=1e-04,
+                           target_vars_chunk_position=0,
+                           intercept_test=True, random_state=0):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -252,14 +256,17 @@ def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
       Clinical data (covariables).
     n_perm: int,
       Number of permutations
+    sparsity_threshold: float,
+      Threshold under which the permutation scores are not stored
+      (because they have no chance to correspond to the max)
     target_vars_offset:
       offset corresponding to the target variables chunk position
-    random_state: int,
-      Seed for random number generator, to have the same permutations
-      in each computing units.
     intercept_test: boolean,
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise).
+    random_state: int,
+      Seed for random number generator, to have the same permutations
+      in each computing units.
 
     """
     # initialize the seed of the random generator
@@ -296,15 +303,13 @@ def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     # We use a threshold to sparsify the permutations results since not all
     # the scores have the chance to be retained as the max value at the end
     # we keep scores < threshold
-    sparsity_threshold = 1e-04
-    sparsity_threshold = 0.5
     threshold = stats.f.isf(sparsity_threshold, 1, n_samples - lost_dof - 1)
     # We use a special data structure to store the results of the permutations
     # max_elts is used to preallocate memory
     max_elts = int(
         n_regressors * n_descriptors_chunk
         * (1 + (1.1 * n_perm * sparsity_threshold)))
-    msarray = MULMSparseArray(
+    msarray = GrowableSparseArray(
         n_perm + 1, max_elts=max_elts, threshold=threshold)
     # add original data results as permutation 0
     msarray.append_perm_data(
@@ -337,8 +342,8 @@ def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     return msarray, params
 
 
-def permuted_ols(tested_vars, imaging_vars, confounding_vars,
-                 n_perm=10000, random_state=0, n_jobs=0):
+def permuted_ols(tested_vars, imaging_vars, confounding_vars, n_perm=10000,
+                 sparsity_threshold=1e-04, random_state=0, n_jobs=0):
     """Massively univariate group analysis with permuted OLS.
 
     Tested variables are independently fitted to brain imaging signal
@@ -364,6 +369,9 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars,
       Number of permutations to perform. Default is 10000.
       Permutations are costly but the more are performed, the more precision
       we get in the pvalues estimation.
+    sparsity_threshold: float,
+      Threshold under which the permutation scores are not stored
+      (because they have no chance to correspond to the max)
     random_state: int,
       Seed for random number generator, to have the same permutations
       in each computing units.
@@ -377,7 +385,7 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars,
       Negative log10 p-values associated to the significance test of the
       n_regressors explanatory variables against the n_descriptors target
       variables. Family-wise corrected p-values.
-    score_orig_data: MULMSparseArray object,
+    score_orig_data: GrowableSparseArray object,
       Statistic associated to the significance test of the n_regressors
       explanatory variables against the n_descriptors target variables.
       The ranks of the scores into the h0 distribution correspond to the
@@ -412,14 +420,14 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars,
     n_regressors = tested_vars.shape[1]
     # run computation on chunks
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
-        (tested_vars, imaging_vars[chunk], confounding_vars,
-         n_perm, random_state=random_state,
+        (tested_vars, imaging_vars[chunk], confounding_vars, n_perm,
+         sparsity_threshold=sparsity_threshold, random_state=random_state,
          target_vars_chunk_position=chunk.start, intercept_test=intercept_test)
         for chunk in gen_even_slices(
             n_descriptors, max(2, min(n_descriptors, n_jobs))))
     # reduce results
     all_chunks_results, params = zip(*ret)
-    final_results = MULMSparseArray(n_perm + 1)
+    final_results = GrowableSparseArray(n_perm + 1)
     final_results.merge(all_chunks_results)
     # get h0
     h0 = np.zeros(n_perm)
@@ -429,8 +437,8 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars,
             cum_sizes[i]:cum_sizes[i + 1]]['score'].max()
     # convert scores into p-values
     score_orig_data = final_results.get_data()[:final_results.sizes[0]]
-    pvals = ((n_perm - np.searchsorted(h0, score_orig_data['score']))
-             / float(n_perm))
+    pvals = ((n_perm + 1 - np.searchsorted(h0, score_orig_data['score']))
+             / float(n_perm + 1))
     np.seterr(divide='ignore')  # ignore division-by-zero warning in log10
     pvals_mat = sparse.coo_matrix(
         (- np.log10(pvals),
