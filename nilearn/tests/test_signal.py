@@ -380,4 +380,3 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(np.abs(outG.T.dot(outG)),
                                    np.identity(outG.shape[1]),
                                    decimal=13)
-    # np.testing.assert_almost_equal(outG, outGt, decimal=10)
