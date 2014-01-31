@@ -188,7 +188,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             return signal
 
     if low_pass is not None and high_pass is not None \
-                            and high_pass >= low_pass:
+            and high_pass >= low_pass:
         raise ValueError(
             "High pass cutoff frequency (%f) is greater or equal"
             "to low pass filter frequency (%f). This case is not handled "
@@ -243,15 +243,15 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
             Timeseries. A timeseries is a column in the "series" array.
             shape (sample number, feature number)
 
-        n_confounds: int
+        n_confounds: int, optional
             Number of confounds to return
 
-        percentile: float
+        percentile: float, optional
             Highest-variance series percentile to keep before computing the
             singular value decomposition, 0. <= `percentile` <= 100.
-            series.shape[0] * percentile / 100 must be greater than n_confounds.
+            series.shape[0] * percentile / 100 must be greater than n_confounds
 
-        detrend: bool
+        detrend: bool, optional
             If True, detrend timeseries before processing.
 
         Returns
@@ -288,8 +288,10 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     var_thr = stats.scoreatpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)
     # Return the singular vectors with largest singular values
-    u, _, _ = linalg.svd(series, full_matrices=False)
-    u = u[:, :n_confounds].copy()
+    # We solve the symmetric eigenvalue problem here, increasing stability
+    s, u = linalg.eigh(series.dot(series.T) / series.shape[0])
+    ix_ = np.argsort(s)[::-1]
+    u = u[:, ix_[:n_confounds]].copy()
     return u
 
 

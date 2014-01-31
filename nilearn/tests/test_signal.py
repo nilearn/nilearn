@@ -374,4 +374,9 @@ def test_high_variance_confounds():
                                              n_confounds=n_confounds)
     outGt = nisignal.high_variance_confounds(seriesGt, detrend=True,
                                              n_confounds=n_confounds)
-    np.testing.assert_almost_equal(outG, outGt, decimal=10)
+    # Since sign flips could occur, we look at the absolute values of the 
+    # covariance, rather than the absolute difference, and compare this to
+    # the identity matrix
+    np.testing.assert_almost_equal(np.abs(outG.T.dot(outG)),
+                                   np.identity(outG.shape[1]),
+                                   decimal=13)
