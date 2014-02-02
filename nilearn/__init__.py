@@ -40,7 +40,7 @@ def _check_dependencies():
     except ImportError:
         print('Scikit-learn could not be found,'
               ' please install it properly to use nilearn.')
-    if not LooseVersion(sklearn.__version__) >= LooseVersion('0.10.0'):
+    if not LooseVersion(sklearn.__version__) >= LooseVersion('0.10'):
         raise ImportError('A scikit-learn version of at least 0.10 is required'
             ' to use nilearn. %s was found. Please upgrade scikit-learn.'
             % sklearn.__version__
