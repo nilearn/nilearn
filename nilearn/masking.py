@@ -3,8 +3,6 @@ Utilities to compute a brain mask from EPI images
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
-import copy
-import gc
 import warnings
 
 import numpy as np
@@ -14,6 +12,7 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
 from ._utils.ndimage import largest_connected_component
+from ._utils.niimg_conversions import _safe_get_data
 from ._utils.cache_mixin import cache
 
 
@@ -161,6 +160,27 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
+def _compute_mean(imgs, memory=None, target_affine=None, target_shape=None):
+    from . import image
+    input_repr = _utils._repr_niimgs(imgs)
+    imgs = cache(image.resample_img, memory, ignore=['copy'])(
+        imgs,
+        target_affine=target_affine,
+        target_shape=target_shape)
+
+    # XXX: should implement a loop on file, if a list of 3D files are
+    # given
+    imgs = _utils.check_niimgs(imgs, accept_3d=True)
+    mean_img = _safe_get_data(imgs)
+    if not mean_img.ndim in (3, 4):
+        raise ValueError('Mask computation expects 3D or 4D '
+                         'images, but %i dimensions were given (%s)'
+                         % (mean_img.ndim, input_repr))
+    if mean_img.ndim == 4:
+        mean_img = mean_img.mean(axis=-1)
+    return mean_img, imgs.get_affine()
+
+
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
                      ensure_finite=True,
@@ -232,22 +252,10 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
 
-    # Delayed import to avoid circular imports
-    from . import image
-    input_repr = _utils._repr_niimgs(epi_img)
-    epi_img = cache(image.resample_img, memory, ignore=['copy'])(
-        epi_img,
+    mean_epi, affine = _compute_mean(epi_img, memory=memory,
         target_affine=target_affine,
         target_shape=target_shape)
 
-    epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
-    mean_epi = epi_img.get_data()
-    if not mean_epi.ndim in (3, 4):
-        raise ValueError('compute_epi_mask expects 3D or 4D '
-                         'images, but %i dimensions were given (%s)'
-                         % (mean_epi.ndim, input_repr))
-    if mean_epi.ndim == 4:
-        mean_epi = mean_epi.mean(axis=-1)
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         mean_epi[np.logical_not(np.isfinite(mean_epi))] = 0
@@ -278,7 +286,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         mask = ndimage.binary_dilation(mask, iterations=2*opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
     return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
-                       epi_img.get_affine())
+                       affine)
 
 
 def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
@@ -442,14 +450,8 @@ def _apply_mask_fmri(niimgs, mask_img, dtype='f',
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
-    if hasattr(niimgs_img, '_data_cache') and niimgs_img._data_cache is None:
-        # Copy locally the niimgs_img to avoid the side effect of data
-        # loading
-        niimgs_img = copy.deepcopy(niimgs_img)
-    # typically the line series = ... is doubling memory usage
-    # that's why we invoke a forced call to the garbage collector
-    gc.collect()
-    series = niimgs_img.get_data()
+    series = _safe_get_data(niimgs_img)
+
     if dtype == 'f':
         if series.dtype.kind == 'f':
             dtype = series.dtype
