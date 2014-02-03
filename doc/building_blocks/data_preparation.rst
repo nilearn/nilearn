@@ -124,7 +124,7 @@ opening steps (*opening=10*) using the `mask_args` argument of the
 :class:`NiftiMasker`.
 
 .. literalinclude:: ../../plot_mask_computation.py
-    :start-after: # Generate mask without opening
+    :start-after: # Generate mask with strong opening
     :end-before: # Generate mask with a high lower cutoff
 
 ____
@@ -144,10 +144,9 @@ voxels that are very light on the EPI image.
 
 
 .. literalinclude:: ../../plot_mask_computation.py
-    :start-after: # Generate mask with a low upper cutoff
+    :start-after: # Generate mask with a high lower cutoff
     :end-before: ################################################################################
 
-The resulting mask includes a little more of the edges of the brain.
 
 .. note::
 
@@ -157,8 +156,8 @@ The resulting mask includes a little more of the edges of the brain.
     :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
 
-Preprocessing
--------------
+Common data preparation steps
+------------------------------
 
 .. _resampling:
 

@@ -14,7 +14,9 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 ### Compute the mask ##########################################################
 
-nifti_masker = NiftiMasker(standardize=False,
+# As this is raw resting-state EPI, the background is noisy and we cannot
+# rely on the 'background' masking strategy. We need to use the 'epi' one
+nifti_masker = NiftiMasker(standardize=False, mask_strategy='epi',
                            memory="nilearn_cache", memory_level=2)
 nifti_masker.fit(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data()

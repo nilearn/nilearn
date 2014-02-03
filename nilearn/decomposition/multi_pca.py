@@ -211,6 +211,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                             standardize=self.standardize,
                                             low_pass=self.low_pass,
                                             high_pass=self.high_pass,
+                                            mask_strategy='epi',
                                             t_r=self.t_r,
                                             memory=self.memory,
                                             memory_level=self.memory_level,
