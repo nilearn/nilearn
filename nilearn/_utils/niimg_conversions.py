@@ -140,8 +140,13 @@ def check_niimg(niimg):
     else:
         # it is an object, it should have get_data and get_affine methods
         if not is_a_niimg(niimg):
-            raise TypeError("Given data does not expose"
-                            " get_data or get_affine methods")
+            this_repr = repr(niimg)
+            if len(this_repr) > 20:
+                this_repr = this_repr[:18] + '...'
+            raise TypeError("Data given cannot be converted to a nifti"
+                            " image: this object -'%s'- does not expose"
+                            " get_data or get_affine methods"
+                            % this_repr)
         result = niimg
     return result
 
