@@ -67,6 +67,20 @@ def test_nan():
     assert_false(mask[:, :, -1].any())
 
 
+def test_different_affines():
+    # Mask and EIP files with different affines
+    mask_img = Nifti1Image(np.ones((2, 2, 2), dtype=np.int8),
+                           affine=np.diag((4, 4, 4, 1)))
+    epi_img1 = Nifti1Image(np.ones((4, 4, 4, 3)),
+                           affine=np.diag((2, 2, 2, 1)))
+    epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)),
+                           affine=np.diag((3, 3, 3, 1)))
+    masker = MultiNiftiMasker(mask=mask_img)
+    epis = masker.fit_transform([epi_img1, epi_img2])
+    for this_epi in epis:
+        masker.inverse_transform(this_epi)
+
+
 def test_joblib_cache():
     if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
         # Old nibabel do not pickle
