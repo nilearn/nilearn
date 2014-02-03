@@ -101,6 +101,65 @@ def extrapolate_out_mask(data, mask, iterations=1):
 # Utilities to compute masks
 #
 
+def intersect_masks(mask_imgs, threshold=0.5, connected=True):
+    """ Compute intersection of several masks
+
+    Given a list of input mask images, generate the output image which
+    is the the threshold-level intersection of the inputs
+
+    Parameters
+    ----------
+    masks_imgs: list of 3D nifti-like images
+        3D individual masks with same shape and affine.
+
+    threshold: float, optional
+        Gives the level of the intersection, must be within [0, 1].
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
+
+    connected: bool, optional
+        If true, extract the main connected component
+
+    Returns
+    -------
+        grp_mask: 3D nifti-like image
+            intersection of all masks.
+    """
+    if len(mask_imgs) == 0:
+        raise ValueError('No mask provided for intersection')
+    grp_mask = None
+    first_mask, ref_affine = _load_mask_img(mask_imgs[0], allow_empty=True)
+    ref_shape = first_mask.shape
+    if threshold > 1:
+        raise ValueError('The threshold should be smaller than 1')
+    if threshold < 0:
+        raise ValueError('The threshold should be greater than 0')
+    threshold = min(threshold, 1 - 1.e-7)
+
+    for this_mask in mask_imgs:
+        mask, affine = _load_mask_img(this_mask, allow_empty=True)
+        if np.any(affine != ref_affine):
+            raise ValueError("All masks should have the same affine")
+        if np.any(mask.shape != ref_shape):
+            raise ValueError("All masks should have the same shape")
+
+        if grp_mask is None:
+            # We use int here because there may be a lot of masks to merge
+            grp_mask = _utils.as_ndarray(mask, dtype=int)
+        else:
+            # If this_mask is floating point and grp_mask is integer, numpy 2
+            # casting rules raise an error for in-place addition. Hence we do
+            # it long-hand.
+            # XXX should the masks be coerced to int before addition?
+            grp_mask += mask
+
+    grp_mask = grp_mask > (threshold * len(list(mask_imgs)))
+
+    if np.any(grp_mask > 0) and connected:
+        grp_mask = largest_connected_component(grp_mask)
+    grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
+    return Nifti1Image(grp_mask, ref_affine)
+
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
@@ -220,66 +279,6 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
         mask = ndimage.binary_erosion(mask, iterations=opening)
     return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
                        epi_img.get_affine())
-
-
-def intersect_masks(mask_imgs, threshold=0.5, connected=True):
-    """ Compute intersection of several masks
-
-    Given a list of input mask images, generate the output image which
-    is the the threshold-level intersection of the inputs
-
-    Parameters
-    ----------
-    masks_imgs: list of 3D nifti-like images
-        3D individual masks with same shape and affine.
-
-    threshold: float, optional
-        Gives the level of the intersection, must be within [0, 1].
-        threshold=1 corresponds to keeping the intersection of all
-        masks, whereas threshold=0 is the union of all masks.
-
-    connected: bool, optional
-        If true, extract the main connected component
-
-    Returns
-    -------
-        grp_mask: 3D nifti-like image
-            intersection of all masks.
-    """
-    if len(mask_imgs) == 0:
-        raise ValueError('No mask provided for intersection')
-    grp_mask = None
-    first_mask, ref_affine = _load_mask_img(mask_imgs[0], allow_empty=True)
-    ref_shape = first_mask.shape
-    if threshold > 1:
-        raise ValueError('The threshold should be smaller than 1')
-    if threshold < 0:
-        raise ValueError('The threshold should be greater than 0')
-    threshold = min(threshold, 1 - 1.e-7)
-
-    for this_mask in mask_imgs:
-        mask, affine = _load_mask_img(this_mask, allow_empty=True)
-        if np.any(affine != ref_affine):
-            raise ValueError("All masks should have the same affine")
-        if np.any(mask.shape != ref_shape):
-            raise ValueError("All masks should have the same shape")
-
-        if grp_mask is None:
-            # We use int here because there may be a lot of masks to merge
-            grp_mask = _utils.as_ndarray(mask, dtype=int)
-        else:
-            # If this_mask is floating point and grp_mask is integer, numpy 2
-            # casting rules raise an error for in-place addition. Hence we do
-            # it long-hand.
-            # XXX should the masks be coerced to int before addition?
-            grp_mask += mask
-
-    grp_mask = grp_mask > (threshold * len(list(mask_imgs)))
-
-    if np.any(grp_mask > 0) and connected:
-        grp_mask = largest_connected_component(grp_mask)
-    grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
-    return Nifti1Image(grp_mask, ref_affine)
 
 
 def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
