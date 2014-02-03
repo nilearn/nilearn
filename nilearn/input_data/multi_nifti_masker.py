@@ -202,7 +202,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
-            copy=False)
+            interpolation='nearest', copy=False)
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
