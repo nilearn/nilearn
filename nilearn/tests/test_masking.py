@@ -25,8 +25,8 @@ np_version = distutils.version.LooseVersion(np_version).version
 
 def test_compute_epi_mask():
     mean_image = np.ones((9, 9, 3))
-    mean_image[3:-3, 3:-3, :] = 10
-    mean_image[5, 5, :] = 100
+    mean_image[3:-2, 3:-2, :] = 10
+    mean_image[5, 5, :] = 11
     mean_image = Nifti1Image(mean_image, np.eye(4))
     mask1 = compute_epi_mask(mean_image, opening=False)
     mask2 = compute_epi_mask(mean_image, exclude_zeros=True,

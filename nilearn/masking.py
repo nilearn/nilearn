@@ -198,7 +198,7 @@ def _post_process_mask(mask, affine, opening=2, connected=True, msg=""):
                        affine)
 
 
-def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
                      connected=True, opening=2, exclude_zeros=False,
                      ensure_finite=True,
                      target_affine=None, target_shape=None,
@@ -280,7 +280,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
     lower_cutoff = int(np.floor(lower_cutoff * len(sorted_input)))
-    upper_cutoff = int(np.floor(upper_cutoff * len(sorted_input)))
+    upper_cutoff = min(int(np.floor(upper_cutoff * len(sorted_input))),
+                       len(sorted_input) - 1)
 
     delta = sorted_input[lower_cutoff + 1:upper_cutoff + 1] \
         - sorted_input[lower_cutoff:upper_cutoff]
@@ -295,7 +296,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
             "data are EPI images not detrended. ")
 
 
-def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
+def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
                            connected=True, opening=2, threshold=0.5,
                            target_affine=None, target_shape=None,
                            exclude_zeros=False, n_jobs=1,
@@ -375,7 +376,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
 
 
 def compute_background_mask(data_imgs, border_size=2,
-                     connected=True, opening=2,
+                     connected=False, opening=False,
                      target_affine=None, target_shape=None,
                      memory=None, verbose=0):
     """ Compute a brain mask for the images by guessing the value of the
@@ -447,6 +448,76 @@ def compute_background_mask(data_imgs, border_size=2,
     return _post_process_mask(mask, affine, opening=opening,
         connected=connected, msg="Are you sure that input "
             "images have a homogeneous background.")
+
+
+def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
+                           connected=True, opening=2, threshold=0.5,
+                           target_affine=None, target_shape=None,
+                           exclude_zeros=False, n_jobs=1,
+                           memory=None, verbose=0):
+    """ Compute a common mask for several sessions or subjects of data.
+
+    Uses the mask-finding algorithms to extract masks for each session
+    or subject, and then keep only the main connected component of the
+    a given fraction of the intersection of all the masks.
+
+    Parameters
+    ----------
+    data_imgs: list of Niimgs
+        A list of arrays, each item being a subject or a session.
+        3D and 4D images are accepted.
+        If 3D images is given, we suggest to use the mean image of each
+        session
+
+    threshold: float, optional
+        the inter-session threshold: the fraction of the
+        total number of session in for which a voxel must be in the
+        mask to be kept in the common mask.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
+
+    border_size: integer, optional
+        The size, in voxel of the border used on the side of the image
+        to determine the value of the background.
+
+    connected: boolean, optional
+        if connected is True, only the largest connect component is kept.
+
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
+    Returns
+    -------
+    mask : 3D nifti-like image
+        The brain mask.
+    """
+    if len(data_imgs) == 0:
+        raise TypeError('An empty object - %r - was passed instead of an '
+                        'image or a list of images' % data_imgs)
+    masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
+        delayed(compute_background_mask)(img,
+                                  border_size=border_size,
+                                  connected=connected,
+                                  opening=opening,
+                                  target_affine=target_affine,
+                                  target_shape=target_shape,
+                                  memory=memory)
+        for img in data_imgs)
+
+    mask = intersect_masks(masks, connected=connected, threshold=threshold)
+    return mask
 
 
 #
