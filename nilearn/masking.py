@@ -181,6 +181,23 @@ def _compute_mean(imgs, memory=None, target_affine=None, target_shape=None):
     return mean_img, imgs.get_affine()
 
 
+def _post_process_mask(mask, affine, opening=2, connected=True, msg=""):
+    if opening:
+        opening = int(opening)
+        mask = ndimage.binary_erosion(mask, iterations=opening)
+    mask_any = mask.any()
+    if not mask_any:
+        warnings.warn("Computed an empty mask. %s" % msg,
+            MaskWarning, stacklevel=2)
+    if connected and mask_any:
+        mask = largest_connected_component(mask)
+    if opening:
+        mask = ndimage.binary_dilation(mask, iterations=2*opening)
+        mask = ndimage.binary_erosion(mask, iterations=opening)
+    return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
+                       affine)
+
+
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
                      connected=True, opening=2, exclude_zeros=False,
                      ensure_finite=True,
@@ -273,20 +290,9 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
 
     mask = mean_epi >= threshold
 
-    if opening:
-        opening = int(opening)
-        mask = ndimage.binary_erosion(mask, iterations=opening)
-    mask_any = mask.any()
-    if not mask_any:
-        warnings.warn("Computed an empty mask. Are you sure that imput "
-            "data are EPI images not detrended. ", MaskWarning, stacklevel=2)
-    if connected and mask_any:
-        mask = largest_connected_component(mask)
-    if opening:
-        mask = ndimage.binary_dilation(mask, iterations=2*opening)
-        mask = ndimage.binary_erosion(mask, iterations=opening)
-    return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
-                       affine)
+    return _post_process_mask(mask, affine, opening=opening,
+        connected=connected, msg="Are you sure that input "
+            "data are EPI images not detrended. ")
 
 
 def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
@@ -366,6 +372,81 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.9,
 
     mask = intersect_masks(masks, connected=connected, threshold=threshold)
     return mask
+
+
+def compute_background_mask(data_imgs, border_size=2,
+                     connected=True, opening=2,
+                     target_affine=None, target_shape=None,
+                     memory=None, verbose=0):
+    """ Compute a brain mask for the images by guessing the value of the
+    background from the border of the image.
+
+    Parameters
+    ----------
+    data_imgs: nifti-like image
+        Images used to compute the mask. 3D and 4D images are accepted.
+        If a 3D image is given, we suggest to use the mean image
+
+    border_size: integer, optional
+        The size, in voxel of the border used on the side of the image
+        to determine the value of the background.
+
+    connected: bool, optional
+        if connected is True, only the largest connect component is kept.
+
+    opening: bool or int, optional
+        if opening is True, a morphological opening is performed, to keep
+        only large structures. This step is useful to remove parts of
+        the skull that might have been included.
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
+
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
+    verbose: int, optional
+
+    Returns
+    -------
+    mask: nibabel.Nifti1Image
+        The brain mask (3D image)
+    """
+    if verbose > 0:
+        print "Background mask computation"
+    # We suppose that it is a niimg
+    # XXX make a is_a_niimgs function ?
+
+    data, affine = _compute_mean(data_imgs, memory=memory,
+        target_affine=target_affine,
+        target_shape=target_shape)
+
+    border_data = np.concatenate([
+            data[:border_size, :, :].ravel(), data[-border_size:, :, :].ravel(),
+            data[:, :border_size, :].ravel(), data[:, -border_size:, :].ravel(),
+            data[:, :, :border_size].ravel(), data[:, :, -border_size:].ravel(),
+        ])
+    background = np.median(border_data)
+    if np.isnan(background):
+        # We absolutely need to catter for NaNs as a background:
+        # SPM does that by default
+        mask = np.logical_not(np.isnan(data))
+    else:
+        mask = data != background
+
+    return _post_process_mask(mask, affine, opening=opening,
+        connected=connected, msg="Are you sure that input "
+            "images have a homogeneous background.")
 
 
 #
