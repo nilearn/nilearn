@@ -5,6 +5,7 @@ Utilities to compute a brain mask from EPI images
 # License: simplified BSD
 import copy
 import gc
+import warnings
 
 import numpy as np
 from scipy import ndimage
@@ -14,6 +15,13 @@ from sklearn.externals.joblib import Parallel, delayed
 from . import _utils
 from ._utils.ndimage import largest_connected_component
 from ._utils.cache_mixin import cache
+
+
+class MaskWarning(UserWarning):
+    "A class to always raise warnings"
+
+
+warnings.simplefilter("always", MaskWarning)
 
 
 def _load_mask_img(mask_img, allow_empty=False):
@@ -201,7 +209,11 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.9,
     if opening:
         opening = int(opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
-    if connected and mask.any():
+    mask_any = mask.any()
+    if not mask_any:
+        warnings.warn("Computed an empty mask. Are you sure that imput "
+            "data are EPI images not detrended. ", MaskWarning, stacklevel=2)
+    if connected and mask_any:
         mask = largest_connected_component(mask)
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=2*opening)

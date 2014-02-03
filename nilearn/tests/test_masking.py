@@ -3,10 +3,12 @@ Test the mask-extracting utilities.
 """
 import types
 import distutils.version
+import warnings
 import numpy as np
 
 from numpy.testing import assert_array_equal
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
+from nose.tools import assert_true, assert_false, assert_equal, \
+    assert_raises, assert_is_instance
 
 from nibabel import Nifti1Image
 
@@ -49,6 +51,17 @@ def test_compute_epi_mask():
     mean_image[5, 5] = 100
     mean_image = Nifti1Image(mean_image, np.eye(4))
     assert_raises(ValueError, compute_epi_mask, mean_image)
+
+    # Check that we get a useful warning for empty masks
+    mean_image = np.zeros((9, 9, 9))
+    mean_image[0, 0, 1] = -1
+    mean_image[0, 0, 0] = 1.2
+    mean_image[0, 0, 2] = 1.1
+    mean_image = Nifti1Image(mean_image, np.eye(4))
+    with warnings.catch_warnings(True) as w:
+        compute_epi_mask(mean_image, exclude_zeros=True)
+    assert_equal(len(w), 1)
+    assert_is_instance(w[0].message, masking.MaskWarning)
 
 
 def test__smooth_array():
