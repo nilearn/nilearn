@@ -49,7 +49,7 @@ def normalize_matrix_on_axis(m, axis=0):
         ret = normalize_matrix_on_axis(m.T).T
     else:
         raise Exception('Invalid axis in normalization.')
-    return ret
+    return ret.copy()  # copy for C-contiguous array (np.ascontiguousarray nok)
 
 
 def orthonormalize_matrix(m, tol=1.e-12):
@@ -91,11 +91,15 @@ def orthonormalize_matrix(m, tol=1.e-12):
 
 
 class GrowableSparseArray(object):
-    """Data structure to contain permutations data.
+    """Data structure to contain data from numerous estimations.
+
+    Examples of application are all resampling schemes
+    (bootstrap, permutations, ...)
 
     GrowableSparseArray can be seen as a three-dimensional array that contains
     scores associated with three position indices corresponding to
-    (i) a permutation, (ii) a test variate and (iii) a target variate.
+    (i) an iteration (or estimation), (ii) a test variate and
+    (iii) a target variate.
     Memory is pre-allocated to store a large number of scores. The structure
     can be indexed efficiently according to three dimensions to add new
     scores at the right position fast.
@@ -108,38 +112,37 @@ class GrowableSparseArray(object):
     ----------
     n_elts: int
       The total number of scores actually stored into the data structure
-    n_perm: int
-      Number of permutations performed in the permutation scheme
+    n_iter: int
+      Number of trials (using as many iterators)
     max_elts: int
       Maximum number of scores that can be stored into the structure
     data: array-like, own-designed dtype
-      The actual scores corresponding to all the tests performed under
-      permutation.
+      The actual scores corresponding to all the estimations.
       dtype is built so that every score is associated with three position
       GrowableSparseArray can be seen as a three-dimensional array so every
       score is associated with three position indices corresponding to
-      (i) a permutation ('perm_id'),
+      (i) an iteration (or an estimator) ('iter_id'),
       (ii) a test variate ('x_id') and
       (iii) a target variate ('y_id').
-    sizes: array-like, shape=(n_perm, )
-      The number of scores stored for each permutation.
-      Useful to select a range of values from permutation ids.
+    sizes: array-like, shape=(n_iter, )
+      The number of scores stored for each estimation.
+      Useful to select a range of values from iteration ids.
     threshold: float,
       Sparsity threshold used to discard scores that are to low to have a
       chance to correspond to a maximum value amongst all the scores of
-      a given permutation.
+      a given iteration.
 
     """
-    def __init__(self, n_perm=10000, n_elts=0, max_elts=None,
+    def __init__(self, n_iter=10000, n_elts=0, max_elts=None,
                  threshold=np.inf):
         self.n_elts = n_elts
-        self.n_perm = n_perm
+        self.n_iter = n_iter
         self.max_elts = max(max_elts, n_elts)
         self.data = np.empty(
             self.max_elts,
-            dtype=[('perm_id', np.int32), ('x_id', np.int32),
+            dtype=[('iter_id', np.int32), ('x_id', np.int32),
                    ('y_id', np.int32), ('score', np.float32)])
-        self.sizes = np.zeros((n_perm))
+        self.sizes = np.zeros((n_iter))
         self.threshold = threshold
 
     def get_data(self):
@@ -170,22 +173,22 @@ class GrowableSparseArray(object):
                                     [msa.get_data() for msa in others])
         self.n_elts = self.sizes.sum()
         self.max_elts = self.n_elts
-        self.data = np.sort(self.data, order=['perm_id', 'x_id', 'y_id'])
+        self.data = np.sort(self.data, order=['iter_id', 'x_id', 'y_id'])
 
         return
 
-    def append_perm_data(self, perm_id, perm_data, y_offset=0):
-        """Add the data of one permutation into the structure.
+    def append_iter_data(self, iter_id, iter_data, y_offset=0):
+        """Add the data of one estimation (iteration) into the structure.
 
         This is done in a memory-efficient way, by taking into account
         pre-allocated space.
 
         Parameters
         ----------
-        perm_id: int,
-          ID of the permutation we are inserting into the structure
-        perm_data: array-like, shape=(n_targets_chunk, n_regressors)
-          Scores corresponding to the permutation chunk to be inserted into
+        iter_id: int,
+          ID of the estimation we are inserting into the structure
+        iter_data: array-like, shape=(n_targets_chunk, n_regressors)
+          Scores corresponding to the iteration chunk to be inserted into
           the data structure.
         y_offset: int,
           Position of the target variates chunk relative to the original
@@ -193,24 +196,24 @@ class GrowableSparseArray(object):
 
         """
         # we only store float32 to save space
-        perm_data = perm_data.astype('float32')
+        iter_data = iter_data.astype('float32')
         # we sparsify the matrix wrt. threshold using coordinates list
-        y_idx, x_idx = (perm_data >= self.threshold).nonzero()
+        y_idx, x_idx = (iter_data >= self.threshold).nonzero()
         score_size = len(x_idx)
         new_n_elts = score_size + self.n_elts
         if (new_n_elts > self.max_elts or
-            self.sizes[perm_id + 1:].sum() > 0):  # insertion (costly)
+            self.sizes[iter_id + 1:].sum() > 0):  # insertion (costly)
             new_data = np.empty(score_size,
-                        dtype=[('perm_id', np.int32), ('x_id', np.int32),
+                        dtype=[('iter_id', np.int32), ('x_id', np.int32),
                                ('y_id', np.int32), ('score', np.float32)])
             new_data['x_id'][:] = x_idx
             new_data['y_id'][:] = y_idx + y_offset
-            new_data['score'][:] = perm_data[y_idx, x_idx]
-            new_data['perm_id'][:] = perm_id
-            msarray = GrowableSparseArray(self.n_perm)
+            new_data['score'][:] = iter_data[y_idx, x_idx]
+            new_data['iter_id'][:] = iter_id
+            msarray = GrowableSparseArray(self.n_iter)
             msarray.data = new_data
-            msarray.sizes = np.zeros((msarray.n_perm))
-            msarray.sizes[perm_id] = score_size
+            msarray.sizes = np.zeros((msarray.n_iter))
+            msarray.sizes[iter_id] = score_size
             msarray.n_elts = score_size
             msarray.max_elts = score_size
             self.merge(msarray)
@@ -218,9 +221,9 @@ class GrowableSparseArray(object):
             self.data['x_id'][self.n_elts:new_n_elts] = x_idx
             self.data['y_id'][self.n_elts:new_n_elts] = y_idx + y_offset
             self.data['score'][self.n_elts:new_n_elts] = (
-                perm_data[y_idx, x_idx])
-            self.data['perm_id'][self.n_elts:new_n_elts] = perm_id
-            self.sizes[perm_id] += score_size
+                iter_data[y_idx, x_idx])
+            self.data['iter_id'][self.n_elts:new_n_elts] = iter_id
+            self.sizes[iter_id] += score_size
             self.n_elts = new_n_elts
         return
 
@@ -326,11 +329,11 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     >>> res, params = permuted_ols_on_chunk(
     ...     X, Y, Z, n_perm=1, sparsity_threshold=1.)
     >>> res.get_data()[0]
-    (0, 0, 0, 27.0)
+    (0, 0, 0, 18.0)
     >>> res.get_data()[1]
-    (1, 0, 0, 0.3333333432674408)
+    (1, 0, 0, 0.2222222238779068)
     >>> params
-    {'lost_dof': 0, 'threshold': 0.0, 'n_perm': 1, 'n_subj': 4}
+    {'lost_dof': 1, 'threshold': 0.0, 'n_perm': 1, 'n_subj': 4}
 
     """
     # initialize the seed of the random generator
@@ -376,7 +379,7 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     msarray = GrowableSparseArray(
         n_perm + 1, max_elts=max_elts, threshold=threshold)
     # add original data results as permutation 0
-    msarray.append_perm_data(
+    msarray.append_iter_data(
         0, score_original_data, y_offset=target_vars_chunk_position)
 
     # do the permutations
@@ -398,7 +401,7 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
         cur_res = f_score(
             testedvars_resid_covars, targetvars_resid_covars,
             covars_orthonormed, lost_dof)
-        msarray.append_perm_data(
+        msarray.append_iter_data(
             i, cur_res, y_offset=target_vars_chunk_position)
 
     params = {'lost_dof': lost_dof, 'threshold': threshold,
