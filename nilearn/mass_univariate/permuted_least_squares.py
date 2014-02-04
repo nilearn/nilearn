@@ -49,7 +49,7 @@ def normalize_matrix_on_axis(m, axis=0):
         ret = normalize_matrix_on_axis(m.T).T
     else:
         raise Exception('Invalid axis in normalization.')
-    return ret.copy()  # copy for C-contiguous array (np.ascontiguousarray nok)
+    return np.ascontiguousarray(ret)
 
 
 def orthonormalize_matrix(m, tol=1.e-12):
@@ -86,7 +86,8 @@ def orthonormalize_matrix(m, tol=1.e-12):
     n_null_eig = s.size - n_eig
     tmp = normalize_matrix_on_axis(tmp)
     if n_null_eig > 0:
-        tmp = np.hstack((tmp, np.zeros((tmp.shape[0], n_null_eig))))
+        tmp = np.ascontiguousarray(
+            np.hstack((tmp, np.zeros((tmp.shape[0], n_null_eig)))))
     return tmp
 
 
