@@ -511,8 +511,8 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars, n_perm=10000,
             cum_sizes[i]:cum_sizes[i + 1]]['score'].max()
     # convert scores into p-values
     score_orig_data = final_results.get_data()[:final_results.sizes[0]]
-    pvals = ((n_perm + 1 - np.searchsorted(h0, score_orig_data['score']))
-             / float(n_perm + 1))
+    pvals = (n_perm + 1 - np.searchsorted(
+                np.sort(h0), score_orig_data['score'])) / float(n_perm + 1)
     np.seterr(divide='ignore')  # ignore division-by-zero warning in log10
     pvals_mat = sparse.coo_matrix(
         (- np.log10(pvals),

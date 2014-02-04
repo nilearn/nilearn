@@ -11,6 +11,7 @@ three last sessions are included and only z slice number 36 is considered.
 
 """
 import numpy as np
+from scipy import stats
 import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
@@ -36,7 +37,7 @@ session = session[condition_mask]
 ### Mask data #################################################################
 mask_img = nibabel.load(dataset_files.mask)
 process_mask = mask_img.get_data().astype(np.int)
-# we only keep the slice z = 36 to speed up computation
+# we only keep the slice z = 26 to speed up computation
 process_mask[..., 27:] = 0
 process_mask[..., :26] = 0
 process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
@@ -45,26 +46,63 @@ nifti_masker = NiftiMasker(mask=process_mask_img, sessions=session,
 fmri_masked = nifti_masker.fit_transform(fmri_img)
 
 ### Perform massively univariate analysis with permuted OLS ###################
-neg_log_pvals, _, _, _ = permuted_ols(
+neg_log_pvals, all_scores, _, params = permuted_ols(
     conditions_encoded.reshape((-1, 1)), fmri_masked.T,
-     session.reshape((-1, 1)), n_perm=10000, sparsity_threshold=0.5)
+    session.reshape((-1, 1)), n_perm=10000, sparsity_threshold=.5)
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals).get_data()
+    np.ravel(neg_log_pvals)).get_data()
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import ImageGrid
 
 # Use the fmri mean image as a surrogate of anatomical data
 mean_fmri = fmri_img.get_data().mean(axis=-1)
 
-plt.figure()
-process_mask[neg_log_pvals_unmasked[..., 0] < 1.] = 0
+# Various plotting parameters
+vmin = 10 ** -0.1  # 10% corrected
+vmax = np.amax(neg_log_pvals)
+grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
+                 axes_pad=0.05, add_all=True, label_mode="1",
+                 share_all=True, cbar_location="right", cbar_mode="single",
+                 cbar_size="7%", cbar_pad="1%")
+
+# Plot thresholded F-scores map
+ax = grid[0]
+pvals_bonferroni = 1 - stats.f.cdf(
+    all_scores['score'][all_scores['iter_id'] == 0],
+    1, conditions_encoded.shape[0] - params['lost_dof'] - 1)
+pvals_bonferroni *= fmri_masked.shape[1]
+pvals_bonferroni[pvals_bonferroni > 1.] = 1.
+neg_log_pvals_bonferroni = np.zeros(neg_log_pvals.size)
+orig_scores_idx = all_scores['y_id'][all_scores['iter_id'] == 0]
+neg_log_pvals_bonferroni[orig_scores_idx] = - np.log10(pvals_bonferroni)
+neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
+    neg_log_pvals_bonferroni).get_data()
+# threshold at 10% corrected
+process_mask_bonf = process_mask.copy()
+process_mask_bonf[neg_log_pvals_bonferroni_unmasked < vmin] = 0
+p_ma = np.ma.array(neg_log_pvals_bonferroni_unmasked,
+                   mask=np.logical_not(process_mask_bonf))
+ax.imshow(np.rot90(mean_fmri[..., 26]), interpolation='nearest',
+          cmap=plt.cm.gray)
+ax.imshow(np.rot90(p_ma[..., 26]), interpolation='nearest',
+          cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
+ax.set_title('Negative log p-values\n(Bonferroni)')
+ax.axis('off')
+
+# Plot permutation p-values map
+ax = grid[1]
+process_mask[neg_log_pvals_unmasked < vmin] = 0
 p_ma = np.ma.array(neg_log_pvals_unmasked,
                    mask=np.logical_not(process_mask))
-plt.imshow(np.rot90(mean_fmri[..., 26]), interpolation='nearest',
-           cmap=plt.cm.gray)
-plt.imshow(np.rot90(p_ma[..., 26, 0]), interpolation='nearest',
-           cmap=plt.cm.autumn)
-plt.title('Negative log p-values')
-plt.axis('off')
+ax.imshow(np.rot90(mean_fmri[..., 26]), interpolation='nearest',
+          cmap=plt.cm.gray)
+im = ax.imshow(np.rot90(p_ma[..., 26]), interpolation='nearest',
+               cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
+ax.set_title('Negative log p-values\n(permutations)')
+ax.axis('off')
+
+grid[0].cax.colorbar(im)
+plt.draw()
 plt.show()
