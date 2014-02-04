@@ -25,13 +25,30 @@ def normalize_matrix_on_axis(m, axis=0):
     -------
     ret : numpy array, shape = m.shape
         The normalize matrix
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.mass_univariate.permuted_least_squares import (
+    ...     normalize_matrix_on_axis)
+    >>> X = np.array([[0, 4], [1, 0]])
+    >>> normalize_matrix_on_axis(X)
+    array([[ 0.,  1.],
+           [ 1.,  0.]])
+    >>> normalize_matrix_on_axis(X, axis=1)
+    array([[ 0.,  1.],
+           [ 1.,  0.]])
+
     """
+    if m.ndim > 2:
+        raise Exception('Only for 2D array.')
+
     if axis == 0:
-        ret = m / np.sqrt(np.sum(m ** 2, axis=axis))
+        ret = m / np.sqrt(np.sum(m ** 2, axis=0))
     elif axis == 1:
         ret = normalize_matrix_on_axis(m.T).T
     else:
-        raise Exception('Only for 2D array.')
+        raise Exception('Invalid axis in normalization.')
     return ret
 
 
@@ -47,18 +64,30 @@ def orthonormalize_matrix(m, tol=1.e-12):
     -------
     ret : numpy array, shape = m.shape
         The orthonormalize matrix
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.mass_univariate.permuted_least_squares import (
+    ...     orthonormalize_matrix)
+    >>> X = np.array([[0, 1], [0, 1]])
+    >>> orthonormalize_matrix(X)
+    array([[ 0.70710678,  0.        ],
+           [ 0.70710678,  0.        ]])
+    >>> X = np.array([[0, 1], [4, 0]])
+    >>> orthonormalize_matrix(X)
+    array([[ 0., -1.],
+           [-1.,  0.]])
+
     """
     U, s, _ = linalg.svd(m, 0)
     n_eig = s[abs(s) > tol].size
     tmp = np.dot(U, np.diag(s))[:, :n_eig]
-    n_null_eig = tmp.shape[1] - n_eig
+    n_null_eig = s.size - n_eig
+    tmp = normalize_matrix_on_axis(tmp)
     if n_null_eig > 0:
-        ret = np.hstack((
-            normalize_matrix_on_axis(tmp),
-            np.zeros((tmp.shape[0], n_null_eig))))
-    else:
-        ret = normalize_matrix_on_axis(tmp)
-    return ret
+        tmp = np.hstack((tmp, np.zeros((tmp.shape[0], n_null_eig))))
+    return tmp
 
 
 class GrowableSparseArray(object):
@@ -66,7 +95,7 @@ class GrowableSparseArray(object):
 
     GrowableSparseArray can be seen as a three-dimensional array that contains
     scores associated with three position indices corresponding to
-    (i) a permutation, (ii) a test variable and (iii) a target variable.
+    (i) a permutation, (ii) a test variate and (iii) a target variate.
     Memory is pre-allocated to store a large number of scores. The structure
     can be indexed efficiently according to three dimensions to add new
     scores at the right position fast.
@@ -82,16 +111,16 @@ class GrowableSparseArray(object):
     n_perm: int
       Number of permutations performed in the permutation scheme
     max_elts: int
-      Maximum number of scores that can be contained into the structure
+      Maximum number of scores that can be stored into the structure
     data: array-like, own-designed dtype
       The actual scores corresponding to all the tests performed under
       permutation.
-      dtype is built so that every score is associated to three position
+      dtype is built so that every score is associated with three position
       GrowableSparseArray can be seen as a three-dimensional array so every
       score is associated with three position indices corresponding to
       (i) a permutation ('perm_id'),
-      (ii) a test variable ('x_id') and
-      (iii) a target variable ('y_id').
+      (ii) a test variate ('x_id') and
+      (iii) a target variate ('y_id').
     sizes: array-like, shape=(n_perm, )
       The number of scores stored for each permutation.
       Useful to select a range of values from permutation ids.
@@ -116,7 +145,7 @@ class GrowableSparseArray(object):
     def get_data(self):
         return self.data[:self.n_elts]
 
-    def merge(self, l):
+    def merge(self, others):
         """Copy one or several GrowableSparseArray into the current structure.
 
         Parameters
@@ -125,19 +154,20 @@ class GrowableSparseArray(object):
           The structures to be merged into the current structure.
 
         """
-        if isinstance(l, GrowableSparseArray):
-            return self.merge([l])
-        if not isinstance(l, list) and not isinstance(l, tuple):
-            raise Exception('l is not a list/tuple of GrowableSparseArray '
-                            'or a GrowableSparseArray.')
-        for msarray in l:
+        if isinstance(others, GrowableSparseArray):
+            return self.merge([others])
+        if not isinstance(others, list) and not isinstance(others, tuple):
+            raise Exception(
+                '\'others\' is not a list/tuple of GrowableSparseArray '
+                'or a GrowableSparseArray.')
+        for msarray in others:
             if not isinstance(msarray, GrowableSparseArray):
                 raise Exception('msarray is not a GrowableSparseArray.')
 
         self.sizes = np.array([self.sizes] +
-                               [msa.sizes for msa in l]).sum(axis=0)
+                               [msa.sizes for msa in others]).sum(axis=0)
         self.data = np.concatenate([self.get_data()] +
-                                    [msa.get_data() for msa in l])
+                                    [msa.get_data() for msa in others])
         self.n_elts = self.sizes.sum()
         self.max_elts = self.n_elts
         self.data = np.sort(self.data, order=['perm_id', 'x_id', 'y_id'])
@@ -158,7 +188,7 @@ class GrowableSparseArray(object):
           Scores corresponding to the permutation chunk to be inserted into
           the data structure.
         y_offset: int,
-          Position of the target variables chunk relative to the original
+          Position of the target variates chunk relative to the original
           dataset.
 
         """
@@ -196,36 +226,36 @@ class GrowableSparseArray(object):
 
 
 def f_score(vars1, vars2, covars, lost_dof):
-    """Compute the F-score associated to the regression of vars2 against vars1
+    """Compute the F-score associated with the regression of vars2 against vars1
 
-    Covariables are taken into account
+    Covariates are taken into account
 
     Parameters
     ----------
     vars1: array-like, shape=(n_samples, n_var1)
-      Explanatory variables
+      Explanatory variates
     vars2: array-like, shape=(n_var2, n_samples)
-      Targets variables
+      Targets variates
     covars, array-like, shape=(n_samples, n_covars)
-      Confounding variables
+      Confounding variates
     lost_dof: int,
       Lost degrees of freedom
 
     Returns
     -------
     score: array-like, shape=(n_var2, n_var1)
-      F-scores associated to the tests of each explanatory variable against
-      each target variable (in the presence of covars).
+      F-scores associated with the tests of each explanatory variate against
+      each target variate (in the presence of covars).
 
     """
     if not vars1.flags['C_CONTIGUOUS']:
-        warnings.warn('explanatory variables not C_CONTIGUOUS.')
+        warnings.warn('explanatory variates not C_CONTIGUOUS.')
         vars1 = np.ascontiguousarray(vars1)
     if not vars2.flags['C_CONTIGUOUS']:
-        warnings.warn('target variables not C_CONTIGUOUS.')
+        warnings.warn('target variates not C_CONTIGUOUS.')
         vars2 = np.ascontiguousarray(vars2)
     if not covars.flags['C_CONTIGUOUS']:
-        warnings.warn('confounding variables not C_CONTIGUOUS.')
+        warnings.warn('confounding variates not C_CONTIGUOUS.')
         covars = np.ascontiguousarray(covars)
     beta_vars2_vars1 = np.dot(vars2, vars1)
     beta_vars2_covars = np.dot(vars2, covars)
@@ -238,7 +268,7 @@ def f_score(vars1, vars2, covars, lost_dof):
     return score
 
 
-def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
+def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
                            confounding_vars, n_perm, sparsity_threshold=1e-04,
                            target_vars_chunk_position=0,
                            intercept_test=True, random_state=0):
@@ -249,24 +279,58 @@ def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     Parameters
     ----------
     tested_vars: array-like, shape=(n_samples, n_regressors)
-      Explanatory variables.
+      Explanatory variates.
     target_vars_chunk: array-like, shape=(n_targets, n_samples)
       fMRI data.
     confounding_vars: array-like, shape=(n_samples, n_covars)
-      Clinical data (covariables).
+      Clinical data (covariates).
     n_perm: int,
       Number of permutations
     sparsity_threshold: float,
       Threshold under which the permutation scores are not stored
       (because they have no chance to correspond to the max)
     target_vars_offset:
-      offset corresponding to the target variables chunk position
+      offset corresponding to the target variates chunk position
     intercept_test: boolean,
       Change the permutation scheme (swap signs for intercept,
-      switch labels otherwise).
+      switch labels otherwise). See [1]
     random_state: int,
       Seed for random number generator, to have the same permutations
       in each computing units.
+
+    Returns
+    -------
+    msarray: GrowableSparseArray,
+      Permutation scores corresponding to the current target variates chunk
+      (passed as an argument of the function call).
+    params: dict,
+      Parameters of the permuted model:
+      - lost_dof: lost degrees of freedom
+      - n_perm: number of permutations
+      - n_subj: number of observations
+      - threshold: threshold used to sparsify the results and reduce the
+                   size of the permutation scores in memory.
+
+    References
+    ----------
+    [1] Fisher, R. A. (1935). The design of experiments.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.mass_univariate.permuted_least_squares import (
+    ...     permuted_ols_on_chunk)
+    >>> X = np.ones((4, 1))
+    >>> Y = np.array([[1, 2, 2, 1]])
+    >>> Z = np.zeros((4, 1))
+    >>> res, params = permuted_ols_on_chunk(
+    ...     X, Y, Z, n_perm=1, sparsity_threshold=1.)
+    >>> res.get_data()[0]
+    (0, 0, 0, 27.0)
+    >>> res.get_data()[1]
+    (1, 0, 0, 0.3333333432674408)
+    >>> params
+    {'lost_dof': 0, 'threshold': 0.0, 'n_perm': 1, 'n_subj': 4}
 
     """
     # initialize the seed of the random generator
@@ -346,25 +410,25 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars, n_perm=10000,
                  sparsity_threshold=1e-04, random_state=0, n_jobs=0):
     """Massively univariate group analysis with permuted OLS.
 
-    Tested variables are independently fitted to brain imaging signal
+    Tested variates are independently fitted to brain imaging signal
     descriptors according to a linear model solved with an
     Ordinary Least Squares criterion.
-    Confounding variables may be included in the model.
+    Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
-    between the tested variables and the imaging variables. A max-type
+    between the tested variates and the imaging variates. A max-type
     procedure is used to obtain family-wise corrected p-values.
 
-    The variables should be given C-contiguous.
+    The variates should be given C-contiguous.
 
     Parameters
     ----------
     tested_vars: array-like, shape=(n_samples, n_regressors)
-      Explanatory variables, fitted and tested independently from each others.
+      Explanatory variates, fitted and tested independently from each others.
     imaging_vars: array-like, shape=(n_descriptors, n_samples)
       fMRI data, trying to be explained by explanatory and confounding
-      variables.
+      variates.
     confounding_vars: array-like, shape=(n_samples, n_covars)
-      Confounding variables (covariables), fitted but not tested.
+      Confounding variates (covariates), fitted but not tested.
     n_perm: int,
       Number of permutations to perform. Default is 10000.
       Permutations are costly but the more are performed, the more precision
@@ -382,12 +446,12 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars, n_perm=10000,
     Returns
     -------
     pvals: array-like, shape=(n_regressors, n_descriptors)
-      Negative log10 p-values associated to the significance test of the
-      n_regressors explanatory variables against the n_descriptors target
-      variables. Family-wise corrected p-values.
+      Negative log10 p-values associated with the significance test of the
+      n_regressors explanatory variates against the n_descriptors target
+      variates. Family-wise corrected p-values.
     score_orig_data: GrowableSparseArray object,
-      Statistic associated to the significance test of the n_regressors
-      explanatory variables against the n_descriptors target variables.
+      Statistic associated with the significance test of the n_regressors
+      explanatory variates against the n_descriptors target variates.
       The ranks of the scores into the h0 distribution correspond to the
       p-values.
     h0: array-like, shape=(n_perm, )
@@ -401,25 +465,31 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars, n_perm=10000,
       - threshold: threshold used to sparsify the results and reduce the
                    size of the permutation scores in memory.
 
+    References
+    ----------
+    [1] Anderson, M. J., & Robinson, J. (2001).
+        Permutation tests for linear models.
+        Australian & New Zealand Journal of Statistics, 43(1), 75-88.
+
     """
     if n_jobs < 1:
         n_jobs = joblib.cpu_count()
     # TODO: add various checks
-    # check explanatory variables dimensions
+    # check explanatory variates dimensions
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
 
-    # check if explanatory variables is intercept (constant) or not
+    # check if explanatory variates is intercept (constant) or not
     if (tested_vars.shape[1] == 1 and np.unique(tested_vars).size == 1):
         intercept_test = True
     else:
         intercept_test = False
 
-    # split target variables into chunks for parallel processing
+    # split target variates into chunks for parallel processing
     n_descriptors = imaging_vars.shape[0]
     n_regressors = tested_vars.shape[1]
     # run computation on chunks
-    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
+    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(permuted_ols_on_chunk)
         (tested_vars, imaging_vars[chunk], confounding_vars, n_perm,
          sparsity_threshold=sparsity_threshold, random_state=random_state,
          target_vars_chunk_position=chunk.start, intercept_test=intercept_test)

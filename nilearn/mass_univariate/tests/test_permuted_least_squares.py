@@ -1,20 +1,22 @@
 """
 
 """
+import os
 import unittest
 import numpy as np
 from scipy import sparse
 
 from numpy.testing import assert_almost_equal, assert_equal
 
-from nilearn.nilearn.mass_univariate import permuted_ols
+from nilearn.mass_univariate import permuted_ols
 
 
 class TestPermutedLeastSquares(unittest.TestCase):
     """
 
     """
-    data = np.load('./testing_data.npz')
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    data = np.load(os.path.join(cur_dir, 'testing_data.npz'))
     n_perm = data['n_perm']
 
     tested_vars = data['x']
@@ -23,10 +25,11 @@ class TestPermutedLeastSquares(unittest.TestCase):
     confounding_vars = data['z']
 
     def test_permuted_ols(self):
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
         pvals, h1, h0, params = permuted_ols(
             self.tested_vars, self.imaging_vars, self.confounding_vars,
-            self.n_perm)
-        ar = np.load('./res_gstat_test_MULM_OLS.npz')
+            self.n_perm, sparsity_threshold=0.5)
+        ar = np.load(os.path.join(cur_dir, 'res_gstat_test_MULM_OLS.npz'))
         assert_almost_equal(ar['h0'], h0)
         h1_mat = sparse.coo_matrix(
             (h1['score'], (h1['x_id'], h1['y_id']))).todense()
@@ -39,10 +42,12 @@ class TestPermutedLeastSquares(unittest.TestCase):
             assert_equal(param_value, ar['param'].tolist()[param_name])
 
     def test_permuted_ols_intercept(self):
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
         pvals, h1, h0, params = permuted_ols(
             self.tested_vars_intercept, self.imaging_vars,
-            self.confounding_vars, self.n_perm)
-        ar = np.load('./res_gstat_test_MULM_OLS_intercept.npz')
+            self.confounding_vars, self.n_perm, sparsity_threshold=0.5)
+        ar = np.load(os.path.join(
+                cur_dir, 'res_gstat_test_MULM_OLS_intercept.npz'))
         assert_almost_equal(ar['h0'], h0)
         h1_mat = sparse.coo_matrix(
             (h1['score'], (h1['x_id'], h1['y_id']))).todense()

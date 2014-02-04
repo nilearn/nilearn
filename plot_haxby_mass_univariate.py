@@ -37,8 +37,8 @@ session = session[condition_mask]
 mask_img = nibabel.load(dataset_files.mask)
 process_mask = mask_img.get_data().astype(np.int)
 # we only keep the slice z = 36 to speed up computation
-process_mask[..., 37:] = 0
-process_mask[..., :36] = 0
+process_mask[..., 27:] = 0
+process_mask[..., :26] = 0
 process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 nifti_masker = NiftiMasker(mask=process_mask_img, sessions=session,
                            memory='nilearn_cache', memory_level=1)
@@ -61,9 +61,9 @@ plt.figure()
 process_mask[neg_log_pvals_unmasked[..., 0] < 1.] = 0
 p_ma = np.ma.array(neg_log_pvals_unmasked,
                    mask=np.logical_not(process_mask))
-plt.imshow(np.rot90(mean_fmri[..., 36]), interpolation='nearest',
+plt.imshow(np.rot90(mean_fmri[..., 26]), interpolation='nearest',
            cmap=plt.cm.gray)
-plt.imshow(np.rot90(p_ma[..., 36, 0]), interpolation='nearest',
+plt.imshow(np.rot90(p_ma[..., 26, 0]), interpolation='nearest',
            cmap=plt.cm.autumn)
 plt.title('Negative log p-values')
 plt.axis('off')
