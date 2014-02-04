@@ -8,8 +8,10 @@ For data that has already been masked, the default strategy works out of
 the box.
 
 However, for raw EPI, as in resting-state time series, we need to use the
-'epi' strategy of the NiftiMasker. It may be useful to tweak the
-different parameters of the underlying mask extraction routine
+'epi' strategy of the NiftiMasker.
+
+In addition, we show here how to tweak the different parameters of the
+underlying mask extraction routine
 :func:`nilearn.masking.compute_epi_mask`.
 
 """

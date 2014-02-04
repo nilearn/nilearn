@@ -160,7 +160,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
-def _compute_mean(imgs, memory=None, target_affine=None, target_shape=None):
+def _compute_mean(imgs, memory=None, target_affine=None,
+                  target_shape=None, smooth=False):
     from . import image
     input_repr = _utils._repr_niimgs(imgs)
     imgs = cache(image.resample_img, memory, ignore=['copy'])(
@@ -178,6 +179,11 @@ def _compute_mean(imgs, memory=None, target_affine=None, target_shape=None):
                          % (mean_img.ndim, input_repr))
     if mean_img.ndim == 4:
         mean_img = mean_img.mean(axis=-1)
+    if smooth:
+        nan_mask = np.isnan(mean_img)
+        mean_img = _smooth_array(mean_img, affine=np.eye(4), fwhm=smooth,
+                                 ensure_finite=True, copy=False)
+        mean_img[nan_mask] = np.nan
     return mean_img, imgs.get_affine()
 
 
@@ -236,6 +242,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
         operations are performed followed by `n` erosions. This corresponds
         to 1 opening operation of order `n` followed by a closing operator
         of order `n`.
+        Note that turning off opening (opening=False) will also prevent
+        any smoothing applied to the image during the mask computation.
 
     ensure_finite: bool
         If ensure_finite is True, the non-finite values (NaNs and infs)
@@ -270,8 +278,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     # XXX make a is_a_niimgs function ?
 
     mean_epi, affine = _compute_mean(epi_img, memory=memory,
-        target_affine=target_affine,
-        target_shape=target_shape)
+        target_affine=target_affine, target_shape=target_shape,
+        smooth=1 if opening else False)
 
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
@@ -429,8 +437,8 @@ def compute_background_mask(data_imgs, border_size=2,
     # XXX make a is_a_niimgs function ?
 
     data, affine = _compute_mean(data_imgs, memory=memory,
-        target_affine=target_affine,
-        target_shape=target_shape)
+        target_affine=target_affine, target_shape=target_shape,
+        smooth=False)
 
     border_data = np.concatenate([
             data[:border_size, :, :].ravel(), data[-border_size:, :, :].ravel(),
@@ -658,6 +666,12 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     This function is most efficient with arr in C order.
     """
 
+    if arr.dtype.kind == 'i':
+        if arr.dtype == np.int64:
+            arr = np.astype(arr, np.float64)
+        else:
+            # We don't need crazy precision
+            arr = np.astype(arr, np.float32)
     if copy:
         arr = arr.copy()
 
