@@ -230,7 +230,7 @@ class GrowableSparseArray(object):
 
 
 def f_score(vars1, vars2, covars, lost_dof):
-    """Compute the F-score associated with the regression of vars2 against vars1
+    """Compute F-score associated with the regression of vars2 against vars1
 
     Covariates are taken into account
 
@@ -374,9 +374,8 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     threshold = stats.f.isf(sparsity_threshold, 1, n_samples - lost_dof - 1)
     # We use a special data structure to store the results of the permutations
     # max_elts is used to preallocate memory
-    max_elts = int(
-        n_regressors * n_descriptors_chunk
-        * (1 + (1.1 * n_perm * sparsity_threshold)))
+    max_elts = int(n_regressors * n_descriptors_chunk
+                   * np.sqrt(sparsity_threshold) * n_perm)
     msarray = GrowableSparseArray(
         n_perm + 1, max_elts=max_elts, threshold=threshold)
     # add original data results as permutation 0
@@ -507,8 +506,14 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars, n_perm=10000,
     h0 = np.zeros(n_perm)
     cum_sizes = final_results.sizes.cumsum().astype(int)
     for i in range(n_perm):
-        h0[i] = final_results.get_data()[
-            cum_sizes[i]:cum_sizes[i + 1]]['score'].max()
+        tmp = final_results.get_data()[cum_sizes[i]:cum_sizes[i + 1]]['score']
+        if tmp.size > 0:
+            h0[i] = tmp.max()
+        else:
+            h0[i] = - np.inf
+    if np.isinf(h0).sum() > 0.75 * n_perm:
+        warnings.warn(
+            "Sparsity threshold may be too low, yielding false negative.")
     # convert scores into p-values
     score_orig_data = final_results.get_data()[:final_results.sizes[0]]
     pvals = (n_perm + 1 - np.searchsorted(
