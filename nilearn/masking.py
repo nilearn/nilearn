@@ -616,4 +616,9 @@ def unmask(X, mask_img, order="F"):
         unmasked = _unmask_nd(X, mask, order=order)
     elif X.ndim == 1:
         unmasked = _unmask_3d(X, mask, order=order)
+    else:
+        raise TypeError(
+            "Masked data X must be 2D or 1D array; got shape: %s" % str(
+                X.shape))
+
     return Nifti1Image(unmasked, affine)
