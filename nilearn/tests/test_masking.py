@@ -359,11 +359,12 @@ def test_issue_162_fix(random_state=42, shape=(3, 5, 7, 11)):
         if bad_ndim:
             # 3D X (unmask should raise a TypeError)
             X = np.random.randn(n_samples, n_features, 2)
+            unmask(X, mask_img)
         else:
             # 2D X (should be ok)
             X = np.random.randn(n_samples, n_features)
 
-    try:
-        unmask(X, mask_img)
-    except TypeError:
-        pass
+            try:
+                unmask(X, mask_img)
+            except TypeError:
+                pass
