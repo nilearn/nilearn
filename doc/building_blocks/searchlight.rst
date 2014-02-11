@@ -139,8 +139,8 @@ expected result.
 
    * :ref:`visualizing`
 
-Comparing to standard-analysis: F_score or SPM
-------------------------------------------------
+Comparing to massively univariate analysis: F_score or SPM
+----------------------------------------------------------
 
 The standard approach to brain mapping is performed using *Statistical
 Parametric Mapping* (SPM), using ANOVA (analysis of variance), and
@@ -154,6 +154,58 @@ To display the results, we use the negative log of the p-value.
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### Show the F_score
+
+F-scores can be converted into p-values using a reference theoretical
+distribution, which is known under specific assumptions. In practice,
+neuroimaging signal has a complex structure that might not match these
+assumptions. An exact, non-parametric *permutation test* can be
+performed as an alternative to the analytic F-test: We exange the
+signal values of all voxels while the tested variables remain
+unchanged and we perform a voxel-wise analysis on these permuted
+data. When the data are transformed this way, the relationship between
+the fmri signal and the tested variates are broken while the value of
+the signal in each particular voxel can be observed with the same
+probability than the original value associated to that voxel. Note
+that it is hereby assumed that the signal distribution is the same in
+every voxel. Several data shuffling are performed (typically 10,000)
+while the F-scores for every voxel and every data shuffling is
+stored. The empirical distribution of the F-scores is thus constructed
+(under the hypothesis that there is no relationship between the tested
+variates and the neuroimaging signal, the so-called *null-hypothesis*)
+and we can compare the original F-scores to that distribution: The
+rank of the original F-scores is inversely proportional to their
+associated p-value. The :func:`nilearn.mass_univariate.permuted_ols`
+function returns the p-values computed with a permutation test.
+
+The number of tests performed is generally large when full-brain
+analysis is performed (> 50,000 voxels). This increases the
+probability of finding a significant activation by chance, a
+phenomenon that is known to statisticians as the *multiple comparisons
+problem*. It is therefore recommended to correct the p-values to take
+into account the multiple tests. *Bonferroni correction* consists of
+multiplying the p-values by the number of tests (while making sure the
+p-values stay smaller than 1). Thus, we control the occurrence of one
+false detection *at most*, the so-called *family-wise error control*.
+A similar control can be attained when performing a permutation test:
+For each permutation, only the maximum value of the F-statistic across
+voxel is considered and is used to build the null distribution. It is
+crucial to assume that the distribution of the signal is the same in
+every voxel so that the F-statistics are comparable. This correction
+strategy is applied in Nilearn's
+:func:`nilearn.mass_univariate.permuted_ols` function.
+
+.. figure:: ../auto_examples/images/plot_haxby_mass_univariate_1.png
+   :target: ../auto_examples/plot_haxby_searchlight.html
+   :align: center
+   :scale: 60
+
+.. literalinclude:: ../../plot_haxby_mass_univariate.py
+   :start-after: ### Perform massively univariate analysis with permuted OLS ###################
+   :end-before: neg_log_pvals_unmasked
+
+We observe that the Bonferroni correction strategy yields results that
+are a bitmore conservative that the results obtained with a
+permutation test.
 
 .. [1]
 
