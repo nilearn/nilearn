@@ -345,12 +345,12 @@ def test_compute_multi_epi_mask():
 def test_issue_162_fix(random_state=42, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
 
-    np.random.RandomState(random_state)
+    rng = np.random.RandomState(random_state)
 
     # setup
-    X = np.random.randn()
+    X = rng.randn()
     mask_img = np.zeros(shape, dtype=np.uint8)
-    mask_img[np.random.randn(*shape) > .4] = 1
+    mask_img[rng.randn(*shape) > .4] = 1
     n_features = (mask_img > 0).sum()
     mask_img = Nifti1Image(mask_img, np.eye(4))
     n_samples = shape[0]
@@ -358,13 +358,9 @@ def test_issue_162_fix(random_state=42, shape=(3, 5, 7, 11)):
     for bad_ndim in [True, False]:
         if bad_ndim:
             # 3D X (unmask should raise a TypeError)
-            X = np.random.randn(n_samples, n_features, 2)
-            unmask(X, mask_img)
+            X = rng.randn(n_samples, n_features, 2)
+            assert_raises(TypeError, unmask, X, mask_img)
         else:
             # 2D X (should be ok)
-            X = np.random.randn(n_samples, n_features)
-
-            try:
-                unmask(X, mask_img)
-            except TypeError:
-                pass
+            X = rng.randn(n_samples, n_features)
+            unmask(X, mask_img)
