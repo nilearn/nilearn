@@ -103,7 +103,7 @@ def test_gsarray_merge():
     gsarray2 = GrowableSparseArray(n_iter=1, threshold=0)  # lower threshold
     with warnings.catch_warnings(True) as warning:
         gsarray2.merge(gsarray)
-        assert(len(warning) > 1)
+        assert(len(warning) >= 1)
         assert(isinstance(warning[0], warnings.WarningMessage))
     assert_array_equal(
         gsarray.get_data()['iter_id'], gsarray2.get_data()['iter_id'])
