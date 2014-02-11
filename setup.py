@@ -44,6 +44,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('nilearn/mass_univariate')
     config.add_subpackage('nilearn/image')
     config.add_subpackage('nilearn/_utils')
+    config.add_subpackage('nilearn/_utils/fixes')
     return config
 
 

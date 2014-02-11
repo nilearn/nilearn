@@ -2,7 +2,7 @@
 Tests for the permuted_ols function.
 
 """
-
+# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 import os
 import numpy as np
 from scipy import sparse
@@ -12,6 +12,8 @@ from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
                            assert_equal)
 
 from nilearn.mass_univariate import permuted_ols
+
+from nilearn._utils.fixes import f_regression
 
 
 ### Tests for labels swapping permutation scheme ##############################
@@ -55,7 +57,6 @@ def test_permuted_ols_sklearn_nocovar(random_state=0):
     target_var = rng.randn(n_samples, 1)
     tested_var = rng.randn(n_samples, 1)
     # scikit-learn F-score
-    from sklearn.feature_selection import f_regression
     fvals, _ = f_regression(target_var, tested_var, center=False)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
@@ -133,7 +134,6 @@ def test_permuted_ols_sklearn_nocovar_multivariate(random_state=0):
     target_vars = rng.randn(n_samples, n_targets)
     tested_var = rng.randn(n_samples, 1)
     # scikit-learn F-scores
-    from sklearn.feature_selection import f_regression
     fvals = np.empty(n_targets)
     for i in range(n_targets):
         fvals[i], _ = f_regression(target_vars[:, i], tested_var, center=False)
@@ -255,7 +255,6 @@ def test_permuted_ols_intercept_sklearn_nocovar(random_state=0):
     target_var = rng.randn(n_samples, 1)
     tested_var = np.ones((n_samples, 1))
     # scikit-learn F-score
-    from sklearn.feature_selection import f_regression
     fvals, _ = f_regression(target_var, tested_var, center=False)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
@@ -315,7 +314,6 @@ def test_permuted_ols_intercept_sklearn_nocovar_multivariate(random_state=0):
     target_vars = rng.randn(n_samples, n_targets)
     tested_var = np.ones((n_samples, 1))
     # scikit-learn F-scores
-    from sklearn.feature_selection import f_regression
     fvals = np.empty(n_targets)
     for i in range(n_targets):
         fvals[i], _ = f_regression(target_vars[:, i], tested_var, center=False)

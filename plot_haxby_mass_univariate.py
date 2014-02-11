@@ -57,7 +57,7 @@ neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals)).get_data()
 
 ### scikit-learn F-scores for comparison ######################################
-from sklearn.feature_selection import f_regression
+from nilearn._utils.fixes import f_regression
 _, pvals_bonferroni = f_regression(
     fmri_masked, conditions_encoded)  # f_regression implicitly adds intercept
 pvals_bonferroni *= fmri_masked.shape[1]
