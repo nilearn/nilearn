@@ -153,7 +153,7 @@ To display the results, we use the negative log of the p-value.
    :scale: 60
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
-    :start-after: ### Show the F_score
+    :start-after: ### F_score results
 
 F-scores can be converted into p-values using a reference theoretical
 distribution, which is known under specific assumptions. In practice,
@@ -177,6 +177,14 @@ rank of the original F-scores is inversely proportional to their
 associated p-value. The :func:`nilearn.mass_univariate.permuted_ols`
 function returns the p-values computed with a permutation test.
 
+.. literalinclude:: ../../plot_haxby_mass_univariate.py
+   :start-after: from nilearn.mass_univariate import permuted_ols
+   :end-before: ### Load Haxby dataset
+
+.. literalinclude:: ../../plot_haxby_mass_univariate.py
+   :start-after: ### Perform massively univariate analysis with permuted OLS
+   :end-before: neg_log_pvals_unmasked
+
 The number of tests performed is generally large when full-brain
 analysis is performed (> 50,000 voxels). This increases the
 probability of finding a significant activation by chance, a
@@ -186,7 +194,7 @@ into account the multiple tests. *Bonferroni correction* consists of
 multiplying the p-values by the number of tests (while making sure the
 p-values stay smaller than 1). Thus, we control the occurrence of one
 false detection *at most*, the so-called *family-wise error control*.
-A similar control can be attained when performing a permutation test:
+A similar control can be performed when performing a permutation test:
 For each permutation, only the maximum value of the F-statistic across
 voxel is considered and is used to build the null distribution. It is
 crucial to assume that the distribution of the signal is the same in
@@ -199,13 +207,9 @@ strategy is applied in Nilearn's
    :align: center
    :scale: 60
 
-.. literalinclude:: ../../plot_haxby_mass_univariate.py
-   :start-after: ### Perform massively univariate analysis with permuted OLS ###################
-   :end-before: neg_log_pvals_unmasked
-
-We observe that the Bonferroni correction strategy yields results that
-are a bitmore conservative that the results obtained with a
-permutation test.
+We observe that
+the Bonferroni correction strategy yields results that are a bit more
+conservative that the results obtained with a permutation test.
 
 .. [1]
 

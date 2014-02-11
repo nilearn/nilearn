@@ -87,7 +87,7 @@ import matplotlib.pyplot as plt
 # Use the fmri mean image as a surrogate of anatomical data
 mean_fmri = fmri_img.get_data().mean(axis=-1)
 
-# Searchlight results
+### Searchlight results
 plt.figure(1)
 # searchlight.scores_ contains per voxel cross validation scores
 s_scores = np.ma.array(searchlight.scores_, mask=np.logical_not(process_mask))

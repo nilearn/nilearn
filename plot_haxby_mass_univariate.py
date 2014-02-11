@@ -92,7 +92,7 @@ ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title('Negative log p-values\n(Bonferroni)')
+ax.set_title(r'Negative $\log_{10}$ p-values\n(Bonferroni)')
 ax.axis('off')
 
 # Plot permutation p-values map
@@ -104,7 +104,7 @@ ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
                cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title('Negative log p-values\n(permutations)')
+ax.set_title(r'Negative $\log_{10}$ p-values\n(permutations)')
 ax.axis('off')
 
 grid[0].cax.colorbar(im)
