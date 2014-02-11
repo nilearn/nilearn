@@ -35,7 +35,7 @@ Reshaping the data
 For this example we need:
 
 - to put X in the form *n_samples* x *n_features*
-- compute a mean image for visualisation background
+- compute a mean image for visualization background
 - limit our analysis to the `face` and `house` conditions
   (like in the :ref:`decoding <fmri_decoding>` example)
 
@@ -114,7 +114,7 @@ performance in their simulation.
     :start-after: # The radius is the one of the Searchlight sphere that will scan the volume
     :end-before: ### F-scores computation ######################################################
 	
-Visualisation
+Visualization
 =============
 
 Searchlight
@@ -159,26 +159,27 @@ F-scores can be converted into p-values using a reference theoretical
 distribution, which is known under specific assumptions. In practice,
 neuroimaging signal has a complex structure that might not match these
 assumptions. An exact, non-parametric *permutation test* can be
-performed as an alternative to the analytic F-test: We exange the
+performed as an alternative to the analytic F-test: We exchange the
 signal values of all voxels while the tested variables remain
 unchanged and we perform a voxel-wise analysis on these permuted
-data. When the data are transformed this way, the relationship between
-the fmri signal and the tested variates are broken while the value of
-the signal in each particular voxel can be observed with the same
-probability than the original value associated to that voxel. Note
-that it is hereby assumed that the signal distribution is the same in
-every voxel. Several data shuffling are performed (typically 10,000)
-while the F-scores for every voxel and every data shuffling is
-stored. The empirical distribution of the F-scores is thus constructed
-(under the hypothesis that there is no relationship between the tested
-variates and the neuroimaging signal, the so-called *null-hypothesis*)
-and we can compare the original F-scores to that distribution: The
-rank of the original F-scores is inversely proportional to their
-associated p-value. The :func:`nilearn.mass_univariate.permuted_ols`
-function returns the p-values computed with a permutation test.
+data. When the data are transformed this way, the relationships
+between the image descriptors and the tested variates are broken while
+the value of the signal in each particular voxel can be observed with
+the same probability than the original value associated to that
+voxel. Note that it is hereby assumed that the signal distribution is
+the same in every voxel. Several data shufflings are performed
+(typically 10,000) while the F-scores for every voxel and every data
+shuffling is stored. The empirical distribution of the F-scores is
+thus constructed (under the hypothesis that there is no relationship
+between the tested variates and the neuroimaging signal, the so-called
+*null-hypothesis*) and we can compare the original F-scores to that
+distribution: The rank of the original F-scores is inversely
+proportional to their associated p-value. The
+:func:`nilearn.mass_univariate.permuted_ols` function returns the
+p-values computed with a permutation test.
 
 .. literalinclude:: ../../plot_haxby_mass_univariate.py
-   :start-after: from nilearn.mass_univariate import permuted_ols
+   :start-after: from nilearn.input_data import NiftiMasker
    :end-before: ### Load Haxby dataset
 
 .. literalinclude:: ../../plot_haxby_mass_univariate.py
@@ -196,7 +197,7 @@ p-values stay smaller than 1). Thus, we control the occurrence of one
 false detection *at most*, the so-called *family-wise error control*.
 A similar control can be performed when performing a permutation test:
 For each permutation, only the maximum value of the F-statistic across
-voxel is considered and is used to build the null distribution. It is
+voxels is considered and is used to build the null distribution. It is
 crucial to assume that the distribution of the signal is the same in
 every voxel so that the F-statistics are comparable. This correction
 strategy is applied in Nilearn's
@@ -207,9 +208,9 @@ strategy is applied in Nilearn's
    :align: center
    :scale: 60
 
-We observe that
-the Bonferroni correction strategy yields results that are a bit more
-conservative that the results obtained with a permutation test.
+We observe that the Bonferroni correction strategy yields results that
+are a bit more conservative than the results obtained with a
+permutation test.
 
 .. [1]
 
