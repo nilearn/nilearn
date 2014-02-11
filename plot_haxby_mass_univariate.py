@@ -39,8 +39,8 @@ conditions_encoded = conditions_encoded[condition_mask]
 ### Mask data #################################################################
 mask_img = nibabel.load(dataset_files.mask)
 process_mask = mask_img.get_data().astype(np.int)
-# we only keep the slice z = 36 to speed up computation
-picked_slice = 37
+# we only keep the slice z = 27 to speed up computation
+picked_slice = 27
 process_mask[..., (picked_slice + 1):] = 0
 process_mask[..., :picked_slice] = 0
 process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
