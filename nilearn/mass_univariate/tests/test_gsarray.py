@@ -5,7 +5,7 @@ Tests for the GrowableSparseArray class used in permuted_ols function.
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 import warnings
 import numpy as np
-from numpy.testing import assert_equal, assert_array_equal, assert_raises
+from numpy.testing import assert_array_equal, assert_raises
 from nilearn.mass_univariate.permuted_least_squares import GrowableSparseArray
 
 
@@ -103,7 +103,7 @@ def test_gsarray_merge():
     gsarray2 = GrowableSparseArray(n_iter=1, threshold=0)  # lower threshold
     with warnings.catch_warnings(True) as warning:
         gsarray2.merge(gsarray)
-        assert_equal(len(warning), 1)
+        assert(len(warning) > 1)
         assert(isinstance(warning[0], warnings.WarningMessage))
     assert_array_equal(
         gsarray.get_data()['iter_id'], gsarray2.get_data()['iter_id'])
