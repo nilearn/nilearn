@@ -18,7 +18,7 @@ def test_gsarray_append_data():
     """
     # Simplest example
     gsarray = GrowableSparseArray(n_iter=1, threshold=0)
-    gsarray.append_iter_data(0, np.ones((5, 1)))
+    gsarray.append(0, np.ones((5, 1)))
     assert_array_equal(gsarray.get_data()['iter_id'], np.zeros(5))
     assert_array_equal(gsarray.get_data()['x_id'], np.zeros(5))
     assert_array_equal(gsarray.get_data()['y_id'], np.arange(5))
@@ -26,7 +26,7 @@ def test_gsarray_append_data():
 
     # Void array
     gsarray = GrowableSparseArray(n_iter=1, threshold=10)
-    gsarray.append_iter_data(0, np.ones((5, 1)))
+    gsarray.append(0, np.ones((5, 1)))
     assert_array_equal(gsarray.get_data()['iter_id'], [])
     assert_array_equal(gsarray.get_data()['x_id'], [])
     assert_array_equal(gsarray.get_data()['y_id'], [])
@@ -35,7 +35,7 @@ def test_gsarray_append_data():
     # Toy example
     gsarray = GrowableSparseArray(n_iter=10, threshold=8)
     for i in range(10):
-        gsarray.append_iter_data(i, (np.arange(10) - i).reshape((-1, 1)))
+        gsarray.append(i, (np.arange(10) - i).reshape((-1, 1)))
     assert_array_equal(gsarray.get_data()['iter_id'], np.array([0., 0., 1.]))
     assert_array_equal(gsarray.get_data()['x_id'], np.zeros(3))
     assert_array_equal(gsarray.get_data()['y_id'], [8, 9, 9])
@@ -51,7 +51,7 @@ def test_gsarray_merge():
     """
     # Basic merge
     gsarray = GrowableSparseArray(n_iter=1, threshold=0)
-    gsarray.append_iter_data(0, np.ones((5, 1)))
+    gsarray.append(0, np.ones((5, 1)))
     gsarray2 = GrowableSparseArray(n_iter=1, threshold=0)
     gsarray2.merge(gsarray)
     assert_array_equal(
@@ -65,9 +65,9 @@ def test_gsarray_merge():
 
     # Merge list
     gsarray = GrowableSparseArray(n_iter=2, threshold=0)
-    gsarray.append_iter_data(0, np.ones((5, 1)))
+    gsarray.append(0, np.ones((5, 1)))
     gsarray2 = GrowableSparseArray(n_iter=2, threshold=0)
-    gsarray2.append_iter_data(1, 2 * np.ones((5, 1)), y_offset=5)
+    gsarray2.append(1, 2 * np.ones((5, 1)), y_offset=5)
     gsarray3 = GrowableSparseArray(n_iter=2, threshold=0)
     gsarray3.merge([gsarray, gsarray2])
     assert_array_equal(gsarray3.get_data()['iter_id'],
@@ -79,7 +79,7 @@ def test_gsarray_merge():
 
     # Test failure case (merging arrays with different n_iter)
     gsarray_wrong = GrowableSparseArray(n_iter=1)
-    gsarray_wrong.append_iter_data(0, np.ones((5, 1)))
+    gsarray_wrong.append(0, np.ones((5, 1)))
     gsarray = GrowableSparseArray(n_iter=2)
     assert_raises(Exception, gsarray.merge, gsarray_wrong)
 
@@ -91,7 +91,7 @@ def test_gsarray_merge():
     # merging a gsarray into another one that has a higher threhold
     # (nothing should be left in the parent array)
     gsarray = GrowableSparseArray(n_iter=1, threshold=0)
-    gsarray.append_iter_data(0, np.ones((5, 1)))
+    gsarray.append(0, np.ones((5, 1)))
     gsarray2 = GrowableSparseArray(n_iter=1, threshold=2)  # higher threshold
     gsarray2.merge(gsarray)
     assert_array_equal(gsarray2.get_data()['score'], [])
@@ -99,7 +99,7 @@ def test_gsarray_merge():
     # merging a gsarray into another one that has a higher threhold
     # (should raises a warning on potential information loss)
     gsarray = GrowableSparseArray(n_iter=1, threshold=1)
-    gsarray.append_iter_data(0, np.ones((5, 1)))
+    gsarray.append(0, np.ones((5, 1)))
     gsarray2 = GrowableSparseArray(n_iter=1, threshold=0)  # lower threshold
     with warnings.catch_warnings(True) as warning:
         gsarray2.merge(gsarray)

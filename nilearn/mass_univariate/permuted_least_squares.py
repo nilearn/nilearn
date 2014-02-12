@@ -201,7 +201,7 @@ class GrowableSparseArray(object):
 
         return
 
-    def append_iter_data(self, iter_id, iter_data, y_offset=0):
+    def append(self, iter_id, iter_data, y_offset=0):
         """Add the data of one estimation (iteration) into the structure.
 
         This is done in a memory-efficient way, by taking into account
@@ -416,7 +416,7 @@ def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     gs_array = GrowableSparseArray(
         n_perm + 1, max_elts=max_elts, threshold=threshold)
     # add original data results as permutation 0
-    gs_array.append_iter_data(
+    gs_array.append(
         0, score_original_data, y_offset=target_vars_chunk_position)
 
     # do the permutations
@@ -439,7 +439,7 @@ def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
         cur_res = f_score(
             testedvars_resid_covars, targetvars_resid_covars,
             covars_orthonormed, lost_dof)
-        gs_array.append_iter_data(
+        gs_array.append(
             i, cur_res, y_offset=target_vars_chunk_position)
 
     params = {'lost_dof': lost_dof, 'threshold': threshold,
