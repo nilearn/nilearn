@@ -52,7 +52,8 @@ fmri_masked = nifti_masker.fit_transform(fmri_img)
 ### Perform massively univariate analysis with permuted OLS ###################
 neg_log_pvals, all_scores, _, params = permuted_ols(
     conditions_encoded, fmri_masked.T,  # + intercept as a covariate by default
-    n_perm=1000)  # only 1000 permutations to reduce computation time
+    n_perm=1000,  # only 1000 permutations to reduce computation time
+    n_jobs=0)  # use all CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals)).get_data()
 

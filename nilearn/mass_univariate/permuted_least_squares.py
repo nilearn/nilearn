@@ -164,34 +164,34 @@ class GrowableSparseArray(object):
             raise Exception(
                 '\'others\' is not a list/tuple of GrowableSparseArray '
                 'or a GrowableSparseArray.')
-        for gsarray in others:
-            if not isinstance(gsarray, GrowableSparseArray):
+        for gs_array in others:
+            if not isinstance(gs_array, GrowableSparseArray):
                 raise Exception('List element is not a GrowableSparseArray.')
-            if gsarray.n_iter != self.n_iter:
+            if gs_array.n_iter != self.n_iter:
                 raise Exception('Cannot merge a structure with %d iterations '
                                 'into a structure with %d iterations.'
-                                % (gsarray.n_iter, self.n_iter))
+                                % (gs_array.n_iter, self.n_iter))
 
         acc_sizes = [self.sizes]
         acc_data = [self.get_data()]
-        for gsarray in others:
+        for gs_array in others:
             # threshold the data to respect self.threshold
-            if gsarray.threshold < self.threshold:
-                gsarray_data_thresholded = (
-                    gsarray.get_data()[gsarray.get_data()['score']
+            if gs_array.threshold < self.threshold:
+                gs_array_data_thresholded = (
+                    gs_array.get_data()[gs_array.get_data()['score']
                                        >= self.threshold])
-                acc_sizes.append([gsarray_data_thresholded.size])
-                acc_data.append(gsarray_data_thresholded)
-            elif gsarray.threshold > self.threshold:
+                acc_sizes.append([gs_array_data_thresholded.size])
+                acc_data.append(gs_array_data_thresholded)
+            elif gs_array.threshold > self.threshold:
                 warnings.warn('Merging a GrowableSparseArray into another '
                               'with a lower threshold: parent array may '
                               'contain less scores than its threshold '
                               'suggests.')
-                acc_sizes.append(gsarray.sizes)
-                acc_data.append(gsarray.get_data())
+                acc_sizes.append(gs_array.sizes)
+                acc_data.append(gs_array.get_data())
             else:
-                acc_sizes.append(gsarray.sizes)
-                acc_data.append(gsarray.get_data())
+                acc_sizes.append(gs_array.sizes)
+                acc_data.append(gs_array.get_data())
 
         self.sizes = np.array(acc_sizes).sum(axis=0)
         self.data = np.concatenate(acc_data)
@@ -234,14 +234,14 @@ class GrowableSparseArray(object):
             new_data['y_id'][:] = y_idx + y_offset
             new_data['score'][:] = iter_data[y_idx, x_idx]
             new_data['iter_id'][:] = iter_id
-            gsarray = GrowableSparseArray(
+            gs_array = GrowableSparseArray(
                 self.n_iter, threshold=self.threshold)
-            gsarray.data = new_data
-            gsarray.sizes = np.zeros((gsarray.n_iter))
-            gsarray.sizes[iter_id] = score_size
-            gsarray.n_elts = score_size
-            gsarray.max_elts = score_size
-            self.merge(gsarray)
+            gs_array.data = new_data
+            gs_array.sizes = np.zeros((gs_array.n_iter))
+            gs_array.sizes[iter_id] = score_size
+            gs_array.n_elts = score_size
+            gs_array.max_elts = score_size
+            self.merge(gs_array)
         else:  # it fits --> updates (efficient)
             self.data['x_id'][self.n_elts:new_n_elts] = x_idx
             self.data['y_id'][self.n_elts:new_n_elts] = y_idx + y_offset
@@ -299,11 +299,11 @@ def f_score(vars1, vars2, covars, lost_dof):
     return score
 
 
-def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
-                          confounding_vars=None, n_perm=10000,
-                          sparsity_threshold=1e-04,
-                          target_vars_chunk_position=0,
-                          intercept_test=True, random_state=0):
+def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
+                           confounding_vars=None, n_perm=10000,
+                           sparsity_threshold=1e-04,
+                           target_vars_chunk_position=0,
+                           intercept_test=True, random_state=0):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -332,7 +332,7 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
 
     Returns
     -------
-    gsarray: GrowableSparseArray,
+    gs_array: GrowableSparseArray,
       Permutation scores corresponding to the current target variates chunk
       (passed as an argument of the function call).
     params: dict,
@@ -351,11 +351,11 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     permuted_ols_on_chunk)
+    ...     _permuted_ols_on_chunk)
     >>> X = np.ones((4, 1))
     >>> Y = np.array([[1, 2, 2, 1]])
     >>> Z = np.zeros((4, 1))
-    >>> res, params = permuted_ols_on_chunk(
+    >>> res, params = _permuted_ols_on_chunk(
     ...     X, Y, Z, n_perm=1, sparsity_threshold=1.)
     >>> res.get_data()[0]
     (0, 0, 0, 18.0)
@@ -413,10 +413,10 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     # max_elts is used to preallocate memory
     max_elts = int(n_regressors * n_descriptors_chunk
                    * np.sqrt(sparsity_threshold) * n_perm)
-    gsarray = GrowableSparseArray(
+    gs_array = GrowableSparseArray(
         n_perm + 1, max_elts=max_elts, threshold=threshold)
     # add original data results as permutation 0
-    gsarray.append_iter_data(
+    gs_array.append_iter_data(
         0, score_original_data, y_offset=target_vars_chunk_position)
 
     # do the permutations
@@ -439,17 +439,17 @@ def permuted_ols_on_chunk(tested_vars, target_vars_chunk,
         cur_res = f_score(
             testedvars_resid_covars, targetvars_resid_covars,
             covars_orthonormed, lost_dof)
-        gsarray.append_iter_data(
+        gs_array.append_iter_data(
             i, cur_res, y_offset=target_vars_chunk_position)
 
     params = {'lost_dof': lost_dof, 'threshold': threshold,
               'n_perm': n_perm, 'n_subj': n_samples}
-    return gsarray, params
+    return gs_array, params
 
 
 def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
                  model_intercept=True, n_perm=10000, sparsity_threshold=None,
-                 random_state=0, n_jobs=0):
+                 random_state=0, n_jobs=1):
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to brain imaging signal
@@ -491,8 +491,10 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
       Seed for random number generator, to have the same permutations
       in each computing units.
     n_jobs: int,
-      Number of parallel workers.
-      if 0 or negative numbers provided, all CPUs are used.
+      Number of parallel workers. Default is 1.
+      If 0 is provided, all CPUs are used.
+      A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
+      must be used.
 
     Returns
     -------
@@ -523,8 +525,10 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
         Australian & New Zealand Journal of Statistics, 43(1), 75-88.
 
     """
-    if n_jobs < 1:
+    if n_jobs == 0:
         n_jobs = joblib.cpu_count()
+    elif n_jobs < 0:
+        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     # TODO: add various checks
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
@@ -535,7 +539,7 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
 
     # automatically set sparsity_threshold if not provided
     if sparsity_threshold is None:
-        sparsity_threshold = 1 / np.sqrt(n_perm * n_descriptors)
+        sparsity_threshold = 1. / np.sqrt(n_perm * n_descriptors)
 
     # check if explanatory variates is intercept (constant) or not
     if (tested_vars.shape[1] == 1 and np.unique(tested_vars).size == 1):
@@ -553,12 +557,13 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
 
     # split target variates into chunks for parallel processing
     # run computation on chunks
-    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(permuted_ols_on_chunk)
-        (tested_vars, imaging_vars[chunk], confounding_vars, n_perm,
-         sparsity_threshold=sparsity_threshold, random_state=random_state,
-         target_vars_chunk_position=chunk.start, intercept_test=intercept_test)
-        for chunk in gen_even_slices(
-            n_descriptors, max(2, min(n_descriptors, n_jobs))))
+    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
+          (tested_vars, imaging_vars[chunk], confounding_vars, n_perm,
+           sparsity_threshold=sparsity_threshold, random_state=random_state,
+           target_vars_chunk_position=chunk.start,
+           intercept_test=intercept_test)
+          for chunk in gen_even_slices(
+            n_descriptors + 1, min(n_descriptors, n_jobs)))
     # reduce results
     all_chunks_results, params = zip(*ret)
     final_results = GrowableSparseArray(
@@ -574,17 +579,15 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
             h0[i] = tmp.max()
         else:
             h0[i] = - np.inf
-    if np.isinf(h0).sum() > 0.75 * n_perm:
+    if np.isinf(h0).sum() > 0.8 * n_perm:
+        print np.isinf(h0).sum(), h0.size
         warnings.warn(
             "Sparsity threshold may be too low, yielding false negative.")
     # convert scores into p-values
     score_orig_data = final_results.get_data()[:final_results.sizes[0]]
     pvals = (n_perm + 1 - np.searchsorted(
                 np.sort(h0), score_orig_data['score'])) / float(n_perm + 1)
-    np.seterr(divide='ignore')  # ignore division-by-zero warning in log10
-    pvals_mat = sparse.coo_matrix(
-        (- np.log10(pvals),
-         (score_orig_data['x_id'],
-          score_orig_data['y_id'])),
-        shape=(n_regressors, n_descriptors), dtype=np.float).todense()
+    pvals_mat = np.zeros(shape=(n_regressors, n_descriptors), dtype=np.float)
+    pvals_mat[score_orig_data['x_id'], score_orig_data['y_id']] = - np.log10(
+        pvals)
     return pvals_mat, score_orig_data, h0, params[0]
