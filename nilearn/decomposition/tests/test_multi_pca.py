@@ -41,8 +41,8 @@ def test_multi_pca():
     nose.tools.assert_raises(ValueError, multi_pca.fit, data[:2])
 
     # Smoke test the use of a masker and without CCA
-    multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_opening=0), do_cca=False,
-                         n_components=3)
+    multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
+                         do_cca=False, n_components=3)
     multi_pca.fit(data[:2])
 
     # Smoke test the transform and inverse_transform

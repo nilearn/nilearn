@@ -21,7 +21,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     ----------
     mask : filename or NiImage, optional
         Mask of the data. If not given, a mask is computed in the fit step.
-        Optional parameters detailed below (mask_connected...) can be set to
+        Optional parameters (mask_args and mask_strategy) can be set to
         fine tune the mask extraction.
 
     sessions : numpy array, optional
@@ -60,21 +60,18 @@ class NiftiMasker(BaseMasker, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_connected : boolean, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
+    mask_strategy: {'background' or 'epi'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, and 'epi' if they
+        are raw EPI images. Depending on this value, the mask will be
+        computed from masking.compute_background_mask or
+        masking.compute_epi_mask. Default is 'background'.
 
-    mask_opening : int, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_lower_cutoff : float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
-
-    mask_upper_cutoff : float, optional
-        If mask is None, this parameter is passed to masking.compute_epi_mask
-        for mask computation. Please see the related documentation for details.
+    mask_args : dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
 
     memory : instance of joblib.Memory or string
         Used to cache the masking process.
@@ -100,6 +97,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     See also
     --------
+    nilearn.masking.compute_background_mask
     nilearn.masking.compute_epi_mask
     nilearn.image.resample_img
     nilearn.masking.apply_mask
@@ -109,8 +107,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
-                 mask_connected=True, mask_opening=2,
-                 mask_lower_cutoff=0.2, mask_upper_cutoff=0.9,
+                 mask_strategy='background',
+                 mask_args=None,
                  memory_level=0, memory=Memory(cachedir=None),
                  verbose=0
                  ):
@@ -126,10 +124,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.t_r = t_r
         self.target_affine = target_affine
         self.target_shape = target_shape
-        self.mask_connected = mask_connected
-        self.mask_opening = mask_opening
-        self.mask_lower_cutoff = mask_lower_cutoff
-        self.mask_upper_cutoff = mask_upper_cutoff
+        self.mask_strategy = mask_strategy
+        self.mask_args = mask_args
 
         self.memory = memory
         self.memory_level = memory_level
@@ -154,18 +150,24 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         # Compute the mask if not given by the user
         if self.mask is None:
+            mask_args = (self.mask_args if self.mask_args is not None
+                         else {})
+            if self.mask_strategy == 'background':
+                compute_mask = masking.compute_background_mask
+            elif self.mask_strategy == 'epi':
+                compute_mask = masking.compute_epi_mask
+            else:
+                raise ValueError("Unknown value of mask_strategy '%s'. "
+                    "Acceptable values are 'background' and 'epi'.")
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
             niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
-            self.mask_img_ = self._cache(masking.compute_epi_mask,
+            self.mask_img_ = self._cache(compute_mask,
                               memory_level=1,
                               ignore=['verbose'])(
                 niimgs,
-                connected=self.mask_connected,
-                opening=self.mask_opening,
-                lower_cutoff=self.mask_lower_cutoff,
-                upper_cutoff=self.mask_upper_cutoff,
-                verbose=(self.verbose - 1))
+                verbose=(self.verbose - 1),
+                **mask_args)
         else:
             if niimgs is not None:
                 warnings.warn('[%s.fit] Generation of a mask has been'

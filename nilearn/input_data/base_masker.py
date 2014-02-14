@@ -157,8 +157,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         params = get_params(NiftiMasker, self)
         # Remove the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
-        for name in ('mask', 'mask_connected', 'mask_lower_cutoff',
-                     'mask_opening', 'mask_upper_cutoff'):
+        for name in ('mask', 'mask_args'):
             params.pop(name, None)
         data, _ = self._cache(filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])(

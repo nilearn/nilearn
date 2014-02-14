@@ -14,7 +14,7 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from ..masking import compute_epi_mask, compute_multi_epi_mask, \
-    unmask, intersect_masks
+    compute_background_mask, unmask, intersect_masks
 
 from .._utils.testing import write_tmp_imgs
 
@@ -25,8 +25,8 @@ np_version = distutils.version.LooseVersion(np_version).version
 
 def test_compute_epi_mask():
     mean_image = np.ones((9, 9, 3))
-    mean_image[3:-3, 3:-3, :] = 10
-    mean_image[5, 5, :] = 100
+    mean_image[3:-2, 3:-2, :] = 10
+    mean_image[5, 5, :] = 11
     mean_image = Nifti1Image(mean_image, np.eye(4))
     mask1 = compute_epi_mask(mean_image, opening=False)
     mask2 = compute_epi_mask(mean_image, exclude_zeros=True,
@@ -36,14 +36,16 @@ def test_compute_epi_mask():
     np.testing.assert_array_equal(mask1.get_data(), mask2.get_data())
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30, 3))
-    mean_image2[:9, :9, :] = mean_image.get_data()
+    mean_image2[3:12, 3:12, :] = mean_image.get_data()
     mean_image2 = Nifti1Image(mean_image2, np.eye(4))
     mask3 = compute_epi_mask(mean_image2, exclude_zeros=True,
                              opening=False)
-    np.testing.assert_array_equal(mask1.get_data(), mask3.get_data()[:9, :9])
+    np.testing.assert_array_equal(mask1.get_data(),
+                                  mask3.get_data()[3:12, 3:12])
     # However, without exclude_zeros, it does
     mask3 = compute_epi_mask(mean_image2, opening=False)
-    assert_false(np.allclose(mask1.get_data(), mask3.get_data()[:9, :9]))
+    assert_false(np.allclose(mask1.get_data(),
+                             mask3.get_data()[3:12, 3:12]))
 
     # Check that we get a ValueError for incorrect shape
     mean_image = np.ones((9, 9))
@@ -60,6 +62,32 @@ def test_compute_epi_mask():
     mean_image = Nifti1Image(mean_image, np.eye(4))
     with warnings.catch_warnings(True) as w:
         compute_epi_mask(mean_image, exclude_zeros=True)
+    assert_equal(len(w), 1)
+    assert_is_instance(w[0].message, masking.MaskWarning)
+
+
+def test_compute_background_mask():
+    for value in (0, np.nan):
+        mean_image = value * np.ones((9, 9, 9))
+        mean_image[3:-3, 3:-3, 3:-3] = 1
+        mask = mean_image == 1
+        mean_image = Nifti1Image(mean_image, np.eye(4))
+        mask1 = compute_background_mask(mean_image, opening=False)
+        np.testing.assert_array_equal(mask1.get_data(),
+                                      mask.astype(np.int8))
+
+    # Check that we get a ValueError for incorrect shape
+    mean_image = np.ones((9, 9))
+    mean_image[3:-3, 3:-3] = 10
+    mean_image[5, 5] = 100
+    mean_image = Nifti1Image(mean_image, np.eye(4))
+    assert_raises(ValueError, compute_background_mask, mean_image)
+
+    # Check that we get a useful warning for empty masks
+    mean_image = np.zeros((9, 9, 9))
+    mean_image = Nifti1Image(mean_image, np.eye(4))
+    with warnings.catch_warnings(True) as w:
+        compute_background_mask(mean_image)
     assert_equal(len(w), 1)
     assert_is_instance(w[0].message, masking.MaskWarning)
 

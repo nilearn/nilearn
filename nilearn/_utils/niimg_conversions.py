@@ -5,6 +5,8 @@ Conversion utilities.
 # License: simplified BSD
 
 import collections
+import copy
+import gc
 
 import numpy as np
 
@@ -68,6 +70,20 @@ def _repr_niimgs(niimgs):
     return repr(niimgs)
 
 
+def _safe_get_data(nifti_image):
+    """ Get the data in the niimg without having a side effect on the
+        Nifti1Image object
+    """
+    if hasattr(nifti_image, '_data_cache') and nifti_image._data_cache is None:
+        # Copy locally the nifti_image to avoid the side effect of data
+        # loading
+        nifti_image = copy.deepcopy(nifti_image)
+    # typically the line below can double memory usage
+    # that's why we invoke a forced call to the garbage collector
+    gc.collect()
+    return nifti_image.get_data()
+
+
 def copy_niimg(niimg):
     """Copy a niimg to a nibabel.Nifti1Image.
 
@@ -124,8 +140,13 @@ def check_niimg(niimg):
     else:
         # it is an object, it should have get_data and get_affine methods
         if not is_a_niimg(niimg):
-            raise TypeError("Given data does not expose"
-                            " get_data or get_affine methods")
+            this_repr = repr(niimg)
+            if len(this_repr) > 20:
+                this_repr = this_repr[:18] + '...'
+            raise TypeError("Data given cannot be converted to a nifti"
+                            " image: this object -'%s'- does not expose"
+                            " get_data or get_affine methods"
+                            % this_repr)
         result = niimg
     return result
 

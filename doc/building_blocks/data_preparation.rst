@@ -51,23 +51,23 @@ transformer so that you can directly plug it into a `scikit-learn
 Custom data loading
 --------------------
 
-Sometimes, some custom preprocessing of data is necessary. In this
-example, we will restrict Haxby dataset (which contains 1452 frames)
-to 150 frames to speed up computation. To do that, we load the dataset
-with :func:`fetch_haxby_simple() <nilearn.datasets.fetch_haxby_simple>`,
-restrict it to 150 frames and build a brand new Nifti-like object to
-give it to the masker. Though it is possible, there is no need to save
-your data in a file to pass it to a :class:`NiftiMasker`. Simply use
-`nibabel <http://nipy.sourceforge.net/nibabel/>`_ to create a
-:ref:`Niimg <niimg>` in memory:
+Sometimes, some custom preprocessing of data is necessary. For instance
+we can restrict a dataset to the first 100 frames. Below, we load
+a resting-state dataset with :func:`fetch_fetch_nyu_rest()
+<nilearn.datasets.fetch_nyu_rest>`, restrict it to 100 frames and
+build a brand new Nifti-like object to give it to the masker. Though it
+is possible, there is no need to save your data in a file to pass it to a
+:class:`NiftiMasker`. Simply use `nibabel
+<http://nipy.sourceforge.net/nibabel/>`_ to create a :ref:`Niimg <niimg>`
+in memory:
 
 
-.. literalinclude:: ../../plot_nifti_advanced.py
-    :start-after: from nilearn import datasets
-    :end-before: # Display helper
+.. literalinclude:: ../../plot_mask_computation.py
+    :start-after: Load NYU resting-state dataset
+    :end-before: # To display the background
 
-Custom Masking
----------------
+Controlling how the mask is computed from the data
+-----------------------------------------------------
 
 In the basic tutorial, we showed how the masker could compute a mask
 automatically, and it has done a good job. But, on some datasets, the
@@ -78,13 +78,13 @@ Mask Visualization
 ...................
 
 Before exploring the subject, we define a helper function to display
-masks. This function will display a background (composed of a mean of
-epi scans) and a mask as a red layer over this background.
+masks. This function will display a background (we can use the mean of
+the input images) and a mask as a red layer over this background.
 
 
-.. literalinclude:: ../../plot_nifti_advanced.py
-    :start-after: haxby_img = nibabel.Nifti1Image(haxby_func, haxby_img.get_affine())
-    :end-before: # Generate mask with default parameters
+.. literalinclude:: ../../plot_mask_computation.py
+    :start-after: # Simple visualization helper
+    :end-before: ###############################################################################
 
 
 Computing the mask
@@ -100,61 +100,64 @@ As an example, we will now try to build a mask based on a dataset from
 scratch. The Haxby dataset will be used since it provides a mask that we
 can use as a reference.
 
-.. figure:: ../auto_examples/images/plot_nifti_advanced_1.png
-    :target: auto_examples/plot_nifti_advanced.html
+.. figure:: ../auto_examples/images/plot_mask_computation_2.png
+    :target: auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
 
 The first step is to generate a mask with default parameters and take
-a look at it. As an indicator, we can, for example, compare the mask
-to original data.
+a look at it. 
 
-.. literalinclude:: ../../plot_nifti_advanced.py
-    :start-after: # Generate mask with default parameters
-    :end-before: # Generate mask with opening
+.. literalinclude:: ../../plot_mask_computation.py
+    :start-after: # Simple mask extraction from EPI images
+    :end-before: # Generate mask with strong opening
 
-With naked eyes, we can see that the outline of the mask is not very
-smooth. To make it less smooth, bypass the opening step
-(*mask_opening=0*).
+____
 
-.. figure:: ../auto_examples/images/plot_nifti_advanced_2.png
-    :target: auto_examples/plot_nifti_advanced.html
+.. figure:: ../auto_examples/images/plot_mask_computation_3.png
+    :target: auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
 
-.. literalinclude:: ../../plot_nifti_advanced.py
-    :start-after: # Generate mask with opening
-    :end-before: # Generate mask with upper cutoff
+We can make the outline of the mask more by increasing the number of
+opening steps (*opening=10*) using the `mask_args` argument of the
+:class:`NiftiMasker`.
 
-Looking at the :class:`NiftiMasker` object, we
-see two interesting parameters: *lower_cutoff* and *upper_cutoff*. The
-algorithm ignores dark (low) values. We can tell the algorithm to ignore
-high values by lowering *upper cutoff*. Default value is 0.9, so we try
-0.8 to lower a bit the threshold and get a larger mask.
+.. literalinclude:: ../../plot_mask_computation.py
+    :start-after: # Generate mask with strong opening
+    :end-before: # Generate mask with a high lower cutoff
 
+____
 
-.. literalinclude:: ../../plot_nifti_advanced.py
-    :start-after: # Generate mask with upper cutoff
-    :end-before: # trended vs detrended
+Looking at the :func:`nilearn.masking.compute_epi_mask` called by the
+:class:`NiftiMasker` object, we see two interesting parameters:
+*lower_cutoff* and *upper_cutoff*. These set the grey-values bounds in
+which the masking algorithm is going to try to find it's threshold (where
+0 is the minimum of the image, and 1 the maximum). Here we raise a lot
+the lower cutoff, and thus force the masking algorithm to select only
+voxels that are very light on the EPI image.
 
-.. figure:: ../auto_examples/images/plot_nifti_advanced_3.png
-    :target: ../auto_examples/plot_nifti_advanced.html
-    :align: center
+.. figure:: ../auto_examples/images/plot_mask_computation_4.png
+    :target: ../auto_examples/plot_mask_computation.html
+    :align: right
     :scale: 50%
 
-The resulting mask seems to be correct. Compared to the original one,
-it is very close.
+
+.. literalinclude:: ../../plot_mask_computation.py
+    :start-after: # Generate mask with a high lower cutoff
+    :end-before: ################################################################################
+
 
 .. note::
 
     The full example described in this section can be found here:
-    :doc:`plot_nifti_advanced.py <../auto_examples/plot_nifti_advanced>`.
+    :doc:`plot_mask_computation.py <../auto_examples/plot_mask_computation>`.
     This one can be relevant too:
     :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
 
-Preprocessing
--------------
+Common data preparation steps
+------------------------------
 
 .. _resampling:
 
