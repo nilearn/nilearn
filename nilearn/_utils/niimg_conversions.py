@@ -142,6 +142,7 @@ def check_niimg(niimg):
         if not is_a_niimg(niimg):
             this_repr = repr(niimg)
             if len(this_repr) > 20:
+                # Shorten the repr to have a useful error message
                 this_repr = this_repr[:18] + '...'
             raise TypeError("Data given cannot be converted to a nifti"
                             " image: this object -'%s'- does not expose"
