@@ -585,7 +585,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     # convert scores into p-values
     score_orig_data = final_results.get_data()[:final_results.sizes[0]]
     pvals = (n_perm + 1 - np.searchsorted(
-                np.sort(h0), score_orig_data['score'])) / float(n_perm + 1)
+                np.sort(h0), score_orig_data['score'])) / float(n_perm)
     pvals_mat = np.zeros(shape=(n_regressors, n_descriptors), dtype=np.float)
     pvals_mat[score_orig_data['x_id'], score_orig_data['y_id']] = - np.log10(
         pvals)
