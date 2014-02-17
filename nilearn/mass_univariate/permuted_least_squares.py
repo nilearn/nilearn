@@ -515,13 +515,15 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         Australian & New Zealand Journal of Statistics, 43(1), 75-88.
 
     """
-    if n_jobs == 0:
+    if n_jobs == 0:  # invalid according to joblib's conventions
         raise ValueError("'n_jobs == 0' is not a valid choice. "
                          "Please provide a positive number of CPUs, or -1 "
                          "for all CPUs, or a negative number (-i) for "
                          "'all but (i-1)' CPUs (joblib conventions).")
     elif n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
+    else:
+        n_jobs = min(n_jobs, joblib.cpu_count())
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
         raise ValueError("'target_vars' should be a 2D array. "
