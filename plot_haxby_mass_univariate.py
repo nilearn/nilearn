@@ -38,22 +38,16 @@ conditions_encoded = conditions_encoded[condition_mask]
 
 ### Mask data #################################################################
 mask_img = nibabel.load(dataset_files.mask)
-process_mask = mask_img.get_data().astype(np.int)
-# we only keep the slice z = 27 to speed up computation
-picked_slice = 27
-process_mask[..., (picked_slice + 1):] = 0
-process_mask[..., :picked_slice] = 0
-process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 nifti_masker = NiftiMasker(
-    mask=process_mask_img,
+    mask=mask_img,
     memory='nilearn_cache', memory_level=1)  # cache options
 fmri_masked = nifti_masker.fit_transform(fmri_img)
 
 ### Perform massively univariate analysis with permuted OLS ###################
 neg_log_pvals, all_scores, _, params = permuted_ols(
-    conditions_encoded, fmri_masked.T,  # + intercept as a covariate by default
-    n_perm=1000,  # only 1000 permutations to reduce computation time
-    n_jobs=0)  # use all CPUs
+    conditions_encoded, fmri_masked,  # + intercept as a covariate by default
+    n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals)).get_data()
 
@@ -76,6 +70,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 mean_fmri = fmri_img.get_data().mean(axis=-1)
 
 # Various plotting parameters
+picked_slice = 27  # plotted slice
 vmin = -np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_bonferroni))
 grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
@@ -85,10 +80,10 @@ grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
 
 # Plot thresholded F-scores map
 ax = grid[0]
-process_mask_bonf = process_mask.copy()
-process_mask_bonf[neg_log_pvals_bonferroni_unmasked < vmin] = 0
+mask_bonf = np.asarray(mask_img.get_data().copy())
+mask_bonf[neg_log_pvals_bonferroni_unmasked < vmin] = 0
 p_ma = np.ma.array(neg_log_pvals_bonferroni_unmasked,
-                   mask=np.logical_not(process_mask_bonf))
+                   mask=np.logical_not(mask_bonf))
 ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
@@ -98,9 +93,10 @@ ax.axis('off')
 
 # Plot permutation p-values map
 ax = grid[1]
-process_mask[neg_log_pvals_unmasked < vmin] = 0
+mask = np.asarray(mask_img.get_data().copy())
+mask[neg_log_pvals_unmasked < vmin] = 0
 p_ma = np.ma.array(neg_log_pvals_unmasked,
-                   mask=np.logical_not(process_mask))
+                   mask=np.logical_not(mask))
 ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
@@ -109,5 +105,4 @@ ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(permutations)')
 ax.axis('off')
 
 grid[0].cax.colorbar(im)
-plt.draw()
 plt.show()

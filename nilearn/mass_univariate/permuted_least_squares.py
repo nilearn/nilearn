@@ -6,7 +6,7 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 # refactorized by Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
 import numpy as np
-from scipy import sparse, linalg, stats
+from scipy import linalg, stats
 from sklearn.utils import gen_even_slices, check_random_state
 import sklearn.externals.joblib as joblib
 
@@ -41,29 +41,31 @@ def normalize_matrix_on_axis(m, axis=0):
 
     """
     if m.ndim > 2:
-        raise Exception('Only for 2D array.')
+        raise ValueError('This function only accepts 2D arrays. '
+                         'An array of shape %r was passed.' % m.shape)
 
     if axis == 0:
         ret = m / np.sqrt(np.sum(m ** 2, axis=0))
     elif axis == 1:
         ret = normalize_matrix_on_axis(m.T).T
     else:
-        raise Exception('Invalid axis in normalization.')
+        raise ValueError('Invalid axis in normalization: %r' % axis)
     return np.ascontiguousarray(ret)
 
 
 def orthonormalize_matrix(m, tol=1.e-12):
-    """ Orthonormalize a matrix.
+    """ Orthonormalize a matrix and complete it with zeros to preserve shape.
 
     Parameters
     ----------
     m : numpy array,
-        The matrix to orthonormalize
+      The matrix to orthonormalize
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-        The orthonormalize matrix
+      The orthonormalized matrix. It may be completed with zeros in order
+      to preserve the initial matrix shape.
 
     Examples
     --------
@@ -80,7 +82,7 @@ def orthonormalize_matrix(m, tol=1.e-12):
            [-1.,  0.]])
 
     """
-    U, s, _ = linalg.svd(m, 0)
+    U, s, _ = linalg.svd(m, full_matrices=False)
     n_eig = s[abs(s) > tol].size
     tmp = np.dot(U, np.diag(s))[:, :n_eig]
     n_null_eig = s.size - n_eig
@@ -143,7 +145,7 @@ class GrowableSparseArray(object):
             self.max_elts,
             dtype=[('iter_id', np.int32), ('x_id', np.int32),
                    ('y_id', np.int32), ('score', np.float32)])
-        self.sizes = np.zeros((n_iter))
+        self.sizes = np.zeros(n_iter, dtype=int)
         self.threshold = threshold
 
     def get_data(self):
@@ -161,14 +163,14 @@ class GrowableSparseArray(object):
         if isinstance(others, GrowableSparseArray):
             return self.merge([others])
         if not isinstance(others, list) and not isinstance(others, tuple):
-            raise Exception(
+            raise TypeError(
                 '\'others\' is not a list/tuple of GrowableSparseArray '
                 'or a GrowableSparseArray.')
         for gs_array in others:
             if not isinstance(gs_array, GrowableSparseArray):
-                raise Exception('List element is not a GrowableSparseArray.')
+                raise TypeError('List element is not a GrowableSparseArray.')
             if gs_array.n_iter != self.n_iter:
-                raise Exception('Cannot merge a structure with %d iterations '
+                raise ValueError('Cannot merge a structure with %d iterations '
                                 'into a structure with %d iterations.'
                                 % (gs_array.n_iter, self.n_iter))
 
@@ -198,8 +200,6 @@ class GrowableSparseArray(object):
         self.n_elts = self.sizes.sum()
         self.max_elts = self.n_elts
         self.data = np.sort(self.data, order=['iter_id', 'x_id', 'y_id'])
-
-        return
 
     def append(self, iter_id, iter_data, y_offset=0):
         """Add the data of one estimation (iteration) into the structure.
@@ -237,7 +237,7 @@ class GrowableSparseArray(object):
             gs_array = GrowableSparseArray(
                 self.n_iter, threshold=self.threshold)
             gs_array.data = new_data
-            gs_array.sizes = np.zeros((gs_array.n_iter))
+            gs_array.sizes = np.zeros((gs_array.n_iter), dtype=int)
             gs_array.sizes[iter_id] = score_size
             gs_array.n_elts = score_size
             gs_array.max_elts = score_size
@@ -250,7 +250,6 @@ class GrowableSparseArray(object):
             self.data['iter_id'][self.n_elts:new_n_elts] = iter_id
             self.sizes[iter_id] += score_size
             self.n_elts = new_n_elts
-        return
 
 
 def f_score(vars1, vars2, covars, lost_dof):
@@ -276,15 +275,6 @@ def f_score(vars1, vars2, covars, lost_dof):
       each target variate (in the presence of covars).
 
     """
-    if not vars1.flags['C_CONTIGUOUS']:
-        warnings.warn('explanatory variates not C_CONTIGUOUS.')
-        vars1 = np.ascontiguousarray(vars1)
-    if not vars2.flags['C_CONTIGUOUS']:
-        warnings.warn('target variates not C_CONTIGUOUS.')
-        vars2 = np.ascontiguousarray(vars2)
-    if covars is not None and not covars.flags['C_CONTIGUOUS']:
-        warnings.warn('confounding variates not C_CONTIGUOUS.')
-        covars = np.ascontiguousarray(covars)
     dof = vars2.shape[1] - 1 - lost_dof
     beta_vars2_vars1 = np.dot(vars2, vars1)
     b2 = beta_vars2_vars1 ** 2
@@ -447,17 +437,17 @@ def _permuted_ols_on_chunk(tested_vars, target_vars_chunk,
     return gs_array, params
 
 
-def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
+def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                  model_intercept=True, n_perm=10000, sparsity_threshold=None,
                  random_state=0, n_jobs=1):
     """Massively univariate group analysis with permuted OLS.
 
-    Tested variates are independently fitted to brain imaging signal
-    descriptors according to a linear model solved with an
+    Tested variates are independently fitted to target variates descriptors
+    (e.g. brain imaging signal) according to a linear model solved with an
     Ordinary Least Squares criterion.
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
-    between the tested variates and the imaging variates. A max-type
+    between the tested variates and the target variates. A max-type
     procedure is used to obtain family-wise corrected p-values.
 
     The variates should be given C-contiguous.
@@ -466,7 +456,7 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
     ----------
     tested_vars: array-like, shape=(n_samples, n_regressors)
       Explanatory variates, fitted and tested independently from each others.
-    imaging_vars: array-like, shape=(n_descriptors, n_samples)
+    target_vars: array-like, shape=(n_samples, n_descriptors)
       fMRI data, trying to be explained by explanatory and confounding
       variates.
     confounding_vars: array-like, shape=(n_samples, n_covars)
@@ -526,15 +516,23 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
 
     """
     if n_jobs == 0:
-        n_jobs = joblib.cpu_count()
+        raise ValueError("'n_jobs == 0' is not a valid choice. "
+                         "Please provide a positive number of CPUs, or -1 "
+                         "for all CPUs, or a negative number (-i) for "
+                         "'all but (i-1)' CPUs (joblib conventions).")
     elif n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
-    # TODO: add various checks
+    # make target_vars F-ordered to speed-up computation
+    if target_vars.ndim != 2:
+        raise ValueError("'target_vars' should be a 2D array. "
+                         "An array with %d dimension was passed"
+                         % (target_vars.ndim))
+    target_vars = np.ascontiguousarray(target_vars.T)
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
 
-    n_descriptors = imaging_vars.shape[0]
+    n_descriptors = target_vars.shape[0]
     n_samples, n_regressors = tested_vars.shape
 
     # automatically set sparsity_threshold if not provided
@@ -558,7 +556,7 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
     # split target variates into chunks for parallel processing
     # run computation on chunks
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
-          (tested_vars, imaging_vars[chunk], confounding_vars, n_perm,
+          (tested_vars, target_vars[chunk], confounding_vars, n_perm,
            sparsity_threshold=sparsity_threshold, random_state=random_state,
            target_vars_chunk_position=chunk.start,
            intercept_test=intercept_test)
@@ -572,7 +570,7 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
     final_results.merge(all_chunks_results)
     # get h0
     h0 = np.zeros(n_perm)
-    cum_sizes = final_results.sizes.cumsum().astype(int)
+    cum_sizes = final_results.sizes.cumsum()
     for i in range(n_perm):
         tmp = final_results.get_data()[cum_sizes[i]:cum_sizes[i + 1]]['score']
         if tmp.size > 0:
@@ -580,7 +578,6 @@ def permuted_ols(tested_vars, imaging_vars, confounding_vars=None,
         else:
             h0[i] = - np.inf
     if np.isinf(h0).sum() > 0.8 * n_perm:
-        print np.isinf(h0).sum(), h0.size
         warnings.warn(
             "Sparsity threshold may be too low, yielding false negative.")
     # convert scores into p-values

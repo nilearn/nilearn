@@ -159,7 +159,7 @@ F-scores can be converted into p-values using a reference theoretical
 distribution, which is known under specific assumptions. In practice,
 neuroimaging signal has a complex structure that might not match these
 assumptions. An exact, non-parametric *permutation test* can be
-performed as an alternative to the analytic F-test: We exchange the
+performed as an alternative to the analytic F-test: We swap the
 signal values of all voxels while the tested variables remain
 unchanged and we perform a voxel-wise analysis on these permuted
 data. When the data are transformed this way, the relationships
@@ -167,9 +167,9 @@ between the image descriptors and the tested variates are broken while
 the value of the signal in each particular voxel can be observed with
 the same probability than the original value associated to that
 voxel. Note that it is hereby assumed that the signal distribution is
-the same in every voxel. Several data shufflings are performed
+the same in every voxel. Several data permutationss are performed
 (typically 10,000) while the F-scores for every voxel and every data
-shuffling is stored. The empirical distribution of the F-scores is
+permutation is stored. The empirical distribution of the F-scores is
 thus constructed (under the hypothesis that there is no relationship
 between the tested variates and the neuroimaging signal, the so-called
 *null-hypothesis*) and we can compare the original F-scores to that
@@ -208,9 +208,9 @@ strategy is applied in Nilearn's
    :align: center
    :scale: 60
 
-We observe that the Bonferroni correction strategy yields results that
-are a bit more conservative than the results obtained with a
-permutation test.
+We observe that the results obtained with a permutation test are less
+conservative than the ones obtained with a Bonferroni correction
+strategy.
 
 .. [1]
 

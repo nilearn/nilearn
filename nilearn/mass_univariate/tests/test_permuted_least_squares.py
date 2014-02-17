@@ -7,13 +7,119 @@ import os
 import numpy as np
 from scipy import sparse
 from sklearn.utils import check_random_state
+from sklearn.utils.testing import assert_warns
 
-from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
-                           assert_equal)
+from numpy.testing import (assert_equal, assert_almost_equal, assert_raises,
+                           assert_array_equal, assert_array_almost_equal)
 
 from nilearn.mass_univariate import permuted_ols
+from nilearn.mass_univariate.permuted_least_squares import GrowableSparseArray
 
 from nilearn._utils.fixes import f_regression
+
+
+## Tests for the GrowableSparseArray class used in permuted_ols function. #####
+def test_gsarray_append_data():
+    """This function tests GrowableSparseArray creation and filling.
+
+    It is especially important to check that the threshold is respected
+    and that the structure is robust to threshold choice.
+
+    """
+    # Simplest example
+    gsarray = GrowableSparseArray(n_iter=1, threshold=0)
+    gsarray.append(0, np.ones((5, 1)))
+    assert_array_equal(gsarray.get_data()['iter_id'], np.zeros(5))
+    assert_array_equal(gsarray.get_data()['x_id'], np.zeros(5))
+    assert_array_equal(gsarray.get_data()['y_id'], np.arange(5))
+    assert_array_equal(gsarray.get_data()['score'], np.ones(5))
+
+    # Empty array
+    gsarray = GrowableSparseArray(n_iter=1, threshold=10)
+    gsarray.append(0, np.ones((5, 1)))
+    assert_array_equal(gsarray.get_data()['iter_id'], [])
+    assert_array_equal(gsarray.get_data()['x_id'], [])
+    assert_array_equal(gsarray.get_data()['y_id'], [])
+    assert_array_equal(gsarray.get_data()['score'], [])
+
+    # Toy example
+    gsarray = GrowableSparseArray(n_iter=10, threshold=8)
+    for i in range(10):
+        gsarray.append(i, (np.arange(10) - i).reshape((-1, 1)))
+    assert_array_equal(gsarray.get_data()['iter_id'], np.array([0., 0., 1.]))
+    assert_array_equal(gsarray.get_data()['x_id'], np.zeros(3))
+    assert_array_equal(gsarray.get_data()['y_id'], [8, 9, 9])
+    assert_array_equal(gsarray.get_data()['score'], [8., 9., 8.])
+
+
+def test_gsarray_merge():
+    """This function tests GrowableSparseArray merging.
+
+    Because of the specific usage of GrowableSparseArrays, only a reduced
+    number of manipulations has been implemented.
+
+    """
+    # Basic merge
+    gsarray = GrowableSparseArray(n_iter=1, threshold=0)
+    gsarray.append(0, np.ones((5, 1)))
+    gsarray2 = GrowableSparseArray(n_iter=1, threshold=0)
+    gsarray2.merge(gsarray)
+    assert_array_equal(gsarray.get_data()['iter_id'],
+                       gsarray2.get_data()['iter_id'])
+    assert_array_equal(gsarray.get_data()['x_id'],
+                       gsarray2.get_data()['x_id'])
+    assert_array_equal(gsarray.get_data()['y_id'],
+                       gsarray2.get_data()['y_id'])
+    assert_array_equal(gsarray.get_data()['score'],
+                       gsarray2.get_data()['score'])
+
+    # Merge list
+    gsarray = GrowableSparseArray(n_iter=2, threshold=0)
+    gsarray.append(0, np.ones((5, 1)))
+    gsarray2 = GrowableSparseArray(n_iter=2, threshold=0)
+    gsarray2.append(1, 2 * np.ones((5, 1)), y_offset=5)
+    gsarray3 = GrowableSparseArray(n_iter=2, threshold=0)
+    gsarray3.merge([gsarray, gsarray2])
+    assert_array_equal(gsarray3.get_data()['iter_id'],
+                       np.array([0.] * 5 + [1.] * 5))
+    assert_array_equal(gsarray3.get_data()['x_id'], np.zeros(10))
+    assert_array_equal(gsarray3.get_data()['y_id'], np.arange(10))
+    assert_array_equal(gsarray3.get_data()['score'],
+                       np.array([1.] * 5 + [2.] * 5))
+
+    # Test failure case (merging arrays with different n_iter)
+    gsarray_wrong = GrowableSparseArray(n_iter=1)
+    gsarray_wrong.append(0, np.ones((5, 1)))
+    gsarray = GrowableSparseArray(n_iter=2)
+    assert_raises(Exception, gsarray.merge, gsarray_wrong)
+
+    # Test failure case (merge a numpy array)
+    gsarray = GrowableSparseArray(n_iter=1)
+    assert_raises(Exception, gsarray.merge, np.ones(5))
+
+    # Check the threshold is respected when merging
+    # merging a gsarray into another one that has a higher threhold
+    # (nothing should be left in the parent array)
+    gsarray = GrowableSparseArray(n_iter=1, threshold=0)
+    gsarray.append(0, np.ones((5, 1)))
+    gsarray2 = GrowableSparseArray(n_iter=1, threshold=2)  # higher threshold
+    gsarray2.merge(gsarray)
+    assert_array_equal(gsarray2.get_data()['score'], [])
+
+    # merging a gsarray into another one that has a higher threhold
+    # (should raises a warning on potential information loss)
+    gsarray = GrowableSparseArray(n_iter=1, threshold=1)
+    gsarray.append(0, np.ones((5, 1)))
+    gsarray2 = GrowableSparseArray(n_iter=1, threshold=0)  # lower threshold
+    assert_warns(UserWarning, gsarray2.merge, gsarray)
+    assert_array_equal(gsarray.get_data()['iter_id'],
+                       gsarray2.get_data()['iter_id'])
+    assert_array_equal(gsarray.get_data()['x_id'],
+                       gsarray2.get_data()['x_id'])
+    assert_array_equal(gsarray.get_data()['y_id'],
+                       gsarray2.get_data()['y_id'])
+    assert_array_equal(gsarray.get_data()['score'],
+                       gsarray2.get_data()['score'])
 
 
 ### Tests for labels swapping permutation scheme ##############################
@@ -26,13 +132,13 @@ def test_permuted_ols_gstat():
     data = np.load(os.path.join(cur_dir, 'testing_data.npz'))
     n_perm = data['n_perm']
     tested_vars = data['x']
-    imaging_vars = np.vstack((data['y_1'], data['y_2']))
+    imaging_vars = np.vstack((data['y_1'], data['y_2'])).T
     confounding_vars = data['z']
 
     # Run permuted OLS
     pvals, h1, h0, params = permuted_ols(
         tested_vars, imaging_vars, confounding_vars, model_intercept=False,
-        n_perm=n_perm, sparsity_threshold=0.5, n_jobs=1)
+        n_perm=n_perm, sparsity_threshold=0.5)
 
     # Load data to compare to
     ar = np.load(os.path.join(cur_dir, 'res_gstat_test_MULM_OLS.npz'))
@@ -60,21 +166,21 @@ def test_permuted_ols_sklearn_nocovar(random_state=0):
     fvals, _ = f_regression(target_var, tested_var, center=False)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_var.T, model_intercept=False,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, model_intercept=False,
+        n_perm=0, sparsity_threshold=1.)
     assert_array_almost_equal(fvals, all_scores['score'], decimal=6)
 
     # test with ravelized tested_var
     _, all_scores, _, _ = permuted_ols(
-        np.ravel(tested_var), target_var.T, model_intercept=False,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        np.ravel(tested_var), target_var, model_intercept=False,
+        n_perm=0, sparsity_threshold=1.)
     assert_array_almost_equal(fvals, all_scores['score'], decimal=6)
 
     ### Adds intercept (should be equivalent to centering variates)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_var.T, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     target_var -= target_var.mean(0)
     tested_var -= tested_var.mean(0)
     # scikit-learn F-score
@@ -108,15 +214,15 @@ def test_permuted_ols_statsmodels_withcovar(random_state=0):
     fvals = ols.f_test([[1., 0., 0.]]).fvalue[0]
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_var.T, confounding_vars, model_intercept=False,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, confounding_vars, model_intercept=False,
+        n_perm=0, sparsity_threshold=1.)
     assert_array_almost_equal(fvals, all_scores['score'], decimal=6)
 
     ### Adds intercept
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_var.T, confounding_vars, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, confounding_vars, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     # statsmodels OLS
     confounding_vars = np.hstack((confounding_vars, np.ones((n_samples, 1))))
     ols = OLS(target_var, np.hstack((tested_var, confounding_vars))).fit()
@@ -139,15 +245,15 @@ def test_permuted_ols_sklearn_nocovar_multivariate(random_state=0):
         fvals[i], _ = f_regression(target_vars[:, i], tested_var, center=False)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_vars.T, model_intercept=False,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, model_intercept=False,
+        n_perm=0, sparsity_threshold=1.)
     assert_array_almost_equal(fvals, all_scores['score'], decimal=6)
 
     ### Adds intercept (should be equivalent to centering variates)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_vars.T, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     target_vars -= target_vars.mean(0)
     tested_var -= tested_var.mean(0)
     # scikit-learn F-score
@@ -190,15 +296,15 @@ def test_permuted_ols_statsmodels_withcovar_multivariate(random_state=0):
         fvals[i] = ols.fit().f_test(test_matrix).fvalue[0][0]
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_vars.T, confounding_vars, model_intercept=False,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, confounding_vars, model_intercept=False,
+        n_perm=0, sparsity_threshold=1.)
     assert_almost_equal(fvals, all_scores['score'], decimal=6)
 
     ### Adds intercept
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_vars.T, confounding_vars, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, confounding_vars, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     # statsmodels OLS
     confounding_vars = np.hstack((confounding_vars, np.ones((n_samples, 1))))
     fvals_addintercept = np.empty(n_targets)
@@ -221,7 +327,7 @@ def test_permuted_ols_intercept_gstat():
     data = np.load(os.path.join(cur_dir, 'testing_data.npz'))
     n_perm = data['n_perm']
     tested_vars_intercept = data['x_intercept']
-    imaging_vars = np.vstack((data['y_1'], data['y_2']))
+    imaging_vars = np.vstack((data['y_1'], data['y_2'])).T
     confounding_vars = data['z']
 
     # Run permuted OLS (intercept version)
@@ -229,7 +335,7 @@ def test_permuted_ols_intercept_gstat():
     #  since it would be useless to randomize the tested --constant-- column)
     pvals, h1, h0, params = permuted_ols(
         tested_vars_intercept, imaging_vars, confounding_vars,
-        model_intercept=False, n_perm=n_perm, sparsity_threshold=0.5, n_jobs=1)
+        model_intercept=False, n_perm=n_perm, sparsity_threshold=0.5)
 
     # Load data to compare to
     ar = np.load(os.path.join(
@@ -258,12 +364,12 @@ def test_permuted_ols_intercept_sklearn_nocovar(random_state=0):
     fvals, _ = f_regression(target_var, tested_var, center=False)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_var.T, confounding_vars=None, n_perm=0,
-        sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, confounding_vars=None, n_perm=0,
+        sparsity_threshold=1.)
     # same thing but with model_intercept=True to check it has no effect
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_var.T, confounding_vars=None, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, confounding_vars=None, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     assert_array_almost_equal(fvals, all_scores['score'], decimal=6)
     assert_array_almost_equal(all_scores['score'],
                               all_scores_addintercept['score'], decimal=6)
@@ -294,12 +400,12 @@ def test_permuted_ols_intercept_statsmodels_withcovar(random_state=0):
     fvals = ols.f_test([[1., 0., 0.]]).fvalue[0]
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_var.T, confounding_vars, n_perm=0,
-        sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, confounding_vars, n_perm=0,
+        sparsity_threshold=1.)
     # same thing but with model_intercept=True to check it has no effect
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_var.T, confounding_vars, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_var, confounding_vars, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     assert_array_almost_equal(fvals, all_scores['score'], decimal=6)
     assert_array_almost_equal(all_scores['score'],
                               all_scores_addintercept['score'], decimal=6)
@@ -319,12 +425,12 @@ def test_permuted_ols_intercept_sklearn_nocovar_multivariate(random_state=0):
         fvals[i], _ = f_regression(target_vars[:, i], tested_var, center=False)
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_vars.T, confounding_vars=None, n_perm=0,
-        sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, confounding_vars=None, n_perm=0,
+        sparsity_threshold=1.)
     # same thing but with model_intercept=True to check it has no effect
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_vars.T, confounding_vars=None, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, confounding_vars=None, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     assert_array_almost_equal(fvals, all_scores['score'], decimal=6)
     assert_array_almost_equal(all_scores['score'],
                               all_scores_addintercept['score'], decimal=6)
@@ -362,12 +468,12 @@ def test_permuted_ols_intercept_statsmodels_withcovar_multivariate(
         fvals[i] = ols.fit().f_test(test_matrix).fvalue[0][0]
     # permuted OLS (sparsity_threshold=1. to get all values)
     _, all_scores, _, _ = permuted_ols(
-        tested_var, target_vars.T, confounding_vars, n_perm=0,
-        sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, confounding_vars, n_perm=0,
+        sparsity_threshold=1.)
     # same thing but with model_intercept=True to check it has no effect
     _, all_scores_addintercept, _, _ = permuted_ols(
-        tested_var, target_vars.T, confounding_vars, model_intercept=True,
-        n_perm=0, sparsity_threshold=1., n_jobs=1)
+        tested_var, target_vars, confounding_vars, model_intercept=True,
+        n_perm=0, sparsity_threshold=1.)
     assert_almost_equal(fvals, all_scores['score'], decimal=6)
     assert_array_almost_equal(all_scores['score'],
                               all_scores_addintercept['score'], decimal=6)
