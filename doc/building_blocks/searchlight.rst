@@ -159,10 +159,14 @@ F-scores can be converted into p-values using a reference theoretical
 distribution, which is known under specific assumptions. In practice,
 neuroimaging signal has a complex structure that might not match these
 assumptions. An exact, non-parametric *permutation test* can be
-performed as an alternative to the analytic F-test: We swap the
+performed as an alternative to the analytic F-test: the residuals of
+the model are permuted so as to break any effect and the corresponding
+decision statistic is recomputed. One thus builds the distribution of
+the decision statistic under the hypothesis that there is no
+relationship between the tested variates and the target variates. In neuroimaging, this is generally done by swapping the
 signal values of all voxels while the tested variables remain
-unchanged and we perform a voxel-wise analysis on these permuted
-data. When the data are transformed this way, the relationships
+unchanged [2]_. A voxel-wise analysis is then performed on the permuted
+data. The relationships
 between the image descriptors and the tested variates are broken while
 the value of the signal in each particular voxel can be observed with
 the same probability than the original value associated to that
@@ -219,3 +223,14 @@ strategy.
     Therefore, a small *p-value* indicates that there is a small chance
     of getting this data if no real difference existed, so the observed
     voxel must be significant.
+
+.. [2]
+
+    When the tested variate is a constant (test of the *intercept*)
+    --which corresponds to a one sample test--, no swapping can be
+    performed but one can creates a shuffled distribution by assuming
+    symmetry about some reference value. When this value is zero, ones can
+    randomly swap the sign of the target variates (the imaging
+    signal). This strategy is known as *sign swap*. Nilearn's
+    :func:`nilearn.mass_univariate.permuted_ols` function automatically
+    adopts the suitable strategy according to the input data.

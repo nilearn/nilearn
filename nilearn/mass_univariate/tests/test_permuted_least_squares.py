@@ -374,41 +374,6 @@ def test_permuted_ols_statsmodels_withcovar_multivariate(random_state=0):
 
 
 ### Tests for sign swapping permutation scheme ##############################
-def test_permuted_ols_intercept_gstat():
-    """Compare the results to a former implementation.
-
-    """
-    # Load input data
-    cur_dir = os.path.dirname(os.path.abspath(__file__))
-    data = np.load(os.path.join(cur_dir, 'testing_data.npz'))
-    n_perm = data['n_perm']
-    tested_vars_intercept = data['x_intercept']
-    imaging_vars = np.vstack((data['y_1'], data['y_2'])).T
-    confounding_vars = data['z']
-
-    # Run permuted OLS (intercept version)
-    # (intercept version means we randomly swap the sign of the targets
-    #  since it would be useless to randomize the tested --constant-- column)
-    pvals, h1, h0, params = permuted_ols(
-        tested_vars_intercept, imaging_vars, confounding_vars,
-        model_intercept=False, n_perm=n_perm, sparsity_threshold=0.5)
-
-    # Load data to compare to
-    ar = np.load(os.path.join(
-            cur_dir, 'res_gstat_test_MULM_OLS_intercept.npz'))
-    # comparison
-    assert_almost_equal(ar['h0'], h0)
-    h1_mat = sparse.coo_matrix(
-        (h1['score'], (h1['x_id'], h1['y_id']))).todense()
-    h1_mat_ar = ar['h1']
-    h1_mat_ar = sparse.coo_matrix(
-        (h1_mat_ar['data'],
-         (h1_mat_ar['snp'], h1_mat_ar['vox']))).todense()
-    assert_almost_equal(h1_mat, h1_mat_ar)
-    for param_name, param_value in params.iteritems():
-        assert_equal(param_value, ar['param'].tolist()[param_name])
-
-
 def test_permuted_ols_intercept_sklearn_nocovar(random_state=0):
     rng = check_random_state(random_state)
     # design parameters
