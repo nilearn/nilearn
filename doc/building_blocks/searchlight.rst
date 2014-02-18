@@ -171,7 +171,7 @@ between the image descriptors and the tested variates are broken while
 the value of the signal in each particular voxel can be observed with
 the same probability than the original value associated to that
 voxel. Note that it is hereby assumed that the signal distribution is
-the same in every voxel. Several data permutationss are performed
+the same in every voxel. Several data permutations are performed
 (typically 10,000) while the F-scores for every voxel and every data
 permutation is stored. The empirical distribution of the F-scores is
 thus constructed (under the hypothesis that there is no relationship
