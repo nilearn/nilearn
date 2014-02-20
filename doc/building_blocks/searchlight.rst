@@ -177,8 +177,7 @@ permutation is stored. The empirical distribution of the F-scores is
 thus constructed (under the hypothesis that there is no relationship
 between the tested variates and the neuroimaging signal, the so-called
 *null-hypothesis*) and we can compare the original F-scores to that
-distribution: The rank of the original F-scores is inversely
-proportional to their associated p-value. The
+distribution: The higher the rank of the original F-scores, the less are their associated p-value. The
 :func:`nilearn.mass_univariate.permuted_ols` function returns the
 p-values computed with a permutation test.
 
@@ -226,11 +225,11 @@ strategy.
 
 .. [2]
 
-    When the tested variate is a constant (test of the *intercept*)
+    When the tested variate is a scalar (test of the *intercept*)
     --which corresponds to a one sample test--, no swapping can be
-    performed but one can creates a shuffled distribution by assuming
-    symmetry about some reference value. When this value is zero, ones can
+    performed but one can estimate the null distribution by assuming
+    symmetry about some reference value. When this value is zero, one can
     randomly swap the sign of the target variates (the imaging
-    signal). This strategy is known as *sign swap*. Nilearn's
+    signal). Nilearn's
     :func:`nilearn.mass_univariate.permuted_ols` function automatically
     adopts the suitable strategy according to the input data.
