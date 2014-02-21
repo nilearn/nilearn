@@ -344,7 +344,7 @@ def _permuted_ols_on_chunk(seed, tested_vars, target_vars_chunk,
       Number of permutations.
     sparsity_threshold: float,
       Threshold under which the permutation scores are not stored
-      (because they have no chance to correspond to the max)
+      (because they have no chance to correspond to the max).
     target_vars_chunk_position: int,
       offset corresponding to the target variates chunk position
     intercept_test: boolean,
@@ -530,7 +530,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       (because they have no chance to correspond to the max).
       If None is provided, it is automatically set at best from the problem
       dimensions. However, it may be useful to manually set it for specific
-      needs.
+      needs: Using a higher threshold generally speeds up the algorithm,
+      at the cost of memory usage. On the contrary, a too low threshold
+      choice may result in a slow run.
     random_state: int,
       Seed for random number generator, to have the same permutations
       in each computing units.
