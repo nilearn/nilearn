@@ -8,7 +8,7 @@ from scipy import stats
 from sklearn.utils import check_random_state
 
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
-                           assert_array_less)
+                           assert_array_less, assert_equal)
 
 from nilearn.mass_univariate import permuted_ols
 from nilearn.mass_univariate.permuted_least_squares import (
@@ -136,6 +136,7 @@ def test_permuted_ols_check_h0_noeffect(random_state=0):
         pval, orig_scores, h0 = permuted_ols(
             tested_var, target_var, model_intercept=False,
             n_perm=n_perm, random_state=i)
+        assert_equal(h0.size, n_perm)
         # Kolmogorov-Smirnov test
         kstest_pval = stats.kstest(h0, stats.f(1, n_samples - 1).cdf)[1]
         all_kstest_pvals.append(kstest_pval)

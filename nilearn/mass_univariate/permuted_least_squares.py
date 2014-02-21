@@ -224,7 +224,7 @@ def _permuted_ols_on_chunk(tested_vars, target_vars, confounding_vars=None,
     return h0_fmax_part
 
 
-def convert_to_pvalues(h0_distribution, scores_to_convert):
+def _convert_to_pvalues(h0_distribution, scores_to_convert):
     """Convert a statistic into p-values using its empirical distribution
 
     Parameters
@@ -411,7 +411,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     # parallel computing units perform a reduced number of permutations each
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
-        n_perm_chunks[-1] = n_perm + n_perm % n_jobs
+        n_perm_chunks[-1] += n_perm % n_jobs
     elif n_perm > 0:
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
@@ -422,16 +422,16 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
            covars_orthonormed, n_perm_chunk=n_perm_chunk, lost_dof=lost_dof,
            intercept_test=intercept_test, random_state=0)
           for n_perm_chunk in n_perm_chunks)
-    # reduce results
+    # reduce resultsx
     h0_fmax = np.sort(np.ravel(np.concatenate(ret)))
     # convert scores into negative log10 p-values
     # TODO: to speed this up, we could threshold scores_original_data
     n_scores = n_descriptors * n_regressors
     ravelized_scores = np.ravel(scores_original_data)
-    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(convert_to_pvalues)
+    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_convert_to_pvalues)
           (h0_fmax, ravelized_scores[chunk])
           for chunk in gen_even_slices(
             n_scores + 1, min(n_scores, n_jobs)))
-    pvals = np.ravel(ret).reshape((n_regressors, n_descriptors))
+    pvals = np.concatenate(ret).reshape((n_regressors, n_descriptors))
 
     return pvals, scores_original_data, h0_fmax
