@@ -447,7 +447,7 @@ def _permuted_ols_on_chunk(seed, tested_vars, target_vars_chunk,
     # We use a threshold to sparsify the permutations results since not all
     # the scores have the chance to be retained as the max value at the end
     # we keep scores < threshold
-    threshold = stats.f.isf(sparsity_threshold, 1, n_samples - lost_dof - 1)
+    threshold = stats.f(1, n_samples - lost_dof - 1).isf(sparsity_threshold)
     # We use a special data structure to store the results of the permutations
     # max_elts is used to preallocate memory
     max_elts = int(n_regressors * n_descriptors_chunk
@@ -597,7 +597,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     # automatically set sparsity_threshold if not provided
     if sparsity_threshold is None:
-        sparsity_threshold = 1. / np.sqrt(n_perm * n_descriptors)
+        # 99% probability to have at least one stored result per permutation
+        sparsity_threshold = 1. - (0.01 ** (1. / n_descriptors))
 
     # check if explanatory variates is intercept (constant) or not
     if (tested_vars.shape[1] == 1 and np.unique(tested_vars).size == 1):
