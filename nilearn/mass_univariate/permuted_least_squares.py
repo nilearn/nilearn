@@ -20,12 +20,12 @@ def normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
       The matrix to normalize.
     axis : integer in {0, 1}, optional
-      A valid axis to normalize accross.
+      A valid axis to normalize across.
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-      The normalize matrix
+      The normalized matrix
 
     Examples
     --------
@@ -46,7 +46,7 @@ def normalize_matrix_on_axis(m, axis=0):
                          'An array of shape %r was passed.' % m.shape)
 
     if axis == 0:
-        # transposes are here to preserve the array contiguousity flags
+        # array transposition preserves the contiguity flag of that array
         ret = (m.T / np.sqrt(np.sum(m ** 2, axis=0))[:, np.newaxis]).T
     elif axis == 1:
         ret = normalize_matrix_on_axis(m.T).T
@@ -56,28 +56,30 @@ def normalize_matrix_on_axis(m, axis=0):
 
 
 def orthonormalize_matrix(m, tol=1.e-12):
-    """ Orthonormalize a matrix and complete it with zeros to preserve shape.
+    """ Orthonormalize a matrix.
+
+    Uses a Singular Value Decomposition.
 
     Parameters
     ----------
     m : numpy array,
-      The matrix to orthonormalize
+      The matrix to orthonormalize.
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-      The orthonormalized matrix. It may be completed with zeros in order
-      to preserve the initial matrix shape.
+      The orthonormalized matrix.
 
     Examples
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
     ...     orthonormalize_matrix)
-    >>> X = np.array([[1, 1, 2], [0, 1, 2]])
+    >>> X = np.array([[1, 0], [0, 1], [1, 1]])
     >>> orthonormalize_matrix(X)
-    array([[-0.74145253, -0.67100532,  0.        ],
-           [-0.67100532,  0.74145253,  0.        ]])
+    array([[ -4.08248290e-01,   7.07106781e-01],
+           [ -4.08248290e-01,  -7.07106781e-01],
+           [ -8.16496581e-01,  -1.11022302e-16]])
     >>> X = np.array([[0, 1], [4, 0]])
     >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
@@ -85,10 +87,8 @@ def orthonormalize_matrix(m, tol=1.e-12):
 
     """
     U, s, _ = linalg.svd(m, full_matrices=False)
-    n_eig = np.sum(np.fabs(s) > tol)
-    res = np.zeros(m.shape)
-    res[:, :n_eig] = U[:, :n_eig]  # TODO: filling could be more efficient
-    return res
+    n_eig = np.count_nonzero(s > tol)
+    return np.ascontiguousarray(U[:, :n_eig])
 
 
 class GrowableSparseArray(object):
@@ -273,7 +273,7 @@ def _f_score(vars1, vars2, covars=None, lost_dof=0,
     lost_dof: int, >= 0
       Lost degrees of freedom
     normalized_design: bool,
-      Specify whether the variates have been normalized and orthoganalized
+      Specify whether the variates have been normalized and orthogonalized
       with respect to each other. In such a case, the computation is simpler
       and a lot more efficient.
 
@@ -323,7 +323,7 @@ def _permuted_ols_on_chunk(seed, tested_vars, target_vars_chunk,
                            confounding_vars=None, n_perm=10000,
                            sparsity_threshold=1e-04,
                            target_vars_chunk_position=0,
-                           intercept_test=True, random_state=None):
+                           intercept_test=True):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -375,15 +375,14 @@ def _permuted_ols_on_chunk(seed, tested_vars, target_vars_chunk,
     ...     _permuted_ols_on_chunk)
     >>> X = np.ones((4, 1))
     >>> Y = np.array([[1, 2, 2, 1]]).T
-    >>> Z = np.zeros((4, 1))
     >>> res, params = _permuted_ols_on_chunk(
-    ...     0, X, Y, Z, n_perm=1, sparsity_threshold=1.)
+    ...     0, X, Y, n_perm=1, sparsity_threshold=1.)
     >>> res.get_data()[0]
-    (0, 0, 0, 18.0)
+    (0, 0, 0, 27.0)
     >>> res.get_data()[1]
-    (1, 0, 0, 0.2222222238779068)
+    (1, 0, 0, 0.3333333432674408)
     >>> params
-    {'lost_dof': 1, 'threshold': 0.0, 'n_perm': 1, 'n_subj': 4}
+    {'lost_dof': 0, 'threshold': 0.0, 'n_perm': 1, 'n_subj': 4}
 
     """
     # initialize the seed of the random generator

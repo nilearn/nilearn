@@ -214,91 +214,82 @@ def test_f_score_withcovar(random_state=0):
 
 
 ### General tests for permuted_ols function ###################################
-def test_permuted_ols_check_h0(random_state=0):
+def test_permuted_ols_check_h0_noeffect(random_state=0):
     rng = check_random_state(random_state)
     # design parameters
-    n_samples = 50
+    n_samples = 1000
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
     tested_var = np.arange(n_samples).reshape((-1, 1))
+    tested_var_not_centered = tested_var.copy()
+    tested_var -= tested_var.mean(0)  # centered
     # permuted OLS (sparsity_threshold=1. to get all values)
     # We check that h0 is close to the theoretical distribution, which is
     # known for this simple design (= F(1, 1 - n_samples)).
-    # We use the Mean Squared Error (MSE) between cdf for that purpose.
     perm_ranges = [10, 100, 1000]  # test various number of permutations
+    # we use two models (with and without intercept modelling)
+    all_kstest_pvals = []
+    all_kstest_pvals_intercept = []
+    all_kstest_pvals_intercept2 = []
+    # we compute the Mean Squared Error between cumulative Density Function
+    # as a proof of consistency of the permutation algorithm
     all_mse = []
+    all_mse_intercept = []
+    all_mse_intercept2 = []
     for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
+        ### Case no. 1: no intercept in the model
         pval, orig_scores, h0, _ = permuted_ols(
             tested_var, target_var, model_intercept=False,
             n_perm=n_perm, sparsity_threshold=1., random_state=i)
         assert_array_less(pval, 1.)  # pval should not be significant
-        # comparing h0 cumulative density function to F(1, n_samples - 1).cdf()
-        # (we consider only one target so in each permutation, the max is equal
-        #  to the single available value)
+        # Kolmogorov-Smirnov test
+        kstest_pval = stats.kstest(h0, stats.f(1, n_samples - 1).cdf)[1]
+        all_kstest_pvals.append(kstest_pval)
         mse = np.mean(
             (stats.f(1, n_samples - 1).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size)) ** 2)
+             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
         all_mse.append(mse)
-    all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
-    # for a given n_perm, check that we have a mse below a specific threshold
-    assert_array_less(
-        all_mse - np.array([0.1, 0.05, 0.005]).reshape((-1, 1)), 0)
-    # consistency of the algorithm: the more permutations, the less the mse
-    assert_array_less(np.diff(all_mse.mean(1)), 0)
-
-    # create design with strong effect
-    target_var = np.arange(n_samples, dtype=float).reshape((-1, 1))
-    target_var += rng.randn(n_samples, 1)
-    tested_var = np.arange(n_samples).reshape((-1, 1))
-    # permuted OLS (sparsity_threshold=1. to get all values)
-    n_perm = 1000
-    pval, orig_scores, h0, _ = permuted_ols(
-        tested_var, target_var, model_intercept=False,
-        n_perm=n_perm, sparsity_threshold=1., random_state=random_state)
-    assert_array_equal(pval, np.log10(n_perm + 1))  # pval should be large
-
-
-def test_permuted_ols_intercept_check_h0(random_state=0):
-    rng = check_random_state(random_state)
-    # design parameters
-    n_samples = 50
-    # create dummy design with no effect
-    target_var = rng.randn(n_samples, 1)
-    tested_var = np.ones((n_samples, 1))
-    # permuted OLS (sparsity_threshold=1. to get all values)
-    # We check that h0 is close to the theoretical distribution, which is
-    # known for this simple design (= F(1, 1 - n_samples)).
-    # We use the Mean Squared Error (MSE) between cdf for that purpose.
-    perm_ranges = [10, 100, 1000]  # test various number of permutations
-    all_mse = []
-    for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
+        ### Case no. 2: intercept in the model
         pval, orig_scores, h0, _ = permuted_ols(
-            tested_var, target_var, model_intercept=False,
+            tested_var, target_var, model_intercept=True,
             n_perm=n_perm, sparsity_threshold=1., random_state=i)
         assert_array_less(pval, 1.)  # pval should not be significant
-        # comparing h0 cumulative density function to F(1, n_samples - 1).cdf()
-        # (we consider only one target so in each permutation, the max is equal
-        #  to the single available value)
+        # Kolmogorov-Smirnov test
+        kstest_pval = stats.kstest(h0, stats.f(1, n_samples - 2).cdf)[1]
+        all_kstest_pvals_intercept.append(kstest_pval)
         mse = np.mean(
-            (stats.f(1, n_samples - 1).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size)) ** 2)
-        all_mse.append(mse)
+            (stats.f(1, n_samples - 2).cdf(np.sort(h0))
+             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+        all_mse_intercept.append(mse)
+        ### Case no. 3: intercept in the model, no centering of tested vars
+        pval, orig_scores, h0, _ = permuted_ols(
+            tested_var_not_centered, target_var, model_intercept=True,
+            n_perm=n_perm, sparsity_threshold=1., random_state=i)
+        assert_array_less(pval, 1.)  # pval should not be significant
+        # Kolmogorov-Smirnov test
+        kstest_pval = stats.kstest(h0, stats.f(1, n_samples - 2).cdf)[1]
+        all_kstest_pvals_intercept2.append(kstest_pval)
+        mse = np.mean(
+            (stats.f(1, n_samples - 2).cdf(np.sort(h0))
+             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+        all_mse_intercept2.append(mse)
+    all_kstest_pvals = np.array(all_kstest_pvals).reshape(
+        (len(perm_ranges), -1))
+    all_kstest_pvals_intercept = np.array(all_kstest_pvals_intercept).reshape(
+        (len(perm_ranges), -1))
     all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
-    # for a given n_perm, check that we have a mse below a specific threshold
-    assert_array_less(
-        all_mse - np.array([0.1, 0.01, 0.001]).reshape((-1, 1)), 0)
-    # consistency of the algorithm: the more permutations, the less the mse
+    all_mse_intercept = np.array(all_mse_intercept).reshape(
+        (len(perm_ranges), -1))
+    all_mse_intercept2 = np.array(all_mse_intercept2).reshape(
+        (len(perm_ranges), -1))
+    # check that a difference between distributions is not rejected by KS test
+    assert_array_less(0.01, all_kstest_pvals)
+    assert_array_less(0.01, all_kstest_pvals_intercept)
+    assert_array_less(0.01, all_kstest_pvals_intercept2)
+    # consistency of the algorithm: the more permutations, the less the MSE
     assert_array_less(np.diff(all_mse.mean(1)), 0)
-
-    # create design with strong effect
-    target_var = np.ones((n_samples, 1)) + rng.randn(n_samples, 1)
-    tested_var = np.ones((n_samples, 1))
-    # permuted OLS (sparsity_threshold=1. to get all values)
-    n_perm = 1000
-    pval, orig_scores, h0, _ = permuted_ols(
-        tested_var, target_var, model_intercept=False,
-        n_perm=n_perm, sparsity_threshold=1., random_state=random_state)
-    assert_array_equal(pval, np.log10(n_perm + 1))  # pval should be large
+    assert_array_less(np.diff(all_mse_intercept.mean(1)), 0)
+    assert_array_less(np.diff(all_mse_intercept2.mean(1)), 0)
 
 
 ### Tests for labels swapping permutation scheme ##############################

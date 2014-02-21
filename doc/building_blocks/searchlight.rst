@@ -177,7 +177,7 @@ permutation is stored. The empirical distribution of the F-scores is
 thus constructed (under the hypothesis that there is no relationship
 between the tested variates and the neuroimaging signal, the so-called
 *null-hypothesis*) and we can compare the original F-scores to that
-distribution: The higher the rank of the original F-scores, the less are their associated p-value. The
+distribution: The higher the rank of the original F-score, the smaller is its associated p-value. The
 :func:`nilearn.mass_univariate.permuted_ols` function returns the
 p-values computed with a permutation test.
 
