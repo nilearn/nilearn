@@ -196,7 +196,7 @@ phenomenon that is known to statisticians as the *multiple comparisons
 problem*. It is therefore recommended to correct the p-values to take
 into account the multiple tests. *Bonferroni correction* consists of
 multiplying the p-values by the number of tests (while making sure the
-p-values stay smaller than 1). Thus, we control the occurrence of one
+p-values remain smaller than 1). Thus, we control the occurrence of one
 false detection *at most*, the so-called *family-wise error control*.
 A similar control can be performed when performing a permutation test:
 For each permutation, only the maximum value of the F-statistic across
