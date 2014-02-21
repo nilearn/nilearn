@@ -524,7 +524,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     n_perm: int,
       Number of permutations to perform.
       Permutations are costly but the more are performed, the more precision
-      we get in the pvalues estimation.
+      one gets in the p-values estimation.
     sparsity_threshold: float,
       Threshold under which the permutation scores are not stored
       (because they have no chance to correspond to the max).
