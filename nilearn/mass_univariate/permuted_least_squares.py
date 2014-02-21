@@ -7,7 +7,7 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 import warnings
 import numpy as np
 from scipy import linalg
-from sklearn.utils import check_random_state
+from sklearn.utils import check_random_state, gen_even_slices
 import sklearn.externals.joblib as joblib
 
 
@@ -224,6 +224,31 @@ def _permuted_ols_on_chunk(tested_vars, target_vars, confounding_vars=None,
     return h0_fmax_part
 
 
+def convert_to_pvalues(h0_distribution, scores_to_convert):
+    """Convert a statistic into p-values using its empirical distribution
+
+    Parameters
+    ----------
+    h0_distribution: array-like, shape=(n_realizations, )
+      The empirical distribution of the statistic to be converted into
+      p-values.
+    scores_to_convert: array-like, shape=(n_scores, )
+      The values of the statistic to be converted into p-values according to
+      their rank in h0_distribution.
+
+    Returns
+    -------
+    pvals: numpy.array, shape=(n_scores, )
+      Negative log10-pvalues corresponding to the scores confronted to their
+      distribution (h0_distribution).
+
+    """
+    pvals = ((h0_distribution.size + 1
+              - np.searchsorted(np.sort(h0_distribution), scores_to_convert))
+             / float(h0_distribution.size + 1))
+    return - np.log10(pvals)
+
+
 def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                  model_intercept=True, n_perm=10000,
                  random_state=None, n_jobs=1):
@@ -279,14 +304,14 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       Negative log10 p-values associated with the significance test of the
       n_regressors explanatory variates against the n_descriptors target
       variates. Family-wise corrected p-values.
-    score_orig_data: GrowableSparseArray object,
+    score_orig_data: numpy.ndarray, shape=(n_regressors, n_descriptors)
       F-statistic associated with the significance test of the n_regressors
       explanatory variates against the n_descriptors target variates.
       The ranks of the scores into the h0 distribution correspond to the
       p-values.
     h0_fmax: array-like, shape=(n_perm, )
       Distribution of the (max) F-statistic under the null hypothesis
-      (obtained from the permutations).
+      (obtained from the permutations). Array is sorted.
 
     References
     ----------
@@ -391,17 +416,20 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
         return np.asarray([]), scores_original_data,  np.asarray([])
+
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
           (testedvars_resid_covars, targetvars_resid_covars.T,
            covars_orthonormed, n_perm_chunk=n_perm_chunk, lost_dof=lost_dof,
            intercept_test=intercept_test, random_state=0)
           for n_perm_chunk in n_perm_chunks)
     # reduce results
-    h0_fmax = np.ravel(ret)
-    # convert scores into p-values
-    pvals = ((n_perm + 1
-              - np.searchsorted(np.sort(h0_fmax), scores_original_data))
-             / float(n_perm + 1))
-    pvals = (- np.log10(pvals)).reshape((n_regressors, n_descriptors))
+    h0_fmax = np.sort(np.ravel(ret))
+    # convert scores into negative log10 p-values
+    # TODO: to speed this up, we could threshold scores_original_data
+    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(convert_to_pvalues)
+          (h0_fmax, scores_original_data[chunk])
+          for chunk in gen_even_slices(
+            n_regressors + 1, min(n_regressors, n_jobs)))
+    pvals = np.ravel(ret).reshape((n_regressors, n_descriptors))
 
     return pvals, scores_original_data, h0_fmax
