@@ -423,13 +423,15 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
            intercept_test=intercept_test, random_state=0)
           for n_perm_chunk in n_perm_chunks)
     # reduce results
-    h0_fmax = np.sort(np.ravel(ret))
+    h0_fmax = np.sort(np.ravel(np.concatenate(ret)))
     # convert scores into negative log10 p-values
     # TODO: to speed this up, we could threshold scores_original_data
+    n_scores = n_descriptors * n_regressors
+    ravelized_scores = np.ravel(scores_original_data)
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(convert_to_pvalues)
-          (h0_fmax, scores_original_data[chunk])
+          (h0_fmax, ravelized_scores[chunk])
           for chunk in gen_even_slices(
-            n_regressors + 1, min(n_regressors, n_jobs)))
+            n_scores + 1, min(n_scores, n_jobs)))
     pvals = np.ravel(ret).reshape((n_regressors, n_descriptors))
 
     return pvals, scores_original_data, h0_fmax
