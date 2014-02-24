@@ -177,7 +177,7 @@ def _permuted_ols_on_chunk(tested_vars, target_vars, confounding_vars=None,
     intercept_test: boolean,
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise). See [1]
-    random_state: int,
+    random_state: int or None,
       Seed for random number generator, to have the same permutations
       in each computing units.
 
@@ -289,7 +289,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       Number of permutations to perform.
       Permutations are costly but the more are performed, the more precision
       one gets in the p-values estimation.
-    random_state: int,
+    random_state: int or None,
       Seed for random number generator, to have the same permutations
       in each computing units.
     n_jobs: int,

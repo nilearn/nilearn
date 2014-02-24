@@ -1,1 +1,1 @@
-from permuted_least_squares import permuted_ols
+from .permuted_least_squares import permuted_ols
