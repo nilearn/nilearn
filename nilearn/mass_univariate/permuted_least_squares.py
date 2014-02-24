@@ -422,7 +422,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
            covars_orthonormed, n_perm_chunk=n_perm_chunk, lost_dof=lost_dof,
            intercept_test=intercept_test, random_state=0)
           for n_perm_chunk in n_perm_chunks)
-    # reduce resultsx
+    # reduce results
     h0_fmax = np.sort(np.ravel(np.concatenate(ret)))
     # convert scores into negative log10 p-values
     # TODO: to speed this up, we could threshold scores_original_data
