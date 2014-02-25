@@ -177,7 +177,7 @@ def _crop_img_to(niimg, slices, copy=True):
     return new_niimg
 
 
-def crop_img(niimg, copy=True):
+def crop_img(niimg, rtol=1e-6, copy=True):
     """Crops niimg as much as possible
 
     Will crop niimg, removing as many zero entries as possible
@@ -190,8 +190,13 @@ def crop_img(niimg, copy=True):
     niimg: niimg
         niimg to be cropped.
 
+    rtol: float
+        relative tolerance (with respect to maximal absolute
+        value of the image), under which values are considered
+        negligeable and thus croppable.
+
     copy: boolean
-        Specifies whether cropped data is copied or not
+        Specifies whether cropped data is copied or not.
 
     Returns
     =======
@@ -201,8 +206,10 @@ def crop_img(niimg, copy=True):
 
     niimg = check_niimg(niimg)
     data = niimg.get_data()
+    absdata = np.abs(data)
+    infty_norm = absdata.max()
 
-    coords = np.array(np.where(data != 0))
+    coords = np.array(np.where(absdata > rtol * infty_norm))
     start = coords.min(axis=1)
     end = coords.max(axis=1) + 1
 

@@ -103,3 +103,20 @@ def test_crop_img():
     assert_true((cropped_niimg.get_data()[1:-1, 1:-1, 1:-1] == 1).all())
     assert_true(cropped_niimg.shape == (2 + 2, 4 + 2, 3 + 2))
 
+
+def test_crop_threshold_tolerance():
+    """Check to see whether crop can skip values that are extremely
+    close to zero in a relative sense and will crop them away"""
+
+    data = np.zeros([10, 14, 12])
+    data[3:7, 3:7, 5:9] = 1.
+    active_shape = (4 + 2, 4 + 2, 4 + 2)  # add padding
+
+    # add an infinitesimal outside this block
+    data[3, 3, 3] = 1e-12
+    affine = np.eye(4)
+    niimg = nibabel.Nifti1Image(data, affine=affine)
+
+    cropped_niimg = image.crop_img(niimg)
+    assert_true(cropped_niimg.shape == active_shape)
+
