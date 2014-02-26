@@ -154,18 +154,20 @@ def _f_score(vars1, vars2, covars=None, lost_dof=0,
             rss = (1 - a2[:, np.newaxis] - b2)
         score = b2 / rss
         score *= dof
-        return score
+        return np.asfortranarray(score)
 
 
-def _permuted_ols_on_chunk(tested_vars, target_vars, confounding_vars=None,
-                           n_perm_chunk=10000, lost_dof=0,
-                           intercept_test=True, random_state=None):
+def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
+                           confounding_vars=None, n_perm_chunk=10000,
+                           lost_dof=0, intercept_test=True, random_state=None):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
 
     Parameters
     ----------
+    scores_original_data: array-like, shape=(n_descriptors, n_regressors)
+      F-scores obtained for the original (non-permuted) data.
     tested_vars: array-like, shape=(n_samples, n_regressors)
       Explanatory variates.
     target_vars: array-like, shape=(n_samples, n_targets)
@@ -196,9 +198,11 @@ def _permuted_ols_on_chunk(tested_vars, target_vars, confounding_vars=None,
     rng = check_random_state(random_state)
 
     n_samples, n_regressors = tested_vars.shape
+    n_descriptors = target_vars.shape[1]
 
     # do the permutations
     h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
+    scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
     for i in xrange(n_perm_chunk):
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
@@ -220,33 +224,15 @@ def _permuted_ols_on_chunk(tested_vars, target_vars, confounding_vars=None,
         perm_scores = _f_score(tested_vars, target_vars, confounding_vars,
                                lost_dof, normalized_design=True)
         h0_fmax_part[i] = np.amax(perm_scores, 0)
+        # find the rank of the original scores in h0_part
+        # (when n_descriptors or n_perm are large, it can be quite long to
+        #  find the rank of the original scores into the whole H0 distribution.
+        #  Here, it is performed in parallel by the workers involded in the
+        #  permutation computation)
+        scores_as_ranks_part += (h0_fmax_part[i].reshape((-1, 1))
+                                 < scores_original_data.T)
 
-    return h0_fmax_part
-
-
-def _convert_to_pvalues(h0_distribution, scores_to_convert):
-    """Convert a statistic into p-values using its empirical distribution
-
-    Parameters
-    ----------
-    h0_distribution: array-like, shape=(n_realizations, )
-      The empirical distribution of the statistic to be converted into
-      p-values.
-    scores_to_convert: array-like, shape=(n_scores, )
-      The values of the statistic to be converted into p-values according to
-      their rank in h0_distribution.
-
-    Returns
-    -------
-    pvals: numpy.array, shape=(n_scores, )
-      Negative log10-pvalues corresponding to the scores confronted to their
-      distribution (h0_distribution).
-
-    """
-    pvals = ((h0_distribution.size + 1
-              - np.searchsorted(np.sort(h0_distribution), scores_to_convert))
-             / float(h0_distribution.size + 1))
-    return - np.log10(pvals)
+    return scores_as_ranks_part, h0_fmax_part.T
 
 
 def permuted_ols(tested_vars, target_vars, confounding_vars=None,
@@ -418,20 +404,18 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         return np.asarray([]), scores_original_data,  np.asarray([])
 
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
-          (testedvars_resid_covars, targetvars_resid_covars.T,
-           covars_orthonormed, n_perm_chunk=n_perm_chunk, lost_dof=lost_dof,
+          (scores_original_data, testedvars_resid_covars,
+           targetvars_resid_covars.T, covars_orthonormed,
+           n_perm_chunk=n_perm_chunk, lost_dof=lost_dof,
            intercept_test=intercept_test, random_state=0)
           for n_perm_chunk in n_perm_chunks)
     # reduce results
-    h0_fmax = np.sort(np.ravel(np.concatenate(ret)))
-    # convert scores into negative log10 p-values
-    # TODO: to speed this up, we could threshold scores_original_data
-    n_scores = n_descriptors * n_regressors
-    ravelized_scores = np.ravel(scores_original_data)
-    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_convert_to_pvalues)
-          (h0_fmax, ravelized_scores[chunk])
-          for chunk in gen_even_slices(
-            n_scores + 1, min(n_scores, n_jobs)))
-    pvals = np.concatenate(ret).reshape((n_regressors, n_descriptors))
+    scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
+    h0_fmax = np.hstack((h0_fmax_parts))
+    scores_as_ranks = np.zeros((n_regressors, n_descriptors))
+    for scores_as_ranks_part in scores_as_ranks_parts:
+        scores_as_ranks += scores_as_ranks_part
+    # convert ranks into p-values
+    pvals = (n_perm + 1 - scores_as_ranks) / float(1 + n_perm)
 
-    return pvals, scores_original_data, h0_fmax
+    return - np.log10(pvals), scores_original_data, h0_fmax[0]
