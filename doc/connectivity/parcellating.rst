@@ -83,7 +83,7 @@ Now that the component tree has been computed, computation is must faster
 thanks to caching. You should have the result in less than 1 second.
 
 Post-Processing and visualizing the parcels
-============================================
+===========================================
 
 Unmasking
 ---------
@@ -144,3 +144,37 @@ representation thanks to a two-step procedure :
 We can see that using only 2000 parcels, the original image is well
 approximated.
 
+Another approach: spectral clustering
+=====================================
+
+Spectral clustering is a segmentation approach known for its simplicity and its
+(relatively) low computational cost. Spectral clustering uses the spectrum of an
+affinity matrix (usually computed using Pearson's correlation coefficient) to
+perform dimension reduction, and then apply a clustering algorithm (typically
+K-Means) on less dimensions.
+
+**Compute an affinity matrix**
+An affinity matrix has the same structure as a connectivity matrix, except that
+edge value represent the affinity between 2 time series. Scikit-learn's spectral
+clustering does not offer to compute an affinity matrix using Pearson's
+correlation coefficient. We therefor have to compute it using an ad-hoc for
+loop. Note that a threshold is applied to sparsify the matrix and make spectral
+clustering faster :
+
+.. literalinclude:: ../../plot_rest_spectral.py
+    :start-after: # Compute the connectivity graph (it is sparse)
+    :end-before: # End computing affinity matrix
+
+**Applying the Spectral clustering**
+
+We simply call scikit-learn's spectral clustering with our pre-computed affinity
+matrix :
+
+.. literalinclude:: ../../plot_rest_spectral.py
+    :start-after: # Apply spectral clustering on affinity matrix
+    :end-before: # End spectral clustering
+
+.. figure:: ../auto_examples/images/plot_rest_spectral_1.png
+   :target: ../auto_examples/plot_rest_spectral.html
+   :align: center
+   :scale: 60
