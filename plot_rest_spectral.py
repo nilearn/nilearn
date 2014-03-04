@@ -17,17 +17,13 @@ from nilearn import datasets, input_data
 import time
 
 
-print 'Fetching dataset... '
-t0 = time.time()
+### Fetch and mask data #######################################################
+
 dataset = datasets.fetch_adhd(n_subjects=1)
-print '... done (%.2fs)' % (time.time() - t0)
-print 'Masking data... '
-t0 = time.time()
 nifti_masker = input_data.NiftiMasker(memory='nilearn_cache', memory_level=1,
                               smoothing_fwhm=6., standardize=False)
 X = nifti_masker.fit_transform(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
-print '... done (%.2fs)' % (time.time() - t0)
 
 ### Spectral clustering #######################################################
 
