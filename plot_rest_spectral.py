@@ -12,7 +12,7 @@ from sklearn.feature_extraction.image import grid_to_graph
 
 import numpy as np
 import scipy as sp
-import pylab as pl
+import matplotlib.pyplot as plt
 from nilearn import datasets, input_data
 import time
 
@@ -44,7 +44,7 @@ for i, (r, c) in enumerate(zip(rows, cols)):
     if np.isnan(corr):
         continue
     if corr <= 0.5:
-        # Suppress negative values and sparsify matrix
+        # Sparsify matrix
         corr = 0.
     values[i] = corr
 correlation = sp.sparse.coo_matrix((values, (rows, cols)))
@@ -61,6 +61,6 @@ print '... done (%.2fs)' % (time.time() - t0)
 
 clustering = nifti_masker.inverse_transform(clustering)
 
-pl.imshow(clustering.get_data()[..., 25] + 1, cmap='Set1',
+plt.imshow(clustering.get_data()[..., 25] + 1, cmap='Set1',
           interpolation='nearest')
-pl.show()
+plt.show()
