@@ -32,7 +32,8 @@ import numpy as np
 import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
-from nilearn.mass_univariate import permuted_ols
+from nilearn.mass_univariate import (permuted_ols,
+                                     randomized_parcellation_based_inference)
 
 ### Load Haxby dataset ########################################################
 dataset_files = datasets.fetch_haxby_simple()
@@ -87,6 +88,16 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 
 ### scikit-learn F-scores for comparison ######################################
 # F-test does not allow to observe the effect sign (pure two-sided test)
+
+### scikit-learn F-scores for comparison ######################################
+neg_log_pvals_bonferroni, _, _, _ = randomized_parcellation_based_inference(
+    conditions_encoded, fmri_masked, np.asarray(mask_img.get_data()),
+    n_parcellations=20, n_parcels=1000,
+    threshold=0.01, n_perm=100, random_state=0, n_jobs=-1, verbose=True)
+neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
+    np.ravel(neg_log_pvals_bonferroni)).get_data()
+
+"""
 from nilearn._utils.fixes import f_regression
 _, pvals_bonferroni = f_regression(
     grouped_fmri_masked,
@@ -97,7 +108,7 @@ pvals_bonferroni[pvals_bonferroni > 1] = 1
 neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni).get_data()
-
+"""
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid

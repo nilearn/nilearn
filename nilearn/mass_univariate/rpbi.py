@@ -6,16 +6,17 @@ Randomized Parcellation Based Inference
 #          Benoit Da Mota <damota.benoit@gmail.com>, jun. 2013
 import warnings
 import numpy as np
+from scipy import stats
 import scipy.sparse as sps
 import sklearn.externals.joblib as joblib
-from sklearn.utils import gen_even_slices
+from sklearn.utils import gen_even_slices, check_random_state
 
-from nilearn.mass_univariate.permuted_least_squares import (
-    _permuted_ols_on_chunk)
+from nilearn.mass_univariate.utils import f_score, orthogonalize_design
 
 from parietal.group_analysis.rpbi import build_parcellations
 
 
+###############################################################################
 class GrowableSparseArray(object):
     """Data structure to contain data from numerous estimations.
 
@@ -86,14 +87,14 @@ class GrowableSparseArray(object):
         if isinstance(others, GrowableSparseArray):
             return self.merge([others])
         if not isinstance(others, list) and not isinstance(others, tuple):
-            raise Exception(
+            raise TypeError(
                 '\'others\' is not a list/tuple of GrowableSparseArray '
                 'or a GrowableSparseArray.')
         for gs_array in others:
             if not isinstance(gs_array, GrowableSparseArray):
-                raise Exception('List element is not a GrowableSparseArray.')
+                raise TypeError('List element is not a GrowableSparseArray.')
             if gs_array.n_iter != self.n_iter:
-                raise Exception('Cannot merge a structure with %d iterations '
+                raise ValueError('Cannot merge a structure with %d iterations '
                                 'into a structure with %d iterations.'
                                 % (gs_array.n_iter, self.n_iter))
 
@@ -178,6 +179,7 @@ class GrowableSparseArray(object):
         return
 
 
+###############################################################################
 def max_csr(csr_mat, n_x):
     """Fast computation of the max along each row of a CSR matrix.
 
@@ -230,7 +232,7 @@ def _inverse_transform(perm_lot_results, perm_lot_slice,
          (regressors_ids, perm_lot_results['y_id'])),
         shape=(n_perm_in_perm_lot * n_regressors, n_parcels_all_parcellations))
     # counting statistic as a dot product (efficient between CSR x CSC)
-    counting_statistic = np.dot(perm_lot_as_csr, parcellation_masks)
+    counting_statistic = perm_lot_as_csr.dot(parcellation_masks)
 
     # Get counting statistic for original data and construct (a part of) H0
     if perm_lot_slice.start == 0:  # perm 0 of perm_lot 0 contains orig scores
@@ -244,7 +246,65 @@ def _inverse_transform(perm_lot_results, perm_lot_slice,
     return original_scores, h0_samples
 
 
-def rpbi_core(tested_vars, parcelled_imaging_vars,
+def _counting_statistic_on_chunk(perm_chunk, tested_vars, target_vars,
+                                 confounding_vars=None, lost_dof=0,
+                                 intercept_test=True, sparsity_threshold=1e-4,
+                                 random_state=None):
+    """
+
+    """
+    # initialize the seed of the random generator
+    rng = check_random_state(random_state)
+
+    n_samples, n_regressors = tested_vars.shape
+    n_descriptors = target_vars.shape[1]
+    n_perm_chunk = perm_chunk.stop - perm_chunk.start
+
+    # We only retain the score for which the associated p-value is below the
+    # threshold (we use a F distribution as an approximation of the scores
+    # distribution)
+    threshold = stats.f(1, n_samples - lost_dof - 1).isf(sparsity_threshold)
+    # We use a special data structure to store the results of the permutations
+    # max_elts is used to preallocate memory
+    max_elts = int(n_regressors * n_descriptors
+                   * np.sqrt(sparsity_threshold) * n_perm_chunk)
+    gs_array = GrowableSparseArray(n_perm_chunk, max_elts=max_elts,
+                                   threshold=threshold)
+
+    if perm_chunk.start == 0:  # add original data results as permutation 0
+        scores_original_data = f_score(tested_vars, target_vars,
+                                       confounding_vars, lost_dof,
+                                       normalized_design=True)
+        gs_array.append(0, scores_original_data)
+        perm_chunk = slice(1, perm_chunk.stop)
+
+    # do the permutations
+    for i in xrange(perm_chunk.start, perm_chunk.stop):
+        if intercept_test:
+            # sign swap (random multiplication by 1 or -1)
+            target_vars = (target_vars
+                           * rng.randint(2, size=(1, n_samples)) * 2 - 1)
+        else:
+            # shuffle data
+            # Regarding computation costs, we choose to shuffle testvars
+            # and covars rather than fmri_signal.
+            # Also, it is important to shuffle testedvars and covars
+            # jointly to simplify f_score computation (null dot product).
+            shuffle_idx = rng.permutation(n_samples)
+            #rng.shuffle(shuffle_idx)
+            tested_vars = tested_vars[shuffle_idx]
+            if confounding_vars is not None:
+                confounding_vars = confounding_vars[shuffle_idx]
+
+        # OLS regression on randomized data
+        perm_scores = f_score(tested_vars, target_vars, confounding_vars,
+                              lost_dof, normalized_design=True)
+        gs_array.append(i, perm_scores)
+
+    return gs_array
+
+
+def rpbi_core(tested_vars, target_vars,
               n_parcellations, parcellations_labels,
               confounding_vars=None, model_intercept=True, threshold=1e-04,
               n_perm=1000, random_state=0, n_jobs=0):
@@ -256,7 +316,7 @@ def rpbi_core(tested_vars, parcelled_imaging_vars,
     ----------
     tested_vars: array-like, shape=(n_samples, n_regressors),
       Explanatory variates, fitted and tested independently from each others.
-    parcelled_imaging_vars: array-like, shape=(n_parcels_tot, n_samples)
+    target_vars: array-like, shape=(n_samples, n_parcels_tot)
       Average signal within parcels of all parcellations, for every subject.
     n_parcellations: int,
       Number of (randomized) parcellations.
@@ -287,17 +347,29 @@ def rpbi_core(tested_vars, parcelled_imaging_vars,
       must be used.
 
     """
-    if n_jobs == 0:
-        n_jobs = joblib.cpu_count()
+    # check n_jobs (number of CPUs)
+    if n_jobs == 0:  # invalid according to joblib's conventions
+        raise ValueError("'n_jobs == 0' is not a valid choice. "
+                         "Please provide a positive number of CPUs, or -1 "
+                         "for all CPUs, or a negative number (-i) for "
+                         "'all but (i-1)' CPUs (joblib conventions).")
     elif n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
+    else:
+        n_jobs = min(n_jobs, joblib.cpu_count())
+    # make target_vars F-ordered to speed-up computation
+    if target_vars.ndim != 2:
+        raise ValueError("'target_vars' should be a 2D array. "
+                         "An array with %d dimension%s was passed"
+                         % (target_vars.ndim,
+                            "s" if target_vars.ndim > 1 else ""))
+    target_vars = np.asfortranarray(target_vars)
+    n_descriptors = target_vars.shape[1]
 
-    n_samples = parcelled_imaging_vars.shape[1]
-    n_regressors = tested_vars.shape[1]
-    n_voxels_all_parcellations = parcellations_labels.size
-    n_voxels = n_voxels_all_parcellations / n_parcellations
-    unique_labels_all_parcellations = np.unique(parcellations_labels)
-    n_parcels_all_parcellations = len(unique_labels_all_parcellations)
+    # check explanatory variates dimensions
+    if tested_vars.ndim == 1:
+        tested_vars = np.atleast_2d(tested_vars).T
+    n_samples, n_regressors = tested_vars.shape
 
     # check if explanatory variates is intercept (constant) or not
     if (n_regressors == 1 and np.unique(tested_vars).size == 1):
@@ -313,27 +385,38 @@ def rpbi_core(tested_vars, parcelled_imaging_vars,
         else:
             confounding_vars = np.ones((n_samples, 1))
 
-    ### Use permuted OLS to actually perform permutations of the RPBI analysis
-    # (because parcelled_data contains data from all parcellations)
-    # We use the _permuted_ols_on_chunk function as a way to obtain the scores
-    # of all permutations and to avoid conversion of the scores into p-values
-    # which is useless at this stage.
-    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
-          (tested_vars, parcelled_imaging_vars[chunk], confounding_vars,
-           n_perm, sparsity_threshold=threshold,
-           random_state=random_state, target_vars_chunk_position=chunk.start,
-           intercept_test=intercept_test)
-          for chunk in gen_even_slices(n_perm + 2, min(n_perm + 1, n_jobs)))
+    # orthogonalize design to speed up subsequent permutations
+    orthogonalized_design = orthogonalize_design(tested_vars, target_vars,
+                                                 confounding_vars)
+    testedvars_resid_covars = orthogonalized_design[0]
+    targetvars_resid_covars = orthogonalized_design[1]
+    covars_orthonormed = orthogonalized_design[2]
+    lost_dof = orthogonalized_design[3]
+
+    ### Permutation of the RPBI analysis
+    # parallel computing units perform a reduced number of permutations each
+    all_chunks_results = joblib.Parallel(n_jobs=n_jobs)(
+        joblib.delayed(_counting_statistic_on_chunk)
+        (perm_chunk, testedvars_resid_covars, targetvars_resid_covars,
+         covars_orthonormed, lost_dof=lost_dof,
+         intercept_test=intercept_test,
+         random_state=random_state, sparsity_threshold=threshold)
+        for perm_chunk in gen_even_slices(n_perm + 1, min(n_perm, n_jobs)))
     # reduce results
-    all_chunks_results, params = zip(*ret)
+    max_elts = int(n_regressors * n_descriptors * np.sqrt(threshold) * n_perm)
     all_results = GrowableSparseArray(
-        n_perm + 1,
+        n_perm + 1, max_elts=max_elts,
         threshold=all_chunks_results[0].threshold)  # same threshold everywhere
     all_results.merge(all_chunks_results)
     # scores binarization (to be summed later to yield the counting statistic)
     all_results.data['score'] = binarization(all_results.get_data()['score'])
 
     ### Inverse transforms (map back masked voxels into a brain)
+    n_voxels_all_parcellations = parcellations_labels.size
+    n_voxels = n_voxels_all_parcellations / n_parcellations
+    unique_labels_all_parcellations = np.unique(parcellations_labels)
+    n_parcels_all_parcellations = len(unique_labels_all_parcellations)
+
     # Build parcellations labels as masks.
     # we need a CSC sparse matrix for efficient computation. we can build
     # it efficiently using a COO sparse matrix constructor.
@@ -341,14 +424,17 @@ def rpbi_core(tested_vars, parcelled_imaging_vars,
     parcellation_masks = sps.coo_matrix(
         (np.ones(n_voxels_all_parcellations),
          (parcellations_labels, voxel_ids)),
-        shape=(n_parcels_all_parcellations, n_voxels)).tocsc()
+        shape=(n_parcels_all_parcellations, n_voxels),
+        dtype=np.float32).tocsc()
 
     # Slice permutations to treat them in parallel
     perm_lots_slices = gen_even_slices(n_perm + 2, min(n_perm + 1, n_jobs))
     perm_lots_sizes = [np.sum(all_results.sizes[s]) for s in perm_lots_slices]
-    perm_lots_cuts = np.cumsum(perm_lots_sizes)
-    perm_lots = [all_results[perm_lots_cuts[i]:perm_lots_cuts[i + 1]]
-                 for i in xrange(perm_lots_cuts.size - 1)]
+    perm_lots_cuts = np.concatenate(([0], np.cumsum(perm_lots_sizes)))
+    perm_lots = [
+        all_results.get_data()[perm_lots_cuts[i]:perm_lots_cuts[i + 1]]
+        for i in xrange(perm_lots_cuts.size - 1)]
+    perm_lots_slices = gen_even_slices(n_perm + 2, min(n_perm + 1, n_jobs))
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_inverse_transform)
           (perm_lot, perm_lot_slice, n_regressors, parcellation_masks,
            n_parcellations, n_parcels_all_parcellations)
@@ -370,7 +456,7 @@ def rpbi_core(tested_vars, parcelled_imaging_vars,
 def randomized_parcellation_based_inference(
     tested_vars, imaging_vars, mask, confounding_vars=None,
     model_intercept=True, n_parcellations=100, n_parcels=1000,
-    threshold=0.0001, n_perm=1000, random_state=0, n_jobs=0, verbose=True):
+    threshold=0.0001, n_perm=1000, random_state=0, n_jobs=-1, verbose=True):
     """Perform Randomized Parcellation Base Inference on a dataset.
 
     1. Randomized parcellation are built.
@@ -429,11 +515,11 @@ def randomized_parcellation_based_inference(
     ### Statistical inference
     if verbose:
         print "Statistical inference"
-    counting_stat_original_data, h0 = rpbi_core(
-        tested_vars, parcelled_imaging_vars,
+    neg_log_pvals, counting_stat_original_data, h0 = rpbi_core(
+        tested_vars, parcelled_imaging_vars.T,
         n_parcellations, parcellations_labels,
         confounding_vars=confounding_vars, model_intercept=model_intercept,
         threshold=threshold, n_perm=n_perm,
         random_state=random_state, n_jobs=n_jobs)
 
-    return h0, counting_stat_original_data, parcelled_imaging_vars
+    return neg_log_pvals, h0, counting_stat_original_data, parcelled_imaging_vars
