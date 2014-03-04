@@ -2,8 +2,14 @@
 Spectral clustering to segment brain from resting state fMRI
 ============================================================
 
-We build an affinity matrix between voxels using Pearson correlation coefficient
-and then use it to segment the brain into functional regions.
+We build an affinity matrix between voxels using Pearson correlation
+coefficient and then use it to segment the brain into functional regions.
+
+Refernce :
+    Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
+    and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
+    Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
+    1914–1928. doi:10.1002/hbm.21333.
 """
 
 from sklearn.feature_extraction.image import grid_to_graph
