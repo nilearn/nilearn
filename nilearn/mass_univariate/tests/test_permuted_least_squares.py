@@ -98,7 +98,7 @@ def test_f_score_withcovar(random_state=0):
     covars[3] = -1  # covars is orthogonal to var1
     covars = orthonormalize_matrix(covars)
     f_val_own = _f_score(var1, var2, covars,
-                         normalized_design=True, lost_dof=3)[0]
+                         normalized_design=True)[0]
     f_val_own2 = _f_score(var1, var2, covars,
                           normalized_design=False)[0]
     test_matrix = np.array([[1., 0., 0., 0.]])
@@ -118,7 +118,7 @@ def test_permuted_ols_check_h0_noeffect(random_state=0):
     tested_var = np.arange(n_samples).reshape((-1, 1))
     tested_var_not_centered = tested_var.copy()
     tested_var -= tested_var.mean(0)  # centered
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     # We check that h0 is close to the theoretical distribution, which is
     # known for this simple design (= F(1, 1 - n_samples)).
     perm_ranges = [10, 100, 1000]  # test various number of permutations
@@ -197,7 +197,7 @@ def test_permuted_ols_sklearn_nocovar(random_state=0):
     tested_var = rng.randn(n_samples, 1)
     # scikit-learn F-score
     fvals, _ = f_regression(target_var, tested_var, center=False)
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         n_perm=0, random_state=random_state)
@@ -210,7 +210,7 @@ def test_permuted_ols_sklearn_nocovar(random_state=0):
     assert_array_almost_equal([fvals], orig_scores, decimal=6)
 
     ### Adds intercept (should be equivalent to centering variates)
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores_addintercept, _ = permuted_ols(
         tested_var, target_var, model_intercept=True,
         n_perm=0, random_state=random_state)
@@ -245,14 +245,14 @@ def test_permuted_ols_statsmodels_withcovar(random_state=0):
     # statsmodels OLS
     ols = OLS(target_var, np.hstack((tested_var, confounding_vars))).fit()
     fvals = ols.f_test([[1., 0., 0.]]).fvalue
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_var, confounding_vars, model_intercept=False,
         n_perm=0, random_state=random_state)
     assert_array_almost_equal(fvals, orig_scores, decimal=6)
 
     ### Adds intercept
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores_addintercept, _ = permuted_ols(
         tested_var, target_var, confounding_vars, model_intercept=True,
         n_perm=0, random_state=random_state)
@@ -265,6 +265,11 @@ def test_permuted_ols_statsmodels_withcovar(random_state=0):
 
 
 def test_permuted_ols_sklearn_nocovar_multivariate(random_state=0):
+    """Test permuted_ols with multiple tested variates and no covariate.
+
+    It is equivalent to fitting several models with only one tested variate.
+
+    """
     rng = check_random_state(random_state)
     # design parameters
     n_samples = 50
@@ -277,14 +282,14 @@ def test_permuted_ols_sklearn_nocovar_multivariate(random_state=0):
     fvals = np.empty((n_targets, n_regressors))
     for i in range(n_targets):
         fvals[i], _ = f_regression(tested_var, target_vars[:, i], center=False)
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_vars, model_intercept=False,
         n_perm=0, random_state=random_state)
     assert_array_almost_equal(fvals, orig_scores, decimal=6)
 
     ### Adds intercept (should be equivalent to centering variates)
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores_addintercept, _ = permuted_ols(
         tested_var, target_vars, model_intercept=True,
         n_perm=0, random_state=random_state)
@@ -300,7 +305,9 @@ def test_permuted_ols_sklearn_nocovar_multivariate(random_state=0):
 
 
 def test_permuted_ols_statsmodels_withcovar_multivariate(random_state=0):
-    """
+    """Test permuted_ols with multiple tested variates and covariates.
+
+    It is equivalent to fitting several models with only one tested variate.
 
     This test has a statsmodels dependance. There seems to be no simple,
     alternative way to perform a F-test on a linear model including
@@ -328,14 +335,14 @@ def test_permuted_ols_statsmodels_withcovar_multivariate(random_state=0):
         ols = OLS(
             target_vars[:, i], np.hstack((tested_var, confounding_vars)))
         fvals[i] = ols.fit().f_test(test_matrix).fvalue[0][0]
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_vars, confounding_vars, model_intercept=False,
         n_perm=0, random_state=random_state)
     assert_almost_equal(fvals, orig_scores, decimal=6)
 
     ### Adds intercept
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores_addintercept, _ = permuted_ols(
         tested_var, target_vars, confounding_vars, model_intercept=True,
         n_perm=0, random_state=random_state)
@@ -361,7 +368,7 @@ def test_permuted_ols_intercept_sklearn_nocovar(random_state=0):
     tested_var = np.ones((n_samples, 1))
     # scikit-learn F-score
     fvals, _ = f_regression(target_var, tested_var, center=False)
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_var, confounding_vars=None, n_perm=0,
         random_state=random_state)
@@ -396,7 +403,7 @@ def test_permuted_ols_intercept_statsmodels_withcovar(random_state=0):
     # statsmodels OLS
     ols = OLS(target_var, np.hstack((tested_var, confounding_vars))).fit()
     fvals = ols.f_test([[1., 0., 0.]]).fvalue
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_var, confounding_vars, n_perm=0,
         random_state=random_state)
@@ -420,7 +427,7 @@ def test_permuted_ols_intercept_sklearn_nocovar_multivariate(random_state=0):
     fvals = np.empty((n_targets, 1))
     for i in range(n_targets):
         fvals[i], _ = f_regression(target_vars[:, i], tested_var, center=False)
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_vars, confounding_vars=None, n_perm=0,
         random_state=random_state)
@@ -462,7 +469,7 @@ def test_permuted_ols_intercept_statsmodels_withcovar_multivariate(
         ols = OLS(
             target_vars[:, i], np.hstack((tested_var, confounding_vars)))
         fvals[i] = ols.fit().f_test(test_matrix).fvalue[0][0]
-    # permuted OLS (sparsity_threshold=1. to get all values)
+    # permuted OLS
     _, orig_scores, _ = permuted_ols(
         tested_var, target_vars, confounding_vars, n_perm=0,
         random_state=random_state)

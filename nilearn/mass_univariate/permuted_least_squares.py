@@ -7,7 +7,7 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 import warnings
 import numpy as np
 from scipy import linalg
-from sklearn.utils import check_random_state, gen_even_slices
+from sklearn.utils import check_random_state
 import sklearn.externals.joblib as joblib
 
 
@@ -58,6 +58,7 @@ def orthonormalize_matrix(m, tol=1.e-12):
     """ Orthonormalize a matrix.
 
     Uses a Singular Value Decomposition.
+    If the input matrix is rank-deficient, then its shape is cropped.
 
     Parameters
     ----------
@@ -74,11 +75,11 @@ def orthonormalize_matrix(m, tol=1.e-12):
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
     ...     orthonormalize_matrix)
-    >>> X = np.array([[1, 0], [0, 1], [1, 1]])
+    >>> X = np.array([[1, 2], [0, 1], [1, 1]])
     >>> orthonormalize_matrix(X)
-    array([[ -4.08248290e-01,   7.07106781e-01],
-           [ -4.08248290e-01,  -7.07106781e-01],
-           [ -8.16496581e-01,  -1.11022302e-16]])
+    array([[-0.81049889, -0.0987837 ],
+           [-0.31970025, -0.75130448],
+           [-0.49079864,  0.65252078]])
     >>> X = np.array([[0, 1], [4, 0]])
     >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
@@ -90,8 +91,7 @@ def orthonormalize_matrix(m, tol=1.e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def _f_score(vars1, vars2, covars=None, lost_dof=0,
-             normalized_design=True):
+def _f_score(vars1, vars2, covars=None, normalized_design=True):
     """Compute F-score associated with the regression of vars2 against vars1
 
     Covariates are taken into account (if not None).
@@ -105,11 +105,9 @@ def _f_score(vars1, vars2, covars=None, lost_dof=0,
     vars1: array-like, shape=(n_samples, n_var1)
       Explanatory variates
     vars2: array-like, shape=(n_samples, n_var2)
-      Targets variates. F-ordered for efficient computation.
+      Targets variates. F-ordered is better for efficient computation.
     covars, array-like, shape=(n_samples, n_covars) or None
       Confounding variates.
-    lost_dof: int, >= 0
-      Lost degrees of freedom
     normalized_design: bool,
       Specify whether the variates have been normalized and orthogonalized
       with respect to each other. In such a case, the computation is simpler
@@ -128,21 +126,23 @@ def _f_score(vars1, vars2, covars=None, lost_dof=0,
         vars2_normalized = normalize_matrix_on_axis(vars2)
         if covars is not None:
             # orthonormalize covariates
-            covars_orthonormed = orthonormalize_matrix(covars)
-            updated_lost_dof = covars_orthonormed.shape[1]
+            covars_orthonormalized = orthonormalize_matrix(covars)
             # orthogonalize vars1 with respect to covars
             beta_vars1_covars = np.dot(
-                vars1_normalized.T, covars_orthonormed)
+                vars1_normalized.T, covars_orthonormalized)
             vars1_resid_covars = vars1_normalized.T - np.dot(
-                beta_vars1_covars, covars_orthonormed.T)
+                beta_vars1_covars, covars_orthonormalized.T)
             vars1_normalized = normalize_matrix_on_axis(
                 vars1_resid_covars, axis=1).T
         else:
-            covars_orthonormed = None
-            updated_lost_dof = 0
-        return _f_score(vars1_normalized, vars2_normalized, covars_orthonormed,
-                        updated_lost_dof, normalized_design=True)
+            covars_orthonormalized = None
+        return _f_score(vars1_normalized, vars2_normalized,
+                        covars_orthonormalized, normalized_design=True)
     else:  # efficient, should be used everytime with permuted OLS
+        if covars is None:
+            lost_dof = 0
+        else:
+            lost_dof = covars.shape[1]
         dof = vars2.shape[0] - 1 - lost_dof
         beta_vars2_vars1 = np.dot(vars2.T, vars1)
         b2 = beta_vars2_vars1 ** 2
@@ -159,7 +159,7 @@ def _f_score(vars1, vars2, covars=None, lost_dof=0,
 
 def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
                            confounding_vars=None, n_perm_chunk=10000,
-                           lost_dof=0, intercept_test=True, random_state=None):
+                           intercept_test=True, random_state=None):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -200,7 +200,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     n_samples, n_regressors = tested_vars.shape
     n_descriptors = target_vars.shape[1]
 
-    # do the permutations
+    # run the permutations
     h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
     scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
     for i in xrange(n_perm_chunk):
@@ -212,17 +212,16 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
             # and covars rather than fmri_signal.
-            # Also, it is important to shuffle testedvars and covars
+            # Also, it is important to shuffle tested_vars and covars
             # jointly to simplify f_score computation (null dot product).
             shuffle_idx = rng.permutation(n_samples)
-            #rng.shuffle(shuffle_idx)
             tested_vars = tested_vars[shuffle_idx]
             if confounding_vars is not None:
                 confounding_vars = confounding_vars[shuffle_idx]
 
         # OLS regression on randomized data
         perm_scores = _f_score(tested_vars, target_vars, confounding_vars,
-                               lost_dof, normalized_design=True)
+                               normalized_design=True)
         h0_fmax_part[i] = np.amax(perm_scores, 0)
         # find the rank of the original scores in h0_part
         # (when n_descriptors or n_perm are large, it can be quite long to
@@ -245,7 +244,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     Ordinary Least Squares criterion.
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
-    between the tested variates and the target variates. A max-type
+    between the tested variates and the target variates [1]. A max-type
     procedure is used to obtain family-wise corrected p-values.
 
     Permutations are performed on parallel computing units. Each of them
@@ -282,7 +281,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       Number of parallel workers.
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
-      must be used.
+      will be used.
 
     Returns
     -------
@@ -347,11 +346,12 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     ### OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
-        covars_orthonormed = orthonormalize_matrix(confounding_vars)
-        if not covars_orthonormed.flags['C_CONTIGUOUS']:
+        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
+        if not covars_orthonormalized.flags['C_CONTIGUOUS']:
             # useful to developer
             warnings.warn('Confounding variates not C_CONTIGUOUS.')
-            covars_orthonormed = np.ascontiguousarray(covars_orthonormed)
+            covars_orthonormalized = np.ascontiguousarray(
+                covars_orthonormalized)
         targetvars_normalized = normalize_matrix_on_axis(
             target_vars).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags['C_CONTIGUOUS']:
@@ -359,25 +359,23 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             warnings.warn('Target variates not C_CONTIGUOUS.')
             targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
         beta_targetvars_covars = np.dot(targetvars_normalized,
-                                        covars_orthonormed)
+                                        covars_orthonormalized)
         targetvars_resid_covars = targetvars_normalized - np.dot(
-            beta_targetvars_covars, covars_orthonormed.T)
+            beta_targetvars_covars, covars_orthonormalized.T)
         targetvars_resid_covars = normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1)
-        lost_dof = covars_orthonormed.shape[1]
         # step 2: extract effect of covars from tested vars
         testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
         beta_testedvars_covars = np.dot(testedvars_normalized,
-                                        covars_orthonormed)
+                                        covars_orthonormalized)
         testedvars_resid_covars = testedvars_normalized - np.dot(
-            beta_testedvars_covars, covars_orthonormed.T)
+            beta_testedvars_covars, covars_orthonormalized.T)
         testedvars_resid_covars = normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1).T.copy()
     else:
         targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
         testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
-        covars_orthonormed = None
-        lost_dof = 0
+        covars_orthonormalized = None
     # check arrays contiguousity (for the sake of code efficiency)
     if not targetvars_resid_covars.flags['C_CONTIGUOUS']:
         # useful to developer
@@ -390,8 +388,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     # step 3: original regression (= regression on residuals + adjust F score)
     # compute F score for original data
     scores_original_data = _f_score(
-        testedvars_resid_covars, targetvars_resid_covars.T, covars_orthonormed,
-        lost_dof, normalized_design=True)
+        testedvars_resid_covars, targetvars_resid_covars.T,
+        covars_orthonormalized, normalized_design=True)
 
     ### Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -405,9 +403,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
           (scores_original_data, testedvars_resid_covars,
-           targetvars_resid_covars.T, covars_orthonormed,
-           n_perm_chunk=n_perm_chunk, lost_dof=lost_dof,
-           intercept_test=intercept_test, random_state=0)
+           targetvars_resid_covars.T, covars_orthonormalized,
+           n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
+           random_state=0)
           for n_perm_chunk in n_perm_chunks)
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
