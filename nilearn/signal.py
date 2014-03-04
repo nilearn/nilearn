@@ -11,7 +11,6 @@ import distutils.version
 
 import numpy as np
 from scipy import signal, stats, linalg
-from sklearn.utils.fixes import qr_economic
 from sklearn.utils import gen_even_slices
 
 np_version = distutils.version.LooseVersion(np.version.short_version).version
@@ -408,7 +407,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         confounds = np.hstack(all_confounds)
         del all_confounds
         confounds = _standardize(confounds, normalize=True, detrend=detrend)
-        Q = qr_economic(confounds)[0]
+        Q = linalg.qr(confounds, mode='economic')[0]
         signals -= np.dot(Q, np.dot(Q.T, signals))
 
     if low_pass is not None or high_pass is not None:
