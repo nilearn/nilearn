@@ -206,10 +206,13 @@ def crop_img(niimg, rtol=1e-6, copy=True):
 
     niimg = check_niimg(niimg)
     data = niimg.get_data()
-    absdata = np.abs(data)
-    infty_norm = absdata.max()
+    infinity_norm = max(-data.min(), data.max())
+    passes_threshold_above = data > rtol * infinity_norm
+    passes_threshold_below = data < -rtol * infinity_norm
 
-    coords = np.array(np.where(absdata > rtol * infty_norm))
+    coords = np.array(np.where(
+            np.logical_or(passes_threshold_above,
+                          passes_threshold_below)))
     start = coords.min(axis=1)
     end = coords.max(axis=1) + 1
 
