@@ -18,6 +18,7 @@ def normalize_matrix_on_axis(m, axis=0):
     ----------
     m : numpy 2D array,
       The matrix to normalize.
+
     axis : integer in {0, 1}, optional
       A valid axis to normalize across.
 
@@ -91,70 +92,51 @@ def orthonormalize_matrix(m, tol=1.e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def _f_score(vars1, vars2, covars=None, normalized_design=True):
-    """Compute F-score associated with the regression of vars2 against vars1
+def _f_score_with_covars_and_normalized_design(tested_vars, target_vars,
+                                               covars_orthonormalized=None):
+    """F-score in the regression of tested variates against target variates
 
     Covariates are taken into account (if not None).
     The normalized_design case corresponds to the following assumptions:
-    - vars1 and vars2 are normalized
-    - covars are orthonormalized
-    - vars1 and covars are orthogonal (np.dot(vars1.T, covars) == 0)
+    - tested_vars and target_vars are normalized
+    - covars_orthonormalized are orthonormalized
+    - tested_vars and covars_orthonormalized are orthogonal
+      (np.dot(tested_vars.T, covars) == 0)
 
     Parameters
     ----------
-    vars1: array-like, shape=(n_samples, n_var1)
-      Explanatory variates
-    vars2: array-like, shape=(n_samples, n_var2)
+    tested_vars : array-like, shape=(n_samples, n_tested_vars)
+      Explanatory variates.
+
+    target_vars : array-like, shape=(n_samples, n_target_vars)
       Targets variates. F-ordered is better for efficient computation.
-    covars, array-like, shape=(n_samples, n_covars) or None
+
+    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None
       Confounding variates.
-    normalized_design: bool,
-      Specify whether the variates have been normalized and orthogonalized
-      with respect to each other. In such a case, the computation is simpler
-      and a lot more efficient.
 
     Returns
     -------
-    score: numpy.ndarray, shape=(n_var2, n_var1)
+    score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
       F-scores associated with the tests of each explanatory variate against
       each target variate (in the presence of covars).
 
     """
-    if not normalized_design:  # not efficient, added for code exhaustivity
-        # normalize variates
-        vars1_normalized = normalize_matrix_on_axis(vars1)
-        vars2_normalized = normalize_matrix_on_axis(vars2)
-        if covars is not None:
-            # orthonormalize covariates
-            covars_orthonormalized = orthonormalize_matrix(covars)
-            # orthogonalize vars1 with respect to covars
-            beta_vars1_covars = np.dot(
-                vars1_normalized.T, covars_orthonormalized)
-            vars1_resid_covars = vars1_normalized.T - np.dot(
-                beta_vars1_covars, covars_orthonormalized.T)
-            vars1_normalized = normalize_matrix_on_axis(
-                vars1_resid_covars, axis=1).T
-        else:
-            covars_orthonormalized = None
-        return _f_score(vars1_normalized, vars2_normalized,
-                        covars_orthonormalized, normalized_design=True)
-    else:  # efficient, should be used everytime with permuted OLS
-        if covars is None:
-            lost_dof = 0
-        else:
-            lost_dof = covars.shape[1]
-        dof = vars2.shape[0] - 1 - lost_dof
-        beta_vars2_vars1 = np.dot(vars2.T, vars1)
-        b2 = beta_vars2_vars1 ** 2
-        if covars is None:
-            rss = (1 - b2)
-        else:
-            beta_vars2_covars = np.dot(vars2.T, covars)
-            a2 = np.sum(beta_vars2_covars ** 2, 1)
-            rss = (1 - a2[:, np.newaxis] - b2)
-        score = b2 / rss
-        score *= dof
-        return np.asfortranarray(score)
+    if covars_orthonormalized is None:
+        lost_dof = 0
+    else:
+        lost_dof = covars_orthonormalized.shape[1]
+    dof = target_vars.shape[0] - 1 - lost_dof
+    beta_targetvars_testedvars = np.dot(target_vars.T, tested_vars)
+    b2 = beta_targetvars_testedvars ** 2
+    if covars_orthonormalized is None:
+        rss = (1 - b2)
+    else:
+        beta_targetvars_covars = np.dot(target_vars.T, covars_orthonormalized)
+        a2 = np.sum(beta_targetvars_covars ** 2, 1)
+        rss = (1 - a2[:, np.newaxis] - b2)
+    score = b2 / rss
+    score *= dof
+    return score
 
 
 def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
@@ -166,26 +148,31 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
 
     Parameters
     ----------
-    scores_original_data: array-like, shape=(n_descriptors, n_regressors)
+    scores_original_data : array-like, shape=(n_descriptors, n_regressors)
       F-scores obtained for the original (non-permuted) data.
-    tested_vars: array-like, shape=(n_samples, n_regressors)
+
+    tested_vars : array-like, shape=(n_samples, n_regressors)
       Explanatory variates.
-    target_vars: array-like, shape=(n_samples, n_targets)
+
+    target_vars : array-like, shape=(n_samples, n_targets)
       fMRI data. F-ordered for efficient computations.
-    confounding_vars: array-like, shape=(n_samples, n_covars)
+
+    confounding_vars : array-like, shape=(n_samples, n_covars)
       Clinical data (covariates).
-    n_perm_chunk: int,
+
+    n_perm_chunk : int,
       Number of permutations to be performed.
-    intercept_test: boolean,
+    intercept_test : boolean,
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise). See [1]
-    random_state: int or None,
+
+    random_state : int or None,
       Seed for random number generator, to have the same permutations
       in each computing units.
 
     Returns
     -------
-    h0_fmax_part: array-like, shape=(n_perm_chunk, )
+    h0_fmax_part : array-like, shape=(n_perm_chunk, )
       Distribution of the (max) F-statistic under the null hypothesis
       (limited to this permutation chunk).
 
@@ -220,8 +207,10 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
                 confounding_vars = confounding_vars[shuffle_idx]
 
         # OLS regression on randomized data
-        perm_scores = _f_score(tested_vars, target_vars, confounding_vars,
-                               normalized_design=True)
+        perm_scores = np.asfortranarray(
+            _f_score_with_covars_and_normalized_design(tested_vars,
+                                                       target_vars,
+                                                       confounding_vars))
         h0_fmax_part[i] = np.amax(perm_scores, 0)
         # find the rank of the original scores in h0_part
         # (when n_descriptors or n_perm are large, it can be quite long to
@@ -257,27 +246,33 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     Parameters
     ----------
-    tested_vars: array-like, shape=(n_samples, n_regressors)
+    tested_vars : array-like, shape=(n_samples, n_regressors)
       Explanatory variates, fitted and tested independently from each others.
-    target_vars: array-like, shape=(n_samples, n_descriptors)
+
+    target_vars : array-like, shape=(n_samples, n_descriptors)
       fMRI data, trying to be explained by explanatory and confounding
       variates.
-    confounding_vars: array-like, shape=(n_samples, n_covars)
+
+    confounding_vars : array-like, shape=(n_samples, n_covars)
       Confounding variates (covariates), fitted but not tested.
       If None, no confounding variate is added to the model
       (except maybe a constant column according to the value of
       `model_intercept`)
-    model_intercept: bool,
+
+    model_intercept : bool,
       If True, a constant column is added to the confounding variates
       unless the tested variate is already the intercept.
-    n_perm: int,
+
+    n_perm : int,
       Number of permutations to perform.
       Permutations are costly but the more are performed, the more precision
       one gets in the p-values estimation.
-    random_state: int or None,
+
+    random_state : int or None,
       Seed for random number generator, to have the same permutations
       in each computing units.
-    n_jobs: int,
+
+    n_jobs : int,
       Number of parallel workers.
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
@@ -285,16 +280,18 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     Returns
     -------
-    pvals: array-like, shape=(n_regressors, n_descriptors)
+    pvals : array-like, shape=(n_regressors, n_descriptors)
       Negative log10 p-values associated with the significance test of the
       n_regressors explanatory variates against the n_descriptors target
       variates. Family-wise corrected p-values.
-    score_orig_data: numpy.ndarray, shape=(n_regressors, n_descriptors)
+
+    score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
       F-statistic associated with the significance test of the n_regressors
       explanatory variates against the n_descriptors target variates.
       The ranks of the scores into the h0 distribution correspond to the
       p-values.
-    h0_fmax: array-like, shape=(n_perm, )
+
+    h0_fmax : array-like, shape=(n_perm, )
       Distribution of the (max) F-statistic under the null hypothesis
       (obtained from the permutations). Array is sorted.
 
@@ -305,6 +302,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         Australian & New Zealand Journal of Statistics, 43(1), 75-88.
 
     """
+    # initialize the seed of the random generator
+    rng = check_random_state(random_state)
+
     # check n_jobs (number of CPUs)
     if n_jobs == 0:  # invalid according to joblib's conventions
         raise ValueError("'n_jobs == 0' is not a valid choice. "
@@ -387,9 +387,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
     # step 3: original regression (= regression on residuals + adjust F score)
     # compute F score for original data
-    scores_original_data = _f_score(
+    scores_original_data = _f_score_with_covars_and_normalized_design(
         testedvars_resid_covars, targetvars_resid_covars.T,
-        covars_orthonormalized, normalized_design=True)
+        covars_orthonormalized)
 
     ### Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -400,12 +400,13 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
         return np.asarray([]), scores_original_data,  np.asarray([])
-
+    # actual permutations, seeded from a random integer between 0 and maximum
+    # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
           (scores_original_data, testedvars_resid_covars,
            targetvars_resid_covars.T, covars_orthonormalized,
            n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
-           random_state=0)
+           random_state=rng.random_integers(np.iinfo(np.int32).max))
           for n_perm_chunk in n_perm_chunks)
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)

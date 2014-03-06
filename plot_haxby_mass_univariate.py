@@ -25,31 +25,28 @@ from nilearn.mass_univariate import permuted_ols
 ### Load Haxby dataset ########################################################
 dataset_files = datasets.fetch_haxby_simple()
 
-fmri_img = nibabel.load(dataset_files.func)
-conditions_encoded, _ = np.loadtxt(
-    dataset_files.session_target).astype("int").T
-conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
-
-### Restrict to faces and houses ##############################################
-condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
-fmri_img = nibabel.Nifti1Image(fmri_img.get_data()[..., condition_mask],
-                               fmri_img.get_affine().copy())
-conditions_encoded = conditions_encoded[condition_mask]
-
 ### Mask data #################################################################
 mask_img = nibabel.load(dataset_files.mask)
 nifti_masker = NiftiMasker(
-    mask=mask_img,
+    mask=dataset_files.mask,
     memory='nilearn_cache', memory_level=1)  # cache options
-fmri_masked = nifti_masker.fit_transform(fmri_img)
+fmri_masked = nifti_masker.fit_transform(dataset_files.func)
+
+### Restrict to faces and houses ##############################################
+conditions_encoded, _ = np.loadtxt(
+    dataset_files.session_target).astype("int").T
+conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
+condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+conditions_encoded = conditions_encoded[condition_mask]
+fmri_masked = fmri_masked[condition_mask]
 
 ### Perform massively univariate analysis with permuted OLS ###################
 neg_log_pvals, all_scores, _ = permuted_ols(
     conditions_encoded, fmri_masked,  # + intercept as a covariate by default
-    n_perm=1000,
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals)).get_data()
+    neg_log_pvals).get_data()
 
 ### scikit-learn F-scores for comparison ######################################
 from nilearn._utils.fixes import f_regression
@@ -67,7 +64,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 # Use the fmri mean image as a surrogate of anatomical data
-mean_fmri = fmri_img.get_data().mean(axis=-1)
+mean_fmri = nibabel.load(dataset_files.func).get_data().mean(axis=-1)
 
 # Various plotting parameters
 picked_slice = 27  # plotted slice
@@ -80,32 +77,28 @@ grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
 
 # Plot thresholded F-scores map
 ax = grid[0]
-mask_bonf = np.asarray(mask_img.get_data().copy())
-mask_bonf[neg_log_pvals_bonferroni_unmasked < vmin] = 0
-p_ma = np.ma.array(neg_log_pvals_bonferroni_unmasked,
-                   mask=np.logical_not(mask_bonf))
+p_ma = np.ma.masked_less(neg_log_pvals_bonferroni_unmasked, vmin)
 ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Analytic F-test + '
-             '\nBonferroni correction)')
+             '\nBonferroni correction)' +
+             '\n%d detections' % p_ma.mask[..., picked_slice].sum())
 ax.axis('off')
 
 # Plot permutation p-values map
 ax = grid[1]
-mask = np.asarray(mask_img.get_data().copy())
-mask[neg_log_pvals_unmasked < vmin] = 0
-p_ma = np.ma.array(neg_log_pvals_unmasked,
-                   mask=np.logical_not(mask))
+p_ma = np.ma.masked_less(neg_log_pvals_unmasked, vmin)[..., 0]
 ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
                cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Permutations + '
-             '\nmax-type correction)')
+ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
+             '\nmax-type correction)' +
+             '\n%d detections' % p_ma.mask[..., picked_slice].sum())
 ax.axis('off')
 
 grid[0].cax.colorbar(im)
-plt.subplots_adjust(0.05, 0.05, 0.95, 0.85)
+plt.subplots_adjust(0., 0.03, 1., 0.83)
 plt.show()
