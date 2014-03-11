@@ -33,9 +33,9 @@ mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
 ### Spectral clustering #######################################################
 
-print 'Computing affinity matrix... '
 t0 = time.time()
-# Compute the connecitvity graph (it is sparse)
+print 'Computing affinity matrix... '
+# Compute the connectivity graph (it is sparse)
 connectivity = grid_to_graph(*mask.shape, mask=mask)
 
 # Compute the Pearson correlation matrix from data and connectivity
@@ -49,16 +49,18 @@ for i, (r, c) in enumerate(zip(rows, cols)):
         # Sparsify matrix
         corr = 0.
     values[i] = corr
-correlation = sp.sparse.coo_matrix((values, (rows, cols)))
+affinity = sp.sparse.coo_matrix((values, (rows, cols)))
+# End computing affinity matrix
 print '... done (%.2fs)' % (time.time() - t0)
 
-# Apply spectral clustering on correlation matrix
-from sklearn.cluster import spectral_clustering
 
-print 'Running spectral clustering... '
 t0 = time.time()
-clustering = spectral_clustering(correlation,
+print 'Running spectral clustering... '
+# Apply spectral clustering on affinity matrix
+from sklearn.cluster import spectral_clustering
+clustering = spectral_clustering(affinity,
         n_clusters=50, assign_labels='discretize')
+# End spectral clustering
 print '... done (%.2fs)' % (time.time() - t0)
 
 clustering = nifti_masker.inverse_transform(clustering)
