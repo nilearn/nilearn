@@ -16,7 +16,7 @@ def f_regression_nosparse(X, y, center=True):
 
     This is done in 3 steps:
     1. the regressor of interest and the data are orthogonalized
-    wrt constant regressors
+       with respect to constant regressors
     2. the cross correlation between data and regressors is computed
     3. it is converted to an F score then to a p-value
 

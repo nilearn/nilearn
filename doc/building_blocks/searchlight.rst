@@ -26,8 +26,8 @@ Fetching the data from internet and loading it can be done with the
 provided functions (see :ref:`loading_data`):
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
-    :start-after: ### Load Haxby dataset ########################################################
-    :end-before: ### Restrict to faces and houses ##############################################
+    :start-after: ### Load Haxby dataset ################################
+    :end-before: ### Restrict to faces and houses #######################
 
 Reshaping the data
 -------------------
@@ -40,8 +40,8 @@ For this example we need:
   (like in the :ref:`decoding <fmri_decoding>` example)
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
-    :start-after: ### Restrict to faces and houses ##############################################
-    :end-before: ### Prepare masks #############################################################
+    :start-after: ### Restrict to faces and houses ###################
+    :end-before: ### Prepare masks ###################################
 
 Masking
 -------
@@ -64,7 +64,7 @@ taken into account when iterating with the sphere.
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
         :start-after: #   brain to speed up computation)
-        :end-before: ### Searchlight computation ###################################################
+        :end-before: ### Searchlight computation ######################
 
 Third Step: Setting up the searchlight
 =======================================
@@ -94,8 +94,9 @@ score is computed by running a classifier on selected voxels. In order to make
 this score as accurate as possible (and avoid overfitting), a cross validation
 is made.
 
-As :class:`SearchLight` is computationally costly, we have chosen a cross validation
-method that does not take too much time. *K*-Fold along with *K* = 4 is a
+As :class:`SearchLight` is computationally costly, we have chosen a cross
+validation method that does not take too much time.
+*K*-Fold along with *K* = 4 is a
 good compromise between running time and quality.
 
 .. literalinclude:: ../plot_haxby_searchlight.py
@@ -105,14 +106,15 @@ good compromise between running time and quality.
 Running Searchlight
 ===================
 
-Running :class:`SearchLight` is straightforward now that everything is set. The only
+Running :class:`SearchLight` is straightforward now that everything is set.
+The only
 parameter left is the radius of the ball that will run through the data.
 Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
-    :start-after: # The radius is the one of the Searchlight sphere that will scan the volume
-    :end-before: ### F-scores computation ######################################################
+    :start-after: # The radius is the one of the Searchlight sphere
+    :end-before: ### F-scores computation ############################
 	
 Visualization
 =============
@@ -131,7 +133,7 @@ expected result.
    :scale: 60
 
 .. literalinclude:: ../../plot_haxby_searchlight.py
-    :start-after: ### Visualization #############################################################
+    :start-after: ### Visualization ####################################
     :end-before: ### Show the F_score
 
 
@@ -163,7 +165,8 @@ performed as an alternative to the analytic F-test: the residuals of
 the model are permuted so as to break any effect and the corresponding
 decision statistic is recomputed. One thus builds the distribution of
 the decision statistic under the hypothesis that there is no
-relationship between the tested variates and the target variates. In neuroimaging, this is generally done by swapping the
+relationship between the tested variates and the target variates.
+In neuroimaging, this is generally done by swapping the
 signal values of all voxels while the tested variables remain
 unchanged [2]_. A voxel-wise analysis is then performed on the permuted
 data. The relationships
@@ -177,7 +180,8 @@ permutation is stored. The empirical distribution of the F-scores is
 thus constructed (under the hypothesis that there is no relationship
 between the tested variates and the neuroimaging signal, the so-called
 *null-hypothesis*) and we can compare the original F-scores to that
-distribution: The higher the rank of the original F-score, the smaller is its associated p-value. The
+distribution: The higher the rank of the original F-score, the smaller
+is its associated p-value. The
 :func:`nilearn.mass_univariate.permuted_ols` function returns the
 p-values computed with a permutation test.
 
@@ -225,7 +229,7 @@ strategy.
 
 .. [2]
 
-    When the tested variate is a scalar (test of the *intercept*)
+    When the variate tested is a scalar (test of the *intercept*)
     --which corresponds to a one sample test--, no swapping can be
     performed but one can estimate the null distribution by assuming
     symmetry about some reference value. When this value is zero, one can
