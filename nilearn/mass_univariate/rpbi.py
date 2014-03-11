@@ -127,7 +127,7 @@ class GrowableSparseArray(object):
 
         return
 
-    def append(self, iter_id, iter_data, y_offset=0):
+    def append(self, iter_id, iter_data):
         """Add the data of one estimation (iteration) into the structure.
 
         This is done in a memory-efficient way, by taking into account
@@ -140,9 +140,6 @@ class GrowableSparseArray(object):
         iter_data: array-like, shape=(n_targets_chunk, n_regressors)
           Scores corresponding to the iteration chunk to be inserted into
           the data structure.
-        y_offset: int,
-          Position of the target variates chunk relative to the original
-          dataset.
 
         """
         # we only store float32 to save space
@@ -157,11 +154,11 @@ class GrowableSparseArray(object):
                         dtype=[('iter_id', np.int32), ('x_id', np.int32),
                                ('y_id', np.int32), ('score', np.float32)])
             new_data['x_id'][:] = x_idx
-            new_data['y_id'][:] = y_idx + y_offset
+            new_data['y_id'][:] = y_idx
             new_data['score'][:] = iter_data[y_idx, x_idx]
             new_data['iter_id'][:] = iter_id
-            gs_array = GrowableSparseArray(
-                self.n_iter, threshold=self.threshold)
+            gs_array = GrowableSparseArray(self.n_iter,
+                                           threshold=self.threshold)
             gs_array.data = new_data
             gs_array.sizes = np.zeros((gs_array.n_iter))
             gs_array.sizes[iter_id] = score_size
@@ -170,7 +167,7 @@ class GrowableSparseArray(object):
             self.merge(gs_array)
         else:  # it fits --> updates (efficient)
             self.data['x_id'][self.n_elts:new_n_elts] = x_idx
-            self.data['y_id'][self.n_elts:new_n_elts] = y_idx + y_offset
+            self.data['y_id'][self.n_elts:new_n_elts] = y_idx
             self.data['score'][self.n_elts:new_n_elts] = (
                 iter_data[y_idx, x_idx])
             self.data['iter_id'][self.n_elts:new_n_elts] = iter_id
@@ -246,7 +243,7 @@ def _inverse_transform(perm_lot_results, perm_lot_slice,
     return original_scores, h0_samples
 
 
-def _counting_statistic_on_chunk(perm_chunk, tested_vars, target_vars,
+def _counting_statistic_on_chunk(n_perm, perm_chunk, tested_vars, target_vars,
                                  confounding_vars=None, lost_dof=0,
                                  intercept_test=True, sparsity_threshold=1e-4,
                                  random_state=None):
@@ -268,7 +265,7 @@ def _counting_statistic_on_chunk(perm_chunk, tested_vars, target_vars,
     # max_elts is used to preallocate memory
     max_elts = int(n_regressors * n_descriptors
                    * np.sqrt(sparsity_threshold) * n_perm_chunk)
-    gs_array = GrowableSparseArray(n_perm_chunk, max_elts=max_elts,
+    gs_array = GrowableSparseArray(n_perm + 1, max_elts=max_elts,
                                    threshold=threshold)
 
     if perm_chunk.start == 0:  # add original data results as permutation 0
@@ -307,7 +304,7 @@ def _counting_statistic_on_chunk(perm_chunk, tested_vars, target_vars,
 def rpbi_core(tested_vars, target_vars,
               n_parcellations, parcellations_labels,
               confounding_vars=None, model_intercept=True, threshold=1e-04,
-              n_perm=1000, random_state=0, n_jobs=0):
+              n_perm=1000, random_state=None, n_jobs=0):
     """Run RPBI from parcelled data.
 
     This is the core method for Randomized Parcellation Based Inference.
@@ -347,6 +344,9 @@ def rpbi_core(tested_vars, target_vars,
       must be used.
 
     """
+    # initialize the seed of the random generator
+    rng = check_random_state(random_state)
+
     # check n_jobs (number of CPUs)
     if n_jobs == 0:  # invalid according to joblib's conventions
         raise ValueError("'n_jobs == 0' is not a valid choice. "
@@ -397,13 +397,14 @@ def rpbi_core(tested_vars, target_vars,
     # parallel computing units perform a reduced number of permutations each
     all_chunks_results = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(_counting_statistic_on_chunk)
-        (perm_chunk, testedvars_resid_covars, targetvars_resid_covars,
+        (n_perm, perm_chunk, testedvars_resid_covars, targetvars_resid_covars,
          covars_orthonormed, lost_dof=lost_dof,
-         intercept_test=intercept_test,
-         random_state=random_state, sparsity_threshold=threshold)
+         intercept_test=intercept_test, sparsity_threshold=threshold,
+         random_state=rng.random_integers(np.iinfo(np.int32).max))
         for perm_chunk in gen_even_slices(n_perm + 1, min(n_perm, n_jobs)))
     # reduce results
-    max_elts = int(n_regressors * n_descriptors * np.sqrt(threshold) * n_perm)
+    max_elts = int(n_regressors * n_descriptors
+                   * np.sqrt(threshold) * (n_perm + 1))
     all_results = GrowableSparseArray(
         n_perm + 1, max_elts=max_elts,
         threshold=all_chunks_results[0].threshold)  # same threshold everywhere
@@ -428,21 +429,21 @@ def rpbi_core(tested_vars, target_vars,
         dtype=np.float32).tocsc()
 
     # Slice permutations to treat them in parallel
-    perm_lots_slices = gen_even_slices(n_perm + 2, min(n_perm + 1, n_jobs))
+    perm_lots_slices = [s for s in
+                        gen_even_slices(n_perm + 1, min(n_perm, n_jobs))]
     perm_lots_sizes = [np.sum(all_results.sizes[s]) for s in perm_lots_slices]
     perm_lots_cuts = np.concatenate(([0], np.cumsum(perm_lots_sizes)))
     perm_lots = [
         all_results.get_data()[perm_lots_cuts[i]:perm_lots_cuts[i + 1]]
         for i in xrange(perm_lots_cuts.size - 1)]
-    perm_lots_slices = gen_even_slices(n_perm + 2, min(n_perm + 1, n_jobs))
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_inverse_transform)
           (perm_lot, perm_lot_slice, n_regressors, parcellation_masks,
            n_parcellations, n_parcels_all_parcellations)
           for perm_lot, perm_lot_slice in zip(perm_lots, perm_lots_slices))
     # reduce results
     counting_stat_original_data, h0 = zip(*ret)
-    counting_stat_original_data = np.ravel(counting_stat_original_data)
-    h0 = np.sort(np.ravel(h0))
+    counting_stat_original_data = counting_stat_original_data[0]
+    h0 = np.sort(np.concatenate(h0))
 
     # Convert H1 to neg. log. p-values
     p_values = - np.log10(
@@ -508,7 +509,7 @@ def randomized_parcellation_based_inference(
     if verbose:
         print "Build parcellations"
     parcelled_imaging_vars, parcellations_labels = build_parcellations(
-        imaging_vars, mask,
+        imaging_vars, mask, n_bootstrap_subjs=20,
         n_wards=n_parcellations, ward_sizes=[n_parcels],
         seed=random_state, n_jobs=n_jobs)
 

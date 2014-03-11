@@ -88,14 +88,18 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 
 ### scikit-learn F-scores for comparison ######################################
 # F-test does not allow to observe the effect sign (pure two-sided test)
-
-### scikit-learn F-scores for comparison ######################################
-neg_log_pvals_bonferroni, _, _, _ = randomized_parcellation_based_inference(
+neg_log_pvals_bonferroni, a, b, c = randomized_parcellation_based_inference(
     conditions_encoded, fmri_masked, np.asarray(mask_img.get_data()),
     n_parcellations=20, n_parcels=1000,
-    threshold=0.01, n_perm=100, random_state=0, n_jobs=-1, verbose=True)
+    threshold=1e-6, n_perm=1000, random_state=0, n_jobs=-1, verbose=True)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_bonferroni)).get_data()
+    neg_log_pvals_bonferroni).get_data()
+
+# from parietal.group_analysis.rpbi import rpbi
+# d, e, f = rpbi(
+#     fmri_masked, np.asarray(mask_img.get_data()),
+#     confounds=np.ones((fmri_masked.shape[0], 1)),
+#     test_vars=conditions_encoded.reshape((-1, 1)), n_wards=20)
 
 """
 from nilearn._utils.fixes import f_regression

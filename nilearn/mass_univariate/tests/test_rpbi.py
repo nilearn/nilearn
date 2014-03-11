@@ -78,9 +78,10 @@ def test_gsarray_merge():
                        np.array([1.] * 5 + [2.] * 5))
 
     # Test failure case (merging arrays with different n_iter)
-    gs_array_wrong = GrowableSparseArray(n_iter=1)
+    gs_array_wrong = GrowableSparseArray(n_iter=2)
     gs_array_wrong.append(0, np.ones((5, 1)))
-    gs_array = GrowableSparseArray(n_iter=2)
+    gs_array_wrong.append(1, np.ones((5, 1)))
+    gs_array = GrowableSparseArray(n_iter=1)
     assert_raises(ValueError, gs_array.merge, gs_array_wrong)
 
     # Test failure case (merge a numpy array)
