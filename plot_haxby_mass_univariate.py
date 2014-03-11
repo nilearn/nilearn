@@ -82,7 +82,7 @@ ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Analytic F-test + '
+ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Parametric F-test + '
              '\nBonferroni correction)' +
              '\n%d detections' % p_ma.mask[..., picked_slice].sum())
 ax.axis('off')
