@@ -84,7 +84,7 @@ ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Parametric F-test + '
              '\nBonferroni correction)' +
-             '\n%d detections' % p_ma.mask[..., picked_slice].sum())
+             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
 ax.axis('off')
 
 # Plot permutation p-values map
@@ -96,7 +96,7 @@ im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
                cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
              '\nmax-type correction)' +
-             '\n%d detections' % p_ma.mask[..., picked_slice].sum())
+             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
 ax.axis('off')
 
 grid[0].cax.colorbar(im)
