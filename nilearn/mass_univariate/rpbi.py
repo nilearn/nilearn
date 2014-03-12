@@ -509,7 +509,7 @@ def randomized_parcellation_based_inference(
     if verbose:
         print "Build parcellations"
     parcelled_imaging_vars, parcellations_labels = build_parcellations(
-        imaging_vars, mask, n_bootstrap_subjs=20,
+        imaging_vars, mask, n_bootstrap_subjs=1,
         n_wards=n_parcellations, ward_sizes=[n_parcels],
         seed=random_state, n_jobs=n_jobs)
 
@@ -523,4 +523,4 @@ def randomized_parcellation_based_inference(
         threshold=threshold, n_perm=n_perm,
         random_state=random_state, n_jobs=n_jobs)
 
-    return neg_log_pvals, h0, counting_stat_original_data, parcelled_imaging_vars
+    return neg_log_pvals, h0, counting_stat_original_data, parcelled_imaging_vars, parcellations_labels

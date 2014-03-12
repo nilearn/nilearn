@@ -87,13 +87,38 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals).get_data()
 
 ### scikit-learn F-scores for comparison ######################################
-# F-test does not allow to observe the effect sign (pure two-sided test)
-neg_log_pvals_bonferroni, a, b, c = randomized_parcellation_based_inference(
+n_parcellations = 100
+neg_log_pvals_bonferroni, a, b, c, d = randomized_parcellation_based_inference(
     conditions_encoded, fmri_masked, np.asarray(mask_img.get_data()),
-    n_parcellations=20, n_parcels=1000,
-    threshold=1e-6, n_perm=1000, random_state=0, n_jobs=-1, verbose=True)
+    n_parcellations=n_parcellations, n_parcels=1000,
+    threshold=1e-4, n_perm=1000, random_state=0, n_jobs=-1, verbose=True)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni).get_data()
+
+# <debug>
+from sklearn.metrics import adjusted_mutual_info_score
+
+parcellation_labels = d
+n_voxels = mask_img.get_data().sum()
+mask_array = np.asarray(mask_img.get_data(), dtype=bool)
+for i in range(n_parcellations):
+    ward_ = parcellation_labels[
+        (i * n_voxels):((i + 1) * n_voxels)]
+    ward_data = - np.ones(mask_img.get_data().shape)
+    ward_data[mask_array] = ward_
+    ward_img = nibabel.Nifti1Image(ward_data, mask_img.get_affine())
+    nibabel.save(ward_img, "./tmp_ward_%d" % i)
+
+mutual_info = []
+for i in range(n_parcellations - 1):
+    ward1 = parcellation_labels[
+        (i * n_voxels):((i + 1) * n_voxels)]
+    ward2 = parcellation_labels[
+        ((i + 1) * n_voxels):((i + 2) * n_voxels)]
+    mutual_info.append(adjusted_mutual_info_score(ward1, ward2))
+
+print np.mean(mutual_info)
+# </debug>
 
 # from parietal.group_analysis.rpbi import rpbi
 # d, e, f = rpbi(
