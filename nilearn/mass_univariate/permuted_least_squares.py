@@ -233,8 +233,13 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     Ordinary Least Squares criterion.
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
-    between the tested variates and the target variates [1]. A max-type
+    between the tested variates and the target variates [1, 2]. A max-type
     procedure is used to obtain family-wise corrected p-values.
+
+    The specific permutation scheme implemented here is the one of
+    Freedman & Lane [3]. Its has been demonstrated in [1] that this scheme
+    conveys more sensitivity than alternative schemes. This holds for
+    neuroimaging applications, as discussed in details in [2].
 
     Permutations are performed on parallel computing units. Each of them
     performs a fraction of permutations on the whole dataset. Thus, the max
@@ -304,6 +309,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     [2] Winkler, A. M. et al. (2014).
         Permutation inference for the general linear model.
         Neuroimage.
+    [3] Freedman, D. & Lane, D. (1983).
+        A nonstochastic interpretation of reported significance levels.
+        J. Bus. Econ. Stats., 1(4), 292-298
 
     """
     # initialize the seed of the random generator
