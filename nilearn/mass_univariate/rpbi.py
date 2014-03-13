@@ -509,9 +509,30 @@ def randomized_parcellation_based_inference(
     if verbose:
         print "Build parcellations"
     parcelled_imaging_vars, parcellations_labels = build_parcellations(
-        imaging_vars, mask, n_bootstrap_subjs=1,
+        imaging_vars, mask, n_bootstrap_subjs=50,
         n_wards=n_parcellations, ward_sizes=[n_parcels],
-        seed=random_state, n_jobs=n_jobs)
+        random_state=random_state, n_jobs=n_jobs)
+    # # <temp>
+    # n_samples = tested_vars.shape[0]
+    # from sklearn.cluster import k_means
+    # mask_data = np.asarray(mask.get_data()).astype(bool)
+    # mask_affine = np.asarray(mask.get_affine())
+    # ijk_coords = np.vstack((
+    #         np.asarray(np.where(mask_data)), np.ones(mask_data.sum())))
+    # xyz_coords = np.dot(mask_affine, ijk_coords)[:3].T
+    # parcelled_imaging_vars = np.empty((n_samples, n_parcellations * n_parcels))
+    # parcellations_labels = []
+    # for i in range(n_parcellations):
+    #     print i
+    #     centroids, labels, _ = k_means(xyz_coords, n_parcels, n_jobs=n_jobs)
+    #     print i, "+"
+    #     for j, l in enumerate(np.unique(labels)):
+    #         parcelled_imaging_vars[:, i * n_parcels + j] = (
+    #             imaging_vars[:, labels == j].mean(1))
+    #     parcellations_labels.append(labels.copy())
+    # parcellations_labels = np.ravel(parcellations_labels)
+    # parcelled_imaging_vars = parcelled_imaging_vars.T
+    # # </temp>
 
     ### Statistical inference
     if verbose:

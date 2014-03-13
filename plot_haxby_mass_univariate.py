@@ -30,6 +30,7 @@ References
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 import numpy as np
 import nibabel
+from sklearn.preprocessing import normalize
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import (permuted_ols,
@@ -87,9 +88,11 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals).get_data()
 
 ### scikit-learn F-scores for comparison ######################################
-n_parcellations = 100
+n_parcellations = 5
+#fmri_masked_normalized = fmri_masked - fmri_masked.mean(0)
 neg_log_pvals_bonferroni, a, b, c, d = randomized_parcellation_based_inference(
-    conditions_encoded, fmri_masked, np.asarray(mask_img.get_data()),
+    conditions_encoded, fmri_masked,
+    np.asarray(mask_img.get_data()).astype(bool),
     n_parcellations=n_parcellations, n_parcels=1000,
     threshold=1e-4, n_perm=1000, random_state=0, n_jobs=-1, verbose=True)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
@@ -100,24 +103,25 @@ from sklearn.metrics import adjusted_mutual_info_score
 
 parcellation_labels = d
 n_voxels = mask_img.get_data().sum()
-mask_array = np.asarray(mask_img.get_data(), dtype=bool)
-for i in range(n_parcellations):
-    ward_ = parcellation_labels[
-        (i * n_voxels):((i + 1) * n_voxels)]
-    ward_data = - np.ones(mask_img.get_data().shape)
-    ward_data[mask_array] = ward_
-    ward_img = nibabel.Nifti1Image(ward_data, mask_img.get_affine())
-    nibabel.save(ward_img, "./tmp_ward_%d" % i)
+# mask_array = np.asarray(mask_img.get_data(), dtype=bool)
+# for i in range(n_parcellations):
+#     ward_ = parcellation_labels[
+#         (i * n_voxels):((i + 1) * n_voxels)]
+#     ward_data = - np.ones(mask_img.get_data().shape)
+#     ward_data[mask_array] = ward_
+#     ward_img = nibabel.Nifti1Image(ward_data, mask_img.get_affine())
+#     nibabel.save(ward_img, "./tmp_ward_%d" % i)
 
-mutual_info = []
-for i in range(n_parcellations - 1):
-    ward1 = parcellation_labels[
-        (i * n_voxels):((i + 1) * n_voxels)]
-    ward2 = parcellation_labels[
-        ((i + 1) * n_voxels):((i + 2) * n_voxels)]
-    mutual_info.append(adjusted_mutual_info_score(ward1, ward2))
-
-print np.mean(mutual_info)
+# mutual_info = []
+# for i in range(n_parcellations - 1):
+#     ward1 = parcellation_labels[
+#         (i * n_voxels):((i + 1) * n_voxels)]
+#     ward2 = parcellation_labels[
+#         ((i + 1) * n_voxels):((i + 2) * n_voxels)]
+#     mutual_info.append(adjusted_mutual_info_score(ward1, ward2))
+#
+# print mutual_info
+# print np.mean(mutual_info)
 # </debug>
 
 # from parietal.group_analysis.rpbi import rpbi
