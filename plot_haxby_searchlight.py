@@ -38,8 +38,9 @@ mask_img = nibabel.load(dataset_files.mask)
 
 # .astype() makes a copy.
 process_mask = mask_img.get_data().astype(np.int)
-process_mask[..., 38:] = 0
-process_mask[..., :36] = 0
+picked_slice = 27
+process_mask[..., (picked_slice + 1):] = 0
+process_mask[..., :picked_slice] = 0
 process_mask[:, 30:] = 0
 process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 
@@ -87,13 +88,13 @@ import matplotlib.pyplot as plt
 # Use the fmri mean image as a surrogate of anatomical data
 mean_fmri = fmri_img.get_data().mean(axis=-1)
 
-# Searchlight results
+### Searchlight results
 plt.figure(1)
 # searchlight.scores_ contains per voxel cross validation scores
 s_scores = np.ma.array(searchlight.scores_, mask=np.logical_not(process_mask))
-plt.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
+plt.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
-plt.imshow(np.rot90(s_scores[..., 37]), interpolation='nearest',
+plt.imshow(np.rot90(s_scores[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.hot, vmax=1)
 plt.axis('off')
 plt.title('Searchlight')
@@ -101,9 +102,9 @@ plt.title('Searchlight')
 ### F_score results
 plt.figure(2)
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-plt.imshow(np.rot90(mean_fmri[..., 37]), interpolation='nearest',
+plt.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
-plt.imshow(np.rot90(p_ma[..., 37]), interpolation='nearest',
+plt.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.hot)
 plt.title('F-scores')
 plt.axis('off')

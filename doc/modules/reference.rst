@@ -203,3 +203,21 @@ Functions
    butterworth
 
 
+.. _mass_univariate:
+
+:mod:`nilearn.mass_univariate`: Massively Univariate Analysis
+=============================================================
+
+.. automodule:: nilearn.mass_univariate
+   :no-members:
+   :no-inherited-members:
+
+Functions
+---------
+.. currentmodule:: nilearn.mass_univariate
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   permuted_ols
