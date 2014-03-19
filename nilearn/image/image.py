@@ -177,7 +177,7 @@ def _crop_img_to(niimg, slices, copy=True):
     return new_niimg
 
 
-def crop_img(niimg, rtol=1e-6, copy=True):
+def crop_img(niimg, rtol=1e-8, copy=True):
     """Crops niimg as much as possible
 
     Will crop niimg, removing as many zero entries as possible
@@ -207,9 +207,10 @@ def crop_img(niimg, rtol=1e-6, copy=True):
     niimg = check_niimg(niimg)
     data = niimg.get_data()
     infinity_norm = max(-data.min(), data.max())
+    passes_threshold = np.logical_or(data < -rtol * infinity_norm,
+                                     data > rtol * infinity_norm)
 
-    coords = np.array(np.where(
-            np.abs(data) > rtol * infinity_norm))
+    coords = np.array(np.where(passes_threshold))
     start = coords.min(axis=1)
     end = coords.max(axis=1) + 1
 
