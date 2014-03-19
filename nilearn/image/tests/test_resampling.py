@@ -2,7 +2,8 @@
 Test the resampling code.
 """
 
-from nose.tools import assert_equal, assert_raises, assert_false
+from nose.tools import assert_equal, assert_raises, assert_false, \
+    assert_almost_equal
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -124,3 +125,52 @@ def test_resampling_error_checks():
     assert_false(np.may_share_memory(img_r.get_data(), img.get_data()))
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
     np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
+
+
+def test_4D_affine_bounding_box_error():
+
+    small_data = np.ones([4, 4, 4])
+    small_data_4D_affine = np.eye(4)
+    small_data_4D_affine[:3, -1] = np.array([5, 5, 5])
+
+    small_img = Nifti1Image(small_data,
+                            small_data_4D_affine)
+
+    bigger_data_4D_affine = np.eye(4)
+    bigger_data = np.zeros([9, 9, 9])
+    bigger_img = Nifti1Image(bigger_data,
+                             bigger_data_4D_affine)
+
+    # We would like to check whether all/most of the data
+    # will be contained in the resampled image
+    # The measure will be the l2 norm, since some resampling
+    # schemes approximately conserve it
+
+    def l2_norm(arr):
+        return (arr ** 2).sum()
+
+    # resample using 4D affine and specified target shape
+    small_to_big_with_shape = resample_img(
+        small_img,
+        target_affine=bigger_img.get_affine(),
+        target_shape=bigger_img.shape)
+    # resample using 3D affine and no target shape
+    small_to_big_without_shape_3D_affine = resample_img(
+        small_img,
+        target_affine=bigger_img.get_affine()[:3, :3])
+    # resample using 4D affine and no target shape
+    small_to_big_without_shape = resample_img(
+        small_img,
+        target_affine=bigger_img.get_affine())
+
+    # The first 2 should pass
+    assert_almost_equal(l2_norm(small_data),
+                 l2_norm(small_to_big_with_shape.get_data()))
+    assert_almost_equal(l2_norm(small_data),
+                 l2_norm(small_to_big_without_shape_3D_affine.get_data()))
+
+    # This should break
+    assert_almost_equal(l2_norm(small_data),
+                 l2_norm(small_to_big_without_shape.get_data()))
+
+
