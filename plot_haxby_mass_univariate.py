@@ -41,14 +41,18 @@ conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
 
 ### Perform massively univariate analysis with permuted OLS ###################
-neg_log_pvals, all_scores, _ = permuted_ols(
+# We use a two-sided t-test to compute p-values, but we keep trace of the
+# effect sign to add it back at the end and thus observe the signed effect
+neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     conditions_encoded, fmri_masked,  # + intercept as a covariate by default
-    n_perm=10000,
+    n_perm=10000, two_sided_test=True,
     n_jobs=1)  # can be changed to use more CPUs
-neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals).get_data()
+signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
+signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
+    signed_neg_log_pvals).get_data()
 
 ### scikit-learn F-scores for comparison ######################################
+# F-test does not allow to observe the effect sign (pure two-sided test)
 from nilearn._utils.fixes import f_regression
 _, pvals_bonferroni = f_regression(
     fmri_masked, conditions_encoded)  # f_regression implicitly adds intercept
@@ -75,30 +79,50 @@ grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
                  share_all=True, cbar_location="right", cbar_mode="single",
                  cbar_size="7%", cbar_pad="1%")
 
-# Plot thresholded F-scores map
+# Plot thresholded p-values map corresponding to F-scores
 ax = grid[0]
 p_ma = np.ma.masked_less(neg_log_pvals_bonferroni_unmasked, vmin)
 ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Parametric F-test + '
-             '\nBonferroni correction)' +
+          cmap=plt.cm.RdBu_r, vmin=-vmax, vmax=vmax)
+ax.set_title(r'Negative $\log_{10}$ p-values'
+             '\n(Parametric two-sided F-test'
+             '\n+ Bonferroni correction)'
              '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
 ax.axis('off')
 
 # Plot permutation p-values map
 ax = grid[1]
-p_ma = np.ma.masked_less(neg_log_pvals_unmasked, vmin)[..., 0]
+p_ma = np.ma.masked_inside(signed_neg_log_pvals_unmasked, -vmin, vmin)[..., 0]
 ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.gray)
 im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-               cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
-             '\nmax-type correction)' +
+               cmap=plt.cm.RdBu_r, vmin=-vmax, vmax=vmax)
+ax.set_title(r'Negative $\log_{10}$ p-values'
+             '\n(Non-parametric two-sided test'
+             '\n+ max-type correction)'
              '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
 ax.axis('off')
 
-grid[0].cax.colorbar(im)
+# plot colorbar
+colorbar = grid[1].cax.colorbar(im)
+colorbar_mask = np.logical_and(colorbar._y > -1, colorbar._y < 1)
+colorbar._y[colorbar_mask] = 0.
+colorbar_mask = np.logical_and(colorbar._values > -1, colorbar._values < 1)
+colorbar._values[colorbar_mask] = 0.
+colorbar_mask = np.logical_and(colorbar._boundaries > -1,
+                               colorbar._boundaries < 1)
+colorbar._boundaries[colorbar_mask] = 0.
+plt.draw()  # update colormap labels
 plt.subplots_adjust(0., 0.03, 1., 0.83)
+# unsign colorbar tick labels
+new_ticklabels = []
+for tick in colorbar.cbar_axis.get_ticklabels():
+    if len(tick._text) > 0 and tick._text[0] == u'\u2212':
+        new_ticklabels.append(tick._text[1:])
+    else:
+        new_ticklabels.append(tick._text)
+
+colorbar.cbar_axis.set_ticklabels(new_ticklabels)
 plt.show()
