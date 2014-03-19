@@ -107,13 +107,6 @@ ax.axis('off')
 
 # plot colorbar
 colorbar = grid[1].cax.colorbar(im)
-colorbar_mask = np.logical_and(colorbar._y > -1, colorbar._y < 1)
-colorbar._y[colorbar_mask] = 0.
-colorbar_mask = np.logical_and(colorbar._values > -1, colorbar._values < 1)
-colorbar._values[colorbar_mask] = 0.
-colorbar_mask = np.logical_and(colorbar._boundaries > -1,
-                               colorbar._boundaries < 1)
-colorbar._boundaries[colorbar_mask] = 0.
 plt.draw()  # update colormap labels
 plt.subplots_adjust(0., 0.03, 1., 0.83)
 # unsign colorbar tick labels
