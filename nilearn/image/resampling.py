@@ -203,10 +203,22 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     data = niimg.get_data()
 
     if target_shape is None:
-        target_shape = data.shape[:3]
+        if target_affine.shape == (4, 4):
+            # We have a 4D affine, i.e. an offset and sampling axes
+            # Since no shape is given, we will choose one that with
+            # guarantee contains all the data contained in the
+            # _positive orthant_ of the affine
+            transform_affine = np.dot(linalg.inv(target_affine), affine)
+            (_, fimax), (_, fjmax), (_, fkmax) = \
+                get_bounds(data.shape[:3], transform_affine)
+            target_shape = (int(np.ceil(fimax)) + 1,
+                            int(np.ceil(fjmax)) + 1,
+                            int(np.ceil(fkmax)) + 1)
+        else:
+            target_shape = data.shape[:3]
     target_shape = list(target_shape)
 
-    if target_affine.shape[0] == 3:
+    if target_affine.shape == (3, 3):
         # We have a 3D affine, we need to find out the offset and
         # shape to keep the same bounding box in the new space
         affine4d = np.eye(4)
@@ -222,6 +234,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         target_shape = (int(np.ceil(xmax - xmin)) + 1,
                         int(np.ceil(ymax - ymin)) + 1,
                         int(np.ceil(zmax - zmin)) + 1, )
+
 
     if np.all(target_affine == affine):
         # Small trick to be more numerically stable
