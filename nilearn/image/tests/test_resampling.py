@@ -4,6 +4,7 @@ Test the resampling code.
 
 from nose.tools import assert_equal, assert_raises, assert_false, \
     assert_almost_equal
+from numpy.testing import assert_array_equal
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -131,13 +132,13 @@ def test_4D_affine_bounding_box_error():
 
     small_data = np.ones([4, 4, 4])
     small_data_4D_affine = np.eye(4)
-    small_data_4D_affine[:3, -1] = np.array([5, 5, 5])
+    small_data_4D_affine[:3, -1] = np.array([5, 4, 5])
 
     small_img = Nifti1Image(small_data,
                             small_data_4D_affine)
 
     bigger_data_4D_affine = np.eye(4)
-    bigger_data = np.zeros([9, 9, 9])
+    bigger_data = np.zeros([10, 10, 10])
     bigger_img = Nifti1Image(bigger_data,
                              bigger_data_4D_affine)
 
@@ -169,8 +170,9 @@ def test_4D_affine_bounding_box_error():
     assert_almost_equal(l2_norm(small_data),
                  l2_norm(small_to_big_without_shape_3D_affine.get_data()))
 
-    # This should break
+    # This now passes as well
     assert_almost_equal(l2_norm(small_data),
                  l2_norm(small_to_big_without_shape.get_data()))
 
-
+    assert_array_equal(small_to_big_without_shape.shape,
+                 small_data_4D_affine[:3, -1] + np.array(small_img.shape))
