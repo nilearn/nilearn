@@ -109,7 +109,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
                  mask_args=None,
-                 memory_level=0, memory=Memory(cachedir=None),
+                 memory_level=1, memory=Memory(cachedir=None),
                  verbose=0
                  ):
         # Mask is provided or computed
