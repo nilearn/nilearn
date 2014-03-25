@@ -9,7 +9,7 @@ import numpy as np
 
 from nibabel import Nifti1Image
 
-from ..resampling import resample_img
+from ..resampling import resample_img, BoundingBoxError
 from ..._utils import testing
 
 ###############################################################################
@@ -176,3 +176,57 @@ def test_4D_affine_bounding_box_error():
 
     assert_array_equal(small_to_big_without_shape.shape,
                  small_data_4D_affine[:3, -1] + np.array(small_img.shape))
+
+
+def test_raises_upon_3x3_affine_and_no_shape():
+    img = Nifti1Image(np.zeros([8, 9, 10]),
+                      affine=np.eye(4))
+    with assert_raises(ValueError("Given target shape without anchor "
+                                  "vector: Affine should be (4, 4) and "
+                                  "not (3, 3)")):
+        new_img = resample_img(img, target_affine=np.eye(3) * 2,
+                               target_shape=(10, 10, 10))
+
+
+def test_raises_bbox_error_if_data_outside_box():
+
+    # Make some cases which should raise exceptions
+
+    # original image
+    data = np.zeros([8, 9, 10])
+    affine = np.eye(4)
+    affine_offset = np.array([1, 1, 1])
+    affine[:3, 3] = affine_offset
+
+    img = Nifti1Image(data, affine)
+
+    # some axis flipping affines
+    axis_flips = np.array(map(np.diag,
+                              [[-1, 1, 1, 1],
+                               [1, -1, 1, 1],
+                               [1, 1, -1, 1],
+                               [-1, -1, 1, 1],
+                               [-1, 1, -1, 1],
+                               [1, -1, -1, 1]]))
+
+    # some in plane 90 degree rotations base on these
+    # (by permuting two lines)
+    af = axis_flips
+    rotations = np.array([af[0][[1, 0, 2, 3]],
+                          af[0][[2, 1, 0, 3]],
+                          af[1][[1, 0, 2, 3]],
+                          af[1][[0, 2, 1, 3]],
+                          af[2][[2, 1, 0, 3]],
+                          af[2][[0, 2, 1, 3]]])
+
+    new_affines = np.concatenate([axis_flips,
+                                  rotations])
+    new_offset = np.array([0., 0., 0.])
+    new_affines[:, :3, 3] = new_offset[np.newaxis, :]
+
+    for new_affine in new_affines:
+        with assert_raises(
+            BoundingBoxError("The field of view given "
+                             "by the target affine does "
+                             "not contain any of the data")):
+            new_img = resample_img(img, target_affine=new_affine)

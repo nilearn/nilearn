@@ -117,6 +117,12 @@ def get_bounds(shape, affine):
     return zip(box.min(axis=-1), box.max(axis=-1))
 
 
+class BoundingBoxError(ValueError):
+    """This error is raised when a transformation is
+    incompatible with the given data."""
+    pass
+
+
 def resample_img(niimg, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
     """ Resample a Nifti Image
