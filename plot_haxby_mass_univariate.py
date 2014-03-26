@@ -88,10 +88,11 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals).get_data()
 
 ### scikit-learn F-scores for comparison ######################################
-n_parcellations = 5
+n_parcellations = 100
 #fmri_masked_normalized = fmri_masked - fmri_masked.mean(0)
 neg_log_pvals_bonferroni, a, b, c, d = randomized_parcellation_based_inference(
-    conditions_encoded, fmri_masked,
+    grouped_conditions_encoded,
+    grouped_fmri_masked,
     np.asarray(mask_img.get_data()).astype(bool),
     n_parcellations=n_parcellations, n_parcels=1000,
     threshold=1e-4, n_perm=1000, random_state=0, n_jobs=-1, verbose=True)
@@ -99,10 +100,10 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni).get_data()
 
 # <debug>
-from sklearn.metrics import adjusted_mutual_info_score
+# from sklearn.metrics import adjusted_mutual_info_score
 
-parcellation_labels = d
-n_voxels = mask_img.get_data().sum()
+# parcellation_labels = d
+# n_voxels = mask_img.get_data().sum()
 # mask_array = np.asarray(mask_img.get_data(), dtype=bool)
 # for i in range(n_parcellations):
 #     ward_ = parcellation_labels[
