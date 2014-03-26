@@ -20,13 +20,13 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
     """Utility function to compute tvalues with linalg or statsmodels
 
     Massively univariate linear model (= each target is considered
-    indenpendently).
+    independently).
 
     Parameters
     ----------
     tested_vars: array-like, shape=(n_samples, n_regressors)
       Tested variates, the associated coefficient of which are to be tested
-      indenpendently with a t-test, resulting in as many t-values.
+      independently with a t-test, resulting in as many t-values.
 
     target_vars: array-like, shape=(n_samples, n_targets)
       Target variates, to be approximated with a linear combination of
