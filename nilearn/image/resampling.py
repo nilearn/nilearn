@@ -125,7 +125,7 @@ class BoundingBoxError(ValueError):
 
 def resample_img(niimg, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
-    """ Resample a Nifti Image
+    """Resample a Nifti Image
 
     Parameters
     ----------
@@ -139,7 +139,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     target_shape: tuple or list, optional
         If specified, the image will be resized to match this new shape.
         len(target_shape) must be equal to 3.
-        A target_affine has to be specified jointly with target_shape.
+        If target_shape is specified, a target_affine of shape (4, 4)
+        must also be given.
 
     interpolation: str, optional
         Can be continuous' (default) or 'nearest'. Indicate the resample method
@@ -158,6 +159,32 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     resampled: nibabel.Nifti1Image
         input image, resampled to have respectively target_shape and
         target_affine as shape and affine.
+
+    Notes
+    =====
+    If a 4x4 transformation matrix (target_affine) is given and all of the 
+    transformed data points have a negative voxel index along one of the 
+    axis, then none of the data will be visible in the transformed image 
+    and a BoundingBoxError will be raised.
+
+    If a 4x4 transformation matrix (target_affine) is given and no target
+    shape is provided, the resulting image will have voxel coordinate 
+    (0, 0, 0) in the affine offset (4th column of target affine) and will
+    extend far enough to contain all the visible data and a margin of one
+    voxel.
+
+    If a 3x3 transformation matrix is given as target_affine, it will be
+    assumed to represent the three coordinate axes of the target space. In
+    this case the affine offset (4th column of a 4x4 transformation matrix)
+    as well as the target_shape will be inferred by resample_img, such that
+    the resulting field of view is the closest possible (with a margin of
+    1 voxel) bounding box around the transformed data.
+
+    In certain cases one may want to obtain a transformed image with the
+    closest bounding box around the data, which at the same time respects
+    a voxel grid defined by a 4x4 affine transformation matrix. In this 
+    case, one resamples the image using this function given the target
+    affine and no target shape. One then uses crop_img on the result.
     """
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -219,7 +246,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         target_affine_ = np.eye(4)
         target_affine[:3, :3] = target_affine
     else:
-        target_affine_ = target_affine
+        target_affine_ = target_affine.copy()
     transform_affine = np.linalg.inv(target_affine_).dot(affine)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
         data.shape[:3], transform_affine)
