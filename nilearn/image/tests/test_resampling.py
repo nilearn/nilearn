@@ -181,9 +181,10 @@ def test_4D_affine_bounding_box_error():
 def test_raises_upon_3x3_affine_and_no_shape():
     img = Nifti1Image(np.zeros([8, 9, 10]),
                       affine=np.eye(4))
-    with assert_raises(ValueError("Given target shape without anchor "
-                                  "vector: Affine should be (4, 4) and "
-                                  "not (3, 3)")):
+    # with assert_raises(ValueError("Given target shape without anchor "
+    #                               "vector: Affine should be (4, 4) and "
+    #                               "not (3, 3)")):
+    with assert_raises(ValueError):
         new_img = resample_img(img, target_affine=np.eye(3) * 2,
                                target_shape=(10, 10, 10))
 
@@ -225,8 +226,9 @@ def test_raises_bbox_error_if_data_outside_box():
     new_affines[:, :3, 3] = new_offset[np.newaxis, :]
 
     for new_affine in new_affines:
-        with assert_raises(
-            BoundingBoxError("The field of view given "
-                             "by the target affine does "
-                             "not contain any of the data")):
+        # with assert_raises(
+        #     BoundingBoxError("The field of view given "
+        #                      "by the target affine does "
+        #                      "not contain any of the data")):
+        with assert_raises(BoundingBoxError):
             new_img = resample_img(img, target_affine=new_affine)

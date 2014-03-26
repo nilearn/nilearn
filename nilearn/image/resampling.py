@@ -170,6 +170,11 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                          'the 3D grid, and thus of length 3. %s was specified'
                          % str(target_shape))
 
+    if target_shape is not None and target_affine.shape == (3, 3):
+        raise ValueError("Given target shape without anchor "
+                         "vector: Affine should be (4, 4) and "
+                         "not (3, 3)")
+
     if interpolation == 'continuous':
         interpolation_order = 3
     elif interpolation == 'nearest':
@@ -208,45 +213,47 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     # array.
     data = niimg.get_data()
 
-    if target_shape is None:
-        if target_affine.shape == (4, 4):
-            # We have a 4D affine, i.e. an offset and sampling axes
-            # Since no shape is given, we will choose one that with
-            # guarantee contains all the data contained in the
-            # _positive orthant_ of the affine
-            transform_affine = np.dot(linalg.inv(target_affine), affine)
-            (_, fimax), (_, fjmax), (_, fkmax) = \
-                get_bounds(data.shape[:3], transform_affine)
-            target_shape = (int(np.ceil(fimax)) + 1,
-                            int(np.ceil(fjmax)) + 1,
-                            int(np.ceil(fkmax)) + 1)
-        else:
-            target_shape = data.shape[:3]
-    target_shape = list(target_shape)
-
+    # Get a bounding box for the transformed data
+    # Embed target_affine in 4x4 shape if necessary
     if target_affine.shape == (3, 3):
-        # We have a 3D affine, we need to find out the offset and
-        # shape to keep the same bounding box in the new space
-        affine4d = np.eye(4)
-        affine4d[:3, :3] = target_affine
-        transform_affine = np.dot(linalg.inv(affine4d), affine)
-        # The bounding box in the new world, if no offset is given
-        (xmin, xmax), (ymin, ymax), (zmin, zmax) = \
-            get_bounds(data.shape[:3], transform_affine)
+        target_affine_ = np.eye(4)
+        target_affine[:3, :3] = target_affine
+    else:
+        target_affine_ = target_affine
+    transform_affine = np.linalg.inv(target_affine_).dot(affine)
+    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
+        data.shape[:3], transform_affine)
 
-        offset = np.array((xmin, ymin, zmin))
-        offset = np.dot(target_affine, offset)
-        target_affine = from_matrix_vector(target_affine, offset[:3])
-        target_shape = (int(np.ceil(xmax - xmin)) + 1,
-                        int(np.ceil(ymax - ymin)) + 1,
-                        int(np.ceil(zmax - zmin)) + 1, )
+    # if target_affine is (3, 3), then calculate
+    # offset from bounding box and update bounding box
+    # to be in the voxel coordinates of the calculated 4x4 affine
+    if target_affine.shape == (3, 3):
+        offset = target_affine.dot(np.array([xmin, ymin, zmin]))
+        target_affine_[:3, 3] = offset
+        (xmin, xmax), (ymin, ymax), (zmin, zmax) = (
+            (0, xmax - xmin), (0, ymax - ymin), (0, zmax - zmin))
 
+    # if target_shape is not given (always the case with 3x3
+    # transformation matrix and sometimes the case with 4x4
+    # transformation matrix), then set it to contain the bounding
+    # box by a margin of 1 voxel
+    if target_shape is None:
+        target_shape = (int(np.ceil(xmax)) + 1,
+                        int(np.ceil(ymax)) + 1,
+                        int(np.ceil(zmax)) + 1)
 
-    if np.all(target_affine == affine):
+    # Check whether transformed data is actually within the FOV
+    # of the target affine
+    if xmax < 0 or ymax < 0 or zmax < 0:
+        raise BoundingBoxError("The field of view given "
+                             "by the target affine does "
+                             "not contain any of the data")
+
+    if np.all(target_affine_ == affine):
         # Small trick to be more numerically stable
         transform_affine = np.eye(4)
     else:
-        transform_affine = np.dot(linalg.inv(affine), target_affine)
+        transform_affine = np.dot(linalg.inv(affine), target_affine_)
     A, b = to_matrix_vector(transform_affine)
     A_inv = linalg.inv(A)
     # If A is diagonal, ndimage.affine_transform is clever enough to use a
@@ -280,4 +287,4 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                                                   offset=np.dot(A_inv, b),
                                                   output_shape=target_shape,
                                                   order=interpolation_order)
-    return Nifti1Image(resampled_data, target_affine)
+    return Nifti1Image(resampled_data, target_affine_)
