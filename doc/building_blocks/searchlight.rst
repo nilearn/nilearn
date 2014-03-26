@@ -223,7 +223,7 @@ strategy.
 In Nilearn's :func:`nilearn.mass_univariate.permuted_ols` function, we
 permute a parametric t-test. Unlike F-test, a t-test can be signed
 (*one-sided test*), that is both the absolute value and the sign of an
-effect are considered. Thus, only positive (resp. negative) effects
+effect are considered. Thus, only positive effects
 can be focused on.  It is still possible to perform a two-sided test
 equivalent to a permuted F-test by setting the argument
 `two_sided_test` to `True`. In the example above, we do perform a two-sided
