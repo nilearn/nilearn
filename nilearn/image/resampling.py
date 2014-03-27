@@ -244,7 +244,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     # Embed target_affine in 4x4 shape if necessary
     if target_affine.shape == (3, 3):
         target_affine_ = np.eye(4)
-        target_affine[:3, :3] = target_affine
+        target_affine_[:3, :3] = target_affine
     else:
         target_affine_ = target_affine.copy()
     transform_affine = np.linalg.inv(target_affine_).dot(affine)
