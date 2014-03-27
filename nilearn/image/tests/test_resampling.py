@@ -28,6 +28,33 @@ def rotation(theta, phi):
     return np.dot(a1, a2)
 
 
+def pad(array, *args):
+    """will pad an ndarray with zeros of quantity specified
+    in args as follows args = (x1minpad, x1maxpad, x2minpad,
+    x2maxpad, x3minpad, ...)"""
+
+    if len(args) % 2 != 0:
+        args = args + [0]
+
+    all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
+    all_paddings[:len(args) / 2] = np.array(args).reshape(-1, 2)
+
+    lower_paddings, upper_paddings = all_paddings.T
+    new_shape = np.array(array.shape) + upper_paddings + lower_paddings
+
+    padded = np.zeros(new_shape, dtype=array.dtype)
+    source_slices = [slice(max(-lp, 0), min(s + up, s))
+                     for lp, up, s in zip(lower_paddings, 
+                                          upper_paddings,
+                                          array.shape)]
+    target_slices = [slice(max(lp, 0), min(s - up, s))
+                     for lp, up, s in zip(lower_paddings,
+                                          upper_paddings,
+                                          new_shape)]
+
+    padded[target_slices] = array[source_slices].copy()
+    return padded
+
 ###############################################################################
 # Tests
 def test_identity_resample():
@@ -236,8 +263,8 @@ def test_raises_bbox_error_if_data_outside_box():
             new_img = resample_img(img, target_affine=new_affine)
 
 # Transform real data using easily checkable transformations
-# 1) axis flips
-def test_resampling_result_axis_flip():
+# 1) axis permutations
+def test_resampling_result_axis_permutation():
 
     # create a cuboid full of deterministic data, padded with one
     # voxel thickness of zeros
@@ -249,18 +276,37 @@ def test_resampling_result_axis_flip():
 
     source_img = Nifti1Image(full_data, np.eye(4))
 
-    axis_flips = [[0, 1, 2],
-                  [1, 0, 2],
-                  [2, 1, 0],
-                  [0, 2, 1]]
+    axis_permutations = [[0, 1, 2],
+                         [1, 0, 2],
+                         [2, 1, 0],
+                         [0, 2, 1]]
 
     # check 3x3 transformation matrix
-    for af in axis_flips:
-        target_affine = np.eye(3)[af]
+    for ap in axis_permutations:
+        target_affine = np.eye(3)[ap]
         resampled_img = resample_img(source_img,
                                      target_affine=target_affine)
 
         resampled_data = resampled_img.get_data()
-        what_resampled_data_should_be = full_data.transpose(af)
+        what_resampled_data_should_be = full_data.transpose(ap)
+        assert_array_almost_equal(resampled_data,
+                                  what_resampled_data_should_be)
+
+    # check 4x4 transformation matrix
+    offset = np.array([-2, 1, -3])
+    for ap in axis_permutations:
+        target_affine = np.eye(4)
+        target_affine[:3, :3] = np.eye(3)[ap]
+        target_affine[:3, 3] = offset
+
+        resampled_img = resample_img(source_img,
+                                     target_affine=target_affine)
+        resampled_data = resampled_img.get_data()
+        offset_cropping = np.vstack([-offset[ap][np.newaxis, :],
+                                     np.zeros([1, 3])]
+                                    ).T.ravel().astype(int)
+        what_resampled_data_should_be = pad(full_data.transpose(ap),
+                                            *list(offset_cropping))
+
         assert_array_almost_equal(resampled_data,
                                   what_resampled_data_should_be)
