@@ -4,7 +4,7 @@ Test the resampling code.
 
 from nose.tools import assert_equal, assert_raises, assert_false, \
     assert_almost_equal
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -170,7 +170,9 @@ def test_4D_affine_bounding_box_error():
     assert_almost_equal(l2_norm(small_data),
                  l2_norm(small_to_big_without_shape_3D_affine.get_data()))
 
-    # This now passes as well
+    # After correcting decision tree for 4x4 affine given + no target shape
+    # from "use initial shape" to "calculate minimal bounding box respecting
+    # the affine anchor and the data"
     assert_almost_equal(l2_norm(small_data),
                  l2_norm(small_to_big_without_shape.get_data()))
 
@@ -232,3 +234,33 @@ def test_raises_bbox_error_if_data_outside_box():
         #                      "not contain any of the data")):
         with assert_raises(BoundingBoxError):
             new_img = resample_img(img, target_affine=new_affine)
+
+# Transform real data using easily checkable transformations
+# 1) axis flips
+def test_resampling_result_axis_flip():
+
+    # create a cuboid full of deterministic data, padded with one
+    # voxel thickness of zeros
+    core_shape = (3, 5, 4)
+    core_data = np.arange(np.prod(core_shape)).reshape(core_shape)
+    full_data_shape = np.array(core_shape) + 2
+    full_data = np.zeros(full_data_shape)
+    full_data[[slice(1, 1 + s) for s in core_shape]] = core_data
+
+    source_img = Nifti1Image(full_data, np.eye(4))
+
+    axis_flips = [[0, 1, 2],
+                  [1, 0, 2],
+                  [2, 1, 0],
+                  [0, 2, 1]]
+
+    # check 3x3 transformation matrix
+    for af in axis_flips:
+        target_affine = np.eye(3)[af]
+        resampled_img = resample_img(source_img,
+                                     target_affine=target_affine)
+
+        resampled_data = resampled_img.get_data()
+        what_resampled_data_should_be = full_data.transpose(af)
+        assert_array_almost_equal(resampled_data,
+                                  what_resampled_data_should_be)
