@@ -203,7 +203,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
     return data_dir
 
 
-def _uncompress_file(file_, delete_archive=True):
+def _uncompress_file(file_, subfolder_name=None, delete_archive=True):
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -227,7 +227,22 @@ def _uncompress_file(file_, delete_archive=True):
         processed = False
         if ext == '.zip':
             z = zipfile.ZipFile(file_)
-            z.extractall(data_dir)
+            z.extractall(path=data_dir)
+            if subfolder_name is not None:
+                files_of_interest = [f for f in z.namelist()
+                                     if f.startswith(subfolder_name)]
+                z.extractall(path=data_dir, members=files_of_interest)
+                for f in files_of_interest:
+                    target_file = os.path.join(
+                        data_dir,
+                        str.strip(str.split(f, subfolder_name, 1)[1], '/'))
+                    if not os.path.exists(os.path.dirname(target_file)):
+                        os.makedirs(os.path.dirname(target_file))
+                    shutil.move(os.path.join(data_dir, f),
+                                os.path.join(data_dir, target_file))
+                shutil.rmtree(os.path.join(data_dir, subfolder_name))
+            else:
+                z.extractall(path=data_dir)
             z.close()
             processed = True
         elif ext == '.gz':
@@ -258,7 +273,7 @@ def _uncompress_file(file_, delete_archive=True):
         raise
 
 
-def _fetch_file(url, data_dir, resume=True, overwrite=False,
+def _fetch_file(url, data_dir, file_name=None, resume=True, overwrite=False,
                 md5sum=None, verbose=0):
     """Load requested file, downloading it if needed or requested.
 
@@ -297,9 +312,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    file_name = os.path.basename(url)
-    # Eliminate vars if needed
-    file_name = file_name.split('?')[0]
+    if file_name is None:
+        file_name = os.path.basename(url)
+        # Eliminate vars if needed
+        file_name = file_name.split('?')[0]
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
@@ -1464,3 +1480,253 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
         label=files[32:64],
         mask=files[64],
         mask_roi=files[65:])
+
+
+def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
+                              get_anats=False,
+                              data_dir=None, url=None, resume=True, verbose=0):
+    """Download and load Brainomics Localizer dataset (94 subjects).
+
+    "The Functional Localizer is a simple and fast acquisition
+    procedure based on a 5-minute functional magnetic resonance
+    imaging (fMRI) sequence that can be run as easily and as
+    systematically as an anatomical scan. This protocol captures the
+    cerebral bases of auditory and visual perception, motor actions,
+    reading, language comprehension and mental calculation at an
+    individual level. Individual functional maps are reliable and
+    quite precise. The procedure is decribed in more detail on the
+    Functional Localizer page."
+    (see http://brainomics.cea.fr/localizer/)
+
+    "Scientific results obtained using this dataset are described in
+    Pinel et al., 2007" [1]
+
+    Parameters
+    ----------
+    contrasts: list of str
+        The contrasts to be fetched (for all 94 subjects available).
+        Allowed values are:
+        {"computation audio", ..., "sentences video"}
+        or equivalently:
+        {"auditory calculation", ..., "visual sentences vs checkerboard"}.
+
+    get_tmaps: boolean
+        Whether t maps should be fetched or not.
+
+    get_masks: boolean
+        Whether individual masks should be fetched or not.
+
+    get_anats: boolean
+        Whether individual structural images should be fetched or not.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    verbose: int
+        Verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'cmaps': string list
+            Paths to nifti contrast maps
+        'tmaps' string list (if 'get_tmaps' set to True)
+            Paths to nifti t maps
+        'masks': string list
+            Paths to nifti files corresponding to the subjects individual masks
+        'anats': string
+            Path to nifti files corresponding to the subjects structural images
+
+    References
+    ----------
+    [1] Pinel, Philippe, et al.
+        "Fast reproducible identification and large-scale databasing of
+         individual functional cognitive networks."
+        BMC neuroscience 8.1 (2007): 91.
+
+    """
+    contrast_name_wrapper = {
+        "computation audio": "auditory calculation",
+        "computation-sentences audio": "auditory calculation vs "
+           + "auditory sentences",
+        "c": "auditory click vs auditory sentences",
+        "d": "auditory processing",
+        "e": "auditory processing vs visual processing",
+        "sentences audio": "auditory sentences",
+        "computation": "auditory&visual calculation",
+        "computation-sentences": "auditory&visual calculation vs sentences",
+        "i": "auditory&visual motor vs cognitive processing",
+        "sentences": "auditory&visual sentences",
+        "checkerboard": "checkerboard",
+        "l": "cognitive processing vs motor",
+        "checkerboardH": "horizontal checkerboard",
+        "n": "horizontal vs vertical checkerboard",
+        "motor left audio": "left auditory click",
+        "motor left": "left auditory&visual click",
+        "motor": "left auditory & visual click vs "
+           + "right auditory&visual click",
+        "motor left video": "left visual click",
+        "motor right audio": "right auditory click",
+        "motor right": "right auditory&visual click",
+        "right-left": "right auditory & visual click "
+           + "vs left auditory&visual click",
+        "motor right video": "right visual click",
+        "checkerboardV": "vertical checkerboard",
+        "x": "vertical vs horizontal checkerboard",
+        "computation video": "visual calculation",
+        "computation-sentences video": "visual calculation vs sentences",
+        "aa": "visual click vs visual sentences",
+        "ab": "visual processing",
+        "ac": "visual processing vs auditory processing",
+        "ad": "visual processing vs checkerboard",
+        "sentences video": "visual sentences",
+        "af": "visual sentences vs checkerboard"}
+    allowed_contrasts = contrast_name_wrapper.values()
+    # convert contrast names
+    contrasts_wrapped = []
+    for contrast in contrasts:
+        if contrast in allowed_contrasts:
+            contrasts_wrapped.append(contrast)
+        elif contrast in contrast_name_wrapper:
+            contrasts_wrapped.append(contrast_name_wrapper[contrast])
+        else:
+            raise ValueError("Contrast \'%s\' is not available" % contrast)
+
+    # It is better to perform several small requests than a big one because:
+    # - Brainomics server has no cache
+    # - Local (cached) version of the files can be checked for each contrast
+    opts = {'uncompress': "brainomics_data",
+            'file_name': "brainomics_data.zip"}
+    data_types = ["c map"]
+    if get_tmaps:
+        data_types.append(["t map"])
+    rql_types = str.join(", ", ["\"" + x + "\"" for x in data_types])
+    urls = ["http://brainomics.cea.fr/localizer/?rql="
+            + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
+                           "X label XL, X identifier XI, "
+                           "X format XF, X description XD, "
+                           "X type IN(%s), X label \"%s\"" % (rql_types, c),
+                           safe=',=()')
+            + "&vid=data-zip"
+            for c in contrasts_wrapped]
+    filenames = []
+    for s in np.arange(1, 95):  # 94 subjects available
+        for data_type in data_types:
+            for contrast_id, contrast in enumerate(contrasts_wrapped):
+                file_path = os.path.join(
+                    "S%02d" % s,
+                    str.replace(str.join('_', [data_type, c]), ' ', '_')
+                    + ".nii.gz")
+                file_tarball_url = urls[contrast_id]
+                filenames.append((file_path, file_tarball_url, opts))
+    # Fetch masks if asked by user
+    if get_masks:
+        urls.append("http://brainomics.cea.fr/localizer/?rql="
+                    + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
+                                   "X type XT, X label XL, X identifier XI, "
+                                   "X format XF, X description XD, "
+                                   "X type IN(\"boolean mask\"), "
+                                   "X label \"mask\"", safe=',=()')
+                    + "&vid=data-zip")
+        for s in np.arange(1, 95):  # 94 subjects available
+            for contrast_id, contrast in enumerate(contrasts_wrapped):
+                file_path = os.path.join(
+                    "S%02d" % s,
+                    str.replace(str.join('_', ["boolean mask", c]), ' ', '_')
+                    + ".nii.gz")
+                file_tarball_url = urls[contrast_id]
+                filenames.append((file_path, file_tarball_url, opts))
+    # Fetch anats if asked by user
+    if get_anats:
+        urls.append("http://brainomics.cea.fr/localizer/?rql="
+                    + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
+                                   "X type XT, X label XL, X identifier XI, "
+                                   "X format XF, X description XD, "
+                                   "X type IN(\"normalized T1\"), "
+                                   "X label \"anatomy\"", safe=',=()')
+                    + "&vid=data-zip")
+        for s in np.arange(1, 95):  # 94 subjects available
+            for contrast_id, contrast in enumerate(contrasts_wrapped):
+                file_path = os.path.join(
+                    "S%02d" % s,
+                    str.replace(str.join('_', ["normalized T1", c]), ' ', '_')
+                    + ".nii.gz")
+                file_tarball_url = urls[contrast_id]
+                filenames.append((file_path, file_tarball_url, opts))
+
+    # Actual data fetching
+    files = _fetch_files('brainomics_localizer', filenames, data_dir=data_dir)
+    anats = None
+    masks = None
+    tmaps = None
+    if get_anats:
+        anats = files[-94:]
+        files = files[:-94]
+    if get_masks:
+        masks = files[-94:]
+        files = files[:-94]
+    if get_tmaps:
+        tmaps = files(slice(1, len(files) + 1, 2))
+        files = files(slice(0, len(files), 2))
+    return Bunch(cmaps=files, tmaps=tmaps, mask=masks, anats=anats)
+
+
+def fetch_localizer_motor_task():
+    """Fetch motor task contrast maps from the localizer (94 subjects).
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+
+    """
+    return fetch_localizer_contrasts(["motor"],
+                                     get_tmaps=False, get_masks=False,
+                                     get_anats=False, data_dir=None, url=None,
+                                     resume=True, verbose=0)
+
+
+def fetch_localizer_computation_task():
+    """Fetch computation task contrast maps from the localizer (94 subjects).
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+
+    """
+    return fetch_localizer_contrasts(["computation"],
+                                     get_tmaps=False, get_masks=False,
+                                     get_anats=False, data_dir=None, url=None,
+                                     resume=True, verbose=0)
+
+
+def fetch_localizer_reading_task():
+    """Fetch reading task contrast maps from the localizer (94 subjects).
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+
+    """
+    return fetch_localizer_contrasts(["sentences"],
+                                     get_tmaps=False, get_masks=False,
+                                     get_anats=False, data_dir=None, url=None,
+                                     resume=True, verbose=0)
+
+
+def fetch_localizer_auditory_task():
+    """Fetch auditory task contrast maps from the localizer (94 subjects).
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+
+    """
+    return fetch_localizer_contrasts(["auditory processing"],
+                                     get_tmaps=False, get_masks=False,
+                                     get_anats=False, data_dir=None, url=None,
+                                     resume=True, verbose=0)
