@@ -5,6 +5,7 @@ Test the resampling code.
 from nose.tools import assert_equal, assert_raises, assert_false, \
     assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
+from sklearn.utils.testing import assert_raise_message
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -155,7 +156,7 @@ def test_resampling_error_checks():
     np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
 
 
-def test_4D_affine_bounding_box_error():
+def test_4d_affine_bounding_box_error():
 
     small_data = np.ones([4, 4, 4])
     small_data_4D_affine = np.eye(4)
@@ -210,16 +211,17 @@ def test_4D_affine_bounding_box_error():
 def test_raises_upon_3x3_affine_and_no_shape():
     img = Nifti1Image(np.zeros([8, 9, 10]),
                       affine=np.eye(4))
-    # with assert_raises(ValueError("Given target shape without anchor "
-    #                               "vector: Affine should be (4, 4) and "
-    #                               "not (3, 3)")):
-    with assert_raises(ValueError):
-        new_img = resample_img(img, target_affine=np.eye(3) * 2,
-                               target_shape=(10, 10, 10))
+    exception = ValueError
+    message = ("Given target shape without anchor "
+                   "vector: Affine should be (4, 4) and "
+                   "not (3, 3)")
+    function = lambda *args: resample_img(
+            img, target_affine=np.eye(3) * 2,
+            target_shape=(10, 10, 10))
+    assert_raise_message(exception, message, function)
 
 
 def test_raises_bbox_error_if_data_outside_box():
-
     # Make some cases which should raise exceptions
 
     # original image
@@ -255,12 +257,14 @@ def test_raises_bbox_error_if_data_outside_box():
     new_affines[:, :3, 3] = new_offset[np.newaxis, :]
 
     for new_affine in new_affines:
-        # with assert_raises(
-        #     BoundingBoxError("The field of view given "
-        #                      "by the target affine does "
-        #                      "not contain any of the data")):
-        with assert_raises(BoundingBoxError):
-            new_img = resample_img(img, target_affine=new_affine)
+        exception = BoundingBoxError
+        message = ("The field of view given "
+                   "by the target affine does "
+                   "not contain any of the data")
+        function = lambda *args: resample_img(img,
+                                              target_affine=new_affine)
+        assert_raise_message(exception, message, function)
+
 
 # Transform real data using easily checkable transformations
 # 1) axis permutations
