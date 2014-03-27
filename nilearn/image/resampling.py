@@ -243,20 +243,23 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     # Get a bounding box for the transformed data
     # Embed target_affine in 4x4 shape if necessary
     if target_affine.shape == (3, 3):
-        target_affine_ = np.eye(4)
-        target_affine_[:3, :3] = target_affine
+        missing_offset = True
+        target_affine_tmp = np.eye(4)
+        target_affine_tmp[:3, :3] = target_affine
+        target_affine = target_affine_tmp
     else:
-        target_affine_ = target_affine.copy()
-    transform_affine = np.linalg.inv(target_affine_).dot(affine)
+        missing_offset = False
+        target_affine = target_affine.copy()
+    transform_affine = np.linalg.inv(target_affine).dot(affine)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
         data.shape[:3], transform_affine)
 
     # if target_affine is (3, 3), then calculate
     # offset from bounding box and update bounding box
     # to be in the voxel coordinates of the calculated 4x4 affine
-    if target_affine.shape == (3, 3):
-        offset = target_affine.dot(np.array([xmin, ymin, zmin]))
-        target_affine_[:3, 3] = offset
+    if missing_offset:
+        offset = target_affine[:3, :3].dot(np.array([xmin, ymin, zmin]))
+        target_affine[:3, 3] = offset
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = (
             (0, xmax - xmin), (0, ymax - ymin), (0, zmax - zmin))
 
@@ -276,11 +279,11 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                              "by the target affine does "
                              "not contain any of the data")
 
-    if np.all(target_affine_ == affine):
+    if np.all(target_affine == affine):
         # Small trick to be more numerically stable
         transform_affine = np.eye(4)
     else:
-        transform_affine = np.dot(linalg.inv(affine), target_affine_)
+        transform_affine = np.dot(linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
     A_inv = linalg.inv(A)
     # If A is diagonal, ndimage.affine_transform is clever enough to use a
@@ -314,4 +317,4 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                                                   offset=np.dot(A_inv, b),
                                                   output_shape=target_shape,
                                                   order=interpolation_order)
-    return Nifti1Image(resampled_data, target_affine_)
+    return Nifti1Image(resampled_data, target_affine)
