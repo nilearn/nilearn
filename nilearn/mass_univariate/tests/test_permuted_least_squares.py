@@ -332,9 +332,10 @@ def test_permuted_ols_intercept_sklearn_nocovar(random_state=0):
     # scikit-learn F-score
     fvals, _ = f_regression(target_var, tested_var, center=False)
     # permuted OLS
-    _, orig_scores, _ = permuted_ols(
-        tested_var, target_var, confounding_vars=None, n_perm=0,
+    neg_log_pvals, orig_scores, _ = permuted_ols(
+        tested_var, target_var, confounding_vars=None, n_perm=10,
         random_state=random_state)
+    assert_array_less(neg_log_pvals, 1.)  # ensure sign swap is correctly done
     # same thing but with model_intercept=True to check it has no effect
     _, orig_scores_addintercept, _ = permuted_ols(
         tested_var, target_var, confounding_vars=None, model_intercept=True,
