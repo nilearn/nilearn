@@ -203,7 +203,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
     return data_dir
 
 
-def _uncompress_file(file_, subfolder_name=None, delete_archive=True):
+def _uncompress_file(file_, delete_archive=True):
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -228,21 +228,6 @@ def _uncompress_file(file_, subfolder_name=None, delete_archive=True):
         if ext == '.zip':
             z = zipfile.ZipFile(file_)
             z.extractall(path=data_dir)
-            if subfolder_name is not None:
-                files_of_interest = [f for f in z.namelist()
-                                     if f.startswith(subfolder_name)]
-                z.extractall(path=data_dir, members=files_of_interest)
-                for f in files_of_interest:
-                    target_file = os.path.join(
-                        data_dir,
-                        str.strip(str.split(f, subfolder_name, 1)[1], '/'))
-                    if not os.path.exists(os.path.dirname(target_file)):
-                        os.makedirs(os.path.dirname(target_file))
-                    shutil.move(os.path.join(data_dir, f),
-                                os.path.join(data_dir, target_file))
-                shutil.rmtree(os.path.join(data_dir, subfolder_name))
-            else:
-                z.extractall(path=data_dir)
             z.close()
             processed = True
         elif ext == '.gz':
@@ -1604,7 +1589,7 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
     # It is better to perform several small requests than a big one because:
     # - Brainomics server has no cache
     # - Local (cached) version of the files can be checked for each contrast
-    opts = {'uncompress': "brainomics_data",
+    opts = {'uncompress': True,
             'file_name': "brainomics_data.zip"}
     data_types = ["c map"]
     if get_tmaps:
@@ -1623,7 +1608,7 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
                 file_path = os.path.join(
-                    "S%02d" % s,
+                    "brainomics_data", "S%02d" % s,
                     str.replace(str.join('_', [data_type, c]), ' ', '_')
                     + ".nii.gz")
                 file_tarball_url = urls[contrast_id]
@@ -1640,7 +1625,7 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
         for s in np.arange(1, 95):  # 94 subjects available
             for contrast_id, contrast in enumerate(contrasts_wrapped):
                 file_path = os.path.join(
-                    "S%02d" % s,
+                    "brainomics_data", "S%02d" % s,
                     str.replace(str.join('_', ["boolean mask", c]), ' ', '_')
                     + ".nii.gz")
                 file_tarball_url = urls[contrast_id]
@@ -1657,7 +1642,7 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
         for s in np.arange(1, 95):  # 94 subjects available
             for contrast_id, contrast in enumerate(contrasts_wrapped):
                 file_path = os.path.join(
-                    "S%02d" % s,
+                    "brainomics_data", "S%02d" % s,
                     str.replace(str.join('_', ["normalized T1", c]), ' ', '_')
                     + ".nii.gz")
                 file_tarball_url = urls[contrast_id]
