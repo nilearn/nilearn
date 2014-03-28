@@ -258,7 +258,7 @@ def _uncompress_file(file_, delete_archive=True):
         raise
 
 
-def _fetch_file(url, data_dir, file_name=None, resume=True, overwrite=False,
+def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 md5sum=None, verbose=0):
     """Load requested file, downloading it if needed or requested.
 
@@ -297,10 +297,9 @@ def _fetch_file(url, data_dir, file_name=None, resume=True, overwrite=False,
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    if file_name is None:
-        file_name = os.path.basename(url)
-        # Eliminate vars if needed
-        file_name = file_name.split('?')[0]
+    file_name = os.path.basename(url)
+    # Eliminate vars if needed
+    file_name = file_name.split('?')[0]
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
@@ -1603,13 +1602,12 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # It is better to perform several small requests than a big one because:
     # - Brainomics server has no cache
     # - Local (cached) version of the files can be checked for each contrast
-    opts = {'uncompress': True,
-            'file_name': "brainomics_data.zip"}
+    opts = {'uncompress': True}
     data_types = ["c map"]
     if get_tmaps:
         data_types.append(["t map"])
     rql_types = str.join(", ", ["\"" + x + "\"" for x in data_types])
-    urls = ["http://brainomics.cea.fr/localizer/?rql="
+    urls = ["http://brainomics.cea.fr/localizer/brainomics_data.zip?rql="
             + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
                            "X label XL, X identifier XI, "
                            "X format XF, X description XD, "
@@ -1629,7 +1627,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 filenames.append((file_path, file_tarball_url, opts))
     # Fetch masks if asked by user
     if get_masks:
-        urls.append("http://brainomics.cea.fr/localizer/?rql="
+        urls.append("http://brainomics.cea.fr/localizer/brainomics_data.zip"
+                    "?rql="
                     + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
                                    "X type XT, X label XL, X identifier XI, "
                                    "X format XF, X description XD, "
@@ -1643,7 +1642,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
-        urls.append("http://brainomics.cea.fr/localizer/?rql="
+        urls.append("http://brainomics.cea.fr/localizer/brainomics_data.zip"
+                    "?rql="
                     + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
                                    "X type XT, X label XL, X identifier XI, "
                                    "X format XF, X description XD, "
@@ -1679,6 +1679,7 @@ def fetch_localizer_one_structural_image(data_dir=None):
 
     Useful for plots and examples, where the structural image can serve as
     a background image.
+    Subject S53 is used, but this is an arbitrary choice.
 
     Parameters
     ----------
@@ -1694,8 +1695,9 @@ def fetch_localizer_one_structural_image(data_dir=None):
             Path to nifti file corresponding to structural image
 
     """
-    opts = {'uncompress': True, 'file_name': "brainomics_data.zip"}
-    url = ("http://brainomics.cea.fr/localizer/scan/1064245?rql="
+    opts = {'uncompress': True}
+    url = ("http://brainomics.cea.fr/localizer/scan/1064245"
+           "/brainomics_data.zip?rql="
            + urllib.quote("Any X,AA,AB,AC,AD,AE,AF WHERE X is Scan, "
                           "X filepath AA, X type AB, X label AC, "
                           "X format AD, X description AE, "
