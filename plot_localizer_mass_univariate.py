@@ -38,7 +38,7 @@ neg_log_pvals, all_scores, h0 = permuted_ols(
     n_perm=1000,
     n_jobs=-1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals).get_data()
+    np.ravel(neg_log_pvals))
 
 ### scikit-learn F-scores for comparison ######################################
 from nilearn._utils.fixes import f_regression
@@ -49,21 +49,27 @@ pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1
 neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals_bonferroni).get_data()
+    neg_log_pvals_bonferroni)
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 # Use the structural image of one subject as a background image
-resampled_anat = resample_img(
-    dataset_files.anat[0],
-    target_affine=nibabel.load(dataset_files.cmaps[0]).get_affine(),
-    target_shape=neg_log_pvals_bonferroni_unmasked.shape)
-structural_data = resampled_anat.get_data()
+structural_img = nibabel.load(dataset_files.anat[0])
+neg_log_pvals_resampled = resample_img(
+    neg_log_pvals_unmasked,
+    target_affine=structural_img.get_affine(),
+    target_shape=structural_img.shape,
+    interpolation='nearest')
+neg_log_pvals_bonferroni_resampled = resample_img(
+    neg_log_pvals_bonferroni_unmasked,
+    target_affine=structural_img.get_affine(),
+    target_shape=structural_img.shape,
+    interpolation='nearest')
 
 # Various plotting parameters
-picked_slice = 35  # plotted slice
+picked_slice = 110  # plotted slice
 vmin = -np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_bonferroni))
 grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
@@ -73,8 +79,8 @@ grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
 
 # Plot thresholded F-scores map
 ax = grid[0]
-p_ma = np.ma.masked_less(neg_log_pvals_bonferroni_unmasked, vmin)
-ax.imshow(np.rot90(structural_data[..., picked_slice]),
+p_ma = np.ma.masked_less(neg_log_pvals_bonferroni_resampled.get_data(), vmin)
+ax.imshow(np.rot90(structural_img.get_data()[..., picked_slice]),
           interpolation='nearest', cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
@@ -85,8 +91,8 @@ ax.axis('off')
 
 # Plot permutation p-values map
 ax = grid[1]
-p_ma = np.ma.masked_less(neg_log_pvals_unmasked, vmin)[..., 0]
-ax.imshow(np.rot90(structural_data[..., picked_slice]),
+p_ma = np.ma.masked_less(neg_log_pvals_resampled.get_data(), vmin)
+ax.imshow(np.rot90(structural_img.get_data()[..., picked_slice]),
           interpolation='nearest', cmap=plt.cm.gray)
 im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
                cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
