@@ -1,6 +1,6 @@
 """
 Massively univariate analysis of a motor task from the Localizer dataset
-============================================================================
+========================================================================
 
 A permuted Ordinary Least Squares algorithm is run at each voxel in
 order to detemine which voxels are specifically active when a healthy subject
@@ -86,7 +86,8 @@ ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Parametric F-test + '
              '\nBonferroni correction)' +
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
+             # divide number of detections by 9 to compensate for resampling
+             '\n%d detections' % ((~p_ma.mask[..., picked_slice]).sum() / 9))
 ax.axis('off')
 
 # Plot permutation p-values map
@@ -98,7 +99,8 @@ im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
                cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
              '\nmax-type correction)' +
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
+             # divide number of detections by 9 to compensate for resampling
+             '\n%d detections' % ((~p_ma.mask[..., picked_slice]).sum() / 9))
 ax.axis('off')
 
 grid[0].cax.colorbar(im)
