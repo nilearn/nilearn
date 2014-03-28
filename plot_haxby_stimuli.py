@@ -26,9 +26,7 @@ for stim_type in sorted(stimulus_information.keys()):
     for i in range(48):
         plt.subplot(6, 8, i + 1)
         try:
-            plt.imshow(imread(file_names[i]))
-
-            plt.gray()
+            plt.imshow(imread(file_names[i]), cmap=plt.cm.gray)
         except:
             # just go to the next one if the file is not present
             pass

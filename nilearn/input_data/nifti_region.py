@@ -114,7 +114,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                  smoothing_fwhm=None, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  resampling_target="labels",
-                 memory=Memory(cachedir=None, verbose=0), memory_level=0,
+                 memory=Memory(cachedir=None, verbose=0), memory_level=1,
                  verbose=0):
         self.labels_img = labels_img
         self.background_label = background_label
