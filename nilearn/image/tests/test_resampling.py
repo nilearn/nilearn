@@ -5,7 +5,11 @@ Test the resampling code.
 from nose.tools import assert_equal, assert_raises, assert_false, \
     assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-from sklearn.utils.testing import assert_raise_message
+
+# The following import is not compliant with backward compatibility
+# requirements to sklearn
+# from sklearn.utils.testing import assert_raise_message
+
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -218,7 +222,11 @@ def test_raises_upon_3x3_affine_and_no_shape():
     function = lambda *args: resample_img(
             img, target_affine=np.eye(3) * 2,
             target_shape=(10, 10, 10))
-    assert_raise_message(exception, message, function)
+    # Avoid sklearn backwards compatibility issues
+    # assert_raise_message(exception, message, function)
+
+    with assert_raises(exception):
+        function()
 
 
 def test_raises_bbox_error_if_data_outside_box():
@@ -263,7 +271,12 @@ def test_raises_bbox_error_if_data_outside_box():
                    "not contain any of the data")
         function = lambda *args: resample_img(img,
                                               target_affine=new_affine)
-        assert_raise_message(exception, message, function)
+
+        # Avoid sklearn backward compatbility issues
+        # assert_raise_message(exception, message, function)
+
+        with assert_raises(exception):
+            function()
 
 
 # Transform real data using easily checkable transformations
