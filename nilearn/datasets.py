@@ -1548,7 +1548,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     first subjects on disk.
 
     """
-    if (n_subjects is None) or (n_subjects > 94) or (n_subjects < 1):
+    if n_subjects is None:
+        n_subjects = 94  # 94 subjects available
+    if (n_subjects > 94) or (n_subjects < 1):
+        warnings.warn("Wrong value for \'n_subjects\' (%d). The maximum "
+                      "value will be used instead (\'n_subjects=94\')")
         n_subjects = 94  # 94 subjects available
 
     # we allow the user to use alternatives to Brainomics contrast names
