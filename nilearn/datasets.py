@@ -1467,8 +1467,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
         mask_roi=files[65:])
 
 
-def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
-                              get_anats=False,
+def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
+                              get_masks=False, get_anats=False,
                               data_dir=None, url=None, resume=True, verbose=0):
     """Download and load Brainomics Localizer dataset (94 subjects).
 
@@ -1494,6 +1494,10 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
         {"computation audio", ..., "sentences video"}
         or equivalently:
         {"auditory calculation", ..., "visual sentences vs checkerboard"}.
+
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
 
     get_tmaps: boolean
         Whether t maps should be fetched or not.
@@ -1538,7 +1542,17 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
          individual functional cognitive networks."
         BMC neuroscience 8.1 (2007): 91.
 
+    Caveats
+    -------
+    When n_subjects < 94 is specified, all subjects are actually downloaded.
+    However, the caching system only checks for the presence of the n_subjects
+    first subjects on disk.
+
     """
+    if (n_subjects is None) or (n_subjects > 94) or (n_subjects < 1):
+        n_subjects = 94  # 94 subjects available
+
+    # we allow the user to use alternatives to Brainomics contrast names
     contrast_name_wrapper = {
         "computation audio": "auditory calculation",
         "computation-sentences audio": "auditory calculation vs "
@@ -1600,11 +1614,11 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
                            "X label XL, X identifier XI, "
                            "X format XF, X description XD, "
                            "X type IN(%s), X label \"%s\"" % (rql_types, c),
-                           safe=',=()')
+                           safe=',()')
             + "&vid=data-zip"
             for c in contrasts_wrapped]
     filenames = []
-    for s in np.arange(1, 95):  # 94 subjects available
+    for s in np.arange(1, n_subjects + 1):
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
                 file_path = os.path.join(
@@ -1620,16 +1634,13 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
                                    "X type XT, X label XL, X identifier XI, "
                                    "X format XF, X description XD, "
                                    "X type IN(\"boolean mask\"), "
-                                   "X label \"mask\"", safe=',=()')
+                                   "X label \"mask\"", safe=',()')
                     + "&vid=data-zip")
-        for s in np.arange(1, 95):  # 94 subjects available
-            for contrast_id, contrast in enumerate(contrasts_wrapped):
-                file_path = os.path.join(
-                    "brainomics_data", "S%02d" % s,
-                    str.replace(str.join('_', ["boolean mask", c]), ' ', '_')
-                    + ".nii.gz")
-                file_tarball_url = urls[contrast_id]
-                filenames.append((file_path, file_tarball_url, opts))
+        for s in np.arange(1, n_subjects + 1):  # 94 subjects available
+            file_path = os.path.join(
+                "brainomics_data", "S%02d" % s, "boolean_mask.nii.gz")
+            file_tarball_url = urls[-1]
+            filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
         urls.append("http://brainomics.cea.fr/localizer/?rql="
@@ -1637,16 +1648,14 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
                                    "X type XT, X label XL, X identifier XI, "
                                    "X format XF, X description XD, "
                                    "X type IN(\"normalized T1\"), "
-                                   "X label \"anatomy\"", safe=',=()')
+                                   "X label \"anatomy\"", safe=',()')
                     + "&vid=data-zip")
-        for s in np.arange(1, 95):  # 94 subjects available
-            for contrast_id, contrast in enumerate(contrasts_wrapped):
-                file_path = os.path.join(
-                    "brainomics_data", "S%02d" % s,
-                    str.replace(str.join('_', ["normalized T1", c]), ' ', '_')
-                    + ".nii.gz")
-                file_tarball_url = urls[contrast_id]
-                filenames.append((file_path, file_tarball_url, opts))
+        for s in np.arange(1, n_subjects + 1):
+            file_path = os.path.join(
+                "brainomics_data", "S%02d" % s,
+                "normalized_T1_anat_defaced.nii.gz")
+            file_tarball_url = urls[-1]
+            filenames.append((file_path, file_tarball_url, opts))
 
     # Actual data fetching
     files = _fetch_files('brainomics_localizer', filenames, data_dir=data_dir)
@@ -1654,64 +1663,181 @@ def fetch_localizer_contrasts(contrasts, get_tmaps=False, get_masks=False,
     masks = None
     tmaps = None
     if get_anats:
-        anats = files[-94:]
-        files = files[:-94]
+        anats = files[-n_subjects:]
+        files = files[:-n_subjects]
     if get_masks:
-        masks = files[-94:]
-        files = files[:-94]
+        masks = files[-n_subjects:]
+        files = files[:-n_subjects]
     if get_tmaps:
         tmaps = files(slice(1, len(files) + 1, 2))
         files = files(slice(0, len(files), 2))
     return Bunch(cmaps=files, tmaps=tmaps, mask=masks, anats=anats)
 
 
-def fetch_localizer_motor_task():
+def fetch_localizer_one_structural_image(data_dir=None):
+    """Download and load one single structural image from the localizer.
+
+    Useful for plots and examples, where the structural image can serve as
+    a background image.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'anat': string
+            Path to nifti file corresponding to structural image
+
+    """
+    opts = {'uncompress': True, 'file_name': "brainomics_data.zip"}
+    url = ("http://brainomics.cea.fr/localizer/scan/1064245?rql="
+           + urllib.quote("Any X,AA,AB,AC,AD,AE,AF WHERE X is Scan, "
+                          "X filepath AA, X type AB, X label AC, "
+                          "X format AD, X description AE, "
+                          "X modification_date AF, X eid 1064245", safe=',()')
+           + "&vid=data-zip")
+    filename = [(os.path.join("brainomics_data", "S53",
+                              "normalized_T1_anat_defaced.nii.gz"),
+                 url,
+                 opts)]
+    # Actual data fetching
+    anat = _fetch_files('brainomics_localizer', filename, data_dir=data_dir)
+    return Bunch(anat=anat)
+
+
+def fetch_localizer_motor_task(n_subjects=None, data_dir=None):
     """Fetch motor task contrast maps from the localizer (94 subjects).
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
 
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'cmaps': string list
+            Paths to nifti contrast maps
+
     """
-    return fetch_localizer_contrasts(["motor"],
-                                     get_tmaps=False, get_masks=False,
-                                     get_anats=False, data_dir=None, url=None,
-                                     resume=True, verbose=0)
+    res = fetch_localizer_contrasts(["motor"], n_subjects=n_subjects,
+                                    get_tmaps=False, get_masks=False,
+                                    get_anats=False, data_dir=data_dir,
+                                    url=None, resume=True, verbose=0)
+    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
+    res.update(anat)
+    return res
 
 
-def fetch_localizer_computation_task():
+def fetch_localizer_computation_task(n_subjects=None, data_dir=None):
     """Fetch computation task contrast maps from the localizer (94 subjects).
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
 
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'cmaps': string list
+            Paths to nifti contrast maps
+
     """
-    return fetch_localizer_contrasts(["computation"],
-                                     get_tmaps=False, get_masks=False,
-                                     get_anats=False, data_dir=None, url=None,
-                                     resume=True, verbose=0)
+    res = fetch_localizer_contrasts(["computation"], n_subjects=n_subjects,
+                                    get_tmaps=False, get_masks=False,
+                                    get_anats=False, data_dir=data_dir,
+                                    url=None, resume=True, verbose=0)
+    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
+    res.update(anat)
+    return res
 
 
-def fetch_localizer_reading_task():
+def fetch_localizer_reading_task(n_subjects=None, data_dir=None):
     """Fetch reading task contrast maps from the localizer (94 subjects).
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
 
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'cmaps': string list
+            Paths to nifti contrast maps
+
     """
-    return fetch_localizer_contrasts(["sentences"],
-                                     get_tmaps=False, get_masks=False,
-                                     get_anats=False, data_dir=None, url=None,
-                                     resume=True, verbose=0)
+    res = fetch_localizer_contrasts(["sentences"], n_subjects=n_subjects,
+                                    get_tmaps=False, get_masks=False,
+                                    get_anats=False, data_dir=data_dir,
+                                    url=None, resume=True, verbose=0)
+    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
+    res.update(anat)
+    return res
 
 
-def fetch_localizer_auditory_task():
+def fetch_localizer_auditory_task(n_subjects=None, data_dir=None):
     """Fetch auditory task contrast maps from the localizer (94 subjects).
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
 
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'cmaps': string list
+            Paths to nifti contrast maps
+
     """
-    return fetch_localizer_contrasts(["auditory processing"],
-                                     get_tmaps=False, get_masks=False,
-                                     get_anats=False, data_dir=None, url=None,
-                                     resume=True, verbose=0)
+    res = fetch_localizer_contrasts(["auditory processing"],
+                                    n_subjects=n_subjects,
+                                    get_tmaps=False, get_masks=False,
+                                    get_anats=False, data_dir=data_dir,
+                                    url=None, resume=True, verbose=0)
+    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
+    res.update(anat)
+    return res
