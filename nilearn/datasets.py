@@ -1557,46 +1557,55 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # we allow the user to use alternatives to Brainomics contrast names
     contrast_name_wrapper = {
-        "computation (auditory)": "auditory calculation",
-        "computation-sentences (auditory)":
-            "auditory calculation vs auditory sentences",
-        #"c": "auditory click vs auditory sentences",
-        #"d": "auditory processing",
-        #"e": "auditory processing vs visual processing",
-        "sentences (auditory)": "auditory sentences",
-        "computation": "auditory&visual calculation",
-        "computation-sentences": "auditory&visual calculation vs sentences",
-        #"i": "auditory&visual motor vs cognitive processing",
-        "sentences": "auditory&visual sentences",
+        # Checkerboard
         "checkerboard": "checkerboard",
-        #"l": "cognitive processing vs motor",
         "horizontal checkerboard": "horizontal checkerboard",
-        #"n": "horizontal vs vertical checkerboard",
-        "left button press (auditory)": "left auditory click",
-        "left button press": "left auditory&visual click",
-        #"motor": "left auditory & visual click vs "
-        #   + "right auditory&visual click",
-        "left button press (visual)": "left visual click",
-        "right button press (auditory)": "right auditory click",
-        "right button press": "right auditory&visual click",
-        "right-left button press": "right auditory & visual click "
-           + "vs left auditory&visual click",
-        "right button press (visual)": "right visual click",
         "vertical checkerboard": "vertical checkerboard",
-        "vertical-horizontal checkerboard":
+        "horizontal vs vertical checkerboard":
+            "horizontal vs vertical checkerboard",
+        "vertical vs horizontal checkerboard":
             "vertical vs horizontal checkerboard",
-        "computation (visual cue)": "visual calculation",
-        "computation (visual cue) - sentence reading":
-            "visual calculation vs sentences",
-        "right button press (viausl cue) - visual sentence reading":
-            "visual click vs visual sentences",
+        # Instructions
+        "auditory instructions": "auditory processing",
         "visual instructions": "visual processing",
-        "visual - auditory instructions":
+        "visual vs auditory instructions":
             "visual processing vs auditory processing",
-        "visual instructions - checkerboard":
+        "auditory vs visual instructions":
+            "auditory processing vs visual processing",
+        "visual instructions vs checkerboard":
             "visual processing vs checkerboard",
+        "instructions vs button press": "cognitive processing vs motor",
+        # Sentences
+        "sentences": "auditory&visual sentences",
+        "sentence listening": "auditory sentences",
         "sentence reading": "visual sentences",
-        "sentence reading - checkerboard": "visual sentences vs checkerboard"}
+        "sentence reading vs checkerboard": "visual sentences vs checkerboard",
+        # Calculation
+        "calculation (auditory cue)": "auditory calculation",
+        "calculation (visual cue)": "visual calculation",
+        "calculation": "auditory&visual calculation",
+        "calculation (auditory cue) vs sentences listening":
+            "auditory calculation vs auditory sentences",
+        "calculation (visual cue) vs sentence reading":
+            "visual calculation vs sentences",
+        "calculation vs sentences": "auditory&visual calculation vs sentences",
+        # Button press
+        "left button press (auditory)": "left auditory click",
+        "left button press (visual cue)": "left visual click",
+        "left button press": "left auditory&visual click",
+        "left vs right button press": "left auditory & visual click vs "
+           + "right auditory&visual click",
+        "right button press (auditory cue)": "right auditory click",
+        "right button press (visual cue)": "right visual click",
+        "right button press": "right auditory&visual click",
+        "right vs left button press": "right auditory & visual click "
+           + "vs left auditory&visual click",
+        "button press (auditory cue) vs sentences listening":
+            "auditory click vs auditory sentences",
+        "button press (visual cue) vs sentences reading":
+            "visual click vs visual sentences",
+        "button press vs instructions":
+            "auditory&visual motor vs cognitive processing"}
     allowed_contrasts = contrast_name_wrapper.values()
     # convert contrast names
     contrasts_wrapped = []
