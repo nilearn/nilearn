@@ -1621,7 +1621,6 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # - Brainomics server has no cache (can lead to timeout while the archive
     #   is generated on the remote server)
     # - Local (cached) version of the files can be checked for each contrast
-    opts = {'uncompress': True}
     data_types = ["c map"]
     if get_tmaps:
         data_types.append(["t map"])
@@ -1638,11 +1637,12 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     for s in np.arange(1, n_subjects + 1):
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
+                name_aux = str.replace(str.join('_', [data_type, c]), ' ', '_')
                 file_path = os.path.join(
-                    "brainomics_data", "S%02d" % s,
-                    str.replace(str.join('_', [data_type, c]), ' ', '_')
-                    + ".nii.gz")
+                    "brainomics_data", "S%02d" % s, name_aux + ".nii.gz")
                 file_tarball_url = urls[contrast_id]
+                opts = {'uncompress': True,
+                        'move': "%dsubj" % n_subjects + name_aux + ".zip"}
                 filenames.append((file_path, file_tarball_url, opts))
     # Fetch masks if asked by user
     if get_masks:
@@ -1658,6 +1658,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             file_path = os.path.join(
                 "brainomics_data", "S%02d" % s, "boolean_mask.nii.gz")
             file_tarball_url = urls[-1]
+            opts = {'uncompress': True,
+                    'move': "%dsubj" % n_subjects + "boolean_mask.zip"}
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
@@ -1674,6 +1676,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 "brainomics_data", "S%02d" % s,
                 "normalized_T1_anat_defaced.nii.gz")
             file_tarball_url = urls[-1]
+            opts = {'uncompress': True,
+                    'move': "%dsubj" % n_subjects + "normalized_T1.zip"}
             filenames.append((file_path, file_tarball_url, opts))
 
     # Actual data fetching
@@ -1714,7 +1718,8 @@ def fetch_localizer_one_structural_image(data_dir=None):
             Path to nifti file corresponding to structural image
 
     """
-    opts = {'uncompress': True}
+    opts = {'uncompress': True,
+            'move': "one_anat.zip"}
     url = ("http://brainomics.cea.fr/localizer/scan/1064245"
            "/brainomics_data.zip?rql="
            + urllib.quote("Any X,AA,AB,AC,AD,AE,AF WHERE X is Scan, "
