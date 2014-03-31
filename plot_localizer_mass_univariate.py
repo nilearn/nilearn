@@ -1,16 +1,16 @@
 """
-Massively univariate analysis of a motor task from the Localizer dataset
-========================================================================
+Massively univariate analysis of a computation task from the Localizer dataset
+==============================================================================
 
 A permuted Ordinary Least Squares algorithm is run at each voxel in
 order to detemine which voxels are specifically active when a healthy subject
-performs a motor task.
+performs a computation task as opposed to a sentence reading task.
 
 The example shows the small differences that exist between
 Bonferroni-corrected p-values and family-wise corrected p-values obtained
 from a permutation test combined with a max-type procedure.
-Bonferroni correction is a bit conservative, as revealed by the presence of
-a few false negative.
+Bonferroni correction is a bit conservative, as it detects less significant
+voxels than the non-parametric, exact permutation test.
 
 
 """
@@ -24,7 +24,8 @@ from nilearn.mass_univariate import permuted_ols
 
 ### Load Localizer motor contrast #############################################
 n_samples = 20
-dataset_files = datasets.fetch_localizer_motor_task(n_subjects=n_samples)
+dataset_files = datasets.fetch_localizer_computation_vs_sentences_task(
+    n_subjects=n_samples)
 
 ### Mask data #################################################################
 nifti_masker = NiftiMasker(
@@ -35,8 +36,8 @@ fmri_masked = nifti_masker.fit_transform(dataset_files.cmaps)
 neg_log_pvals, all_scores, h0 = permuted_ols(
     np.ones((n_samples, 1), dtype=float),
     fmri_masked, model_intercept=False,
-    n_perm=1000,
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals))
 
@@ -47,7 +48,7 @@ _, pvals_bonferroni = f_regression(
 pvals_bonferroni *= fmri_masked.shape[1]
 pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1
-neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
+neg_log_pvals_bonferroni = - np.log10(pvals_bonferroni)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni)
 
@@ -69,8 +70,8 @@ neg_log_pvals_bonferroni_resampled = resample_img(
     interpolation='nearest')
 
 # Various plotting parameters
-picked_slice = 110  # plotted slice
-vmin = -np.log10(0.1)  # 10% corrected
+picked_slice = 85  # plotted slice
+vmin = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_bonferroni))
 grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
                  axes_pad=0.05, add_all=True, label_mode="1",

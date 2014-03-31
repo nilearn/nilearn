@@ -1557,41 +1557,46 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # we allow the user to use alternatives to Brainomics contrast names
     contrast_name_wrapper = {
-        "computation audio": "auditory calculation",
-        "computation-sentences audio": "auditory calculation vs "
-           + "auditory sentences",
-        "c": "auditory click vs auditory sentences",
-        "d": "auditory processing",
-        "e": "auditory processing vs visual processing",
-        "sentences audio": "auditory sentences",
+        "computation (auditory)": "auditory calculation",
+        "computation-sentences (auditory)":
+            "auditory calculation vs auditory sentences",
+        #"c": "auditory click vs auditory sentences",
+        #"d": "auditory processing",
+        #"e": "auditory processing vs visual processing",
+        "sentences (auditory)": "auditory sentences",
         "computation": "auditory&visual calculation",
         "computation-sentences": "auditory&visual calculation vs sentences",
-        "i": "auditory&visual motor vs cognitive processing",
+        #"i": "auditory&visual motor vs cognitive processing",
         "sentences": "auditory&visual sentences",
         "checkerboard": "checkerboard",
-        "l": "cognitive processing vs motor",
-        "checkerboardH": "horizontal checkerboard",
-        "n": "horizontal vs vertical checkerboard",
-        "motor left audio": "left auditory click",
-        "motor left": "left auditory&visual click",
-        "motor": "left auditory & visual click vs "
-           + "right auditory&visual click",
-        "motor left video": "left visual click",
-        "motor right audio": "right auditory click",
-        "motor right": "right auditory&visual click",
-        "right-left": "right auditory & visual click "
+        #"l": "cognitive processing vs motor",
+        "horizontal checkerboard": "horizontal checkerboard",
+        #"n": "horizontal vs vertical checkerboard",
+        "left button press (auditory)": "left auditory click",
+        "left button press": "left auditory&visual click",
+        #"motor": "left auditory & visual click vs "
+        #   + "right auditory&visual click",
+        "left button press (visual)": "left visual click",
+        "right button press (auditory)": "right auditory click",
+        "right button press": "right auditory&visual click",
+        "right-left button press": "right auditory & visual click "
            + "vs left auditory&visual click",
-        "motor right video": "right visual click",
-        "checkerboardV": "vertical checkerboard",
-        "x": "vertical vs horizontal checkerboard",
-        "computation video": "visual calculation",
-        "computation-sentences video": "visual calculation vs sentences",
-        "aa": "visual click vs visual sentences",
-        "ab": "visual processing",
-        "ac": "visual processing vs auditory processing",
-        "ad": "visual processing vs checkerboard",
-        "sentences video": "visual sentences",
-        "af": "visual sentences vs checkerboard"}
+        "right button press (visual)": "right visual click",
+        "vertical checkerboard": "vertical checkerboard",
+        "vertical-horizontal checkerboard":
+            "vertical vs horizontal checkerboard",
+        "computation (visual cue)": "visual calculation",
+        "computation (visual cue) - sentence reading":
+            "visual calculation vs sentences",
+        "right button press (viausl cue) - visual sentence reading":
+            "visual click vs visual sentences",
+        "visual instructions": "visual processing",
+        "visual - auditory instructions":
+            "visual processing vs auditory processing",
+        "visual instructions - checkerboard":
+            "visual processing vs checkerboard",
+        "sentence reading": "visual sentences",
+        "sentence reading - checkerboard": "visual sentences vs checkerboard"}
     allowed_contrasts = contrast_name_wrapper.values()
     # convert contrast names
     contrasts_wrapped = []
@@ -1604,7 +1609,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             raise ValueError("Contrast \'%s\' is not available" % contrast)
 
     # It is better to perform several small requests than a big one because:
-    # - Brainomics server has no cache
+    # - Brainomics server has no cache (can lead to timeout while the archive
+    #   is generated on the remote server)
     # - Local (cached) version of the files can be checked for each contrast
     opts = {'uncompress': True}
     data_types = ["c map"]
@@ -1716,8 +1722,9 @@ def fetch_localizer_one_structural_image(data_dir=None):
     return Bunch(anat=anat)
 
 
-def fetch_localizer_motor_task(n_subjects=None, data_dir=None):
-    """Fetch motor task contrast maps from the localizer (94 subjects).
+def fetch_localizer_computation_vs_sentences_task(n_subjects=None,
+                                                  data_dir=None):
+    """Fetch computation-sentences task contrast maps from the localizer.
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
@@ -1740,106 +1747,7 @@ def fetch_localizer_motor_task(n_subjects=None, data_dir=None):
             Paths to nifti contrast maps
 
     """
-    res = fetch_localizer_contrasts(["motor"], n_subjects=n_subjects,
-                                    get_tmaps=False, get_masks=False,
-                                    get_anats=False, data_dir=data_dir,
-                                    url=None, resume=True, verbose=0)
-    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
-    res.update(anat)
-    return res
-
-
-def fetch_localizer_computation_task(n_subjects=None, data_dir=None):
-    """Fetch computation task contrast maps from the localizer (94 subjects).
-
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
-
-    Parameters
-    ----------
-    n_subjects: int, optional
-        The number of subjects to load. If None is given,
-        all 94 subjects are used.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    Returns
-    -------
-    data: Bunch
-        Dictionary-like object, the interest attributes are :
-        'cmaps': string list
-            Paths to nifti contrast maps
-
-    """
-    res = fetch_localizer_contrasts(["computation"], n_subjects=n_subjects,
-                                    get_tmaps=False, get_masks=False,
-                                    get_anats=False, data_dir=data_dir,
-                                    url=None, resume=True, verbose=0)
-    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
-    res.update(anat)
-    return res
-
-
-def fetch_localizer_reading_task(n_subjects=None, data_dir=None):
-    """Fetch reading task contrast maps from the localizer (94 subjects).
-
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
-
-    Parameters
-    ----------
-    n_subjects: int, optional
-        The number of subjects to load. If None is given,
-        all 94 subjects are used.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    Returns
-    -------
-    data: Bunch
-        Dictionary-like object, the interest attributes are :
-        'cmaps': string list
-            Paths to nifti contrast maps
-
-    """
-    res = fetch_localizer_contrasts(["sentences"], n_subjects=n_subjects,
-                                    get_tmaps=False, get_masks=False,
-                                    get_anats=False, data_dir=data_dir,
-                                    url=None, resume=True, verbose=0)
-    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
-    res.update(anat)
-    return res
-
-
-def fetch_localizer_auditory_task(n_subjects=None, data_dir=None):
-    """Fetch auditory task contrast maps from the localizer (94 subjects).
-
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
-
-    Parameters
-    ----------
-    n_subjects: int, optional
-        The number of subjects to load. If None is given,
-        all 94 subjects are used.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    Returns
-    -------
-    data: Bunch
-        Dictionary-like object, the interest attributes are :
-        'cmaps': string list
-            Paths to nifti contrast maps
-
-    """
-    res = fetch_localizer_contrasts(["auditory processing"],
+    res = fetch_localizer_contrasts(["computation-sentences"],
                                     n_subjects=n_subjects,
                                     get_tmaps=False, get_masks=False,
                                     get_anats=False, data_dir=data_dir,
