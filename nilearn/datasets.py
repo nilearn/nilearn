@@ -1694,7 +1694,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_tmaps:
         tmaps = files(slice(1, len(files) + 1, 2))
         files = files(slice(0, len(files), 2))
-    return Bunch(cmaps=files, tmaps=tmaps, mask=masks, anats=anats)
+    return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats)
 
 
 def fetch_localizer_one_structural_image(data_dir=None):
