@@ -24,8 +24,7 @@ from nilearn.mass_univariate import permuted_ols
 
 ### Load Localizer motor contrast #############################################
 n_samples = 20
-dataset_files = datasets.fetch_localizer_computation_vs_sentences_task(
-    n_subjects=n_samples)
+dataset_files = datasets.fetch_localizer_calculation_task(n_subjects=n_samples)
 
 ### Mask data #################################################################
 nifti_masker = NiftiMasker(
@@ -70,7 +69,7 @@ neg_log_pvals_bonferroni_resampled = resample_img(
     interpolation='nearest')
 
 # Various plotting parameters
-picked_slice = 85  # plotted slice
+picked_slice = 90  # plotted slice
 vmin = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_bonferroni))
 grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
