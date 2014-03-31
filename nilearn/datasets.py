@@ -16,6 +16,7 @@ import time
 import hashlib
 import fnmatch
 import warnings
+import cPickle as pickle
 
 import numpy as np
 from scipy import ndimage
@@ -365,9 +366,42 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     return full_name
 
 
+def movetree(src, dst):
+    """Move an entire tree to another directory. Any existing file is
+    overwritten"""
+    names = os.listdir(src)
+
+    # Create destination dir if it does not exist
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    errors = []
+
+    for name in names:
+        srcname = os.path.join(src, name)
+        dstname = os.path.join(dst, name)
+        try:
+            if os.path.isdir(srcname) and os.path.isdir(dstname):
+                movetree(srcname, dstname)
+                os.rmdir(srcname)
+            else:
+                shutil.move(srcname, dstname)
+        except (IOError, os.error) as why:
+            errors.append((srcname, dstname, str(why)))
+        # catch the Error from the recursive movetree so that we can
+        # continue with other files
+        except Exception as err:
+            errors.extend(err.args[0])
+    if errors:
+        raise Exception(errors)
+
+
 def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
                  verbose=0):
     """Load requested dataset, downloading it if needed or requested.
+
+    If needed, _fetch_files download data in a sandbox and check that all files
+    are present before moving it to their final destination. This avoids
+    corruption of an existing dataset.
 
     Parameters
     ----------
@@ -396,30 +430,67 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     files: list of string
         Absolute paths of downloaded files on disk
     """
-    # Determine data path
+    # There are two working directories here:
+    # - data_dir is the destination directory of the dataset
+    # - temp_dir is a temporary directory dedicated to this fetching call. All
+    #   files that must be downloaded will be in this directory. If a corrupted
+    #   file is found, or a file is missing, this working directory will be
+    #   deleted.
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
+    files_pickle = pickle.dumps(files)
+    files_md5 = hashlib.md5(files_pickle).hexdigest()
+    temp_dir = os.path.join(data_dir, files_md5)
+
+    # Abortion flag, in case of error
+    abort = False
 
     files_ = []
     for file_, url, opts in files:
-        # Download the file if it exists
-        abs_file = os.path.join(data_dir, file_)
-        if not os.path.exists(abs_file):
+        # 3 possibilities:
+        # - the file exists in data_dir, nothing to do.
+        # - the file does not exists: we download it in temp_dir
+        # - the file exists in temp_dir: this can happen if an archive has been
+        #   downloaded. There is nothing to do
+
+        # Target file in the data_dir
+        target_file = os.path.join(data_dir, file_)
+        # Target file in temp dir
+        temp_target_file = os.path.join(temp_dir, file_)
+        if (not os.path.exists(target_file) and not
+                os.path.exists(temp_target_file)):
+            if not os.path.exists(temp_dir):
+                os.mkdir(temp_dir)
             md5sum = opts.get('md5sum', None)
-            dl_file = _fetch_file(url, data_dir, resume=resume,
+            dl_file = _fetch_file(url, temp_dir, resume=resume,
                                   verbose=verbose, md5sum=md5sum)
             if 'move' in opts:
-                target = os.path.join(data_dir, opts['move'])
-                target_dir = os.path.dirname(target)
-                if not os.path.exists(target_dir):
-                    os.makedirs(target_dir)
-                shutil.move(os.path.join(data_dir, dl_file),
-                            target)
-                dl_file = os.path.join(data_dir, opts['move'])
+                # XXX: here, move is supposed to be a dir, it can be a name
+                move = os.path.join(temp_dir, opts['move'])
+                move_dir = os.path.dirname(os.path.join(temp_dir, move))
+                if not os.path.exists(move_dir):
+                    os.makedirs(move_dir)
+                shutil.move(os.path.join(temp_dir, dl_file), move)
+                dl_file = os.path.join(temp_dir, opts['move'])
             if 'uncompress' in opts:
-                _uncompress_file(dl_file)
-        if not os.path.exists(abs_file):
-            raise IOError('An error occured while fetching %s' % file_)
-        files_.append(abs_file)
+                try:
+                    _uncompress_file(dl_file)
+                except:
+                    abort = True
+        if (not os.path.exists(target_file) and not
+                os.path.exists(temp_target_file)):
+            warnings.warn('An error occured while fetching %s' % file_)
+            abort = True
+        if abort:
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+            raise IOError('Fetching aborted. See error above')
+        files_.append(target_file)
+    # If needed, move files from temps directory to final directory.
+    if os.path.exists(temp_dir):
+        #XXX We could only moved the files requested
+        #XXX Movetree can go wrong
+        movetree(temp_dir, data_dir)
+        shutil.rmtree(temp_dir)
     return files_
 
 
@@ -822,7 +893,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                 data_dir=data_dir, resume=resume)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
-        
+
     # return the data
     return Bunch(
             anat=files[7::n_files],

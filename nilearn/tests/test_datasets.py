@@ -10,7 +10,7 @@ from tempfile import mkdtemp, mktemp
 import numpy as np
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from .. import datasets
 from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
@@ -26,6 +26,10 @@ def setup_tmpdata():
     # create temporary dir
     global tmpdir
     tmpdir = mkdtemp()
+
+
+def setup_tmpdata_and_mock():
+    setup_tmpdata()
     global mock
     mock = mock_urllib2()
     datasets.urllib2 = mock
@@ -106,6 +110,44 @@ def test_tree():
     shutil.rmtree(parent)
 
 
+def test_movetree():
+    # Create a dummy directory tree
+    parent = mkdtemp()
+
+    dir1 = os.path.join(parent, 'dir1')
+    dir11 = os.path.join(dir1, 'dir11')
+    dir12 = os.path.join(dir1, 'dir12')
+    dir2 = os.path.join(parent, 'dir2')
+    os.mkdir(dir1)
+    os.mkdir(dir11)
+    os.mkdir(dir12)
+    os.mkdir(dir2)
+    os.mkdir(os.path.join(dir2, 'dir12'))
+    open(os.path.join(dir1, 'file11'), 'w').close()
+    open(os.path.join(dir1, 'file12'), 'w').close()
+    open(os.path.join(dir11, 'file111'), 'w').close()
+    open(os.path.join(dir12, 'file121'), 'w').close()
+    open(os.path.join(dir2, 'file21'), 'w').close()
+
+    datasets.movetree(dir1, dir2)
+
+    assert_false(os.path.exists(dir11))
+    assert_false(os.path.exists(dir12))
+    assert_false(os.path.exists(os.path.join(dir1, 'file11')))
+    assert_false(os.path.exists(os.path.join(dir1, 'file12')))
+    assert_false(os.path.exists(os.path.join(dir11, 'file111')))
+    assert_false(os.path.exists(os.path.join(dir12, 'file121')))
+    dir11 = os.path.join(dir2, 'dir11')
+    dir12 = os.path.join(dir2, 'dir12')
+
+    assert_true(os.path.exists(dir11))
+    assert_true(os.path.exists(dir12))
+    assert_true(os.path.exists(os.path.join(dir2, 'file11')))
+    assert_true(os.path.exists(os.path.join(dir2, 'file12')))
+    assert_true(os.path.exists(os.path.join(dir11, 'file111')))
+    assert_true(os.path.exists(os.path.join(dir12, 'file121')))
+
+
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby_simple():
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
@@ -120,10 +162,39 @@ def test_fetch_haxby_simple():
         assert_true(os.path.exists(os.path.join(datasetdir, file)))
 
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fail_fetch_haxby_simple():
+    # Test a dataset fetching failure to validate sandboxing
+    local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
+    datasetdir = os.path.join(tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
+    os.makedirs(datasetdir)
+    # Create a dummy file. If sandboxing is successful, it won't be overwritten
+    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'w')
+    dummy.write('stuff')
+    dummy.close()
+
+    path = 'pymvpa-exampledata'
+
+    opts = {'uncompress': True}
+    files = [
+            (os.path.join(path, 'attributes.txt'), local_url, opts),
+            # The following file does not exists. It will cause an abortion of
+            # the fetching procedure
+            (os.path.join(path, 'bald.nii.gz'), local_url, opts)
+    ]
+
+    assert_raises(IOError, datasets._fetch_files, 'haxby2001_simple', files,
+            data_dir=tmpdir)
+    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
+    stuff = dummy.read(5)
+    dummy.close()
+    assert_equal(stuff, 'stuff')
+
+
 # Smoke tests for the rest of the fetchers
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_craddock_2011_atlas():
     bunch = datasets.fetch_craddock_2011_atlas(data_dir=tmpdir)
 
@@ -142,7 +213,7 @@ def test_fetch_craddock_2011_atlas():
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_haxby():
     for i in range(1, 6):
         haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)
@@ -158,7 +229,7 @@ def test_fetch_haxby():
         mock.reset()
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_nyu_rest():
     # First session, all subjects
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
@@ -182,7 +253,7 @@ def test_fetch_nyu_rest():
     assert_true(np.all(s[24:] == 3))
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_adhd():
     local_url = "file://" + datadir
     # Disabled: cannot be tested without actually fetching the phenotypic file
@@ -192,7 +263,7 @@ def test_fetch_adhd():
     assert_equal(len(mock.urls), 2)
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_miyawaki2008():
     dataset = datasets.fetch_miyawaki2008(data_dir=tmpdir)
     assert_equal(len(dataset.func), 32)
@@ -202,7 +273,7 @@ def test_miyawaki2008():
     assert_equal(len(mock.urls), 1)
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_msdl_atlas():
     dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir)
     assert_true(isinstance(dataset.labels, basestring))
@@ -210,7 +281,7 @@ def test_fetch_msdl_atlas():
     assert_equal(len(mock.urls), 1)
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_icbm152_2009():
     dataset = datasets.fetch_icbm152_2009(data_dir=tmpdir)
     assert_true(isinstance(dataset.csf, basestring))
@@ -226,7 +297,7 @@ def test_fetch_icbm152_2009():
     assert_equal(len(mock.urls), 1)
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_yeo_2011_atlas():
     dataset = datasets.fetch_yeo_2011_atlas(data_dir=tmpdir)
     assert_true(isinstance(dataset.anat, basestring))
