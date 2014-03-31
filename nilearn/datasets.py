@@ -1590,7 +1590,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "visual calculation vs sentences",
         "calculation vs sentences": "auditory&visual calculation vs sentences",
         # Button press
-        "left button press (auditory)": "left auditory click",
+        "left button press (auditory cue)": "left auditory click",
         "left button press (visual cue)": "left visual click",
         "left button press": "left auditory&visual click",
         "left vs right button press": "left auditory & visual click vs "
