@@ -1731,9 +1731,8 @@ def fetch_localizer_one_structural_image(data_dir=None):
     return Bunch(anat=anat)
 
 
-def fetch_localizer_computation_vs_sentences_task(n_subjects=None,
-                                                  data_dir=None):
-    """Fetch computation-sentences task contrast maps from the localizer.
+def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
+    """Fetch calculation task contrast maps from the localizer.
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
@@ -1756,8 +1755,7 @@ def fetch_localizer_computation_vs_sentences_task(n_subjects=None,
             Paths to nifti contrast maps
 
     """
-    res = fetch_localizer_contrasts(["computation-sentences"],
-                                    n_subjects=n_subjects,
+    res = fetch_localizer_contrasts(["calculation"], n_subjects=n_subjects,
                                     get_tmaps=False, get_masks=False,
                                     get_anats=False, data_dir=data_dir,
                                     url=None, resume=True, verbose=0)
