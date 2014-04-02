@@ -321,16 +321,9 @@ def test_fetch_localizer_contrasts():
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
-def test_fetch_localizer_one_structural_image():
-    dataset = datasets.fetch_localizer_one_structural_image(data_dir=tmpdir)
-    assert_true(isinstance(dataset.anat[0], basestring))
-
-
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
     dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
-    assert_true(isinstance(dataset.anat[0], basestring))
     assert_true(isinstance(dataset.cmaps[0], basestring))
