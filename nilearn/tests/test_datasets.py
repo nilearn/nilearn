@@ -214,6 +214,26 @@ def test_fetch_craddock_2011_atlas():
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+def test_fetch_smith_2009_atlas():
+    bunch = datasets.fetch_smith_2009(data_dir=tmpdir)
+
+    keys = ("rsn20", "rsn10", "rsn70",
+            "bm20", "bm10", "bm70")
+    filenames = [
+            "rsn20.nii.gz",
+            "PNAS_Smith09_rsn10.nii.gz",
+            "rsn70.nii.gz",
+            "bm20.nii.gz",
+            "PNAS_Smith09_bm10.nii.gz",
+            "bm70.nii.gz",
+    ]
+
+    assert_equal(len(mock.urls), 6)
+    for key, fn in zip(keys, filenames):
+        assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
+
+
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_haxby():
     for i in range(1, 6):
         haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)

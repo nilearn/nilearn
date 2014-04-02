@@ -81,6 +81,8 @@ def write_tmp_imgs(*imgs, **kwargs):
 
 class mock_urllib2(object):
 
+    urlparse = urllib2.urlparse
+
     def __init__(self):
         """Object that mocks the urllib2 module to store downloaded filenames.
 

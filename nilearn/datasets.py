@@ -297,9 +297,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    file_name = os.path.basename(url)
-    # Eliminate vars if needed
-    file_name = file_name.split('?')[0]
+    # Determine filename using URL
+    parse = urllib2.urlparse.urlparse(url)
+    file_name = os.path.basename(parse.path)
+
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
@@ -574,8 +575,9 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     on this parcellation.
     """
 
-    url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
-          "/Parcellations/craddock_2011_parcellations.tar.gz"
+    if url is None:
+        url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
+              "/Parcellations/craddock_2011_parcellations.tar.gz"
     opts = {'uncompress': True}
 
     dataset_name = "craddock_2011"
@@ -643,8 +645,9 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
 
     Licence: unknown.
     """
-    url = "ftp://surfer.nmr.mgh.harvard.edu/" \
-          "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
+    if url is None:
+        url = "ftp://surfer.nmr.mgh.harvard.edu/" \
+              "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
     opts = {'uncompress': True}
 
     dataset_name = "yeo_2011"
@@ -713,8 +716,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
     """
 
-    url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
-          "mni_icbm152_nlin_sym_09a_nifti.zip"
+    if url is None:
+        url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
+              "mni_icbm152_nlin_sym_09a_nifti.zip"
     opts = {'uncompress': True}
 
     keys = ("csf", "gm", "wm",
@@ -739,6 +743,73 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
+
+
+def fetch_smith_2009(data_dir=None, url=None, resume=True,
+        verbose=0):
+    """Download and load the Smith ICA and BrainMap atlas (dated 2009)
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Use to forec data storage in a non-
+        standard location. Default: None (meaning: default)
+    url: string, optional
+        Download URL of the dataset. Overwrite the default URL.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - 20-dimensional ICA, Resting-FMRI components:
+            - all 20 components (rsn20)
+            - 10 well-matched maps from these, as shown in PNAS paper (rsn10)
+
+        - 20-dimensional ICA, BrainMap components:
+            - all 20 components (bm20)
+            - 10 well-matched maps from these, as shown in PNAS paper (bm10)
+
+        - 70-dimensional ICA, Resting-FMRI components (rsn70)
+
+        - 70-dimensional ICA, BrainMap components (bm70)
+
+
+    References
+    ----------
+
+    S.M. Smith, P.T. Fox, K.L. Miller, D.C. Glahn, P.M. Fox, C.E. Mackay, N.
+    Filippini, K.E. Watkins, R. Toro, A.R. Laird, and C.F. Beckmann.
+    Correspondence of the brain's functional architecture during activation and
+    rest. Proc Natl Acad Sci USA (PNAS), 106(31):13040-13045, 2009.
+
+    A.R. Laird, P.M. Fox, S.B. Eickhoff, J.A. Turner, K.L. Ray, D.R. McKay, D.C.
+    Glahn, C.F. Beckmann, S.M. Smith, and P.T. Fox. Behavioral interpretations
+    of intrinsic connectivity networks. Journal of Cognitive Neuroscience, 2011.
+
+    Notes
+    -----
+    For more information about this dataset's structure:
+    http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/
+    """
+
+    if url is None:
+        url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
+
+    files = [('rsn20.nii.gz', url + 'rsn20.nii.gz', {}),
+             ('PNAS_Smith09_rsn10.nii.gz',
+                 url + 'PNAS_Smith09_rsn10.nii.gz', {}),
+             ('rsn70.nii.gz', url + 'rsn70.nii.gz', {}),
+             ('bm20.nii.gz', url + 'bm20.nii.gz', {}),
+             ('PNAS_Smith09_bm10.nii.gz',
+                 url + 'PNAS_Smith09_bm10.nii.gz', {}),
+             ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
+             ]
+
+    files_ = _fetch_files('smith_2009', files, data_dir=data_dir,
+            resume=resume)
+
+    return Bunch(rsn20=files_[0], rsn10=files_[1], rsn70=files_[2],
+            bm20=files_[3], bm10=files_[4], bm70=files_[5])
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
