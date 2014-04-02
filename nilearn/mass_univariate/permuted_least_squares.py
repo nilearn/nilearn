@@ -194,7 +194,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
             target_vars = (target_vars
-                           * rng.randint(2, size=(1, n_samples)) * 2 - 1)
+                           * (rng.randint(2, size=(n_samples, 1)) * 2 - 1))
         else:
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
