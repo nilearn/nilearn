@@ -3,7 +3,7 @@ Massively univariate analysis of a computation task from the Localizer dataset
 ==============================================================================
 
 A permuted Ordinary Least Squares algorithm is run at each voxel in
-order to detemine which voxels are specifically active when a healthy subject
+order to determine which voxels are specifically active when a healthy subject
 performs a computation task as opposed to a sentence reading task.
 
 The example shows the small differences that exist between
@@ -32,9 +32,9 @@ nifti_masker = NiftiMasker(
 fmri_masked = nifti_masker.fit_transform(dataset_files.cmaps)
 
 ### Perform massively univariate analysis with permuted OLS ###################
+tested_var = np.ones((n_samples, 1), dtype=float)  # intercept
 neg_log_pvals, all_scores, h0 = permuted_ols(
-    np.ones((n_samples, 1), dtype=float),
-    fmri_masked, model_intercept=False,
+    tested_var, fmri_masked, model_intercept=False,
     n_perm=10000,
     n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
@@ -42,8 +42,7 @@ neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 
 ### scikit-learn F-scores for comparison ######################################
 from nilearn._utils.fixes import f_regression
-_, pvals_bonferroni = f_regression(
-    fmri_masked, np.ones((n_samples, 1), dtype=float), center=False)
+_, pvals_bonferroni = f_regression(fmri_masked, tested_var, center=False)
 pvals_bonferroni *= fmri_masked.shape[1]
 pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1

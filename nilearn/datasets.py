@@ -1576,14 +1576,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "visual processing vs checkerboard",
         "instructions vs button press": "cognitive processing vs motor",
         # Sentences
-        "sentences": "auditory&visual sentences",
         "sentence listening": "auditory sentences",
         "sentence reading": "visual sentences",
+        "sentence listening and reading": "auditory&visual sentences",
         "sentence reading vs checkerboard": "visual sentences vs checkerboard",
         # Calculation
         "calculation (auditory cue)": "auditory calculation",
         "calculation (visual cue)": "visual calculation",
-        "calculation": "auditory&visual calculation",
+        "calculation (auditory and visual cue)": "auditory&visual calculation",
         "calculation (auditory cue) vs sentences listening":
             "auditory calculation vs auditory sentences",
         "calculation (visual cue) vs sentence reading":
