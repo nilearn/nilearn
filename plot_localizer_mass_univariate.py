@@ -16,10 +16,8 @@ voxels than the non-parametric, exact permutation test.
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Mar. 2014
 import numpy as np
-import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
-from nilearn.image import resample_img
 from nilearn.mass_univariate import permuted_ols
 
 ### Load Localizer motor contrast #############################################
@@ -54,21 +52,10 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 
-# Use the structural image of one subject as a background image
-structural_img = nibabel.load(dataset_files.anat[0])
-neg_log_pvals_resampled = resample_img(
-    neg_log_pvals_unmasked,
-    target_affine=structural_img.get_affine(),
-    target_shape=structural_img.shape,
-    interpolation='nearest')
-neg_log_pvals_bonferroni_resampled = resample_img(
-    neg_log_pvals_bonferroni_unmasked,
-    target_affine=structural_img.get_affine(),
-    target_shape=structural_img.shape,
-    interpolation='nearest')
+# Here, we should use a structural image as a background, when available.
 
 # Various plotting parameters
-picked_slice = 90  # plotted slice
+picked_slice = 30  # plotted slice
 vmin = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_bonferroni))
 grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
@@ -78,28 +65,28 @@ grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
 
 # Plot thresholded F-scores map
 ax = grid[0]
-p_ma = np.ma.masked_less(neg_log_pvals_bonferroni_resampled.get_data(), vmin)
-ax.imshow(np.rot90(structural_img.get_data()[..., picked_slice]),
+p_ma = np.ma.masked_less(neg_log_pvals_bonferroni_unmasked.get_data(), vmin)
+ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
           interpolation='nearest', cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Parametric F-test + '
              '\nBonferroni correction)' +
              # divide number of detections by 9 to compensate for resampling
-             '\n%d detections' % ((~p_ma.mask[..., picked_slice]).sum() / 9))
+             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
 ax.axis('off')
 
 # Plot permutation p-values map
 ax = grid[1]
-p_ma = np.ma.masked_less(neg_log_pvals_resampled.get_data(), vmin)
-ax.imshow(np.rot90(structural_img.get_data()[..., picked_slice]),
+p_ma = np.ma.masked_less(neg_log_pvals_unmasked.get_data(), vmin)
+ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
           interpolation='nearest', cmap=plt.cm.gray)
 im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
                cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
              '\nmax-type correction)' +
              # divide number of detections by 9 to compensate for resampling
-             '\n%d detections' % ((~p_ma.mask[..., picked_slice]).sum() / 9))
+             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
 ax.axis('off')
 
 grid[0].cax.colorbar(im)

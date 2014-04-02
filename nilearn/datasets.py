@@ -1692,44 +1692,6 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats)
 
 
-def fetch_localizer_one_structural_image(data_dir=None):
-    """Download and load one single structural image from the localizer.
-
-    Useful for plots and examples, where the structural image can serve as
-    a background image.
-    Subject S53 is used, but this is an arbitrary choice.
-
-    Parameters
-    ----------
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    Returns
-    -------
-    data: Bunch
-        Dictionary-like object, the interest attributes are :
-        'anat': string
-            Path to nifti file corresponding to structural image
-
-    """
-    opts = {'uncompress': True}
-    url = ("http://brainomics.cea.fr/localizer/scan/1064245"
-           "/brainomics_data.zip?rql="
-           + urllib.quote("Any X,AA,AB,AC,AD,AE,AF WHERE X is Scan, "
-                          "X filepath AA, X type AB, X label AC, "
-                          "X format AD, X description AE, "
-                          "X modification_date AF, X eid 1064245", safe=',()')
-           + "&vid=data-zip")
-    filename = [(os.path.join("brainomics_data", "S53",
-                              "normalized_T1_anat_defaced.nii.gz"),
-                 url,
-                 opts)]
-    # Actual data fetching
-    anat = _fetch_files('brainomics_localizer', filename, data_dir=data_dir)
-    return Bunch(anat=anat)
-
-
 def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
     """Fetch calculation task contrast maps from the localizer.
 
@@ -1754,10 +1716,8 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
             Paths to nifti contrast maps
 
     """
-    res = fetch_localizer_contrasts(["calculation"], n_subjects=n_subjects,
-                                    get_tmaps=False, get_masks=False,
-                                    get_anats=False, data_dir=data_dir,
-                                    url=None, resume=True, verbose=0)
-    anat = fetch_localizer_one_structural_image(data_dir=data_dir)
-    res.update(anat)
-    return res
+    return fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
+                                     n_subjects=n_subjects,
+                                     get_tmaps=False, get_masks=False,
+                                     get_anats=False, data_dir=data_dir,
+                                     url=None, resume=True, verbose=0)
