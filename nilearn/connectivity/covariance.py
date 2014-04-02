@@ -127,24 +127,30 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
     perform the analysis.
     """
 
-    def __init__(self, kind='tangent'):
+    def __init__(self, base_estimator=None, kind='tangent'):
+        self.base_estimator = base_estimator
         self.kind = kind
 
     def fit(self, covs):
+        if base_estimator is None:
+            self.base_estimator_ = ...
+        else:
+            self.base_estimator_ = clone(self.base_estimator)
         if self.kind == 'tangent':
             covs = my_stack(covs)
             #self.mean_cov = mean_cov = spd_manifold.log_mean(covs)
-            mean_cov = mean_cov = np.mean(covs, axis=0)
-            self.whitening = inv_sqrtm(mean_cov)
+            mean_cov = np.mean(covs, axis=0)
+            self.whitening_ = inv_sqrtm(mean_cov)
         return self
 
     def transform(self, covs):
         if self.kind == 'tangent':
-            covs = [np.dot(np.dot(self.whitening, c), self.whitening)
+            covs = [np.dot(np.dot(self.whitening_, c), self.whitening_)
                         for c in covs]
         elif self.kind == 'partial correlation':
             covs = [inv(g) for g in covs]
-        return np.array([sym_to_vec(c) for c in covs])
+        self.vect_ = np.array([sym_to_vec(c) for c in covs])
+        return self.vect_
 
 
 if __name__ == '__main__':
