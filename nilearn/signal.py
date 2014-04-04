@@ -295,7 +295,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
 
 
 def clean(signals, detrend=True, standardize=True, confounds=None,
-          low_pass=None, high_pass=None, t_r=2.5):
+          n_hv_confounds=None, low_pass=None, high_pass=None, t_r=2.5):
     """Improve SNR on masked fMRI signals.
 
        This function can do several things on the input signals, in
@@ -361,6 +361,10 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
 
+    if n_hv_confounds is not None:
+        hv_confounds = high_variance_confounds(signals,
+                                               n_confounds=n_hv_confounds)
+
     # Standardize / detrend
     normalize = False
     if confounds is not None:
@@ -370,42 +374,52 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
     signals = _standardize(signals, normalize=normalize, detrend=detrend)
 
     # Remove confounds
-    if confounds is not None:
-        if not isinstance(confounds, (list, tuple)):
-            confounds = (confounds, )
-
+    if confounds is not None or n_hv_confounds is not None:
         # Read confounds
-        all_confounds = []
-        for confound in confounds:
-            if isinstance(confound, basestring):
-                filename = confound
-                confound = np.genfromtxt(filename)
-                if np.isnan(confound.flat[0]):
-                    # There may be a header
-                    if np_version >= [1, 4, 0]:
-                        confound = np.genfromtxt(filename, skip_header=1)
-                    else:
-                        confound = np.genfromtxt(filename, skiprows=1)
-                if confound.shape[0] != signals.shape[0]:
-                    raise ValueError("Confound signal has an incorrect length")
+        if confounds is not None:
+            if not isinstance(confounds, (list, tuple)):
+                confounds = (confounds, )
 
-            elif isinstance(confound, np.ndarray):
-                if confound.ndim == 1:
-                    confound = np.atleast_2d(confound).T
-                elif confound.ndim != 2:
-                    raise ValueError("confound array has an incorrect number "
-                                     "of dimensions: %d" % confound.ndim)
+            all_confounds = []
+            for confound in confounds:
+                if isinstance(confound, basestring):
+                    filename = confound
+                    confound = np.genfromtxt(filename)
+                    if np.isnan(confound.flat[0]):
+                        # There may be a header
+                        if np_version >= [1, 4, 0]:
+                            confound = np.genfromtxt(filename, skip_header=1)
+                        else:
+                            confound = np.genfromtxt(filename, skiprows=1)
+                    if confound.shape[0] != signals.shape[0]:
+                        raise ValueError("Confound signal has an incorrect"
+                                         " length")
 
-                if confound.shape[0] != signals.shape[0]:
-                    raise ValueError("Confound signal has an incorrect length")
-            else:
-                raise TypeError("confound has an unhandled type: %s"
-                                % confound.__class__)
-            all_confounds.append(confound)
+                elif isinstance(confound, np.ndarray):
+                    if confound.ndim == 1:
+                        confound = np.atleast_2d(confound).T
+                    elif confound.ndim != 2:
+                        raise ValueError("confound array has an incorrect"
+                                         " number of dimensions: %d"
+                                         % confound.ndim)
 
-        # Restrict the signal to the orthogonal of the confounds
-        confounds = np.hstack(all_confounds)
-        del all_confounds
+                    if confound.shape[0] != signals.shape[0]:
+                        raise ValueError("Confound signal has an incorrect"
+                                         " length")
+                else:
+                    raise TypeError("confound has an unhandled type: %s"
+                                    % confound.__class__)
+                all_confounds.append(confound)
+
+            # Restrict the signal to the orthogonal of the confounds
+            if n_hv_confounds is not None:
+                all_confounds.append(hv_confounds)
+            confounds = np.hstack(all_confounds)
+            del all_confounds
+
+        elif n_hv_confounds is not None:  # confounds is None !!
+            confounds = hv_confounds
+        print confounds.shape
         confounds = _standardize(confounds, normalize=True, detrend=detrend)
         Q = linalg.qr(confounds, mode='economic')[0]
         signals -= np.dot(Q, np.dot(Q.T, signals))

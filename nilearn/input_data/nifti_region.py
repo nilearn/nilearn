@@ -180,8 +180,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 self.mask_img_ = image.resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.get_affine(),
-                    target_shape=_utils._get_shape(
-                                                self.labels_img_)[:3],
+                    target_shape=_utils._get_shape(self.labels_img_)[:3],
                     interpolation="nearest",
                     copy=True)
 
@@ -193,28 +192,35 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def fit_transform(self, niimgs, confounds=None):
-        return self.fit().transform(niimgs, confounds=confounds)
+    def fit_transform(self, niimgs, confounds=None, n_hv_confounds=None):
+        return self.fit().transform(niimgs, confounds=confounds,
+                                    n_hv_confounds=n_hv_confounds)
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, n_hv_confounds=None):
         """Extract signals from images.
 
         Parameters
         ==========
         niimgs: niimg
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
 
         confounds: array-like, optional
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details.
+        shape: (number of scans, number of confounds)
+
+        n_hv_confounds: unsigned integer, optional
+        This parameter is passed on to
+        nilearn.image.high_variance_confounds.
+        Please see related documentation for details
+
 
         Returns
         =======
         signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
+        Signal for each region.
+        shape: (number of scans, number of regions)
 
         """
         logger.log("loading images: %s" %
@@ -247,7 +253,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        t_r=self.t_r,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
-                                       confounds=confounds)
+                                       confounds=confounds,
+                                       n_hv_confounds=n_hv_confounds)
         return region_signals
 
     def inverse_transform(self, signals):
@@ -258,14 +265,14 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ==========
         signals (2D numpy.ndarray)
-            Signal for each region.
-            shape: (number of scans, number of regions)
+        Signal for each region.
+        shape: (number of scans, number of regions)
 
         Returns
         =======
         voxel_signals (Nifti1Image)
-            Signal for each voxel
-            shape: (number of scans, number of voxels)
+        Signal for each voxel
+        shape: (number of scans, number of voxels)
         """
         logger.log("computing image from signals", verbose=self.verbose)
         return region.signals_to_img_labels(
@@ -279,53 +286,53 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     Parameters
     ==========
     maps_img: niimg
-        Region definitions, as one image of labels.
+    Region definitions, as one image of labels.
 
     mask_img: niimg, optional
-        Mask to apply to regions before extracting signals.
+    Mask to apply to regions before extracting signals.
 
     smoothing_fwhm: float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the signal.
+    If smoothing_fwhm is not None, it gives the full-width half maximum in
+    millimeters of the spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
-        If standardize is True, the time-series are centered and normed:
+    If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    This parameter is passed to signal.clean. Please see the related
+    documentation for details
 
     low_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    This parameter is passed to signal.clean. Please see the related
+    documentation for details
 
     high_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    This parameter is passed to signal.clean. Please see the related
+    documentation for details
 
     t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    This parameter is passed to signal.clean. Please see the related
+    documentation for details
 
     resampling_target: {"mask", "maps", None} optional.
-        Gives which image gives the final shape/size. For example, if
-        `resampling_target` is "mask" then maps_img and images provided to
-        fit() are resampled to the shape and affine of mask_img. "None" means
-        no resampling: if shapes and affines do not match, a ValueError is
-        raised. Default value: "maps".
+    Gives which image gives the final shape/size. For example, if
+    `resampling_target` is "mask" then maps_img and images provided to
+    fit() are resampled to the shape and affine of mask_img. "None" means
+    no resampling: if shapes and affines do not match, a ValueError is
+    raised. Default value: "maps".
 
     memory: joblib.Memory or str, optional
-        Used to cache the region extraction process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+    Used to cache the region extraction process.
+    By default, no caching is done. If a string is given, it is the
+    path to the caching directory.
 
     memory_level: int, optional
-        Aggressiveness of memory caching. The higher the number, the higher
-        the number of functions that will be cached. Zero means no caching.
+    Aggressiveness of memory caching. The higher the number, the higher
+    the number of functions that will be cached. Zero means no caching.
 
     verbose: integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+    Indicate the level of verbosity. By default, nothing is printed
 
     Notes
     =====
@@ -414,8 +421,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # Since a copy is required, order can be forced as well.
             maps_data = _utils.as_ndarray(self.maps_img_.get_data(),
                                           copy=True, order="C")
-            maps_affine = _utils.as_ndarray(
-                                            self.maps_img_.get_affine())
+            maps_affine = _utils.as_ndarray(self.maps_img_.get_affine())
             self.maps_img_ = nibabel.Nifti1Image(maps_data, maps_affine)
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
@@ -438,28 +444,34 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def fit_transform(self, niimgs, confounds=None):
-        return self.fit().transform(niimgs, confounds=confounds)
+    def fit_transform(self, niimgs, confounds=None, n_hv_confounds=None):
+        return self.fit().transform(niimgs, confounds=confounds,
+                                    n_hv_confounds=n_hv_confounds)
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, n_hv_confounds=None):
         """Extract signals from images.
 
         Parameters
         ==========
         niimgs: niimg
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
 
         confounds: array-like, optional
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details.
+        shape: (number of scans, number of confounds)
+
+        n_hv_confounds: unsigned integer, optional
+        This parameter is passed on to
+        nilearn.image.high_variance_confounds.
+        Please see related documentation for details
 
         Returns
         =======
         region_signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
+        Signal for each region.
+        shape: (number of scans, number of regions)
         """
         logger.log("loading images from %s" %
                    _utils._repr_niimgs(niimgs)[:200], verbose=self.verbose)
@@ -499,7 +511,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        t_r=self.t_r,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
-                                       confounds=confounds)
+                                       confounds=confounds,
+                                       n_hv_confounds=n_hv_confounds)
         return region_signals
 
     def inverse_transform(self, region_signals):
@@ -510,13 +523,13 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ==========
         region_signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
+        Signal for each region.
+        shape: (number of scans, number of regions)
 
         Returns
         =======
         voxel_signals: nibabel.Nifti1Image
-            Signal for each voxel. shape: that of maps.
+        Signal for each voxel. shape: that of maps.
         """
         logger.log("computing image from signals", verbose=self.verbose)
         return region.signals_to_img_maps(region_signals, self.maps_img_,
