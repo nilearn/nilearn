@@ -1504,14 +1504,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "calculation (auditory and visual cue)",
             "calculation (auditory cue) vs sentences listening",
             "calculation (visual cue) vs sentence reading",
-            "calculation vs sentences",
-            "calculation (auditory cue) + sentence listening",
-            "calculation (visual cue) + sentence reading",
-            "calculation (auditory and visual cue) + sentence listening and reading",
-            "calculation (auditory cue) + sentence listening vs "
-            "calculation (visual cue) + sentence reading",
-            "calculation (visual cue) + sentence reading vs checkerboard"
-            "calculation (auditory and visual cue) + sentence listening and reading vs button press",
+            "calculation vs sentences listening/reading",
+            "calculation (auditory cue) and sentence listening",
+            "calculation (visual cue) and sentence reading",
+            "calculation and sentence listening/reading",
+            "calculation (auditory cue) and sentence listening vs "
+            "calculation (visual cue) and sentence reading",
+            "calculation (visual cue) and sentence reading vs checkerboard"
+            "calculation and sentence listening/reading vs button press",
             "left button press (auditory cue)",
             "left button press (visual cue)",
             "left button press",
@@ -1522,7 +1522,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "right vs left button press",
             "button press (auditory cue) vs sentences listening",
             "button press (visual cue) vs sentences reading",
-            "button press vs calculation (auditory and visual cue) + sentence listening and reading"}
+            "button press vs calculation and sentence listening/reading"}
         or equivalently:
             {"checkerboard",
             "horizontal checkerboard",
@@ -1544,7 +1544,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "visual processing vs auditory processing",
             "auditory processing vs visual processing",
             "visual processing vs checkerboard",
-            "calculation (auditory and visual cue) + cognitive processing vs motor",
+            "cognitive processing vs motor",
             "left auditory click",
             "left visual click",
             "left auditory&visual click",
@@ -1643,19 +1643,17 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "visual calculation vs sentences",
         "calculation vs sentences": "auditory&visual calculation vs sentences",
         # Calculation + Sentences
-        "calculation (auditory cue) + sentence listening":
+        "calculation (auditory cue) and sentence listening":
             "auditory processing",
-        "calculation (visual cue) + sentence reading": "visual processing",
-        "calculation (auditory and visual cue) + "
-        "sentence listening and reading":
+        "calculation (visual cue) and sentence reading": "visual processing",
+        "calculation and sentence listening/reading":
             "visual processing vs auditory processing",
-        "calculation (auditory cue) + sentence listening vs "
-        "calculation (visual cue) + sentence reading":
+        "calculation (auditory cue) and sentence listening vs "
+        "calculation (visual cue) and sentence reading":
             "auditory processing vs visual processing",
-        "calculation (visual cue) + sentence reading vs checkerboard":
+        "calculation (visual cue) and sentence reading vs checkerboard":
             "visual processing vs checkerboard",
-        "calculation (auditory and visual cue) + "
-        "sentence listening and reading vs button press":
+        "calculation and sentence listening/reading vs button press":
             "cognitive processing vs motor",
         # Button press
         "left button press (auditory cue)": "left auditory click",
@@ -1672,8 +1670,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "auditory click vs auditory sentences",
         "button press (visual cue) vs sentences reading":
             "visual click vs visual sentences",
-        "button press vs calculation (auditory and visual cue) + "
-        "sentence listening and reading":
+        "button press vs calculation and sentence listening/reading":
             "auditory&visual motor vs cognitive processing"}
     allowed_contrasts = contrast_name_wrapper.values()
     # convert contrast names
