@@ -7,7 +7,8 @@ from sklearn.decomposition import ProbabilisticPCA
 from sklearn.pipeline import Pipeline
 from scipy.linalg.lapack import get_lapack_funcs
 from matrix import untri
-from .data import load
+from sklearn import clone
+#from .data import load
 
 
 def covariance_matrix(series, gm_index, confounds=None):
@@ -36,11 +37,14 @@ def covariance_matrix(series, gm_index, confounds=None):
 
 
 def cov_embedding(covariances):
+    """Returns for a list of matrices a list of transformed 
+    matrices in matrix form, with 1. on the diagonal
+    """
     ce = CovEmbedding()
-    covariances = ce.fit_transform(covariances)
+    covariances = ce.fit_transform(covariances) # shape n(n+1)/2
     if covariances is None:
         return None
-    return np.asarray([untri(c, k=1, fill=1.) for c in covariances])
+    return np.asarray([untri(c, k=0, fill=1.) for c in covariances]) # changed from k=1 to k=0 by Salma
 
 
 def match_pairs(covariances, regions):
@@ -113,6 +117,14 @@ def inv(mat):
 
 
 def sym_to_vec(sym):
+    """ Returns the lower triangular part of
+    sqrt(2) (sym + Id) + (1-sqrt(2)) / sqrt(2), shape n (n+1) /2, with n = 
+    sym.shape[0]
+    
+    Parmaeters
+    ==========
+    sym: array
+    """
     sym = np.copy(sym)
     sym -= np.eye(sym.shape[-1])
     # the sqrt(2) factor
@@ -124,11 +136,16 @@ def sym_to_vec(sym):
 
 class CovEmbedding(BaseEstimator, TransformerMixin):
     """ Tranformer that returns the coefficients on a flat space to
-    perform the analysis.
+    perform the analysis.    
     """
 
-    def __init__(self, kind='tangent'):
+    def __init__(self, base_estimator=None, kind='tangent'):
+        self.base_estimator = base_estimator 
         self.kind = kind
+        if self.base_estimator == None:
+            self.base_estimator_ = ...
+        else:
+            self.base_estimator_ = clone(base_estimator)
 
     def fit(self, covs):
         if self.kind == 'tangent':
@@ -139,6 +156,18 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, covs):
+        """Apply transform to covariances
+
+        Parameters
+        ----------
+        covs: list of array        
+            list of covariance matrices, shape (n_rois, n_rois)
+            
+        Returns
+        -------
+        list of array, transformed covariance matrices,
+        shape (n_rois * (n_rois+1)/2,)        
+        """        
         if self.kind == 'tangent':
             covs = [np.dot(np.dot(self.whitening, c), self.whitening)
                         for c in covs]
@@ -153,13 +182,13 @@ if __name__ == '__main__':
     KIND = 'tangent'
 
     # load the controls
-    control_covs = np.load('controls.npy')
-    control_covs = np.mean(control_covs, 1)
+    control_covs = np.load('/home/sb238920/CODE/NSAP/controls.npy')#controls.npy
+#    control_covs = np.mean(control_covs, 1)
     n_controls, n_rois, _ = control_covs.shape
 
     # load the patients
-    patient_covs = np.load('patients.npy')
-    patient_covs = np.mean(patient_covs, 1)
+    patient_covs = np.load('/home/sb238920/CODE/NSAP/patients.npy')
+#    patient_covs = np.mean(patient_covs, 1)
     n_patients = len(patient_covs)
     patient_nbs = [4, 13, 18, 15, 16, 20, 22, 27, 30, 36]
 
