@@ -126,11 +126,10 @@ plt.tight_layout()
 
 ###############################################################################
 # Plot the face vs house map for the different estimators
-import nibabel
 
 # use the average EPI as a background
-epi_img = nibabel.load(data_files.func[0])
-mean_epi = epi_img.get_data().mean(axis=-1)
+from nilearn import image
+mean_epi = image.mean_img(data_files.func[0]).get_data()
 
 # Restrict the decoding to face vs house
 condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')

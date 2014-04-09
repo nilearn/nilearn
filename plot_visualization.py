@@ -26,6 +26,8 @@ import matplotlib.pyplot as plt
 
 # Compute the mean EPI: we do the mean along the axis 3, which is time
 mean_img = np.mean(fmri_data, axis=3)
+# Note that this can also be done on Nifti images using
+# nilearn.image.mean_img
 
 # plt.figure() creates a new figure
 plt.figure(figsize=(7, 4))

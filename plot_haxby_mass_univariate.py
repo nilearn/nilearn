@@ -64,7 +64,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 # Use the fmri mean image as a surrogate of anatomical data
-mean_fmri = nibabel.load(dataset_files.func).get_data().mean(axis=-1)
+from nilearn import image
+mean_fmri = image.mean_img(dataset_files.func).get_data()
 
 # Various plotting parameters
 picked_slice = 27  # plotted slice

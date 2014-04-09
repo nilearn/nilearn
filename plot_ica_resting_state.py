@@ -28,9 +28,6 @@ data_masked = masker.fit_transform(dataset.func[0])
 #fmri_data = np.concatenate(data_masked, axis=1)
 fmri_data = data_masked
 
-# Take the mean along axis 3: the direction of time
-mean_img = masker.inverse_transform(fmri_data.mean(axis=0))
-
 
 ### Apply ICA #################################################################
 
@@ -55,6 +52,11 @@ components = np.ma.masked_equal(components, 0, copy=False)
 
 ### Visualize the results #####################################################
 # Show some interesting components
+
+# Use the mean as a background
+from nilearn import image
+mean_img = image.mean_img(dataset.func[0])
+
 mean_epi = mean_img.get_data()
 import matplotlib.pyplot as plt
 plt.figure()

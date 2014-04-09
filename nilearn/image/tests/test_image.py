@@ -195,6 +195,7 @@ def test_mean_img():
             niimg = np.mean(niimg, axis=-1)
         arrays.append(niimg)
     truth = np.mean(arrays, axis=0)
+
     assert_array_equal(mean_img.get_affine(), affine)
     assert_array_equal(mean_img.get_data(), truth)
 
