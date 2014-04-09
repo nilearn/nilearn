@@ -44,8 +44,7 @@ def test_with_files():
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, np.eye(4))
 
-    with testing.write_tmp_imgs(data_img, create_files=True)\
-                as filename:
+    with testing.write_tmp_imgs(data_img) as filename:
         masker = NiftiMasker()
         masker.fit(filename)
         masker.transform(filename)

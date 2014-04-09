@@ -185,17 +185,24 @@ def test_mean_img():
                    [niimg2, niimg1, niimg2],
                    [niimg3, niimg1, niimg2], # Mixture of 4D and 3D images
                   ):
+
+        arrays = list()
+        # Ground-truth:
+        for niimg in niimgs:
+            niimg = niimg.get_data()
+            if niimg.ndim == 4:
+                niimg = np.mean(niimg, axis=-1)
+            arrays.append(niimg)
+        truth = np.mean(arrays, axis=0)
+
         mean_img = image.mean_img(niimgs)
+        assert_array_equal(mean_img.get_affine(), affine)
+        assert_array_equal(mean_img.get_data(), truth)
 
-    arrays = list()
-    # Ground-truth:
-    for niimg in niimgs:
-        niimg = niimg.get_data()
-        if niimg.ndim == 4:
-            niimg = np.mean(niimg, axis=-1)
-        arrays.append(niimg)
-    truth = np.mean(arrays, axis=0)
+        # Test with files
+        with testing.write_tmp_imgs(*niimgs) as imgs:
+            mean_img = image.mean_img(imgs)
+            assert_array_equal(mean_img.get_affine(), affine)
+            assert_array_equal(mean_img.get_data(), truth)
 
-    assert_array_equal(mean_img.get_affine(), affine)
-    assert_array_equal(mean_img.get_data(), truth)
 
