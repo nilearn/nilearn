@@ -14,7 +14,7 @@ data = datasets.fetch_haxby()
 
 # Build the mean image because we have no anatomic data
 from nilearn import image
-mean_img = image.mean_img(data.func[0])
+mean_img = image.mean_img(data.func[0]).get_data()
 
 z = 25
 

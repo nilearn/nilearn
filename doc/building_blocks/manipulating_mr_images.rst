@@ -274,12 +274,17 @@ set up your own data preparation procedure:
 * Resampling: :func:`nilearn.image.resample_img`. See the example
   :ref:`example_plot_affine_transformation.py` to
   see the effect of affine transforms on data and bounding boxes.
-
+* Computing the mean of images (in the time of 4th direction):
+  :func:`nilearn.image.mean_img`
 * Smoothing: :func:`nilearn.image.smooth_img`
 * Masking:
 
-  * compute: :func:`nilearn.masking.compute_epi_mask`
-  * compute for multiple sessions/subjects: :func:`nilearn.masking.compute_multi_epi_mask`
+  * compute from EPI images: :func:`nilearn.masking.compute_epi_mask`
+  * compute from images with a flat background:
+    :func:`nilearn.masking.compute_background_mask`
+  * compute for multiple sessions/subjects:
+    :func:`nilearn.masking.compute_multi_epi_mask`
+    :func:`nilearn.masking.compute_multi_background_mask`
   * apply: :func:`nilearn.masking.apply_mask`
   * intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
   * unmasking: :func:`nilearn.masking.unmask`
