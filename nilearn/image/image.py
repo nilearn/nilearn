@@ -304,7 +304,7 @@ def _compute_mean(imgs, memory=None, target_affine=None,
     imgs = check_niimgs(imgs, accept_3d=True)
     mean_img = _safe_get_data(imgs)
     if not mean_img.ndim in (3, 4):
-        raise ValueError('Mask computation expects 3D or 4D '
+        raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
                          % (mean_img.ndim, input_repr))
     if mean_img.ndim == 4:
