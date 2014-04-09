@@ -327,6 +327,9 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
              verbose=False, memory=None, n_jobs=1):
     """ Compute the mean of the images (in the time dimension of 4th dimension)
 
+    Note that if list of 4D images are given, the mean of each 4D image is
+    computed separately, and the resulting mean is computed after.
+
     Parameters
     ==========
 
