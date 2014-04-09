@@ -6,11 +6,17 @@ See also nilearn.signal.
 # Authors: Philippe Gervais, Alexandre Abraham
 # License: simplified BSD
 
+import collections
+
 import numpy as np
+from scipy import ndimage
 import nibabel
+from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
-from .._utils import check_niimgs, check_niimg, as_ndarray
+from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
+from .._utils.cache_mixin import cache
+from .._utils.niimg_conversions import _safe_get_data
 from .. import masking
 
 
@@ -77,6 +83,75 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                                            detrend=detrend)
 
 
+def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
+    """Smooth images by applying a Gaussian filter.
+
+    Apply a Gaussian filter along the three first dimensions of arr.
+
+    Parameters
+    ==========
+    arr: numpy.ndarray
+        4D array, with image number as last dimension. 3D arrays are also
+        accepted.
+
+    affine: numpy.ndarray
+        (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
+        are also accepted (only these coefficients are used).
+
+    fwhm: scalar or numpy.ndarray
+        Smoothing strength, as a full-width at half maximum, in millimeters.
+        If a scalar is given, width is identical on all three directions.
+        A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If fwhm is None, no filtering is performed (useful when just removal
+        of non-finite values is needed)
+
+    ensure_finite: bool
+        if True, replace every non-finite values (like NaNs) by zero before
+        filtering.
+
+    copy: bool
+        if True, input array is not modified. False by default: the filtering
+        is performed in-place.
+
+    Returns
+    =======
+    filtered_arr: numpy.ndarray
+        arr, filtered.
+
+    Notes
+    =====
+    This function is most efficient with arr in C order.
+    """
+
+    if arr.dtype.kind == 'i':
+        if arr.dtype == np.int64:
+            arr = np.astype(arr, np.float64)
+        else:
+            # We don't need crazy precision
+            arr = np.astype(arr, np.float32)
+    if copy:
+        arr = arr.copy()
+
+    # Keep only the scale part.
+    affine = affine[:3, :3]
+
+    if ensure_finite:
+        # SPM tends to put NaNs in the data outside the brain
+        arr[np.logical_not(np.isfinite(arr))] = 0
+
+    if fwhm is not None:
+        # Convert from a FWHM to a sigma:
+        # Do not use /=, fwhm may be a numpy scalar
+        fwhm = fwhm / np.sqrt(8 * np.log(2))
+        vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
+        sigma = fwhm / vox_size
+        for n, s in enumerate(sigma):
+            ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
+
+    return arr
+
+
+
 def smooth_img(niimgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
@@ -115,9 +190,8 @@ def smooth_img(niimgs, fwhm):
     for img in niimgs:
         img = check_niimg(img)
         affine = img.get_affine()
-        filtered = masking._smooth_array(img.get_data(), affine,
-                                         fwhm=fwhm, ensure_finite=True,
-                                         copy=True)
+        filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
+                                 ensure_finite=True, copy=True)
         ret.append(nibabel.Nifti1Image(filtered, affine))
 
     if single_img:
@@ -221,4 +295,73 @@ def crop_img(niimg, rtol=1e-8, copy=True):
     slices = [slice(s, e) for s, e in zip(start, end)]
 
     return _crop_img_to(niimg, slices, copy=copy)
+
+
+def _compute_mean(imgs, memory=None, target_affine=None,
+                  target_shape=None, smooth=False):
+    from . import resampling
+    input_repr = _repr_niimgs(imgs)
+    imgs = cache(resampling.resample_img, memory, ignore=['copy'])(
+        imgs,
+        target_affine=target_affine,
+        target_shape=target_shape)
+
+    # XXX: should implement a loop on file, if a list of 3D files are
+    # given
+    imgs = check_niimgs(imgs, accept_3d=True)
+    mean_img = _safe_get_data(imgs)
+    if not mean_img.ndim in (3, 4):
+        raise ValueError('Mask computation expects 3D or 4D '
+                         'images, but %i dimensions were given (%s)'
+                         % (mean_img.ndim, input_repr))
+    if mean_img.ndim == 4:
+        mean_img = mean_img.mean(axis=-1)
+    if smooth:
+        nan_mask = np.isnan(mean_img)
+        mean_img = _smooth_array(mean_img, affine=np.eye(4), fwhm=smooth,
+                                 ensure_finite=True, copy=False)
+        mean_img[nan_mask] = np.nan
+    return mean_img, imgs.get_affine()
+
+
+def mean_img(niimgs, target_affine=None, target_shape=None,
+             verbose=False, memory=None, n_jobs=1):
+    if (isinstance(niimgs, basestring) or
+        not isinstance(niimgs, collections.Iterable)):
+        niimgs = [niimgs, ]
+        total_n_imgs = 1
+    else:
+        try:
+            total_n_imgs = len(niimgs)
+        except:
+            total_n_imgs = None
+
+    niimgs_iter = iter(niimgs)
+
+    if target_affine is None or target_shape is None:
+        # Compute the first mean to retrieve the reference
+        # target_affine and target_shape
+        n_imgs = 1
+        running_mean, target_affine = _compute_mean(next(niimgs_iter))
+        target_shape = running_mean.shape[:3]
+    else:
+        running_mean = None
+        n_imgs = 0
+
+    if not total_n_imgs == 1 and n_imgs == 1:
+        for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
+                delayed(_compute_mean)(n, target_affine=target_affine,
+                    target_shape=target_shape, memory=memory)
+                for n in niimgs_iter):
+            n_imgs += 1
+            # _compute_mean returns (mean_img, affine)
+            this_mean = this_mean[0]
+            if running_mean is None:
+                running_mean = this_mean
+            else:
+                running_mean += this_mean
+
+    running_mean = running_mean / float(n_imgs)
+    return nibabel.Nifti1Image(running_mean, target_affine)
+
 
