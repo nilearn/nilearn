@@ -125,10 +125,10 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
 
     if arr.dtype.kind == 'i':
         if arr.dtype == np.int64:
-            arr = np.astype(arr, np.float64)
+            arr = arr.astype(np.float64)
         else:
             # We don't need crazy precision
-            arr = np.astype(arr, np.float32)
+            arr = arr.astype(np.float32)
     if copy:
         arr = arr.copy()
 
