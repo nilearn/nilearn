@@ -235,9 +235,12 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
         related documentation for details.
 
     memory: instance of joblib.Memory or string
-        Used to cache the function call.
+        Used to cache the function call: if this is a string, it
+        specifies the directory where the cache will be stored.
 
     verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
 
     Returns
     -------

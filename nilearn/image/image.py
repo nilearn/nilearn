@@ -151,7 +151,6 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     return arr
 
 
-
 def smooth_img(niimgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
@@ -326,6 +325,42 @@ def _compute_mean(imgs, memory=None, target_affine=None,
 
 def mean_img(niimgs, target_affine=None, target_shape=None,
              verbose=False, memory=None, n_jobs=1):
+    """ Compute the mean of the images (in the time dimension of 4th dimension)
+
+    Parameters
+    ==========
+
+    niimgs: niimgs or iterable of niimgs
+        One or several niimage(s), either 3D or 4D (note that these
+        can be file names).
+
+    target_affine: numpy.ndarray, optional
+        If specified, the image is resampled corresponding to this new affine.
+        target_affine can be a 3x3 or a 4x4 matrix
+
+    target_shape: tuple or list, optional
+        If specified, the image will be resized to match this new shape.
+        len(target_shape) must be equal to 3.
+        A target_affine has to be specified jointly with target_shape.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call: if this is a string, it
+        specifies the directory where the cache will be stored.
+
+    verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
+
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
+    Returns
+    =======
+    mean: nibabel.Nifti1Image
+        mean image
+
+    """
     if (isinstance(niimgs, basestring) or
         not isinstance(niimgs, collections.Iterable)):
         niimgs = [niimgs, ]
