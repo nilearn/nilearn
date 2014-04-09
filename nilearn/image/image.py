@@ -300,13 +300,7 @@ def _compute_mean(imgs, memory=None, target_affine=None,
                   target_shape=None, smooth=False):
     from . import resampling
     input_repr = _repr_niimgs(imgs)
-    imgs = cache(resampling.resample_img, memory, ignore=['copy'])(
-        imgs,
-        target_affine=target_affine,
-        target_shape=target_shape)
 
-    # XXX: should implement a loop on file, if a list of 3D files are
-    # given
     imgs = check_niimgs(imgs, accept_3d=True)
     mean_img = _safe_get_data(imgs)
     if not mean_img.ndim in (3, 4):
@@ -315,12 +309,19 @@ def _compute_mean(imgs, memory=None, target_affine=None,
                          % (mean_img.ndim, input_repr))
     if mean_img.ndim == 4:
         mean_img = mean_img.mean(axis=-1)
+    mean_img = cache(resampling.resample_img, memory)(
+        nibabel.Nifti1Image(mean_img, imgs.get_affine()),
+        target_affine=target_affine, target_shape=target_shape)
+    affine = mean_img.get_affine()
+    mean_img = mean_img.get_data()
+
     if smooth:
         nan_mask = np.isnan(mean_img)
         mean_img = _smooth_array(mean_img, affine=np.eye(4), fwhm=smooth,
                                  ensure_finite=True, copy=False)
         mean_img[nan_mask] = np.nan
-    return mean_img, imgs.get_affine()
+
+    return mean_img, affine
 
 
 def mean_img(niimgs, target_affine=None, target_shape=None,
