@@ -221,7 +221,6 @@ def _uncompress_file(file_, delete_archive=True):
     """
     print 'extracting data from %s...' % file_
     data_dir = os.path.dirname(file_)
-    import pdb; pdb.set_trace()
     # We first try to see if it is a zip file
     try:
         filename, ext = os.path.splitext(file_)
@@ -232,8 +231,6 @@ def _uncompress_file(file_, delete_archive=True):
             z.close()
             processed = True
         elif ext == '.gz':
-            print "blablabla"
-            import pdb; pdb.set_trace()
             import gzip
             gz = gzip.open(file_)
             out = open(filename, 'wb')
@@ -1937,7 +1934,11 @@ def fetch_oasis_vbm(n_subjects=None, data_dir=None, url=None, resume=True,
     elif n_subjects < 1:
         raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
     url = ('https://www.nitrc.org/frs/download.php/'
-           '6346/archive.tar.gz/?i_agree=1')
+           '6347/archive.tgz?i_agree=1&download_now=1')
+    url_csv = ('https://www.nitrc.org/frs/download.php/'
+               '6348/oasis_cross-sectional.csv?i_agree=1&download_now=1')
+    url_dua = ('https://www.nitrc.org/frs/download.php/'
+               '6349/data_usage_agreement.txt?i_agree=1&download_now=1')
     opts = {'uncompress': True}
 
     missing_subjects = [8, 24, 36, 48, 89, 93, 100, 118, 128, 149, 154, 171,
@@ -1946,20 +1947,18 @@ def fetch_oasis_vbm(n_subjects=None, data_dir=None, url=None, resume=True,
                         364, 391, 393, 412, 414, 427]
     file_names_gm = [
         (os.path.join(
-                "oasis1", "OAS1_%04d_MR1",
+                "OAS1_%04d_MR1",
                 "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz") % (s, s),
          url, opts)
         for s in range(1, 427) if s not in missing_subjects][:n_subjects]
     file_names_wm = [
         (os.path.join(
-                "oasis1", "OAS1_%04d_MR1",
+                "OAS1_%04d_MR1",
                 "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz") % (s, s),
          url, opts)
         for s in range(1, 427) if s not in missing_subjects]
-    file_names_extvars = [(os.path.join("oasis1", "oasis_cross_sectional.csv"),
-                          url, opts)]
-    file_names_dua = [(os.path.join("oasis1", "data_usage_agreement.txt"),
-                      url, opts)]
+    file_names_extvars = [("oasis_cross-sectional.csv", url_csv, {})]
+    file_names_dua = [("data_usage_agreement.txt", url_dua, {})]
     # restrict to user-specified number of subjects
     file_names_gm = file_names_gm[:n_subjects]
     file_names_wm = file_names_wm[:n_subjects]

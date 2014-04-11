@@ -12,7 +12,7 @@ from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 
-n_subject_max = 150
+n_subjects = 50
 
 ### Get data
 # # <temp>
@@ -26,9 +26,9 @@ n_subject_max = 150
 # dataset_files.ext_vars = (
 #     "/home/virgile/wip/retreat/oasis/archive/oasis_cross-sectional.csv")
 # # </temp>
-dataset_files = datasets.fetch_oasis_vbm()
+dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 ext_vars = np.recfromcsv(dataset_files.ext_vars)
-age = ext_vars['age'][:n_subject_max].astype(float).reshape((-1, 1))
+age = ext_vars['age'][:n_subjects].astype(float).reshape((-1, 1))
 
 ### Mask data
 nifti_masker = NiftiMasker(
@@ -47,8 +47,8 @@ print n_samples, "subjects, ", n_features, "features"
 print "Massively univariate model"
 neg_log_pvals, all_scores, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=1000,
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals).get_data()[..., 0]
 
