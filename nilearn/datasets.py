@@ -221,6 +221,7 @@ def _uncompress_file(file_, delete_archive=True):
     """
     print 'extracting data from %s...' % file_
     data_dir = os.path.dirname(file_)
+    import pdb; pdb.set_trace()
     # We first try to see if it is a zip file
     try:
         filename, ext = os.path.splitext(file_)
@@ -231,6 +232,8 @@ def _uncompress_file(file_, delete_archive=True):
             z.close()
             processed = True
         elif ext == '.gz':
+            print "blablabla"
+            import pdb; pdb.set_trace()
             import gzip
             gz = gzip.open(file_)
             out = open(filename, 'wb')
@@ -1548,7 +1551,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
         label=files[32:64],
         mask=files[64],
         mask_roi=files[65:])
-    
+
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
@@ -1876,3 +1879,102 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
                                      url=None, resume=True, verbose=0)
+
+
+def fetch_oasis_vbm(n_subjects=None, data_dir=None, url=None, resume=True,
+                    verbose=0):
+    """Download and load Oasis "cross-sectional MRI" dataset (427 subjects).
+
+    Original Oasis data [1] have been preprocessed with the following steps:
+      1. Dimension swapping (technically required for subsequent steps)
+      2. Brain Extraction
+      3. Segmentation and normalization to a template with SPM8
+      4. Replacement of NaN values with 0 in gray/white matter density maps.
+
+    An archive containing the gray and white matter density probability maps
+    for 387 subjects is provided. Externals variates (age, gender,
+    estimated intracranial volume, years of education, socioeconomic status,
+    dementia score) are provided in a CSV file that is a copy of the
+    original Oasis CSV file.
+
+    The Open Access Structural Imaging Series (OASIS) is a project
+    dedicated to making brain imaging data openly available to the public.
+    Using data available through the OASIS project requires agreeing with
+    the Data Usage Agreement that can be found at
+    http://www.oasis-brains.org/app/template/UsageAgreement.vm
+
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load. If None is given, all the
+        subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    resume: bool, optional
+        If true, try resuming download if possible
+
+    verbose: int, optional
+        Defines the level of verbosity of the output
+
+    References
+    ----------
+    [1] http://www.oasis-brains.org/
+
+    [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
+        Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
+        Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
+
+    """
+    if n_subjects is None or n_subjects > 387:
+        n_subjects = 387
+    elif n_subjects < 1:
+        raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
+    url = ('https://www.nitrc.org/frs/download.php/'
+           '6346/archive.tar.gz/?i_agree=1')
+    opts = {'uncompress': True}
+
+    missing_subjects = [8, 24, 36, 48, 89, 93, 100, 118, 128, 149, 154, 171,
+                        172, 175, 187, 194, 196, 215, 219, 225, 242, 245, 248,
+                        251, 252, 257, 276, 297, 306, 320, 324, 334, 347, 360,
+                        364, 391, 393, 412, 414, 427]
+    file_names_gm = [
+        (os.path.join(
+                "oasis1", "OAS1_%04d_MR1",
+                "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz") % (s, s),
+         url, opts)
+        for s in range(1, 427) if s not in missing_subjects][:n_subjects]
+    file_names_wm = [
+        (os.path.join(
+                "oasis1", "OAS1_%04d_MR1",
+                "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz") % (s, s),
+         url, opts)
+        for s in range(1, 427) if s not in missing_subjects]
+    file_names_extvars = [(os.path.join("oasis1", "oasis_cross_sectional.csv"),
+                          url, opts)]
+    file_names_dua = [(os.path.join("oasis1", "data_usage_agreement.txt"),
+                      url, opts)]
+    # restrict to user-specified number of subjects
+    file_names_gm = file_names_gm[:n_subjects]
+    file_names_wm = file_names_wm[:n_subjects]
+
+    file_names = (file_names_gm + file_names_wm
+                  + file_names_extvars + file_names_dua)
+    files = _fetch_files('oasis1', file_names, resume=resume,
+                         data_dir=data_dir, verbose=verbose)
+    # build Bunch
+    gm_maps = files[:n_subjects]
+    wm_maps = files[n_subjects:(2 * n_subjects)]
+    ext_vars_file = files[-2]
+    data_usage_agreement = files[-1]
+    return Bunch(
+        gray_matter_maps=gm_maps,
+        white_matter_maps=wm_maps,
+        ext_vars=ext_vars_file,
+        data_usage_agreement=data_usage_agreement)
