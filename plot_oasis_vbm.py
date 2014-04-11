@@ -15,17 +15,6 @@ from nilearn.mass_univariate import permuted_ols
 n_subjects = 50
 
 ### Get data
-# # <temp>
-# import os
-# import glob
-# path_to_images = "/home/virgile/wip/retreat/oasis/archive"
-# class dataset_files(object): pass
-# dataset_files.gray_matter_maps = sorted(glob.glob(os.path.join(
-#             path_to_images,
-#             "OAS1_*_MR1/mwc1OAS1_*dim_bet.nii.gz")))[:n_subject_max]
-# dataset_files.ext_vars = (
-#     "/home/virgile/wip/retreat/oasis/archive/oasis_cross-sectional.csv")
-# # </temp>
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 ext_vars = np.recfromcsv(dataset_files.ext_vars)
 age = ext_vars['age'][:n_subjects].astype(float).reshape((-1, 1))
