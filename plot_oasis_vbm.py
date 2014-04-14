@@ -36,8 +36,8 @@ print n_samples, "subjects, ", n_features, "features"
 print "Massively univariate model"
 neg_log_pvals, all_scores, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=10000,
-    n_jobs=1)  # can be changed to use more CPUs
+    n_perm=100,
+    n_jobs=-1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals).get_data()[..., 0]
 
@@ -50,15 +50,15 @@ for img in dataset_files.gray_matter_maps[1:]:
 mean_anat /= float(len(dataset_files.gray_matter_maps))
 picked_slice = 36
 vmin = -np.log10(0.1)  # 10% corrected
-plt.figure()
-p_ma = np.ma.masked_less(neg_log_pvals_unmasked, vmin)
+plt.figure(figsize=(5, 4))
+masked_pvals = np.ma.masked_less(neg_log_pvals_unmasked, vmin)
 plt.imshow(np.rot90(mean_anat[..., picked_slice]),
            interpolation='nearest', cmap=plt.cm.gray, vmin=0., vmax=1.)
-im = plt.imshow(np.rot90(p_ma[..., picked_slice]),
+im = plt.imshow(np.rot90(masked_pvals[..., picked_slice]),
                 interpolation='nearest', cmap=plt.cm.autumn,
                 vmin=vmin, vmax=np.amax(neg_log_pvals_unmasked))
 plt.axis('off')
 plt.colorbar(im)
-plt.subplots_adjust(0., 0.03, 1., 0.83)
+plt.subplots_adjust(0., .02, .98, .98)
 
 plt.show()
