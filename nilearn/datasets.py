@@ -1920,6 +1920,19 @@ def fetch_oasis_vbm(n_subjects=None, data_dir=None, url=None, resume=True,
     verbose: int, optional
         Defines the level of verbosity of the output
 
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'gray_matter_maps': string list
+            Paths to nifti gray matter density probability maps
+        'white_matter_maps' string list
+            Paths to nifti gray matter density probability maps
+        'ext_vars': string
+            Path to .csv file with information about subjects
+        'data_usage_agreement': string
+            Path to the .txt file containing the data usage agreement.
+
     References
     ----------
     [1] http://www.oasis-brains.org/
