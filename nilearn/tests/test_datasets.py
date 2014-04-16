@@ -352,11 +352,23 @@ def test_fetch_localizer_calculation_task():
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_oasis_vbm():
-    dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir)
-    assert_equal(len(dataset.gray_matter_maps), 387)
-    assert_equal(len(dataset.white_matter_maps), 387)
+    local_url = "file://" + datadir
+    # Disabled: cannot be tested without actually fetching covariates CSV file
+    dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url)
+    assert_equal(len(dataset.gray_matter_maps), 416)
+    assert_equal(len(dataset.white_matter_maps), 416)
     assert_true(isinstance(dataset.gray_matter_maps[0], basestring))
     assert_true(isinstance(dataset.white_matter_maps[0], basestring))
-    assert_true(isinstance(dataset.ext_vars, basestring))
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
+    assert_true(isinstance(dataset.data_usage_agreement, basestring))
+    assert_equal(len(mock.urls), 3)
+
+    dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
+                                       dartel_version=False)
+    assert_equal(len(dataset.gray_matter_maps), 404)
+    assert_equal(len(dataset.white_matter_maps), 404)
+    assert_true(isinstance(dataset.gray_matter_maps[0], basestring))
+    assert_true(isinstance(dataset.white_matter_maps[0], basestring))
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
     assert_equal(len(mock.urls), 3)

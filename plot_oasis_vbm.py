@@ -16,8 +16,7 @@ n_subjects = 50
 
 ### Get data
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
-ext_vars = np.recfromcsv(dataset_files.ext_vars)
-age = ext_vars['age'][:n_subjects].astype(float).reshape((-1, 1))
+age = dataset_files.ext_vars['age'].astype(float).reshape((-1, 1))
 
 ### Mask data
 nifti_masker = NiftiMasker(
@@ -36,8 +35,8 @@ print n_samples, "subjects, ", n_features, "features"
 print "Massively univariate model"
 neg_log_pvals, all_scores, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=100,
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals).get_data()[..., 0]
 
