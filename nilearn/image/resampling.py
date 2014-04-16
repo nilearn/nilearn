@@ -278,8 +278,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     # of the target affine
     if xmax < 0 or ymax < 0 or zmax < 0:
         raise BoundingBoxError("The field of view given "
-                             "by the target affine does "
-                             "not contain any of the data")
+                               "by the target affine does "
+                               "not contain any of the data")
 
     if np.all(target_affine == affine):
         # Small trick to be more numerically stable
