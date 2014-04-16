@@ -260,7 +260,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     # offset from bounding box and update bounding box
     # to be in the voxel coordinates of the calculated 4x4 affine
     if missing_offset:
-        offset = target_affine[:3, :3].dot(np.array([xmin, ymin, zmin]))
+        offset = target_affine[:3, :3].dot([xmin, ymin, zmin])
         target_affine[:3, 3] = offset
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = (
             (0, xmax - xmin), (0, ymax - ymin), (0, zmax - zmin))
