@@ -137,7 +137,13 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrix
+        target_affine can be a 3x3 or a 4x4 matrix. If a 3x3 matrix is given,
+        the output image shape will be the closest cartesian bounding box
+        around the resampled data. If a 4x4 matrix is given and no shape 
+        specified, the ouput image shape will be the closest cartesian
+        bounding box around the resampled data and containing the affine
+        offset. If a 4x4 matrix is given and a shape is specified, then
+        the output will have this matrix as affine and the target shape.
 
     target_shape: tuple or list, optional
         If specified, the image will be resized to match this new shape.
