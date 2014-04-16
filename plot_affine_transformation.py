@@ -24,23 +24,25 @@ image = np.zeros_like(circle)
 image[16:160, 16:120] = 1.
 image = image + 2 * circle + 3 * rectangle + 4 * diamond + 1
 
-affine1 = np.eye(4)
+source_affine = np.eye(4)
 # Use canonical vectors for affine
 # Give the affine an offset
-affine1[:2, 3] = np.array([64, 32])
+source_affine[:2, 3] = np.array([64, 32])
 
 # Rotate it slightly
 angle = np.pi / 180 * 15
 rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
                             [np.sin(angle), np.cos(angle)]])
-affine1[:2, :2] = rotation_matrix
+source_affine[:2, :2] = rotation_matrix
 
-niimg = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=affine1)
+niimg = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
 niimg_in_mm_space = resample_img(niimg, target_affine=np.eye(4),
                                  target_shape=(256, 256, 1))
 
-niimg_3d_affine = resample_img(niimg, target_affine=np.eye(3))
-niimg_4d_affine = resample_img(niimg, target_affine=np.eye(4))
+target_affine_3x3 = np.eye(3)
+target_affine_4x4 = np.eye(4)
+niimg_3d_affine = resample_img(niimg, target_affine=target_affine_3x3)
+niimg_4d_affine = resample_img(niimg, target_affine=target_affine_4x4)
 
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0)
