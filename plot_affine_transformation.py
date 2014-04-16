@@ -8,7 +8,7 @@ This example shows how an affine resampling works in voxel space.
 
 import matplotlib.pyplot as plt
 import numpy as np
-import nibabel as nb
+import nibabel
 from nilearn.image import resample_img
 
 # Make an image
@@ -36,7 +36,7 @@ rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
                             [np.sin(angle), np.cos(angle)]])
 affine1[:2, :2] = rotation_matrix
 
-niimg = nb.Nifti1Image(image[:, :, np.newaxis], affine=affine1)
+niimg = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=affine1)
 niimg_in_mm_space = resample_img(niimg, target_affine=np.eye(4),
                                  target_shape=(256, 256, 1))
 
