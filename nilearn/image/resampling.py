@@ -128,7 +128,7 @@ class BoundingBoxError(ValueError):
 
 def resample_img(niimg, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
-    """Resample a Nifti Image
+    """Resample a Nifti image
 
     Parameters
     ----------
