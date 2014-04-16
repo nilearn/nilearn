@@ -39,7 +39,9 @@ def pad(array, *args):
     x2maxpad, x3minpad, ...)"""
 
     if len(args) % 2 != 0:
-        args = args + [0]
+        raise ValueError("Please specify as many max paddings as min"
+                         " paddings. You have specified %d arguments" %
+                         len(args))
 
     all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
     all_paddings[:len(args) / 2] = np.array(args).reshape(-1, 2)
