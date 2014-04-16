@@ -34,7 +34,7 @@ def rotation(theta, phi):
 
 
 def pad(array, *args):
-    """will pad an ndarray with zeros of quantity specified
+    """Pad an ndarray with zeros of quantity specified
     in args as follows args = (x1minpad, x1maxpad, x2minpad,
     x2maxpad, x3minpad, ...)"""
 
