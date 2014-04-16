@@ -118,8 +118,11 @@ def get_bounds(shape, affine):
 
 
 class BoundingBoxError(ValueError):
-    """This error is raised when a transformation is
-    incompatible with the given data."""
+    """This error is raised when a resampling transformation is
+    incompatible with the given data.
+
+    This can happen, for example, if the field of view of a target affine
+    matrix does not contain any of the original data."""
     pass
 
 
