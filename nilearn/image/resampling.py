@@ -207,9 +207,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                          % str(target_shape))
 
     if target_shape is not None and target_affine.shape == (3, 3):
-        raise ValueError("Given target shape without anchor "
-                         "vector: Affine should be (4, 4) and "
-                         "not (3, 3)")
+        raise ValueError("Given target shape without anchor vector: "
+                         "Affine shape should be (4, 4) and not (3, 3)")
 
     if interpolation == 'continuous':
         interpolation_order = 3
