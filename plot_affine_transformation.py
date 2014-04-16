@@ -22,8 +22,7 @@ rectangle = np.max(np.abs(
 
 image = np.zeros_like(circle)
 image[16:160, 16:120] = 1.
-image = image + 2 * circle + 3 * rectangle + 4 * diamond
-image = image + 1
+image = image + 2 * circle + 3 * rectangle + 4 * diamond + 1
 
 affine1 = np.eye(4)
 # Use canonical vectors for affine
