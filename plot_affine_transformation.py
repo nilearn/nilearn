@@ -24,6 +24,8 @@ image = np.zeros_like(circle)
 image[16:160, 16:120] = 1.
 image = image + 2 * circle + 3 * rectangle + 4 * diamond + 1
 
+vmax = image.max()
+
 source_affine = np.eye(4)
 # Use canonical vectors for affine
 # Give the affine an offset
@@ -45,19 +47,19 @@ niimg_3d_affine = resample_img(niimg, target_affine=target_affine_3x3)
 niimg_4d_affine = resample_img(niimg, target_affine=target_affine_4x4)
 
 plt.figure()
-plt.imshow(image, interpolation="nearest", vmin=0)
+plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
 plt.title("The actual data in voxel space")
 
 plt.figure()
-plt.imshow(niimg_in_mm_space.get_data()[:, :, 0], vmin=0)
+plt.imshow(niimg_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
 plt.title("The actual data in mm space")
 
 plt.figure()
-plt.imshow(niimg_3d_affine.get_data()[:, :, 0], vmin=0)
+plt.imshow(niimg_3d_affine.get_data()[:, :, 0], vmin=0, vmax=vmax)
 plt.title("Transformed using a 3x3 affine -\n leads to re-estimation of bounding box")
 
 plt.figure()
-plt.imshow(niimg_4d_affine.get_data()[:, :, 0], vmin=0)
+plt.imshow(niimg_4d_affine.get_data()[:, :, 0], vmin=0, vmax=vmax)
 plt.title("Transformed using a 4x4 affine -\n Uses affine anchor and estimates bounding box size")
 
 plt.show()
