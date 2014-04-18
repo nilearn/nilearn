@@ -328,3 +328,22 @@ def test_fetch_yeo_2011_atlas():
     assert_true(isinstance(dataset.tight_17, basestring))
     assert_true(isinstance(dataset.tight_7, basestring))
     assert_equal(len(mock.urls), 1)
+
+
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+def test_fetch_localizer_contrasts():
+    dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
+                                                 data_dir=tmpdir)
+    assert_true(dataset.anats is None)
+    assert_true(dataset.tmaps is None)
+    assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+
+
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+def test_fetch_localizer_calculation_task():
+    dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir)
+    assert_true(dataset.anats is None)
+    assert_true(dataset.tmaps is None)
+    assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.cmaps[0], basestring))
