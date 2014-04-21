@@ -174,7 +174,7 @@ Resampling
 
 Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
-resampled to display overlays.
+resampled to display overlays. Please see example `plot_affine_transformation` for a visualization of different affine transforms.
 
 
 Smoothing
