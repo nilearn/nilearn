@@ -1,14 +1,15 @@
 """
 Test the class_inspect module
 
-This test file is in nilearn/tests because nosetests seems to ignore modules whose
-name starts with an underscore
+This test file is in nilearn/tests because nosetests seems to ignore modules
+whose name starts with an underscore
 """
 from nose.tools import assert_equal
 
 from sklearn.base import BaseEstimator
 
 from nilearn._utils import class_inspect
+
 
 ###############################################################################
 # Helpers for the tests
@@ -62,5 +63,5 @@ def test_enclosing_scope_name():
     assert_equal(name, 'C.get_scope_name')
     name = b.get_scope_name(stack=3, ensure_estimator=False)
     assert_equal(name, 'get_scope_name')
-    name = b.get_scope_name(ensure_estimator=False, stack_level=120)
-    assert_equal(name, 'Unknown')
+    name = b.get_scope_name(ensure_estimator=False, max_stack_level=120)
+    assert_equal(name, 'C.get_scope_name')
