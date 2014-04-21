@@ -2,7 +2,32 @@
 Visualization of affine resamplings
 ===================================
 
-This example shows how an affine resampling works in voxel space.
+This example shows how an affine resampling works.
+
+A Nifti image contains, along with its 3D or 4D data content, a 4x4 matrix
+encoding and affine transformation that maps the data array into millimeter
+space. If (i, j, k) encodes an integer position (voxel) with the data array,
+then adding 1 as a fourth entry, (i, j, k, 1), and multiplying by the affine 
+matrix yields (x, y, z, 1), a 4-vector containing the millimeter position of
+the voxel.
+
+The resampling procedure in `resample_img` can attribute a new affine matrix
+and a new shape to your Nifti image while keeping its representation in 
+millimeter space exactly the same (up to sampling error and possible 
+clipping).
+
+This example shows a 2D image in voxel space, and the position of the data in
+millimeter space, as encoded by the affine matrix. The image is the resampled
+in 3 ways and displayed in in millimeter space.
+
+1) 4x4 affine matrix and target shape given
+2) 3x3 transformation matrix (only new voxel axes, no offset) 
+   given and no shape given
+3) 4x4 affine matrix given and no shape given
+
+While 1) needs no further explanation (it returns an image exactly as specified, with a new view on the data in millimeter space), 2) and 3) are missing some specification, which is subsequently inferred by `resample_img`: If the affine offset is missing (3x3 transformation, case 2), then the new image will be the closest bounding box possible around the data along the new axes. If the affine offset is given, but no shape provided, the resulting image will be the closest bounding box around the union of the data points and the affine offset.
+
+Note that specifying a shape specifying a 3x3 transformation matrix causes an error message, because `resample_img` will not know where to start the bounding box (there is no intelligent way of inferring this given the bounding box shape).
 """
 
 
