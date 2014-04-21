@@ -282,10 +282,9 @@ def test_raises_bbox_error_if_data_outside_box():
             function()
 
 
-# Transform real data using easily checkable transformations
-# 1) axis permutations
 def test_resampling_result_axis_permutation():
-
+    # Transform real data using easily checkable transformations
+    # For now: axis permutations
     # create a cuboid full of deterministic data, padded with one
     # voxel thickness of zeros
     core_shape = (3, 5, 4)
