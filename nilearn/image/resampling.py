@@ -1,7 +1,7 @@
 """
 Utilities to resample a Nifti Image
 """
-# Author: Gael Varoquaux, Alexandre Abraham
+# Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
 
 
