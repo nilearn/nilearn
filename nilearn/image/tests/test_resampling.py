@@ -6,7 +6,19 @@ from nose.tools import assert_equal, assert_raises, assert_false, \
     assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-from sklearn.utils.testing import assert_warns
+try:
+    from sklearn.utils.testing import assert_warns
+except ImportError:
+    # New in scikit-learn 0.14
+
+    # We implement a poor-man's version
+    import warnings
+    def assert_warns(warning_class, func, *args, **kw):
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("ignore", warning_class)
+            func(*args, **kw)
+
+
 # The following import is not compliant with backward compatibility
 # requirements to sklearn
 # from sklearn.utils.testing import assert_raise_message
