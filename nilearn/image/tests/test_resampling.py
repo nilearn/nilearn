@@ -329,3 +329,48 @@ def test_resampling_result_axis_permutation():
 
         assert_array_almost_equal(resampled_data,
                                   what_resampled_data_should_be)
+
+
+def test_resampling_nan():
+    # Test that when the data has NaNs they do propagate to the
+    # whole image
+
+    for core_shape in [(3, 5, 4), (3, 5, 4, 2)]:
+        # create deterministic data, padded with one
+        # voxel thickness of zeros
+        core_data = np.arange(np.prod(core_shape)
+                        ).reshape(core_shape).astype(np.float)
+        # Introduce a nan
+        core_data[2, 2:4, 1] = np.nan
+        full_data_shape = np.array(core_shape) + 2
+        full_data = np.zeros(full_data_shape)
+        full_data[[slice(1, 1 + s) for s in core_shape]] = core_data
+
+        source_img = Nifti1Image(full_data, np.eye(4))
+
+        # Transform real data using easily checkable transformations
+        # For now: axis permutations
+        axis_permutation = [0, 1, 2]
+
+        # check 3x3 transformation matrix
+        target_affine = np.eye(3)[axis_permutation]
+        resampled_img = resample_img(source_img,
+                                    target_affine=target_affine)
+
+        resampled_data = resampled_img.get_data()
+        if full_data.ndim == 4:
+            axis_permutation.append(3)
+        what_resampled_data_should_be = full_data.transpose(axis_permutation)
+        non_nan = np.isfinite(what_resampled_data_should_be)
+
+        # Check that the input data hasn't been modified:
+        assert_false(np.all(non_nan))
+
+        # Check that for finite value resampling works without problems
+        assert_array_almost_equal(resampled_data[non_nan],
+                                  what_resampled_data_should_be[non_nan])
+
+        # Check that what was not finite is still not finite
+        assert_false(np.any(np.isfinite(
+                        resampled_data[np.logical_not(non_nan)]
+                     )))
