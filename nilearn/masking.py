@@ -11,6 +11,7 @@ from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
+from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component
 from ._utils.niimg_conversions import _safe_get_data
 
@@ -254,9 +255,10 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
-    mean_epi, affine = _compute_mean(epi_img, memory=memory,
-        target_affine=target_affine, target_shape=target_shape,
-        smooth=1 if opening else False)
+    mean_epi, affine = cache(_compute_mean, memory)(epi_img,
+                                     target_affine=target_affine,
+                                     target_shape=target_shape,
+                                     smooth=(1 if opening else False))
 
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
@@ -415,9 +417,9 @@ def compute_background_mask(data_imgs, border_size=2,
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
-    data, affine = _compute_mean(data_imgs, memory=memory,
-        target_affine=target_affine, target_shape=target_shape,
-        smooth=False)
+    data, affine = cache(_compute_mean, memory)(data_imgs,
+                target_affine=target_affine, target_shape=target_shape,
+                smooth=False)
 
     border_data = np.concatenate([
             data[:border_size, :, :].ravel(), data[-border_size:, :, :].ravel(),

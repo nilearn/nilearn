@@ -15,7 +15,6 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
-from .._utils.cache_mixin import cache
 from .._utils.niimg_conversions import _safe_get_data
 from .. import masking
 
@@ -296,7 +295,7 @@ def crop_img(niimg, rtol=1e-8, copy=True):
     return _crop_img_to(niimg, slices, copy=copy)
 
 
-def _compute_mean(imgs, memory=None, target_affine=None,
+def _compute_mean(imgs, target_affine=None,
                   target_shape=None, smooth=False):
     from . import resampling
     input_repr = _repr_niimgs(imgs)
@@ -309,7 +308,7 @@ def _compute_mean(imgs, memory=None, target_affine=None,
                          % (mean_img.ndim, input_repr))
     if mean_img.ndim == 4:
         mean_img = mean_img.mean(axis=-1)
-    mean_img = cache(resampling.resample_img, memory)(
+    mean_img = resampling.resample_img(
         nibabel.Nifti1Image(mean_img, imgs.get_affine()),
         target_affine=target_affine, target_shape=target_shape)
     affine = mean_img.get_affine()
@@ -325,7 +324,7 @@ def _compute_mean(imgs, memory=None, target_affine=None,
 
 
 def mean_img(niimgs, target_affine=None, target_shape=None,
-             verbose=False, memory=None, n_jobs=1):
+             verbose=False, n_jobs=1):
     """ Compute the mean of the images (in the time dimension of 4th dimension)
 
     Note that if list of 4D images are given, the mean of each 4D image is
@@ -346,10 +345,6 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
         If specified, the image will be resized to match this new shape.
         len(target_shape) must be equal to 3.
         A target_affine has to be specified jointly with target_shape.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the function call: if this is a string, it
-        specifies the directory where the cache will be stored.
 
     verbose: int, optional
         Controls the amount of verbosity: higher numbers give
@@ -390,7 +385,7 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     if not total_n_imgs == 1 and n_imgs == 1:
         for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
                 delayed(_compute_mean)(n, target_affine=target_affine,
-                    target_shape=target_shape, memory=memory)
+                                       target_shape=target_shape)
                 for n in niimgs_iter):
             n_imgs += 1
             # _compute_mean returns (mean_img, affine)
