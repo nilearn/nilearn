@@ -62,11 +62,11 @@ def _load_mask_img(mask_img, allow_empty=False):
     return mask, mask_img.get_affine()
 
 
-def extrapolate_out_mask(data, mask, iterations=1):
+def _extrapolate_out_mask(data, mask, iterations=1):
     """ Extrapolate values outside of the mask.
     """
     if iterations > 1:
-        data, mask = extrapolate_out_mask(data, mask,
+        data, mask = _extrapolate_out_mask(data, mask,
                                           iterations=iterations - 1)
     new_mask = ndimage.binary_dilation(mask)
     larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=np.bool)
