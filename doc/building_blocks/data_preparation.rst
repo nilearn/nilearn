@@ -156,8 +156,14 @@ voxels that are very light on the EPI image.
     :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
 
-Common data preparation steps
-------------------------------
+Common data preparation steps: resampling, smoothing, filtering
+----------------------------------------------------------------
+
+.. seealso::
+
+   If you don't want to use the :class:`NiftiMasker` to perform these
+   simple operations on data, note that they are 
+   :ref:`corresponding functions <preprocessing_functions>`.
 
 .. _resampling:
 
@@ -176,8 +182,30 @@ Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
 resampled to display overlays.
 
-Please see the example :ref:`example_plot_affine_transformation.py` to
-see the effect of affine transforms on data and bounding boxes.
+Automatic compution of offset and bounding box can be performed by
+specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
+computes automatically the translation part of the affine.
+
+.. image:: ../auto_examples/images/plot_affine_transformation_2.png
+    :target: auto_examples/plot_affine_transformation.html
+    :scale: 36%
+.. image:: ../auto_examples/images/plot_affine_transformation_4.png
+    :target: auto_examples/plot_affine_transformation.html
+    :scale: 36%
+.. image:: ../auto_examples/images/plot_affine_transformation_3.png
+    :target: auto_examples/plot_affine_transformation.html
+    :scale: 36%
+
+
+.. topic:: **Special case: resampling to a given voxel size**
+
+   Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
+   voxel size. For instance ot resample to 3x3x3 mm voxels::
+
+    >>> import numpy as np
+    >>> target_affine = np.diag((3, 3, 3))
+
+|
 
 .. seealso::
 

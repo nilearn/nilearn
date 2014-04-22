@@ -7,13 +7,13 @@ This example shows how an affine resampling works.
 A Nifti image contains, along with its 3D or 4D data content, a 4x4 matrix
 encoding and affine transformation that maps the data array into millimeter
 space. If (i, j, k) encodes an integer position (voxel) with the data array,
-then adding 1 as a fourth entry, (i, j, k, 1), and multiplying by the affine 
+then adding 1 as a fourth entry, (i, j, k, 1), and multiplying by the affine
 matrix yields (x, y, z, 1), a 4-vector containing the millimeter position of
 the voxel.
 
 The resampling procedure in `resample_img` can attribute a new affine matrix
-and a new shape to your Nifti image while keeping its representation in 
-millimeter space exactly the same (up to sampling error and possible 
+and a new shape to your Nifti image while keeping its representation in
+millimeter space exactly the same (up to sampling error and possible
 clipping).
 
 This example shows a 2D image in voxel space, and the position of the data in
@@ -21,7 +21,7 @@ millimeter space, as encoded by the affine matrix. The image is the resampled
 in 3 ways and displayed in in millimeter space.
 
 1) 4x4 affine matrix and target shape given
-2) 3x3 transformation matrix (only new voxel axes, no offset) 
+2) 3x3 transformation matrix (only new voxel axes, no offset)
    given and no shape given
 3) 4x4 affine matrix given and no shape given
 
@@ -60,7 +60,7 @@ source_affine[:2, 3] = np.array([96, 64])
 angle = np.pi / 180 * 15
 rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
                             [np.sin(angle), np.cos(angle)]])
-source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size 
+source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
 niimg = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
 niimg_in_mm_space = resample_img(niimg, target_affine=np.eye(4),
@@ -84,11 +84,11 @@ niimg_4d_affine_in_mm_space = resample_img(niimg_4d_affine,
     target_shape=(np.array(niimg_4d_affine.shape) * 2).astype(int))
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
-plt.title("The actual data in voxel space")
+plt.title("The original data in voxel space")
 
 plt.figure()
 plt.imshow(niimg_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
-plt.title("The actual data in mm space")
+plt.title("The original data in mm space")
 
 plt.figure()
 plt.imshow(niimg_3d_affine_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
