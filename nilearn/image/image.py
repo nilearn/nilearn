@@ -376,7 +376,9 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
         # Compute the first mean to retrieve the reference
         # target_affine and target_shape
         n_imgs = 1
-        running_mean, target_affine = _compute_mean(next(niimgs_iter))
+        running_mean, target_affine = _compute_mean(next(niimgs_iter),
+                    target_affine=target_affine,
+                    target_shape=target_shape)
         target_shape = running_mean.shape[:3]
     else:
         running_mean = None
