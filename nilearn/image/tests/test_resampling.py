@@ -374,3 +374,17 @@ def test_resampling_nan():
         assert_false(np.any(np.isfinite(
                         resampled_data[np.logical_not(non_nan)]
                      )))
+
+
+    # Test with an actual resampling, in the case of a bigish hole
+    # This checks the extrapolation mechanism: if we don't do any
+    # extrapolation before resampling, the hole creates big
+    # artefacts
+    data = 10 * np.ones((10, 10, 10))
+    data[4:6, 4:6, 4:6] = np.nan
+    source_img = Nifti1Image(data, 2 * np.eye(4))
+    resampled_img = resample_img(source_img, target_affine=np.eye(4))
+
+    resampled_data = resampled_img.get_data()
+    np.testing.assert_allclose(10,
+                resampled_data[np.isfinite(resampled_data)])

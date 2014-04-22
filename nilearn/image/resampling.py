@@ -322,8 +322,11 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                     # We need to do a copy to avoid modifying the input
                     # array
                     img = img.copy()
-                img[not_finite] = 0
+                from ..masking import _extrapolate_out_mask
+                img = _extrapolate_out_mask(img, np.logical_not(not_finite),
+                                            iterations=2)[0]
 
+            # The resampling itself
             resampled_data[all_img + ind] = \
                                    ndimage.affine_transform(img, A,
                                                     offset=np.dot(A_inv, b),
@@ -350,7 +353,12 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                 # We need to do a copy to avoid modifying the input
                 # array
                 data = data.copy()
-            data[not_finite] = 0
+            #data[not_finite] = 0
+            from ..masking import _extrapolate_out_mask
+            data = _extrapolate_out_mask(data, np.logical_not(not_finite),
+                                         iterations=2)[0]
+
+        # The resampling itself
         resampled_data = ndimage.affine_transform(data, A,
                                                   offset=np.dot(A_inv, b),
                                                   output_shape=target_shape,
