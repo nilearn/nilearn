@@ -382,7 +382,7 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
         running_mean = None
         n_imgs = 0
 
-    if not total_n_imgs == 1 and n_imgs == 1:
+    if not (total_n_imgs == 1 and n_imgs == 1):
         for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
                 delayed(_compute_mean)(n, target_affine=target_affine,
                                        target_shape=target_shape)
