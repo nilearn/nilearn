@@ -14,7 +14,7 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from ..masking import compute_epi_mask, compute_multi_epi_mask, \
-    compute_background_mask, unmask, intersect_masks
+    compute_background_mask, unmask, intersect_masks, MaskWarning
 
 from .._utils.testing import write_tmp_imgs
 
@@ -311,7 +311,10 @@ def test_compute_multi_epi_mask():
     mask_b[2:6, 2:6] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
 
-    assert_raises(ValueError, compute_multi_epi_mask, [mask_a_img, mask_b_img])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MaskWarning)
+        assert_raises(ValueError, compute_multi_epi_mask,
+                      [mask_a_img, mask_b_img])
     mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
     mask_ab[2, 2] = 1
     mask_ab_ = compute_multi_epi_mask([mask_a_img, mask_b_img], threshold=1.,
