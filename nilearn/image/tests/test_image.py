@@ -8,6 +8,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from .. import image
+from .. import resampling
 from ..._utils import testing
 
 def test_high_variance_confounds():
@@ -205,4 +206,23 @@ def test_mean_img():
             assert_array_equal(mean_img.get_affine(), affine)
             assert_array_equal(mean_img.get_data(), truth)
 
+
+def test_mean_img_resample():
+    # Test resampling in mean_img with a permutation of the axes
+    rng = np.random.RandomState(42)
+    data = rng.rand(5, 6, 7, 40)
+    affine = np.diag((4, 3, 2, 1))
+    niimg = nibabel.Nifti1Image(data, affine=affine)
+    mean_img = nibabel.Nifti1Image(data.mean(axis=-1), affine=affine)
+
+    target_affine = affine[:, [1, 0, 2, 3]]  # permutation of axes
+    mean_img_with_resampling = image.mean_img(niimg,
+                                              target_affine=target_affine)
+    resampled_mean_image = resampling.resample_img(mean_img,
+                                              target_affine=target_affine)
+    assert_array_equal(resampled_mean_image.get_data(),
+                       mean_img_with_resampling.get_data())
+    assert_array_equal(resampled_mean_image.get_affine(),
+                       mean_img_with_resampling.get_affine())
+    assert_array_equal(mean_img_with_resampling.get_affine(), target_affine)
 
