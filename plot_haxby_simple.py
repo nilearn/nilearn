@@ -105,7 +105,7 @@ plt.tight_layout()
 
 mask = nifti_masker.mask_img_.get_data()
 
-plt.figure()
+plt.figure(figsize=(3, 5))
 plt.axis('off')
 plt.imshow(np.rot90(nibabel.load(data.func[0]).get_data()[..., 27, 0]),
           interpolation='nearest', cmap=plt.cm.gray)

@@ -46,7 +46,7 @@ preprocessings and validate them.
 In addition, :class:`NiftiMasker` is a `scikit-learn
 <http://scikit-learn.org>`_ compliant
 transformer so that you can directly plug it into a `scikit-learn
-<http://scikit-learn.org>`_ pipeline.
+pipeline <http://scikit-learn.org/stable/modules/pipeline.html>`_.
 
 Custom data loading
 --------------------
@@ -200,7 +200,7 @@ computes automatically the translation part of the affine.
 .. topic:: **Special case: resampling to a given voxel size**
 
    Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
-   voxel size. For instance ot resample to 3x3x3 mm voxels::
+   voxel size. For instance to resample to 3x3x3 mm voxels::
 
     >>> import numpy as np
     >>> target_affine = np.diag((3, 3, 3))
@@ -250,7 +250,7 @@ All previous filters operate on images, before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :doc:`plot_haxby_simple.py
+   the parameters in :ref:`plot_haxby_simple.py
    <auto_examples/plot_haxby_simple>`. Try to enable detrending
    and run the script: does it have a big impact on the result?
 
@@ -263,14 +263,15 @@ All previous filters operate on images, before conversion to voxel signals.
 Inverse transform: unmasking data
 ----------------------------------
 
-Once voxel signals have been processed, the result can be visualized as images
-after unmasking (turning voxel signals into a series of images, using the same
-mask as for masking). This step is present in almost all the
-:doc:`examples <auto_examples/index>` provided in Nilearn.
-
+Once voxel signals have been processed, the result can be visualized as
+images after unmasking (turning voxel signals into a series of images,
+using the same mask as for masking). This step is present in almost all
+the :ref:`examples <examples-index>` provided in Nilearn. Below is
+an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
+<example_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Look at the discriminating weights
+    :start-after: ### Look at the SVC's discriminating weights
     :end-before: # We use a masked array so that the voxels at '-1' are displayed
 
 
@@ -368,8 +369,8 @@ algorithm:
    :end-before: print("-- Displaying results")
 
 
-NiftiLabelsMasker Usage
------------------------
+:class:`NiftiLabelsMasker` Usage
+---------------------------------
 
 Usage of :class:`NiftiLabelsMasker` is similar to that of
 :class:`NiftiMapsMasker`. The main difference is that it requires a labels image
