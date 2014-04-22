@@ -6,6 +6,7 @@ from nose.tools import assert_equal, assert_raises, assert_false, \
     assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
+from sklearn.utils.testing import assert_warns
 # The following import is not compliant with backward compatibility
 # requirements to sklearn
 # from sklearn.utils.testing import assert_raise_message
@@ -354,7 +355,7 @@ def test_resampling_nan():
 
         # check 3x3 transformation matrix
         target_affine = np.eye(3)[axis_permutation]
-        resampled_img = resample_img(source_img,
+        resampled_img = assert_warns(RuntimeWarning, resample_img, source_img,
                                     target_affine=target_affine)
 
         resampled_data = resampled_img.get_data()
@@ -383,7 +384,8 @@ def test_resampling_nan():
     data = 10 * np.ones((10, 10, 10))
     data[4:6, 4:6, 4:6] = np.nan
     source_img = Nifti1Image(data, 2 * np.eye(4))
-    resampled_img = resample_img(source_img, target_affine=np.eye(4))
+    resampled_img = assert_warns(RuntimeWarning, resample_img, source_img,
+                                 target_affine=np.eye(4))
 
     resampled_data = resampled_img.get_data()
     np.testing.assert_allclose(10,

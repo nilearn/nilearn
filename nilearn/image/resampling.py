@@ -166,6 +166,8 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     Notes
     =====
+
+    **BoundingBoxError**
     If a 4x4 transformation matrix (target_affine) is given and all of the
     transformed data points have a negative voxel index along one of the
     axis, then none of the data will be visible in the transformed image
@@ -177,6 +179,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     extend far enough to contain all the visible data and a margin of one
     voxel.
 
+    **3x3 transformation matrices**
     If a 3x3 transformation matrix is given as target_affine, it will be
     assumed to represent the three coordinate axes of the target space. In
     this case the affine offset (4th column of a 4x4 transformation matrix)
@@ -189,6 +192,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     a voxel grid defined by a 4x4 affine transformation matrix. In this
     case, one resamples the image using this function given the target
     affine and no target shape. One then uses crop_img on the result.
+
+    **NaNs and infinite values**
+    This function handles gracefully NaNs and infinite values in the input
+    data, however they make the execution of the function much slower.
     """
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -317,7 +324,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                 not_finite = np.logical_not(np.isfinite(img))
                 has_not_finite = np.any(not_finite)
             if has_not_finite:
-                warnings.warn("NaNs present in the data passed to resample")
+                warnings.warn("NaNs are present in the data passed to "
+                              "resample. This is a bad thing as they "
+                              "make resampling ill-defined and much "
+                              "slower.", RuntimeWarning, stacklevel=2)
                 if not input_niimg_is_string:
                     # We need to do a copy to avoid modifying the input
                     # array
@@ -348,7 +358,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
             not_finite = np.logical_not(np.isfinite(data))
             has_not_finite = np.any(not_finite)
         if has_not_finite:
-            warnings.warn("NaNs present in the data passed to resample")
+            warnings.warn("NaNs are present in the data passed to "
+                            "resample. This is a bad thing as they "
+                            "make resampling ill-defined and much "
+                            "slower.", RuntimeWarning, stacklevel=2)
             if not input_niimg_is_string:
                 # We need to do a copy to avoid modifying the input
                 # array
