@@ -184,7 +184,7 @@ def test_mean_img():
     for niimgs in ([niimg1, ],
                    [niimg1, niimg2],
                    [niimg2, niimg1, niimg2],
-                   [niimg3, niimg1, niimg2], # Mixture of 4D and 3D images
+                   [niimg3, niimg1, niimg2],  # Mixture of 4D and 3D images
                   ):
 
         arrays = list()
