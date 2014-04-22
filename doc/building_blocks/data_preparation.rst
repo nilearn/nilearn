@@ -174,7 +174,14 @@ Resampling
 
 Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
-resampled to display overlays. Please see example `plot_affine_transformation` for a visualization of different affine transforms.
+resampled to display overlays.
+
+Please see the example :ref:`example_plot_affine_transformation.py` to
+see the effect of affine transforms on data and bounding boxes.
+
+.. seealso::
+
+   :func:`nilearn.image.resample_img`
 
 
 Smoothing
@@ -186,6 +193,10 @@ half maximum (in millimeter) along each axis in the parameter `smoothing_fwhm`.
 For an isotropic filtering, passing a scalar is also possible. The underlying
 function handles properly the tricky case of non-cubic voxels, by scaling the
 given widths appropriately.
+
+.. seealso::
+
+   :func:`nilearn.image.smooth_img`
 
 
 .. _temporal_filtering:
@@ -214,6 +225,11 @@ All previous filters operate on images, before conversion to voxel signals.
    the parameters in :doc:`plot_haxby_simple.py
    <auto_examples/plot_haxby_simple>`. Try to enable detrending
    and run the script: does it have a big impact on the result?
+
+
+.. seealso::
+
+   :func:`nilearn.signal.clean`
 
 
 Inverse transform: unmasking data

@@ -271,7 +271,10 @@ set up your own data preparation procedure:
 
 .. currentmodule:: nilearn
 
-* Resampling: :func:`nilearn.image.resample_img`
+* Resampling: :func:`nilearn.image.resample_img`. See the example
+  :ref:`example_plot_affine_transformation.py` to
+  see the effect of affine transforms on data and bounding boxes.
+
 * Smoothing: :func:`nilearn.image.smooth_img`
 * Masking:
 

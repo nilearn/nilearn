@@ -79,6 +79,7 @@ Functions
    high_variance_confounds
    smooth_img
    resample_img
+   crop_img
 
 
 .. _io_ref:
