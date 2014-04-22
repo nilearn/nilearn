@@ -16,7 +16,8 @@ except ImportError:
     def assert_warns(warning_class, func, *args, **kw):
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("ignore", warning_class)
-            func(*args, **kw)
+            output = func(*args, **kw)
+        return output
 
 
 # The following import is not compliant with backward compatibility
