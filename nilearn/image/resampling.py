@@ -324,10 +324,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                 not_finite = np.logical_not(np.isfinite(img))
                 has_not_finite = np.any(not_finite)
             if has_not_finite:
-                warnings.warn("NaNs are present in the data passed to "
-                              "resample. This is a bad thing as they "
-                              "make resampling ill-defined and much "
-                              "slower.", RuntimeWarning, stacklevel=2)
+                warnings.warn("NaNs or infinite values are present in the "
+                            "data passed to resample. This is a bad thing "
+                            "as they make resampling ill-defined and much "
+                            "slower.", RuntimeWarning, stacklevel=2)
                 if not input_niimg_is_string:
                     # We need to do a copy to avoid modifying the input
                     # array
@@ -358,10 +358,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
             not_finite = np.logical_not(np.isfinite(data))
             has_not_finite = np.any(not_finite)
         if has_not_finite:
-            warnings.warn("NaNs are present in the data passed to "
-                            "resample. This is a bad thing as they "
-                            "make resampling ill-defined and much "
-                            "slower.", RuntimeWarning, stacklevel=2)
+            warnings.warn("NaNs or infinite values are present in the data "
+                          "passed to resample. This is a bad thing as they "
+                          "make resampling ill-defined and much slower.",
+                          RuntimeWarning, stacklevel=2)
             if not input_niimg_is_string:
                 # We need to do a copy to avoid modifying the input
                 # array
