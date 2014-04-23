@@ -227,7 +227,7 @@ def _uncompress_file(file_, delete_archive=True):
         processed = False
         if ext == '.zip':
             z = zipfile.ZipFile(file_)
-            z.extractall(path=data_dir)
+            z.extractall(data_dir)
             z.close()
             processed = True
         elif ext == '.gz':
@@ -397,7 +397,7 @@ def movetree(src, dst):
 
 
 def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
-                 verbose=0):
+                 mock=False, verbose=0):
     """Load requested dataset, downloading it if needed or requested.
 
     If needed, _fetch_files download data in a sandbox and check that all files
@@ -426,6 +426,10 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     folder: string, optional
         Folder in which the file must be fetched inside the dataset folder.
 
+    mock: boolean, optional
+        If true, create empty files if the file cannot be downloaded. Test use
+        only.
+
     Returns
     -------
     files: list of string
@@ -441,17 +445,6 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     files_pickle = pickle.dumps(files)
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
-
-    # Check that no files to be downloaded shares the same name.
-    file_names = {}
-    for _, url, _ in files:
-        # Determine filename using URL
-        parse = urllib2.urlparse.urlparse(url)
-        file_name = os.path.basename(parse.path)
-        if file_name in file_names and url != file_names[file_name]:
-            warnings.warn('Name collision in the downloaded files.'
-                    'Resuming may disfunction.')
-        file_names[file_name] = url
 
     # Abortion flag, in case of error
     abort = False
@@ -485,13 +478,21 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
                 dl_file = os.path.join(temp_dir, opts['move'])
             if 'uncompress' in opts:
                 try:
-                    _uncompress_file(dl_file)
+                    if not mock or os.path.getsize(dl_file) != 0:
+                        _uncompress_file(dl_file)
+                    else:
+                        os.remove(dl_file)
                 except:
                     abort = True
         if (not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            warnings.warn('An error occured while fetching %s' % file_)
-            abort = True
+            if not mock:
+                warnings.warn('An error occured while fetching %s' % file_)
+                abort = True
+            else:
+                if not os.path.exists(os.path.dirname(temp_target_file)):
+                    os.makedirs(os.path.dirname(temp_target_file))
+                open(temp_target_file, 'w').close()
         if abort:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
@@ -939,7 +940,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         n_subjects = 6
 
     # Dataset files
-    url = 'http://data.pymvpa.org/datasets/haxby2001/'
+    if url is None:
+        url = 'http://data.pymvpa.org/datasets/haxby2001/'
     md5sums = _fetch_files("haxby2001", [('MD5SUMS', url + 'MD5SUMS', {})],
                            data_dir=data_dir)[0]
     md5sums = _read_md5_sum_file(md5sums)
@@ -1546,7 +1548,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
         label=files[32:64],
         mask=files[64],
         mask_roi=files[65:])
-
+    
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
