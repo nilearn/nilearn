@@ -442,6 +442,17 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
+    # Check that no files to be downloaded shares the same name.
+    file_names = {}
+    for _, url, _ in files:
+        # Determine filename using URL
+        parse = urllib2.urlparse.urlparse(url)
+        file_name = os.path.basename(parse.path)
+        if file_name in file_names and url != file_names[file_name]:
+            warnings.warn('Name collision in the downloaded files.'
+                    'Resuming may disfunction.')
+        file_names[file_name] = url
+
     # Abortion flag, in case of error
     abort = False
 
@@ -1746,11 +1757,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     allowed_contrasts = contrast_name_wrapper.values()
     # convert contrast names
     contrasts_wrapped = []
+    contrasts_indices = []
     for contrast in contrasts:
         if contrast in allowed_contrasts:
             contrasts_wrapped.append(contrast)
+            contrasts_indices.append(allowed_contrasts.index(contrast))
         elif contrast in contrast_name_wrapper:
-            contrasts_wrapped.append(contrast_name_wrapper[contrast])
+            name = contrast_name_wrapper[contrast]
+            contrasts_wrapped.append(name)
+            contrasts_indices.append(allowed_contrasts.index(name))
         else:
             raise ValueError("Contrast \'%s\' is not available" % contrast)
 
@@ -1763,14 +1778,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_tmaps:
         data_types.append(["t map"])
     rql_types = str.join(", ", ["\"" + x + "\"" for x in data_types])
-    urls = ["http://brainomics.cea.fr/localizer/brainomics_data.zip?rql="
+    root_url = "http://brainomics.cea.fr/localizer/"
+    urls = [root_url + "brainomics_data_%d.zip?rql=" % i
             + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
                            "X label XL, X identifier XI, "
                            "X format XF, X description XD, "
                            "X type IN(%s), X label \"%s\"" % (rql_types, c),
                            safe=',()')
             + "&vid=data-zip"
-            for c in contrasts_wrapped]
+            for c, i in zip(contrasts_wrapped, contrasts_indices)]
     filenames = []
     for s in np.arange(1, n_subjects + 1):
         for data_type in data_types:
@@ -1782,8 +1798,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 filenames.append((file_path, file_tarball_url, opts))
     # Fetch masks if asked by user
     if get_masks:
-        urls.append("http://brainomics.cea.fr/localizer/brainomics_data.zip"
-                    "?rql="
+        urls.append(root_url + "/brainomics_data_masks.zip?rql="
                     + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
                                    "X type XT, X label XL, X identifier XI, "
                                    "X format XF, X description XD, "
@@ -1797,8 +1812,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
-        urls.append("http://brainomics.cea.fr/localizer/brainomics_data.zip"
-                    "?rql="
+        urls.append(root_url + "brainomics_data_anats.zip?rql="
                     + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
                                    "X type XT, X label XL, X identifier XI, "
                                    "X format XF, X description XD, "
