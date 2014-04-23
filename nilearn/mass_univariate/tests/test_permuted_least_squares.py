@@ -131,7 +131,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
 
 
 ### General tests for permuted_ols function ###################################
-def test_permuted_ols_check_h0_noeffect(random_state=0):
+def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
     rng = check_random_state(random_state)
     # design parameters
     n_samples = 100
@@ -207,6 +207,42 @@ def test_permuted_ols_check_h0_noeffect(random_state=0):
     assert_array_less(np.diff(all_mse.mean(1)), 0)
     assert_array_less(np.diff(all_mse_intercept.mean(1)), 0)
     assert_array_less(np.diff(all_mse_intercept2.mean(1)), 0)
+
+
+def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
+    rng = check_random_state(random_state)
+    # design parameters
+    n_samples = 100
+    # create dummy design with no effect
+    target_var = rng.randn(n_samples, 1)
+    tested_var = np.ones((n_samples, 1))
+    # permuted OLS
+    # We check that h0 is close to the theoretical distribution, which is
+    # known for this simple design (= t(n_samples - dof)).
+    perm_ranges = [10, 100, 1000]  # test various number of permutations
+    all_kstest_pvals = []
+    # we compute the Mean Squared Error between cumulative Density Function
+    # as a proof of consistency of the permutation algorithm
+    all_mse = []
+    for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
+        pval, orig_scores, h0 = permuted_ols(
+            tested_var, target_var, model_intercept=False,
+            n_perm=n_perm, two_sided_test=False, random_state=i)
+        assert_equal(h0.size, n_perm)
+        # Kolmogorov-Smirnov test
+        kstest_pval = stats.kstest(h0, stats.t(n_samples).cdf)[1]
+        all_kstest_pvals.append(kstest_pval)
+        mse = np.mean(
+            (stats.t(n_samples).cdf(np.sort(h0))
+             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+        all_mse.append(mse)
+    all_kstest_pvals = np.array(all_kstest_pvals).reshape(
+        (len(perm_ranges), -1))
+    all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
+    # check that a difference between distributions is not rejected by KS test
+    assert_array_less(0.01 / (len(perm_ranges) * 10.), all_kstest_pvals)
+    # consistency of the algorithm: the more permutations, the less the MSE
+    assert_array_less(np.diff(all_mse.mean(1)), 0)
 
 
 ### Tests for labels swapping permutation scheme ##############################

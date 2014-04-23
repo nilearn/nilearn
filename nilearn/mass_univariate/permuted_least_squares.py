@@ -125,7 +125,8 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
         lost_dof = 0
     else:
         lost_dof = covars_orthonormalized.shape[1]
-    lost_dof += 1  # tested variates fitted independently
+    # Tested variates are fitted independently,
+    # so lost_dof is unrelated to n_tested_vars.
     dof = target_vars.shape[0] - lost_dof
     beta_targetvars_testedvars = np.dot(target_vars.T, tested_vars)
     if covars_orthonormalized is None:
@@ -134,7 +135,7 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
         beta_targetvars_covars = np.dot(target_vars.T, covars_orthonormalized)
         a2 = np.sum(beta_targetvars_covars ** 2, 1)
         rss = (1 - a2[:, np.newaxis] - beta_targetvars_testedvars ** 2)
-    return beta_targetvars_testedvars * np.sqrt(dof / rss)
+    return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
 def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
@@ -167,8 +168,10 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
       switch labels otherwise). See [1]
 
     two_sided_test : boolean,
-      If True, performs an unsigned t-test.
-      If False, only positive effects are considered as relevant.
+      If True, performs an unsigned t-test. Both positive and negative
+      effects are considered; the null hypothesis is that the effect is zero.
+      If False, only positive effects are considered as relevant. The null
+      hypothesis is that the effect is zero or negative.
 
     random_state : int or None,
       Seed for random number generator, to have the same permutations
@@ -198,7 +201,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
             target_vars = (target_vars
-                           * rng.randint(2, size=(1, n_samples)) * 2 - 1)
+                           * (rng.randint(2, size=(n_samples, 1)) * 2 - 1))
         else:
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
@@ -280,8 +283,10 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       one gets in the p-values estimation.
 
     two_sided_test : boolean,
-      If True, performs an unsigned t-test.
-      If False, only positive effects are considered as relevant.
+      If True, performs an unsigned t-test. Both positive and negative
+      effects are considered; the null hypothesis is that the effect is zero.
+      If False, only positive effects are considered as relevant. The null
+      hypothesis is that the effect is zero or negative.
 
     random_state : int or None,
       Seed for random number generator, to have the same permutations
@@ -419,6 +424,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
     elif n_perm > 0:
+        warnings.warn('Performing less permutations than specified number '
+                      'of jobs (%d). Only %d jobs will be running.'
+                      % (n_jobs, n_perm))
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
         return np.asarray([]), scores_original_data,  np.asarray([])
