@@ -21,6 +21,9 @@ from .. import masking
 from . import logger
 
 
+original_fetch_files = datasets._fetch_files
+
+
 @contextlib.contextmanager
 def write_tmp_imgs(*imgs, **kwargs):
     """Context manager for writing Nifti images.
@@ -128,37 +131,14 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
     raise urllib2.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
-def mock_fetch_files(dataset_name, files, data_dir=None, resume=True,
-                     folder=None, verbose=0):
+def mock_fetch_files(*args, **kwargs):
     """Load requested dataset, downloading it if needed or requested.
 
     For test purpose, instead of actually fetching the dataset, this function
     creates empty files and return their paths.
-
-    TODO: make mock files for each dataset and use this function to fetch them.
-
     """
-    # Determine data path
-    data_dir = datasets._get_dataset_dir(dataset_name,
-                                         data_dir=data_dir, folder=folder)
-    urls = set()
-    files_ = []
-    for file_, url, opts in files:
-        # Download the file if it exists
-        if not url in urls:
-            urls.add(url)
-            dl_file = datasets._fetch_file(url, data_dir, resume=resume)
-            if os.path.getsize(dl_file) != 0 and 'uncompress' in opts:
-                datasets._uncompress_file(dl_file)
-            else:
-                os.remove(dl_file)
-        abs_file = os.path.join(data_dir, file_)
-        if not os.path.exists(os.path.dirname(abs_file)):
-            os.makedirs(os.path.dirname(abs_file))
-        if not os.path.exists(abs_file):
-            open(abs_file, 'w').close()
-        files_.append(abs_file)
-    return files_
+    kwargs['mock'] = True
+    return original_fetch_files(*args, **kwargs)
 
 
 def generate_timeseries(n_instants, n_features,
