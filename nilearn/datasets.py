@@ -1757,6 +1757,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     allowed_contrasts = contrast_name_wrapper.values()
     # convert contrast names
     contrasts_wrapped = []
+    # get a unique ID for each contrast. It is used to give a unique name to
+    # each download file and avoid name collisions.
     contrasts_indices = []
     for contrast in contrasts:
         if contrast in allowed_contrasts:
