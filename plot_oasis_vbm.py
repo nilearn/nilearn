@@ -1,5 +1,7 @@
 """
-Voxel-Based Morphometry on Oasis dataset.
+Voxel-Based Morphometry on Oasis dataset
+========================================
+
 Relationship between aging and gray matter density.
 
 """
@@ -20,6 +22,7 @@ age = dataset_files.ext_vars['age'].astype(float).reshape((-1, 1))
 
 ### Mask data
 nifti_masker = NiftiMasker(
+    standardize=False,
     memory='nilearn_cache',
     memory_level=1)  # cache options
 # remove features with too low between-subject variance
@@ -51,9 +54,9 @@ picked_slice = 36
 vmin = -np.log10(0.1)  # 10% corrected
 plt.figure(figsize=(5, 4))
 masked_pvals = np.ma.masked_less(neg_log_pvals_unmasked, vmin)
-plt.imshow(np.rot90(mean_anat[..., picked_slice]),
+plt.imshow(np.rot90(mean_anat[:, :, picked_slice]),
            interpolation='nearest', cmap=plt.cm.gray, vmin=0., vmax=1.)
-im = plt.imshow(np.rot90(masked_pvals[..., picked_slice]),
+im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
                 interpolation='nearest', cmap=plt.cm.autumn,
                 vmin=vmin, vmax=np.amax(neg_log_pvals_unmasked))
 plt.axis('off')
