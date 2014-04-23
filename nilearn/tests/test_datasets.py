@@ -237,7 +237,7 @@ def test_fetch_smith_2009_atlas():
 def test_fetch_haxby():
     for i in range(1, 6):
         haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)
-        assert_equal(len(mock.urls), i + (i == 1))  # n_subjects + md5 file
+        assert_equal(len(mock.urls), 1 + (i == 1))  # subject_data + md5 file
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
         assert_equal(len(haxby.session_target), i)
@@ -263,7 +263,8 @@ def test_fetch_nyu_rest():
     mock.reset()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
                                   n_subjects=12)
-    assert_equal(len(mock.urls), 3)
+    # Session 1 has already been downloaded
+    assert_equal(len(mock.urls), 2)
     assert_equal(len(nyu.func), 36)
     assert_equal(len(nyu.anat_anon), 36)
     assert_equal(len(nyu.anat_skull), 36)
