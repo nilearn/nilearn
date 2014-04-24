@@ -107,15 +107,5 @@ ax.axis('off')
 
 # plot colorbar
 colorbar = grid[1].cax.colorbar(im)
-plt.draw()  # update colormap labels
 plt.subplots_adjust(0., 0.03, 1., 0.83)
-# unsign colorbar tick labels
-new_ticklabels = []
-for tick in colorbar.cbar_axis.get_ticklabels():
-    if len(tick._text) > 0 and tick._text[0] == u'\u2212':
-        new_ticklabels.append(tick._text[1:])
-    else:
-        new_ticklabels.append(tick._text)
-
-colorbar.cbar_axis.set_ticklabels(new_ticklabels)
 plt.show()
