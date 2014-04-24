@@ -1965,15 +1965,17 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     """
     # check number of subjects
+    if n_subjects is None:
+        n_subjects = 403 if dartel_version else 415
     if dartel_version:  # DARTEL version has 13 identified outliers
-        if n_subjects is None or n_subjects > 403:
+        if n_subjects > 403:
             warnings.warn('Only 403 subjects are available in the '
                           'DARTEL-normalized version of the dataset. '
                           'All of them will be used instead of the wanted %d'
                           % n_subjects)
             n_subjects = 403
     else:  # all subjects except one are available with non-DARTEL version
-        if n_subjects is None or n_subjects > 415:
+        if n_subjects > 415:
             warnings.warn('Only 415 subjects are available in the '
                           'non-DARTEL-normalized version of the dataset. '
                           'All of them will be used instead of the wanted %d'
