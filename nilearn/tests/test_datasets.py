@@ -361,7 +361,7 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.white_matter_maps[0], basestring))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
-    assert_equal(len(mock.urls), 2)
+    assert_equal(len(mock.urls), 3)
 
     dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
                                        dartel_version=False)
@@ -371,4 +371,4 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.white_matter_maps[0], basestring))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
-    assert_equal(len(mock.urls), 3)
+    assert_equal(len(mock.urls), 4)
