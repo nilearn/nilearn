@@ -22,6 +22,7 @@ age = dataset_files.ext_vars['age'].astype(float)
 ### Preprocess data ###########################################################
 nifti_masker = NiftiMasker(
     standardize=False,
+    smoothing_fwhm=5,
     memory='nilearn_cache',
     memory_level=1)  # cache options
 # remove features with too low between-subject variance
@@ -47,7 +48,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 # namely Anova. We set the number of features to be selected to 500
 feature_selection = SelectKBest(f_classif, k=5000)
 
-# We have our classifier (SVC), our feature selection (SelectKBest), and now,
+# We have our predictor (SVR), our feature selection (SelectKBest), and now,
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
@@ -74,11 +75,12 @@ weights = np.ma.masked_array(weight_niimg.get_data(),
 mean_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
 picked_slice = 36
 plt.figure(figsize=(5, 4))
+vmax = max(np.min(weights[:, :, picked_slice, 0]),
+           np.max(weights[:, :, picked_slice, 0]))
 plt.imshow(np.rot90(mean_img[:, :, picked_slice]), cmap=plt.cm.gray,
           interpolation='nearest')
-im = plt.imshow(np.rot90(weights[:, :, picked_slice, 0]), cmap=plt.cm.hot,
-                interpolation='nearest',
-                vmin=0, vmax=np.amax(weights[:, :, picked_slice, 0]))
+im = plt.imshow(np.rot90(weights[:, :, picked_slice, 0]), cmap=plt.cm.RdBu_r,
+                interpolation='nearest', vmin=-vmax, vmax=vmax)
 plt.axis('off')
 plt.colorbar(im)
 plt.title('SVM weights')
