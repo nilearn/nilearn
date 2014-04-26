@@ -71,11 +71,11 @@ from sklearn.svm import SVR
 svr = SVR(kernel='linear')
 
 ### Dimension reduction
-from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.feature_selection import SelectKBest, f_regression
 
 # Here we use a classical univariate feature selection based on F-test,
-# namely Anova. We set the number of features to be selected to 500
-feature_selection = SelectKBest(f_classif, k=1500)
+# namely Anova.
+feature_selection = SelectKBest(f_regression, k=2000)
 
 # We have our predictor (SVR), our feature selection (SelectKBest), and now,
 # we can plug them together in a *pipeline* that performs the two operations
@@ -132,7 +132,7 @@ print "Massively univariate model"
 from nilearn.mass_univariate import permuted_ols
 neg_log_pvals, all_scores, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=10000,
+    n_perm=5000,  # In the interest of time; 10000 would be better
     n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals).get_data()[..., 0]
