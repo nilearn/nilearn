@@ -7,7 +7,7 @@ the :ref:`full user guide <user_guide>` for further details, as the class and
 function raw specifications may not be enough to give full guidelines on their
 uses.
 
-.. contents:: List of modules
+.. contents:: **List of modules**
    :local:
 
 .. _datasets_ref:
