@@ -32,6 +32,8 @@ for the prediction here. A standard analysis using mass-univariate GLM
 (here permute to have exact correction for multiple comparisons) gives a
 much clearer view of the important regions.
 
+____
+
 """
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
@@ -101,7 +103,7 @@ weights = np.ma.masked_array(weight_niimg.get_data(),
 ### Create the figure
 background_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
 picked_slice = 36
-plt.figure(figsize=(5, 4))
+plt.figure(figsize=(5, 5))
 data_for_plot = weights[:, :, picked_slice, 0]
 vmax = max(np.min(data_for_plot), np.max(data_for_plot)) * 0.5
 plt.imshow(np.rot90(background_img[:, :, picked_slice]), cmap=plt.cm.gray,
