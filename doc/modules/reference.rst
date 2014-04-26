@@ -21,8 +21,8 @@ uses.
 
 **User guide:** See the :ref:`datasets` section for further details.
 
-Functions
----------
+**Functions**:
+
 .. currentmodule:: nilearn.datasets
 
 .. autosummary::
@@ -48,8 +48,7 @@ Functions
    :no-members:
    :no-inherited-members:
 
-Classes
--------
+**Classes**:
 
 .. currentmodule:: nilearn.decomposition
 
@@ -68,8 +67,8 @@ Classes
    :no-members:
    :no-inherited-members:
 
-Functions
----------
+**Functions**:
+
 .. currentmodule:: nilearn.image
 
 .. autosummary::
@@ -94,8 +93,8 @@ Functions
 
 **User guide:** See the :ref:`nifti_masker` section for further details.
 
-Classes
--------
+**Classes**:
+
 .. currentmodule:: nilearn.input_data
 
 .. autosummary::
@@ -118,33 +117,8 @@ Classes
 
 **User guide:** See the :ref:`masking` section for further details.
 
-Functions
----------
-.. currentmodule:: nilearn.masking
+**Functions**:
 
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   compute_epi_mask
-   compute_multi_epi_mask
-   intersect_masks
-   apply_mask
-   unmask
-
-.. _region_ref:
-
-:mod:`nilearn.region`: Regions Handling Utilities
-=================================================
-
-.. automodule:: nilearn.region
-   :no-members:
-   :no-inherited-members:
-
-**User guide:** See the :ref:`region` section for further details.
-
-Functions
----------
 .. currentmodule:: nilearn.region
 
 .. autosummary::
@@ -170,8 +144,8 @@ Functions
    :no-members:
    :no-inherited-members:
 
-Classes
--------
+**Classes**:
+
 .. currentmodule:: nilearn.decoding
 
 .. autosummary::
@@ -192,30 +166,8 @@ Classes
 
 .. No relevant user manual section yet.
 
-Functions
----------
-.. currentmodule:: nilearn.signal
+**Functions**:
 
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   clean
-   high_variance_confounds
-   butterworth
-
-
-.. _mass_univariate:
-
-:mod:`nilearn.mass_univariate`: Massively Univariate Analysis
-=============================================================
-
-.. automodule:: nilearn.mass_univariate
-   :no-members:
-   :no-inherited-members:
-
-Functions
----------
 .. currentmodule:: nilearn.mass_univariate
 
 .. autosummary::
