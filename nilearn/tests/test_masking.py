@@ -14,7 +14,7 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from ..masking import compute_epi_mask, compute_multi_epi_mask, \
-    compute_background_mask, unmask, intersect_masks
+    compute_background_mask, unmask, intersect_masks, MaskWarning
 
 from .._utils.testing import write_tmp_imgs
 
@@ -90,55 +90,6 @@ def test_compute_background_mask():
         compute_background_mask(mean_image)
     assert_equal(len(w), 1)
     assert_is_instance(w[0].message, masking.MaskWarning)
-
-
-def test__smooth_array():
-    """Test smoothing of images: _smooth_array()"""
-    # Impulse in 3D
-    data = np.zeros((40, 41, 42))
-    data[20, 20, 20] = 1
-
-    # fwhm divided by any test affine must be odd. Otherwise assertion below
-    # will fail. ( 9 / 0.6 = 15 is fine)
-    fwhm = 9
-    test_affines = (np.eye(4), np.diag((1, 1, -1, 1)),
-                    np.diag((.6, 1, .6, 1)))
-    for affine in test_affines:
-        filtered = masking._smooth_array(data, affine,
-                                         fwhm=fwhm, copy=True)
-        assert_false(np.may_share_memory(filtered, data))
-
-        # We are expecting a full-width at half maximum of
-        # fwhm / voxel_size:
-        vmax = filtered.max()
-        above_half_max = filtered > .5 * vmax
-        for axis in (0, 1, 2):
-            proj = np.any(np.any(np.rollaxis(above_half_max,
-                          axis=axis), axis=-1), axis=-1)
-            np.testing.assert_equal(proj.sum(),
-                                    fwhm / np.abs(affine[axis, axis]))
-
-    # Check that NaNs in the data do not propagate
-    data[10, 10, 10] = np.NaN
-    filtered = masking._smooth_array(data, affine, fwhm=fwhm,
-                                   ensure_finite=True, copy=True)
-    assert_true(np.all(np.isfinite(filtered)))
-
-    # Check copy=False.
-    for affine in test_affines:
-        data = np.zeros((40, 41, 42))
-        data[20, 20, 20] = 1
-        masking._smooth_array(data, affine, fwhm=fwhm, copy=False)
-
-        # We are expecting a full-width at half maximum of
-        # fwhm / voxel_size:
-        vmax = data.max()
-        above_half_max = data > .5 * vmax
-        for axis in (0, 1, 2):
-            proj = np.any(np.any(np.rollaxis(above_half_max,
-                          axis=axis), axis=-1), axis=-1)
-            np.testing.assert_equal(proj.sum(),
-                                    fwhm / np.abs(affine[axis, axis]))
 
 
 def test_apply_mask():
@@ -360,7 +311,10 @@ def test_compute_multi_epi_mask():
     mask_b[2:6, 2:6] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
 
-    assert_raises(ValueError, compute_multi_epi_mask, [mask_a_img, mask_b_img])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MaskWarning)
+        assert_raises(ValueError, compute_multi_epi_mask,
+                      [mask_a_img, mask_b_img])
     mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
     mask_ab[2, 2] = 1
     mask_ab_ = compute_multi_epi_mask([mask_a_img, mask_b_img], threshold=1.,

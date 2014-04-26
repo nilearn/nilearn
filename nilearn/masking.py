@@ -11,9 +11,9 @@ from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
+from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component
 from ._utils.niimg_conversions import _safe_get_data
-from ._utils.cache_mixin import cache
 
 
 class MaskWarning(UserWarning):
@@ -160,33 +160,6 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
-def _compute_mean(imgs, memory=None, target_affine=None,
-                  target_shape=None, smooth=False):
-    from . import image
-    input_repr = _utils._repr_niimgs(imgs)
-    imgs = cache(image.resample_img, memory, ignore=['copy'])(
-        imgs,
-        target_affine=target_affine,
-        target_shape=target_shape)
-
-    # XXX: should implement a loop on file, if a list of 3D files are
-    # given
-    imgs = _utils.check_niimgs(imgs, accept_3d=True)
-    mean_img = _safe_get_data(imgs)
-    if not mean_img.ndim in (3, 4):
-        raise ValueError('Mask computation expects 3D or 4D '
-                         'images, but %i dimensions were given (%s)'
-                         % (mean_img.ndim, input_repr))
-    if mean_img.ndim == 4:
-        mean_img = mean_img.mean(axis=-1)
-    if smooth:
-        nan_mask = np.isnan(mean_img)
-        mean_img = _smooth_array(mean_img, affine=np.eye(4), fwhm=smooth,
-                                 ensure_finite=True, copy=False)
-        mean_img[nan_mask] = np.nan
-    return mean_img, imgs.get_affine()
-
-
 def _post_process_mask(mask, affine, opening=2, connected=True, msg=""):
     if opening:
         opening = int(opening)
@@ -263,9 +236,12 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
         related documentation for details.
 
     memory: instance of joblib.Memory or string
-        Used to cache the function call.
+        Used to cache the function call: if this is a string, it
+        specifies the directory where the cache will be stored.
 
     verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
 
     Returns
     -------
@@ -277,9 +253,12 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
 
-    mean_epi, affine = _compute_mean(epi_img, memory=memory,
-        target_affine=target_affine, target_shape=target_shape,
-        smooth=1 if opening else False)
+    # Delayed import to avoid circular imports
+    from .image.image import _compute_mean
+    mean_epi, affine = cache(_compute_mean, memory)(epi_img,
+                                     target_affine=target_affine,
+                                     target_shape=target_shape,
+                                     smooth=(1 if opening else False))
 
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
@@ -436,9 +415,11 @@ def compute_background_mask(data_imgs, border_size=2,
     # We suppose that it is a niimg
     # XXX make a is_a_niimgs function ?
 
-    data, affine = _compute_mean(data_imgs, memory=memory,
-        target_affine=target_affine, target_shape=target_shape,
-        smooth=False)
+    # Delayed import to avoid circular imports
+    from .image.image import _compute_mean
+    data, affine = cache(_compute_mean, memory)(data_imgs,
+                target_affine=target_affine, target_shape=target_shape,
+                smooth=False)
 
     border_data = np.concatenate([
             data[:border_size, :, :].ravel(), data[-border_size:, :, :].ravel(),
@@ -621,77 +602,11 @@ def _apply_mask_fmri(niimgs, mask_img, dtype='f',
                                copy=True)
     del niimgs_img  # frees a lot of memory
 
+    # Delayed import to avoid circular imports
+    from .image.image import _smooth_array
     _smooth_array(series, affine, fwhm=smoothing_fwhm,
                   ensure_finite=ensure_finite, copy=False)
     return series[mask_data].T
-
-
-def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
-    """Smooth images by applying a Gaussian filter.
-
-    Apply a Gaussian filter along the three first dimensions of arr.
-
-    Parameters
-    ==========
-    arr: numpy.ndarray
-        4D array, with image number as last dimension. 3D arrays are also
-        accepted.
-
-    affine: numpy.ndarray
-        (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
-        are also accepted (only these coefficients are used).
-
-    fwhm: scalar or numpy.ndarray
-        Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a scalar is given, width is identical on all three directions.
-        A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
-        If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed)
-
-    ensure_finite: bool
-        if True, replace every non-finite values (like NaNs) by zero before
-        filtering.
-
-    copy: bool
-        if True, input array is not modified. False by default: the filtering
-        is performed in-place.
-
-    Returns
-    =======
-    filtered_arr: numpy.ndarray
-        arr, filtered.
-
-    Notes
-    =====
-    This function is most efficient with arr in C order.
-    """
-
-    if arr.dtype.kind == 'i':
-        if arr.dtype == np.int64:
-            arr = np.astype(arr, np.float64)
-        else:
-            # We don't need crazy precision
-            arr = np.astype(arr, np.float32)
-    if copy:
-        arr = arr.copy()
-
-    # Keep only the scale part.
-    affine = affine[:3, :3]
-
-    if ensure_finite:
-        # SPM tends to put NaNs in the data outside the brain
-        arr[np.logical_not(np.isfinite(arr))] = 0
-
-    if fwhm is not None:
-        # Convert from a FWHM to a sigma:
-        # Do not use /=, fwhm may be a numpy scalar
-        fwhm = fwhm / np.sqrt(8 * np.log(2))
-        vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
-        sigma = fwhm / vox_size
-        for n, s in enumerate(sigma):
-            ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
-
-    return arr
 
 
 def _unmask_3d(X, mask, order="C"):

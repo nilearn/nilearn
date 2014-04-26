@@ -11,10 +11,10 @@ import nibabel
 
 from nilearn import datasets
 data = datasets.fetch_haxby()
-bold_img = nibabel.load(data.func[0])
+
 # Build the mean image because we have no anatomic data
-fmri_data = bold_img.get_data().astype(float)
-mean_img = fmri_data.mean(axis=-1)
+from nilearn import image
+mean_img = image.mean_img(data.func[0]).get_data()
 
 z = 25
 

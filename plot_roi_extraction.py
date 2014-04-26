@@ -61,10 +61,13 @@ def plot_brain(brain, x, y, z, title, cmap='hot'):
 ### Find voxels of interest ###################################################
 
 # Smooth the data
-from nilearn.image import smooth_img
-fmri_img = smooth_img(haxby_files.func[0], fwhm=6)
+from nilearn import image
+fmri_img = image.smooth_img(haxby_files.func[0], fwhm=6)
 fmri_data = fmri_img.get_data()
-plot_brain(fmri_data.mean(axis=-1), coronal, sagittal, axial,
+
+# Plot the mean image
+mean_img = image.mean_img(fmri_img)
+plot_brain(mean_img.get_data(), coronal, sagittal, axial,
            'Smoothed mean EPI')
 
 # Run a T-test for face and houses

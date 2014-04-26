@@ -86,7 +86,8 @@ p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 import matplotlib.pyplot as plt
 
 # Use the fmri mean image as a surrogate of anatomical data
-mean_fmri = fmri_img.get_data().mean(axis=-1)
+from nilearn import image
+mean_fmri = image.mean_img(fmri_img).get_data()
 
 ### Searchlight results
 plt.figure(1)

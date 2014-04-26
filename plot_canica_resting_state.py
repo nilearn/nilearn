@@ -20,7 +20,6 @@ Pre-prints for both papers are available on hal
 (http://hal.archives-ouvertes.fr)
 """
 import numpy as np
-import nibabel
 
 ### Load ADHD rest dataset ####################################################
 from nilearn import datasets
@@ -29,12 +28,9 @@ dataset = datasets.fetch_adhd()
 func_files = dataset.func # The list of 4D nifti files for each subject
 
 ### Compute a mean epi ########################################################
-from nilearn.image import resample_img
+from nilearn import image
 
-epi_img = nibabel.load(func_files[0])
-mean_epi = epi_img.get_data().mean(axis=-1)
-mean_epi_img = nibabel.Nifti1Image(mean_epi, epi_img.get_affine())
-mean_epi = resample_img(mean_epi_img).get_data()
+mean_epi = image.mean_img(func_files[0]).get_data()
 
 ### Apply CanICA ##############################################################
 from nilearn.decomposition.canica import CanICA

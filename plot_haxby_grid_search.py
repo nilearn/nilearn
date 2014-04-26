@@ -36,41 +36,33 @@ a separator.
 ### Load Haxby dataset ########################################################
 from nilearn import datasets
 import numpy as np
-import nibabel
 dataset_files = datasets.fetch_haxby_simple()
 
-# fmri_data and mask are copied to break any reference to the original object
-bold_img = nibabel.load(dataset_files.func)
-fmri_data = np.copy(bold_img.get_data())
-affine = bold_img.get_affine()
 y, session = np.loadtxt(dataset_files.session_target).astype("int").T
 conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
-mask = dataset_files.mask
+mask_file = dataset_files.mask
 # fmri_data.shape is (40, 64, 64, 1452)
 # and mask.shape is (40, 64, 64)
 
 ### Preprocess data ###########################################################
-# Build the mean image because we have no anatomic data
-mean_img = fmri_data.mean(axis=-1)
 
 ### Restrict to faces and houses ##############################################
 
 # Keep only data corresponding to shoes or bottles
 condition_mask = np.logical_or(conditions == 'shoe', conditions == 'bottle')
-X = fmri_data[..., condition_mask]
 y = y[condition_mask]
 session = session[condition_mask]
 conditions = conditions[condition_mask]
 
 ### Loading step ##############################################################
 from nilearn.input_data import NiftiMasker
-from nibabel import Nifti1Image
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask=mask, sessions=session, smoothing_fwhm=4,
+nifti_masker = NiftiMasker(mask=mask_file, sessions=session, smoothing_fwhm=4,
                            standardize=True, memory="nilearn_cache",
                            memory_level=1)
-niimg = Nifti1Image(X, affine)
-X = nifti_masker.fit_transform(niimg)
+X = nifti_masker.fit_transform(dataset_files.func)
+# Restrict to non rest data
+X = X[condition_mask]
 
 ### Prediction function #######################################################
 

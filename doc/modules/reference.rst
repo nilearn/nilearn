@@ -80,6 +80,7 @@ Functions
    smooth_img
    resample_img
    crop_img
+   mean_img
 
 
 .. _io_ref:
