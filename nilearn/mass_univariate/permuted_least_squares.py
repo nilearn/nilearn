@@ -424,9 +424,12 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
     elif n_perm > 0:
-        warnings.warn('Performing less permutations than specified number '
-                      'of jobs (%d). Only %d jobs will be running.'
-                      % (n_jobs, n_perm))
+        warnings.warn('The specified number of permutations is %d and '
+                      'the number of jobs to be performed in parallel has '
+                      'set to %s. This is incompatible so only %d jobs will '
+                      'be running. You may want to perform more permutations '
+                      'in order to take the most of the available computing '
+                      'ressources.' % (n_perm, n_jobs, n_perm))
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
         return np.asarray([]), scores_original_data,  np.asarray([])
