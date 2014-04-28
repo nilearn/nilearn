@@ -333,21 +333,54 @@ def test_fetch_yeo_2011_atlas():
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_localizer_contrasts():
+    # All subjects
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
                                                  data_dir=tmpdir)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(len(dataset.cmaps), 94)
+
+    # 20 subjects
+    dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
+                                                 n_subjects=20,
+                                                 data_dir=tmpdir)
+    assert_true(dataset.anats is None)
+    assert_true(dataset.tmaps is None)
+    assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(len(dataset.cmaps), 20)
+
+    # Multiple contrasts
+    dataset = datasets.fetch_localizer_contrasts(
+        ["checkerboard", "horizontal checkerboard"],
+        n_subjects=20, data_dir=tmpdir)
+    assert_true(dataset.anats is None)
+    assert_true(dataset.tmaps is None)
+    assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(len(dataset.cmaps), 20 * 2)  # two contrasts are fetched
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
+    # All subjects
     dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(len(dataset.cmaps), 94)
+
+    # 20 subjects
+    dataset = datasets.fetch_localizer_calculation_task(n_subjects=20,
+                                                        data_dir=tmpdir)
+    assert_true(dataset.anats is None)
+    assert_true(dataset.tmaps is None)
+    assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(len(dataset.cmaps), 20)
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
