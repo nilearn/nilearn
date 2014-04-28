@@ -92,9 +92,9 @@ def orthonormalize_matrix(m, tol=1.e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def _f_score_with_covars_and_normalized_design(tested_vars, target_vars,
+def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
                                                covars_orthonormalized=None):
-    """F-score in the regression of tested variates against target variates
+    """t-score in the regression of tested variates against target variates
 
     Covariates are taken into account (if not None).
     The normalized_design case corresponds to the following assumptions:
@@ -117,7 +117,7 @@ def _f_score_with_covars_and_normalized_design(tested_vars, target_vars,
     Returns
     -------
     score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
-      F-scores associated with the tests of each explanatory variate against
+      t-scores associated with the tests of each explanatory variate against
       each target variate (in the presence of covars).
 
     """
@@ -125,23 +125,23 @@ def _f_score_with_covars_and_normalized_design(tested_vars, target_vars,
         lost_dof = 0
     else:
         lost_dof = covars_orthonormalized.shape[1]
-    dof = target_vars.shape[0] - 1 - lost_dof
+    # Tested variates are fitted independently,
+    # so lost_dof is unrelated to n_tested_vars.
+    dof = target_vars.shape[0] - lost_dof
     beta_targetvars_testedvars = np.dot(target_vars.T, tested_vars)
-    b2 = beta_targetvars_testedvars ** 2
     if covars_orthonormalized is None:
-        rss = (1 - b2)
+        rss = (1 - beta_targetvars_testedvars ** 2)
     else:
         beta_targetvars_covars = np.dot(target_vars.T, covars_orthonormalized)
         a2 = np.sum(beta_targetvars_covars ** 2, 1)
-        rss = (1 - a2[:, np.newaxis] - b2)
-    score = b2 / rss
-    score *= dof
-    return score
+        rss = (1 - a2[:, np.newaxis] - beta_targetvars_testedvars ** 2)
+    return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
 def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
                            confounding_vars=None, n_perm_chunk=10000,
-                           intercept_test=True, random_state=None):
+                           intercept_test=True, two_sided_test=True,
+                           random_state=None):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -149,7 +149,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     Parameters
     ----------
     scores_original_data : array-like, shape=(n_descriptors, n_regressors)
-      F-scores obtained for the original (non-permuted) data.
+      t-scores obtained for the original (non-permuted) data.
 
     tested_vars : array-like, shape=(n_samples, n_regressors)
       Explanatory variates.
@@ -162,9 +162,16 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
 
     n_perm_chunk : int,
       Number of permutations to be performed.
+
     intercept_test : boolean,
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise). See [1]
+
+    two_sided_test : boolean,
+      If True, performs an unsigned t-test. Both positive and negative
+      effects are considered; the null hypothesis is that the effect is zero.
+      If False, only positive effects are considered as relevant. The null
+      hypothesis is that the effect is zero or negative.
 
     random_state : int or None,
       Seed for random number generator, to have the same permutations
@@ -173,7 +180,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     Returns
     -------
     h0_fmax_part : array-like, shape=(n_perm_chunk, )
-      Distribution of the (max) F-statistic under the null hypothesis
+      Distribution of the (max) t-statistic under the null hypothesis
       (limited to this permutation chunk).
 
     References
@@ -200,7 +207,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
             # Regarding computation costs, we choose to shuffle testvars
             # and covars rather than fmri_signal.
             # Also, it is important to shuffle tested_vars and covars
-            # jointly to simplify f_score computation (null dot product).
+            # jointly to simplify t-scores computation (null dot product).
             shuffle_idx = rng.permutation(n_samples)
             tested_vars = tested_vars[shuffle_idx]
             if confounding_vars is not None:
@@ -208,9 +215,11 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
 
         # OLS regression on randomized data
         perm_scores = np.asfortranarray(
-            _f_score_with_covars_and_normalized_design(tested_vars,
+            _t_score_with_covars_and_normalized_design(tested_vars,
                                                        target_vars,
                                                        confounding_vars))
+        if two_sided_test:
+            perm_scores = np.fabs(perm_scores)
         h0_fmax_part[i] = np.amax(perm_scores, 0)
         # find the rank of the original scores in h0_part
         # (when n_descriptors or n_perm are large, it can be quite long to
@@ -224,7 +233,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
 
 
 def permuted_ols(tested_vars, target_vars, confounding_vars=None,
-                 model_intercept=True, n_perm=10000,
+                 model_intercept=True, n_perm=10000, two_sided_test=True,
                  random_state=None, n_jobs=1):
     """Massively univariate group analysis with permuted OLS.
 
@@ -243,8 +252,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     Permutations are performed on parallel computing units. Each of them
     performs a fraction of permutations on the whole dataset. Thus, the max
-    F-score amongst data descriptors can be computed directly, which avoids
-    storing all the computed F-scores.
+    t-score amongst data descriptors can be computed directly, which avoids
+    storing all the computed t-scores.
 
     The variates should be given C-contiguous. target_vars are fortran-ordered
     automatically to speed-up computations.
@@ -273,6 +282,12 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       Permutations are costly but the more are performed, the more precision
       one gets in the p-values estimation.
 
+    two_sided_test : boolean,
+      If True, performs an unsigned t-test. Both positive and negative
+      effects are considered; the null hypothesis is that the effect is zero.
+      If False, only positive effects are considered as relevant. The null
+      hypothesis is that the effect is zero or negative.
+
     random_state : int or None,
       Seed for random number generator, to have the same permutations
       in each computing units.
@@ -291,13 +306,13 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       variates. Family-wise corrected p-values.
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
-      F-statistic associated with the significance test of the n_regressors
+      t-statistic associated with the significance test of the n_regressors
       explanatory variates against the n_descriptors target variates.
       The ranks of the scores into the h0 distribution correspond to the
       p-values.
 
     h0_fmax : array-like, shape=(n_perm, )
-      Distribution of the (max) F-statistic under the null hypothesis
+      Distribution of the (max) t-statistic under the null hypothesis
       (obtained from the permutations). Array is sorted.
 
     References
@@ -397,9 +412,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         # useful to developer
         warnings.warn('Tested variates not C_CONTIGUOUS.')
         testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
-    # step 3: original regression (= regression on residuals + adjust F score)
-    # compute F score for original data
-    scores_original_data = _f_score_with_covars_and_normalized_design(
+    # step 3: original regression (= regression on residuals + adjust t-score)
+    # compute t score for original data
+    scores_original_data = _t_score_with_covars_and_normalized_design(
         testedvars_resid_covars, targetvars_resid_covars.T,
         covars_orthonormalized)
 
@@ -409,6 +424,12 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
     elif n_perm > 0:
+        warnings.warn('The specified number of permutations is %d and '
+                      'the number of jobs to be performed in parallel has '
+                      'set to %s. This is incompatible so only %d jobs will '
+                      'be running. You may want to perform more permutations '
+                      'in order to take the most of the available computing '
+                      'ressources.' % (n_perm, n_jobs, n_perm))
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
         return np.asarray([]), scores_original_data,  np.asarray([])
@@ -418,6 +439,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
           (scores_original_data, testedvars_resid_covars,
            targetvars_resid_covars.T, covars_orthonormalized,
            n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
+           two_sided_test=two_sided_test,
            random_state=rng.random_integers(np.iinfo(np.int32).max))
           for n_perm_chunk in n_perm_chunks)
     # reduce results
@@ -429,4 +451,4 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     # convert ranks into p-values
     pvals = (n_perm + 1 - scores_as_ranks) / float(1 + n_perm)
 
-    return - np.log10(pvals), scores_original_data, h0_fmax[0]
+    return - np.log10(pvals), scores_original_data.T, h0_fmax[0]

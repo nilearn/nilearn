@@ -146,7 +146,8 @@ Comparing to massively univariate analysis: F_score or SPM
 
 The standard approach to brain mapping is performed using *Statistical
 Parametric Mapping* (SPM), using ANOVA (analysis of variance), and
-F-tests. Here we compute the *p-values* of the voxels [1]_.
+parametric tests (F-tests ot t-tests).
+Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
 
 .. figure:: ../auto_examples/images/plot_haxby_searchlight_2.png
@@ -157,30 +158,30 @@ To display the results, we use the negative log of the p-value.
 .. literalinclude:: ../../plot_haxby_searchlight.py
     :start-after: ### F_score results
 
-F-scores can be converted into p-values using a reference theoretical
-distribution, which is known under specific assumptions. In practice,
-neuroimaging signal has a complex structure that might not match these
-assumptions. An exact, non-parametric *permutation test* can be
-performed as an alternative to the analytic F-test: the residuals of
-the model are permuted so as to break any effect and the corresponding
-decision statistic is recomputed. One thus builds the distribution of
-the decision statistic under the hypothesis that there is no
-relationship between the tested variates and the target variates.
-In neuroimaging, this is generally done by swapping the
-signal values of all voxels while the tested variables remain
-unchanged [2]_. A voxel-wise analysis is then performed on the permuted
-data. The relationships
-between the image descriptors and the tested variates are broken while
-the value of the signal in each particular voxel can be observed with
-the same probability than the original value associated to that
-voxel. Note that it is hereby assumed that the signal distribution is
-the same in every voxel. Several data permutations are performed
-(typically 10,000) while the F-scores for every voxel and every data
-permutation is stored. The empirical distribution of the F-scores is
-thus constructed (under the hypothesis that there is no relationship
+Parametric scores can be converted into p-values using a reference
+theoretical distribution, which is known under specific assumptions
+(hence the name *parametric*). In practice, neuroimaging signal has a
+complex structure that might not match these assumptions. An exact,
+non-parametric *permutation test* can be performed as an alternative
+to the parametric test: the residuals of the model are permuted so as
+to break any effect and the corresponding decision statistic is
+recomputed. One thus builds the distribution of the decision statistic
+under the hypothesis that there is no relationship between the tested
+variates and the target variates.  In neuroimaging, this is generally
+done by swapping the signal values of all voxels while the tested
+variables remain unchanged [2]_. A voxel-wise analysis is then
+performed on the permuted data. The relationships between the image
+descriptors and the tested variates are broken while the value of the
+signal in each particular voxel can be observed with the same
+probability than the original value associated to that voxel. Note
+that it is hereby assumed that the signal distribution is the same in
+every voxel. Several data permutations are performed (typically
+10,000) while the scores for every voxel and every data permutation
+is stored. The empirical distribution of the scores is thus
+constructed (under the hypothesis that there is no relationship
 between the tested variates and the neuroimaging signal, the so-called
-*null-hypothesis*) and we can compare the original F-scores to that
-distribution: The higher the rank of the original F-score, the smaller
+*null-hypothesis*) and we can compare the original scores to that
+distribution: The higher the rank of the original score, the smaller
 is its associated p-value. The
 :func:`nilearn.mass_univariate.permuted_ols` function returns the
 p-values computed with a permutation test.
@@ -218,6 +219,22 @@ strategy is applied in Nilearn's
 We observe that the results obtained with a permutation test are less
 conservative than the ones obtained with a Bonferroni correction
 strategy.
+
+In Nilearn's :func:`nilearn.mass_univariate.permuted_ols` function, we
+permute a parametric t-test. Unlike F-test, a t-test can be signed
+(*one-sided test*), that is both the absolute value and the sign of an
+effect are considered. Thus, only positive effects
+can be focused on.  It is still possible to perform a two-sided test
+equivalent to a permuted F-test by setting the argument
+`two_sided_test` to `True`. In the example above, we do perform a two-sided
+test but add back the sign of the effect at the end using the t-scores obtained
+on the original (non-permuted) data. Thus, we can perform two one-sided tests
+(a given contrast and its opposite) for the price of one single run.
+The example results can be interpreted as follows: viewing faces significantly
+activates the Fusiform Face Area as compared to viewing houses, while viewing
+houses does not reveals significant supplementary activations as compared to
+viewing faces.
+
 
 .. [1]
 
