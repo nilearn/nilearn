@@ -2,11 +2,12 @@
 Voxel-Based Morphometry on Oasis dataset
 ========================================
 
-This example used Voxel-Based Morphometry (VBM) to study the relationship
+This example uses Voxel-Based Morphometry (VBM) to study the relationship
 between aging and gray matter density.
 
-The data comes from the `OASIS <http://www.oasis-brains.org/>`_ project.
-If you use it, you need to agree with the terms of use on the website.
+The data come from the `OASIS <http://www.oasis-brains.org/>`_ project.
+If you use it, you need to agree with the data usage agreement available
+on the website.
 
 It has been run through a standard VBM pipeline (using SPM8 and
 NewSegment) to create VBM maps, which we study here.
@@ -29,7 +30,7 @@ Brain mapping with mass univariate
 
 SVM weights are very noisy, partly because heavy smoothing is detrimental
 for the prediction here. A standard analysis using mass-univariate GLM
-(here permute to have exact correction for multiple comparisons) gives a
+(here permuted to have exact correction for multiple comparisons) gives a
 much clearer view of the important regions.
 
 ____
@@ -37,6 +38,7 @@ ____
 """
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
+#          Gael Varoquaux, Apr 2014
 import numpy as np
 import matplotlib.pyplot as plt
 import nibabel
