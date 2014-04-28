@@ -1830,12 +1830,24 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 "normalized_T1_anat_defaced.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))
+    # Fetch subject characteristics
+    if url is None:
+        url_csv = (root_url + "dataset/cubicwebexport.csv?rql="
+                   + urllib.quote("Any X WHERE X is Subject")
+                   + "&vid=csvexport")
+    else:
+        url_csv = url + "/cubicwebexport.csv"
+    filenames.append(("cubicwebexport.csv", url_csv, {}))
 
     # Actual data fetching
     files = _fetch_files('brainomics_localizer', filenames, data_dir=data_dir)
     anats = None
     masks = None
     tmaps = None
+    ext_vars_file = files[-1]
+    csv_data = np.recfromcsv(ext_vars_file, delimiter=';')
+    csv_data = csv_data[np.argsort(csv_data['subject_id'])][:n_subjects]
+    files = files[:-1]
     if get_anats:
         anats = files[-n_subjects:]
         files = files[:-n_subjects]
@@ -1845,10 +1857,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_tmaps:
         tmaps = files(slice(1, len(files) + 1, 2))
         files = files(slice(0, len(files), 2))
-    return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats)
+    return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
+                 ext_vars=csv_data)
 
 
-def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
+def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
     """Fetch calculation task contrast maps from the localizer.
 
     This function is only a caller for the fetch_localizer_contrasts in order
@@ -1864,6 +1877,10 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
         Path of the data directory. Used to force data storage in a specified
         location.
 
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
     Returns
     -------
     data: Bunch
@@ -1876,7 +1893,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=None, resume=True, verbose=0)
+                                     url=url, resume=True, verbose=0)
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
@@ -1985,7 +2002,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
     if n_subjects < 1:
         raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
 
-    # pick the archive corrsponding to preprocessings type
+    # pick the archive corresponding to preprocessings type
     if url is None:
         if dartel_version:
             url_images = ('https://www.nitrc.org/frs/download.php/'
@@ -1999,7 +2016,6 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
         url_dua = ('https://www.nitrc.org/frs/download.php/'
                    '6349/data_usage_agreement.txt?i_agree=1&download_now=1')
     else:  # local URL used in tests
-        # we copy the real csv file from tests/data dir to the temp dir
         url_csv = url + "/oasis_cross-sectional.csv"
         url_dua = url + "/data_usage_agreement.txt"
         if dartel_version:

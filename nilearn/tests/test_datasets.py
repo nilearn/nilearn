@@ -349,22 +349,29 @@ def test_fetch_yeo_2011_atlas():
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_localizer_contrasts():
+    local_url = "file://" + datadir
+    # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
-                                                 data_dir=tmpdir)
+                                                 data_dir=tmpdir,
+                                                 url=local_url)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.cmaps), 94)
 
     # 20 subjects
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
                                                  n_subjects=20,
-                                                 data_dir=tmpdir)
+                                                 data_dir=tmpdir,
+                                                 url=local_url)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
     assert_equal(len(dataset.cmaps), 20)
 
@@ -375,27 +382,37 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
     assert_equal(len(dataset.cmaps), 20 * 2)  # two contrasts are fetched
+    assert_equal(dataset.ext_vars.size, 20)
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
+    local_url = "file://" + datadir
+    # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
-    dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir)
+    dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir,
+                                                        url=local_url)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.cmaps), 94)
 
     # 20 subjects
     dataset = datasets.fetch_localizer_calculation_task(n_subjects=20,
-                                                        data_dir=tmpdir)
+                                                        data_dir=tmpdir,
+                                                        url=local_url)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(dataset.ext_vars.size, 20)
     assert_equal(len(dataset.cmaps), 20)
 
 
