@@ -1795,7 +1795,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     for s in np.arange(1, n_subjects + 1):
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
-                name_aux = str.replace(str.join('_', [data_type, c]), ' ', '_')
+                name_aux = str.replace(
+                    str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
                     "brainomics_data", "S%02d" % s, name_aux + ".nii.gz")
                 file_tarball_url = urls[contrast_id]
