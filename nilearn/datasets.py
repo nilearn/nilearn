@@ -1830,24 +1830,37 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 "normalized_T1_anat_defaced.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))
-    # Fetch subject characteristics
+    # Fetch subject characteristics (separated in two files)
     if url is None:
         url_csv = (root_url + "dataset/cubicwebexport.csv?rql="
                    + urllib.quote("Any X WHERE X is Subject")
                    + "&vid=csvexport")
+        url_csv2 = (root_url + "dataset/cubicwebexport2.csv?rql="
+                    + urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
+                                   "X identifier XI, X datetime XD", safe=',')
+                    + "&vid=csvexport")
     else:
         url_csv = url + "/cubicwebexport.csv"
-    filenames.append(("cubicwebexport.csv", url_csv, {}))
+        url_csv2 = url + "/cubicwebexport2.csv"
+    filenames += [("cubicwebexport.csv", url_csv, {}),
+                  ("cubicwebexport2.csv", url_csv2, {})]
 
     # Actual data fetching
     files = _fetch_files('brainomics_localizer', filenames, data_dir=data_dir)
     anats = None
     masks = None
     tmaps = None
+    # combine data from both covariates files into one single recarray
+    from numpy.lib.recfunctions import join_by
+    ext_vars_file2 = files[-1]
+    csv_data2 = np.recfromcsv(ext_vars_file2, delimiter=';')
+    files = files[:-1]
     ext_vars_file = files[-1]
     csv_data = np.recfromcsv(ext_vars_file, delimiter=';')
-    csv_data = csv_data[np.argsort(csv_data['subject_id'])][:n_subjects]
     files = files[:-1]
+    # join_by sorts the output along the key
+    csv_data = join_by('subject_id', csv_data, csv_data2,
+                       usemask=False, asrecarray=True)[:n_subjects]
     if get_anats:
         anats = files[-n_subjects:]
         files = files[:-n_subjects]
