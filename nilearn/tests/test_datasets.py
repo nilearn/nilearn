@@ -371,9 +371,10 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_equal(len(dataset.cmaps), 20)
+    assert_equal(dataset.ext_vars.size, 20)
 
     # Multiple contrasts
     dataset = datasets.fetch_localizer_contrasts(
