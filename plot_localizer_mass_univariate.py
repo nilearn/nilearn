@@ -33,8 +33,8 @@ fmri_masked = nifti_masker.fit_transform(dataset_files.cmaps)
 tested_var = np.ones((n_samples, 1), dtype=float)  # intercept
 neg_log_pvals, all_scores, h0 = permuted_ols(
     tested_var, fmri_masked, model_intercept=False,
-    n_perm=1000,
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals))
 
