@@ -421,8 +421,8 @@ def _to_voxel_level_scale(perm_lot_results, perm_lot_slice,
 def _univariate_analysis_on_chunk(n_perm, perm_chunk,
                                   tested_vars, target_vars,
                                   confounding_vars=None, lost_dof=0,
-                                  intercept_test=True, two_sided_test=True,
-                                  sparsity_threshold=0.1, random_state=None):
+                                  intercept_test=True, sparsity_threshold=0.1,
+                                  random_state=None):
     """Perform part of the permutations of a massively univariate analysis.
 
     Parameters
@@ -457,12 +457,6 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise). See [1]
 
-    two_sided_test : boolean,
-      If True, performs an unsigned t-test. Both positive and negative
-      effects are considered; the null hypothesis is that the effect is zero.
-      If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative.
-
     sparsity_threshold: float,
       Approximate amount of sparsity that is desired when storing the scores
       of a massively univariate analysis.
@@ -496,8 +490,6 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
     if perm_chunk.start == 0:  # add original data results as permutation 0
         scores_original_data = t_score_with_covars_and_normalized_design(
             tested_vars, target_vars, confounding_vars)
-        if two_sided_test:
-            scores_original_data = np.fabs(scores_original_data)
         gs_array.append(0, scores_original_data)
         perm_chunk = slice(1, perm_chunk.stop)
 
@@ -530,7 +522,7 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
 def rpbi_core(tested_vars, target_vars,
               n_parcellations, parcellations_labels, n_parcels,
               confounding_vars=None, model_intercept=True, threshold=1e-04,
-              n_perm=1000, two_sided_test=True, random_state=None, n_jobs=0):
+              n_perm=1000, random_state=None, n_jobs=0):
     """Run RPBI from parcelled data.
 
     This is the core method for Randomized Parcellation Based Inference.
@@ -700,8 +692,7 @@ def rpbi_core(tested_vars, target_vars,
 def randomized_parcellation_based_inference(
     tested_vars, imaging_vars, mask, confounding_vars=None,
     model_intercept=True, n_parcellations=100, n_parcels=1000,
-    threshold='auto', n_perm=1000, two_sided_test=True,
-    random_state=None, n_jobs=-1, verbose=True):
+    threshold='auto', n_perm=1000, random_state=None, n_jobs=-1, verbose=True):
     """Perform Randomized Parcellation Base Inference on a dataset.
 
     1. Randomized parcellation are built.
@@ -775,7 +766,7 @@ def randomized_parcellation_based_inference(
         tested_vars, parcelled_imaging_vars,
         n_parcellations, parcellations_labels, n_parcels,
         confounding_vars=confounding_vars, model_intercept=model_intercept,
-        threshold=threshold, n_perm=n_perm, two_sided_test=two_sided_test,
+        threshold=threshold, n_perm=n_perm,
         random_state=random_state, n_jobs=n_jobs)
 
     return neg_log_pvals, h0, counting_stat_original_data, parcelled_imaging_vars, parcellations_labels
