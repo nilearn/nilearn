@@ -53,6 +53,7 @@ def orthonormalize_matrix(m, tol=1.e-12):
     """ Orthonormalize a matrix.
 
     Uses a Singular Value Decomposition.
+    If the input matrix is rank-deficient, then its shape is cropped.
 
     Parameters
     ----------
@@ -69,11 +70,11 @@ def orthonormalize_matrix(m, tol=1.e-12):
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
     ...     orthonormalize_matrix)
-    >>> X = np.array([[1, 0], [0, 1], [1, 1]])
+    >>> X = np.array([[1, 2], [0, 1], [1, 1]])
     >>> orthonormalize_matrix(X)
-    array([[ -4.08248290e-01,   7.07106781e-01],
-           [ -4.08248290e-01,  -7.07106781e-01],
-           [ -8.16496581e-01,  -1.11022302e-16]])
+    array([[-0.81049889, -0.0987837 ],
+           [-0.31970025, -0.75130448],
+           [-0.49079864,  0.65252078]])
     >>> X = np.array([[0, 1], [4, 0]])
     >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
@@ -85,71 +86,71 @@ def orthonormalize_matrix(m, tol=1.e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def f_score(vars1, vars2, covars=None, lost_dof=0,
-             normalized_design=True):
-    """Compute F-score associated with the regression of vars2 against vars1
+# def f_score(vars1, vars2, covars=None, lost_dof=0,
+#              normalized_design=True):
+#     """Compute F-score associated with the regression of vars2 against vars1
 
-    Covariates are taken into account (if not None).
-    The normalized_design case corresponds to the following assumptions:
-    - vars1 and vars2 are normalized
-    - covars are orthonormalized
-    - vars1 and covars are orthogonal (np.dot(vars1.T, covars) == 0)
+#     Covariates are taken into account (if not None).
+#     The normalized_design case corresponds to the following assumptions:
+#     - vars1 and vars2 are normalized
+#     - covars are orthonormalized
+#     - vars1 and covars are orthogonal (np.dot(vars1.T, covars) == 0)
 
-    Parameters
-    ----------
-    vars1: array-like, shape=(n_samples, n_var1)
-      Explanatory variates
-    vars2: array-like, shape=(n_samples, n_var2)
-      Targets variates. F-ordered for efficient computation.
-    covars, array-like, shape=(n_samples, n_covars) or None
-      Confounding variates.
-    lost_dof: int, >= 0
-      Lost degrees of freedom
-    normalized_design: bool,
-      Specify whether the variates have been normalized and orthogonalized
-      with respect to each other. In such a case, the computation is simpler
-      and a lot more efficient.
+#     Parameters
+#     ----------
+#     vars1: array-like, shape=(n_samples, n_var1)
+#       Explanatory variates
+#     vars2: array-like, shape=(n_samples, n_var2)
+#       Targets variates. F-ordered for efficient computation.
+#     covars, array-like, shape=(n_samples, n_covars) or None
+#       Confounding variates.
+#     lost_dof: int, >= 0
+#       Lost degrees of freedom
+#     normalized_design: bool,
+#       Specify whether the variates have been normalized and orthogonalized
+#       with respect to each other. In such a case, the computation is simpler
+#       and a lot more efficient.
 
-    Returns
-    -------
-    score: numpy.ndarray, shape=(n_var2, n_var1)
-      F-scores associated with the tests of each explanatory variate against
-      each target variate (in the presence of covars).
+#     Returns
+#     -------
+#     score: numpy.ndarray, shape=(n_var2, n_var1)
+#       F-scores associated with the tests of each explanatory variate against
+#       each target variate (in the presence of covars).
 
-    """
-    if not normalized_design:  # not efficient, added for code exhaustivity
-        # normalize variates
-        vars1_normalized = normalize_matrix_on_axis(vars1)
-        vars2_normalized = normalize_matrix_on_axis(vars2)
-        if covars is not None:
-            # orthonormalize covariates
-            covars_orthonormed = orthonormalize_matrix(covars)
-            updated_lost_dof = covars_orthonormed.shape[1]
-            # orthogonalize vars1 with respect to covars
-            beta_vars1_covars = np.dot(
-                vars1_normalized.T, covars_orthonormed)
-            vars1_resid_covars = vars1_normalized.T - np.dot(
-                beta_vars1_covars, covars_orthonormed.T)
-            vars1_normalized = normalize_matrix_on_axis(
-                vars1_resid_covars, axis=1).T
-        else:
-            covars_orthonormed = None
-            updated_lost_dof = 0
-        return f_score(vars1_normalized, vars2_normalized, covars_orthonormed,
-                        updated_lost_dof, normalized_design=True)
-    else:  # efficient, should be used everytime with permuted OLS
-        dof = vars2.shape[0] - 1 - lost_dof
-        beta_vars2_vars1 = np.dot(vars2.T, vars1)
-        b2 = beta_vars2_vars1 ** 2
-        if covars is None:
-            rss = (1 - b2)
-        else:
-            beta_vars2_covars = np.dot(vars2.T, covars)
-            a2 = np.sum(beta_vars2_covars ** 2, 1)
-            rss = (1 - a2[:, np.newaxis] - b2)
-        score = b2 / rss
-        score *= dof
-        return np.asfortranarray(score)
+#     """
+#     if not normalized_design:  # not efficient, added for code exhaustivity
+#         # normalize variates
+#         vars1_normalized = normalize_matrix_on_axis(vars1)
+#         vars2_normalized = normalize_matrix_on_axis(vars2)
+#         if covars is not None:
+#             # orthonormalize covariates
+#             covars_orthonormed = orthonormalize_matrix(covars)
+#             updated_lost_dof = covars_orthonormed.shape[1]
+#             # orthogonalize vars1 with respect to covars
+#             beta_vars1_covars = np.dot(
+#                 vars1_normalized.T, covars_orthonormed)
+#             vars1_resid_covars = vars1_normalized.T - np.dot(
+#                 beta_vars1_covars, covars_orthonormed.T)
+#             vars1_normalized = normalize_matrix_on_axis(
+#                 vars1_resid_covars, axis=1).T
+#         else:
+#             covars_orthonormed = None
+#             updated_lost_dof = 0
+#         return f_score(vars1_normalized, vars2_normalized, covars_orthonormed,
+#                         updated_lost_dof, normalized_design=True)
+#     else:  # efficient, should be used everytime with permuted OLS
+#         dof = vars2.shape[0] - 1 - lost_dof
+#         beta_vars2_vars1 = np.dot(vars2.T, vars1)
+#         b2 = beta_vars2_vars1 ** 2
+#         if covars is None:
+#             rss = (1 - b2)
+#         else:
+#             beta_vars2_covars = np.dot(vars2.T, covars)
+#             a2 = np.sum(beta_vars2_covars ** 2, 1)
+#             rss = (1 - a2[:, np.newaxis] - b2)
+#         score = b2 / rss
+#         score *= dof
+#         return np.asfortranarray(score)
 
 
 def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
@@ -203,3 +204,49 @@ def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
                              targetvars_resid_covars.T,
                              covars_orthonormed, lost_dof)
     return orthogonalized_design
+
+
+def t_score_with_covars_and_normalized_design(tested_vars, target_vars,
+                                               covars_orthonormalized=None):
+    """t-score in the regression of tested variates against target variates
+
+    Covariates are taken into account (if not None).
+    The normalized_design case corresponds to the following assumptions:
+    - tested_vars and target_vars are normalized
+    - covars_orthonormalized are orthonormalized
+    - tested_vars and covars_orthonormalized are orthogonal
+      (np.dot(tested_vars.T, covars) == 0)
+
+    Parameters
+    ----------
+    tested_vars : array-like, shape=(n_samples, n_tested_vars)
+      Explanatory variates.
+
+    target_vars : array-like, shape=(n_samples, n_target_vars)
+      Targets variates. F-ordered is better for efficient computation.
+
+    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None
+      Confounding variates.
+
+    Returns
+    -------
+    score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
+      t-scores associated with the tests of each explanatory variate against
+      each target variate (in the presence of covars).
+
+    """
+    if covars_orthonormalized is None:
+        lost_dof = 0
+    else:
+        lost_dof = covars_orthonormalized.shape[1]
+    # Tested variates are fitted independently,
+    # so lost_dof is unrelated to n_tested_vars.
+    dof = target_vars.shape[0] - lost_dof
+    beta_targetvars_testedvars = np.dot(target_vars.T, tested_vars)
+    if covars_orthonormalized is None:
+        rss = (1 - beta_targetvars_testedvars ** 2)
+    else:
+        beta_targetvars_covars = np.dot(target_vars.T, covars_orthonormalized)
+        a2 = np.sum(beta_targetvars_covars ** 2, 1)
+        rss = (1 - a2[:, np.newaxis] - beta_targetvars_testedvars ** 2)
+    return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
