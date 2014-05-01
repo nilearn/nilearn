@@ -6,6 +6,20 @@ from nose.tools import assert_equal, assert_raises, assert_false, \
     assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
+try:
+    from sklearn.utils.testing import assert_warns
+except ImportError:
+    # New in scikit-learn 0.14
+
+    # We implement a poor-man's version
+    import warnings
+    def assert_warns(warning_class, func, *args, **kw):
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("ignore", warning_class)
+            output = func(*args, **kw)
+        return output
+
+
 # The following import is not compliant with backward compatibility
 # requirements to sklearn
 # from sklearn.utils.testing import assert_raise_message
@@ -329,3 +343,63 @@ def test_resampling_result_axis_permutation():
 
         assert_array_almost_equal(resampled_data,
                                   what_resampled_data_should_be)
+
+
+def test_resampling_nan():
+    # Test that when the data has NaNs they do propagate to the
+    # whole image
+
+    for core_shape in [(3, 5, 4), (3, 5, 4, 2)]:
+        # create deterministic data, padded with one
+        # voxel thickness of zeros
+        core_data = np.arange(np.prod(core_shape)
+                        ).reshape(core_shape).astype(np.float)
+        # Introduce a nan
+        core_data[2, 2:4, 1] = np.nan
+        full_data_shape = np.array(core_shape) + 2
+        full_data = np.zeros(full_data_shape)
+        full_data[[slice(1, 1 + s) for s in core_shape]] = core_data
+
+        source_img = Nifti1Image(full_data, np.eye(4))
+
+        # Transform real data using easily checkable transformations
+        # For now: axis permutations
+        axis_permutation = [0, 1, 2]
+
+        # check 3x3 transformation matrix
+        target_affine = np.eye(3)[axis_permutation]
+        resampled_img = assert_warns(RuntimeWarning, resample_img, source_img,
+                                    target_affine=target_affine)
+
+        resampled_data = resampled_img.get_data()
+        if full_data.ndim == 4:
+            axis_permutation.append(3)
+        what_resampled_data_should_be = full_data.transpose(axis_permutation)
+        non_nan = np.isfinite(what_resampled_data_should_be)
+
+        # Check that the input data hasn't been modified:
+        assert_false(np.all(non_nan))
+
+        # Check that for finite value resampling works without problems
+        assert_array_almost_equal(resampled_data[non_nan],
+                                  what_resampled_data_should_be[non_nan])
+
+        # Check that what was not finite is still not finite
+        assert_false(np.any(np.isfinite(
+                        resampled_data[np.logical_not(non_nan)]
+                     )))
+
+
+    # Test with an actual resampling, in the case of a bigish hole
+    # This checks the extrapolation mechanism: if we don't do any
+    # extrapolation before resampling, the hole creates big
+    # artefacts
+    data = 10 * np.ones((10, 10, 10))
+    data[4:6, 4:6, 4:6] = np.nan
+    source_img = Nifti1Image(data, 2 * np.eye(4))
+    resampled_img = assert_warns(RuntimeWarning, resample_img, source_img,
+                                 target_affine=np.eye(4))
+
+    resampled_data = resampled_img.get_data()
+    np.testing.assert_allclose(10,
+                resampled_data[np.isfinite(resampled_data)])

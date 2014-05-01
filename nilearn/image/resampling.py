@@ -4,6 +4,7 @@ Utilities to resample a Nifti Image
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
 
+import warnings
 
 import numpy as np
 from scipy import ndimage, linalg
@@ -165,17 +166,20 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     Notes
     =====
-    If a 4x4 transformation matrix (target_affine) is given and all of the 
-    transformed data points have a negative voxel index along one of the 
-    axis, then none of the data will be visible in the transformed image 
+
+    **BoundingBoxError**
+    If a 4x4 transformation matrix (target_affine) is given and all of the
+    transformed data points have a negative voxel index along one of the
+    axis, then none of the data will be visible in the transformed image
     and a BoundingBoxError will be raised.
 
     If a 4x4 transformation matrix (target_affine) is given and no target
-    shape is provided, the resulting image will have voxel coordinate 
+    shape is provided, the resulting image will have voxel coordinate
     (0, 0, 0) in the affine offset (4th column of target affine) and will
     extend far enough to contain all the visible data and a margin of one
     voxel.
 
+    **3x3 transformation matrices**
     If a 3x3 transformation matrix is given as target_affine, it will be
     assumed to represent the three coordinate axes of the target space. In
     this case the affine offset (4th column of a 4x4 transformation matrix)
@@ -185,9 +189,13 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
     In certain cases one may want to obtain a transformed image with the
     closest bounding box around the data, which at the same time respects
-    a voxel grid defined by a 4x4 affine transformation matrix. In this 
+    a voxel grid defined by a 4x4 affine transformation matrix. In this
     case, one resamples the image using this function given the target
     affine and no target shape. One then uses crop_img on the result.
+
+    **NaNs and infinite values**
+    This function handles gracefully NaNs and infinite values in the input
+    data, however they make the execution of the function much slower.
     """
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -309,14 +317,71 @@ def resample_img(niimg, target_affine=None, target_shape=None,
 
         for ind in np.ndindex(*other_shape):
             img = data[all_img + ind]
+            if img.dtype.kind in ('i', 'u'):
+                # Integers are always finite
+                has_not_finite = False
+            else:
+                not_finite = np.logical_not(np.isfinite(img))
+                has_not_finite = np.any(not_finite)
+            if has_not_finite:
+                warnings.warn("NaNs or infinite values are present in the "
+                            "data passed to resample. This is a bad thing "
+                            "as they make resampling ill-defined and much "
+                            "slower.", RuntimeWarning, stacklevel=2)
+                if not input_niimg_is_string:
+                    # We need to do a copy to avoid modifying the input
+                    # array
+                    img = img.copy()
+                from ..masking import _extrapolate_out_mask
+                img = _extrapolate_out_mask(img, np.logical_not(not_finite),
+                                            iterations=2)[0]
+
+            # The resampling itself
             resampled_data[all_img + ind] = \
                                    ndimage.affine_transform(img, A,
                                                     offset=np.dot(A_inv, b),
                                                     output_shape=target_shape,
                                                     order=interpolation_order)
+            if has_not_finite:
+                # We need to resample the mask of not_finite values
+                not_finite = ndimage.affine_transform(not_finite, A,
+                                                    offset=np.dot(A_inv, b),
+                                                    output_shape=target_shape,
+                                                    order=0)
+                this_slice = resampled_data[all_img + ind]
+                this_slice[not_finite] = np.nan
     else:
+        if data.dtype.kind in ('i', 'u'):
+            # Integers are always finite
+            has_not_finite = False
+        else:
+            not_finite = np.logical_not(np.isfinite(data))
+            has_not_finite = np.any(not_finite)
+        if has_not_finite:
+            warnings.warn("NaNs or infinite values are present in the data "
+                          "passed to resample. This is a bad thing as they "
+                          "make resampling ill-defined and much slower.",
+                          RuntimeWarning, stacklevel=2)
+            if not input_niimg_is_string:
+                # We need to do a copy to avoid modifying the input
+                # array
+                data = data.copy()
+            #data[not_finite] = 0
+            from ..masking import _extrapolate_out_mask
+            data = _extrapolate_out_mask(data, np.logical_not(not_finite),
+                                         iterations=2)[0]
+
+        # The resampling itself
         resampled_data = ndimage.affine_transform(data, A,
                                                   offset=np.dot(A_inv, b),
                                                   output_shape=target_shape,
                                                   order=interpolation_order)
+        if has_not_finite:
+            # We need to resample the mask of not_finite values
+            not_finite = ndimage.affine_transform(not_finite, A,
+                                                offset=np.dot(A_inv, b),
+                                                output_shape=target_shape,
+                                                order=0)
+            resampled_data[not_finite] = np.nan
+
     return Nifti1Image(resampled_data, target_affine)
