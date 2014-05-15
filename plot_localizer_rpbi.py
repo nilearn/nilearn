@@ -6,12 +6,8 @@ A permuted Ordinary Least Squares algorithm is run at each voxel in
 order to determine which voxels are specifically active when a healthy subject
 performs a computation task as opposed to a sentence reading task.
 
-The example shows the small differences that exist between
-Bonferroni-corrected p-values and family-wise corrected p-values obtained
-from a permutation test combined with a max-type procedure.
-Bonferroni correction is a bit conservative, as it detects less significant
-voxels than the non-parametric, exact permutation test.
-
+Randomized Parcellation Based Inference [1] is also used so as to illustrate
+that it conveys more sensitivity.
 
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Mar. 2014
@@ -44,11 +40,12 @@ neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 n_parcellations = 100
 n_parcels = 1000
 #fmri_masked_normalized = fmri_masked - fmri_masked.mean(0)
-neg_log_pvals_rpbi, a, b, c, d = randomized_parcellation_based_inference(
+neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     tested_var, fmri_masked,
     np.asarray(nifti_masker.mask_img_.get_data()).astype(bool),
     n_parcellations=n_parcellations, n_parcels=n_parcels,
-    threshold='auto', n_perm=1000, random_state=0, n_jobs=-1, verbose=True)
+    threshold='auto', n_perm=1000,
+    random_state=0, memory='nilearn_cache', n_jobs=-1, verbose=True)
 neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_rpbi))
 
@@ -81,13 +78,14 @@ ax.axis('off')
 
 # Plot RPBI p-values map
 ax = grid[1]
-p_ma = np.ma.masked_less(neg_log_pvals_rpbi_unmasked.get_data(), vmin)
+masked_pvals = np.ma.masked_less(neg_log_pvals_rpbi_unmasked.get_data(), vmin)
 ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
           interpolation='nearest', cmap=plt.cm.gray)
 ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(RPBI)'
-             + '\n\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
+             + '\n\n%d detections'
+             % (~masked_pvals.mask[..., picked_slice]).sum())
 ax.axis('off')
 
 grid[0].cax.colorbar(im)

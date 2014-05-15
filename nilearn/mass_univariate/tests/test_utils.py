@@ -3,7 +3,7 @@ from sklearn.utils import check_random_state
 from numpy.testing import assert_array_almost_equal
 
 from nilearn.mass_univariate.utils import (
-    orthonormalize_matrix, t_score_with_covars_and_normalized_design,)
+    orthonormalize_matrix, t_score_with_covars_and_normalized_design)
 
 
 def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):

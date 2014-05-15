@@ -3,18 +3,20 @@ Randomized Parcellation Based Inference
 
 """
 # Authors: Virgile Fritsch <virgile.fritsch@inria.fr>, feb. 2014
-#          Benoit Da Mota <damota.benoit@gmail.com>, jun. 2013
+#          Benoit Da Mota, jun. 2013
 import warnings
 import numpy as np
 from scipy import stats
 import scipy.sparse as sps
 import sklearn.externals.joblib as joblib
+from sklearn.externals.joblib import Memory
 from sklearn.utils import gen_even_slices, check_random_state
 from sklearn.preprocessing import binarize
 
 from nilearn._utils.cache_mixin import cache
-from .utils import (orthogonalize_design,
-                    t_score_with_covars_and_normalized_design)
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn.mass_univariate.utils import (
+    orthogonalize_design, t_score_with_covars_and_normalized_design)
 
 
 ### GrowableSparseArray data structure ########################################
@@ -26,7 +28,8 @@ class GrowableSparseArray(object):
 
     GrowableSparseArray can be seen as a three-dimensional array that contains
     scores associated with three position indices corresponding to
-    (i) an iteration (or estimation), (ii) a test variate and
+    (i) an iteration (or estimation),
+    (ii) a test variate,
     (iii) a target variate.
     Memory is pre-allocated to store a large number of scores. The structure
     can be indexed efficiently according to three dimensions to add new
@@ -40,10 +43,13 @@ class GrowableSparseArray(object):
     ----------
     n_elts: int
       The total number of scores actually stored into the data structure
+
     n_iter: int
       Number of trials (using as many iterators)
+
     max_elts: int
       Maximum number of scores that can be stored into the structure
+
     data: array-like, own-designed dtype
       The actual scores corresponding to all the estimations.
       dtype is built so that every score is associated with three position
@@ -52,9 +58,11 @@ class GrowableSparseArray(object):
       (i) an iteration (or an estimator) ('iter_id'),
       (ii) a test variate ('x_id') and
       (iii) a target variate ('y_id').
+
     sizes: array-like, shape=(n_iter, )
       The number of scores stored for each estimation.
       Useful to select a range of values from iteration ids.
+
     threshold: float,
       Sparsity threshold used to discard scores that are to low to have a
       chance to correspond to a maximum value amongst all the scores of
@@ -138,14 +146,15 @@ class GrowableSparseArray(object):
         ----------
         iter_id: int,
           ID of the estimation we are inserting into the structure
+
         iter_data: array-like, shape=(n_targets_chunk, n_regressors)
           Scores corresponding to the iteration chunk to be inserted into
           the data structure.
 
         """
-        # we only store float32 to save space
+        # store scores as float32 to save space
         iter_data = iter_data.astype('float32')
-        # we sparsify the matrix wrt. threshold using coordinates list
+        # sparsify the matrix with respect to threshold using coordinates list
         y_idx, x_idx = (iter_data >= self.threshold).nonzero()
         score_size = len(x_idx)
         if score_size == 0:  # early return if nothing to add
@@ -187,7 +196,15 @@ from sklearn.cluster import WardAgglomeration
 
 def _ward_fit_transform(all_subjects_data, fit_samples_indices,
                         connectivity, n_parcels, offset_labels):
-    """Ward clustering algorithm on a subsample and transform the whole dataset
+    """Ward clustering algorithm on a subsample and apply to the whole dataset.
+
+    Computes a brain parcellation using Ward's clustering algorithm on some
+    images, then averages the signal within parcels in order to reduce the
+    dimension of the images of the whole dataset.
+    This function is used with Randomized Parcellation Based Inference, so we
+    need to save the labels to further perform the inverse transformation.
+    In that context, and for technical reasons, the labels have to be unique
+    across parcellations.
 
     Parameters
     ----------
@@ -218,16 +235,19 @@ def _ward_fit_transform(all_subjects_data, fit_samples_indices,
       Labels giving the correspondance between voxels and parcels.
 
     """
+    # fit part
     data_fit = all_subjects_data[fit_samples_indices]
     ward = WardAgglomeration(n_clusters=n_parcels, connectivity=connectivity)
     ward.fit(data_fit)
+    # transform part
     labels = ward.labels_ + offset_labels  # unique labels across parcellations
     parcelled_data = ward.transform(all_subjects_data)
     return parcelled_data, labels
 
 
-def _build_parcellations(all_subjects_data, mask, n_wards=100, n_parcels=1000,
-                         n_bootstrap_samples=None, random_state=None,
+def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
+                         n_parcels=1000, n_bootstrap_samples=None,
+                         random_state=None, memory=Memory(cachedir=None),
                          n_jobs=1):
     """Build the parcellations for the RPBI framework.
 
@@ -240,7 +260,7 @@ def _build_parcellations(all_subjects_data, mask, n_wards=100, n_parcels=1000,
       Mask that has been applied on the initial images to obtain
       `all_subjects_data`.
 
-    n_wards: int,
+    n_parcellations: int,
       The number of parcellations to be built and used to extract
       signal averages from the data.
 
@@ -255,6 +275,11 @@ def _build_parcellations(all_subjects_data, mask, n_wards=100, n_parcels=1000,
 
     random_state: int,
       Random numbers seed for reproducible results.
+
+    memory : instance of joblib.Memory or string
+      Used to cache the masking process.
+      By default, no caching is done. If a string is given, it is the
+      path to the caching directory.
 
     n_jobs: int,
       Number of parallel workers.
@@ -275,7 +300,7 @@ def _build_parcellations(all_subjects_data, mask, n_wards=100, n_parcels=1000,
     TODO
     ----
     - Deal with NaNs in the original data (WardAgglomeration cannot fit
-      when NaNs are present in the data).
+      when NaNs are present in the data). Median imputation?
 
     """
     # initialize the seed of the random generator
@@ -298,12 +323,12 @@ def _build_parcellations(all_subjects_data, mask, n_wards=100, n_parcels=1000,
         n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask)
 
     # Build parcellations
-    draw = rng.randint(
-        n_samples, size=n_bootstrap_samples * n_wards).reshape((n_wards, -1))
+    draw = rng.randint(n_samples, size=n_bootstrap_samples * n_parcellations)
+    draw = draw.reshape((n_parcellations, -1))
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(
-            cache(_ward_fit_transform, 'nilearn_cache'))
+            cache(_ward_fit_transform, memory))
           (all_subjects_data, draw[i], connectivity, n_parcels, i * n_parcels)
-          for i in range(n_wards))
+          for i in range(n_parcellations))
     # reduce results
     parcelled_data_parts, ward_labels = zip(*ret)
     parcelled_data = np.hstack((parcelled_data_parts))
@@ -314,18 +339,39 @@ def _build_parcellations(all_subjects_data, mask, n_wards=100, n_parcels=1000,
 
 ### Routines for RPBI #########################################################
 def max_csr(csr_matrix, n_x):
-    """Fast computation of the max along each row of a CSR matrix.
+    """Fast computation of the maximum value along each row of a CSR matrix.
+
+    Consecutive rows can be grouped in blocks each containing the same number
+    of rows. Thus, the function can be used to compute the maximum values
+    from groups of rows.
 
     Parameters
     ----------
     csr_matrix: scipy.sparse.csr matrix
-      The matrix from which to compute each line's max.
+      The matrix from which to compute each line's maximum value.
+
+    n_x: int,
+      Size of the blocks of rows in case some rows should be grouped before
+      the maximum value in each block is computed.
+      `csr_matrix.shape[1]` has to be a multiple of `n_x`.
 
     Returns
     -------
     res: array-like, shape=(n_rows, )
       Max value of each row of the input CSR matrix.
-      Empty lines will have a 0 max.
+      Empty lines will have a maximum set to 0.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy import sparse
+    >>> from nilearn.mass_univariate.rpbi import max_csr
+    >>> max_csr(sparse.eye(5).tocsr(), 1)
+    array([ 1.,  1.,  1.,  1.,  1.])
+    >>> max_csr(sparse.dia_matrix(np.diag(np.arange(6))).tocsr(), 1)
+    array([ 0.,  1.,  2.,  3.,  4.,  5.])
+    >>> max_csr(sparse.dia_matrix(np.diag(np.arange(6))).tocsr(), 2)
+    array([ 1.,  3.,  5.])
 
     """
     res = np.zeros(csr_matrix.shape[0] / n_x)
@@ -334,7 +380,7 @@ def max_csr(csr_matrix, n_x):
 
     # We use csr_mat.indptr to adress csr_mat.data.
     # csr_mat.indptr gives the offset to adress each row of the matrix.
-    # The complex syntax only aims at putting 0 as the max value
+    # The complex syntax only aims at putting 0s as the max value
     # for empty lines.
     res[np.diff(csr_matrix.indptr[::n_x]) != 0] = np.maximum.reduceat(
         csr_matrix.data,
@@ -342,16 +388,27 @@ def max_csr(csr_matrix, n_x):
     return res
 
 
-def _to_voxel_level_scale(perm_lot_results, perm_lot_slice,
-                          n_regressors, parcellation_masks, n_parcellations,
-                          n_parcels_all_parcellations):
-    """Put back parcel-level analysis results at the voxel level.
+def _compute_counting_statistic_from_parcel_level_scores(
+    perm_lot_results, perm_lot_slice, n_regressors, parcellation_masks,
+    n_parcellations, n_parcels_all_parcellations):
+    """Transform scores at the voxel level and sum them up across parcellations
 
-    This function performs an inverse transform operation on a bunch
-    of scores that correspond to a predefined range of permutations.
-    The idea is that different bunches can be treated in simultaneously by
-    different workers and that the results can be efficiently combined
-    subsequently.
+    This function performs an inverse transform operation on
+    parcel-level scores so as to put them back at the voxel level. The
+    parcel-level scores may come from various parcellations (all
+    values are concatenated along the second axis). In that case, the
+    resulting voxel-level values are summed across parcellation to
+    obtain the so-called 'counting statistic' that is used in
+    Randomized Parcellation Based Inference.
+
+    As for Randomized Parcellation Based Inference, various
+    permutations can be processed simultaneously by the function
+    (defined by the `perm_lot_slice` argument), yielding as many
+    counting statistic values as needed for the permutation test. The
+    statistics obtained for the original, non-permuted data can be
+    separated from the "null hypothesis statistics" because they
+    correspond to permutation no. 0.  This information is retrieved
+    from the `perm_lot_slice` argument.
 
     Parameters
     ----------
@@ -369,7 +426,7 @@ def _to_voxel_level_scale(perm_lot_results, perm_lot_slice,
       univariate analysis. It corresponds to the 'x_id' dimension/entry
       of the GrowableSparseArray structure.
 
-    parcellation_masks: scipy.sparse.csc_matrix,
+    parcellation_masks: scipy.sparse.csc_matrix, shape=(n_parcels, n_voxels)
       Correspondance between the 3D-image voxels and the labels of the
       parcels of every parcellation. The mapping is encoded as a
       sparse matrix containing binary values: "1" indicates a correspondance
@@ -384,13 +441,13 @@ def _to_voxel_level_scale(perm_lot_results, perm_lot_slice,
 
     Returns
     -------
-    original_scores: np.ndarray, shape=(n_voxels, n_regressors)
-      Scores obtained in the parcel-based analysis of the original data,
-      mapped back at the voxel level.
+    counting_stats_original_data: np.ndarray, shape=(n_regressors, n_voxels)
+      Counting statistics corresponding to the original data.
 
     h0_samples: np.ndarray, shape=(n_perm, n_regressors)
-      Scores obtained in the parcel-based analyses of the permuted data,
-      mapped back at the voxel level.
+      Counting statistics corresponding to the permuted data.
+      Contains only the maximum value of the counting statistic across voxel
+      for each permutation/regressor pair.
 
     """
     n_perm_in_perm_lot = perm_lot_slice.stop - perm_lot_slice.start
@@ -408,14 +465,14 @@ def _to_voxel_level_scale(perm_lot_results, perm_lot_slice,
 
     # Get counting statistic for original data and construct (a part of) H0
     if perm_lot_slice.start == 0:  # perm 0 of perm_lot 0 contains orig scores
-        original_scores = np.asarray(
+        counting_stats_original_data = np.asarray(
             counting_statistic[:n_regressors].todense())
         h0_samples = max_csr(counting_statistic[n_regressors:], n_regressors)
-    else:  # all perm_lots but no. 0 contain scores obtained under the null
-        original_scores = []
+    else:  # all perm_lot but no. 0 only contain scores obtained under the null
+        counting_stats_original_data = []
         h0_samples = max_csr(counting_statistic, n_regressors)
 
-    return original_scores, h0_samples
+    return counting_stats_original_data, h0_samples
 
 
 def _univariate_analysis_on_chunk(n_perm, perm_chunk,
@@ -424,6 +481,14 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
                                   intercept_test=True, sparsity_threshold=0.1,
                                   random_state=None):
     """Perform part of the permutations of a massively univariate analysis.
+
+    In the context of RPBI, we choose to split the chunks on permutations,
+    i.e. each chunk will perform a part of the total amount of permutations
+    but processes the whole data.
+    This is the converse in the permuted OLS approach. The reason for the
+    choice here is that we use the GrowableSparseArray structure, that is
+    filled efficiently by appending the complete range of values corresponding
+    to a given permutation in-a-row.
 
     Parameters
     ----------
@@ -436,7 +501,7 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
       to provide the number of permutations as well as their offset regarding
       the total number of permutations performed by paralell workers.
 
-    tested_vars: array-like, shape=(n_samples, n_regressors),
+    tested_vars: array-like, shape=(n_samples, n_tested_vars),
       Explanatory variates, fitted and tested independently from each others.
 
     target_vars: array-like, shape=(n_samples, n_parcels_tot)
@@ -470,6 +535,12 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
     random_state : int or None,
       Seed for random number generator, to have the same permutations
       in each computing units.
+
+    Returns
+    -------
+    gs_array: GrowableSparseArray,
+      Structure containing the (thresholded) scores corresponding to some
+      permutations, defined by `perm_chunk`.
 
     """
     # initialize the seed of the random generator
@@ -521,8 +592,8 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
 
 def rpbi_core(tested_vars, target_vars,
               n_parcellations, parcellations_labels, n_parcels,
-              confounding_vars=None, model_intercept=True, threshold=1e-04,
-              n_perm=1000, random_state=None, n_jobs=0):
+              confounding_vars=None, model_intercept=True, threshold=None,
+              n_perm=1000, random_state=None, n_jobs=1):
     """Run RPBI from parcelled data.
 
     This is the core method for Randomized Parcellation Based Inference.
@@ -571,9 +642,29 @@ def rpbi_core(tested_vars, target_vars,
       A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
       must be used.
 
+    Returns
+    -------
+    p-values: np.ndarray, shape=(n_tested_vars, n_voxels)
+      Negative log10 p-values associated with the significance test of the
+      n_regressors explanatory variates against the n_tested_vars target
+      variates, assessed with Randomized Parcellation Based Inference.
+      Family-wise corrected p-values (max-type procedure).
+
+    counting_stats_original_data: np.ndarray, shape=(n_tested_vars, n_voxels)
+      Counting statistic (i.e. RPBI score) associated with original
+      (non-permuted) data.
+
+    h0: np.ndarray, shape=(n_perm,)
+      Maximum value of the counting statistic (i.e. RPBI score)
+      across voxels obtained under each permutation of the original data.
+
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
+
+    # check threshold
+    if threshold is None:
+        threshold = 0.1 / n_parcels
 
     # check n_jobs (number of CPUs)
     if n_jobs == 0:  # invalid according to joblib's conventions
@@ -597,10 +688,10 @@ def rpbi_core(tested_vars, target_vars,
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
-    n_samples, n_regressors = tested_vars.shape
+    n_samples, n_tested_vars = tested_vars.shape
 
     # check if explanatory variates is intercept (constant) or not
-    if (n_regressors == 1 and np.unique(tested_vars).size == 1):
+    if (n_tested_vars == 1 and np.unique(tested_vars).size == 1):
         intercept_test = True
     else:
         intercept_test = False
@@ -638,7 +729,7 @@ def rpbi_core(tested_vars, target_vars,
          random_state=rng.random_integers(np.iinfo(np.int32).max))
         for perm_chunk in gen_even_slices(n_perm + 1, min(n_perm, n_jobs)))
     # reduce results
-    max_elts = int(n_regressors * n_descriptors
+    max_elts = int(n_tested_vars * n_descriptors
                    * np.sqrt(threshold) * (n_perm + 1))
     all_results = GrowableSparseArray(
         n_perm + 1, max_elts=max_elts,
@@ -671,28 +762,29 @@ def rpbi_core(tested_vars, target_vars,
         all_results.get_data()[perm_lots_cuts[i]:perm_lots_cuts[i + 1]]
         for i in xrange(perm_lots_cuts.size - 1)]
     # put back parcel-based scores to voxel-level scale
-    ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_to_voxel_level_scale)
-          (perm_lot, perm_lot_slice, n_regressors, parcellation_masks,
-           n_parcellations, n_parcels_all_parcellations)
-          for perm_lot, perm_lot_slice in zip(perm_lots, perm_lots_slices))
+    ret = joblib.Parallel(n_jobs=n_jobs)(
+        joblib.delayed(_compute_counting_statistic_from_parcel_level_scores)
+        (perm_lot, perm_lot_slice, n_tested_vars, parcellation_masks,
+         n_parcellations, n_parcels_all_parcellations)
+        for perm_lot, perm_lot_slice in zip(perm_lots, perm_lots_slices))
     # reduce results
-    counting_stat_original_data, h0 = zip(*ret)
-    counting_stat_original_data = counting_stat_original_data[0]
+    counting_stats_original_data, h0 = zip(*ret)
+    counting_stats_original_data = counting_stats_original_data[0]
     h0 = np.sort(np.concatenate(h0))
 
     ### Convert H1 to neg. log. p-values
     p_values = - np.log10(
-        (n_perm + 1 - np.searchsorted(h0, counting_stat_original_data))
+        (n_perm + 1 - np.searchsorted(h0, counting_stats_original_data))
         / float(n_perm + 1))
-    p_values = p_values.reshape((n_regressors, -1))
 
-    return p_values, counting_stat_original_data, h0
+    return p_values, counting_stats_original_data, h0
 
 
 def randomized_parcellation_based_inference(
     tested_vars, imaging_vars, mask, confounding_vars=None,
     model_intercept=True, n_parcellations=100, n_parcels=1000,
-    threshold='auto', n_perm=1000, random_state=None, n_jobs=-1, verbose=True):
+    threshold='auto', n_perm=1000, random_state=None,
+    memory=Memory(cachedir=None), n_jobs=1, verbose=True):
     """Perform Randomized Parcellation Base Inference on a dataset.
 
     1. Randomized parcellation are built.
@@ -737,6 +829,11 @@ def randomized_parcellation_based_inference(
     random_state: int,
       Random numbers seed for reproducible results.
 
+    memory : instance of joblib.Memory or string
+      Used to cache the masking process.
+      By default, no caching is done. If a string is given, it is the
+      path to the caching directory.
+
     n_jobs: int,
       Number of parallel workers. Default is 1.
       If 0 is provided, all CPUs are used.
@@ -746,27 +843,46 @@ def randomized_parcellation_based_inference(
     verbose: boolean,
       Activate verbose mode (default is False).
 
+    Returns
+    -------
+    neg_log_pvals: np.ndarray, shape=(n_tested_vars, n_voxels)
+      Negative log10 p-values associated with the significance test of the
+      n_regressors explanatory variates against the n_tested_vars target
+      variates, assessed with Randomized Parcellation Based Inference.
+      Family-wise corrected p-values (max-type procedure).
+
+    counting_stats_original_data: np.ndarray, shape=(n_tested_vars, n_voxels)
+      Counting statistic (i.e. RPBI score) associated with original
+      (non-permuted) data.
+
+    h0: np.ndarray, shape=(n_perm,)
+      Maximum value of the counting statistic (i.e. RPBI score)
+      across voxels obtained under each permutation of the original data.
+
     """
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
 
     ### Build parcellations
+    if not isinstance(mask, np.ndarray):
+        mask = check_niimg(mask)
+    mask = np.asarray(mask).astype(bool)
     if verbose:
         print "Build parcellations"
     parcelled_imaging_vars, parcellations_labels = _build_parcellations(
         imaging_vars, mask,
-        n_wards=n_parcellations, n_parcels=n_parcels,
-        random_state=random_state, n_jobs=n_jobs)
+        n_parcellations=n_parcellations, n_parcels=n_parcels,
+        random_state=random_state, memory=memory, n_jobs=n_jobs)
 
     ### Statistical inference
     if verbose:
         print "Statistical inference"
-    neg_log_pvals, counting_stat_original_data, h0 = rpbi_core(
+    neg_log_pvals, counting_stats_original_data, h0 = rpbi_core(
         tested_vars, parcelled_imaging_vars,
         n_parcellations, parcellations_labels, n_parcels,
         confounding_vars=confounding_vars, model_intercept=model_intercept,
         threshold=threshold, n_perm=n_perm,
         random_state=random_state, n_jobs=n_jobs)
 
-    return neg_log_pvals, h0, counting_stat_original_data, parcelled_imaging_vars, parcellations_labels
+    return neg_log_pvals, counting_stats_original_data, h0

@@ -54,7 +54,7 @@ for s in range(n_sessions):
         session_house_mask][0]
     grouped_conditions_encoded[2 * s + 1] = conditions_encoded[
         session_face_mask][0]
-
+1/0
 ### Perform massively univariate analysis with permuted OLS ###################
 # We use a two-sided t-test to compute p-values, but we keep trace of the
 # effect sign to add it back at the end and thus observe the signed effect
@@ -70,12 +70,14 @@ neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 ### Randomized Parcellation Based Inference ###################################
 n_parcellations = 100
 n_parcels = 1000
-neg_log_pvals_rpbi, a, b, c, d = randomized_parcellation_based_inference(
+neg_log_pvals_rpbi, a, b = randomized_parcellation_based_inference(
     grouped_conditions_encoded, grouped_fmri_masked,
     # + intercept as a covariate by default
     np.asarray(mask_img.get_data()).astype(bool),
     n_parcellations=n_parcellations, n_parcels=n_parcels,
-    threshold='auto', n_perm=1000, random_state=0, n_jobs=-1, verbose=True)
+    threshold='auto', n_perm=10000,
+    random_state=0,# memory='nilearn_cache',
+    n_jobs=1, verbose=True)
 neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_rpbi).get_data()
 
