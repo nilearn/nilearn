@@ -191,6 +191,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.mask_img_.get_affine()
         # Load data in memory
         self.mask_img_.get_data()
+        self.shape = self.mask_img_.shape
         return self
 
     def transform(self, niimgs, confounds=None):
