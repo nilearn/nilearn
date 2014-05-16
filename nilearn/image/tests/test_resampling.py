@@ -346,14 +346,14 @@ def test_resampling_result_axis_permutation():
 
 
 def test_resampling_nan():
-    # Test that when the data has NaNs they do propagate to the
+    # Test that when the data has NaNs they do not propagate to the
     # whole image
 
     for core_shape in [(3, 5, 4), (3, 5, 4, 2)]:
         # create deterministic data, padded with one
         # voxel thickness of zeros
         core_data = np.arange(np.prod(core_shape)
-                        ).reshape(core_shape).astype(np.float)
+                              ).reshape(core_shape).astype(np.float)
         # Introduce a nan
         core_data[2, 2:4, 1] = np.nan
         full_data_shape = np.array(core_shape) + 2
@@ -388,7 +388,6 @@ def test_resampling_nan():
         assert_false(np.any(np.isfinite(
                         resampled_data[np.logical_not(non_nan)]
                      )))
-
 
     # Test with an actual resampling, in the case of a bigish hole
     # This checks the extrapolation mechanism: if we don't do any
