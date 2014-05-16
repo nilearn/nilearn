@@ -127,6 +127,47 @@ class BoundingBoxError(ValueError):
     pass
 
 
+def _resample_one_img(data, A, A_inv, b, target_shape,
+                      interpolation_order, out, copy=True):
+    "Internal function for resample_img, do not use"
+    if data.dtype.kind in ('i', 'u'):
+        # Integers are always finite
+        has_not_finite = False
+    else:
+        not_finite = np.logical_not(np.isfinite(data))
+        has_not_finite = np.any(not_finite)
+    if has_not_finite:
+        warnings.warn("NaNs or infinite values are present in the data "
+                        "passed to resample. This is a bad thing as they "
+                        "make resampling ill-defined and much slower.",
+                        RuntimeWarning, stacklevel=2)
+        if copy:
+            # We need to do a copy to avoid modifying the input
+            # array
+            data = data.copy()
+        #data[not_finite] = 0
+        from ..masking import _extrapolate_out_mask
+        data = _extrapolate_out_mask(data, np.logical_not(not_finite),
+                                        iterations=2)[0]
+
+    # The resampling itself
+
+    ndimage.affine_transform(data, A,
+                             offset=np.dot(A_inv, b),
+                             output_shape=target_shape,
+                             output=out,
+                             order=interpolation_order)
+    if has_not_finite:
+        # We need to resample the mask of not_finite values
+        not_finite = ndimage.affine_transform(not_finite, A,
+                                            offset=np.dot(A_inv, b),
+                                            output_shape=target_shape,
+                                            order=0)
+        out[not_finite] = np.nan
+    return out
+
+
+
 def resample_img(niimg, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
     """Resample a Nifti image
@@ -316,72 +357,15 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         all_img = (slice(None), ) * 3
 
         for ind in np.ndindex(*other_shape):
-            img = data[all_img + ind]
-            if img.dtype.kind in ('i', 'u'):
-                # Integers are always finite
-                has_not_finite = False
-            else:
-                not_finite = np.logical_not(np.isfinite(img))
-                has_not_finite = np.any(not_finite)
-            if has_not_finite:
-                warnings.warn("NaNs or infinite values are present in the "
-                            "data passed to resample. This is a bad thing "
-                            "as they make resampling ill-defined and much "
-                            "slower.", RuntimeWarning, stacklevel=2)
-                if not input_niimg_is_string:
-                    # We need to do a copy to avoid modifying the input
-                    # array
-                    img = img.copy()
-                from ..masking import _extrapolate_out_mask
-                img = _extrapolate_out_mask(img, np.logical_not(not_finite),
-                                            iterations=2)[0]
-
-            # The resampling itself
-            resampled_data[all_img + ind] = \
-                                   ndimage.affine_transform(img, A,
-                                                    offset=np.dot(A_inv, b),
-                                                    output_shape=target_shape,
-                                                    order=interpolation_order)
-            if has_not_finite:
-                # We need to resample the mask of not_finite values
-                not_finite = ndimage.affine_transform(not_finite, A,
-                                                    offset=np.dot(A_inv, b),
-                                                    output_shape=target_shape,
-                                                    order=0)
-                this_slice = resampled_data[all_img + ind]
-                this_slice[not_finite] = np.nan
+            _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
+                      interpolation_order,
+                      out=resampled_data[all_img + ind],
+                      copy=not input_niimg_is_string)
     else:
-        if data.dtype.kind in ('i', 'u'):
-            # Integers are always finite
-            has_not_finite = False
-        else:
-            not_finite = np.logical_not(np.isfinite(data))
-            has_not_finite = np.any(not_finite)
-        if has_not_finite:
-            warnings.warn("NaNs or infinite values are present in the data "
-                          "passed to resample. This is a bad thing as they "
-                          "make resampling ill-defined and much slower.",
-                          RuntimeWarning, stacklevel=2)
-            if not input_niimg_is_string:
-                # We need to do a copy to avoid modifying the input
-                # array
-                data = data.copy()
-            #data[not_finite] = 0
-            from ..masking import _extrapolate_out_mask
-            data = _extrapolate_out_mask(data, np.logical_not(not_finite),
-                                         iterations=2)[0]
-
-        # The resampling itself
-        resampled_data = ndimage.affine_transform(data, A,
-                                                  offset=np.dot(A_inv, b),
-                                                  output_shape=target_shape,
-                                                  order=interpolation_order)
-        if has_not_finite:
-            # We need to resample the mask of not_finite values
-            not_finite = ndimage.affine_transform(not_finite, A,
-                                                offset=np.dot(A_inv, b),
-                                                output_shape=target_shape,
-                                                order=0)
-            resampled_data[not_finite] = np.nan
+        resampled_data = np.empty(target_shape, data.dtype)
+        _resample_one_img(data, A, A_inv, b, target_shape,
+                          interpolation_order,
+                          out=resampled_data,
+                          copy=not input_niimg_is_string)
 
     return Nifti1Image(resampled_data, target_affine)
