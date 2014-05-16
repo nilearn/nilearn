@@ -14,7 +14,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
-from ..input_data import MultiNiftiMasker, NiftiMapsMasker
+from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
@@ -208,7 +208,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             raise ValueError('Need one or more niimg as an entry, an '
                     'empty list was given.')
         # First, learn the mask
-        if not isinstance(self.mask, MultiNiftiMasker):
+        if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
             self.masker_ = MultiNiftiMasker(mask=self.mask,
                                             smoothing_fwhm=self.smoothing_fwhm,
                                             target_affine=self.target_affine,
