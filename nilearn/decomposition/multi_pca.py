@@ -202,6 +202,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             niimgs = [niimgs]
             # This is a very incomplete hack, as it won't work right for
             # single-subject list of 3D filenames
+        if len(niimgs) == 0:
+            # Common error that arises from a null glob. Capture
+            # it early and raise a helpful message
+            raise ValueError('Need one or more niimg as an entry, an '
+                    'empty list was given.')
         # First, learn the mask
         if not isinstance(self.mask, MultiNiftiMasker):
             self.masker_ = MultiNiftiMasker(mask=self.mask,
@@ -293,8 +298,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                         data.T, n_components=self.n_components)
             data = data.T
         else:
-            data = subject_pcas[0]
+            data, variance = subject_pcas
         self.components_ = data
+        self.variance_ = variance
         return self
 
     def transform(self, niimgs, confounds=None):
