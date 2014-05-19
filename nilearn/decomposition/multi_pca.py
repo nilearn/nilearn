@@ -99,7 +99,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    mask: filename, NiImage or MultiNiftiMasker instance, optional
+    mask: filename, Niimg, instance of NiftiMasker or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
@@ -240,15 +240,15 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'low_pass', 'high_pass',
                                't_r', 'memory', 'memory_level']:
+                our_param = getattr(self, param_name)
+                if our_param is None:
+                    # Default value
+                    continue
                 if getattr(self.masker_, param_name) is not None:
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
-                setattr(self.masker_, param_name,
-                        getattr(self, param_name))
-        if self.masker_.mask is None:
-            self.masker_.fit(niimgs)
-        else:
-            self.masker_.fit()
+                setattr(self.masker_, param_name, our_param)
+        self.masker_.fit(niimgs)
         self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(MultiNiftiMasker, self)
@@ -298,7 +298,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                         data.T, n_components=self.n_components)
             data = data.T
         else:
-            data, variance = subject_pcas
+            data = subject_pcas[0]
+            variance = subject_svd_vals[0]
         self.components_ = data
         self.variance_ = variance
         return self
