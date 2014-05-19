@@ -6,7 +6,7 @@ A permuted Ordinary Least Squares algorithm is run at each voxel in
 order to detemine whether or not it behaves differently under a "face
 viewing" condition and a "house viewing" condition.
 We consider the mean image per session and per condition.
-Otherwise, the observations could not be exchanged at random because
+Otherwise, the observations cannot be exchanged at random because
 a time dependance exists between observations within a same session
 (see [1] for more detailed explanations).
 
@@ -53,12 +53,13 @@ conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
 
 # We consider the mean image per session and per condition.
-# Otherwise, the observations could not be exchanged at random because
+# Otherwise, the observations cannot be exchanged at random because
 # a time dependance exists between observations within a same session.
 n_sessions = np.unique(sessions).size
 grouped_fmri_masked = np.empty((2 * n_sessions,  # two conditions per session
                                 fmri_masked.shape[1]))
 grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
+
 for s in range(n_sessions):
     session_mask = sessions[condition_mask] == s
     session_house_mask = np.logical_and(session_mask,
