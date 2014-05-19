@@ -10,7 +10,8 @@ from numpy.testing import (assert_equal, assert_array_equal,
 from sklearn.utils import check_random_state
 from nilearn.mass_univariate.rpbi import (
     GrowableSparseArray, _ward_fit_transform, _build_parcellations,
-    _compute_counting_statistic_from_parcel_level_scores, rpbi_core)
+    _compute_counting_statistic_from_parcel_level_scores, rpbi_core,
+    randomized_parcellation_based_inference)
 
 
 ### Tests for the GrowableSparseArray class ###################################
@@ -489,6 +490,83 @@ def test_rpbi_core_withcovars(random_state=0):
     assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_pvalues)
+    # h0
+    assert_equal(h0.shape, (9,))
+    assert_array_almost_equal(h0, np.zeros(9))
+
+
+def test_randomized_parcellation_based_inference(random_state=1):
+    """
+def randomized_parcellation_based_inference(
+    tested_vars, imaging_vars, mask, confounding_vars=None,
+    model_intercept=True, n_parcellations=100, n_parcels=1000,
+    threshold='auto', n_perm=1000, random_state=None,
+    memory=Memory(cachedir=None), n_jobs=1, verbose=True):
+    """
+    # check random state
+    rng = check_random_state(random_state)
+
+    # Generate toy data
+    # define data structure
+    shape = (5, 5, 5)
+    n_voxels = np.prod(shape)
+    mask = np.ones(shape, dtype=bool)
+    # data generation
+    data = np.zeros(shape)
+    data[1:3, 1:3, 1:3] = 1.
+    data = data.reshape((1, -1))
+    data = np.repeat(data, 8, 0)
+    # add noise to avoid constant columns
+    data += 0.1 * rng.randn(data.shape[0], data.shape[1])
+
+    # Randomized Parcellation Based Inference
+    n_parcellations = 2
+    n_parcels = 3
+    neg_log_pvals, counting_statistic_original_data, h0 = (
+        randomized_parcellation_based_inference(
+            np.ones((8, 1)), data, mask, confounding_vars=None,
+            model_intercept=True,
+            n_parcellations=n_parcellations, n_parcels=n_parcels,
+            threshold=0.05 / n_parcels, n_perm=9, random_state=rng,
+            verbose=True))
+    # check pvalues
+    expected_neg_log_pvals = np.zeros(shape)
+    expected_neg_log_pvals[1:3, 1:3, 1:3] = 1.
+    expected_neg_log_pvals = expected_neg_log_pvals.reshape((1, -1))
+    assert_equal(neg_log_pvals.shape, (1, n_voxels))
+    assert_array_almost_equal(neg_log_pvals, expected_neg_log_pvals)
+    # check counting statistic
+    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_array_almost_equal(counting_statistic_original_data,
+                              2 * expected_neg_log_pvals)
+    # h0
+    assert_equal(h0.shape, (9,))
+    assert_array_almost_equal(h0, np.zeros(9))
+
+    ### Same test with 1-dimensional tested_vars
+    # check random state
+    rng = check_random_state(random_state)
+    rng.randn(data.shape[0], data.shape[1])
+    # Randomized Parcellation Based Inference
+    n_parcellations = 2
+    n_parcels = 3
+    neg_log_pvals, counting_statistic_original_data, h0 = (
+        randomized_parcellation_based_inference(
+            np.ones(8), data, mask, confounding_vars=None,
+            model_intercept=True,
+            n_parcellations=n_parcellations, n_parcels=n_parcels,
+            threshold=0.05 / n_parcels, n_perm=9, random_state=rng,
+            verbose=True))
+    # check pvalues
+    expected_neg_log_pvals = np.zeros(shape)
+    expected_neg_log_pvals[1:3, 1:3, 1:3] = 1.
+    expected_neg_log_pvals = expected_neg_log_pvals.reshape((1, -1))
+    assert_equal(neg_log_pvals.shape, (1, n_voxels))
+    assert_array_almost_equal(neg_log_pvals, expected_neg_log_pvals)
+    # check counting statistic
+    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_array_almost_equal(counting_statistic_original_data,
+                              2 * expected_neg_log_pvals)
     # h0
     assert_equal(h0.shape, (9,))
     assert_array_almost_equal(h0, np.zeros(9))
