@@ -402,6 +402,10 @@ def test_fetch_localizer_calculation_task():
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_oasis_vbm():
     local_url = "file://" + datadir
+    ids = np.asarray(['OAS1_%4d' % i for i in range(457)])
+    ids = ids.view(dtype=[('ID', 'S9')])
+    file_mock.add_csv('oasis_cross-sectional.csv', ids)
+
     # Disabled: cannot be tested without actually fetching covariates CSV file
     dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url)
     assert_equal(len(dataset.gray_matter_maps), 403)
