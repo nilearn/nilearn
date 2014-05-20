@@ -14,12 +14,13 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from .. import datasets
 from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
-    mock_fetch_files
+    FetchFilesMock
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 tmpdir = None
-mock = None
+url_mock = None
+file_mock = None
 
 
 def setup_tmpdata():
@@ -30,11 +31,13 @@ def setup_tmpdata():
 
 def setup_tmpdata_and_mock():
     setup_tmpdata()
-    global mock
-    mock = mock_urllib2()
-    datasets.urllib2 = mock
+    global url_mock
+    url_mock = mock_urllib2()
+    datasets.urllib2 = url_mock
     datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
-    datasets._fetch_files = mock_fetch_files
+    global file_mock
+    file_mock = FetchFilesMock()
+    datasets._fetch_files = file_mock
 
 
 def teardown_tmpdata():
@@ -208,7 +211,7 @@ def test_fetch_craddock_2011_atlas():
             "tcorr05_2level_all.nii.gz",
             "random_all.nii.gz",
     ]
-    assert_equal(len(mock.urls), 1)
+    assert_equal(len(url_mock.urls), 1)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
 
@@ -228,7 +231,7 @@ def test_fetch_smith_2009_atlas():
             "bm70.nii.gz",
     ]
 
-    assert_equal(len(mock.urls), 6)
+    assert_equal(len(url_mock.urls), 6)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
 
@@ -237,7 +240,7 @@ def test_fetch_smith_2009_atlas():
 def test_fetch_haxby():
     for i in range(1, 6):
         haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)
-        assert_equal(len(mock.urls), 1 + (i == 1))  # subject_data + md5 file
+        assert_equal(len(url_mock.urls), 1 + (i == 1))  # subject_data + md5
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
         assert_equal(len(haxby.session_target), i)
@@ -246,25 +249,25 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house), i)
         assert_equal(len(haxby.mask_face_little), i)
         assert_equal(len(haxby.mask_house_little), i)
-        mock.reset()
+        url_mock.reset()
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_nyu_rest():
     # First session, all subjects
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
-    assert_equal(len(mock.urls), 2)
+    assert_equal(len(url_mock.urls), 2)
     assert_equal(len(nyu.func), 25)
     assert_equal(len(nyu.anat_anon), 25)
     assert_equal(len(nyu.anat_skull), 25)
     assert_true(np.all(np.asarray(nyu.session) == 1))
 
     # All sessions, 12 subjects
-    mock.reset()
+    url_mock.reset()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
                                   n_subjects=12)
     # Session 1 has already been downloaded
-    assert_equal(len(mock.urls), 2)
+    assert_equal(len(url_mock.urls), 2)
     assert_equal(len(nyu.func), 36)
     assert_equal(len(nyu.anat_anon), 36)
     assert_equal(len(nyu.anat_skull), 36)
@@ -277,11 +280,24 @@ def test_fetch_nyu_rest():
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_adhd():
     local_url = "file://" + datadir
-    # Disabled: cannot be tested without actually fetching the phenotypic file
+
+    sub1 = ['3902469', '7774305', '3699991']
+    sub2 = ['2014113', '4275075', '1019436', '3154996', '3884955', '0027034',
+            '4134561', '0027018', '6115230', '0027037', '8409791', '0027011']
+    sub3 = ['3007585', '8697774', '9750701', '0010064', '0021019', '0010042',
+            '0010128', '2497695', '4164316', '1552181', '4046678', '0023012']
+    sub4 = ['1679142', '1206380', '0023008', '4016887', '1418396', '2950754',
+            '3994098', '3520880', '1517058', '9744150', '1562298', '3205761',
+            '3624598']
+    subs = np.asarray(sub1 + sub2 + sub3 + sub4)
+    subs = subs.view(dtype=[('Subject', 'S7')])
+    file_mock.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
+            subs)
+
     adhd = datasets.fetch_adhd(data_dir=tmpdir, url=local_url, n_subjects=12)
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
-    assert_equal(len(mock.urls), 2)
+    assert_equal(len(url_mock.urls), 2)
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
@@ -291,7 +307,7 @@ def test_miyawaki2008():
     assert_equal(len(dataset.label), 32)
     assert_true(isinstance(dataset.mask, basestring))
     assert_equal(len(dataset.mask_roi), 38)
-    assert_equal(len(mock.urls), 1)
+    assert_equal(len(url_mock.urls), 1)
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
@@ -299,7 +315,7 @@ def test_fetch_msdl_atlas():
     dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir)
     assert_true(isinstance(dataset.labels, basestring))
     assert_true(isinstance(dataset.maps, basestring))
-    assert_equal(len(mock.urls), 1)
+    assert_equal(len(url_mock.urls), 1)
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
@@ -315,7 +331,7 @@ def test_fetch_icbm152_2009():
     assert_true(isinstance(dataset.t2, basestring))
     assert_true(isinstance(dataset.t2_relax, basestring))
     assert_true(isinstance(dataset.wm, basestring))
-    assert_equal(len(mock.urls), 1)
+    assert_equal(len(url_mock.urls), 1)
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
@@ -328,7 +344,7 @@ def test_fetch_yeo_2011_atlas():
     assert_true(isinstance(dataset.liberal_7, basestring))
     assert_true(isinstance(dataset.tight_17, basestring))
     assert_true(isinstance(dataset.tight_7, basestring))
-    assert_equal(len(mock.urls), 1)
+    assert_equal(len(url_mock.urls), 1)
 
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
@@ -394,7 +410,7 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.white_matter_maps[0], basestring))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
-    assert_equal(len(mock.urls), 3)
+    assert_equal(len(url_mock.urls), 3)
 
     dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
                                        dartel_version=False)
@@ -404,4 +420,4 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.white_matter_maps[0], basestring))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
-    assert_equal(len(mock.urls), 4)
+    assert_equal(len(url_mock.urls), 4)

@@ -12,6 +12,7 @@ import numpy as np
 import scipy.signal
 from sklearn.utils import check_random_state
 import scipy.linalg
+from matplotlib.mlab import rec2csv
 
 from nibabel import Nifti1Image
 import nibabel
@@ -131,14 +132,31 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
     raise urllib2.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
-def mock_fetch_files(*args, **kwargs):
-    """Load requested dataset, downloading it if needed or requested.
+class FetchFilesMock (object):
 
-    For test purpose, instead of actually fetching the dataset, this function
-    creates empty files and return their paths.
-    """
-    kwargs['mock'] = True
-    return original_fetch_files(*args, **kwargs)
+    def __init__(self):
+        """Create a mock that can fill a CSV file if needed
+        """
+        self.csv_files = {}
+
+    def add_csv(self, filename, content):
+        self.csv_files[filename] = content
+
+    def __call__(self, *args, **kwargs):
+        """Load requested dataset, downloading it if needed or requested.
+
+        For test purpose, instead of actually fetching the dataset, this
+        function creates empty files and return their paths.
+        """
+        kwargs['mock'] = True
+        files = original_fetch_files(*args, **kwargs)
+        # Fill CSV files with given content if needed
+        for f in files:
+            basename = os.path.basename(f)
+            if basename in self.csv_files:
+                array = self.csv_files[basename]
+                rec2csv(array, f)
+        return files
 
 
 def generate_timeseries(n_instants, n_features,
