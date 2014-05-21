@@ -127,7 +127,10 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         # and can save a lot of memory if dtype is single-precision.
         regressor = np.arange(signals.shape[0], dtype=signals.dtype)
         regressor -= regressor.mean()
-        regressor /= np.sqrt((regressor ** 2).sum())
+        std = np.sqrt((regressor ** 2).sum())
+        # avoid numerical problems
+        if not std < np.finfo(np.float).eps:
+            regressor /= std
         regressor = regressor[:, np.newaxis]
 
         # No batching for small arrays

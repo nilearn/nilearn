@@ -169,11 +169,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 verbose=(self.verbose - 1),
                 **mask_args)
         else:
-            if niimgs is not None:
-                warnings.warn('[%s.fit] Generation of a mask has been'
-                             ' requested (niimgs != None) while a mask has'
-                             ' been provided at masker creation. Given mask'
-                             ' will be used.' % self.__class__.__name__)
             self.mask_img_ = _utils.check_niimg(self.mask)
 
         # If resampling is requested, resample also the mask
@@ -191,6 +186,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.mask_img_.get_affine()
         # Load data in memory
         self.mask_img_.get_data()
+        if self.verbose > 10:
+            print "[%s.fit] Finished fit" % self.__class__.__name__
         return self
 
     def transform(self, niimgs, confounds=None):
