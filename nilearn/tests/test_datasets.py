@@ -397,6 +397,11 @@ def test_fetch_localizer_contrasts():
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
     local_url = "file://" + datadir
+    ids = np.asarray(['S%2d' % i for i in range(94)])
+    ids = ids.view(dtype=[('subject_id', 'S3')])
+    file_mock.add_csv('cubicwebexport.csv', ids)
+    file_mock.add_csv('cubicwebexport2.csv', ids)
+
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
     dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir,
