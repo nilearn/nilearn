@@ -5,14 +5,26 @@ Massively univariate analysis of face vs house recognition
 A permuted Ordinary Least Squares algorithm is run at each voxel in
 order to detemine whether or not it behaves differently under a "face
 viewing" condition and a "house viewing" condition.
-In order to reduce computation time required for the example, only one
-brain slice is considered.
+We consider the mean image per session and per condition.
+Otherwise, the observations cannot be exchanged at random because
+a time dependance exists between observations within a same session
+(see [1] for more detailed explanations).
 
 The example shows the small differences that exist between
 Bonferroni-corrected p-values and family-wise corrected p-values obtained
-from a permutation test combined with a max-type procedure.
+from a permutation test combined with a max-type procedure [2].
 Bonferroni correction is a bit conservative, as revealed by the presence of
 a few false negative.
+
+References
+----------
+[1] Winkler, A. M. et al. (2014).
+    Permutation inference for the general linear model. Neuroimage.
+
+[2] Anderson, M. J. & Robinson, J. (2001).
+    Permutation tests for linear models.
+    Australian & New Zealand Journal of Statistics, 43(1), 75-88.
+    (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
 
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
@@ -33,18 +45,40 @@ nifti_masker = NiftiMasker(
 fmri_masked = nifti_masker.fit_transform(dataset_files.func)
 
 ### Restrict to faces and houses ##############################################
-conditions_encoded, _ = np.loadtxt(
+conditions_encoded, sessions = np.loadtxt(
     dataset_files.session_target).astype("int").T
 conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
 
+# We consider the mean image per session and per condition.
+# Otherwise, the observations cannot be exchanged at random because
+# a time dependance exists between observations within a same session.
+n_sessions = np.unique(sessions).size
+grouped_fmri_masked = np.empty((2 * n_sessions,  # two conditions per session
+                                fmri_masked.shape[1]))
+grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
+
+for s in range(n_sessions):
+    session_mask = sessions[condition_mask] == s
+    session_house_mask = np.logical_and(session_mask,
+                                        conditions[condition_mask] == 'house')
+    session_face_mask = np.logical_and(session_mask,
+                                       conditions[condition_mask] == 'face')
+    grouped_fmri_masked[2 * s] = fmri_masked[session_house_mask].mean(0)
+    grouped_fmri_masked[2 * s + 1] = fmri_masked[session_face_mask].mean(0)
+    grouped_conditions_encoded[2 * s] = conditions_encoded[
+        session_house_mask][0]
+    grouped_conditions_encoded[2 * s + 1] = conditions_encoded[
+        session_face_mask][0]
+
 ### Perform massively univariate analysis with permuted OLS ###################
 # We use a two-sided t-test to compute p-values, but we keep trace of the
 # effect sign to add it back at the end and thus observe the signed effect
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
-    conditions_encoded, fmri_masked,  # + intercept as a covariate by default
+    grouped_conditions_encoded, grouped_fmri_masked,
+    # + intercept as a covariate by default
     n_perm=10000, two_sided_test=True,
     n_jobs=1)  # can be changed to use more CPUs
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
@@ -55,7 +89,8 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 # F-test does not allow to observe the effect sign (pure two-sided test)
 from nilearn._utils.fixes import f_regression
 _, pvals_bonferroni = f_regression(
-    fmri_masked, conditions_encoded)  # f_regression implicitly adds intercept
+    grouped_fmri_masked,
+    grouped_conditions_encoded)  # f_regression implicitly adds intercept
 pvals_bonferroni *= fmri_masked.shape[1]
 pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1
