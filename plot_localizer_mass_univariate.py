@@ -19,7 +19,7 @@ easily deal with covariates for now.
 
 
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Mar. 2014
+# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
@@ -43,18 +43,20 @@ nifti_masker = NiftiMasker(
 fmri_masked = nifti_masker.fit_transform(gray_matter_maps)
 
 ### Perform massively univariate analysis with permuted OLS ###################
+# with covariates
 tested_var = np.ones((n_samples, 1), dtype=float)  # intercept
 neg_log_pvals, _, _ = permuted_ols(
     tested_var, fmri_masked, confounding_vars=covariates,
-    model_intercept=False, n_perm=1000,
-    n_jobs=-1)  # can be changed to use more CPUs
+    model_intercept=False, n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals))
 
+# without covariates
 neg_log_pvals2, _, _ = permuted_ols(
     tested_var, fmri_masked, confounding_vars=None, model_intercept=False,
-    n_perm=1000,
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_perm=10000,
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals2_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals2))
 
