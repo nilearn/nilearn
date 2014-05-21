@@ -273,7 +273,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 confounds=confounds,
                 verbose=self.verbose
             )
-            for niimg in niimgs)
+            for niimg, confound in zip(niimgs, confounds))
         subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
         if len(niimgs) > 1:
