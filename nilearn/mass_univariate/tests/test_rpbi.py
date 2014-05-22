@@ -183,8 +183,7 @@ def test_ward_fit_transform():
 
 
 def test_build_parcellations(random_state=0):
-    """
-
+    """Test parcellations building.
     """
     # check random state
     rng = check_random_state(random_state)
@@ -227,8 +226,7 @@ from scipy import sparse
 
 
 def test_compute_counting_statistic_from_parcel_level_scores(random_state=1):
-    """
-
+    """Test the computation of RPBI's counting statistic.
     """
     # check random state
     rng = check_random_state(random_state)
@@ -290,8 +288,7 @@ def test_compute_counting_statistic_from_parcel_level_scores(random_state=1):
 
 
 def test_rpbi_core(random_state=2):
-    """
-
+    """Test Randomized Parcellation Based Inference core function.
     """
     # check random state
     rng = check_random_state(random_state)
@@ -392,8 +389,7 @@ def test_rpbi_core(random_state=2):
 
 
 def test_rpbi_core_withcovars(random_state=0):
-    """
-
+    """Test Randomized Parcellation Based Inference core function with covars.
     """
     # check random state
     rng = check_random_state(random_state)
@@ -506,12 +502,7 @@ def test_rpbi_core_withcovars(random_state=0):
 
 
 def test_randomized_parcellation_based_inference(random_state=1):
-    """
-def randomized_parcellation_based_inference(
-    tested_vars, imaging_vars, mask, confounding_vars=None,
-    model_intercept=True, n_parcellations=100, n_parcels=1000,
-    threshold='auto', n_perm=1000, random_state=None,
-    memory=Memory(cachedir=None), n_jobs=1, verbose=True):
+    """Test RPBI API.
     """
     # check random state
     rng = check_random_state(random_state)
