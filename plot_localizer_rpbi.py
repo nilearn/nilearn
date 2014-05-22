@@ -30,9 +30,9 @@ fmri_masked = nifti_masker.fit_transform(dataset_files.cmaps)
 tested_var = np.ones((n_samples, 1), dtype=float)  # intercept
 neg_log_pvals, all_scores, h0 = permuted_ols(
     tested_var, fmri_masked, model_intercept=False,
-    n_perm=1000,
+    n_perm=10000,
     two_sided_test=False,  # RPBI does not perform a two-sided test
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals))
 
@@ -44,8 +44,8 @@ neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     tested_var, fmri_masked,
     np.asarray(nifti_masker.mask_img_.get_data()).astype(bool),
     n_parcellations=n_parcellations, n_parcels=n_parcels,
-    threshold='auto', n_perm=1000,
-    random_state=0, memory='nilearn_cache', n_jobs=-1, verbose=True)
+    threshold='auto', n_perm=10000,
+    random_state=0, memory='nilearn_cache', n_jobs=1, verbose=True)
 neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_rpbi))
 
