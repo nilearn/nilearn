@@ -366,7 +366,7 @@ def max_csr(csr_matrix, n_x):
     >>> import numpy as np
     >>> from scipy import sparse
     >>> from nilearn.mass_univariate.rpbi import max_csr
-    >>> max_csr(sparse.eye(5).tocsr(), 1)
+    >>> max_csr(sparse.eye(5, 5).tocsr(), 1)
     array([ 1.,  1.,  1.,  1.,  1.])
     >>> max_csr(sparse.dia_matrix(np.diag(np.arange(6))).tocsr(), 1)
     array([ 0.,  1.,  2.,  3.,  4.,  5.])
