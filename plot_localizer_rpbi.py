@@ -66,14 +66,15 @@ grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
 
 # Plot permutation p-values map
 ax = grid[0]
-p_ma = np.ma.masked_less(neg_log_pvals_unmasked.get_data(), vmin)
+masked_pvals = np.ma.masked_less(neg_log_pvals_unmasked.get_data(), vmin)
 ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
           interpolation='nearest', cmap=plt.cm.gray)
-im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
+im = ax.imshow(np.rot90(masked_pvals[..., picked_slice]),
+               interpolation='nearest',
                cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
              '\nmax-type correction)' +
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
+             '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum())
 ax.axis('off')
 
 # Plot RPBI p-values map
@@ -81,7 +82,7 @@ ax = grid[1]
 masked_pvals = np.ma.masked_less(neg_log_pvals_rpbi_unmasked.get_data(), vmin)
 ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
           interpolation='nearest', cmap=plt.cm.gray)
-ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
+ax.imshow(np.rot90(masked_pvals[..., picked_slice]), interpolation='nearest',
           cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
 ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(RPBI)'
              + '\n\n%d detections'

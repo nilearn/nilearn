@@ -75,7 +75,9 @@ im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
 plt.axis('off')
 plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values'
-          + '\n(Non-parametric + max-type correction)\n')
+          + '\n(Non-parametric + max-type correction)'
+          + '\n%d detections'
+          % (~masked_pvals.mask[..., picked_slice]).sum())
 plt.tight_layout()
 
 ### Randomized Parcellation Based Inference ###################################
@@ -106,7 +108,7 @@ im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
 plt.axis('off')
 plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values' + '\n(RPBI)'
-          + '\n\n%d detections'
+          + '%d detections'
           % (~masked_pvals.mask[..., picked_slice]).sum())
 plt.tight_layout()
 
