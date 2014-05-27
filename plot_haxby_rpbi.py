@@ -16,8 +16,8 @@ import numpy as np
 import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
-from nilearn.mass_univariate import (permuted_ols,
-                                     randomized_parcellation_based_inference)
+from nilearn.mass_univariate import permuted_ols
+from nilearn.mass_univariate import randomized_parcellation_based_inference
 
 ### Load Haxby dataset ########################################################
 dataset_files = datasets.fetch_haxby_simple()

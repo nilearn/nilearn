@@ -14,8 +14,8 @@ that it conveys more sensitivity.
 import numpy as np
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
-from nilearn.mass_univariate import (permuted_ols,
-                                     randomized_parcellation_based_inference)
+from nilearn.mass_univariate import permuted_ols
+from nilearn.mass_univariate import randomized_parcellation_based_inference
 
 ### Load Localizer motor contrast #############################################
 n_samples = 20
@@ -36,7 +36,7 @@ neg_log_pvals, all_scores, h0 = permuted_ols(
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals))
 
-### RPBI ######################################################################
+### Randomized Parcellation Based Inference ###################################
 neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     tested_var, fmri_masked,
     np.asarray(nifti_masker.mask_img_.get_data()).astype(bool),
