@@ -256,7 +256,7 @@ def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
     all_subjects_data: array_like, shape=(n_samples, n_voxels)
       Masked subject images as an array.
 
-    mask: image-like
+    mask: ndarray of booleans
       Mask that has been applied on the initial images to obtain
       `all_subjects_data`.
 
@@ -475,7 +475,7 @@ def _compute_counting_statistic_from_parcel_level_scores(
     return counting_stats_original_data, h0_samples
 
 
-def _univariate_analysis_on_chunk(n_perm, perm_chunk,
+def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
                                   tested_vars, target_vars,
                                   confounding_vars=None, lost_dof=0,
                                   intercept_test=True, sparsity_threshold=0.1,
@@ -495,11 +495,15 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
     n_perm: int,
       The total number of permutations performed in the complete analysis.
 
-    perm_chunk: slice object,
-      Defines the permutations that are delegated to the current function.
-      The permutations are specified as a slice because it is a simple way
-      to provide the number of permutations as well as their offset regarding
-      the total number of permutations performed by paralell workers.
+    perm_chunk_start: int
+      Together with `perm_chunk_stop`, defines the permutations that are
+      delegated to the current function.
+      `perm_chunk_start` also serves as an offset regarding
+      the total number of permutations performed by parallel workers.
+
+    perm_chunk_stop: int
+      Together with `perm_chunk_start`, defines the permutations that
+      are delegated to the current function.
 
     tested_vars: array-like, shape=(n_samples, n_tested_vars),
       Explanatory variates, fitted and tested independently from each others.
@@ -549,7 +553,7 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
 
     n_samples, n_regressors = tested_vars.shape
     n_descriptors = target_vars.shape[1]
-    n_perm_chunk = perm_chunk.stop - perm_chunk.start
+    n_perm_chunk = perm_chunk_stop - perm_chunk_start
 
     # We use a special data structure to store the results of the permutations
     # max_elts is used to preallocate memory
@@ -559,11 +563,11 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
     gs_array = GrowableSparseArray(n_perm + 1, max_elts=max_elts,
                                    threshold=threshold)
 
-    if perm_chunk.start == 0:  # add original data results as permutation 0
+    if perm_chunk_start == 0:  # add original data results as permutation 0
         scores_original_data = t_score_with_covars_and_normalized_design(
             tested_vars, target_vars, confounding_vars)
         gs_array.append(0, scores_original_data)
-        perm_chunk = slice(1, perm_chunk.stop)
+        perm_chunk = slice(1, perm_chunk_stop)
 
     # do the permutations
     for i in xrange(perm_chunk.start, perm_chunk.stop):
@@ -722,13 +726,15 @@ def rpbi_core(tested_vars, target_vars,
 
     ### Permutation of the RPBI analysis
     # parallel computing units perform a reduced number of permutations each
+    perm_chunks = [(x.start, x.stop)
+                   for x in gen_even_slices(n_perm + 1, min(n_perm, n_jobs))]
     all_chunks_results = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(_univariate_analysis_on_chunk)
-        (n_perm, perm_chunk, testedvars_resid_covars, targetvars_resid_covars,
-         covars_orthonormed, lost_dof, intercept_test=intercept_test,
-         sparsity_threshold=threshold,
+        (n_perm, perm_chunk_start, perm_chunk_stop,
+         testedvars_resid_covars, targetvars_resid_covars, covars_orthonormed,
+         lost_dof, intercept_test=intercept_test, sparsity_threshold=threshold,
          random_state=rng.random_integers(np.iinfo(np.int32).max))
-        for perm_chunk in gen_even_slices(n_perm + 1, min(n_perm, n_jobs)))
+        for (perm_chunk_start, perm_chunk_stop) in perm_chunks)
     # reduce results
     max_elts = int(n_tested_vars * n_descriptors
                    * np.sqrt(threshold) * (n_perm + 1))
@@ -782,7 +788,7 @@ def rpbi_core(tested_vars, target_vars,
 
 
 def randomized_parcellation_based_inference(
-    tested_vars, imaging_vars, mask, confounding_vars=None,
+    tested_vars, imaging_vars, mask_img, confounding_vars=None,
     model_intercept=True, n_parcellations=100, n_parcels=1000,
     threshold='auto', n_perm=1000, random_state=None,
     memory=Memory(cachedir=None), n_jobs=1, verbose=True):
@@ -800,7 +806,7 @@ def randomized_parcellation_based_inference(
       Masked subject images as an array.
       Imaging data to be explained by explanatory and confounding variates.
 
-    mask: image-like
+    mask_img: niimg
       Mask image that has been used to mask data in `imaging_vars`.
 
     confounding_vars: array-like, shape=(n_samples, n_covars)
@@ -866,13 +872,13 @@ def randomized_parcellation_based_inference(
         tested_vars = np.atleast_2d(tested_vars).T
 
     ### Build parcellations
-    if not isinstance(mask, np.ndarray):
-        mask = check_niimg(mask)
-    mask = np.asarray(mask).astype(bool)
+    if not isinstance(mask_img, np.ndarray):
+        mask_img = check_niimg(mask_img)
+    mask_img = np.asarray(mask_img).astype(bool)
     if verbose:
         print "Build parcellations"
     parcelled_imaging_vars, parcellations_labels = _build_parcellations(
-        imaging_vars, mask,
+        imaging_vars, mask_img,
         n_parcellations=n_parcellations, n_parcels=n_parcels,
         random_state=random_state, memory=memory, n_jobs=n_jobs)
 
