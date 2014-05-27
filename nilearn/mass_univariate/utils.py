@@ -47,9 +47,12 @@ def normalize_matrix_on_axis(m, axis=0):
                              '%d zeros column%s.'
                              % (n_zeros_column,
                                 "s" if n_zeros_column > 1 else ""))
+        # The following line can create Nans/Infs, but this is supposed to
+        # have been handled at a higher level.
         # array transposition preserves the contiguity flag of that array
         ret = (m.T / np.sqrt(np.sum(m ** 2, axis=0))[:, np.newaxis]).T
     elif axis == 1:
+        # array transposition preserves the contiguity flag of that array
         ret = normalize_matrix_on_axis(m.T).T
     else:
         raise ValueError('axis(=%d) out of bounds' % axis)
