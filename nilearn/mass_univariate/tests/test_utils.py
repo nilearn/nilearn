@@ -1,9 +1,10 @@
 import numpy as np
 from sklearn.utils import check_random_state
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_raises
 
 from nilearn.mass_univariate.utils import (
-    orthonormalize_matrix, t_score_with_covars_and_normalized_design)
+    orthonormalize_matrix, normalize_matrix_on_axis,
+    t_score_with_covars_and_normalized_design)
 
 
 def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
@@ -118,3 +119,29 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
     # compute t-scores with linalg or statmodels
     ref_score = get_tvalue_with_alternative_library(var1, var2, covars)
     assert_array_almost_equal(own_score, ref_score)
+
+
+### Tests normalize function ##################################################
+# Is actually tested with doctests, but here are some additional tests.
+def test_normalize_with_null_columns():
+    """Check that the normalize function fails when matrix has null columns.
+    """
+    X = np.array([[1, 2, 0], [0, 1, 0], [1, 1, 0]])
+    assert_raises(ValueError, normalize_matrix_on_axis, X)
+
+
+def test_normalize_bad_dimensions():
+    """Check that the normalize function fails when matrix has bad dimension.
+    """
+    X = np.arange(6)
+    assert_raises(ValueError, normalize_matrix_on_axis, X)
+
+    X = np.arange(12).reshape((3, 2, 2))
+    assert_raises(ValueError, normalize_matrix_on_axis, X)
+
+
+def test_normalize_bad_axis():
+    """Check that the normalize function fails when bad axis is provided.
+    """
+    X = np.array([[1, 2], [0, 1], [1, 1]])
+    assert_raises(ValueError, normalize_matrix_on_axis, X, axis=3)

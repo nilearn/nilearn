@@ -34,11 +34,18 @@ def normalize_matrix_on_axis(m, axis=0):
            [ 1.,  0.]])
 
     """
-    if m.ndim > 2:
+    if m.ndim != 2:
         raise ValueError('This function only accepts 2D arrays. '
-                         'An array of shape %r was passed.' % m.shape)
+                         'An array of shape %r was passed.' % (m.shape,))
 
     if axis == 0:
+        sum_of_squares = np.sum(m ** 2, axis=0)
+        n_zeros_column = np.sum(sum_of_squares == 0)
+        if n_zeros_column > 0:
+            raise ValueError('The matrix cannot be normalized because it has'
+                             '%d zeros column%s.'
+                             % (n_zeros_column,
+                                "s" if n_zeros_column > 1 else ""))
         # array transposition preserves the contiguity flag of that array
         ret = (m.T / np.sqrt(np.sum(m ** 2, axis=0))[:, np.newaxis]).T
     elif axis == 1:

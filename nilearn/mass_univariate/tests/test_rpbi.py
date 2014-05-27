@@ -305,17 +305,6 @@ def test_rpbi_core(random_state=2):
     data = np.repeat(data, 8, 0)
     # add noise to avoid constant columns
     data += 0.1 * rng.randn(data.shape[0], data.shape[1])
-    # data1 = np.zeros(shape)
-    # data1[1:3, 1:3, 1:3] = 2.
-    # data2 = np.zeros(shape)
-    # data2[3:, 3:, 3:] = 4.
-    # data = np.zeros((4, np.prod(shape)))  # 4 ravelized images
-    # data[0] = np.ravel(data1)
-    # data[1] = np.ravel(data2)
-    # data[2] = np.ravel(data1)
-    # data[3] = np.ravel(data1)
-    # # add noise to avoid constant columns
-    # data[2:] += 0.01 * rng.randn(2, data.shape[1])
 
     # Parcellate data and extract signal averages
     n_parcellations = 2
