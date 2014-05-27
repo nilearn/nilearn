@@ -85,7 +85,12 @@ def orthonormalize_matrix(m, tol=1.e-12):
 
 
 def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
-    """
+    """Orthogonalize a design (tested, target, confounding variates)
+
+    - tested_vars and target_vars are normalized
+    - covars_orthonormalized are orthonormalized
+    - tested_vars and covars_orthonormalized are made orthogonal
+      (np.dot(tested_vars.T, covars) == 0)
 
     Parameters
     ----------

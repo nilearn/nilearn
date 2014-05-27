@@ -202,9 +202,9 @@ def _ward_fit_transform(all_subjects_data, fit_samples_indices,
     images, then averages the signal within parcels in order to reduce the
     dimension of the images of the whole dataset.
     This function is used with Randomized Parcellation Based Inference, so we
-    need to save the labels to further perform the inverse transformation.
-    In that context, and for technical reasons, the labels have to be unique
-    across parcellations.
+    need to save the labels to further perform the inverse transformation
+    operation. The function therefore needs an offset to be applied on the
+    labels so that they are unique across parcellations.
 
     Parameters
     ----------
@@ -437,7 +437,7 @@ def _compute_counting_statistic_from_parcel_level_scores(
       Total number of parcellations.
 
     n_parcels_all_parcellations: int,
-      Total number of parcels (sum for all parcellations).
+      Total number of parcels (summed across all parcellations).
 
     Returns
     -------
@@ -446,8 +446,8 @@ def _compute_counting_statistic_from_parcel_level_scores(
 
     h0_samples: np.ndarray, shape=(n_perm, n_regressors)
       Counting statistics corresponding to the permuted data.
-      Contains only the maximum value of the counting statistic across voxel
-      for each permutation/regressor pair.
+      Yields the maximum count across all voxels for each
+      permutation/regressor pair.
 
     """
     n_perm_in_perm_lot = perm_lot_slice.stop - perm_lot_slice.start
@@ -515,17 +515,18 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk,
 
     lost_dof: int,
       Degress of freedom that are lost during the model estimation.
-      Beware that tested variates are fitted independently so `lost_dof` can
-      only be computed from confounding variates.
+      Beware that tested variates are fitted independently so `lost_dof`
+      only depends from confounding variates.
 
     intercept_test : boolean,
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise). See [1]
 
-    sparsity_threshold: float,
+    sparsity_threshold: float, 0. < sparsity_threshold <= 1.
       Approximate amount of sparsity that is desired when storing the scores
-      of a massively univariate analysis.
-      It also correspond to the uncorrected significance threshold of the
+      of a massively univariate analysis (i.e. proportion of values to
+      be actually stored, as a percentage).
+      It also corresponds to the uncorrected significance threshold of the
       independent parcel-based analyses that are performed from the different
       parcellations.
       The higher the threshold, the more scores will be stored,
@@ -787,7 +788,7 @@ def randomized_parcellation_based_inference(
     memory=Memory(cachedir=None), n_jobs=1, verbose=True):
     """Perform Randomized Parcellation Base Inference on a dataset.
 
-    1. Randomized parcellation are built.
+    1. Randomized parcellations are built.
     2. Statistical inference is performed.
 
     Parameters
