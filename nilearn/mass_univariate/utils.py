@@ -1,5 +1,6 @@
 """
-TODOC
+Utility functions for matrices and designs transformation.
+
 """
 import warnings
 import numpy as np
@@ -113,11 +114,11 @@ def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
 
     Returns
     -------
-    testedvars_resid_covars: np.ndarray, shape=(n_samples, n_tested_vars)
+    tested_vars_resid_covars: np.ndarray, shape=(n_samples, n_tested_vars)
       Normalized tested variates, from which the effect of the covariates
       has been removed.
 
-    targetvars_resid_covars: np.ndarray, shape=(n_samples, n_target_vars)
+    target_vars_resid_covars: np.ndarray, shape=(n_samples, n_target_vars)
       Normalized target variates, from which the effect of the covariates
       has been removed.
 
@@ -137,44 +138,48 @@ def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
             # useful to developer
             warnings.warn('Confounding variates not C_CONTIGUOUS.')
             covars_orthonormed = np.ascontiguousarray(covars_orthonormed)
-        targetvars_normalized = normalize_matrix_on_axis(
+        target_vars_normalized = normalize_matrix_on_axis(
             target_vars).T  # faster with F-ordered target_vars_chunk
-        if not targetvars_normalized.flags['C_CONTIGUOUS']:
+        if not target_vars_normalized.flags['C_CONTIGUOUS']:
             # useful to developer
             warnings.warn('Target variates not C_CONTIGUOUS.')
-            targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
-        beta_targetvars_covars = np.dot(targetvars_normalized,
+            target_vars_normalized = np.ascontiguousarray(
+                target_vars_normalized)
+        beta_target_vars_covars = np.dot(target_vars_normalized,
                                         covars_orthonormed)
-        targetvars_resid_covars = targetvars_normalized - np.dot(
-            beta_targetvars_covars, covars_orthonormed.T)
-        targetvars_resid_covars = normalize_matrix_on_axis(
-            targetvars_resid_covars, axis=1)
+        target_vars_resid_covars = target_vars_normalized - np.dot(
+            beta_target_vars_covars, covars_orthonormed.T)
+        target_vars_resid_covars = normalize_matrix_on_axis(
+            target_vars_resid_covars, axis=1)
         lost_dof = covars_orthonormed.shape[1]
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
-        beta_testedvars_covars = np.dot(testedvars_normalized,
-                                        covars_orthonormed)
-        testedvars_resid_covars = testedvars_normalized - np.dot(
-            beta_testedvars_covars, covars_orthonormed.T)
-        testedvars_resid_covars = normalize_matrix_on_axis(
-            testedvars_resid_covars, axis=1).T.copy()
+        tested_vars_normalized = normalize_matrix_on_axis(tested_vars.T,
+                                                          axis=1)
+        beta_tested_vars_covars = np.dot(tested_vars_normalized,
+                                         covars_orthonormed)
+        tested_vars_resid_covars = tested_vars_normalized - np.dot(
+            beta_tested_vars_covars, covars_orthonormed.T)
+        tested_vars_resid_covars = normalize_matrix_on_axis(
+            tested_vars_resid_covars, axis=1).T.copy()
     else:
-        targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
-        testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
+        target_vars_resid_covars = normalize_matrix_on_axis(target_vars).T
+        tested_vars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormed = None
         lost_dof = 0
     # check arrays contiguousity (for the sake of code efficiency)
-    if not targetvars_resid_covars.flags['C_CONTIGUOUS']:
+    if not target_vars_resid_covars.flags['C_CONTIGUOUS']:
         # useful to developer
         warnings.warn('Target variates not C_CONTIGUOUS.')
-        targetvars_resid_covars = np.ascontiguousarray(targetvars_resid_covars)
-    if not testedvars_resid_covars.flags['C_CONTIGUOUS']:
+        target_vars_resid_covars = np.ascontiguousarray(
+            target_vars_resid_covars)
+    if not tested_vars_resid_covars.flags['C_CONTIGUOUS']:
         # useful to developer
         warnings.warn('Tested variates not C_CONTIGUOUS.')
-        testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
+        tested_vars_resid_covars = np.ascontiguousarray(
+            tested_vars_resid_covars)
 
-    orthogonalized_design = (testedvars_resid_covars,
-                             targetvars_resid_covars.T,
+    orthogonalized_design = (tested_vars_resid_covars,
+                             target_vars_resid_covars.T,
                              covars_orthonormed, lost_dof)
     return orthogonalized_design
 
@@ -215,11 +220,11 @@ def t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     # Tested variates are fitted independently,
     # so lost_dof is unrelated to n_tested_vars.
     dof = target_vars.shape[0] - lost_dof
-    beta_targetvars_testedvars = np.dot(target_vars.T, tested_vars)
+    beta_target_vars_tested_vars = np.dot(target_vars.T, tested_vars)
     if covars_orthonormalized is None:
-        rss = (1 - beta_targetvars_testedvars ** 2)
+        rss = (1 - beta_target_vars_tested_vars ** 2)
     else:
-        beta_targetvars_covars = np.dot(target_vars.T, covars_orthonormalized)
-        a2 = np.sum(beta_targetvars_covars ** 2, 1)
-        rss = (1 - a2[:, np.newaxis] - beta_targetvars_testedvars ** 2)
-    return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
+        beta_target_vars_covars = np.dot(target_vars.T, covars_orthonormalized)
+        a2 = np.sum(beta_target_vars_covars ** 2, 1)
+        rss = (1 - a2[:, np.newaxis] - beta_target_vars_tested_vars ** 2)
+    return beta_target_vars_tested_vars * np.sqrt((dof - 1.) / rss)

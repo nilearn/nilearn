@@ -10,8 +10,7 @@ from sklearn.utils import check_random_state
 import sklearn.externals.joblib as joblib
 
 from nilearn.mass_univariate.utils import (
-    normalize_matrix_on_axis, orthonormalize_matrix,
-    t_score_with_covars_and_normalized_design)
+    orthogonalize_design, t_score_with_covars_and_normalized_design)
 
 
 def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
@@ -246,50 +245,14 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         else:
             confounding_vars = np.ones((n_samples, 1))
 
-    ### OLS regression on original data
-    if confounding_vars is not None:
-        # step 1: extract effect of covars from target vars
-        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
-        if not covars_orthonormalized.flags['C_CONTIGUOUS']:
-            # useful to developer
-            warnings.warn('Confounding variates not C_CONTIGUOUS.')
-            covars_orthonormalized = np.ascontiguousarray(
-                covars_orthonormalized)
-        targetvars_normalized = normalize_matrix_on_axis(
-            target_vars).T  # faster with F-ordered target_vars_chunk
-        if not targetvars_normalized.flags['C_CONTIGUOUS']:
-            # useful to developer
-            warnings.warn('Target variates not C_CONTIGUOUS.')
-            targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
-        beta_targetvars_covars = np.dot(targetvars_normalized,
-                                        covars_orthonormalized)
-        targetvars_resid_covars = targetvars_normalized - np.dot(
-            beta_targetvars_covars, covars_orthonormalized.T)
-        targetvars_resid_covars = normalize_matrix_on_axis(
-            targetvars_resid_covars, axis=1)
-        # step 2: extract effect of covars from tested vars
-        testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
-        beta_testedvars_covars = np.dot(testedvars_normalized,
-                                        covars_orthonormalized)
-        testedvars_resid_covars = testedvars_normalized - np.dot(
-            beta_testedvars_covars, covars_orthonormalized.T)
-        testedvars_resid_covars = normalize_matrix_on_axis(
-            testedvars_resid_covars, axis=1).T.copy()
-    else:
-        targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
-        testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
-        covars_orthonormalized = None
-    # check arrays contiguousity (for the sake of code efficiency)
-    if not targetvars_resid_covars.flags['C_CONTIGUOUS']:
-        # useful to developer
-        warnings.warn('Target variates not C_CONTIGUOUS.')
-        targetvars_resid_covars = np.ascontiguousarray(targetvars_resid_covars)
-    if not testedvars_resid_covars.flags['C_CONTIGUOUS']:
-        # useful to developer
-        warnings.warn('Tested variates not C_CONTIGUOUS.')
-        testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
-    # step 3: original regression (= regression on residuals + adjust t-score)
-    # compute t score for original data
+    # orthogonalize design to speed up subsequent permutations
+    orthogonalized_design = orthogonalize_design(tested_vars, target_vars,
+                                                 confounding_vars)
+    tested_vars_resid_covars = orthogonalized_design[0]
+    target_vars_resid_covars = orthogonalized_design[1]
+    covars_orthonormed = orthogonalized_design[2]
+
+    ### OLS regression (t-scores) on original data
     scores_original_data = t_score_with_covars_and_normalized_design(
         testedvars_resid_covars, targetvars_resid_covars.T,
         covars_orthonormalized)
@@ -314,8 +277,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(_permuted_ols_on_chunk)
-          (scores_original_data, testedvars_resid_covars,
-           targetvars_resid_covars.T, covars_orthonormalized,
+          (scores_original_data, tested_vars_resid_covars,
+           target_vars_resid_covars, covars_orthonormed,
            n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
            two_sided_test=two_sided_test,
            random_state=rng.random_integers(np.iinfo(np.int32).max))

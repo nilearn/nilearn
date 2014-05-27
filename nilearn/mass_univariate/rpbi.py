@@ -579,7 +579,7 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
             # and covars rather than fmri_signal.
-            # Also, it is important to shuffle testedvars and covars
+            # Also, it is important to shuffle tested_vars and covars
             # jointly to simplify f_score computation (null dot product).
             shuffle_idx = rng.permutation(n_samples)
             #rng.shuffle(shuffle_idx)
@@ -712,8 +712,8 @@ def rpbi_core(tested_vars, target_vars,
     # orthogonalize design to speed up subsequent permutations
     orthogonalized_design = orthogonalize_design(tested_vars, target_vars,
                                                  confounding_vars)
-    testedvars_resid_covars = orthogonalized_design[0]
-    targetvars_resid_covars = orthogonalized_design[1]
+    tested_vars_resid_covars = orthogonalized_design[0]
+    target_vars_resid_covars = orthogonalized_design[1]
     covars_orthonormed = orthogonalized_design[2]
     lost_dof = orthogonalized_design[3]
 
@@ -731,8 +731,9 @@ def rpbi_core(tested_vars, target_vars,
     all_chunks_results = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(_univariate_analysis_on_chunk)
         (n_perm, perm_chunk_start, perm_chunk_stop,
-         testedvars_resid_covars, targetvars_resid_covars, covars_orthonormed,
-         lost_dof, intercept_test=intercept_test, sparsity_threshold=threshold,
+         tested_vars_resid_covars, target_vars_resid_covars,
+         covars_orthonormed, lost_dof, intercept_test=intercept_test,
+         sparsity_threshold=threshold,
          random_state=rng.random_integers(np.iinfo(np.int32).max))
         for (perm_chunk_start, perm_chunk_stop) in perm_chunks)
     # reduce results
