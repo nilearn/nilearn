@@ -1,7 +1,8 @@
 """Test CanICA"""
 import nibabel
 import numpy as np
-
+from numpy.testing import assert_array_almost_equal
+from nose.tools import assert_true
 from nilearn.decomposition.canica import CanICA
 
 
@@ -51,17 +52,14 @@ def test_canica_square_img():
 
     # FIXME: This could be done more efficiently, e.g. thanks to hungarian
     # Find pairs of matching components
-    indices = range(4)
-
-    for i in range(4):
-        map = np.abs(maps[i]) > np.abs(maps[i]).max() * 0.95
-        for j in indices:
-            ref_map = components[j].ravel() != 0
-            if np.all(map.ravel() == ref_map):
-                indices.remove(j)
-                break
-        else:
-            assert False, "Non matching component"
+    # compute the cross-correlation matrix between components
+    K = np.corrcoef(components, maps.reshape(4, 400))[4:, :4]
+    # K should be a permutation matrix, hence its coefficients 
+    # should all be close to 0 1 or -1
+    K_abs = np.abs(K)
+    assert_true(np.sum(K_abs > .9) == 4)
+    K_abs[K_abs > .9] -= 1
+    assert_array_almost_equal(K_abs, 0, 1)
 
 if __name__ == "__main__":
     test_canica_square_img()
