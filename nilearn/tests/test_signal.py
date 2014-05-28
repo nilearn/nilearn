@@ -255,13 +255,13 @@ def test_clean_confounds():
     noises1 = noises.copy()
     cleaned_signals = nisignal.clean(noises, confounds=confounds,
                                       detrend=True, standardize=False)
-    assert_true(abs(cleaned_signals).max() < 20. * eps)
+    assert_true(abs(cleaned_signals).max() < 100. * eps)
     np.testing.assert_almost_equal(noises, noises1, decimal=12)
 
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignal.clean(signals + noises, confounds=confounds,
                                       detrend=True, standardize=False)
-    assert_true(abs(np.dot(confounds.T, cleaned_signals)).max() < 20. * eps)
+    assert_true(abs(np.dot(confounds.T, cleaned_signals)).max() < 100. * eps)
 
     # Test detrending. No trend should exist in the output.
     # Use confounds with a trend.
