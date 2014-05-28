@@ -40,17 +40,18 @@ def normalize_matrix_on_axis(m, axis=0):
                          'An array of shape %r was passed.' % (m.shape,))
 
     if axis == 0:
-        sum_of_squares = np.sum(m ** 2, axis=0)
-        n_zeros_column = np.sum(sum_of_squares == 0)
+        column_squared_norms = np.sum(m ** 2, axis=0)
+        # check for null columns
+        n_zeros_column = np.sum(column_squared_norms == 0)
         if n_zeros_column > 0:
+            # A matrix with null column(s) cannot be normalized, but this
+            # is supposed to have been handled at a higher level.
             raise ValueError('The matrix cannot be normalized because it has'
                              '%d zeros column%s.'
                              % (n_zeros_column,
                                 "s" if n_zeros_column > 1 else ""))
-        # The following line can create Nans/Infs, but this is supposed to
-        # have been handled at a higher level.
         # array transposition preserves the contiguity flag of that array
-        ret = (m.T / np.sqrt(np.sum(m ** 2, axis=0))[:, np.newaxis]).T
+        ret = (m.T / np.sqrt(column_squared_norms)[:, np.newaxis]).T
     elif axis == 1:
         # array transposition preserves the contiguity flag of that array
         ret = normalize_matrix_on_axis(m.T).T
