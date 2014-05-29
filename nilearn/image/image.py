@@ -282,13 +282,15 @@ def crop_img(niimg, rtol=1e-8, copy=True):
     passes_threshold = np.logical_or(data < -rtol * infinity_norm,
                                      data > rtol * infinity_norm)
 
+    if data.ndim == 4:
+        passes_threshold = np.any(passes_threshold, axis=-1)
     coords = np.array(np.where(passes_threshold))
     start = coords.min(axis=1)
     end = coords.max(axis=1) + 1
 
     # pad with one voxel to avoid resampling problems
     start = np.maximum(start - 1, 0)
-    end = np.minimum(end + 1, data.shape)
+    end = np.minimum(end + 1, data.shape[:3])
 
     slices = [slice(s, e) for s, e in zip(start, end)]
 
