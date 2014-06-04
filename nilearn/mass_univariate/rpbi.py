@@ -248,7 +248,7 @@ def _ward_fit_transform(all_subjects_data, fit_samples_indices,
 def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
                          n_parcels=1000, n_bootstrap_samples=None,
                          random_state=None, memory=Memory(cachedir=None),
-                         n_jobs=1):
+                         n_jobs=1, verbose=False):
     """Build the parcellations for the RPBI framework.
 
     Parameters
@@ -286,6 +286,9 @@ def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
       will be used.
+
+    verbose: boolean,
+      Activate verbose mode (default is False).
 
     Returns
     -------
@@ -326,7 +329,7 @@ def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
     draw = rng.randint(n_samples, size=n_bootstrap_samples * n_parcellations)
     draw = draw.reshape((n_parcellations, -1))
     ret = joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(
-            cache(_ward_fit_transform, memory))
+            cache(_ward_fit_transform, memory, verbose=verbose))
           (all_subjects_data, draw[i], connectivity, n_parcels, i * n_parcels)
           for i in range(n_parcellations))
     # reduce results
@@ -567,10 +570,10 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
         scores_original_data = t_score_with_covars_and_normalized_design(
             tested_vars, target_vars, confounding_vars)
         gs_array.append(0, scores_original_data)
-        perm_chunk = slice(1, perm_chunk_stop)
+        perm_chunk_start = 1
 
     # do the permutations
-    for i in xrange(perm_chunk.start, perm_chunk.stop):
+    for i in xrange(perm_chunk_start, perm_chunk_stop):
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
             target_vars = (target_vars
@@ -881,7 +884,8 @@ def randomized_parcellation_based_inference(
     parcelled_imaging_vars, parcellations_labels = _build_parcellations(
         imaging_vars, mask_img,
         n_parcellations=n_parcellations, n_parcels=n_parcels,
-        random_state=random_state, memory=memory, n_jobs=n_jobs)
+        random_state=random_state, memory=memory, n_jobs=n_jobs,
+        verbose=verbose)
 
     ### Statistical inference
     if verbose:
