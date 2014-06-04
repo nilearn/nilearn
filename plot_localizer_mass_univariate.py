@@ -21,6 +21,7 @@ easily deal with covariates for now.
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
+import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
@@ -28,12 +29,12 @@ from nilearn.mass_univariate import permuted_ols
 ### Load Localizer calculation contrast #######################################
 n_samples = 50
 dataset_files = datasets.fetch_localizer_calculation_task(n_subjects=n_samples)
-covariates = dataset_files.ext_vars['score_cal_complexe']
+tested_var = dataset_files.ext_vars['mot']
 # Quality check / Remove subjects with bad tested variate
-mask_quality_check = np.where(covariates != 'None')[0]
+mask_quality_check = np.where(tested_var != 'None')[0]
 n_samples = mask_quality_check.size
 gray_matter_maps = [dataset_files.cmaps[i] for i in mask_quality_check]
-covariates = covariates[mask_quality_check].astype(float).reshape((-1, 1))
+tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
 print("Actual number of subjects after quality check: %d" % n_samples)
 
 ### Mask data #################################################################
@@ -42,67 +43,64 @@ nifti_masker = NiftiMasker(
     memory='nilearn_cache', memory_level=1)  # cache options
 fmri_masked = nifti_masker.fit_transform(gray_matter_maps)
 
-### Perform massively univariate analysis with permuted OLS ###################
-# with covariates
-tested_var = np.ones((n_samples, 1), dtype=float)  # intercept
-neg_log_pvals, _, _ = permuted_ols(
-    tested_var, fmri_masked, confounding_vars=covariates,
-    model_intercept=False,
-    n_perm=5000,  # Idealy, this should be 10,000
-    n_jobs=1)  # can be changed to use more CPUs
-neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals))
+### Anova (parametric F-scores) ###############################################
+from nilearn._utils.fixes import f_regression
+_, pvals_anova = f_regression(fmri_masked, tested_var, center=True)
+pvals_anova *= fmri_masked.shape[1]
+pvals_anova[np.isnan(pvals_anova)] = 1
+pvals_anova[pvals_anova > 1] = 1
+neg_log_pvals_anova = - np.log10(pvals_anova)
+neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
+    neg_log_pvals_anova)
 
-# without covariates
-neg_log_pvals2, _, _ = permuted_ols(
-    tested_var, fmri_masked, confounding_vars=None, model_intercept=False,
+### Perform massively univariate analysis with permuted OLS ###################
+neg_log_pvals_permuted_ols, _, _ = permuted_ols(
+    tested_var, fmri_masked,
+    model_intercept=True,
     n_perm=5000,  # Idealy, this should be 10,000
     n_jobs=1)  # can be changed to use more CPUs
-neg_log_pvals2_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals2))
+neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
+    np.ravel(neg_log_pvals_permuted_ols))
 
 ### Visualization #############################################################
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import ImageGrid
 
 # Here, we should use a structural image as a background, when available.
 
 # Various plotting parameters
 picked_slice = 30  # plotted slice
 vmin = - np.log10(0.1)  # 10% corrected
-vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals2))
-grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
-                 axes_pad=0.05, add_all=True, label_mode="1",
-                 share_all=True, cbar_location="right", cbar_mode="single",
-                 cbar_size="7%", cbar_pad="1%")
+vmax = min(np.amax(neg_log_pvals_permuted_ols),
+           np.amax(neg_log_pvals_anova))
 
-# Plot p-values of the model without covariates
-ax = grid[0]
-p_ma = np.ma.masked_less(neg_log_pvals2_unmasked.get_data(), vmin)
-ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
-          interpolation='nearest', cmap=plt.cm.gray)
-ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title('Without covariates' + '\n' +
-             r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + ' +
-             '\nmax-type correction)' +
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
-ax.axis('off')
+# Here, we should use a structural image as a background, when available.
 
-# Plot p-values of the model with covariates
-ax = grid[1]
-p_ma = np.ma.masked_less(neg_log_pvals_unmasked.get_data(), vmin)
-ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
-          interpolation='nearest', cmap=plt.cm.gray)
-im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-               cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title('With covariates' + '\n' +
-             r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
-             '\nmax-type correction)' +
-             # divide number of detections by 9 to compensate for resampling
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
-ax.axis('off')
+# Plot Anova p-values
+plt.figure(figsize=(5, 5))
+masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(), vmin)
+im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
+                interpolation='nearest', cmap=plt.cm.autumn,
+                vmin=vmin,
+                vmax=np.amax(neg_log_pvals_anova_unmasked.get_data()))
+plt.axis('off')
+plt.colorbar(im)
+plt.title(r'Negative $\log_{10}$ p-values'
+          + '\n(Non-parametric + max-type correction)\n')
+plt.tight_layout()
 
-grid[0].cax.colorbar(im)
-plt.subplots_adjust(0.02, 0.03, .95, 0.83)
+# Plot permuted OLS p-values
+plt.figure(figsize=(5, 5))
+vmin = -np.log10(0.1)  # 10% corrected
+masked_pvals = np.ma.masked_less(
+    neg_log_pvals_permuted_ols_unmasked.get_data(), vmin)
+print '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum()
+im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
+                interpolation='nearest', cmap=plt.cm.autumn,
+                vmin=vmin,
+                vmax=np.amax(neg_log_pvals_permuted_ols_unmasked).get_data())
+plt.axis('off')
+plt.colorbar(im)
+plt.title(r'Negative $\log_{10}$ p-values'
+          + '\n(Non-parametric + max-type correction)\n')
+plt.tight_layout()
+
 plt.show()
