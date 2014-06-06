@@ -1588,20 +1588,20 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "calculation (auditory and visual cue)",
             "calculation (auditory cue) vs sentences listening",
             "calculation (visual cue) vs sentence reading",
-            "calculation vs sentences listening/reading",
+            "calculation vs sentences",
             "calculation (auditory cue) and sentence listening",
             "calculation (visual cue) and sentence reading",
             "calculation and sentence listening/reading",
             "calculation (auditory cue) and sentence listening vs "
             "calculation (visual cue) and sentence reading",
-            "calculation (visual cue) and sentence reading vs checkerboard"
+            "calculation (visual cue) and sentence reading vs checkerboard",
             "calculation and sentence listening/reading vs button press",
             "left button press (auditory cue)",
             "left button press (visual cue)",
             "left button press",
             "left vs right button press",
-            "right button press (auditory cue)": "right auditory click",
-            "right button press (visual cue)": "right visual click",
+            "right button press (auditory cue)",
+            "right button press (visual cue)",
             "right button press",
             "right vs left button press",
             "button press (auditory cue) vs sentences listening",
@@ -1729,8 +1729,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         # Calculation + Sentences
         "calculation (auditory cue) and sentence listening":
             "auditory processing",
-        "calculation (visual cue) and sentence reading": "visual processing",
-        "calculation and sentence listening/reading":
+        "calculation (visual cue) and sentence reading":
+            "visual processing",
+        "calculation (visual cue) and sentence reading vs "
+        "calculation (auditory cue) and sentence listening":
             "visual processing vs auditory processing",
         "calculation (auditory cue) and sentence listening vs "
         "calculation (visual cue) and sentence reading":
@@ -1747,7 +1749,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
            + "right auditory&visual click",
         "right button press (auditory cue)": "right auditory click",
         "right button press (visual cue)": "right visual click",
-        "right button press": "right auditory&visual click",
+        "right button press": "right auditory & visual click",
         "right vs left button press": "right auditory & visual click "
            + "vs left auditory&visual click",
         "button press (auditory cue) vs sentences listening":
@@ -1902,7 +1904,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
             Paths to nifti contrast maps
 
     """
-    return fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
+    return fetch_localizer_contrasts(["calculation vs sentences"],
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,

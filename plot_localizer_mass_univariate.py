@@ -27,15 +27,17 @@ from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 
 ### Load Localizer calculation contrast #######################################
-n_samples = 50
-dataset_files = datasets.fetch_localizer_calculation_task(n_subjects=n_samples)
-tested_var = dataset_files.ext_vars['mot']
+n_samples = 94
+dataset_files = datasets.fetch_localizer_contrasts(
+    ['left button press (auditory cue)'],
+    n_subjects=n_samples)
+tested_var = dataset_files.ext_vars['pseudo']
 # Quality check / Remove subjects with bad tested variate
 mask_quality_check = np.where(tested_var != 'None')[0]
 n_samples = mask_quality_check.size
 gray_matter_maps = [dataset_files.cmaps[i] for i in mask_quality_check]
 tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
-print("Actual number of subjects after quality check: %d" % n_samples)
+#print("Actual number of subjects after quality check: %d" % n_samples)
 
 ### Mask data #################################################################
 nifti_masker = NiftiMasker(
@@ -57,8 +59,8 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 neg_log_pvals_permuted_ols, _, _ = permuted_ols(
     tested_var, fmri_masked,
     model_intercept=True,
-    n_perm=5000,  # Idealy, this should be 10,000
-    n_jobs=1)  # can be changed to use more CPUs
+    n_perm=1000,  # Idealy, this should be 10,000
+    n_jobs=-1)  # can be changed to use more CPUs
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_permuted_ols))
 
@@ -67,7 +69,7 @@ neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
 # Here, we should use a structural image as a background, when available.
 
 # Various plotting parameters
-picked_slice = 30  # plotted slice
+picked_slice = 21  # plotted slice
 vmin = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals_permuted_ols),
            np.amax(neg_log_pvals_anova))
@@ -77,30 +79,32 @@ vmax = min(np.amax(neg_log_pvals_permuted_ols),
 # Plot Anova p-values
 plt.figure(figsize=(5, 5))
 masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(), vmin)
+plt.imshow(np.rot90(nifti_masker.mask_img_.get_data()[:, :, picked_slice]),
+           interpolation='nearest', cmap=plt.cm.gray)
 im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
                 interpolation='nearest', cmap=plt.cm.autumn,
-                vmin=vmin,
-                vmax=np.amax(neg_log_pvals_anova_unmasked.get_data()))
+                vmin=vmin, vmax=vmax)
 plt.axis('off')
 plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values'
-          + '\n(Non-parametric + max-type correction)\n')
+          + '\n(Parametric + Bonferroni correction)'
+          + '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum())
 plt.tight_layout()
 
 # Plot permuted OLS p-values
 plt.figure(figsize=(5, 5))
-vmin = -np.log10(0.1)  # 10% corrected
 masked_pvals = np.ma.masked_less(
     neg_log_pvals_permuted_ols_unmasked.get_data(), vmin)
-print '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum()
+plt.imshow(np.rot90(nifti_masker.mask_img_.get_data()[:, :, picked_slice]),
+           interpolation='nearest', cmap=plt.cm.gray)
 im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
                 interpolation='nearest', cmap=plt.cm.autumn,
-                vmin=vmin,
-                vmax=np.amax(neg_log_pvals_permuted_ols_unmasked).get_data())
+                vmin=vmin, vmax=vmax)
 plt.axis('off')
 plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values'
-          + '\n(Non-parametric + max-type correction)\n')
+          + '\n(Non-parametric + max-type correction)'
+          + '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum())
 plt.tight_layout()
 
 plt.show()
