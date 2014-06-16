@@ -39,6 +39,25 @@ uses.
    fetch_yeo_2011_atlas
    load_harvard_oxford
 
+.. _decoding_ref:
+
+:mod:`nilearn.decoding`: Decoding
+=================================
+
+.. automodule:: nilearn.decoding
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.decoding
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+   
+   SearchLight
+
 .. _decomposition_ref:
 
 :mod:`nilearn.decompositon`: Multivariate decompositions
@@ -135,32 +154,11 @@ uses.
    :func:`nilearn.masking.apply_mask`,
    :func:`nilearn.masking.unmask`
 
-.. _decoding_ref:
 
-:mod:`nilearn.decoding`: Decoding
-=================================
+:mod:`nilearn.mass_univariate`: Mass-univariate analysis
+=========================================================
 
-.. automodule:: nilearn.decoding
-   :no-members:
-   :no-inherited-members:
-
-**Classes**:
-
-.. currentmodule:: nilearn.decoding
-
-.. autosummary::
-   :toctree: generated/
-   :template: class.rst
-   
-   SearchLight
-
-
-.. _signal_ref:
-
-:mod:`nilearn.signal`: Preprocessing Time Series
-================================================
-
-.. automodule:: nilearn.signal
+.. automodule:: nilearn.mass_univariate
    :no-members:
    :no-inherited-members:
 
@@ -175,3 +173,26 @@ uses.
    :template: function.rst
 
    permuted_ols
+
+.. _signal_ref:
+
+:mod:`nilearn.signal`: Preprocessing Time Series
+================================================
+
+.. automodule:: nilearn.signal
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.signal
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   clean
+
+
