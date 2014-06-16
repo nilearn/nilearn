@@ -12,6 +12,8 @@ from nibabel import Nifti1Image
 
 from .. import _utils
 
+###############################################################################
+# Affine utils
 
 def to_matrix_vector(transform):
     """Split an homogeneous transform into its matrix and vector components.
@@ -127,6 +129,9 @@ class BoundingBoxError(ValueError):
     pass
 
 
+###############################################################################
+# Resampling
+
 def _resample_one_img(data, A, A_inv, b, target_shape,
                       interpolation_order, out, copy=True):
     "Internal function for resample_img, do not use"
@@ -165,7 +170,6 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
                                             order=0)
         out[not_finite] = np.nan
     return out
-
 
 
 def resample_img(niimg, target_affine=None, target_shape=None,
@@ -369,3 +373,78 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                           copy=not input_niimg_is_string)
 
     return Nifti1Image(resampled_data, target_affine)
+
+
+###############################################################################
+# Reordering the axes of an image
+
+def reorder_img(niimg, resample=False):
+    """ Returns an image with the affine diagonal.
+
+        Parameters
+        -----------
+        resample: boolean, optional
+            If resample is False, no resampling is performed, the
+            axis are only permuted. If it is impossible
+            to get xyz ordering by permuting the axis, a
+            'CompositionError' is raised.
+    """
+    affine = niimg.get_affine()
+    A, b = to_matrix_vector(affine)
+
+    if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
+        # The affine is not nearly diagonal
+        if not resample:
+            raise ValueError(
+            'Cannot reorder the axis: the image affine contains rotations'
+                )
+        else:
+            # Identify the voxel size using a QR decomposition of the
+            # affine
+            R, Q = np.linalg.qr(affine[:3, :3])
+            target_affine = np.diag(np.abs(np.diag(Q))[
+                                                np.abs(R).argmax(axis=1)])
+            return resample_img(niimg, target_affine=target_affine)
+
+    axis_numbers = np.argmax(np.abs(A), axis=0)
+    data = niimg.get_data()
+    while not np.all(np.sort(axis_numbers) == axis_numbers):
+        first_inversion = np.argmax(np.diff(axis_numbers)<0)
+        axis1 = first_inversion + 1
+        axis2 = first_inversion
+        data = np.swapaxes(data, axis1, axis2)
+        order = np.array((0, 1, 2, 3))
+        order[axis1] = axis2
+        order[axis2] = axis1
+        affine = affine.T[order].T
+        A, b = to_matrix_vector(affine)
+        axis_numbers = np.argmax(np.abs(A), axis=0)
+
+    # Now make sure the affine is positive
+    pixdim = np.diag(A).copy()
+    if pixdim[0] < 0:
+        b[0] = b[0] + pixdim[0]*(data.shape[0] - 1)
+        pixdim[0] = -pixdim[0]
+        slice1 = slice(None, None, -1)
+    else:
+        slice1 = slice(None, None, None)
+    if pixdim[1] < 0:
+        b[1] = b[1] + 1 + pixdim[1]*(data.shape[1] - 1)
+        pixdim[1] = -pixdim[1]
+        slice2 = slice(None, None, -1)
+    else:
+        slice2 = slice(None, None, None)
+    if pixdim[2] < 0:
+        b[2] = b[2] + 1 + pixdim[2]*(data.shape[2] - 1)
+        pixdim[2] = -pixdim[2]
+        slice3 = slice(None, None, -1)
+    else:
+        slice3 = slice(None, None, None)
+    data = data[slice1, slice2, slice3]
+    affine = from_matrix_vector(np.diag(pixdim), b)
+
+    niimg = Nifti1Image(data, affine)
+
+    return niimg
+
+

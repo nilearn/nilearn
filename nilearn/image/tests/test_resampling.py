@@ -1,9 +1,10 @@
 """
 Test the resampling code.
 """
+import copy
 
 from nose.tools import assert_equal, assert_raises, assert_false, \
-    assert_almost_equal
+    assert_true, assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 try:
@@ -28,7 +29,8 @@ import numpy as np
 
 from nibabel import Nifti1Image
 
-from ..resampling import resample_img, BoundingBoxError
+from ..resampling import resample_img, BoundingBoxError, reorder_img, \
+    from_matrix_vector
 from ..._utils import testing
 
 ###############################################################################
@@ -402,3 +404,57 @@ def test_resampling_nan():
     resampled_data = resampled_img.get_data()
     np.testing.assert_allclose(10,
                 resampled_data[np.isfinite(resampled_data)])
+
+
+def test_reorder_img():
+    # We need to test on a square array, as rotation does not change
+    # shape, whereas reordering does.
+    shape = (5, 5, 5, 2, 2)
+    rng = np.random.RandomState(42)
+    data = rng.rand(*shape)
+    affine = np.eye(4)
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
+    ref_im = Nifti1Image(data, affine)
+    # Test with purely positive matrices and compare to a rotation
+    for theta, phi in np.random.randint(4, size=(5, 2)):
+        rot = rotation(theta*np.pi/2, phi*np.pi/2)
+        rot[np.abs(rot) < 0.001] = 0
+        rot[rot > 0.9] = 1
+        rot[rot < -0.9] = 1
+        b = 0.5 * np.array(shape[:3])
+        new_affine = from_matrix_vector(rot, b)
+        rot_im = resample_img(ref_im, target_affine=new_affine)
+        np.testing.assert_array_equal(rot_im.affine, new_affine)
+        np.testing.assert_array_equal(rot_im.get_data().shape, shape)
+        reordered_im = reorder_img(rot_im)
+        np.testing.assert_array_equal(reordered_im.affine[:3, :3],
+                                      np.eye(3))
+        np.testing.assert_almost_equal(reordered_im.get_data(),
+                                       data)
+
+    # Create a non-diagonal affine, and check that we raise a sensible
+    # exception
+    affine[1, 0] = 0.1
+    ref_im = Nifti1Image(data, affine)
+    assert_raises(ValueError, reorder_img, ref_im)
+
+    # Test flipping an axis
+    data = rng.rand(*shape)
+    for i in (0, 1, 2):
+        # Make a diagonal affine with a negative axis, and check that
+        # can be reordered, also vary the shape
+        shape = (i+1, i+2, 3-i)
+        affine = np.eye(4)
+        affine[i, i] *= -1
+        img = Nifti1Image(data, affine)
+        orig_img = copy.copy(img)
+        #x, y, z = img.get_world_coords()
+        #sample = img.values_in_world(x, y, z)
+        img2 = reorder_img(img)
+        # Check that img has not been changed
+        np.testing.assert_array_equal(img.affine, orig_img.affine)
+        np.testing.assert_array_equal(img.get_data(),
+                                      orig_img.get_data())
+        # Test that the affine is indeed diagonal:
+        np.testing.assert_array_equal(img2.affine[:3, :3],
+                                      np.diag(np.diag(img2.affine[:3, :3])))
