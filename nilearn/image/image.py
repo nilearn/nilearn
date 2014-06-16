@@ -12,6 +12,7 @@ import numpy as np
 from scipy import ndimage
 import nibabel
 from sklearn.externals.joblib import Parallel, delayed
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
