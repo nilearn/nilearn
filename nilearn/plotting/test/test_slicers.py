@@ -13,8 +13,7 @@ except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
 from ..slicers import OrthoSlicer
-
-from ..anat_cache import find_mni_template, _AnatCache
+from ...datasets import load_mni152_template
 
 ################################################################################
 # Some smoke testing for graphics-related code
@@ -22,14 +21,12 @@ from ..anat_cache import find_mni_template, _AnatCache
 def test_demo_ortho_slicer():
     # This is only a smoke test
     # conditioned on presence of MNI templated
-    if not find_mni_template():
-        raise nose.SkipTest("MNI Template is absent for the smoke test")
     mp.use('svg', warn=False)
     import pylab as pl
     pl.switch_backend('svg')
     pl.clf()
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
-    img, _ = _AnatCache.get_anat()
+    img = load_mni152_template()
     oslicer.add_overlay(img, cmap=pl.cm.gray)
 
 

@@ -65,6 +65,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
             cut_coords = get_cut_coords(data)
 
         img = nibabel.Nifti1Image(data, affine)
+
     slicer = SLICERS[slicer].init_with_figure(img,
                                           threshold=threshold,
                                           cut_coords=cut_coords,
