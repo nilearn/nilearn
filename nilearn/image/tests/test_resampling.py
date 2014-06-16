@@ -458,3 +458,4 @@ def test_reorder_img():
         # Test that the affine is indeed diagonal:
         np.testing.assert_array_equal(img2.affine[:3, :3],
                                       np.diag(np.diag(img2.affine[:3, :3])))
+        assert_true(np.all(np.diag(img2.affine) >= 0))
