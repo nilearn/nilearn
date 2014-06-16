@@ -9,11 +9,10 @@ For a demo, see the 'demo_plot_img' function.
 
 """
 
-# Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
+# Author: Gael Varoquaux, Chris Filo Gorgolewski
 # License: BSD
 
 # Standard library imports
-import warnings
 import operator
 
 # Standard scientific libraries imports (more specific imports are
@@ -36,12 +35,72 @@ from .slicers import SLICERS
 from .edge_detect import _fast_abs_percentile
 
 ################################################################################
-# Helper functions for 2D plotting of activation maps
-################################################################################
+# Core, usage-agnostic functions
+
+def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
+             figure=None, axes=None, title=None, threshold=None,
+             annotate=True, draw_cross=True, black_bg=False,
+             bg_vmin=None, bg_vmax=None, **kwargs):
+    """ Internal function, please refer to the docstring of plot_img
+    """
+    if img is not False and img is not None:
+        img = _utils.check_niimg(img)
+        data = img.get_data()
+        affine = img.get_affine()
+
+        # Remove NaNs
+        nan_mask = np.isnan(np.asarray(data))
+        if np.any(nan_mask):
+            data = data.copy()
+            data[nan_mask] = 0
+        del nan_mask
+
+        # Deal with automatic settings of plot parameters
+        if threshold == 'auto':
+            # Threshold epsilon above a percentile value, to be sure that some
+            # voxels are indeed threshold
+            threshold = _fast_abs_percentile(data) + 1e-5
+
+        if cut_coords is None and slicer in 'xyz':
+            cut_coords = get_cut_coords(data)
+
+        img = nibabel.Nifti1Image(data, affine)
+    slicer = SLICERS[slicer].init_with_figure(img,
+                                          threshold=threshold,
+                                          cut_coords=cut_coords,
+                                          figure=figure, axes=axes,
+                                          black_bg=black_bg)
+
+
+    if bg_img is not None:
+        slicer.add_overlay(nibabel.Nifti1Image(data, affine),
+                           cmap=pl.cmap, vmin=bg_vmin, vmax=bg_vmax,
+                           **kwargs)
+
+    if img is not None and img is not False:
+        if threshold:
+            data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
+        slicer.add_overlay(nibabel.Nifti1Image(data, affine))
+
+    if black_bg:
+        # To have a black background in PDF, we need to create a
+        # patch in black for the background
+        for ax in slicer.axes.values():
+            ax.ax.imshow(np.zeros((2, 2, 3)),
+                         extent=[-5000, 5000, -5000, 5000],
+                         zorder=-500)
+
+    if annotate:
+        slicer.annotate()
+    if draw_cross:
+        slicer.draw_cross()
+    if title is not None and not title == '':
+        slicer.title(title)
+    return slicer
 
 
 def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
-             axes=None, title=None, threshold=None, 
+             axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
@@ -88,74 +147,40 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
     """
-    
-    niimg = _utils.check_niimg(niimg)
-    data = niimg.get_data()
-    affine = niimg.get_affine()
-
-    nan_mask = np.isnan(np.asarray(data))
-    if np.any(nan_mask):
-        data = data.copy()
-        data[nan_mask] = 0
-    del nan_mask
-
-    # Deal with automatic settings of plot parameters
-    if threshold == 'auto':
-        # Threshold epsilon above a percentile value, to be sure that some
-        # voxels are indeed threshold
-        threshold = _fast_abs_percentile(data) + 1e-5
-
-    if cut_coords is None and slicer in 'xyz':
-        cut_coords = get_cut_coords(data)
-
-    niimg = nibabel.Nifti1Image(data, affine)
-    slicer = SLICERS[slicer].init_with_figure(niimg,
-                                          threshold=threshold,
-                                          cut_coords=cut_coords,
-                                          figure=figure, axes=axes,
-                                          black_bg=black_bg)
-
-    if threshold:
-        data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-
-    slicer.add_overlay(nibabel.Nifti1Image(data, affine), **kwargs)
-    if annotate:
-        slicer.annotate()
-    if draw_cross:
-        slicer.draw_cross()
+    slicer = _plot_img_with_bg(niimg, cut_coords=cut_coords,
+                    slicer=slicer, figure=figure, axes=axes, title=title,
+                    threshold=threshold, annotate=annotate,
+                    draw_cross=draw_cross,
+                    black_bg=black_bg, **kwargs)
     return slicer
 
 
-def _plot_anat_with_slicer(slicer, anat_img, title=None,
-               annotate=True, draw_cross=True, dim=False, cmap=pl.cm.gray):
-    """ Internal function used to plot anatomy
+################################################################################
+# Usage-specific functions
+
+def _load_anat(anat_img, dim=False, black_bg='auto'):
+    """ Internal function used to plot anatomy, for optional diming
     """
     canonical_anat = False
     if anat_img is None:
-        try:
-            anat_img, vmax_anat = _AnatCache.get_anat()
-            canonical_anat = True
-        except OSError, e:
-            anat_img = False
-            warnings.warn(repr(e))
+        anat_img, vmax_anat = _AnatCache.get_anat()
+        canonical_anat = True
 
-    black_bg = slicer._black_bg
-    # XXX: Check that we should indeed plot an anat: we have one, and the
-    # cut_coords are in its range
-
+    vmin = None
+    vmax = None
     if anat_img is not False:
+        anat_img = _utils.check_niimg(anat_img)
         if canonical_anat:
             # We special-case the 'canonical anat', as we don't need
             # to do a few transforms to it.
             vmin = 0
             vmax = vmax_anat
+            if black_bg == 'auto':
+                black_bg = False
         elif dim:
             anat = anat_img.get_data()
             vmin = anat.min()
             vmax = anat.max()
-        else:
-            vmin = None
-            vmax = None
         if dim:
             vmean = .5*(vmin + vmax)
             ptp = .5*(vmax - vmin)
@@ -165,44 +190,22 @@ def _plot_anat_with_slicer(slicer, anat_img, title=None,
                 vmax = vmean + (1+dim)*ptp
             else:
                 vmin = vmean - (1+dim)*ptp
-        slicer.add_overlay(anat_img, cmap=cmap, vmin=vmin, vmax=vmax)
-
-        if annotate:
-            slicer.annotate()
-        if draw_cross:
-            slicer.draw_cross()
-
-    if black_bg:
-        # To have a black background in PDF, we need to create a
-        # patch in black for the background
-        for ax in slicer.axes.values():
-            ax.ax.imshow(np.zeros((2, 2, 3)),
-                         extent=[-5000, 5000, -5000, 5000],
-                         zorder=-500)
-
-    if title is not None and not title == '':
-        slicer.title(title)
-    return slicer
+    if black_bg == 'auto':
+        black_bg = True
+    return anat_img, black_bg, vmin, vmax
 
 
 def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
               figure=None, axes=None, title=None, annotate=True,
-              draw_cross=True, black_bg=False, dim=False, cmap=pl.cm.gray):
-    """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
+              draw_cross=True, black_bg='auto', dim=False, cmap=pl.cm.gray):
+    """ Plot cuts of an anatomical image (by default 3 cuts:
+        Frontal, Axial, and Lateral)
 
         Parameters
         ----------
-        anat : 3D ndarray, optional
+        anat_img : nifti-image like object
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to
-            MNI space. This parameter is not used when the default
-            anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
-        figure : integer or matplotlib figure, optional
-            Matplotlib figure used or its number. If None is given, a
-            new figure is created.
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
@@ -241,13 +244,13 @@ def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    slicer = SLICERS[slicer].init_with_figure(img=anat_img,
-                                          threshold=0, cut_coords=cut_coords,
-                                          figure=figure, axes=axes,
-                                          black_bg=black_bg)
-
-    _plot_anat_with_slicer(slicer, anat_img, title=title,
-               annotate=annotate, draw_cross=draw_cross, dim=dim, cmap=cmap)
+    anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
+                                                dim=dim, black_bg=black_bg)
+    slicer = plot_img(anat_img, cut_coords=cut_coords, slicer=slicer,
+                      figure=figure, axes=axes, title=title,
+                      threshold=None, annotate=annotate,
+                      draw_cross=draw_cross, black_bg=black_bg,
+                      vmin=vmin, vmax=vmax)
     return slicer
 
 
