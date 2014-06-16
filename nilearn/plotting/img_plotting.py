@@ -214,7 +214,7 @@ def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
         ----------
         anat : 3D ndarray, optional
             The anatomical image to be used as a background. If None is
-            given, nipy tries to find a T1 template.
+            given, nilearn tries to find a T1 template.
         anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to
             MNI space. This parameter is not used when the default
