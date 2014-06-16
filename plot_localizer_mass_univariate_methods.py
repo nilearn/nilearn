@@ -1,21 +1,18 @@
 """
-Massively univariate analysis of a computation task from the Localizer dataset
-==============================================================================
+Massively univariate analysis of a motor task from the Localizer dataset
+========================================================================
 
-A permuted Ordinary Least Squares algorithm is run at each voxel in
-order to determine which voxels are specifically active when a healthy subject
-performs a computation task as opposed to a sentence reading task.
-The same analysis is performed with a confounding variate (a score that
-measures the subject's performance on complex calculation).
+This example shows the results obtained in a massively univariate
+analysis performed at the inter-subject level with various methods.
+We use the [left button press (auditory cue)] task from the Localizer
+dataset and seek association between the contrast values and a variate
+that measures the speed of pseudo-word reading. No confounding variate
+is included in the model.
 
-The example shows the differences that exist between two similar models:
-(i) a test of the intercept without confounding variate;
-(ii) the same test with a confounding variate.
-It shows the importance of carefully choosing the model variates as the
-results largely depend on it.
+1. A standard Anova is performed. Data smoothed at 5 voxels FWHM are used.
 
-We use permuted OLS to perform the analysis as it is the only tools that can
-easily deal with covariates for now.
+2. A permuted Ordinary Least Squares algorithm is run at each voxel. Data
+   smoothed at 5 voxels FWHM are used.
 
 
 """
@@ -26,24 +23,23 @@ from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 
-### Load Localizer calculation contrast #######################################
+### Load Localizer contrast ###################################################
 n_samples = 94
 dataset_files = datasets.fetch_localizer_contrasts(
-    ['left button press (auditory cue)'],
-    n_subjects=n_samples)
+    ['left button press (auditory cue)'], n_subjects=n_samples)
 tested_var = dataset_files.ext_vars['pseudo']
 # Quality check / Remove subjects with bad tested variate
 mask_quality_check = np.where(tested_var != 'None')[0]
 n_samples = mask_quality_check.size
-gray_matter_maps = [dataset_files.cmaps[i] for i in mask_quality_check]
+contrast_maps = [dataset_files.cmaps[i] for i in mask_quality_check]
 tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
-#print("Actual number of subjects after quality check: %d" % n_samples)
+print("Actual number of subjects after quality check: %d" % n_samples)
 
 ### Mask data #################################################################
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
     memory='nilearn_cache', memory_level=1)  # cache options
-fmri_masked = nifti_masker.fit_transform(gray_matter_maps)
+fmri_masked = nifti_masker.fit_transform(contrast_maps)
 
 ### Anova (parametric F-scores) ###############################################
 from nilearn._utils.fixes import f_regression
@@ -59,14 +55,12 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 neg_log_pvals_permuted_ols, _, _ = permuted_ols(
     tested_var, fmri_masked,
     model_intercept=True,
-    n_perm=1000,  # Idealy, this should be 10,000
-    n_jobs=-1)  # can be changed to use more CPUs
+    n_perm=5000,  # 5,000 for the sake of time. Idealy, this should be 10,000
+    n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_permuted_ols))
 
 ### Visualization #############################################################
-
-# Here, we should use a structural image as a background, when available.
 
 # Various plotting parameters
 picked_slice = 21  # plotted slice
