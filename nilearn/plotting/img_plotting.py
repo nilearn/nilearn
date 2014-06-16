@@ -250,7 +250,7 @@ def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      vmin=vmin, vmax=vmax)
+                      vmin=vmin, vmax=vmax, cmap=cmap)
     return slicer
 
 
