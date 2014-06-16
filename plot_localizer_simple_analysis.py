@@ -51,7 +51,7 @@ vmax = np.amax(neg_log_pvals_anova)
 # Here, we should use a structural image as a background, when available.
 
 # Plot Anova p-values
-plt.figure(figsize=(5, 5))
+plt.figure(figsize=(5.5, 5.5))
 masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(), vmin)
 plt.imshow(np.rot90(nifti_masker.mask_img_.get_data()[:, :, picked_slice]),
            interpolation='nearest', cmap=plt.cm.gray)
@@ -63,6 +63,5 @@ plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values'
           + '\n(Parametric + Bonferroni correction)'
           + '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum())
-plt.tight_layout()
 
 plt.show()
