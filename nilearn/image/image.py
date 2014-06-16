@@ -362,6 +362,65 @@ def crop_img(img, rtol=1e-8, copy=True):
     return _crop_img_to(img, slices, copy=copy)
 
 
+def _check_slices(slices, niimg):
+    return slices
+
+
+class ImageCropper(BaseEstimator, TransformerMixin):
+    """Crops an image along its sampling axes.
+
+    Parameters
+    ==========
+
+    slices: list of slices, default None
+        slices specifying the crop. If `None` is passed, then slices will be
+        specified such that all non-zero (in the sense of the tolerance)
+        voxels will be kept within the new bounding box.
+    rtol: float, default 1e-8
+        If crop is computed, then all voxel values below this relative
+        tolerance value will be considered zero.
+    """
+
+    def __init__(self, slices=None, rtol=1e-8, copy=True):
+        self.slices = slices
+        self.rtol = rtol
+        self.copy = copy
+
+    def fit(self, niimg=None):
+        if self.slices is not None:
+            if niimg is not None:
+                if _check_slices(self.slices, niimg) == False:
+                    raise ValueError(
+                        "Specified slices incompatible with niimg")
+        else:
+            if niimg is None:
+                raise ValueError("Please specify either cropping slices"
+                                 " or a niimg from which to estimate them.")
+
+            niimg = check_niimg(niimg)
+            data = niimg.get_data()
+            infinity_norm = max(-data.min(), data.max())
+            passes_threshold = np.logical_or(
+                data < -self.rtol * infinity_norm,
+                data > self.rtol * infinity_norm)
+
+            if data.ndim == 4:
+                passes_threshold = np.any(passes_threshold, axis=-1)
+            coords = np.array(np.where(passes_threshold))
+            start = coords.min(axis=1)
+            end = coords.max(axis=1) + 1
+
+            # pad with one voxel to avoid resampling problems
+            start = np.maximum(start - 1, 0)
+            end = np.minimum(end + 1, data.shape[:3])
+
+            self.slices = [slice(s, e) for s, e in zip(start, end)]
+        return self
+
+    def transform(self, niimg):
+        return _crop_img_to(niimg, self.slices, self.copy)
+
+
 def _compute_mean(imgs, target_affine=None,
                   target_shape=None, smooth=False):
     from . import resampling
