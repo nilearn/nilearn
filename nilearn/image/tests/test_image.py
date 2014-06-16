@@ -13,6 +13,7 @@ from .. import concat_imgs
 from ..._utils import testing, niimg_conversions
 
 
+
 def test_high_variance_confounds():
     # See also test_signals.test_high_variance_confounds()
     # There is only tests on what is added by image.high_variance_confounds()
@@ -334,3 +335,22 @@ def test_iter_img():
                            expected_data_3d)
         assert_array_equal(img.get_affine(),
                            img_4d.get_affine())
+
+
+def test_image_cropper():
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    affine = np.diag((4, 3, 2, 1))
+    niimg = nibabel.Nifti1Image(data, affine=affine)
+
+    image_cropper = image.ImageCropper()
+
+    cropped_niimg = image_cropper.fit_transform(niimg)
+
+    # correction for padding with "-1"
+    new_origin = np.array((4, 3, 2)) * np.array((2 - 1, 1 - 1, 3 - 1))
+
+    # check that correct part was extracted:
+    # This also corrects for padding
+    assert_true((cropped_niimg.get_data()[1:-1, 1:-1, 1:-1] == 1).all())
+    assert_true(cropped_niimg.shape == (2 + 2, 4 + 2, 3 + 2))
