@@ -97,6 +97,7 @@ uses.
    high_variance_confounds
    smooth_img
    resample_img
+   reorder_img
    crop_img
    mean_img
 

@@ -192,7 +192,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         must also be given. (See notes)
 
     interpolation: str, optional
-        Can be continuous' (default) or 'nearest'. Indicate the resample method
+        Can be 'continuous' (default) or 'nearest'. Indicate the resample method
 
     copy: bool, optional
         If True, guarantees that output array has no memory in common with
@@ -375,20 +375,24 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     return Nifti1Image(resampled_data, target_affine)
 
 
-###############################################################################
-# Reordering the axes of an image
-
 def reorder_img(niimg, resample=False):
-    """ Returns an image with the affine diagonal.
+    """ Returns an image with the affine diagonal (by permuting axes). 
+    The orientation of the new image will be RAS (Right, Anterior, Superior).
+    If it is impossible to get xyz ordering by permuting the axis, a
+    'CompositionError' is raised.
 
         Parameters
         -----------
+        niimg: nilearn nifti image
+            Path to a nifti file or nifti-like object
+        
         resample: boolean, optional
-            If resample is False, no resampling is performed, the
-            axis are only permuted. If it is impossible
-            to get xyz ordering by permuting the axis, a
-            'CompositionError' is raised.
+            If resample is False (default), no resampling is performed, the
+            axis are only permuted. 
     """
+    
+    niimg = _utils.check_niimg(niimg)
+    
     affine = niimg.get_affine()
     A, b = to_matrix_vector(affine)
 
