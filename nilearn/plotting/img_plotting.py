@@ -253,6 +253,60 @@ def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
                       vmin=vmin, vmax=vmax, cmap=cmap)
     return slicer
 
+def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
+             figure=None, axes=None, title=None, annotate=True,
+             draw_cross=True, black_bg=True, cmap=pl.cm.spectral):
+    """ Plot cuts of an EPI image (by default 3 cuts:
+        Frontal, Axial, and Lateral)
+
+        Parameters
+        ----------
+        epi_img : nifti-image like object
+            The EPI (T2*) image
+        cut_coords: None, or a tuple of floats
+            The MNI coordinates of the point where the cut is performed, in
+            MNI coordinates and order.
+            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
+            For slicer == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+        slicer: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts. With 'ortho' three cuts are
+            performed in orthogonal directions
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you whish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        cmap: matplotlib colormap, optional
+            The colormap for the anat
+
+        Notes
+        -----
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+    """
+    slicer = plot_img(epi_img, cut_coords=cut_coords, slicer=slicer,
+                      figure=figure, axes=axes, title=title,
+                      threshold=None, annotate=annotate,
+                      draw_cross=draw_cross, black_bg=black_bg, 
+                      cmap=cmap)
+    return slicer
 
 def demo_plot_img(**kwargs):
     """ Demo activation map plotting.

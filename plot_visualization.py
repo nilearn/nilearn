@@ -8,6 +8,9 @@ Simple example to show Nifti data visualization.
 ### Fetch data ################################################################
 
 from nilearn import datasets
+from nilearn.image.image import mean_img
+from nilearn.plotting.img_plotting import plot_epi
+import matplotlib as mpl
 
 haxby_files = datasets.fetch_haxby(n_subjects=1)
 
@@ -25,39 +28,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Compute the mean EPI: we do the mean along the axis 3, which is time
-mean_img = np.mean(fmri_data, axis=3)
-# Note that this can also be done on Nifti images using
-# nilearn.image.mean_img
+mean_haxby = mean_img(haxby_files.func)
 
-# plt.figure() creates a new figure
-plt.figure(figsize=(7, 4))
-
-# First subplot: coronal view
-# subplot: 1 line, 3 columns and use the first subplot
-plt.subplot(1, 3, 1)
-# Turn off the axes, we don't need it
-plt.axis('off')
-# We use plt.imshow to display an image, and use a 'gray' colormap
-# we also use np.rot90 to rotate the image
-plt.imshow(np.rot90(mean_img[:, 32, :]), interpolation='nearest',
-          cmap=plt.cm.gray)
-plt.title('Coronal')
-
-# Second subplot: sagittal view
-plt.subplot(1, 3, 2)
-plt.axis('off')
-plt.title('Sagittal')
-plt.imshow(np.rot90(mean_img[15, :, :]), interpolation='nearest',
-          cmap=plt.cm.gray)
-
-# Third subplot: axial view
-plt.subplot(1, 3, 3)
-plt.axis('off')
-plt.title('Axial')
-plt.imshow(np.rot90(mean_img[:, :, 32]), interpolation='nearest',
-          cmap=plt.cm.gray)
-plt.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95,
-                   hspace=.02, wspace=.02)
+plot_epi(mean_haxby)
 
 ### Extracting a brain mask ###################################################
 
