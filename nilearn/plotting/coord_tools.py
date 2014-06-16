@@ -26,8 +26,8 @@ from nilearn.image.resampling import get_bounds
 
 def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
-        space. 
-        
+        space.
+
         Parameters
         ----------
         x : number or ndarray

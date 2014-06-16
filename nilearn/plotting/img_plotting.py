@@ -40,7 +40,7 @@ from .edge_detect import _fast_abs_percentile
 ################################################################################
 
 
-def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None, 
+def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
              axes=None, title=None, threshold=None, 
              annotate=True, draw_cross=True, black_bg=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
@@ -126,7 +126,7 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
     return slicer
 
 
-def _plot_anat(slicer, anat_img, title=None,
+def _plot_anat_with_slicer(slicer, anat_img, title=None,
                annotate=True, draw_cross=True, dim=False, cmap=pl.cm.gray):
     """ Internal function used to plot anatomy
     """
@@ -246,7 +246,7 @@ def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
                                           figure=figure, axes=axes,
                                           black_bg=black_bg)
 
-    _plot_anat(slicer, anat_img, title=title,
+    _plot_anat_with_slicer(slicer, anat_img, title=title,
                annotate=annotate, draw_cross=draw_cross, dim=dim, cmap=cmap)
     return slicer
 
