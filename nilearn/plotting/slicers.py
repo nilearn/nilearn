@@ -298,7 +298,7 @@ class BaseSlicer(object):
             else:
                 data = np.ma.masked_inside(data, -threshold, threshold,
                                           copy=False)
-            img = nibabel.Nifti1Image(data, img.affine)
+            img = nibabel.Nifti1Image(data, img.get_affine())
 
         self._map_show(img, type='imshow', **kwargs)
 
@@ -319,7 +319,7 @@ class BaseSlicer(object):
     def _map_show(self, img, type='imshow', **kwargs):
         img = reorder_img(img)
 
-        affine = img.affine
+        affine = img.get_affine()
         data = img.get_data()
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds

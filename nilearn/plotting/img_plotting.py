@@ -23,6 +23,7 @@ import numpy as np
 import nibabel
 
 from nilearn._utils.testing import skip_if_running_nose
+from nilearn import _utils
 
 try:
     import pylab as pl
@@ -39,18 +40,15 @@ from .edge_detect import _fast_abs_percentile
 ################################################################################
 
 
-def plot_img(img, cut_coords=None, anat_img=None,
-             slicer='ortho', figure=None, axes=None, title=None,
-             threshold=None, annotate=True, draw_cross=True,
-             black_bg=False, **kwargs):
+def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None, 
+             axes=None, title=None, threshold=None, 
+             annotate=True, draw_cross=True, black_bg=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
         ----------
-        map : 3D ndarray
-            The activation map, as a 3D image.
-        affine : 4x4 ndarray
-            The affine matrix going from image voxel space to MNI space.
+        niimg: nilearn nifti image
+            Path to a nifti file or nifti-like object
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
@@ -58,14 +56,6 @@ def plot_img(img, cut_coords=None, anat_img=None,
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        anat : 3D ndarray or False, optional
-            The anatomical image to be used as a background. If None, the
-            MNI152 T1 1mm template is used. If False, no anat is displayed.
-        anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to 
-            MNI space. This parameter is not used when the default 
-            anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
         slicer: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts. With 'ortho' three cuts are
             performed in orthogonal directions
@@ -79,11 +69,11 @@ def plot_img(img, cut_coords=None, anat_img=None,
         title : string, optional
             The title dispayed on the figure.
         threshold : a number, None, or 'auto'
-            If None is given, the maps are not thresholded.
-            If a number is given, it is used to threshold the maps:
+            If None is given, the image is not thresholded.
+            If a number is given, it is used to threshold the image:
             values below the threshold are plotted as transparent. If
             auto is given, the threshold is determined magically by
-            analysis of the map.
+            analysis of the image.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -97,21 +87,11 @@ def plot_img(img, cut_coords=None, anat_img=None,
             savefig.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
-
-        Notes
-        -----
-        Arrays should be passed in numpy convention: (x, y, z)
-        ordered.
-
-        Use masked arrays to create transparency:
-
-            import numpy as np
-            map = np.ma.masked_less(map, 0.5)
-            plot_img(map, affine)
     """
-
-    data = img.get_data()
-    affine = img.affine
+    
+    niimg = _utils.check_niimg(niimg)
+    data = niimg.get_data()
+    affine = niimg.get_affine()
 
     nan_mask = np.isnan(np.asarray(data))
     if np.any(nan_mask):
@@ -128,8 +108,8 @@ def plot_img(img, cut_coords=None, anat_img=None,
     if cut_coords is None and slicer in 'xyz':
         cut_coords = get_cut_coords(data)
 
-    img = nibabel.Nifti1Image(data, affine)
-    slicer = SLICERS[slicer].init_with_figure(img,
+    niimg = nibabel.Nifti1Image(data, affine)
+    slicer = SLICERS[slicer].init_with_figure(niimg,
                                           threshold=threshold,
                                           cut_coords=cut_coords,
                                           figure=figure, axes=axes,
@@ -138,11 +118,11 @@ def plot_img(img, cut_coords=None, anat_img=None,
     if threshold:
         data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
 
-
-    _plot_anat(slicer, anat_img, title=title,
-               annotate=annotate, draw_cross=draw_cross)
-
     slicer.add_overlay(nibabel.Nifti1Image(data, affine), **kwargs)
+    if annotate:
+        slicer.annotate()
+    if draw_cross:
+        slicer.draw_cross()
     return slicer
 
 
