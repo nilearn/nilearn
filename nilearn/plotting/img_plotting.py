@@ -74,7 +74,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
 
     if bg_img is not None:
         slicer.add_overlay(nibabel.Nifti1Image(data, affine),
-                           cmap=pl.cmap, vmin=bg_vmin, vmax=bg_vmax,
+                           vmin=bg_vmin, vmax=bg_vmax,
                            **kwargs)
 
     if img is not None and img is not False:
