@@ -425,3 +425,9 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
     assert_equal(len(url_mock.urls), 4)
+    
+def test_load_mni152_template():
+    # All subjects
+    template_nii = datasets.load_mni152_template()
+    assert_equal(template_nii.shape, (91, 109, 91))
+    assert_equal(template_nii.get_header().get_zooms(), (2.0, 2.0, 2.0))

@@ -2085,3 +2085,32 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
         white_matter_maps=wm_maps,
         ext_vars=csv_data,
         data_usage_agreement=data_usage_agreement)
+    
+def load_mni152_template():
+    """Load skullstripped 2mm version of the MNI152 originally distributed with FSL
+
+    Returns
+    -------
+    mni152_template: nibabel object corresponding to the template
+
+
+    References
+    ----------
+    
+    VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and BDCG, 
+    Unbiased average age-appropriate atlases for pediatric studies, NeuroImage, 
+    Volume 54, Issue 1, January 2011, ISSN 1053–8119, 
+    DOI: 10.1016/j.neuroimage.2010.07.033
+    
+    VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased nonlinear 
+    average age-appropriate brain templates from birth to adulthood, NeuroImage, 
+    Volume 47, Supplement 1, July 2009, Page S102 Organization for Human Brain 
+    Mapping 2009 Annual Meeting, 
+    DOI: 10.1016/S1053-8119(09)70884-5
+
+    """
+
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(package_directory, "data", "avg152T1_brain.nii.gz")
+    
+    return nibabel.load(path)
