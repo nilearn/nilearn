@@ -116,7 +116,7 @@ def _get_auto_mask_bounds(img):
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 
-def find_cut_slices(img, direction='z', n_cuts=12, spacing=3):
+def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
 
     Parameters
@@ -127,8 +127,9 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing=3):
         sectional direction; possible values are "x", "y", or "z"
     n_cuts: int, optional (default 12)
         number of cuts in the plot
-    spacing: int, optional (default 3)
+    spacing: 'auto' or int, optional (default 'auto')
         minimum spacing between cuts (in voxels, not milimeters)
+        if 'auto', the spacing is .5 / n_cuts * img_length
 
     Returns
     -------
@@ -148,7 +149,15 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing=3):
     axis = 'xyz'.index(direction)
 
     affine = img.get_affine()
-    data = np.abs(img.get_data()).astype(np.float)
+    data = np.abs(img.get_data())
+    if data.dtype.kind == 'i':
+        data = data.astype(np.float)
+        # We have discreete values: we smooth them in order to have
+        # maxima located at the center of peaks
+        data = ndimage.gaussian_filter(data, 3)
+
+    if spacing == 'auto':
+        spacing = .5 / n_cuts * data.shape[axis]
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 

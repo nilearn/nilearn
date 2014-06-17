@@ -531,9 +531,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         ordered.
     """
     # dim the background
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim, 
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
-    
+
     # make sure that the color range is symmetrical
     stat_map_img = _utils.check_niimg(stat_map_img)
     stat_map_data = stat_map_img.get_data()
@@ -541,7 +541,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     stat_map_min = np.nanmin(stat_map_data)
     vmax = max(-stat_map_min, stat_map_max)
     vmin = -vmax
-    
+
     slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords,
                                display_mode=display_mode,
