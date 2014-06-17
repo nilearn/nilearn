@@ -39,7 +39,7 @@ from . import cm
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False,
-             bg_vmin=None, bg_vmax=None, **kwargs):
+             bg_vmin=None, bg_vmax=None, interpolation="nearest", **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
     if img is not False and img is not None:
@@ -93,12 +93,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
                                  "supported."%len(bg_data.shape))
         slicer.add_overlay(nibabel.Nifti1Image(bg_data, bg_affine),
                            vmin=bg_vmin, vmax=bg_vmax,
-                           cmap=pl.cm.gray)
+                           cmap=pl.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
         if threshold:
             data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-        slicer.add_overlay(nibabel.Nifti1Image(data, affine), **kwargs)
+        slicer.add_overlay(nibabel.Nifti1Image(data, affine), 
+                           interpolation=interpolation, **kwargs)
 
     if black_bg:
         # To have a black background in PDF, we need to create a
@@ -273,7 +274,8 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
               figure=None, axes=None, title=None, annotate=True,
-              draw_cross=True, black_bg='auto', dim=False, cmap=pl.cm.gray):
+              draw_cross=True, black_bg='auto', dim=False, cmap=pl.cm.gray,
+              **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -327,13 +329,13 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      vmin=vmin, vmax=vmax, cmap=cmap)
+                      vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
     return slicer
 
 
 def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
              figure=None, axes=None, title=None, annotate=True,
-             draw_cross=True, black_bg=True, cmap=pl.cm.spectral):
+             draw_cross=True, black_bg=True, cmap=pl.cm.spectral, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -384,7 +386,7 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      cmap=cmap)
+                      cmap=cmap, **kwargs)
     return slicer
 
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
@@ -449,7 +451,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=0.5,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
-                               alpha=alpha, cmap=cmap)
+                               alpha=alpha, cmap=cmap, **kwargs)
     return slicer
 
 
@@ -526,7 +528,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=threshold,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
-                               vmin=vmin, vmax=vmax)
+                               vmin=vmin, vmax=vmax, **kwargs)
     return slicer
 
 ################################################################################
