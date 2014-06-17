@@ -16,9 +16,12 @@ except ImportError:
 
 import nibabel
 
-from ..img_plotting import demo_plot_img, plot_anat, plot_img
-from ..anat_cache import mni_sform, _AnatCache
+from ..img_plotting import demo_plot_roi, plot_anat, plot_img
 
+mni_affine = np.array([[  -2.,    0.,    0.,   90.],
+                        [   0.,    2.,    0., -126.],
+                        [   0.,    0.,    2.,  -72.],
+                        [   0.,    0.,    0.,    1.]])
 
 
 def test_demo_plot_img():
@@ -26,9 +29,9 @@ def test_demo_plot_img():
     mp.use('svg', warn=False)
     import pylab as pl
     pl.switch_backend('svg')
-    demo_plot_img()
+    demo_plot_roi()
     # Test the black background code path
-    demo_plot_img(black_bg=True)
+    demo_plot_roi(black_bg=True)
 
 
 def test_plot_anat():
@@ -38,7 +41,7 @@ def test_plot_anat():
     pl.switch_backend('svg')
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
-    img = nibabel.Nifti1Image(data, mni_sform)
+    img = nibabel.Nifti1Image(data, mni_affine)
     ortho_slicer = plot_anat(img, dim=True)
     ortho_slicer = plot_anat(img, cut_coords=(80, -120, -60))
     # Saving forces a draw, and thus smoke-tests the axes locators
@@ -53,7 +56,7 @@ def test_plot_anat():
     z_slicer.edge_map(img, color='c')
     # Smoke test coordinate finder, with and without mask
     masked_img = nibabel.Nifti1Image(np.ma.masked_equal(data, 0),
-                                     mni_sform)
+                                     mni_affine)
     plot_img(masked_img, slicer='x')
     plot_img(img, slicer='y')
 
@@ -66,7 +69,7 @@ def test_plot_img_empty():
     import pylab as pl
     pl.switch_backend('svg')
     data = np.zeros((20, 20, 20))
-    img = nibabel.Nifti1Image(data, mni_sform)
+    img = nibabel.Nifti1Image(data, mni_affine)
     plot_anat(img)
     plot_img(img, slicer='y', threshold=1)
     pl.close('all')
