@@ -19,12 +19,11 @@ except ImportError:
 
 
 # Local imports
-from .coord_tools import find_xyz_cut_coords
+from .find_cuts import find_xyz_cut_coords, _get_auto_mask_bounds
 from .edge_detect import _edge_map
 from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform,\
             get_mask_bounds
-from .coord_tools import _get_auto_mask_bounds
 
 
 ################################################################################

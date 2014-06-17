@@ -31,7 +31,7 @@ from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
 from .slicers import SLICERS
 from . import cm
-from .coord_tools import find_cut_slices
+from .find_cuts import find_cut_slices
 
 ################################################################################
 # Core, usage-agnostic functions

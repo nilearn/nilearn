@@ -4,7 +4,7 @@ from nose.tools import assert_equal
 
 import nibabel
 
-from ..coord_tools import find_xyz_cut_coords, find_cut_slices
+from ..find_cuts import find_xyz_cut_coords, find_cut_slices
 
 def test_find_cut_coords():
     data = np.zeros((100, 100, 100))

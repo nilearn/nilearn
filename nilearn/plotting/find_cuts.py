@@ -1,12 +1,10 @@
 """
-Misc tools to find activations and cut on maps
+Tools to find activations and cut on maps
 """
 
-# Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
+# Author: Gael Varoquaux
 # License: BSD
 
-# Standard scientific libraries imports (more specific imports are
-# delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
 
