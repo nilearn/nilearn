@@ -24,7 +24,7 @@ mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                         [   0.,    0.,    0.,    1.]])
 
 
-def test_demo_plot_img():
+def test_demo_plot_roi():
     # This is only a smoke test
     mp.use('svg', warn=False)
     import pylab as pl
