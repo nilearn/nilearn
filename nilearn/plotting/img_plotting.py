@@ -125,8 +125,9 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -293,8 +294,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -352,8 +354,9 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -414,8 +417,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -488,8 +492,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
