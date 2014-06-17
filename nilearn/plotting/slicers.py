@@ -205,7 +205,7 @@ class BaseSlicer(object):
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False):
         # deal with "fake" 4D images
-        if len(img.shape) > 3:
+        if img is not None and img is not False and len(img.shape) > 3:
             if len(img.shape) == 4 and img.shape[3] == 1:
                 data = img.get_data()
                 data = data[:,:,:,0]
@@ -214,9 +214,9 @@ class BaseSlicer(object):
                 raise ValueError("The provided volume has %d dimensions. Only" \
                                  " three dimensional volumes volumes are " \
                                  "supported."%len(data.shape))
-                
-        cut_coords = cls.find_cut_coords(img, threshold,
-                                         cut_coords)
+
+        cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
+
         if isinstance(axes, pl.Axes) and figure is None:
             figure = axes.figure
 
@@ -614,11 +614,11 @@ class BaseStackedSlicer(BaseSlicer):
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         if cut_coords is None:
             cut_coords = 12
-        if operator.isNumberType(cut_coords):
+        if (not operator.isSequenceType(cut_coords) and
+                operator.isNumberType(cut_coords)):
             # By default: regularly-spaced cuts in the bounds of the data
             if img is None or img is False:
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
-                lower, upper = bounds['xyz'.index(cls._direction)]
             else:
                 data = img.get_data().copy()
                 affine = img.get_affine()
@@ -636,11 +636,13 @@ class BaseStackedSlicer(BaseSlicer):
                                     )
                     edge_value /= 6
                     mask = np.abs(data - edge_value) > .005*data.ptp()
-                data[mask] = 0
+                # Nifti1Image cannot contain bools
+                mask = mask.astype(np.int)
                 xmin, xmax, ymin, ymax, zmin, zmax = \
-                                get_mask_bounds(mask, affine)
+                        get_mask_bounds(nibabel.Nifti1Image(mask, affine))
                 bounds = (xmin, xmax), (ymin, ymax), (zmin, zmax)
-                cut_coords = np.linspace(lower, upper, cut_coords).tolist()
+            lower, upper = bounds['xyz'.index(cls._direction)]
+            cut_coords = np.linspace(lower, upper, cut_coords).tolist()
 
         return cut_coords
 

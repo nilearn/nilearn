@@ -64,7 +64,7 @@ def find_xyz_cut_coords(map, mask=None, activation_threshold=None):
         offset += [slice_x.start, slice_y.start, slice_z.start]
     # Testing min and max is faster than np.all(my_map == 0)
     if (my_map.max() == 0) and (my_map.min() == 0):
-        return .5*np.array(map.shape)
+        return .5 * np.array(map.shape)
     if activation_threshold is None:
         activation_threshold = fast_abs_percentile(my_map[my_map !=0].ravel(),
                                                    80)
