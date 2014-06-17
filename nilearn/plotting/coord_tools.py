@@ -139,23 +139,48 @@ def find_cut_slices(img, direction='z', n_cuts=12, delta_axis=3):
 
     Notes
     -----
-    This code works by locating the peak activation and taking a few
-    slices before and after
+    This code works by iteratively locating peak activation that are
+    separated by a distance of delta_axis
     """
 
     assert direction in 'xyz'
 
     axis = 'xyz'.index(direction)
-    bounds = _get_auto_mask_bounds(img)[axis]
 
-    data = img.get_data()
+    orig_data = img.get_data()
     affine = img.get_affine()
+    data = np.abs(orig_data)
 
-    max_along_axis = np.unravel_index(np.abs(data).argmax(),
-                                      data.shape)[axis]
-    start = max_along_axis - .5 * delta_axis * n_cuts
-    stop = max_along_axis + .5 * delta_axis * n_cuts
+    slices = [slice(None, None), slice(None, None), slice(None, None)]
 
-    cut_coords = np.linspace(start, stop, n_cuts)
+    cut_coords = list()
 
-    return cut_coords
+    for _ in range(n_cuts):
+        # Find a peak
+        max_along_axis = np.unravel_index(np.abs(data).argmax(),
+                                        data.shape)[axis]
+
+        # XXX: we will end up with fully zeros if n_cuts is too big
+        # Zero out the surroundings of the peak
+        start = max_along_axis - .5 * delta_axis * n_cuts
+        stop = max_along_axis + .5 * delta_axis * n_cuts
+        slices[axis] = slice(start, stop)
+        data[slices] = 0
+
+        cut_coords.append(max_along_axis)
+
+    cut_coords = np.array(cut_coords)
+    cut_coords.sort()
+    # Transform this back in image space
+    kwargs = dict()
+
+    for name in 'xyz':
+        kwargs[name] = np.zeros_like(cut_coords)
+
+    kwargs[direction] = cut_coords
+    kwargs['affine'] = affine
+
+    cut_coords = coord_transform(**kwargs)[axis]
+    # We need to atleast_1d to make sure that when n_cuts is 1 we do
+    # get an iterable
+    return np.atleast_1d(cut_coords)
