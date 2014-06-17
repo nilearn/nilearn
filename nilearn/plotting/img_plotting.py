@@ -242,7 +242,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 # Usage-specific functions
 
 
-def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
+def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
               figure=None, axes=None, title=None, annotate=True,
               draw_cross=True, black_bg='auto', dim=False, cmap=pl.cm.gray):
     """ Plot cuts of an anatomical image (by default 3 cuts:
@@ -358,13 +358,13 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
                       cmap=cmap)
     return slicer
 
-def plot_roi(bg_img, mask_img, cut_coords=None, slicer='ortho',
-             figure=None, axes=None, title=None,
-             annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, **kwargs):
+def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
+             figure=None, axes=None, title=None, annotate=True, draw_cross=True,
+             black_bg='auto', alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, 
+             **kwargs):
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img,
                                                     dim=dim, black_bg=black_bg)
-    slicer = _plot_img_with_bg(img=mask_img, bg_img=bg_img,
+    slicer = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
                                cut_coords=cut_coords, slicer=slicer,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, draw_cross=draw_cross,
