@@ -1586,28 +1586,28 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "calculation (auditory cue)",
             "calculation (visual cue)",
             "calculation (auditory and visual cue)",
-            "calculation (auditory cue) vs sentences listening",
+            "calculation (auditory cue) vs sentence listening",
             "calculation (visual cue) vs sentence reading",
-            "calculation vs sentences listening/reading",
+            "calculation vs sentences",
             "calculation (auditory cue) and sentence listening",
             "calculation (visual cue) and sentence reading",
             "calculation and sentence listening/reading",
             "calculation (auditory cue) and sentence listening vs "
             "calculation (visual cue) and sentence reading",
-            "calculation (visual cue) and sentence reading vs checkerboard"
+            "calculation (visual cue) and sentence reading vs checkerboard",
             "calculation and sentence listening/reading vs button press",
             "left button press (auditory cue)",
             "left button press (visual cue)",
             "left button press",
             "left vs right button press",
-            "right button press (auditory cue)": "right auditory click",
-            "right button press (visual cue)": "right visual click",
+            "right button press (auditory cue)",
+            "right button press (visual cue)",
             "right button press",
             "right vs left button press",
-            "button press (auditory cue) vs sentences listening",
-            "button press (visual cue) vs sentences reading",
+            "button press (auditory cue) vs sentence listening",
+            "button press (visual cue) vs sentence reading",
             "button press vs calculation and sentence listening/reading"}
-        or equivalently:
+        or equivalently on can use the original names:
             {"checkerboard",
             "horizontal checkerboard",
             "vertical checkerboard",
@@ -1721,7 +1721,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         "calculation (auditory cue)": "auditory calculation",
         "calculation (visual cue)": "visual calculation",
         "calculation (auditory and visual cue)": "auditory&visual calculation",
-        "calculation (auditory cue) vs sentences listening":
+        "calculation (auditory cue) vs sentence listening":
             "auditory calculation vs auditory sentences",
         "calculation (visual cue) vs sentence reading":
             "visual calculation vs sentences",
@@ -1729,8 +1729,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         # Calculation + Sentences
         "calculation (auditory cue) and sentence listening":
             "auditory processing",
-        "calculation (visual cue) and sentence reading": "visual processing",
-        "calculation and sentence listening/reading":
+        "calculation (visual cue) and sentence reading":
+            "visual processing",
+        "calculation (visual cue) and sentence reading vs "
+        "calculation (auditory cue) and sentence listening":
             "visual processing vs auditory processing",
         "calculation (auditory cue) and sentence listening vs "
         "calculation (visual cue) and sentence reading":
@@ -1747,12 +1749,12 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
            + "right auditory&visual click",
         "right button press (auditory cue)": "right auditory click",
         "right button press (visual cue)": "right visual click",
-        "right button press": "right auditory&visual click",
+        "right button press": "right auditory & visual click",
         "right vs left button press": "right auditory & visual click "
            + "vs left auditory&visual click",
-        "button press (auditory cue) vs sentences listening":
+        "button press (auditory cue) vs sentence listening":
             "auditory click vs auditory sentences",
-        "button press (visual cue) vs sentences reading":
+        "button press (visual cue) vs sentence reading":
             "visual click vs visual sentences",
         "button press vs calculation and sentence listening/reading":
             "auditory&visual motor vs cognitive processing"}
@@ -1781,15 +1783,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     data_types = ["c map"]
     if get_tmaps:
         data_types.append(["t map"])
-    rql_types = str.join(", ", ["\"" + x + "\"" for x in data_types])
+    rql_types = str.join(", ", ["\"%s\"" % x for x in data_types])
     root_url = "http://brainomics.cea.fr/localizer/"
-    urls = [root_url + "brainomics_data_%d.zip?rql=" % i
-            + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
-                           "X label XL, X identifier XI, "
-                           "X format XF, X description XD, "
-                           "X type IN(%s), X label \"%s\"" % (rql_types, c),
-                           safe=',()')
-            + "&vid=data-zip"
+    urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
+            % (root_url, i,
+               urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
+                            "X label XL, X identifier XI, "
+                            "X format XF, X description XD, "
+                            "X type IN(%s), X label \"%s\"" % (rql_types, c),
+                            safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
     filenames = []
     for s in np.arange(1, n_subjects + 1):
@@ -1798,18 +1800,18 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 name_aux = str.replace(
                     str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
-                    "brainomics_data", "S%02d" % s, name_aux + ".nii.gz")
+                    "brainomics_data", "S%02d" % s, "%s.nii.gz" % name_aux)
                 file_tarball_url = urls[contrast_id]
                 filenames.append((file_path, file_tarball_url, opts))
     # Fetch masks if asked by user
     if get_masks:
-        urls.append(root_url + "/brainomics_data_masks.zip?rql="
-                    + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                   "X type XT, X label XL, X identifier XI, "
-                                   "X format XF, X description XD, "
-                                   "X type IN(\"boolean mask\"), "
-                                   "X label \"mask\"", safe=',()')
-                    + "&vid=data-zip")
+        urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
+                    % (root_url,
+                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
+                                    "X type XT, X label XL, X identifier XI, "
+                                    "X format XF, X description XD, "
+                                    "X type IN(\"boolean mask\"), "
+                                    "X label \"mask\"", safe=',()')))
         for s in np.arange(1, n_subjects + 1):  # 94 subjects available
             file_path = os.path.join(
                 "brainomics_data", "S%02d" % s, "boolean_mask.nii.gz")
@@ -1817,25 +1819,50 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
-        urls.append(root_url + "brainomics_data_anats.zip?rql="
-                    + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                   "X type XT, X label XL, X identifier XI, "
-                                   "X format XF, X description XD, "
-                                   "X type IN(\"normalized T1\"), "
-                                   "X label \"anatomy\"", safe=',()')
-                    + "&vid=data-zip")
+        urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
+                    % (root_url,
+                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
+                                    "X type XT, X label XL, X identifier XI, "
+                                    "X format XF, X description XD, "
+                                    "X type IN(\"normalized T1\"), "
+                                    "X label \"anatomy\"", safe=',()')))
         for s in np.arange(1, n_subjects + 1):
             file_path = os.path.join(
                 "brainomics_data", "S%02d" % s,
                 "normalized_T1_anat_defaced.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))
+    # Fetch subject characteristics (separated in two files)
+    if url is None:
+        url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
+                   % (root_url, urllib.quote("Any X WHERE X is Subject")))
+        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s"
+                    % (root_url,
+                       urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
+                                    "X identifier XI, X datetime XD", safe=',')
+                       ))
+    else:
+        url_csv = "%s/cubicwebexport.csv" % url
+        url_csv2 = "%s/cubicwebexport2.csv" % url
+    filenames += [("cubicwebexport.csv", url_csv, {}),
+                  ("cubicwebexport2.csv", url_csv2, {})]
 
     # Actual data fetching
     files = _fetch_files('brainomics_localizer', filenames, data_dir=data_dir)
     anats = None
     masks = None
     tmaps = None
+    # combine data from both covariates files into one single recarray
+    from numpy.lib.recfunctions import join_by
+    ext_vars_file2 = files[-1]
+    csv_data2 = np.recfromcsv(ext_vars_file2, delimiter=';')
+    files = files[:-1]
+    ext_vars_file = files[-1]
+    csv_data = np.recfromcsv(ext_vars_file, delimiter=';')
+    files = files[:-1]
+    # join_by sorts the output along the key
+    csv_data = join_by('subject_id', csv_data, csv_data2,
+                       usemask=False, asrecarray=True)[:n_subjects]
     if get_anats:
         anats = files[-n_subjects:]
         files = files[:-n_subjects]
@@ -1845,14 +1872,16 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_tmaps:
         tmaps = files(slice(1, len(files) + 1, 2))
         files = files(slice(0, len(files), 2))
-    return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats)
+    return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
+                 ext_vars=csv_data)
 
 
-def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
+def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
     """Fetch calculation task contrast maps from the localizer.
 
     This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
+    to simplify examples reading and understanding. The 'calculation vs
+    sentences' contrast is used.
 
     Parameters
     ----------
@@ -1864,6 +1893,10 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
         Path of the data directory. Used to force data storage in a specified
         location.
 
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
     Returns
     -------
     data: Bunch
@@ -1872,11 +1905,11 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
             Paths to nifti contrast maps
 
     """
-    return fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
+    return fetch_localizer_contrasts(["calculation vs sentences"],
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=None, resume=True, verbose=0)
+                                     url=url, resume=True, verbose=0)
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
@@ -1985,7 +2018,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
     if n_subjects < 1:
         raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
 
-    # pick the archive corrsponding to preprocessings type
+    # pick the archive corresponding to preprocessings type
     if url is None:
         if dartel_version:
             url_images = ('https://www.nitrc.org/frs/download.php/'
@@ -1999,7 +2032,6 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
         url_dua = ('https://www.nitrc.org/frs/download.php/'
                    '6349/data_usage_agreement.txt?i_agree=1&download_now=1')
     else:  # local URL used in tests
-        # we copy the real csv file from tests/data dir to the temp dir
         url_csv = url + "/oasis_cross-sectional.csv"
         url_dua = url + "/data_usage_agreement.txt"
         if dartel_version:
