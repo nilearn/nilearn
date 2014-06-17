@@ -1,12 +1,7 @@
-#!/usr/bin/env python
-
 """
-Functions to do automatic visualization of activation-like maps.
+Functions to do automatic visualization of nifti-like images
 
 Only matplotlib is required.
-
-For a demo, see the 'demo_plot_img' function.
-
 """
 
 # Author: Gael Varoquaux, Chris Filo Gorgolewski
@@ -32,7 +27,7 @@ except ImportError:
 
 from .coord_tools import coord_transform, get_cut_coords
 from .slicers import SLICERS
-from .edge_detect import _fast_abs_percentile
+from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
 
 ################################################################################
@@ -60,7 +55,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
         if threshold == 'auto':
             # Threshold epsilon above a percentile value, to be sure that some
             # voxels are indeed threshold
-            threshold = _fast_abs_percentile(data) + 1e-5
+            threshold = fast_abs_percentile(data) + 1e-5
 
         if cut_coords is None and slicer in 'xyz':
             cut_coords = get_cut_coords(data)

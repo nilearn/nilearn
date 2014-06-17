@@ -1,5 +1,3 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 The Slicer classes.
 
@@ -11,7 +9,7 @@ import operator
 
 import numpy as np
 import nibabel
-from nilearn._utils.testing import skip_if_running_nose
+from .._utils.testing import skip_if_running_nose
 
 try:
     import pylab as pl
@@ -25,7 +23,7 @@ from .coord_tools import coord_transform, get_mask_bounds, \
         find_cut_coords
 from .edge_detect import _edge_map
 from . import cm
-from nilearn.image.resampling import get_bounds, reorder_img
+from ..image.resampling import get_bounds, reorder_img
 
 
 ################################################################################

@@ -1,36 +1,17 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Edget detection routines
+Edge detection routines: this file provides a Canny filter
 """
 
 import numpy as np
 from scipy import ndimage, signal
 
-try:
-    # partition is available only in numpy >= 1.8.0
-    from numpy import partition
-except ImportError:
-    partition = None
+from .._utils.fast_maths import fast_abs_percentile
 
+# Author: Gael Varoquaux
+# License: BSD
 
 ################################################################################
 # Edge detection
-
-def _fast_abs_percentile(map, percentile=80):
-    """ A fast version of the percentile of the absolute value.
-    """
-    if hasattr(map, 'mask'):
-        # Catter for masked arrays
-        map = np.asarray(map[np.logical_not(map.mask)])
-    map = np.abs(map)
-    map = map.ravel()
-    index = int(map.size * .01 * percentile)
-    if partition is not None:
-        # Partial sort: faster than sort
-        return partition(map, index)[index + 1]
-    map.sort()[index]
-
 
 def _orientation_kernel(t):
     """ structure elements for calculating the value of neighbors in several 
@@ -110,8 +91,8 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     # Hysteresis thresholding: find seeds above a high threshold, then
     # expand out until we go below the low threshold
     grad_values = thinned_grad[thinner]
-    high = thinned_grad > _fast_abs_percentile(grad_values, 100*high_threshold)
-    low = thinned_grad >  _fast_abs_percentile(grad_values, 100*low_threshold)
+    high = thinned_grad > fast_abs_percentile(grad_values, 100*high_threshold)
+    low = thinned_grad >  fast_abs_percentile(grad_values, 100*low_threshold)
     edge_mask = ndimage.binary_dilation(high, structure=np.ones((3, 3)), 
                                         iterations=-1, mask=low)
     return grad_mag, edge_mask
