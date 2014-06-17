@@ -36,7 +36,7 @@ from .coord_tools import find_cut_slices
 ################################################################################
 # Core, usage-agnostic functions
 
-def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
+def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False,
              bg_vmin=None, bg_vmax=None, interpolation="nearest", **kwargs):
@@ -60,14 +60,14 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
             # voxels are indeed threshold
             threshold = fast_abs_percentile(data) + 1e-5
 
-        if slicer in 'xyz':
+        if display_mode in 'xyz':
             # Here we use a heuristic for cut indices that is well suited to
             # finding a small number of objects
             if cut_coords is None:
                 cut_coords = 12
             if operator.isNumberType(cut_coords):
                 cut_coords = find_cut_slices(nibabel.Nifti1Image(data, affine),
-                                             direction=slicer,
+                                             direction=display_mode,
                                              n_cuts=cut_coords)
 
         if len(data.shape) > 3:
@@ -80,7 +80,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
-    slicer = SLICERS[slicer].init_with_figure(img,
+    slicer = SLICERS[display_mode].init_with_figure(img,
                                               threshold=threshold,
                                               cut_coords=cut_coords,
                                               figure=figure, axes=axes,
@@ -115,7 +115,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
     return slicer
 
 
-def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
+def plot_img(niimg, cut_coords=None, display_mode='ortho', figure=None,
              axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
@@ -126,13 +126,13 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
             Path to a nifti file or nifti-like object
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        slicer: {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -166,8 +166,8 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
             Extra keyword arguments passed to pylab.imshow
     """
     slicer = _plot_img_with_bg(niimg, cut_coords=cut_coords,
-                    slicer=slicer, figure=figure, axes=axes, title=title,
-                    threshold=threshold, annotate=annotate,
+                    display_mode=display_mode, figure=figure, axes=axes,
+                    title=title, threshold=threshold, annotate=annotate,
                     draw_cross=draw_cross,
                     black_bg=black_bg, **kwargs)
     return slicer
@@ -281,7 +281,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 # Usage-specific functions
 
 
-def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
+def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, display_mode='ortho',
               figure=None, axes=None, title=None, annotate=True,
               draw_cross=True, black_bg='auto', dim=False, cmap=pl.cm.gray,
               **kwargs):
@@ -295,13 +295,13 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
             given, nilearn tries to find a T1 template.
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        slicer: {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
             'z' - axial, 'ortho' - three cuts are performed in orthogonal 
             directions.
@@ -336,7 +336,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
     """
     anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
                                                 dim=dim, black_bg=black_bg)
-    slicer = plot_img(anat_img, cut_coords=cut_coords, slicer=slicer,
+    slicer = plot_img(anat_img, cut_coords=cut_coords,
+                      display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
@@ -344,7 +345,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
     return slicer
 
 
-def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
+def plot_epi(epi_img=None, cut_coords=None, display_mode='ortho',
              figure=None, axes=None, title=None, annotate=True,
              draw_cross=True, black_bg=True, cmap=pl.cm.spectral, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
@@ -356,13 +357,13 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
             The EPI (T2*) image
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        slicer: {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -394,7 +395,8 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    slicer = plot_img(epi_img, cut_coords=cut_coords, slicer=slicer,
+    slicer = plot_img(epi_img, cut_coords=cut_coords,
+                      display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
@@ -402,11 +404,11 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
     return slicer
 
 
-def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
-             figure=None, axes=None, title=None, annotate=True, draw_cross=True,
-             black_bg='auto', alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, 
-             **kwargs):
-    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
+def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+             display_mode='ortho', figure=None, axes=None, title=None,
+             annotate=True, draw_cross=True, black_bg='auto', alpha=0.7,
+             cmap=pl.cm.gist_rainbow, dim=True, **kwargs):
+    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
         Parameters
@@ -420,11 +422,11 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        slicer: {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
             'z' - axial, 'ortho' - three cuts are performed in orthogonal 
             directions.
@@ -461,7 +463,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
                                                     black_bg=black_bg)
 
     slicer = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
-                               cut_coords=cut_coords, slicer=slicer,
+                               cut_coords=cut_coords,
+                               display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=0.5,
@@ -470,9 +473,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
     return slicer
 
 
-def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None, 
-                  slicer='ortho', figure=None, axes=None, title=None,
-                  threshold=1e-6, annotate=True, draw_cross=True, 
+def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+                  display_mode='ortho', figure=None, axes=None, title=None,
+                  threshold=1e-6, annotate=True, draw_cross=True,
                   black_bg='auto', cmap=cm.cold_hot, dim=True, 
                   **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
@@ -488,13 +491,13 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             not specified MNI152 template will be used.
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        slicer: {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -540,7 +543,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     vmin = -vmax
     
     slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
-                               cut_coords=cut_coords, slicer=slicer,
+                               cut_coords=cut_coords,
+                               display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=threshold,

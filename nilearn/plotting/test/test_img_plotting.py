@@ -49,16 +49,16 @@ def test_plot_anat():
     ortho_slicer.edge_map(img, color='c')
 
     # Test saving with empty plot
-    z_slicer = plot_anat(anat_img=False, slicer='z')
+    z_slicer = plot_anat(anat_img=False, display_mode='z')
     pl.savefig(tempfile.TemporaryFile())
-    z_slicer = plot_anat(slicer='z')
+    z_slicer = plot_anat(display_mode='z')
     pl.savefig(tempfile.TemporaryFile())
     z_slicer.edge_map(img, color='c')
     # Smoke test coordinate finder, with and without mask
     masked_img = nibabel.Nifti1Image(np.ma.masked_equal(data, 0),
                                      mni_affine)
-    plot_img(masked_img, slicer='x')
-    plot_img(img, slicer='y')
+    plot_img(masked_img, display_mode='x')
+    plot_img(img, display_mode='y')
 
 
 def test_plot_img_empty():
@@ -71,7 +71,7 @@ def test_plot_img_empty():
     data = np.zeros((20, 20, 20))
     img = nibabel.Nifti1Image(data, mni_affine)
     plot_anat(img)
-    plot_img(img, slicer='y', threshold=1)
+    plot_img(img, display_mode='y', threshold=1)
     pl.close('all')
 
 
@@ -82,5 +82,6 @@ def test_plot_img_with_auto_cut_coords():
     data[3:-3, 3:-3, 3:-3] = 1
     img = nibabel.Nifti1Image(data, np.eye(4))
 
-    for slicer in 'xyz':
-        plot_img(img, cut_coords=None, slicer=slicer, black_bg=True)
+    for display_mode in 'xyz':
+        plot_img(img, cut_coords=None, display_mode=display_mode,
+                 black_bg=True)

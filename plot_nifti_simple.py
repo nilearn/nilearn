@@ -29,7 +29,7 @@ from nilearn.image.image import mean_img
 # calculate mean image for the background
 mean_func_img = mean_img(dataset.func[0])
 
-plot_roi(mask_img, mean_func_img, slicer='y', cut_coords=4, title="Mask")
+plot_roi(mask_img, mean_func_img, display_mode='y', cut_coords=4, title="Mask")
 
 
 ### Preprocess data ###########################################################
@@ -49,8 +49,8 @@ components = nifti_masker.inverse_transform(components_masked)
 import nibabel
 from nilearn.plotting import plot_stat_map
 
-plot_stat_map(nibabel.Nifti1Image(components.get_data()[:,:,:,0], 
+plot_stat_map(nibabel.Nifti1Image(components.get_data()[:,:,:,0],
                                   components.get_affine()), mean_func_img,
-              slicer='y', cut_coords=4, title="Component 0")
+              display_mode='y', cut_coords=4, title="Component 0")
 
 plt.show()
