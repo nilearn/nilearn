@@ -1783,15 +1783,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     data_types = ["c map"]
     if get_tmaps:
         data_types.append(["t map"])
-    rql_types = str.join(", ", ["\"" + x + "\"" for x in data_types])
+    rql_types = str.join(", ", ["\"%s\"" % x for x in data_types])
     root_url = "http://brainomics.cea.fr/localizer/"
-    urls = [root_url + "brainomics_data_%d.zip?rql=" % i
-            + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
-                           "X label XL, X identifier XI, "
-                           "X format XF, X description XD, "
-                           "X type IN(%s), X label \"%s\"" % (rql_types, c),
-                           safe=',()')
-            + "&vid=data-zip"
+    urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
+            % (root_url, i,
+               urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
+                            "X label XL, X identifier XI, "
+                            "X format XF, X description XD, "
+                            "X type IN(%s), X label \"%s\"" % (rql_types, c),
+                            safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
     filenames = []
     for s in np.arange(1, n_subjects + 1):
@@ -1800,18 +1800,18 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 name_aux = str.replace(
                     str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
-                    "brainomics_data", "S%02d" % s, name_aux + ".nii.gz")
+                    "brainomics_data", "S%02d" % s, "%s.nii.gz" % name_aux)
                 file_tarball_url = urls[contrast_id]
                 filenames.append((file_path, file_tarball_url, opts))
     # Fetch masks if asked by user
     if get_masks:
-        urls.append(root_url + "/brainomics_data_masks.zip?rql="
-                    + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                   "X type XT, X label XL, X identifier XI, "
-                                   "X format XF, X description XD, "
-                                   "X type IN(\"boolean mask\"), "
-                                   "X label \"mask\"", safe=',()')
-                    + "&vid=data-zip")
+        urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
+                    % (root_url,
+                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
+                                    "X type XT, X label XL, X identifier XI, "
+                                    "X format XF, X description XD, "
+                                    "X type IN(\"boolean mask\"), "
+                                    "X label \"mask\"", safe=',()')))
         for s in np.arange(1, n_subjects + 1):  # 94 subjects available
             file_path = os.path.join(
                 "brainomics_data", "S%02d" % s, "boolean_mask.nii.gz")
@@ -1819,13 +1819,13 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
-        urls.append(root_url + "brainomics_data_anats.zip?rql="
-                    + urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                   "X type XT, X label XL, X identifier XI, "
-                                   "X format XF, X description XD, "
-                                   "X type IN(\"normalized T1\"), "
-                                   "X label \"anatomy\"", safe=',()')
-                    + "&vid=data-zip")
+        urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
+                    % (root_url,
+                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
+                                    "X type XT, X label XL, X identifier XI, "
+                                    "X format XF, X description XD, "
+                                    "X type IN(\"normalized T1\"), "
+                                    "X label \"anatomy\"", safe=',()')))
         for s in np.arange(1, n_subjects + 1):
             file_path = os.path.join(
                 "brainomics_data", "S%02d" % s,
@@ -1834,16 +1834,16 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch subject characteristics (separated in two files)
     if url is None:
-        url_csv = (root_url + "dataset/cubicwebexport.csv?rql="
-                   + urllib.quote("Any X WHERE X is Subject")
-                   + "&vid=csvexport")
-        url_csv2 = (root_url + "dataset/cubicwebexport2.csv?rql="
-                    + urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
-                                   "X identifier XI, X datetime XD", safe=',')
-                    + "&vid=csvexport")
+        url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
+                   % (root_url, urllib.quote("Any X WHERE X is Subject")))
+        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s"
+                    % (root_url,
+                       urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
+                                    "X identifier XI, X datetime XD", safe=',')
+                       ))
     else:
-        url_csv = url + "/cubicwebexport.csv"
-        url_csv2 = url + "/cubicwebexport2.csv"
+        url_csv = "%s/cubicwebexport.csv" % url
+        url_csv2 = "%s/cubicwebexport2.csv" % url
     filenames += [("cubicwebexport.csv", url_csv, {}),
                   ("cubicwebexport2.csv", url_csv2, {})]
 
