@@ -22,8 +22,9 @@ except ImportError:
 from .coord_tools import find_xyz_cut_coords
 from .edge_detect import _edge_map
 from . import cm
-from ..image.resampling import get_bounds, reorder_img, coord_transform, \
-    get_mask_bounds
+from ..image.resampling import get_bounds, reorder_img, coord_transform,\
+            get_mask_bounds
+from .coord_tools import _get_auto_mask_bounds
 
 
 ################################################################################
@@ -620,27 +621,7 @@ class BaseStackedSlicer(BaseSlicer):
             if img is None or img is False:
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
             else:
-                data = img.get_data().copy()
-                affine = img.get_affine()
-                if hasattr(data, 'mask'):
-                    # Masked array
-                    mask = np.logical_not(data.mask)
-                    data = np.asarray(data)
-                else:
-                    # The mask will be anything that is fairly different
-                    # from the values in the corners
-                    edge_value = float(data[0, 0, 0] + data[0, -1, 0]
-                                     + data[-1, 0, 0] + data[0, 0, -1]
-                                     + data[-1, -1, 0] + data[-1, 0, -1]
-                                     + data[0, -1, -1] + data[-1, -1, -1]
-                                    )
-                    edge_value /= 6
-                    mask = np.abs(data - edge_value) > .005*data.ptp()
-                # Nifti1Image cannot contain bools
-                mask = mask.astype(np.int)
-                xmin, xmax, ymin, ymax, zmin, zmax = \
-                        get_mask_bounds(nibabel.Nifti1Image(mask, affine))
-                bounds = (xmin, xmax), (ymin, ymax), (zmin, zmax)
+                bounds = _get_auto_mask_bounds(img)
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
 

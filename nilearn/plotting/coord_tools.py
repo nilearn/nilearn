@@ -10,10 +10,13 @@ Misc tools to find activations and cut on maps
 import numpy as np
 from scipy import ndimage
 
+import nibabel
+
 # Local imports
 from .._utils.ndimage import largest_connected_component
 from .._utils.fast_maths import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
+from ..image.resampling import get_mask_bounds, coord_transform
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -87,14 +90,40 @@ def find_xyz_cut_coords(map, mask=None, activation_threshold=None):
 
 ################################################################################
 
-def find_cut_slices(map3d, direction='z', n_cuts=12, delta_axis=3):
+def _get_auto_mask_bounds(img):
+    """ Compute the bounds of the data with an automaticaly computed mask
+    """
+    data = img.get_data().copy()
+    affine = img.get_affine()
+    if hasattr(data, 'mask'):
+        # Masked array
+        mask = np.logical_not(data.mask)
+        data = np.asarray(data)
+    else:
+        # The mask will be anything that is fairly different
+        # from the values in the corners
+        edge_value = float(data[0, 0, 0] + data[0, -1, 0]
+                            + data[-1, 0, 0] + data[0, 0, -1]
+                            + data[-1, -1, 0] + data[-1, 0, -1]
+                            + data[0, -1, -1] + data[-1, -1, -1]
+                        )
+        edge_value /= 6
+        mask = np.abs(data - edge_value) > .005*data.ptp()
+    # Nifti1Image cannot contain bools
+    mask = mask.astype(np.int)
+    xmin, xmax, ymin, ymax, zmin, zmax = \
+            get_mask_bounds(nibabel.Nifti1Image(mask, affine))
+    return (xmin, xmax), (ymin, ymax), (zmin, zmax)
+
+
+def find_cut_slices(img, direction='z', n_cuts=12, delta_axis=3):
     """
     Heuristically computes 'good' cross-section cut_coords for plot_img(...)
     call.
 
     Parameters
     ----------
-    map3d: 3D array
+    img: 3D Nifti1Image
         the data under consideration
     direction: string, optional (default "z")
         sectional direction; possible values are "x", "y", or "z"
@@ -117,9 +146,13 @@ def find_cut_slices(map3d, direction='z', n_cuts=12, delta_axis=3):
     assert direction in 'xyz'
 
     axis = 'xyz'.index(direction)
+    bounds = _get_auto_mask_bounds(img)[axis]
 
-    max_along_axis = np.unravel_index(
-        np.abs(map3d).argmax(), map3d.shape)[axis]
+    data = img.get_data()
+    affine = img.get_affine()
+
+    max_along_axis = np.unravel_index(np.abs(data).argmax(),
+                                      data.shape)[axis]
     start = max_along_axis - .5 * delta_axis * n_cuts
     stop = max_along_axis + .5 * delta_axis * n_cuts
 

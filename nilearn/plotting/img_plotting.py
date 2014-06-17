@@ -61,7 +61,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
             threshold = fast_abs_percentile(data) + 1e-5
 
         if cut_coords is None and slicer in 'xyz':
-            cut_coords = find_cut_slices(data)
+            cut_coords = find_cut_slices(nibabel.Nifti1Image(data, affine))
 
         if len(data.shape) > 3:
             if len(data.shape) == 4 and data.shape[3] == 1:
@@ -531,8 +531,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     # make sure that the color range is symmetrical
     stat_map_img = _utils.check_niimg(stat_map_img)
     stat_map_data = stat_map_img.get_data()
-    stat_map_max = stat_map_data.max()
-    stat_map_min = stat_map_data.min()
+    stat_map_max = np.nanmax(stat_map_data)
+    stat_map_min = np.nanmin(stat_map_data)
     vmax = max(-stat_map_min, stat_map_max)
     vmin = -vmax
     
