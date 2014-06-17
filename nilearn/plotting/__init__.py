@@ -8,15 +8,22 @@ Plotting code for nilearn
 # unices
 
 def _set_mpl_backend():
+    # We are doing local imports here to avoid poluting our namespace
     import os
     if not os.name == 'posix':
         # We have the problem only on posix systems
         return
     if 'DISPLAY' in os.environ:
         return
-    import matplotlib
-    # Agg is a backend that will do PNGs and PDFs
-    matplotlib.use('Agg')
+
+    try:
+        import matplotlib
+        # Agg is a backend that will do PNGs and PDFs
+        matplotlib.use('Agg')
+    except ImportError:
+        pass
+        # No need to fail here, eg during tests
+
 
 _set_mpl_backend()
 

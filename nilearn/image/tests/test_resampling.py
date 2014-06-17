@@ -424,10 +424,10 @@ def test_reorder_img():
         b = 0.5 * np.array(shape[:3])
         new_affine = from_matrix_vector(rot, b)
         rot_im = resample_img(ref_im, target_affine=new_affine)
-        np.testing.assert_array_equal(rot_im.affine, new_affine)
+        np.testing.assert_array_equal(rot_im.get_affine(), new_affine)
         np.testing.assert_array_equal(rot_im.get_data().shape, shape)
         reordered_im = reorder_img(rot_im)
-        np.testing.assert_array_equal(reordered_im.affine[:3, :3],
+        np.testing.assert_array_equal(reordered_im.get_affine()[:3, :3],
                                       np.eye(3))
         np.testing.assert_almost_equal(reordered_im.get_data(),
                                        data)
