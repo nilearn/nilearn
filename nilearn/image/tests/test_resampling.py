@@ -452,10 +452,12 @@ def test_reorder_img():
         #sample = img.values_in_world(x, y, z)
         img2 = reorder_img(img)
         # Check that img has not been changed
-        np.testing.assert_array_equal(img.affine, orig_img.affine)
+        np.testing.assert_array_equal(img.get_affine(),
+                                      orig_img.get_affine())
         np.testing.assert_array_equal(img.get_data(),
                                       orig_img.get_data())
         # Test that the affine is indeed diagonal:
-        np.testing.assert_array_equal(img2.affine[:3, :3],
-                                      np.diag(np.diag(img2.affine[:3, :3])))
-        assert_true(np.all(np.diag(img2.affine) >= 0))
+        np.testing.assert_array_equal(img2.get_affine()[:3, :3],
+                                      np.diag(np.diag(
+                                            img2.get_affine()[:3, :3])))
+        assert_true(np.all(np.diag(img2.get_affine()) >= 0))
