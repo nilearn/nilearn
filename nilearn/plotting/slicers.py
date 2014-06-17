@@ -101,7 +101,9 @@ class CutAxes(object):
             raise ValueError('Invalid value for direction %s' %
                              self.direction)
         ax = self.ax
-        getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
+        # Here we need to do a copy to avoid having the image changing as
+        # we change the data
+        getattr(ax, type)(cut.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs)
 
         self._object_bounds.append((xmin_, xmax_, zmin_, zmax_))
         ax.axis(self.get_object_bounds())
