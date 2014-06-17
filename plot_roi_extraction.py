@@ -6,6 +6,7 @@ Example showing how a T-test can be performed to compute an ROI
 mask, and how simple operations can improve the quality of the mask
 obtained.
 """
+from nilearn.plotting.img_plotting import plot_epi, plot_stat_map, plot_roi
 
 ### Coordinates of the selected slice #########################################
 
@@ -67,8 +68,7 @@ fmri_data = fmri_img.get_data()
 
 # Plot the mean image
 mean_img = image.mean_img(fmri_img)
-plot_brain(mean_img.get_data(), coronal, sagittal, axial,
-           'Smoothed mean EPI')
+plot_epi(mean_img, title='Smoothed mean EPI')
 
 # Run a T-test for face and houses
 from scipy import stats
@@ -79,30 +79,34 @@ _, pvalues = stats.ttest_ind(fmri_data[..., labels == 'face'],
 pvalues = - np.log10(pvalues)
 pvalues[np.isnan(pvalues)] = 0.
 pvalues[pvalues > 10] = 10
-plot_brain(pvalues, coronal, sagittal, axial, 'p-values')
+plot_stat_map(nibabel.Nifti1Image(pvalues, fmri_img.get_affine()), mean_img,
+              title="p-values")
 
 ### Build a mask ##############################################################
 
 # Thresholding
-pvalues[pvalues < 5] = 0
-plot_brain(pvalues, coronal, sagittal, axial, 'Thresholded p-values')
+plot_stat_map(nibabel.Nifti1Image(pvalues, fmri_img.get_affine()), mean_img, 
+              threshold = 5, title='Thresholded p-values')
 
 # Binarization and intersection with VT mask
-pvalues = (pvalues != 0)
+bin_pvalues = (pvalues != 0)
 vt = nibabel.load(haxby_files.mask_vt[0]).get_data().astype(bool)
-pvalues = np.logical_and(pvalues, vt)
-plot_brain(pvalues, coronal, sagittal, axial,
-           'Intersection with ventral temporal mask')
+bin_pvalues_and_vt = np.logical_and(pvalues, vt)
+plot_roi(nibabel.Nifti1Image(bin_pvalues_and_vt.astype(np.int), 
+                             fmri_img.get_affine()), 
+         mean_img, title='Intersection with ventral temporal mask')
 
 # Dilation
 from scipy import ndimage
-pvalues = ndimage.binary_dilation(pvalues)
-plot_brain(pvalues, coronal, sagittal, axial, 'Dilated mask')
+dil_bin_pvalues_and_vt = ndimage.binary_dilation(bin_pvalues_and_vt)
+plot_roi(nibabel.Nifti1Image(dil_bin_pvalues_and_vt.astype(np.int), 
+                             fmri_img.get_affine()), 
+         mean_img, title='Dilated mask')
 
 # Identification of connected components
-labels, n_labels = ndimage.label(pvalues)
-plot_brain(labels, coronal, sagittal, axial, 'Connected components',
-           cmap='jet')
+labels, n_labels = ndimage.label(bin_pvalues_and_vt)
+plot_roi(nibabel.Nifti1Image(labels, fmri_img.get_affine()), 
+         mean_img, title='Connected components')
 plt.show()
 
 # Save the result
