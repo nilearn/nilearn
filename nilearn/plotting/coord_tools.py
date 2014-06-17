@@ -117,9 +117,7 @@ def _get_auto_mask_bounds(img):
 
 
 def find_cut_slices(img, direction='z', n_cuts=12, spacing=3):
-    """
-    Heuristically computes 'good' cross-section cut_coords for plot_img(...)
-    call.
+    """ Find 'good' cross-section slicing positions along a given axis.
 
     Parameters
     ----------

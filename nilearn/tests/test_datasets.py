@@ -383,9 +383,6 @@ def test_fetch_localizer_contrasts():
 def test_fetch_localizer_calculation_task():
     # All subjects
     dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.cmaps[0], basestring))
     assert_equal(len(dataset.cmaps), 94)
 
