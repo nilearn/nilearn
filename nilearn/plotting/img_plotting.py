@@ -17,19 +17,19 @@ from scipy import ndimage
 
 import nibabel
 
-from nilearn._utils.testing import skip_if_running_nose
-from nilearn import _utils
+from .._utils.testing import skip_if_running_nose
 
 try:
     import pylab as pl
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
+from .. import _utils
 from .coord_tools import coord_transform, get_cut_coords
 from .slicers import SLICERS
 from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
-import cm
+from . import cm
 
 ################################################################################
 # Core, usage-agnostic functions
