@@ -50,7 +50,7 @@ components_img.to_filename('canica_resting_state.nii.gz')
 # Show some interesting components
 import nibabel
 import matplotlib.pyplot as plt
-from nilearn.plotting.img_plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map
 
 for i in range(n_components):
     plot_stat_map(nibabel.Nifti1Image(components_img.get_data()[:,:,:,5], 

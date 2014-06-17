@@ -57,7 +57,7 @@ components = np.ma.masked_equal(components, 0, copy=False)
 import nibabel
 import pylab as plt
 from nilearn import image
-from nilearn.plotting.img_plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map
 
 mean_img = image.mean_img(dataset.func[0])
 

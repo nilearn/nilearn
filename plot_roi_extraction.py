@@ -27,7 +27,7 @@ labels = np.genfromtxt(haxby_files.session_target[0], skip_header=1,
 ### Visualization function ####################################################
 
 import matplotlib.pyplot as plt
-from nilearn.plotting.img_plotting import plot_epi, plot_stat_map, plot_roi
+from nilearn.plotting import plot_epi, plot_stat_map, plot_roi
 
 
 ### Find voxels of interest ###################################################
