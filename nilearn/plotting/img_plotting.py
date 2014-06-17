@@ -221,12 +221,28 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
                 black_bg = False
         else:
             anat_img = _utils.check_niimg(anat_img)
-            if dim:
-                anat = anat_img.get_data()
-                vmin = anat.min()
-                vmax = anat.max()
-        if black_bg == 'auto':
-            black_bg = True
+            if dim or black_bg == 'auto':
+                # We need to inspect the values of the image
+                data = anat_img.get_data()
+                vmin = data.min()
+                vmax = data.max()
+            if black_bg == 'auto':
+                # Guess if the background is rather black or light based on
+                # the values of voxels near the border
+                border_size = 2
+                border_data = np.concatenate([
+                        data[:border_size, :, :].ravel(),
+                        data[-border_size:, :, :].ravel(),
+                        data[:, :border_size, :].ravel(),
+                        data[:, -border_size:, :].ravel(),
+                        data[:, :, :border_size].ravel(),
+                        data[:, :, -border_size:].ravel(),
+                    ])
+                background = np.median(border_data)
+                if background > .5 * (vmin + vmax):
+                    black_bg = False
+                else:
+                    black_bg = True
         if dim:
             vmean = .5 * (vmin + vmax)
             ptp = .5 * (vmax - vmin)
