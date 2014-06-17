@@ -1872,11 +1872,15 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None):
             Paths to nifti contrast maps
 
     """
-    return fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
+    data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
                                      url=None, resume=True, verbose=0)
+    data.pop('tmaps')
+    data.pop('masks')
+    data.pop('anats')
+    return data
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
