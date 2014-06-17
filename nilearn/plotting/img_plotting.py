@@ -18,6 +18,7 @@ import operator
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
+from scipy import ndimage
 
 import nibabel
 
@@ -29,10 +30,10 @@ try:
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
-from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, get_cut_coords
 from .slicers import SLICERS
 from .edge_detect import _fast_abs_percentile
+from ..datasets import load_mni152_template
 
 ################################################################################
 # Core, usage-agnostic functions
@@ -161,31 +162,67 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
 
 
 ################################################################################
-# Usage-specific functions
+# Anatomy image for background
 
-def _load_anat(anat_img, dim=False, black_bg='auto'):
-    """ Internal function used to plot anatomy, for optional diming
+# A constant class to serve as a sentinel for the default MNI template
+class _MNI152Template(object):
+    """ This class is a constant pointing to the MNI152 Template
+        provided by nilearn
     """
-    canonical_anat = False
-    if anat_img is None:
-        anat_img, vmax_anat = _AnatCache.get_anat()
-        canonical_anat = True
 
+    data   = None
+    affine = None
+    vmax   = None
+
+    def load(self):
+        if self.data is None:
+            anat_img = load_mni152_template()
+            data = anat_img.get_data()
+            data = data.astype(np.float)
+            anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
+            data = np.ma.masked_array(data, np.logical_not(anat_mask))
+            self.affine = anat_img.get_affine()
+            self.data = data
+            self.vmax = data.max()
+
+    def get_data(self):
+        self.load()
+        return self.data
+
+    def get_affine(self):
+        self.load()
+        return self.affine
+
+    def __str__(self):
+        return "<MNI152Template>"
+
+
+# The constant that we use as a default in functions
+MNI152TEMPLATE = _MNI152Template()
+
+
+def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
+    """ Internal function used to load anatomy, for optional diming
+    """
     vmin = None
     vmax = None
-    if anat_img is not False:
-        anat_img = _utils.check_niimg(anat_img)
-        if canonical_anat:
+    if anat_img is not False and anat_img is not None:
+        if anat_img is MNI152TEMPLATE:
+            anat_img.load()
             # We special-case the 'canonical anat', as we don't need
             # to do a few transforms to it.
             vmin = 0
-            vmax = vmax_anat
+            vmax = anat_img.vmax
             if black_bg == 'auto':
                 black_bg = False
-        elif dim:
-            anat = anat_img.get_data()
-            vmin = anat.min()
-            vmax = anat.max()
+        else:
+            anat_img = _utils.check_niimg(anat_img)
+            if dim:
+                anat = anat_img.get_data()
+                vmin = anat.min()
+                vmax = anat.max()
+        if black_bg == 'auto':
+            black_bg = True
         if dim:
             vmean = .5 * (vmin + vmax)
             ptp = .5 * (vmax - vmin)
@@ -196,8 +233,13 @@ def _load_anat(anat_img, dim=False, black_bg='auto'):
             else:
                 vmin = vmean - (1 + dim) * ptp
     if black_bg == 'auto':
-        black_bg = True
+        # No anatomy given: no need to turn black_bg on
+        black_bg = False
     return anat_img, black_bg, vmin, vmax
+
+
+################################################################################
+# Usage-specific functions
 
 
 def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
@@ -258,6 +300,7 @@ def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
                       draw_cross=draw_cross, black_bg=black_bg,
                       vmin=vmin, vmax=vmax, cmap=cmap)
     return slicer
+
 
 def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
              figure=None, axes=None, title=None, annotate=True,
@@ -329,22 +372,19 @@ def plot_roi(bg_img, mask_img, cut_coords=None, slicer='ortho',
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
                                alpha=alpha, cmap=cmap)
     return slicer
-    
+
 
 def demo_plot_img(**kwargs):
     """ Demo activation map plotting.
     """
-    data = np.zeros((182, 218, 182))
+    mni_affine = MNI152TEMPLATE.get_affine()
+    data = np.zeros((91, 109, 91))
     # Color a asymetric rectangle around Broca area:
     x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
-    # Compare to values obtained using fslview. We need to add one as
-    # voxels do not start at 0 in fslview.
-    assert x_map == 142
-    assert y_map + 1 == 137
-    assert z_map + 1 == 95
-    data[x_map - 5:x_map + 5, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
-    img = nibabel.Nifti1Image(data, mni_sform)
+    x_map, y_map, z_map = coord_transform(x, y, z,
+                                          np.linalg.inv(mni_affine))
+    data[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
+    img = nibabel.Nifti1Image(data, mni_affine)
     return plot_img(img, threshold='auto',
                         title="Broca's area", **kwargs)
 
