@@ -2,25 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from ..coord_tools import coord_transform, find_cut_coords
-
-def test_coord_transform_trivial():
-    sform = np.eye(4)
-    x = np.random.random((10,))
-    y = np.random.random((10,))
-    z = np.random.random((10,))
-
-    x_, y_, z_ = coord_transform(x, y, z, sform)
-    np.testing.assert_array_equal(x, x_)
-    np.testing.assert_array_equal(y, y_)
-    np.testing.assert_array_equal(z, z_)
-
-    sform[:, -1] = 1
-    x_, y_, z_ = coord_transform(x, y, z, sform)
-    np.testing.assert_array_equal(x+1, x_)
-    np.testing.assert_array_equal(y+1, y_)
-    np.testing.assert_array_equal(z+1, z_)
-
+from ..coord_tools import find_cut_coords
 
 def test_find_cut_coords():
     map = np.zeros((100, 100, 100))

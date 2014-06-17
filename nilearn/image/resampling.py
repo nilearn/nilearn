@@ -83,6 +83,41 @@ def from_matrix_vector(matrix, vector):
     return t
 
 
+def coord_transform(x, y, z, affine):
+    """ Convert the x, y, z coordinates from one image space to another
+        space.
+
+        Parameters
+        ----------
+        x : number or ndarray
+            The x coordinates in the input space
+        y : number or ndarray
+            The y coordinates in the input space
+        z : number or ndarray
+            The z coordinates in the input space
+        affine : 2D 4x4 ndarray
+            affine that maps from input to output space.
+
+        Returns
+        -------
+        x : number or ndarray
+            The x coordinates in the output space
+        y : number or ndarray
+            The y coordinates in the output space
+        z : number or ndarray
+            The z coordinates in the output space
+
+        Warning: The x, y and z have their Talairach ordering, not 3D
+        numy image ordering.
+    """
+    coords = np.c_[np.atleast_1d(x).flat,
+                   np.atleast_1d(y).flat,
+                   np.atleast_1d(z).flat,
+                   np.ones_like(np.atleast_1d(z).flat)].T
+    x, y, z, _ = np.dot(affine, coords)
+    return x.squeeze(), y.squeeze(), z.squeeze()
+
+
 def get_bounds(shape, affine):
     """Return the world-space bounds occupied by an array given an affine.
 
@@ -118,6 +153,33 @@ def get_bounds(shape, affine):
                     [adim, bdim, cdim, 1]]).T
     box = np.dot(affine, box)[:3]
     return zip(box.min(axis=-1), box.max(axis=-1))
+
+
+def get_mask_bounds(mask, affine):
+    """ Return the world-space bounds occupied by a mask given an affine.
+
+        Notes
+        -----
+
+        The mask should have only one connect component.
+
+        The affine should be diagonal or diagonal-permuted.
+    """
+    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
+    slices = ndimage.find_objects(mask)
+    if len(slices) == 0:
+        warnings.warn("empty mask", stacklevel=2)
+    else:
+        x_slice, y_slice, z_slice = slices[0]
+        x_width, y_width, z_width = mask.shape
+        xmin, xmax = (xmin + x_slice.start*(xmax - xmin)/x_width,
+                    xmin + x_slice.stop *(xmax - xmin)/x_width)
+        ymin, ymax = (ymin + y_slice.start*(ymax - ymin)/y_width,
+                    ymin + y_slice.stop *(ymax - ymin)/y_width)
+        zmin, zmax = (zmin + z_slice.start*(zmax - zmin)/z_width,
+                    zmin + z_slice.stop *(zmax - zmin)/z_width)
+
+    return xmin, xmax, ymin, ymax, zmin, zmax
 
 
 class BoundingBoxError(ValueError):

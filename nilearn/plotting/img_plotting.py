@@ -26,7 +26,8 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
-from .coord_tools import coord_transform, get_cut_coords
+from ..image.resampling import coord_transform
+from .coord_tools import get_cut_coords
 from .slicers import SLICERS
 from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template

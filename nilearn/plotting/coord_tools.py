@@ -1,5 +1,3 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Misc tools to find activations and cut on maps
 """
@@ -7,57 +5,19 @@ Misc tools to find activations and cut on maps
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
 
-import warnings
-
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import stats, ndimage
+from scipy import ndimage
 
 # Local imports
 from .._utils.ndimage import largest_connected_component
 from .._utils.fast_maths import fast_abs_percentile
-from ..image.resampling import get_bounds
 
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
 ################################################################################
-
-
-def coord_transform(x, y, z, affine):
-    """ Convert the x, y, z coordinates from one image space to another
-        space.
-
-        Parameters
-        ----------
-        x : number or ndarray
-            The x coordinates in the input space
-        y : number or ndarray
-            The y coordinates in the input space
-        z : number or ndarray
-            The z coordinates in the input space
-        affine : 2D 4x4 ndarray
-            affine that maps from input to output space.
-
-        Returns
-        -------
-        x : number or ndarray
-            The x coordinates in the output space
-        y : number or ndarray
-            The y coordinates in the output space
-        z : number or ndarray
-            The z coordinates in the output space
-
-        Warning: The x, y and z have their Talairach ordering, not 3D
-        numy image ordering.
-    """
-    coords = np.c_[np.atleast_1d(x).flat,
-                   np.atleast_1d(y).flat,
-                   np.atleast_1d(z).flat,
-                   np.ones_like(np.atleast_1d(z).flat)].T
-    x, y, z, _ = np.dot(affine, coords)
-    return x.squeeze(), y.squeeze(), z.squeeze()
 
 
 def find_cut_coords(map, mask=None, activation_threshold=None):
@@ -124,33 +84,6 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
 
 
 ################################################################################
-
-def get_mask_bounds(mask, affine):
-    """ Return the world-space bounds occupied by a mask given an affine.
-
-        Notes
-        -----
-
-        The mask should have only one connect component.
-
-        The affine should be diagonal or diagonal-permuted.
-    """
-    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
-    slices = ndimage.find_objects(mask)
-    if len(slices) == 0:
-        warnings.warn("empty mask", stacklevel=2)
-    else:
-        x_slice, y_slice, z_slice = slices[0]
-        x_width, y_width, z_width = mask.shape
-        xmin, xmax = (xmin + x_slice.start*(xmax - xmin)/x_width,
-                    xmin + x_slice.stop *(xmax - xmin)/x_width)
-        ymin, ymax = (ymin + y_slice.start*(ymax - ymin)/y_width,
-                    ymin + y_slice.stop *(ymax - ymin)/y_width)
-        zmin, zmax = (zmin + z_slice.start*(zmax - zmin)/z_width,
-                    zmin + z_slice.stop *(zmax - zmin)/z_width)
-
-    return xmin, xmax, ymin, ymax, zmin, zmax
-
 
 def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
     """
