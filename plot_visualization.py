@@ -9,7 +9,7 @@ Simple example to show Nifti data visualization.
 
 from nilearn import datasets
 from nilearn.image.image import mean_img
-from nilearn.plotting.img_plotting import plot_epi
+from nilearn.plotting.img_plotting import plot_epi, plot_roi
 import matplotlib as mpl
 
 haxby_files = datasets.fetch_haxby(n_subjects=1)
@@ -39,13 +39,7 @@ from nilearn.masking import compute_epi_mask
 mask_img = compute_epi_mask(haxby_files.func[0])
 mask_data = mask_img.get_data().astype(bool)
 
-# We create a new figure
-plt.figure(figsize=(3, 4))
-# A plot the axial view of the mask to compare with the axial
-# view of the raw data displayed previously
-plt.axis('off')
-plt.imshow(np.rot90(mask_data[:, :, 32]), interpolation='nearest')
-plt.subplots_adjust(left=.02, bottom=.02, right=.98, top=.95)
+plot_roi(mean_haxby, mask_img)
 
 ### Applying the mask #########################################################
 

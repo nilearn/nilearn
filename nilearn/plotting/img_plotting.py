@@ -74,7 +74,10 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
 
 
     if bg_img is not None:
-        slicer.add_overlay(nibabel.Nifti1Image(data, affine),
+        bg_img = _utils.check_niimg(bg_img)
+        bg_data = bg_img.get_data()
+        bg_affine = bg_img.get_affine()
+        slicer.add_overlay(nibabel.Nifti1Image(bg_data, bg_affine),
                            vmin=bg_vmin, vmax=bg_vmax,
                            cmap=pl.cm.gray)
 
@@ -308,6 +311,21 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
                       draw_cross=draw_cross, black_bg=black_bg, 
                       cmap=cmap)
     return slicer
+
+def plot_roi(bg_img, mask_img, cut_coords=None, slicer='ortho', 
+             figure=None, axes=None, title=None,
+             annotate=True, draw_cross=True, black_bg='auto', 
+             alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, **kwargs):
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img,
+                                                    dim=dim, black_bg=black_bg)
+    slicer = _plot_img_with_bg(img=mask_img, bg_img=bg_img, 
+                               cut_coords=cut_coords, slicer=slicer, figure=figure, axes=axes, 
+                               title=title, annotate=annotate, draw_cross=draw_cross, 
+                               black_bg=black_bg, threshold=0.5,
+                               bg_vmin=bg_vmin, bg_vmax=bg_vmax,
+                               alpha=alpha, cmap=cmap)
+    return slicer
+    
 
 def demo_plot_img(**kwargs):
     """ Demo activation map plotting.
