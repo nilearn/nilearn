@@ -125,7 +125,8 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
+            optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -186,14 +187,14 @@ def _load_anat(anat_img, dim=False, black_bg='auto'):
             vmin = anat.min()
             vmax = anat.max()
         if dim:
-            vmean = .5*(vmin + vmax)
-            ptp = .5*(vmax - vmin)
+            vmean = .5 * (vmin + vmax)
+            ptp = .5 * (vmax - vmin)
             if not operator.isNumberType(dim):
                 dim = .6
             if black_bg:
-                vmax = vmean + (1+dim)*ptp
+                vmax = vmean + (1 + dim) * ptp
             else:
-                vmin = vmean - (1+dim)*ptp
+                vmin = vmean - (1 + dim) * ptp
     if black_bg == 'auto':
         black_bg = True
     return anat_img, black_bg, vmin, vmax
@@ -223,7 +224,8 @@ def plot_anat(anat_img=None, cut_coords=None, slicer='ortho',
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
+            optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -280,7 +282,8 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
+            optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -308,19 +311,20 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
     slicer = plot_img(epi_img, cut_coords=cut_coords, slicer=slicer,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
-                      draw_cross=draw_cross, black_bg=black_bg, 
+                      draw_cross=draw_cross, black_bg=black_bg,
                       cmap=cmap)
     return slicer
 
-def plot_roi(bg_img, mask_img, cut_coords=None, slicer='ortho', 
+def plot_roi(bg_img, mask_img, cut_coords=None, slicer='ortho',
              figure=None, axes=None, title=None,
-             annotate=True, draw_cross=True, black_bg='auto', 
+             annotate=True, draw_cross=True, black_bg='auto',
              alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, **kwargs):
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img,
                                                     dim=dim, black_bg=black_bg)
-    slicer = _plot_img_with_bg(img=mask_img, bg_img=bg_img, 
-                               cut_coords=cut_coords, slicer=slicer, figure=figure, axes=axes, 
-                               title=title, annotate=annotate, draw_cross=draw_cross, 
+    slicer = _plot_img_with_bg(img=mask_img, bg_img=bg_img,
+                               cut_coords=cut_coords, slicer=slicer,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=0.5,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
                                alpha=alpha, cmap=cmap)
@@ -337,9 +341,9 @@ def demo_plot_img(**kwargs):
     # Compare to values obtained using fslview. We need to add one as
     # voxels do not start at 0 in fslview.
     assert x_map == 142
-    assert y_map +1 == 137
-    assert z_map +1 == 95
-    data[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
+    assert y_map + 1 == 137
+    assert z_map + 1 == 95
+    data[x_map - 5:x_map + 5, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
     img = nibabel.Nifti1Image(data, mni_sform)
     return plot_img(img, threshold='auto',
                         title="Broca's area", **kwargs)
