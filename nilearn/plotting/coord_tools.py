@@ -15,8 +15,9 @@ import numpy as np
 from scipy import stats, ndimage
 
 # Local imports
-from nilearn._utils.ndimage import largest_connected_component
-from nilearn.image.resampling import get_bounds
+from .._utils.ndimage import largest_connected_component
+from .._utils.fast_maths import fast_abs_percentile
+from ..image.resampling import get_bounds
 
 
 ################################################################################
@@ -103,9 +104,9 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     if (my_map.max() == 0) and (my_map.min() == 0):
         return .5*np.array(map.shape)
     if activation_threshold is None:
-        activation_threshold = stats.scoreatpercentile(
-                                    np.abs(my_map[my_map !=0]).ravel(), 80)
-    mask = np.abs(my_map) > activation_threshold-1.e-15
+        activation_threshold = fast_abs_percentile(my_map[my_map !=0].ravel(),
+                                                   80)
+    mask = np.abs(my_map) > activation_threshold - 1.e-15
     mask = largest_connected_component(mask)
     slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
     my_map = my_map[slice_x, slice_y, slice_z]
