@@ -27,11 +27,11 @@ except ImportError:
 
 from .. import _utils
 from ..image.resampling import coord_transform
-from .coord_tools import get_cut_coords
-from .slicers import SLICERS
 from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
+from .slicers import SLICERS
 from . import cm
+from .coord_tools import find_cut_slices
 
 ################################################################################
 # Core, usage-agnostic functions
@@ -61,7 +61,15 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
             threshold = fast_abs_percentile(data) + 1e-5
 
         if cut_coords is None and slicer in 'xyz':
-            cut_coords = get_cut_coords(data)
+            cut_coords = find_cut_slices(data)
+
+        if len(data.shape) > 3:
+            if len(data.shape) == 4 and data.shape[3] == 1:
+                data = data[:,:,:,0]
+            else:
+                raise ValueError("The provided volume has %d dimensions. Only" \
+                                 " three dimensional volumes volumes are " \
+                                 "supported." % len(data.shape))
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
@@ -382,6 +390,7 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
                       cmap=cmap, **kwargs)
     return slicer
 
+
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
              figure=None, axes=None, title=None, annotate=True, draw_cross=True,
              black_bg='auto', alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, 
@@ -436,8 +445,15 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim, 
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
+    if (slicer in 'xyz'):
+        if cut_coords is None:
+            cut_coords = 12
+        if operator.isNumberType(cut_coords):
+            cut_coords = find_cut_slices(roi_img.get_data(),
+                                         direction=slicer,
+                                         n_cuts=cut_coords)
     slicer = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
                                cut_coords=cut_coords, slicer=slicer,
                                figure=figure, axes=axes, title=title,

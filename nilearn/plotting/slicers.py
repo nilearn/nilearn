@@ -21,7 +21,7 @@ except ImportError:
 
 
 # Local imports
-from .coord_tools import find_cut_coords
+from .coord_tools import find_xyz_cut_coords
 from .edge_detect import _edge_map
 from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform, \
@@ -483,7 +483,7 @@ class OrthoSlicer(BaseSlicer):
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
             else:
-                x_map, y_map, z_map = find_cut_coords(img.get_data(),
+                x_map, y_map, z_map = find_xyz_cut_coords(img.get_data(),
                                         activation_threshold=threshold)
                 cut_coords = coord_transform(x_map, y_map, z_map,
                                              img.get_affine())
@@ -615,13 +615,19 @@ class BaseStackedSlicer(BaseSlicer):
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         if cut_coords is None:
+            cut_coords = 12
+        if operator.isNumberType(cut_coords):
+            # By default: regularly-spaced cuts in the bounds of the data
             if img is None or img is False:
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
+                lower, upper = bounds['xyz'.index(cls._direction)]
             else:
-                data = img.get_data()
+                data = img.get_data().copy()
                 affine = img.get_affine()
                 if hasattr(data, 'mask'):
+                    # Masked array
                     mask = np.logical_not(data.mask)
+                    data = np.asarray(data)
                 else:
                     # The mask will be anything that is fairly different
                     # from the values in the corners
@@ -632,11 +638,12 @@ class BaseStackedSlicer(BaseSlicer):
                                     )
                     edge_value /= 6
                     mask = np.abs(data - edge_value) > .005*data.ptp()
+                data[mask] = 0
                 xmin, xmax, ymin, ymax, zmin, zmax = \
                                 get_mask_bounds(mask, affine)
                 bounds = (xmin, xmax), (ymin, ymax), (zmin, zmax)
-            lower, upper = bounds['xyz'.index(cls._direction)]
-            cut_coords = np.linspace(lower, upper, 10).tolist()
+                cut_coords = np.linspace(lower, upper, cut_coords).tolist()
+
         return cut_coords
 
 

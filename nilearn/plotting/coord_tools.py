@@ -20,7 +20,7 @@ from .._utils.fast_maths import fast_abs_percentile
 ################################################################################
 
 
-def find_cut_coords(map, mask=None, activation_threshold=None):
+def find_xyz_cut_coords(map, mask=None, activation_threshold=None):
     """ Find the center of the largest activation connect component.
 
         Parameters
@@ -85,7 +85,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
 
 ################################################################################
 
-def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
+def find_cut_slices(map3d, direction='z', n_cuts=12, delta_axis=3):
     """
     Heuristically computes 'good' cross-section cut_coords for plot_img(...)
     call.
@@ -94,8 +94,8 @@ def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
     ----------
     map3d: 3D array
         the data under consideration
-    slicer: string, optional (default "z")
-        sectional slicer; possible values are "x", "y", or "z"
+    direction: string, optional (default "z")
+        sectional direction; possible values are "x", "y", or "z"
     n_cuts: int, optional (default 12)
         number of cuts in the plot
     delta_axis: int, optional (default 3)
@@ -112,9 +112,9 @@ def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
 
     """
 
-    assert slicer in 'xyz'
+    assert direction in 'xyz'
 
-    axis = 'xyz'.index(slicer)
+    axis = 'xyz'.index(direction)
 
     axis_axis_max = np.unravel_index(
         np.abs(map3d).argmax(), map3d.shape)[axis]
