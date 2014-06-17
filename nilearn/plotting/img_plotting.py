@@ -29,7 +29,7 @@ from .. import _utils
 from ..image.resampling import coord_transform
 from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
-from .slicers import SLICERS
+from .slicers import get_slicer
 from . import cm
 from .find_cuts import find_cut_slices
 
@@ -80,7 +80,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
-    slicer = SLICERS[display_mode].init_with_figure(img,
+    slicer = get_slicer(display_mode).init_with_figure(img,
                                               threshold=threshold,
                                               cut_coords=cut_coords,
                                               figure=figure, axes=axes,

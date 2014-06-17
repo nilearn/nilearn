@@ -173,7 +173,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         # We don't actually fully zero the neighborhood, to avoid ending
         # up with fully zeros if n_cuts is too big: we can do multiple
         # passes on the data
-        data[slices] *= 1e-2
+        data[slices] *= 1.e-2
 
         cut_coords.append(max_along_axis)
 

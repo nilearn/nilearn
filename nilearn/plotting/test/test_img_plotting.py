@@ -5,6 +5,8 @@ import tempfile
 import numpy as np
 
 from nose import SkipTest
+from nose.tools import assert_raises
+
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
@@ -73,6 +75,12 @@ def test_plot_img_empty():
     plot_anat(img)
     plot_img(img, display_mode='y', threshold=1)
     pl.close('all')
+
+
+def test_plot_img_invalid():
+    # Check that we get a meaningful error message when we give a wrong
+    # display_mode argument
+    assert_raises(plot_anat, display_mode='zzz')
 
 
 def test_plot_img_with_auto_cut_coords():
