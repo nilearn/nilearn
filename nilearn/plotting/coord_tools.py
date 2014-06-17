@@ -139,8 +139,10 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing=3):
 
     Notes
     -----
-    This code works by iteratively locating peak activation that are
-    separated by a distance of at least 'spacing'
+    This code works by iteratively locating peak activations that are
+    separated by a distance of at least 'spacing'. If n_cuts is very
+    large and all the activated regions are covered, cuts with a spacing
+    less than 'spacing' will be returned.
     """
 
     assert direction in 'xyz'
