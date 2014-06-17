@@ -80,12 +80,13 @@ nibabel.save(coef_niimg, 'haxby_svc_weights.nii')
 
 ### Visualization #############################################################
 import pylab as plt
+from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi, plot_stat_map
 
-epi_img = data.func[0]
-plot_stat_map(coef_niimg, epi_img, title="SVM weights", threshold=0.001)
+mean_epi = mean_img(data.func[0])
+plot_stat_map(coef_niimg, mean_epi, title="SVM weights")
 
-plot_roi(nifti_masker.mask_img_, epi_img, title="Mask")
+plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask")
 
 plt.show()
 
