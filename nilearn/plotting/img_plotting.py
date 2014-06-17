@@ -111,7 +111,7 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
 
         Parameters
         ----------
-        niimg: nilearn nifti image
+        niimg: a nifti-image like object or a filename
             Path to a nifti file or nifti-like object
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
@@ -250,7 +250,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
 
         Parameters
         ----------
-        anat_img : nifti-image like object
+        anat_img : a nifti-image like object or a filename
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
         cut_coords: None, or a tuple of floats
@@ -310,7 +310,7 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
 
         Parameters
         ----------
-        epi_img : nifti-image like object
+        epi_img : a nifti-image like object or a filename
             The EPI (T2*) image
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
@@ -362,8 +362,58 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
              figure=None, axes=None, title=None, annotate=True, draw_cross=True,
              black_bg='auto', alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, 
              **kwargs):
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img,
-                                                    dim=dim, black_bg=black_bg)
+    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
+        Lateral)
+
+        Parameters
+        ----------
+        roi_img : a nifti-image like object or a filename
+            The ROI/mask image, it could be binary mask or an atlas or ROIs with 
+            integer values.
+        bg_img : a nifti-image like object or a filename
+            The background image that the ROI/mask will be plotted on top of. If
+            not specified MNI152 template will be used.
+        cut_coords: None, or a tuple of floats
+            The MNI coordinates of the point where the cut is performed, in
+            MNI coordinates and order.
+            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
+            For slicer == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+        slicer: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts. With 'ortho' three cuts are
+            performed in orthogonal directions
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
+            optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you whish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        cmap: matplotlib colormap, optional
+            The colormap for the anat
+
+        Notes
+        -----
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+    """
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim, 
+                                                    black_bg=black_bg)
     slicer = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
                                cut_coords=cut_coords, slicer=slicer,
                                figure=figure, axes=axes, title=title,
@@ -386,8 +436,7 @@ def demo_plot_roi(**kwargs):
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z,
                                           np.linalg.inv(mni_affine))
-    data[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
+    data[int(x_map)-5:int(x_map)+5, int(y_map)-3:int(y_map)+3, 
+         int(z_map)-10:int(z_map)+10] = 1
     img = nibabel.Nifti1Image(data, mni_affine)
     return plot_roi(img, title="Broca's area", **kwargs)
-
-
