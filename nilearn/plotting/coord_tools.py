@@ -13,7 +13,7 @@ from scipy import ndimage
 # Local imports
 from .._utils.ndimage import largest_connected_component
 from .._utils.fast_maths import fast_abs_percentile
-
+from .._utils.numpy_conversions import as_ndarray
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -53,6 +53,8 @@ def find_xyz_cut_coords(map, mask=None, activation_threshold=None):
         else:
             mask *= not_mask
         map = np.asarray(map)
+    # Get rid of potential memmapping
+    map = as_ndarray(map)
     my_map = map.copy()
     if mask is not None:
         slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]

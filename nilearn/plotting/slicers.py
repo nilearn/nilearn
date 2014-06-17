@@ -10,8 +10,6 @@ import operator
 import numpy as np
 import nibabel
 from .._utils.testing import skip_if_running_nose
-from .._utils.numpy_conversions import as_ndarray
-from .. import _utils
 
 try:
     import pylab as pl
