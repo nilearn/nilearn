@@ -108,24 +108,21 @@ def find_cut_slices(map3d, direction='z', n_cuts=12, delta_axis=3):
     cut_coords: 1D array of length n_cuts
         the computed cut_coords
 
-    Raises
-    ------
-    AssertionError
-
+    Notes
+    -----
+    This code works by locating the peak activation and taking a few
+    slices before and after
     """
 
     assert direction in 'xyz'
 
     axis = 'xyz'.index(direction)
 
-    axis_axis_max = np.unravel_index(
+    max_along_axis = np.unravel_index(
         np.abs(map3d).argmax(), map3d.shape)[axis]
-    axis_axis_min = np.unravel_index(
-        (-np.abs(map3d)).argmin(), map3d.shape)[axis]
-    axis_axis_min, axis_axis_max = (min(axis_axis_min, axis_axis_max),
-                              max(axis_axis_max, axis_axis_min))
-    axis_axis_min = min(axis_axis_min, axis_axis_max - delta_axis * n_cuts)
+    start = max_along_axis - .5 * delta_axis * n_cuts
+    stop = max_along_axis + .5 * delta_axis * n_cuts
 
-    cut_coords = np.linspace(axis_axis_min, axis_axis_max, n_cuts)
+    cut_coords = np.linspace(start, stop, n_cuts)
 
     return cut_coords
