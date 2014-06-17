@@ -124,22 +124,22 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
         ----------
         niimg: a nifti-image like object or a filename
             Path to a nifti file or nifti-like object
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
+            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -293,13 +293,14 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
         anat_img : a nifti-image like object or a filename
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
+            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
         slicer: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
             'z' - axial, 'ortho' - three cuts are performed in orthogonal 
@@ -353,22 +354,22 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
         ----------
         epi_img : a nifti-image like object or a filename
             The EPI (T2*) image
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
+            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -485,16 +486,17 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_img : a nifti-image like object or a filename
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
+            If slicer is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
         slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
