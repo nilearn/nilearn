@@ -79,41 +79,14 @@ import nibabel
 nibabel.save(coef_niimg, 'haxby_svc_weights.nii')
 
 ### Visualization #############################################################
-import matplotlib.pyplot as plt
+import pylab as plt
+from nilearn.image.image import mean_img
+from nilearn.plotting import plot_roi, plot_stat_map
 
-### Create the figure and plot the first EPI image as a background
-plt.figure(figsize=(3, 5))
+mean_epi = mean_img(data.func[0])
+plot_stat_map(coef_niimg, mean_epi, title="SVM weights")
 
-epi_img = nibabel.load(data.func[0])
-plt.imshow(np.rot90(epi_img.get_data()[..., 27, 0]),
-          interpolation='nearest', cmap=plt.cm.gray)
-
-### Plot the SVM weights
-weights = coef_niimg.get_data()
-# We use a masked array so that the voxels at '-1' are displayed transparently
-weights = np.ma.masked_array(weights, weights == 0)
-
-plt.imshow(np.rot90(weights[..., 27, 0]), cmap=plt.cm.hot,
-          interpolation='nearest')
-
-plt.axis('off')
-plt.title('SVM weights')
-plt.tight_layout()
-
-
-### Visualize the mask ########################################################
-
-mask = nifti_masker.mask_img_.get_data()
-
-plt.figure(figsize=(3, 5))
-plt.axis('off')
-plt.imshow(np.rot90(nibabel.load(data.func[0]).get_data()[..., 27, 0]),
-          interpolation='nearest', cmap=plt.cm.gray)
-ma = np.ma.masked_equal(mask, 0)
-plt.imshow(np.rot90(ma[..., 27]), interpolation='nearest', cmap=plt.cm.autumn,
-          alpha=0.5)
-plt.title("Mask")
-plt.tight_layout()
+plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask")
 
 plt.show()
 

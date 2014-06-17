@@ -12,6 +12,8 @@ from nibabel import Nifti1Image
 
 from .. import _utils
 
+###############################################################################
+# Affine utils
 
 def to_matrix_vector(transform):
     """Split an homogeneous transform into its matrix and vector components.
@@ -81,6 +83,41 @@ def from_matrix_vector(matrix, vector):
     return t
 
 
+def coord_transform(x, y, z, affine):
+    """ Convert the x, y, z coordinates from one image space to another
+        space.
+
+        Parameters
+        ----------
+        x : number or ndarray
+            The x coordinates in the input space
+        y : number or ndarray
+            The y coordinates in the input space
+        z : number or ndarray
+            The z coordinates in the input space
+        affine : 2D 4x4 ndarray
+            affine that maps from input to output space.
+
+        Returns
+        -------
+        x : number or ndarray
+            The x coordinates in the output space
+        y : number or ndarray
+            The y coordinates in the output space
+        z : number or ndarray
+            The z coordinates in the output space
+
+        Warning: The x, y and z have their Talairach ordering, not 3D
+        numy image ordering.
+    """
+    coords = np.c_[np.atleast_1d(x).flat,
+                   np.atleast_1d(y).flat,
+                   np.atleast_1d(z).flat,
+                   np.ones_like(np.atleast_1d(z).flat)].T
+    x, y, z, _ = np.dot(affine, coords)
+    return x.squeeze(), y.squeeze(), z.squeeze()
+
+
 def get_bounds(shape, affine):
     """Return the world-space bounds occupied by an array given an affine.
 
@@ -118,6 +155,50 @@ def get_bounds(shape, affine):
     return zip(box.min(axis=-1), box.max(axis=-1))
 
 
+def get_mask_bounds(img):
+    """ Return the world-space bounds occupied by a mask.
+
+        Parameters
+        ----------
+        img: nifti-image like or path to file
+            The image to inspect. Zero values are considered as
+            background.
+
+        Returns
+        --------
+        xmin, xmax, ymin, ymax, zmin, zmax: floats
+            The world-space bounds (field of view) occupied by the
+            non-zero values in the image
+
+        Notes
+        -----
+
+        The image should have only one connect component.
+
+        The affine should be diagonal or diagonal-permuted, use
+        reorder_img to ensure that it is the case.
+
+    """
+    img = _utils.check_niimg(img)
+    mask = img.get_data()
+    affine = img.get_affine()
+    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
+    slices = ndimage.find_objects(mask)
+    if len(slices) == 0:
+        warnings.warn("empty mask", stacklevel=2)
+    else:
+        x_slice, y_slice, z_slice = slices[0]
+        x_width, y_width, z_width = mask.shape
+        xmin, xmax = (xmin + x_slice.start*(xmax - xmin)/x_width,
+                    xmin + x_slice.stop *(xmax - xmin)/x_width)
+        ymin, ymax = (ymin + y_slice.start*(ymax - ymin)/y_width,
+                    ymin + y_slice.stop *(ymax - ymin)/y_width)
+        zmin, zmax = (zmin + z_slice.start*(zmax - zmin)/z_width,
+                    zmin + z_slice.stop *(zmax - zmin)/z_width)
+
+    return xmin, xmax, ymin, ymax, zmin, zmax
+
+
 class BoundingBoxError(ValueError):
     """This error is raised when a resampling transformation is
     incompatible with the given data.
@@ -126,6 +207,9 @@ class BoundingBoxError(ValueError):
     matrix does not contain any of the original data."""
     pass
 
+
+###############################################################################
+# Resampling
 
 def _resample_one_img(data, A, A_inv, b, target_shape,
                       interpolation_order, out, copy=True):
@@ -167,7 +251,6 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
     return out
 
 
-
 def resample_img(niimg, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
     """Resample a Nifti image
@@ -188,7 +271,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         must also be given. (See notes)
 
     interpolation: str, optional
-        Can be continuous' (default) or 'nearest'. Indicate the resample method
+        Can be 'continuous' (default) or 'nearest'. Indicate the resample method
 
     copy: bool, optional
         If True, guarantees that output array has no memory in common with
@@ -369,3 +452,82 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                           copy=not input_niimg_is_string)
 
     return Nifti1Image(resampled_data, target_affine)
+
+
+def reorder_img(niimg, resample=False):
+    """ Returns an image with the affine diagonal (by permuting axes). 
+    The orientation of the new image will be RAS (Right, Anterior, Superior).
+    If it is impossible to get xyz ordering by permuting the axis, a
+    'CompositionError' is raised.
+
+        Parameters
+        -----------
+        niimg: nilearn nifti image
+            Path to a nifti file or nifti-like object
+        
+        resample: boolean, optional
+            If resample is False (default), no resampling is performed, the
+            axis are only permuted. 
+    """
+    
+    niimg = _utils.check_niimg(niimg)
+    
+    affine = niimg.get_affine()
+    A, b = to_matrix_vector(affine)
+
+    if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
+        # The affine is not nearly diagonal
+        if not resample:
+            raise ValueError(
+            'Cannot reorder the axis: the image affine contains rotations'
+                )
+        else:
+            # Identify the voxel size using a QR decomposition of the
+            # affine
+            R, Q = np.linalg.qr(affine[:3, :3])
+            target_affine = np.diag(np.abs(np.diag(Q))[
+                                                np.abs(R).argmax(axis=1)])
+            return resample_img(niimg, target_affine=target_affine)
+
+    axis_numbers = np.argmax(np.abs(A), axis=0)
+    data = niimg.get_data()
+    while not np.all(np.sort(axis_numbers) == axis_numbers):
+        first_inversion = np.argmax(np.diff(axis_numbers)<0)
+        axis1 = first_inversion + 1
+        axis2 = first_inversion
+        data = np.swapaxes(data, axis1, axis2)
+        order = np.array((0, 1, 2, 3))
+        order[axis1] = axis2
+        order[axis2] = axis1
+        affine = affine.T[order].T
+        A, b = to_matrix_vector(affine)
+        axis_numbers = np.argmax(np.abs(A), axis=0)
+
+    # Now make sure the affine is positive
+    pixdim = np.diag(A).copy()
+    if pixdim[0] < 0:
+        b[0] = b[0] + pixdim[0]*(data.shape[0] - 1)
+        pixdim[0] = -pixdim[0]
+        slice1 = slice(None, None, -1)
+    else:
+        slice1 = slice(None, None, None)
+    if pixdim[1] < 0:
+        b[1] = b[1] + 1 + pixdim[1]*(data.shape[1] - 1)
+        pixdim[1] = -pixdim[1]
+        slice2 = slice(None, None, -1)
+    else:
+        slice2 = slice(None, None, None)
+    if pixdim[2] < 0:
+        b[2] = b[2] + 1 + pixdim[2]*(data.shape[2] - 1)
+        pixdim[2] = -pixdim[2]
+        slice3 = slice(None, None, -1)
+    else:
+        slice3 = slice(None, None, None)
+    data = data[slice1, slice2, slice3]
+    affine = from_matrix_vector(np.diag(pixdim), b)
+
+    niimg = Nifti1Image(data, affine)
+
+    return niimg
+
+

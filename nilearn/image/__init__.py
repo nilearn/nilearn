@@ -7,5 +7,5 @@ from .image import high_variance_confounds, smooth_img, crop_img, \
             mean_img
 
 __all__ = ['resample_img', 'high_variance_confounds', 'smooth_img',
-           'crop_img', 'mean_img']
+           'crop_img', 'mean_img', 'reorder_img']
 
