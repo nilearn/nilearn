@@ -116,7 +116,7 @@ def _get_auto_mask_bounds(img):
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 
-def find_cut_slices(img, direction='z', n_cuts=12, delta_axis=3):
+def find_cut_slices(img, direction='z', n_cuts=12, spacing=3):
     """
     Heuristically computes 'good' cross-section cut_coords for plot_img(...)
     call.
@@ -129,8 +129,8 @@ def find_cut_slices(img, direction='z', n_cuts=12, delta_axis=3):
         sectional direction; possible values are "x", "y", or "z"
     n_cuts: int, optional (default 12)
         number of cuts in the plot
-    delta_axis: int, optional (default 3)
-        spacing between cuts
+    spacing: int, optional (default 3)
+        minimum spacing between cuts (in voxels, not milimeters)
 
     Returns
     -------
@@ -140,16 +140,15 @@ def find_cut_slices(img, direction='z', n_cuts=12, delta_axis=3):
     Notes
     -----
     This code works by iteratively locating peak activation that are
-    separated by a distance of delta_axis
+    separated by a distance of at least 'spacing'
     """
 
     assert direction in 'xyz'
 
     axis = 'xyz'.index(direction)
 
-    orig_data = img.get_data()
     affine = img.get_affine()
-    data = np.abs(orig_data)
+    data = np.abs(img.get_data()).astype(np.float)
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
@@ -158,25 +157,26 @@ def find_cut_slices(img, direction='z', n_cuts=12, delta_axis=3):
     for _ in range(n_cuts):
         # Find a peak
         max_along_axis = np.unravel_index(np.abs(data).argmax(),
-                                        data.shape)[axis]
+                                          data.shape)[axis]
 
-        # XXX: we will end up with fully zeros if n_cuts is too big
-        # Zero out the surroundings of the peak
-        start = max_along_axis - .5 * delta_axis * n_cuts
-        stop = max_along_axis + .5 * delta_axis * n_cuts
+        # cancel out the surroundings of the peak
+        start = max_along_axis - spacing
+        stop = max_along_axis + spacing
         slices[axis] = slice(start, stop)
-        data[slices] = 0
+        # We don't actually fully zero the neighborhood, to avoid ending
+        # up with fully zeros if n_cuts is too big: we can do multiple
+        # passes on the data
+        data[slices] *= 1e-2
 
         cut_coords.append(max_along_axis)
 
     cut_coords = np.array(cut_coords)
     cut_coords.sort()
+
     # Transform this back in image space
     kwargs = dict()
-
     for name in 'xyz':
         kwargs[name] = np.zeros_like(cut_coords)
-
     kwargs[direction] = cut_coords
     kwargs['affine'] = affine
 
