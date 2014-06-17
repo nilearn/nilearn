@@ -18,6 +18,7 @@ from scipy import ndimage
 import nibabel
 
 from .._utils.testing import skip_if_running_nose
+from .._utils.numpy_conversions import as_ndarray
 
 try:
     import pylab as pl
@@ -69,7 +70,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
                                  " three dimensional volumes volumes are " \
                                  "supported."%len(data.shape))
 
-        img = nibabel.Nifti1Image(data, affine)
+        img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
     slicer = SLICERS[slicer].init_with_figure(img,
                                           threshold=threshold,
@@ -82,6 +83,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
         bg_img = _utils.check_niimg(bg_img)
         bg_data = bg_img.get_data()
         bg_affine = bg_img.get_affine()
+        if len(bg_data.shape) > 3:
+            if len(bg_data.shape) == 4 and bg_data.shape[3] == 1:
+                bg_data = bg_data[:,:,:,0]
+            else:
+                raise ValueError("The provided volume has %d dimensions. Only" \
+                                 " three dimensional volumes volumes are " \
+                                 "supported."%len(bg_data.shape))
         slicer.add_overlay(nibabel.Nifti1Image(bg_data, bg_affine),
                            vmin=bg_vmin, vmax=bg_vmax,
                            cmap=pl.cm.gray)
@@ -446,7 +454,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
 
 def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None, 
                   slicer='ortho', figure=None, axes=None, title=None,
-                  threshold=None, annotate=True, draw_cross=True, 
+                  threshold=1e-6, annotate=True, draw_cross=True, 
                   black_bg='auto', cmap=cm.cold_hot, dim=True, 
                   **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
@@ -499,20 +507,17 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
+    # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim, 
                                                     black_bg=black_bg)
     
+    # make sure that the color range is symmetrical
     stat_map_img = _utils.check_niimg(stat_map_img)
     stat_map_data = stat_map_img.get_data()
     stat_map_max = stat_map_data.max()
     stat_map_min = stat_map_data.min()
-    
-    if np.abs(stat_map_max) > np.abs(stat_map_min):
-        vmin = -np.abs(stat_map_max)
-        vmax = np.abs(stat_map_max)
-    else:
-        vmin = -np.abs(stat_map_min)
-        vmax = np.abs(stat_map_max)
+    vmax = max(-stat_map_min, stat_map_max)
+    vmin = -vmax
     
     slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords, slicer=slicer,
