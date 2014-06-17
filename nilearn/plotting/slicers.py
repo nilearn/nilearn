@@ -327,7 +327,8 @@ class BaseSlicer(object):
         if hasattr(data, 'mask'):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                            get_mask_bounds(not_mask, affine)
+                    get_mask_bounds(nibabel.Nifti1Image(not_mask.astype(np.int),
+                                    affine))
             if kwargs.get('vmin') is None and kwargs.get('vmax') is None:
                 # Avoid dealing with masked arrays: they are slow
                 if not np.any(not_mask):

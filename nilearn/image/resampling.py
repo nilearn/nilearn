@@ -155,16 +155,33 @@ def get_bounds(shape, affine):
     return zip(box.min(axis=-1), box.max(axis=-1))
 
 
-def get_mask_bounds(mask, affine):
-    """ Return the world-space bounds occupied by a mask given an affine.
+def get_mask_bounds(img):
+    """ Return the world-space bounds occupied by a mask.
+
+        Parameters
+        ----------
+        img: nifti-image like or path to file
+            The image to inspect. Zero values are considered as
+            background.
+
+        Returns
+        --------
+        xmin, xmax, ymin, ymax, zmin, zmax: floats
+            The world-space bounds (field of view) occupied by the
+            non-zero values in the image
 
         Notes
         -----
 
-        The mask should have only one connect component.
+        The image should have only one connect component.
 
-        The affine should be diagonal or diagonal-permuted.
+        The affine should be diagonal or diagonal-permuted, use
+        reorder_img to ensure that it is the case.
+
     """
+    img = _utils.check_niimg(img)
+    mask = img.get_data()
+    affine = img.get_affine()
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
     if len(slices) == 0:
