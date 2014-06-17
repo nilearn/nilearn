@@ -389,9 +389,6 @@ def test_fetch_localizer_calculation_task():
     # 20 subjects
     dataset = datasets.fetch_localizer_calculation_task(n_subjects=20,
                                                         data_dir=tmpdir)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.cmaps[0], basestring))
     assert_equal(len(dataset.cmaps), 20)
 
