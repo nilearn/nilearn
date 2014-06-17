@@ -374,8 +374,11 @@ def plot_roi(bg_img, mask_img, cut_coords=None, slicer='ortho',
     return slicer
 
 
-def demo_plot_img(**kwargs):
-    """ Demo activation map plotting.
+################################################################################
+# Demo functions
+
+def demo_plot_roi(**kwargs):
+    """ Demo plotting an ROI
     """
     mni_affine = MNI152TEMPLATE.get_affine()
     data = np.zeros((91, 109, 91))
@@ -385,7 +388,6 @@ def demo_plot_img(**kwargs):
                                           np.linalg.inv(mni_affine))
     data[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     img = nibabel.Nifti1Image(data, mni_affine)
-    return plot_img(img, threshold='auto',
-                        title="Broca's area", **kwargs)
+    return plot_roi(img, title="Broca's area", **kwargs)
 
 
