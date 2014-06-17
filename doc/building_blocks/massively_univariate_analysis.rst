@@ -204,6 +204,17 @@ on a voxel-based morphometry dataset:
    :align: center
    :scale: 60
 
+.. topic:: **Runtime**
+
+   On a typical fMRI group study involving 25 subjects described by
+   ~40,000 voxels each, Randomized Parcellation Based Inference
+   finished after about 30 minutes using one single CPU (Intel Core 2
+   Duo, T9600 @ 2.80GHz) and default arguments (100 parcellations of
+   1,000 parcels each and 10,000 permutations).  The computation time
+   can easily be lowered by using several, more recent CPUs (ideally,
+   one would set `n_jobs=-1` and use a workstation).
+
+
 
 .. [1]
 
