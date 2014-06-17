@@ -29,6 +29,7 @@ from .coord_tools import coord_transform, get_cut_coords
 from .slicers import SLICERS
 from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
+import cm
 
 ################################################################################
 # Core, usage-agnostic functions
@@ -59,6 +60,14 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
 
         if cut_coords is None and slicer in 'xyz':
             cut_coords = get_cut_coords(data)
+            
+        if len(data.shape) > 3:
+            if len(data.shape) == 4 and data.shape[3] == 1:
+                data = data[:,:,:,0]
+            else:
+                raise ValueError("The provided volume has %d dimensions. Only" \
+                                 " three dimensional volumes volumes are " \
+                                 "supported."%len(data.shape))
 
         img = nibabel.Nifti1Image(data, affine)
 
@@ -418,6 +427,85 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
                                alpha=alpha, cmap=cmap)
     return slicer
 
+
+def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None, 
+                  slicer='ortho', figure=None, axes=None, title=None,
+                  threshold=None, annotate=True, draw_cross=True, 
+                  black_bg='auto', cmap=cm.cold_hot, dim=True, 
+                  **kwargs):
+    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
+        Lateral)
+
+        Parameters
+        ----------
+        stat_map_img : a nifti-image like object or a filename
+            The ROI/mask image, it could be binary mask or an atlas or ROIs with 
+            integer values.
+        bg_img : a nifti-image like object or a filename
+            The background image that the ROI/mask will be plotted on top of. If
+            not specified MNI152 template will be used.
+        cut_coords: None, or a tuple of floats
+            The MNI coordinates of the point where the cut is performed, in
+            MNI coordinates and order.
+            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
+            For slicer == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+        slicer: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts. With 'ortho' three cuts are
+            performed in orthogonal directions
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
+            optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you whish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        cmap: matplotlib colormap, optional
+            The colormap for the anat
+
+        Notes
+        -----
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+    """
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim, 
+                                                    black_bg=black_bg)
+    
+    stat_map_img = _utils.check_niimg(stat_map_img)
+    stat_map_data = stat_map_img.get_data()
+    stat_map_max = stat_map_data.max()
+    stat_map_min = stat_map_data.min()
+    
+    if np.abs(stat_map_max) > np.abs(stat_map_min):
+        vmin = -np.abs(stat_map_max)
+        vmax = np.abs(stat_map_max)
+    else:
+        vmin = -np.abs(stat_map_min)
+        vmax = np.abs(stat_map_max)
+    
+    slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
+                               cut_coords=cut_coords, slicer=slicer,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate, draw_cross=draw_cross,
+                               black_bg=black_bg, threshold=threshold,
+                               bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
+                               vmin=vmin, vmax=vmax)
+    return slicer
 
 ################################################################################
 # Demo functions
