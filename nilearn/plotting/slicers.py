@@ -10,6 +10,8 @@ import operator
 import numpy as np
 import nibabel
 from .._utils.testing import skip_if_running_nose
+from .._utils.numpy_conversions import as_ndarray
+from .. import _utils
 
 try:
     import pylab as pl
@@ -202,6 +204,17 @@ class BaseSlicer(object):
     def init_with_figure(cls, img, threshold=None,
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False):
+        # deal with "fake" 4D images
+        if len(img.shape) > 3:
+            if len(img.shape) == 4 and img.shape[3] == 1:
+                data = img.get_data()
+                data = data[:,:,:,0]
+                img = nibabel.Nifti1Image(data, img.get_affine())
+            else:
+                raise ValueError("The provided volume has %d dimensions. Only" \
+                                 " three dimensional volumes volumes are " \
+                                 "supported."%len(data.shape))
+                
         cut_coords = cls.find_cut_coords(img, threshold,
                                          cut_coords)
         if isinstance(axes, pl.Axes) and figure is None:
@@ -289,6 +302,17 @@ class BaseSlicer(object):
             kwargs:
                 Extra keyword arguments are passed to imshow.
         """
+        # deal with "fake" 4D images
+        if len(img.shape) > 3:
+            if len(img.shape) == 4 and img.shape[3] == 1:
+                data = img.get_data()
+                data = data[:,:,:,0]
+                img = nibabel.Nifti1Image(data, img.get_affine())
+            else:
+                raise ValueError("The provided volume has %d dimensions. Only" \
+                                 " three dimensional volumes volumes are " \
+                                 "supported."%len(data.shape))
+
         if threshold is not None:
             data = img.get_data()
             if threshold == 0:
@@ -324,7 +348,7 @@ class BaseSlicer(object):
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                                         xmin, xmax, ymin, ymax, zmin, zmax
-        if hasattr(data, 'mask'):
+        if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                     get_mask_bounds(nibabel.Nifti1Image(not_mask.astype(np.int),

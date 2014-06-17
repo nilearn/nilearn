@@ -62,36 +62,18 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
 
         if cut_coords is None and slicer in 'xyz':
             cut_coords = get_cut_coords(data)
-            
-        if len(data.shape) > 3:
-            if len(data.shape) == 4 and data.shape[3] == 1:
-                data = data[:,:,:,0]
-            else:
-                raise ValueError("The provided volume has %d dimensions. Only" \
-                                 " three dimensional volumes volumes are " \
-                                 "supported."%len(data.shape))
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
     slicer = SLICERS[slicer].init_with_figure(img,
-                                          threshold=threshold,
-                                          cut_coords=cut_coords,
-                                          figure=figure, axes=axes,
-                                          black_bg=black_bg)
+                                              threshold=threshold,
+                                              cut_coords=cut_coords,
+                                              figure=figure, axes=axes,
+                                              black_bg=black_bg)
 
 
     if bg_img is not None:
-        bg_img = _utils.check_niimg(bg_img)
-        bg_data = bg_img.get_data()
-        bg_affine = bg_img.get_affine()
-        if len(bg_data.shape) > 3:
-            if len(bg_data.shape) == 4 and bg_data.shape[3] == 1:
-                bg_data = bg_data[:,:,:,0]
-            else:
-                raise ValueError("The provided volume has %d dimensions. Only" \
-                                 " three dimensional volumes volumes are " \
-                                 "supported."%len(bg_data.shape))
-        slicer.add_overlay(nibabel.Nifti1Image(bg_data, bg_affine),
+        slicer.add_overlay(bg_img,
                            vmin=bg_vmin, vmax=bg_vmax,
                            cmap=pl.cm.gray, interpolation=interpolation)
 
@@ -187,6 +169,7 @@ class _MNI152Template(object):
     data   = None
     affine = None
     vmax   = None
+    _shape  = None
 
     def load(self):
         if self.data is None:
@@ -198,6 +181,7 @@ class _MNI152Template(object):
             self.affine = anat_img.get_affine()
             self.data = data
             self.vmax = data.max()
+            self._shape = anat_img.shape
 
     def get_data(self):
         self.load()
@@ -206,6 +190,15 @@ class _MNI152Template(object):
     def get_affine(self):
         self.load()
         return self.affine
+    
+    @property
+    def shape(self):
+        self.load()
+        return self._shape
+    
+    def get_shape(self):
+        self.load()
+        return self._shape
 
     def __str__(self):
         return "<MNI152Template>"
