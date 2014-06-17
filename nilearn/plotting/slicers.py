@@ -274,7 +274,7 @@ class BaseSlicer(object):
                     **kwargs)
 
 
-    def add_overlay(self, img, threshold=None, **kwargs):
+    def add_overlay(self, img, threshold=1e-6, **kwargs):
         """ Plot a 3D map in all the views.
 
             Parameters
