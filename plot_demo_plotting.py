@@ -2,8 +2,7 @@
 Demoing Plotting functions of nilearn
 ======================================
 
-Nilearn comes with a set of plotting function for Nifti-like images. Here
-we showcase the major plotting modes.
+Nilearn comes with a set of plotting function for Nifti-like images.
 
 """
 
@@ -63,7 +62,6 @@ plotting.plot_stat_map(localizer.cmaps[3], display_mode='yx',
 plotting.plot_stat_map(localizer.cmaps[3], display_mode='yz',
                        cut_coords=(-27, 60),
                        title="display_mode='yz', cut_coords=(-27, 60)")
-
 
 import pylab as pl
 pl.show()

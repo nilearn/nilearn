@@ -281,13 +281,14 @@ class BaseSlicer(object):
             color = 'k' if self._black_bg else 'w'
         if bgcolor is None:
             bgcolor = 'w' if self._black_bg else 'k'
-        self.frame_axes.text(x, y, text, 
+        self.axes.values()[0].ax.text(x, y, text,
                     transform=self.frame_axes.transAxes,
                     horizontalalignment='left',
                     verticalalignment='top',
                     size=size, color=color,
-                    bbox=dict(boxstyle="square,pad=.3", 
+                    bbox=dict(boxstyle="square,pad=.3",
                               ec=bgcolor, fc=bgcolor, alpha=alpha),
+                    zorder=1000,
                     **kwargs)
 
 
@@ -534,6 +535,15 @@ class OrthoSlicer(BaseSlicer):
             cut_ax = CutAxes(ax, direction, coord)
             self.axes[direction] = cut_ax
             ax.set_axes_locator(self._locator)
+
+        if self._black_bg:
+            # To have a black background in PDF, we need to create a
+            # patch in black for the background
+            self.frame_axes.imshow(np.zeros((2, 2, 3)),
+                                   extent=[-5000, 5000, -5000, 5000],
+                                   zorder=-500, aspect='auto')
+            self.frame_axes.set_zorder(-1000)
+
 
 
     def _locator(self, axes, renderer):
