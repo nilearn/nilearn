@@ -347,7 +347,7 @@ class BaseSlicer(object):
             self._colorbar_show(ims[0])
 
 
-    def contour_map(self, img, **kwargs):
+    def add_contours(self, img, **kwargs):
         """ Contour a 3D map in all the views.
 
             Parameters
@@ -355,7 +355,12 @@ class BaseSlicer(object):
             img: niimg-like
                 The Nifti-Image like object to plot
             kwargs:
-                Extra keyword arguments are passed to contour.
+                Extra keyword arguments are passed to contour, see the
+                documentation of pylab.contour
+                Useful, arguments are typical "levels", which is a
+                list of values to use for plotting a contour, and
+                "colors", which is one color or a list of colors for
+                these contours.
         """
         self._map_show(img, type='contour', **kwargs)
 
@@ -432,7 +437,7 @@ class BaseSlicer(object):
             tick.set_color(color)
         self._colorbar_ax.yaxis.set_tick_params(width=0)
 
-    def edge_map(self, img, color='r'):
+    def add_edges(self, img, color='r'):
         """ Plot the edges of a 3D map in all the views.
 
             Parameters

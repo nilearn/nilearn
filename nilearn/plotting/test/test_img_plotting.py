@@ -64,14 +64,14 @@ def test_plot_anat():
     ortho_slicer = plot_anat(img, cut_coords=(80, -120, -60))
     # Saving forces a draw, and thus smoke-tests the axes locators
     pl.savefig(tempfile.TemporaryFile())
-    ortho_slicer.edge_map(img, color='c')
+    ortho_slicer.add_edges(img, color='c')
 
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
     pl.savefig(tempfile.TemporaryFile())
     z_slicer = plot_anat(display_mode='z')
     pl.savefig(tempfile.TemporaryFile())
-    z_slicer.edge_map(img, color='c')
+    z_slicer.add_edges(img, color='c')
     # Smoke test coordinate finder, with and without mask
     masked_img = nibabel.Nifti1Image(np.ma.masked_equal(data, 0),
                                      mni_affine)
