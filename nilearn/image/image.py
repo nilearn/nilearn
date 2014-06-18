@@ -20,6 +20,8 @@ from .._utils.niimg_conversions import (_safe_get_data, check_niimgs,
                                         _index_niimgs)
 from .. import masking
 from nilearn.image import reorder_img
+from .resampling import get_bounds, resample_img
+
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
@@ -363,64 +365,208 @@ def crop_img(img, rtol=1e-8, copy=True):
     return _crop_img_to(img, slices, copy=copy)
 
 
-def _check_slices(slices, niimg):
-    return slices
-
-
-class ImageCropper(BaseEstimator, TransformerMixin):
+class NiftiCropper(BaseEstimator, TransformerMixin):
     """Crops an image along its sampling axes.
 
     Parameters
     ==========
 
-    slices: list of slices, default None
-        slices specifying the crop. If `None` is passed, then slices will be
-        specified such that all non-zero (in the sense of the tolerance)
-        voxels will be kept within the new bounding box.
+    bounding box: ((xmin, xmax), (ymin, ymax), (zmin, zmax)), default None
+        bounding box specifying the crop.
+        If `None` is passed, then the bounding box will be specified such
+        that all non-zero (in the sense of the tolerance) voxels will be
+        kept within the new bounding box.
+    affine: ndarray, shape=4, 4
+        affine transformation specifying the orientation of the bounding
+        box and the origin of the coordinates.
     rtol: float, default 1e-8
         If crop is computed, then all voxel values below this relative
         tolerance value will be considered zero.
     """
 
-    def __init__(self, slices=None, rtol=1e-8, copy=True):
-        self.slices = slices
-        self.rtol = rtol
+    def __init__(
+        self,
+        bounding_box=None,
+        affine=None,
+        resample=False,
+        cropping_threshold=None,
+        copy=True):
+
+        self.bounding_box = bounding_box
+        self.affine = affine
+        self.resample = resample
+        self.cropping_threshold = cropping_threshold
         self.copy = copy
 
     def fit(self, niimg=None):
-        if self.slices is not None:
-            if niimg is not None:
-                if _check_slices(self.slices, niimg) == False:
-                    raise ValueError(
-                        "Specified slices incompatible with niimg")
+
+        if niimg is None:
+            # No image passed. Check if enough information is provided
+            # for cropping. Affine can be None, but bounding_box must
+            # be provided
+
+            self.affine_ = self.affine
+            if self.bounding_box is None:
+                raise ValueError("If no image is provided at fit, then "
+                                 "a bounding box is required.")
+            self.bounding_box_ = self.bounding_box
+
         else:
-            if niimg is None:
-                raise ValueError("Please specify either cropping slices"
-                                 " or a niimg from which to estimate them.")
-
+            # Niimg provided. We complete all *missing* information using
+            # its specifications.
             niimg = check_niimg(niimg)
-            data = niimg.get_data()
-            infinity_norm = max(-data.min(), data.max())
-            passes_threshold = np.logical_or(
-                data < -self.rtol * infinity_norm,
-                data > self.rtol * infinity_norm)
+            niimg_affine = niimg.get_affine()
 
-            if data.ndim == 4:
-                passes_threshold = np.any(passes_threshold, axis=-1)
-            coords = np.array(np.where(passes_threshold))
-            start = coords.min(axis=1)
-            end = coords.max(axis=1) + 1
+            if self.affine is None:
+                # Use the affine provided by the image if none is specified
+                self.affine_ = niimg_affine
+            else:
+                # Otherwise use the specified one
+                self.affine_ = self.affine
 
-            # pad with one voxel to avoid resampling problems
-            start = np.maximum(start - 1, 0)
-            end = np.minimum(end + 1, data.shape[:3])
+            if self.bounding_box is not None:
+                # Use the provided bounding box
+                self.bounding_box_ = self.bounding_box
+            else:
+                # In this case we need to infer the bounding box from the
+                # image itself.
+                if self.cropping_threshold is None:
+                    # No cropping threshold means that we can use the
+                    # bounding box of the image, transform it to the
+                    # potentially different new affine space, and deduce
+                    # the new bounding box
 
-            self.slices = [slice(s, e) for s, e in zip(start, end)]
+                    if (self.affine_ == niimg_affine).all():
+                        transform_affine = np.eye(4)
+                    else:
+                        transform_affine = \
+                            np.linalg.inv(self.affine_).dot(niimg_affine)
+
+                    # Use get_bounds from resample_img to find the new
+                    # bounding box
+                    self.bounding_box_ = get_bounds(niimg.shape,
+                                                    transform_affine)
+                else:
+                    # A cropping threshold is given, so we find the smallest
+                    # bounding box around the non-zero part of the data wrt
+                    # the target affine.
+                    # We crop along the coordinate axes, without copying, to
+                    # reduce data size. Then, if the affine is oblique, we
+                    # make it diagonal and repeat the coordinate cropping.
+
+                    coord_crop = crop_img(niimg, self.cropping_threshold,
+                                          copy=False)
+
+                    # If the target affine coincides with that of the image,
+                    # then we are already done.
+                    if (self.affine_ == niimg_affine).all():
+                        # All we need to do now is infer the bounding box
+                        # from the new affine offset of coord_crop
+                        affine_offset_mm = (coord_crop.get_affine()[:3, 3] -
+                                            self.affine_[:3, 3])
+                        affine_offset = np.linalg.inv(
+                            self.affine_[:3, :3]).dot(affine_offset_mm)
+                        bbox_min = affine_offset
+                        bbox_max = affine_offset + np.array(coord_crop.shape)
+                        self.bounding_box_ = zip(bbox_min, bbox_max)
+                    
+                    # If the target affine does not coincide with that of the
+                    # image, then we probably have to resample to obtain the
+                    # bounding box. At a later stage, we should check for
+                    # coaxial dilations/contractions and axis permutations
+                    else:
+                        # Resample the cropped image, apply crop_img again
+                        # to obtain the minimal bounding box, and then infer
+                        # the minimal bounding box with respect to the target
+                        # affine.
+
+                        # Calling resample_img with target_affine and without
+                        # target_shape infers the new shape such that it
+                        # contains all the data, and the affine origin, if
+                        # specified.
+                        resampled = resample_img(
+                            coord_crop,
+                            target_affine=self.affine_,
+                            target_shape=None,
+                            copy=True)
+                        cropped_resampled = crop_img(
+                            resampled, self.cropping_threshold, copy=False)
+
+                        # If the affine that was given initially was 3x3,
+                        # then use the inferred 4D affine for the cropper.
+                        # This will result in all minimal bounding box
+                        # values being zero and the maximal ones
+                        # corresponding to the cropped shape
+
+                        cropped_resampled_affine = \
+                            cropped_resampled.get_affine()
+                        if self.affine_.shape == (3, 3):
+                            # Bounding box corresponds to cropped shape
+                            self.affine_ = cropped_resampled_affine
+                            bbox_min = np.array([0, 0, 0])
+                            bbox_max = np.array(cropped_resampled.shape)
+                            self.bounding_box_ = zip(bbox_min, bbox_max)
+                        else:
+                            # Here we need to calculate the beginning
+                            # of the bounding box from the cropped image
+                            affine_offset_mm = (
+                                cropped_resampled_affine[:3, :] -
+                                self.affine_[:3, :])
+                            affine_offset = np.linalg.inv(
+                                self.affine_[:3, :3]).dot(affine_offset_mm)
+                            bbox_min = affine_offset
+                            bbox_max = (affine_offset +
+                                        np.array(cropped_resampled.shape))
+                            self.bounding_box_ = zip(bbox_min, bbox_max)
+
         return self
 
     def transform(self, niimg):
-        return _crop_img_to(niimg, self.slices, self.copy)
+        "Extracts the content within the specified bounding box from niimg"
 
+        if not hasattr(self, "bounding_box_"):
+            raise ValueError("Object NiftiCropper needs to be fit first")
+
+        niimg = check_niimg(niimg)
+
+        if self.affine_ is None:
+            # in this case just crop using the bounding box information
+            # along the axes of the niimg
+            slices = [slice(start, end)
+                      for start, end in self.bounding_box_]
+            return _crop_img_to(niimg, slices, self.copy)
+        else:
+            # Here we use our self.affine_ and our bounding box to locate
+            # the region for cropping.
+            # If niimg and this object share the same affine, and the
+            # bounding box has integer values, then we do not need to
+            # resample. There are other situations where resampling could
+            # be avoided: If the niimg affine axes are permuted with respect
+            # to the self.affine_ axes, if the axis directions are shared,
+            # but not necessarily the voxel sizes, and lastly, if the affine
+            # offset difference is integer (or not) and if the bounding box
+            # shape is not integer. All these options can be added later.
+            niimg_affine = niimg.get_affine()
+            if (niimg_affine == self.affine_).all():
+                # Bounding box is assumed to be integer
+                slices = [slice(start, end)
+                          for start, end in self.bounding_box_]
+                return _crop_img_to(niimg, slices, self.copy)
+
+            # Before the last resort, resampling, the other options can be
+            # played through. Here comes the last resort.
+
+            # If bbox is not int, then we introduce a left bias here
+            bbox_int = np.array(self.bounding_box_).astype(int)
+            bbox_offset = bbox_int[:, 0]
+            bbox_shape = bbox_int[:, 1] - bbox_offset
+            new_affine = self.affine_.copy()
+            new_affine[:3, :] += new_affine[:3, :3].dot(bbox_offset)
+            return resample_img(niimg,
+                                target_affine=new_affine,
+                                target_shape=bbox_shape)
+
+                                            
 
 def _compute_mean(imgs, target_affine=None,
                   target_shape=None, smooth=False):
