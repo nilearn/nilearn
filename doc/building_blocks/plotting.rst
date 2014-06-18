@@ -62,4 +62,83 @@ different heuristics to find cutting coordinates.
 ================= =========================================================
 
 
+Different display modes
+========================
+
+.. |plot_ortho| image:: ../auto_examples/images/plot_demo_plotting_5.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_z_many| image:: ../auto_examples/images/plot_demo_plotting_6.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_x| image:: ../auto_examples/images/plot_demo_plotting_7.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_x_small| image:: ../auto_examples/images/plot_demo_plotting_8.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_z_small| image:: ../auto_examples/images/plot_demo_plotting_9.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_xz| image:: ../auto_examples/images/plot_demo_plotting_10.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_yx| image:: ../auto_examples/images/plot_demo_plotting_11.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_yz| image:: ../auto_examples/images/plot_demo_plotting_12.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+
+================= =========================================================
+================= =========================================================
+|plot_ortho|       `display_mode='ortho', cut_coords=(36, -27, 60)` 
+                   |hack|
+                   Ortho slicer: 3 cuts along the x, y, z directions
+
+|plot_z_many|      `display_mode='z', cut_coords=5`
+                   |hack|
+                   Cutting in the z direction, specifying the number of
+                   cuts
+
+|plot_x|           `display_mode='x', cut_coords=(-36, 36)`
+                   |hack|
+                   Cutting in the x direction, specifying the exact
+                   cuts
+
+|plot_x_small|     `display_mode='x', cut_coords=1`
+                   |hack|
+                   Cutting in the x direction, with only 1 cut, that is
+                   automatically positionned
+
+|plot_z_small|     `display_mode='z', cut_coords=1, colorbar=False`
+                   |hack|
+                   Cutting in the z direction, with only 1 cut, that is
+                   automatically positionned
+
+|plot_xz|          `display_mode='xz', cut_coords=(36, 60)`
+                   |hack|
+                   Cutting in the x and z direction, with cuts manually
+                   positionned
+
+|plot_yx|          `display_mode='yx', cut_coords=(-27, 36)`
+                   |hack|
+                   Cutting in the y and x direction, with cuts manually
+                   positionned
+
+|plot_yz|          `display_mode='yz', cut_coords=(-27, 60)`
+                   |hack|
+                   Cutting in the y and z direction, with cuts manually
+                   positionned
+
+
+================= =========================================================
 

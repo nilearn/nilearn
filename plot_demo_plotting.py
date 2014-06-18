@@ -39,6 +39,10 @@ plotting.plot_epi(image.mean_img(haxby.func[0]), title="plot_epi")
 ###############################################################################
 # demo the different display_mode
 
+plotting.plot_stat_map(localizer.cmaps[3], display_mode='ortho',
+                       cut_coords=(36, -27, 60),
+                       title="display_mode='ortho', cut_coords=(36, -27, 60)")
+
 plotting.plot_stat_map(localizer.cmaps[3], display_mode='z', cut_coords=5,
                        title="display_mode='z', cut_coords=5")
 
@@ -58,7 +62,7 @@ plotting.plot_stat_map(localizer.cmaps[3], display_mode='xz',
 
 plotting.plot_stat_map(localizer.cmaps[3], display_mode='yx',
                        cut_coords=(-27, 36),
-                       title="display_mode='yz', cut_coords=(-27, 36)")
+                       title="display_mode='yx', cut_coords=(-27, 36)")
 
 plotting.plot_stat_map(localizer.cmaps[3], display_mode='yz',
                        cut_coords=(-27, 60),
