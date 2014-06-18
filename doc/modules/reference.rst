@@ -194,8 +194,9 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   plot_img
    plot_anat
+   plot_img
+   plot_epi
    plot_roi
    plot_stat_map
 
