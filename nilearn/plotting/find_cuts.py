@@ -147,7 +147,8 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     axis = 'xyz'.index(direction)
 
     affine = img.get_affine()
-    data = np.abs(img.get_data())
+    orig_data = np.abs(img.get_data())
+    data = orig_data.copy()
     if data.dtype.kind == 'i':
         data = data.astype(np.float)
         # We have discreete values: we smooth them in order to have
@@ -181,13 +182,30 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     # and the end
     cut_coords = np.unique(cut_coords).tolist()
     while len(cut_coords) < n_cuts:
-        is_pair = 1 - 2 * (len(cut_coords) % 2)
-        if is_pair and min(cut_coords) > 1:
-            # We need 'min(cut_coords) > 1' to avoid having negative
+        # Candidates for new cuts:
+        slice_below = min(cut_coords) - 2
+        slice_above = max(cut_coords) + 2
+        candidates = [slice_above]
+        # One slice where there is the biggest gap in the existing
+        # cut_coords
+        if len(cut_coords) > 1:
+            middle_idx = np.argmax(np.diff(cut_coords))
+            slice_middle = int(.5 * (cut_coords[middle_idx]
+                                    + cut_coords[middle_idx + 1]))
+            if not slice_middle in cut_coords:
+                candidates.append(slice_middle)
+        if slice_below >= 0:
+            # We need positive slice to avoid having negative
             # indices, which would work, but not the way we think of them
-            cut_coords.append(min(cut_coords) - 2)
-        else:
-            cut_coords.append(max(cut_coords) + 2)
+            candidates.append(slice_below)
+        best_weight = -10
+        for candidate in candidates:
+            this_weight = np.sum(np.rollaxis(orig_data, axis)[candidate])
+            if this_weight > best_weight:
+                best_candidate = candidate
+                best_weight = this_weight
+
+        cut_coords.append(best_candidate)
         cut_coords = np.unique(cut_coords).tolist()
 
     cut_coords = np.array(cut_coords)
