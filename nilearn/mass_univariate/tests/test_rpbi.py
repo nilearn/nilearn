@@ -560,3 +560,27 @@ def test_randomized_parcellation_based_inference(random_state=1):
     # h0
     assert_equal(h0.shape, (9,))
     assert_array_almost_equal(h0, np.zeros(9))
+
+    ### Test with several tested_vars
+    # check random state
+    rng = check_random_state(random_state)
+    rng.randn(data.shape[0], data.shape[1])
+    # Randomized Parcellation Based Inference
+    tested_vars = np.hstack((np.arange(8).reshape((-1, 1)),
+                             np.arange(8)[::-1].reshape((-1, 1))))
+    n_parcellations = 2
+    n_parcels = 3
+    neg_log_pvals, counting_statistic_original_data, h0 = (
+        randomized_parcellation_based_inference(
+            tested_vars, data, mask, confounding_vars=None,
+            model_intercept=True,
+            n_parcellations=n_parcellations, n_parcels=n_parcels,
+            threshold=0.05 / n_parcels, n_perm=9, random_state=rng,
+            verbose=True))
+    # check pvalues
+    assert_equal(neg_log_pvals.shape, (2, n_voxels))
+    assert_array_almost_equal(neg_log_pvals, np.zeros((2, n_voxels)))
+    # check counting statistic (shape only)
+    assert_equal(counting_statistic_original_data.shape, (2, n_voxels))
+    # h0 (shape only)
+    assert_equal(h0.shape, (9,))
