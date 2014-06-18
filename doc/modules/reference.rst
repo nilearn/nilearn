@@ -200,6 +200,16 @@ uses.
    plot_roi
    plot_stat_map
 
+**Classes**:
+
+.. currentmodule:: nilearn.plotting.slicer
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+   
+   OrthoSlicer
+
 
 .. _signal_ref:
 
