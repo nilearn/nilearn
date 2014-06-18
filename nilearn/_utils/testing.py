@@ -306,12 +306,16 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
 
 
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
-                       affine=np.eye(4), rand_gen = np.random.RandomState(0)):
+                       affine=np.eye(4), n_blocks=None, block_size=None,
+                       block_type='classification',
+                       rand_gen=np.random.RandomState(0)):
     """Generate a signal which can be used for testing.
 
     The return value is a 4D array, representing 3D volumes along time.
     Only the voxels in the center are non-zero, to mimic the presence of
-    brain voxels in real signals.
+    brain voxels in real signals. Setting n_blocks to an integer generates
+    condition blocks, the remaining of the timeseries corresponding
+    to 'rest' or 'baseline' condition.
 
     Parameters
     ==========
@@ -327,7 +331,18 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
         "step": 0.5 for the first half then 1.
 
     affine: numpy.ndarray
-        affine of returned images
+        Affine of returned images
+
+    n_blocks: int or None
+        Number of condition blocks.
+
+    block_size: int or None
+        Number of trials in a block. Used only if n_blocks is not
+        None. Defaults to 3 if n_blocks is not None.
+
+    block_type: str
+        Defines if the returned target should be used for
+        'classification' or 'regression'.
 
     Returns
     =======
@@ -337,6 +352,10 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
 
     mask: nibabel.Nifti1Image
         mask giving non-zero voxels
+
+    target: numpy.ndarray
+        Classification or regression target. Shape of number of
+        time points (length). Returned only if n_blocks is not None
     """
     full_shape = shape + (length, )
     fmri = np.zeros(full_shape)
@@ -361,6 +380,39 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     mask[shift[0]:shift[0] + width[0],
          shift[1]:shift[1] + width[1],
          shift[2]:shift[2] + width[2]] = 1
+
+    if n_blocks is not None:
+        block_size = 3 if block_size is None else block_size
+        flat_fmri = fmri[mask.astype('bool')]
+        target = np.zeros(length, dtype='int')
+        rest_max_size = (length - (n_blocks * block_size)) // n_blocks
+        if rest_max_size < 0:
+            raise ValueError(
+                '%s is to few frames '
+                'to put %s blocks of size %s' % (
+                    length, n_blocks, block_size))
+        t = 0
+        if rest_max_size > 0:
+            t = rand_gen.random_integers(0, rest_max_size, 1)[0]
+        for block in range(n_blocks):
+            if block_type == 'classification':
+                i = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
+                trials = (rand_gen.random_sample(block_size) + 1) * 3.
+            else:
+                i = flat_fmri.shape[0] // 2
+                trials = (rand_gen.random_sample(block_size) + 1) * block
+            t_inc = 0
+            if rest_max_size > 0:
+                t_inc = rand_gen.random_integers(0, rest_max_size, 1)[0]
+            flat_fmri[i, t:t + block_size] += trials
+            target[t:t + block_size] = block + 1
+            t += t_inc + block_size
+        target = target if block_type == 'classification' \
+            else target.astype('float')
+        fmri = np.zeros(fmri.shape)
+        fmri[mask.astype('bool')] = flat_fmri
+        return Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target
+
     return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
 
 
