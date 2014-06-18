@@ -396,15 +396,19 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
             t_start = rand_gen.random_integers(0, rest_max_size, 1)[0]
         for block in range(n_blocks):
             if block_type == 'classification':
-                idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
-                trials = (rand_gen.random_sample(block_size) + 1) * 3.
+                # Select a random voxel and add some signal to the background
+                voxel_idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
+                trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
             else:
-                idx = flat_fmri.shape[0] // 2
-                trials = (rand_gen.random_sample(block_size) + 1) * block
+                # Select the voxel in the image center and add some signal
+                # that increases with each block
+                voxel_idx = flat_fmri.shape[0] // 2
+                trials_effect = (
+                    rand_gen.random_sample(block_size) + 1) * block
             t_rest = 0
             if rest_max_size > 0:
                 t_rest = rand_gen.random_integers(0, rest_max_size, 1)[0]
-            flat_fmri[idx, t_start:t_start + block_size] += trials
+            flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
             target[t_start:t_start + block_size] = block + 1
             t_start += t_rest + block_size
         target = target if block_type == 'classification' \
