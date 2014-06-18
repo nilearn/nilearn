@@ -519,7 +519,7 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
     lost_dof: int,
       Degress of freedom that are lost during the model estimation.
       Beware that tested variates are fitted independently so `lost_dof`
-      only depends from confounding variates.
+      only depends on confounding variates.
 
     intercept_test : boolean,
       Change the permutation scheme (swap signs for intercept,
@@ -729,6 +729,9 @@ def rpbi_core(tested_vars, target_vars,
          random_state=rng.random_integers(np.iinfo(np.int32).max))
         for (perm_chunk_start, perm_chunk_stop) in perm_chunks)
     # reduce results
+    # We expect the number of stored values to decrease non-linerly
+    # with the sparsity_threshold value. Using a square-root is thus useful
+    # to better estimate max_elts.
     max_elts = int(n_tested_vars * n_descriptors
                    * np.sqrt(threshold) * (n_perm + 1))
     all_results = GrowableSparseArray(
