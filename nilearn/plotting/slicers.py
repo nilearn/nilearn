@@ -169,7 +169,8 @@ class BaseSlicer(object):
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
     _colorbar = False
-    _colorbar_width = 0.15
+    # pseudo absolute value
+    _colorbar_width = 0.45
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -208,7 +209,7 @@ class BaseSlicer(object):
     @classmethod
     def init_with_figure(cls, img, threshold=None,
                          cut_coords=None, figure=None, axes=None,
-                         black_bg=False, leave_space=False):
+                         black_bg=False, leave_space=False, colorbar=False):
         # deal with "fake" 4D images
         if img is not None and img is not False and len(img.shape) > 3:
             if len(img.shape) == 4 and img.shape[3] == 1:
@@ -228,8 +229,14 @@ class BaseSlicer(object):
         if not isinstance(figure, pl.Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
+            
             # Adjust for the number of axes
             figsize[0] *= len(cut_coords)
+            
+            # Make space for the colorbar
+            if colorbar:
+                figsize[0] += .7
+                
             facecolor = 'k' if black_bg else 'w'
 
             if leave_space:
@@ -403,21 +410,19 @@ class BaseSlicer(object):
         return ims
     
     def _colorbar_show(self, im):
-        ticks_margin = self._colorbar_width*0.75
+        adjusted_width = self._colorbar_width/len(self.axes)
+        ticks_margin = adjusted_width*0.75
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
-        self._colorbar_ax = figure.add_axes([x1-self._colorbar_width+0.01, 
+        self._colorbar_ax = figure.add_axes([x1-adjusted_width+0.01, 
                                              y0+0.05,
-                                             self._colorbar_width-ticks_margin, 
+                                             adjusted_width-ticks_margin, 
                                              y1-0.10])
+        
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
         cb = figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
         cb.outline.set_linewidth(0)
-        
-        def format_number(n):
-            return "% 2.2g"%n
-            
-        self._colorbar_ax.set_yticklabels([format_number(t) for t in ticks])
+        self._colorbar_ax.set_yticklabels(["% 2.2g"%t for t in ticks])
         
         if self._black_bg:
             color = 'w'
@@ -569,14 +574,16 @@ class OrthoSlicer(BaseSlicer):
             Here we put the logic used to adjust the size of the axes.
         """
         x0, y0, x1, y1 = self.rect
-        if self._colorbar:
-            x1 = x1 - self._colorbar_width
         width_dict = dict()
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
         dummy_ax = CutAxes(None, None, None)
         width_dict[dummy_ax.ax] = 0
         cut_ax_dict = self.axes
+        
+        if self._colorbar:
+            x1 = x1 - self._colorbar_width/len(cut_ax_dict)
+            
         for cut_ax in cut_ax_dict.itervalues():
             bounds = cut_ax.get_object_bounds()
             if not bounds:
@@ -714,6 +721,10 @@ class BaseStackedSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
         cut_ax_dict = self.axes
+        
+        if self._colorbar:
+            x1 = x1 - self._colorbar_width/len(cut_ax_dict)
+            
         for cut_ax in cut_ax_dict.itervalues():
             bounds = cut_ax.get_object_bounds()
             if not bounds:
@@ -754,16 +765,17 @@ class BaseStackedSlicer(BaseSlicer):
 
 class XSlicer(BaseStackedSlicer):
     _direction = 'x'
-    _default_figsize = [2.2, 2.3]
+    _default_figsize = [2.6, 2.3]
 
 
 class YSlicer(BaseStackedSlicer):
     _direction = 'y'
-    _default_figsize = [2.6, 2.3]
+    _default_figsize = [2.2, 2.3]
 
 
 class ZSlicer(BaseStackedSlicer):
     _direction = 'z'
+    _default_figsize = [2.2, 2.3]
 
 
 class XZSlicer(OrthoSlicer):

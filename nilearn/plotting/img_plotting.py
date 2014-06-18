@@ -85,7 +85,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
                                               threshold=threshold,
                                               cut_coords=cut_coords,
                                               figure=figure, axes=axes,
-                                              black_bg=black_bg)
+                                              black_bg=black_bg, 
+                                              colorbar=colorbar)
 
 
     if bg_img is not None:
