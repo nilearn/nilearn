@@ -383,8 +383,8 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
 
     if n_blocks is not None:
         block_size = 3 if block_size is None else block_size
-        flat_fmri = fmri[mask.astype('bool')]
-        target = np.zeros(length, dtype='int')
+        flat_fmri = fmri[mask.astype(np.bool)]
+        target = np.zeros(length, dtype=np.int)
         rest_max_size = (length - (n_blocks * block_size)) // n_blocks
         if rest_max_size < 0:
             raise ValueError(
@@ -408,9 +408,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
             target[t_start:t_start + block_size] = block + 1
             t_start += t_rest + block_size
         target = target if block_type == 'classification' \
-            else target.astype('float')
+            else target.astype(np.float)
         fmri = np.zeros(fmri.shape)
-        fmri[mask.astype('bool')] = flat_fmri
+        fmri[mask.astype(np.bool)] = flat_fmri
         return Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target
 
     return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
