@@ -146,8 +146,14 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
 
     axis = 'xyz'.index(direction)
 
+
     affine = img.get_affine()
     orig_data = np.abs(img.get_data())
+    this_shape = orig_data.shape[axis]
+    if n_cuts > this_shape:
+        raise ValueError('Too many cuts requested for the data: '
+                         'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+
     data = orig_data.copy()
     if data.dtype.kind == 'i':
         data = data.astype(np.float)
@@ -200,7 +206,10 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
             candidates.append(slice_below)
         best_weight = -10
         for candidate in candidates:
-            this_weight = np.sum(np.rollaxis(orig_data, axis)[candidate])
+            if candidate >= this_shape:
+                this_weight = 0
+            else:
+                this_weight = np.sum(np.rollaxis(orig_data, axis)[candidate])
             if this_weight > best_weight:
                 best_candidate = candidate
                 best_weight = this_weight
