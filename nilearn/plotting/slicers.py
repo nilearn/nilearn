@@ -520,6 +520,10 @@ class OrthoSlicer(BaseSlicer):
 
 
     def _init_axes(self):
+        cut_coords = self.cut_coords
+        if len(cut_coords) != len(self._cut_displayed):
+            raise ValueError('The number cut_coords passed does not'
+                             'match the display_mode')
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = dict()
