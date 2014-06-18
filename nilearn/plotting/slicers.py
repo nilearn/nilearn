@@ -182,7 +182,7 @@ class BaseSlicer(object):
                 pylab's savefig.
 
         """
-        self._cut_coords = cut_coords
+        self.cut_coords = cut_coords
         if axes is None:
             axes = pl.axes((0., 0., 1., 1.))
             axes.axis('off')
@@ -495,7 +495,7 @@ class OrthoSlicer(BaseSlicer):
         for index, direction in enumerate(self._cut_displayed):
             ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
             ax.axis('off')
-            coord = self._cut_coords[sorted(self._cut_displayed).index(direction)]
+            coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
             cut_ax = CutAxes(ax, direction, coord)
             self.axes[direction] = cut_ax
             ax.set_axes_locator(self._locator)
@@ -549,7 +549,7 @@ class OrthoSlicer(BaseSlicer):
                 Extra keyword arguments are passed to axhline
         """
         if cut_coords is None:
-            cut_coords = self._cut_coords
+            cut_coords = self.cut_coords
         coords = dict()
         for direction in 'xyz':
             coord = None
@@ -631,8 +631,8 @@ class BaseStackedSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = dict()
-        fraction = 1./len(self._cut_coords)
-        for index, coord in enumerate(self._cut_coords):
+        fraction = 1./len(self.cut_coords)
+        for index, coord in enumerate(self.cut_coords):
             coord = float(coord)
             ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
                           fraction*(x1-x0), y1-y0])
