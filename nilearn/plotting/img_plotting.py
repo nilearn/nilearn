@@ -61,7 +61,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
             # voxels are indeed threshold
             threshold = fast_abs_percentile(data) + 1e-5
 
-        if display_mode in 'xyz':
+        if display_mode in ('x', 'y', 'z'):
             # Here we use a heuristic for cut indices that is well suited to
             # finding a small number of objects
             if cut_coords is None:
@@ -267,11 +267,13 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
         if dim:
             vmean = .5 * (vmin + vmax)
             ptp = .5 * (vmax - vmin)
-            if not operator.isNumberType(dim):
-                dim = .6
             if black_bg:
+                if not operator.isNumberType(dim):
+                    dim = .8
                 vmax = vmean + (1 + dim) * ptp
             else:
+                if not operator.isNumberType(dim):
+                    dim = .6
                 vmin = vmean - (1 + dim) * ptp
     if black_bg == 'auto':
         # No anatomy given: no need to turn black_bg on

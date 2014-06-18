@@ -155,7 +155,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         data = ndimage.gaussian_filter(data, 3)
 
     if spacing == 'auto':
-        spacing = .5 / n_cuts * data.shape[axis]
+        spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
@@ -167,15 +167,28 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
                                           data.shape)[axis]
 
         # cancel out the surroundings of the peak
-        start = max_along_axis - spacing
+        start = max(0, max_along_axis - spacing)
         stop = max_along_axis + spacing
         slices[axis] = slice(start, stop)
         # We don't actually fully zero the neighborhood, to avoid ending
         # up with fully zeros if n_cuts is too big: we can do multiple
         # passes on the data
-        data[slices] *= 1.e-2
+        data[slices] *= 1.e-3
 
         cut_coords.append(max_along_axis)
+
+    # We sometimes get duplicated cuts, so we add cuts at the beginning
+    # and the end
+    cut_coords = np.unique(cut_coords).tolist()
+    while len(cut_coords) < n_cuts:
+        is_pair = 1 - 2 * (len(cut_coords) % 2)
+        if is_pair and min(cut_coords) > 1:
+            # We need 'min(cut_coords) > 1' to avoid having negative
+            # indices, which would work, but not the way we think of them
+            cut_coords.append(min(cut_coords) - 2)
+        else:
+            cut_coords.append(max(cut_coords) + 2)
+        cut_coords = np.unique(cut_coords).tolist()
 
     cut_coords = np.array(cut_coords)
     cut_coords.sort()
@@ -183,7 +196,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     # Transform this back in image space
     kwargs = dict()
     for name in 'xyz':
-        kwargs[name] = np.zeros_like(cut_coords)
+        kwargs[name] = np.zeros(len(cut_coords))
     kwargs[direction] = cut_coords
     kwargs['affine'] = affine
 
