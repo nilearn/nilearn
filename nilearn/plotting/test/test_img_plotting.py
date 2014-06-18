@@ -18,12 +18,28 @@ except ImportError:
 
 import nibabel
 
-from ..img_plotting import demo_plot_roi, plot_anat, plot_img
+from ...image.resampling import coord_transform
+from ..img_plotting import MNI152TEMPLATE, plot_anat, plot_img, plot_roi
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                         [   0.,    2.,    0., -126.],
                         [   0.,    0.,    2.,  -72.],
                         [   0.,    0.,    0.,    1.]])
+
+
+def demo_plot_roi(**kwargs):
+    """ Demo plotting an ROI
+    """
+    mni_affine = MNI152TEMPLATE.get_affine()
+    data = np.zeros((91, 109, 91))
+    # Color a asymetric rectangle around Broca area:
+    x, y, z = -52, 10, 22
+    x_map, y_map, z_map = coord_transform(x, y, z,
+                                          np.linalg.inv(mni_affine))
+    data[int(x_map)-5:int(x_map)+5, int(y_map)-3:int(y_map)+3,
+         int(z_map)-10:int(z_map)+10] = 1
+    img = nibabel.Nifti1Image(data, mni_affine)
+    return plot_roi(img, title="Broca's area", **kwargs)
 
 
 def test_demo_plot_roi():
