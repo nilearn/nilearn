@@ -407,7 +407,7 @@ def plot_epi(epi_img=None, cut_coords=None, display_mode='ortho',
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg='auto', alpha=0.7,
-             cmap=pl.cm.gist_rainbow, dim=True, **kwargs):
+             cmap=pl.cm.gist_ncar, dim=True, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
