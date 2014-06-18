@@ -2,7 +2,7 @@ import itertools
 
 import numpy as np
 
-from nose.tools import assert_equals, assert_raises
+from nose.tools import assert_equals, assert_raises, assert_true
 
 from .._utils.testing import generate_fake_fmri
 
