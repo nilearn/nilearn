@@ -385,6 +385,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     if n_blocks is not None:
         block_size = 3 if block_size is None else block_size
         flat_fmri = fmri[mask.astype(np.bool)]
+        flat_fmri /= np.abs(flat_fmri).max()
         target = np.zeros(length, dtype=np.int)
         rest_max_size = (length - (n_blocks * block_size)) // n_blocks
         if rest_max_size < 0:
