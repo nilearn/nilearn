@@ -428,6 +428,10 @@ def resample_img(niimg, target_affine=None, target_shape=None,
         b = np.dot(A, b)
 
     data_shape = list(data.shape)
+    # Make sure that we have a list here
+    if isinstance(target_shape, np.ndarray):
+        target_shape = target_shape.tolist()
+    target_shape = tuple(target_shape)
     # For images with dimensions larger than 3D:
     if len(data_shape) > 3:
         # Iter in a set of 3D volumes, as the interpolation problem is
