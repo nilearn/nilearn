@@ -337,15 +337,15 @@ def test_iter_img():
                            img_4d.get_affine())
 
 
-def test_image_cropper():
+def test_nifti_cropper():
     data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1
     affine = np.diag((4, 3, 2, 1))
     niimg = nibabel.Nifti1Image(data, affine=affine)
 
-    image_cropper = image.ImageCropper()
+    nifti_cropper = image.NiftiCropper(cropping_threshold=1e-6)
 
-    cropped_niimg = image_cropper.fit_transform(niimg)
+    cropped_niimg = nifti_cropper.fit_transform(niimg)
 
     # correction for padding with "-1"
     new_origin = np.array((4, 3, 2)) * np.array((2 - 1, 1 - 1, 3 - 1))
