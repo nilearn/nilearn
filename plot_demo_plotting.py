@@ -34,7 +34,9 @@ plotting.plot_anat(haxby.anat[0], title="plot_anat")
 plotting.plot_roi(haxby.mask_vt[0], bg_img=haxby.anat[0], title="plot_roi")
 
 # Plotting EPI haxby
-plotting.plot_epi(image.mean_img(haxby.func[0]), title="plot_epi")
+mean_haxby_img = image.mean_img(haxby.func[0])
+plotting.plot_epi(mean_haxby_img, title="plot_epi")
+
 
 ###############################################################################
 # demo the different display_mode
@@ -67,6 +69,18 @@ plotting.plot_stat_map(localizer.cmaps[3], display_mode='yx',
 plotting.plot_stat_map(localizer.cmaps[3], display_mode='yz',
                        cut_coords=(-27, 60),
                        title="display_mode='yz', cut_coords=(-27, 60)")
+
+###############################################################################
+# demo the outline modes
+
+# Plot T1 outline on top of the mean EPI (useful for checking coregistration)
+my_plot = plotting.plot_anat(mean_haxby_img, title="add_edges")
+my_plot.add_edges(haxby.anat[0])
+
+# Plotting outline of the mask on top of the EPI
+my_plot = plotting.plot_anat(mean_haxby_img, title="add_contours", 
+                             cut_coords=(28,-34,-22))
+my_plot.add_contours(haxby.mask_vt[0], levels=[0.5], colors='r')
 
 import pylab as pl
 pl.show()
