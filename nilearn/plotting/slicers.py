@@ -416,16 +416,16 @@ class BaseSlicer(object):
     
     def _colorbar_show(self, im):
         adjusted_width = self._colorbar_width/len(self.axes)
+        adjusted_right_margin = 0.01/len(self.axes)
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
-        self._colorbar_ax = figure.add_axes([x1-adjusted_width, 
+        self._colorbar_ax = figure.add_axes([x1-(adjusted_width+adjusted_right_margin), 
                                              y0+0.05,
-                                             adjusted_width, 
+                                             adjusted_width-adjusted_right_margin, 
                                              y1-0.10])
         
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
-        cb = figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
-        #cb.outline.set_linewidth(0)
+        figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
         self._colorbar_ax.yaxis.tick_left()
         self._colorbar_ax.set_yticklabels(["% 2.2g"%t for t in ticks])
         
