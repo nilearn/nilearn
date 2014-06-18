@@ -23,6 +23,7 @@ import nibabel
 from nilearn import datasets
 
 
+
 ###############################################################################
 # Simple visualization helper
 
@@ -38,13 +39,14 @@ def display_mask(background, mask, title):
 ###############################################################################
 # From already masked data
 from nilearn.input_data import NiftiMasker
+import nilearn.image as image
+from nilearn.plotting.img_plotting import plot_roi
 
 # Load Miyawaki dataset
 miyawaki = datasets.fetch_miyawaki2008()
 miyawaki_img = nibabel.load(miyawaki.func[0])
-miyawaki_func = miyawaki_img.get_data()
 
-background = np.mean(miyawaki_func, axis=-1)[..., 14]
+miyawaki_mean_img = image.mean_img(miyawaki.func[0])
 
 # This time, we can use the NiftiMasker without changing the default mask
 # strategy, as the data has already been masked, and thus lies on a
@@ -52,10 +54,9 @@ background = np.mean(miyawaki_func, axis=-1)[..., 14]
 
 masker = NiftiMasker()
 masker.fit(miyawaki_img)
-default_mask = masker.mask_img_.get_data().astype(np.bool)
-plt.figure(figsize=(4, 4.5))
-display_mask(background, default_mask[..., 14], 'Default background mask')
-plt.tight_layout()
+
+plot_roi(masker.mask_img_, miyawaki_mean_img, 
+         title="Mask from already masked data")
 
 
 ###############################################################################
@@ -71,37 +72,26 @@ nyu_func = nyu_img.get_data()[..., :100]
 nyu_img = nibabel.Nifti1Image(nyu_func, nyu_img.get_affine())
 
 # To display the background
-background = np.mean(nyu_func, axis=-1)[..., 21]
+nyu_mean_img = image.mean_img(nyu_img)
 
 
 # Simple mask extraction from EPI images
-from nilearn.input_data import NiftiMasker
 # We need to specify an 'epi' mask_strategy, as this is raw EPI data
 masker = NiftiMasker(mask_strategy='epi')
 masker.fit(nyu_img)
-default_mask = masker.mask_img_.get_data().astype(np.bool)
-plt.figure(figsize=(4, 4.5))
-display_mask(background, default_mask[..., 21], 'EPI automatic mask')
-plt.tight_layout()
+plot_roi(masker.mask_img_, nyu_mean_img, title='EPI automatic mask')
 
 # Generate mask with strong opening
 masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
 masker.fit(nyu_img)
-opening_mask = masker.mask_img_.get_data().astype(np.bool)
-plt.figure(figsize=(4, 4.5))
-display_mask(background, opening_mask[..., 21], 'EPI Mask with strong opening')
-plt.tight_layout()
+plot_roi(masker.mask_img_, nyu_mean_img, title='EPI Mask with strong opening')
 
 # Generate mask with a high lower cutoff
 masker = NiftiMasker(mask_strategy='epi',
                      mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
                                     opening=False))
 masker.fit(nyu_img)
-cutoff_mask = masker.mask_img_.get_data().astype(np.bool)
-
-plt.figure(figsize=(4, 4.5))
-display_mask(background, cutoff_mask[..., 21], 'EPI Mask: high lower_cutoff')
-plt.tight_layout()
+plot_roi(masker.mask_img_, nyu_mean_img, title='EPI Mask: high lower_cutoff')
 
 ################################################################################
 # Extract time series
