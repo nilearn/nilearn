@@ -26,11 +26,6 @@ from nilearn import datasets
 dataset = datasets.fetch_adhd()
 func_files = dataset.func # The list of 4D nifti files for each subject
 
-### Compute a mean epi ########################################################
-from nilearn import image
-
-mean_img = image.mean_img(func_files[0])
-
 ### Apply CanICA ##############################################################
 from nilearn.decomposition.canica import CanICA
 
@@ -54,7 +49,8 @@ from nilearn.plotting import plot_stat_map
 
 for i in range(n_components):
     plot_stat_map(nibabel.Nifti1Image(components_img.get_data()[..., i],
-                                      components_img.get_affine()), mean_img,
-                  display_mode="z", title="Component %d"%i, cut_coords=1)
+                                      components_img.get_affine()),
+                  display_mode="z", title="Component %d"%i, cut_coords=1,
+                  colorbar=False)
 
 plt.show()

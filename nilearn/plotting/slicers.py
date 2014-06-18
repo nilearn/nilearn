@@ -526,10 +526,12 @@ class OrthoSlicer(BaseSlicer):
             raise ValueError('The number cut_coords passed does not'
                              'match the display_mode')
         x0, y0, x1, y1 = self.rect
+        axisbg = 'k' if self._black_bg else 'w'
         # Create our axes:
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
-            ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
+            ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0],
+                         axisbg=axisbg)
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
             cut_ax = CutAxes(ax, direction, coord)
@@ -537,6 +539,11 @@ class OrthoSlicer(BaseSlicer):
             ax.set_axes_locator(self._locator)
 
         if self._black_bg:
+            for ax in self.axes.values():
+                ax.ax.imshow(np.zeros((2, 2, 3)),
+                            extent=[-5000, 5000, -5000, 5000],
+                            zorder=-500, aspect='auto')
+
             # To have a black background in PDF, we need to create a
             # patch in black for the background
             self.frame_axes.imshow(np.zeros((2, 2, 3)),

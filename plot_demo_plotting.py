@@ -24,7 +24,8 @@ localizer = datasets.fetch_localizer_contrasts(["left vs right button press"],
 
 # Plotting statistical maps
 plotting.plot_stat_map(localizer.cmaps[3], bg_img=localizer.anats[3],
-                       title="plot_stat_map")
+                       threshold=3, title="plot_stat_map",
+                       cut_coords=(36, -27, 66))
 
 # Plotting anatomical maps
 plotting.plot_anat(haxby.anat[0], title="plot_anat")
