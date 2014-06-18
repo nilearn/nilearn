@@ -24,7 +24,7 @@
 .. |banner3| image:: auto_examples/images/plot_rest_clustering_1.png
    :target: auto_examples/plot_rest_clustering.html
 
-.. |banner4| image:: auto_examples/images/plot_canica_resting_state_9.png
+.. |banner4| image:: auto_examples/images/plot_canica_resting_state_11.png
    :target: auto_examples/plot_canica_resting_state.html
 
 .. |banner5| image:: auto_examples/images/plot_haxby_searchlight_1.png

@@ -50,7 +50,7 @@ from nilearn.plotting import plot_stat_map
 for i in range(n_components):
     plot_stat_map(nibabel.Nifti1Image(components_img.get_data()[..., i],
                                       components_img.get_affine()),
-                  display_mode="z", title="Component %d"%i, cut_coords=1,
+                  display_mode="z", title="IC %d"%i, cut_coords=1,
                   colorbar=False)
 
 plt.show()
