@@ -33,7 +33,7 @@
 .. raw:: html
 
    <div id="index-grid" class="section group">
-    <div class="col span_1_of_2">
+    <div class="col span_1_of_3">
         <h3><a href="introduction.html">First Steps</a></h3>
         <p>Get started with NiLearn</p>
 
@@ -42,7 +42,7 @@
         <h3><a href="user_guide.html"> User Guide</a></h3>
         <p>Browse the full documentation</p>
     </div>
-    <div class="col span_1_of_2">
+    <div class="col span_2_of_3">
     <div class="jcarousel-wrapper">
     <div class="jcarousel">
 

@@ -91,12 +91,14 @@ mean_fmri = image.mean_img(fmri_img)
 
 plot_stat_map(nibabel.Nifti1Image(searchlight.scores_,
                                   mean_fmri.get_affine()), mean_fmri,
-              title="Searchlight", display_mode="z", cut_coords=[-16])
+              title="Searchlight", display_mode="z", cut_coords=[-16],
+              colorbar=False)
 
 ### F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 plot_stat_map(nibabel.Nifti1Image(p_ma,
                                   mean_fmri.get_affine()), mean_fmri,
-              title="F-scores", display_mode="z", cut_coords=[-16])
+              title="F-scores", display_mode="z", cut_coords=[-16],
+              colorbar=False)
 
 plt.show()

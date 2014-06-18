@@ -528,8 +528,8 @@ class OrthoSlicer(BaseSlicer):
     """
     _cut_displayed = 'yxz'
 
-    @staticmethod
-    def find_cut_coords(img=None, threshold=None, cut_coords=None):
+    @classmethod
+    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
@@ -538,8 +538,9 @@ class OrthoSlicer(BaseSlicer):
                                         activation_threshold=threshold)
                 cut_coords = coord_transform(x_map, y_map, z_map,
                                              img.get_affine())
+            cut_coords = [cut_coords['xyz'.find(c)]
+                          for c in sorted(self._cut_displayed)]
         return cut_coords
-
 
     def _init_axes(self):
         cut_coords = self.cut_coords
@@ -571,8 +572,6 @@ class OrthoSlicer(BaseSlicer):
                                    extent=[-5000, 5000, -5000, 5000],
                                    zorder=-500, aspect='auto')
             self.frame_axes.set_zorder(-1000)
-
-
 
     def _locator(self, axes, renderer):
         """ The locator function used by matplotlib to position axes.
@@ -613,7 +612,6 @@ class OrthoSlicer(BaseSlicer):
         left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
         return transforms.Bbox([[left_dict[axes], y0],
                           [left_dict[axes] + width_dict[axes], y1]])
-
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
