@@ -10,7 +10,6 @@ import operator
 import numpy as np
 import nibabel
 from .._utils.testing import skip_if_running_nose
-from matplotlib import ticker
 
 try:
     import pylab as pl
@@ -712,6 +711,19 @@ class BaseStackedSlicer(BaseSlicer):
             cut_ax = CutAxes(ax, self._direction, coord)
             self.axes[coord] = cut_ax
             ax.set_axes_locator(self._locator)
+
+        if self._black_bg:
+            for ax in self.axes.values():
+                ax.ax.imshow(np.zeros((2, 2, 3)),
+                            extent=[-5000, 5000, -5000, 5000],
+                            zorder=-500, aspect='auto')
+
+            # To have a black background in PDF, we need to create a
+            # patch in black for the background
+            self.frame_axes.imshow(np.zeros((2, 2, 3)),
+                                   extent=[-5000, 5000, -5000, 5000],
+                                   zorder=-500, aspect='auto')
+            self.frame_axes.set_zorder(-1000)
 
 
     def _locator(self, axes, renderer):
