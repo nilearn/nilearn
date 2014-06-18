@@ -145,5 +145,41 @@ Different display modes
 Adding overlays, edges and contours
 ====================================
 
+To add overlays, contours, or edges, use the return value of the plotting
+functions. Indeed, these return a slicer object, such as the
+:class:`nilearn.plotting.slicers.OrthoSlicer`. This object represents the
+plot, and has methods to add overlays, contours or edge maps::
 
+        slices = plotting.plot_epi(...)
+
+.. |plot_edges| image:: ../auto_examples/images/plot_demo_plotting_13.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+.. |plot_contours| image:: ../auto_examples/images/plot_demo_plotting_14.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
+================= =========================================================
+================= =========================================================
+|plot_edges|       `slicer.add_edges(img)`
+                   |hack|
+                   Add a plot of the edges of `img`, where edges are
+                   extracted using a Canny edge-detection routine. This
+                   is typically useful to check registration. Note that
+                   `img` should have some visible sharp edges. Typically
+                   an EPI img does not, but a T1 does.
+
+|plot_contours|    `slicer.add_contours(img, levels=[.5], colors='r')`
+                   |hack|
+                   Add a plot of the contours of `img`, where contours
+                   are computed for constant values, specified in
+                   'levels'. This is typically useful to outline a mask,
+                   or ROI on top of another map.
+
+**add_overlay**   `slicer.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
+                   |hack|
+                   Add a new overlay on the existing figure
+
+================= =========================================================
 

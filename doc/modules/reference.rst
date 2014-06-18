@@ -202,7 +202,7 @@ uses.
 
 **Classes**:
 
-.. currentmodule:: nilearn.plotting.slicer
+.. currentmodule:: nilearn.plotting.slicers
 
 .. autosummary::
    :toctree: generated/
