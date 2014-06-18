@@ -316,8 +316,8 @@ def _crop_img_to(img, slices, copy=True):
     return new_img
 
 
-def crop_img(img, rtol=1e-8, copy=True):
-    """Crops img as much as possible
+def crop_img(niimg, rtol=1e-8, padding=1, copy=True):
+    """Crops niimg as much as possible
 
     Will crop img, removing as many zero entries as possible
     without touching non-zero entries. Will leave one voxel of
@@ -334,6 +334,10 @@ def crop_img(img, rtol=1e-8, copy=True):
         relative tolerance (with respect to maximal absolute
         value of the image), under which values are considered
         negligeable and thus croppable.
+
+    padding: int or tuple, default 1
+        indicates the number of voxels to use for padding. Padding
+        will never go further than image border.
 
     copy: boolean
         Specifies whether cropped data is copied or not.
@@ -356,9 +360,10 @@ def crop_img(img, rtol=1e-8, copy=True):
     start = coords.min(axis=1)
     end = coords.max(axis=1) + 1
 
-    # pad with one voxel to avoid resampling problems
-    start = np.maximum(start - 1, 0)
-    end = np.minimum(end + 1, data.shape[:3])
+    # pad with default one voxel to avoid resampling problems
+    padding = np.atleast_1d(padding)
+    start = np.maximum(start - padding, 0)
+    end = np.minimum(end + padding, data.shape[:3])
 
     slices = [slice(s, e) for s, e in zip(start, end)]
 

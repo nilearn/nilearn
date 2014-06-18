@@ -169,20 +169,27 @@ def test__crop_img_to():
 
 
 def test_crop_img():
-    data = np.zeros((5, 6, 7))
+    data = np.zeros((5, 6, 8))
     data[2:4, 1:5, 3:6] = 1
     affine = np.diag((4, 3, 2, 1))
     img = nibabel.Nifti1Image(data, affine=affine)
 
-    cropped_img = image.crop_img(img)
+    padding = (1, 1, 2)
+    cropped_niimg = image.crop_img(niimg, padding=padding)
 
     # correction for padding with "-1"
-    new_origin = np.array((4, 3, 2)) * np.array((2 - 1, 1 - 1, 3 - 1))
+    new_origin = np.diag(affine)[:3] * (
+        np.array((2, 1, 3)) - np.array(padding))
 
     # check that correct part was extracted:
     # This also corrects for padding
-    assert_true((cropped_img.get_data()[1:-1, 1:-1, 1:-1] == 1).all())
-    assert_true(cropped_img.shape == (2 + 2, 4 + 2, 3 + 2))
+    remove_padding_slice = [slice(p, -p) for p in padding]
+    assert_true((cropped_niimg.get_data()[remove_padding_slice] == 1).all())
+    padded_shape = \
+        np.array([2, 4, 3]) + \
+        np.array(padding) + \
+        np.array(padding)
+    assert_true(cropped_niimg.shape == tuple(padded_shape))
 
 
 def test_crop_threshold_tolerance():
