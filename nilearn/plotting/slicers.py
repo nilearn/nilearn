@@ -101,10 +101,12 @@ class CutAxes(object):
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
-        getattr(ax, type)(cut.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs)
+        im = getattr(ax, type)(cut.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs)
 
         self._object_bounds.append((xmin_, xmax_, zmin_, zmax_))
         ax.axis(self.get_object_bounds())
+        
+        return im
 
 
     def get_object_bounds(self):
@@ -165,6 +167,8 @@ class BaseSlicer(object):
     """
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
+    _colorbar = False
+    _colorbar_width = 0.08
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -287,7 +291,7 @@ class BaseSlicer(object):
                     **kwargs)
 
 
-    def add_overlay(self, img, threshold=1e-6, **kwargs):
+    def add_overlay(self, img, threshold=1e-6, colorbar=False, **kwargs):
         """ Plot a 3D map in all the views.
 
             Parameters
@@ -302,6 +306,12 @@ class BaseSlicer(object):
             kwargs:
                 Extra keyword arguments are passed to imshow.
         """
+        if colorbar and self._colorbar:
+            raise ValueError("This figure already has an overlay with a " \
+                             "colorbar.")
+        else:
+            self._colorbar = colorbar
+        
         # deal with "fake" 4D images
         if len(img.shape) > 3:
             if len(img.shape) == 4 and img.shape[3] == 1:
@@ -322,7 +332,10 @@ class BaseSlicer(object):
                                           copy=False)
             img = nibabel.Nifti1Image(data, img.get_affine())
 
-        self._map_show(img, type='imshow', **kwargs)
+        ims = self._map_show(img, type='imshow', **kwargs)
+        
+        if colorbar:
+            self._colorbar_show(ims[0])
 
 
     def contour_map(self, img, **kwargs):
@@ -375,14 +388,32 @@ class BaseSlicer(object):
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
 
         # For each ax, cut the data and plot it
+        ims = []
         for cut_ax in self.axes.itervalues():
             try:
                 cut = cut_ax.do_cut(data, affine)
             except IndexError:
                 # We are cutting outside the indices of the data
                 continue
-            cut_ax.draw_cut(cut, data_bounds, bounding_box,
+            im = cut_ax.draw_cut(cut, data_bounds, bounding_box,
                             type=type, **kwargs)
+            ims.append(im)
+        return ims
+    
+    def _colorbar_show(self, im):
+        ticks_margin = self._colorbar_width*0.75
+        figure = self.frame_axes.figure
+        _, y0, x1, y1 = self.rect
+        colorbar_ax = figure.add_axes([x1-self._colorbar_width, y0,
+                                       self._colorbar_width-ticks_margin, y1])
+        figure.colorbar(im, cax=colorbar_ax)
+        
+        if self._black_bg:
+            color = 'w'
+        else:
+            color = 'k'
+        for tick in colorbar_ax.yaxis.get_ticklabels():
+            tick.set_color(color)
 
     def edge_map(self, img, color='r'):
         """ Plot the edges of a 3D map in all the views.
@@ -506,6 +537,8 @@ class OrthoSlicer(BaseSlicer):
             Here we put the logic used to adjust the size of the axes.
         """
         x0, y0, x1, y1 = self.rect
+        if self._colorbar:
+            x1 = x1 - self._colorbar_width
         width_dict = dict()
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts

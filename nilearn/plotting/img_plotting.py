@@ -39,7 +39,8 @@ from .find_cuts import find_cut_slices
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False,
-             bg_vmin=None, bg_vmax=None, interpolation="nearest", **kwargs):
+             bg_vmin=None, bg_vmax=None, interpolation="nearest", 
+             colorbar=False, **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
     if img is not False and img is not None:
@@ -96,7 +97,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
         if threshold:
             data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
         slicer.add_overlay(nibabel.Nifti1Image(data, affine), 
-                           interpolation=interpolation, **kwargs)
+                           interpolation=interpolation, colorbar=colorbar,
+                           **kwargs)
 
     if black_bg:
         # To have a black background in PDF, we need to create a
@@ -476,7 +478,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   display_mode='ortho', figure=None, axes=None, title=None,
                   threshold=1e-6, annotate=True, draw_cross=True,
-                  black_bg='auto', cmap=cm.cold_hot, dim=True, 
+                  black_bg='auto', cmap=cm.cold_hot, dim=True, colorbar=True,
                   **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
         Lateral)
@@ -549,7 +551,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=threshold,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
-                               vmin=vmin, vmax=vmax, **kwargs)
+                               vmin=vmin, vmax=vmax, colorbar=colorbar,
+                               **kwargs)
     return slicer
 
 ################################################################################
