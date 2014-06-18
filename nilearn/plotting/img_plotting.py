@@ -96,7 +96,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
     if img is not None and img is not False:
         if threshold:
             data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-        slicer.add_overlay(nibabel.Nifti1Image(data, affine), 
+        slicer.add_overlay(nibabel.Nifti1Image(data, affine),
                            interpolation=interpolation, colorbar=colorbar,
                            **kwargs)
 
