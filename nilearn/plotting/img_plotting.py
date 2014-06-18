@@ -100,14 +100,6 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
                            interpolation=interpolation, colorbar=colorbar,
                            **kwargs)
 
-    if black_bg:
-        # To have a black background in PDF, we need to create a
-        # patch in black for the background
-        for ax in slicer.axes.values():
-            ax.ax.imshow(np.zeros((2, 2, 3)),
-                         extent=[-5000, 5000, -5000, 5000],
-                         zorder=-500)
-
     if annotate:
         slicer.annotate()
     if draw_cross:
