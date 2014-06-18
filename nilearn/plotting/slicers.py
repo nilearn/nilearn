@@ -169,7 +169,8 @@ class BaseSlicer(object):
     _default_figsize = [2.2, 2.6]
     _colorbar = False
     # pseudo absolute value
-    _colorbar_width = 0.45
+    _colorbar_width = 0.06
+    _colorbar_labels_margin = 2.8
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -258,8 +259,8 @@ class BaseSlicer(object):
         return cls(cut_coords, axes, black_bg)
 
 
-    def title(self, text, x=0.01, y=0.99, size=15, color=None,
-                bgcolor=None, alpha=1, **kwargs):
+    def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None, 
+              alpha=1, **kwargs):
         """ Write a title to the view.
 
             Parameters
@@ -410,17 +411,17 @@ class BaseSlicer(object):
     
     def _colorbar_show(self, im):
         adjusted_width = self._colorbar_width/len(self.axes)
-        ticks_margin = adjusted_width*0.75
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
-        self._colorbar_ax = figure.add_axes([x1-adjusted_width+0.01, 
+        self._colorbar_ax = figure.add_axes([x1-adjusted_width, 
                                              y0+0.05,
-                                             adjusted_width-ticks_margin, 
+                                             adjusted_width, 
                                              y1-0.10])
         
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
         cb = figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
-        cb.outline.set_linewidth(0)
+        #cb.outline.set_linewidth(0)
+        self._colorbar_ax.yaxis.tick_left()
         self._colorbar_ax.set_yticklabels(["% 2.2g"%t for t in ticks])
         
         if self._black_bg:
@@ -581,7 +582,9 @@ class OrthoSlicer(BaseSlicer):
         cut_ax_dict = self.axes
         
         if self._colorbar:
-            x1 = x1 - self._colorbar_width/len(cut_ax_dict)
+            adjusted_width = self._colorbar_width/len(self.axes)
+            ticks_margin = adjusted_width*self._colorbar_labels_margin
+            x1 = x1 - (adjusted_width+ticks_margin)
             
         for cut_ax in cut_ax_dict.itervalues():
             bounds = cut_ax.get_object_bounds()
@@ -735,7 +738,9 @@ class BaseStackedSlicer(BaseSlicer):
         cut_ax_dict = self.axes
         
         if self._colorbar:
-            x1 = x1 - self._colorbar_width/len(cut_ax_dict)
+            adjusted_width = self._colorbar_width/len(self.axes)
+            ticks_margin = adjusted_width*self._colorbar_labels_margin
+            x1 = x1 - (adjusted_width+ticks_margin)
             
         for cut_ax in cut_ax_dict.itervalues():
             bounds = cut_ax.get_object_bounds()
