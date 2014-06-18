@@ -337,7 +337,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
         Number of condition blocks.
 
     block_size: int or None
-        Number of trials in a block. Used only if n_blocks is not
+        Number of timepoints in a block. Used only if n_blocks is not
         None. Defaults to 3 if n_blocks is not None.
 
     block_type: str
