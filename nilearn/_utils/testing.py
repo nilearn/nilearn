@@ -388,25 +388,25 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
         rest_max_size = (length - (n_blocks * block_size)) // n_blocks
         if rest_max_size < 0:
             raise ValueError(
-                '%s is to few frames '
+                '%s is too small '
                 'to put %s blocks of size %s' % (
                     length, n_blocks, block_size))
-        t = 0
+        t_start = 0
         if rest_max_size > 0:
-            t = rand_gen.random_integers(0, rest_max_size, 1)[0]
+            t_start = rand_gen.random_integers(0, rest_max_size, 1)[0]
         for block in range(n_blocks):
             if block_type == 'classification':
-                i = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
+                idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
                 trials = (rand_gen.random_sample(block_size) + 1) * 3.
             else:
-                i = flat_fmri.shape[0] // 2
+                idx = flat_fmri.shape[0] // 2
                 trials = (rand_gen.random_sample(block_size) + 1) * block
-            t_inc = 0
+            t_rest = 0
             if rest_max_size > 0:
-                t_inc = rand_gen.random_integers(0, rest_max_size, 1)[0]
-            flat_fmri[i, t:t + block_size] += trials
-            target[t:t + block_size] = block + 1
-            t += t_inc + block_size
+                t_rest = rand_gen.random_integers(0, rest_max_size, 1)[0]
+            flat_fmri[idx, t_start:t_start + block_size] += trials
+            target[t_start:t_start + block_size] = block + 1
+            t_start += t_rest + block_size
         target = target if block_type == 'classification' \
             else target.astype('float')
         fmri = np.zeros(fmri.shape)
