@@ -10,6 +10,7 @@ import operator
 import numpy as np
 import nibabel
 from .._utils.testing import skip_if_running_nose
+from matplotlib import ticker
 
 try:
     import pylab as pl
@@ -168,7 +169,7 @@ class BaseSlicer(object):
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
     _colorbar = False
-    _colorbar_width = 0.08
+    _colorbar_width = 0.15
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -405,16 +406,26 @@ class BaseSlicer(object):
         ticks_margin = self._colorbar_width*0.75
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
-        colorbar_ax = figure.add_axes([x1-self._colorbar_width, y0,
-                                       self._colorbar_width-ticks_margin, y1])
-        figure.colorbar(im, cax=colorbar_ax)
+        self._colorbar_ax = figure.add_axes([x1-self._colorbar_width+0.01, 
+                                             y0+0.05,
+                                             self._colorbar_width-ticks_margin, 
+                                             y1-0.10])
+        ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
+        cb = figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
+        cb.outline.set_linewidth(0)
+        
+        def format_number(n):
+            return "% 2.2g"%n
+            
+        self._colorbar_ax.set_yticklabels([format_number(t) for t in ticks])
         
         if self._black_bg:
             color = 'w'
         else:
             color = 'k'
-        for tick in colorbar_ax.yaxis.get_ticklabels():
+        for tick in self._colorbar_ax.yaxis.get_ticklabels():
             tick.set_color(color)
+        self._colorbar_ax.yaxis.set_tick_params(width=0)
 
     def edge_map(self, img, color='r'):
         """ Plot the edges of a 3D map in all the views.
