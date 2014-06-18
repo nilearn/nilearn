@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.utils import check_random_state
 import sklearn.externals.joblib as joblib
 
+from nilearn._utils import check_n_jobs
 from nilearn.mass_univariate.utils import (
     orthogonalize_design, t_score_with_covars_and_normalized_design)
 
@@ -208,15 +209,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     rng = check_random_state(random_state)
 
     # check n_jobs (number of CPUs)
-    if n_jobs == 0:  # invalid according to joblib's conventions
-        raise ValueError("'n_jobs == 0' is not a valid choice. "
-                         "Please provide a positive number of CPUs, or -1 "
-                         "for all CPUs, or a negative number (-i) for "
-                         "'all but (i-1)' CPUs (joblib conventions).")
-    elif n_jobs < 0:
-        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
-    else:
-        n_jobs = min(n_jobs, joblib.cpu_count())
+    n_jobs = check_n_jobs(n_jobs)
+
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
         raise ValueError("'target_vars' should be a 2D array. "

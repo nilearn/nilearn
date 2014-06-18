@@ -219,10 +219,10 @@ on a voxel-based morphometry dataset:
 .. [1]
 
     The *p-value* is the probability of getting the observed values
-    assuming that nothing happens (i.e. under the null hypothesis).
+    assuming that no effect is present (i.e. under the null hypothesis).
     Therefore, a small *p-value* indicates that there is a small chance
-    of getting this data if no real difference existed, so the observed
-    voxel must be significant.
+    of getting this data if no real difference existed; in that sense, the
+    effect is considered as *significant*.
 
 .. [2]
 

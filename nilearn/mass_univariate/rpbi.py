@@ -13,8 +13,8 @@ from sklearn.externals.joblib import Memory
 from sklearn.utils import gen_even_slices, check_random_state
 from sklearn.preprocessing import binarize
 
+from nilearn._utils import check_niimg, check_n_jobs
 from nilearn._utils.cache_mixin import cache
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.mass_univariate.utils import (
     orthogonalize_design, t_score_with_covars_and_normalized_design)
 
@@ -310,11 +310,7 @@ def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
     rng = check_random_state(random_state)
 
     # check n_jobs (number of CPUs)
-    if n_jobs == 0:  # invalid according to joblib's conventions
-        raise ValueError("'n_jobs == 0' is not a valid choice. "
-                         "Please provide a positive number of CPUs, or -1 "
-                         "for all CPUs, or a negative number (-i) for "
-                         "'all but (i-1)' CPUs (joblib conventions).")
+    n_jobs = check_n_jobs(n_jobs)
 
     n_samples = all_subjects_data.shape[0]
     if n_bootstrap_samples is None:
@@ -675,15 +671,8 @@ def rpbi_core(tested_vars, target_vars,
         threshold = 0.1 / n_parcels
 
     # check n_jobs (number of CPUs)
-    if n_jobs == 0:  # invalid according to joblib's conventions
-        raise ValueError("'n_jobs == 0' is not a valid choice. "
-                         "Please provide a positive number of CPUs, or -1 "
-                         "for all CPUs, or a negative number (-i) for "
-                         "'all but (i-1)' CPUs (joblib conventions).")
-    elif n_jobs < 0:
-        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
-    else:
-        n_jobs = min(n_jobs, joblib.cpu_count())
+    n_jobs = check_n_jobs(n_jobs)
+
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
         raise ValueError("'target_vars' should be a 2D array. "
