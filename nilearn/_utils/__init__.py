@@ -6,3 +6,4 @@ from .numpy_conversions import as_ndarray
 
 from .cache_mixin import CacheMixin
 
+from .common_checks import check_n_jobs
