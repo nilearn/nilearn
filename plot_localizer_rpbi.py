@@ -32,7 +32,7 @@ neg_log_pvals, all_scores, h0 = permuted_ols(
     tested_var, fmri_masked, model_intercept=False,
     n_perm=5000,  # 5,000 for the sake of time. 10,000 is recommended
     two_sided_test=False,  # RPBI does not perform a two-sided test
-    n_jobs=1)  # can be changed to use more CPUs
+    n_jobs=-1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals))
 
@@ -44,9 +44,9 @@ neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     n_parcels=1000,
     threshold='auto',
     n_perm=5000,  # 5,000 for the sake of time. 10,000 is recommended
-    random_state=0, memory='nilearn_cache', n_jobs=1, verbose=True)
+    random_state=0, memory='nilearn_cache', n_jobs=-1, verbose=True)
 neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_rpbi))
+    neg_log_pvals_rpbi)
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt

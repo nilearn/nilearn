@@ -22,16 +22,14 @@ class GrowableSparseArray(object):
     """Sparse data array that supports memory-efficient, fast data appending.
 
     GrowableSparseArray is a sparse numpy recarray.
-    It is similar to a scipy.sparse COO matrix, except that:
-    (i) it is three-dimensional;
-    (ii) memory is pre-allocated from an estimation of the number of
-         scores the array will eventually contain.  The allocated
-         space can be extended if needed, but we want to avoid this
-         because it is costly. User should carefully initialize the
-         structure.
+    It is similar to a scipy.sparse COO matrix, except that memory is
+    pre-allocated from an estimation of the number of scores the array
+    will eventually contain.  The allocated space can be extended if
+    needed, but we want to avoid this because it is costly. User
+    should carefully initialize the structure.
 
-    The structure can be indexed efficiently according to three
-    dimensions ('i', 'j' and 'k' axes) to add new data at the right
+    The structure can be indexed efficiently according to two
+    dimensions ('i' and 'j' axes) to add new data at the right
     position fast.
 
     Only non-zero scores are actually stored; others are
@@ -60,7 +58,7 @@ class GrowableSparseArray(object):
 
     data : array-like, own-designed dtype
       The actual data contained in the structure.
-      These can be indexed with three dimensions ('i', 'j' and 'k' axes).
+      These can be indexed with three dimensions ('i' and 'j' axes).
 
     sizes : array-like, shape=(n_perm, )
       The number of data stored for each estimation.
@@ -74,8 +72,7 @@ class GrowableSparseArray(object):
         self.max_elts = max(max_elts, n_elts)
         self.data = np.empty(
             self.max_elts,
-            dtype=[('i', np.int32), ('j', np.int32),
-                   ('k', np.int32), ('data', np.float32)])
+            dtype=[('i', np.int32), ('j', np.int32), ('data', np.float32)])
         self.sizes = np.zeros((n_rows))
 
     def get_data(self):
@@ -114,7 +111,7 @@ class GrowableSparseArray(object):
         self.data = np.concatenate(acc_data)
         self.n_elts = self.sizes.sum()
         self.max_elts = self.n_elts
-        self.data = np.sort(self.data, order=['i', 'j', 'k'])
+        self.data = np.sort(self.data, order=['i', 'j'])
 
         return
 
@@ -129,14 +126,14 @@ class GrowableSparseArray(object):
         row_id : int,
           Index of the row we are inserting into the structure.
 
-        row_data : array-like, shape=(n_targets_chunk, n_regressors)
+        row_data : array-like, shape=(n_targets_chunk, )
           Data to be inserted into the data structure.
 
         """
         # store values as float32 to save space
-        row_data = row_data.astype('float32')
+        row_data = np.ravel(row_data.astype('float32'))
         # sparsify the matrix using coordinates list
-        k_idx, j_idx = row_data.nonzero()
+        j_idx = row_data.nonzero()[0]
         score_size = len(j_idx)
         if score_size == 0:  # early return if nothing to add
             return
@@ -147,12 +144,11 @@ class GrowableSparseArray(object):
         if (new_n_elts > self.max_elts or
             self.sizes[row_id + 1:].sum() > 0):  # insertion (costly)
             new_data = np.empty(score_size,
-                        dtype=[('i', np.int32), ('j', np.int32),
-                               ('k', np.int32), ('data', np.float32)])
+                                dtype=[('i', np.int32), ('j', np.int32),
+                                       ('data', np.float32)])
             new_data['i'][:] = row_id
             new_data['j'][:] = j_idx
-            new_data['k'][:] = k_idx
-            new_data['data'][:] = row_data[k_idx, j_idx]
+            new_data['data'][:] = row_data[j_idx]
             gs_array = GrowableSparseArray(self.n_rows)
             gs_array.data = new_data
             gs_array.sizes = np.zeros((gs_array.n_rows))
@@ -163,9 +159,7 @@ class GrowableSparseArray(object):
         else:  # it fits --> updates (efficient)
             self.data['i'][self.n_elts:new_n_elts] = row_id
             self.data['j'][self.n_elts:new_n_elts] = j_idx
-            self.data['k'][self.n_elts:new_n_elts] = k_idx
-            self.data['data'][self.n_elts:new_n_elts] = (
-                row_data[k_idx, j_idx])
+            self.data['data'][self.n_elts:new_n_elts] = row_data[j_idx]
             self.sizes[row_id] += score_size
             self.n_elts = new_n_elts
         return
@@ -319,22 +313,15 @@ def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
 
 
 ### Routines for RPBI #########################################################
-def max_csr(csr_matrix, n_x):
+def max_csr(csr_matrix):
     """Fast computation of the maximum value along each row of a CSR matrix.
 
-    Consecutive rows can be grouped in blocks each containing the same number
-    of rows. Thus, the function can be used to compute the maximum values
-    from groups of rows.
+    Empty lines will have a maximum equal to 0.
 
     Parameters
     ----------
     csr_matrix : scipy.sparse.csr matrix
       The matrix from which to compute each line's maximum value.
-
-    n_x : int,
-      Size of the blocks of rows in case some rows should be grouped before
-      the maximum value in each block is computed.
-      `csr_matrix.shape[1]` has to be a multiple of `n_x`.
 
     Returns
     -------
@@ -351,11 +338,9 @@ def max_csr(csr_matrix, n_x):
     array([ 1.,  1.,  1.,  1.,  1.])
     >>> max_csr(sparse.dia_matrix(np.diag(np.arange(6))).tocsr(), 1)
     array([ 0.,  1.,  2.,  3.,  4.,  5.])
-    >>> max_csr(sparse.dia_matrix(np.diag(np.arange(6))).tocsr(), 2)
-    array([ 1.,  3.,  5.])
 
     """
-    res = np.zeros(csr_matrix.shape[0] / n_x)
+    res = np.zeros(csr_matrix.shape[0])
     if len(csr_matrix.data) == 0:
         return res
 
@@ -363,14 +348,14 @@ def max_csr(csr_matrix, n_x):
     # csr_mat.indptr gives the offset to adress each row of the matrix.
     # The complex syntax only aims at putting 0s as the max value
     # for empty lines.
-    res[np.diff(csr_matrix.indptr[::n_x]) != 0] = np.maximum.reduceat(
+    res[np.diff(csr_matrix.indptr) != 0] = np.maximum.reduceat(
         csr_matrix.data,
-        csr_matrix.indptr[:-1:n_x][np.diff(csr_matrix.indptr[::n_x]) > 0])
+        csr_matrix.indptr[:-1][np.diff(csr_matrix.indptr) > 0])
     return res
 
 
 def _compute_counting_statistic_from_parcel_level_scores(
-    perm_lot_results, perm_lot_slice, n_regressors, parcellation_masks,
+    perm_lot_results, perm_lot_slice, parcellation_masks,
     n_parcellations, n_parcels_all_parcellations):
     """Transform scores at the voxel level and sum them up across parcellations
 
@@ -402,11 +387,6 @@ def _compute_counting_statistic_from_parcel_level_scores(
       Slice that defines the permutations for which the scores are being
       inverse transformed.
 
-    n_regressors : int,
-      Number of variates that have been tested independently in a massively
-      univariate analysis. It corresponds to the 'j' dimension/entry
-      of the GrowableSparseArray structure.
-
     parcellation_masks : scipy.sparse.csc_matrix, shape=(n_parcels, n_voxels)
       Correspondance between the 3D-image voxels and the labels of the
       parcels of every parcellation. The mapping is encoded as a
@@ -422,42 +402,39 @@ def _compute_counting_statistic_from_parcel_level_scores(
 
     Returns
     -------
-    counting_stats_original_data : np.ndarray, shape=(n_regressors, n_voxels)
+    counting_stats_original_data : np.ndarray, shape=(n_voxels,)
       Counting statistics corresponding to the original data.
 
-    h0_samples : np.ndarray, shape=(n_perm, n_regressors)
+    h0_samples : np.ndarray, shape=(n_perm,)
       Counting statistics corresponding to the permuted data.
-      Yields the maximum count across all voxels for each
-      permutation/regressor pair.
+      Yields the maximum count across all voxels for each permutation.
 
     """
     n_perm_in_perm_lot = perm_lot_slice.stop - perm_lot_slice.start
 
     # Convert chunk results to a CSR matrix
-    regressors_ids = (
-        (perm_lot_results['i'] - perm_lot_slice.start) * n_regressors
-        + perm_lot_results['j'])
+    regressors_ids = perm_lot_results['i'] - perm_lot_slice.start
     perm_lot_as_csr = sparse.csr_matrix(
         (perm_lot_results['data'],
-         (regressors_ids, perm_lot_results['k'])),
-        shape=(n_perm_in_perm_lot * n_regressors, n_parcels_all_parcellations))
+         (regressors_ids, perm_lot_results['j'])),
+        shape=(n_perm_in_perm_lot, n_parcels_all_parcellations))
     # counting statistic as a dot product (efficient between CSR x CSC)
     counting_statistic = perm_lot_as_csr.dot(parcellation_masks)
 
     # Get counting statistic for original data and construct (a part of) H0
     if perm_lot_slice.start == 0:  # perm 0 of perm_lot 0 contains orig scores
         counting_stats_original_data = np.asarray(
-            counting_statistic[:n_regressors].todense())
-        h0_samples = max_csr(counting_statistic[n_regressors:], n_regressors)
+            counting_statistic[0].todense())
+        h0_samples = max_csr(counting_statistic[1:])
     else:  # all perm_lot but no. 0 only contain scores obtained under the null
         counting_stats_original_data = []
-        h0_samples = max_csr(counting_statistic, n_regressors)
+        h0_samples = max_csr(counting_statistic)
 
     return counting_stats_original_data, h0_samples
 
 
 def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
-                                  tested_vars, target_vars,
+                                  tested_var, target_vars,
                                   confounding_vars=None, lost_dof=0,
                                   intercept_test=True, sparsity_threshold=0.1,
                                   random_state=None):
@@ -486,8 +463,8 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
       Together with `perm_chunk_start`, defines the permutations that
       are delegated to the current function.
 
-    tested_vars : array-like, shape=(n_samples, n_tested_vars),
-      Explanatory variates, fitted and tested independently from each others.
+    tested_var : array-like, shape=(n_samples, 1),
+      Explanatory variate, fitted and tested.
 
     target_vars: array-like, shape=(n_samples, n_parcels_tot)
       Average signal within parcels of all parcellations, for every subject.
@@ -527,8 +504,7 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
 
-    n_samples, n_regressors = tested_vars.shape
-    n_descriptors = target_vars.shape[1]
+    n_samples, n_descriptors = target_vars.shape
     n_perm_chunk = perm_chunk_stop - perm_chunk_start
 
     # We use a special data structure to store the results of the permutations.
@@ -538,13 +514,12 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
     # We expect the number of stored values to decrease non-linearly
     # with the sparsity_threshold value. Using a square-root is thus useful
     # to better estimate max_elts.
-    max_elts = int(n_regressors * n_descriptors * n_perm_chunk
-                   * np.sqrt(sparsity_threshold))
+    max_elts = int(n_descriptors * n_perm_chunk * np.sqrt(sparsity_threshold))
     gs_array = GrowableSparseArray(n_perm + 1, max_elts=max_elts)
 
     if perm_chunk_start == 0:  # add original data results as permutation 0
         scores_original_data = t_score_with_covars_and_normalized_design(
-            tested_vars, target_vars, confounding_vars)
+            tested_var, target_vars, confounding_vars)
         # threshold scores according to sparsity_threshold
         scores_original_data[
             scores_original_data < sparsity_threshold_as_t_value] = 0
@@ -561,16 +536,16 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
             # and covars rather than fmri_signal.
-            # Also, it is important to shuffle tested_vars and covars
+            # Also, it is important to shuffle tested_var and covars
             # jointly to simplify f_score computation (null dot product).
             shuffle_idx = rng.permutation(n_samples)
-            tested_vars = tested_vars[shuffle_idx]
+            tested_var = tested_var[shuffle_idx]
             if confounding_vars is not None:
                 confounding_vars = confounding_vars[shuffle_idx]
 
         # OLS regression on randomized data
         perm_scores = t_score_with_covars_and_normalized_design(
-            tested_vars, target_vars, confounding_vars)
+            tested_var, target_vars, confounding_vars)
         # threshold scores according to sparsity_threshold
         perm_scores[perm_scores < sparsity_threshold_as_t_value] = 0
         gs_array.append(i, perm_scores)
@@ -578,7 +553,7 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
     return gs_array
 
 
-def rpbi_core(tested_vars, target_vars,
+def rpbi_core(tested_var, target_vars,
               n_parcellations, parcellations_labels, n_parcels,
               confounding_vars=None, model_intercept=True, threshold=None,
               n_perm=1000, random_state=None, n_jobs=1):
@@ -588,8 +563,8 @@ def rpbi_core(tested_vars, target_vars,
 
     Parameters
     ----------
-    tested_vars : array-like, shape=(n_samples, n_regressors),
-      Explanatory variates, fitted and tested independently from each others.
+    tested_var : array-like, shape=(n_samples, 1),
+      Explanatory variate, fitted and tested.
 
     target_vars : array-like, shape=(n_samples, n_parcels_tot)
       Average signal within parcels of all parcellations, for every subject.
@@ -632,13 +607,13 @@ def rpbi_core(tested_vars, target_vars,
 
     Returns
     -------
-    p-values : np.ndarray, shape=(n_tested_vars, n_voxels)
+    p-values : np.ndarray, shape=(n_voxels,)
       Negative log10 p-values associated with the significance test of the
-      n_regressors explanatory variates against the n_tested_vars target
-      variates, assessed with Randomized Parcellation Based Inference.
+      explanatory variate against the target variate, assessed with
+      Randomized Parcellation Based Inference.
       Family-wise corrected p-values (max-type procedure).
 
-    counting_stats_original_data : np.ndarray, shape=(n_tested_vars, n_voxels)
+    counting_stats_original_data : np.ndarray, shape=(n_voxels,)
       Counting statistic (i.e. RPBI score) associated with original
       (non-permuted) data.
 
@@ -662,12 +637,12 @@ def rpbi_core(tested_vars, target_vars,
     target_vars = np.asfortranarray(target_vars)
 
     # check explanatory variates dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
-    n_samples, n_tested_vars = tested_vars.shape
+    if tested_var.ndim == 1:
+        tested_var = np.atleast_2d(tested_var).T
+    n_samples = tested_var.shape[0]
 
     # check if explanatory variates is intercept (constant) or not
-    if (n_tested_vars == 1 and np.unique(tested_vars).size == 1):
+    if np.unique(tested_var).size == 1:
         intercept_test = True
     else:
         intercept_test = False
@@ -681,9 +656,9 @@ def rpbi_core(tested_vars, target_vars,
             confounding_vars = np.ones((n_samples, 1))
 
     # orthogonalize design to speed up subsequent permutations
-    orthogonalized_design = orthogonalize_design(tested_vars, target_vars,
+    orthogonalized_design = orthogonalize_design(tested_var, target_vars,
                                                  confounding_vars)
-    tested_vars_resid_covars = orthogonalized_design[0]
+    tested_var_resid_covars = orthogonalized_design[0]
     target_vars_resid_covars = orthogonalized_design[1]
     covars_orthonormed = orthogonalized_design[2]
     lost_dof = orthogonalized_design[3]
@@ -702,7 +677,7 @@ def rpbi_core(tested_vars, target_vars,
     all_chunks_results = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(_univariate_analysis_on_chunk)
         (n_perm, perm_chunk_start, perm_chunk_stop,
-         tested_vars_resid_covars, target_vars_resid_covars,
+         tested_var_resid_covars, target_vars_resid_covars,
          covars_orthonormed, lost_dof, intercept_test=intercept_test,
          sparsity_threshold=threshold,
          random_state=rng.random_integers(np.iinfo(np.int32).max))
@@ -742,12 +717,12 @@ def rpbi_core(tested_vars, target_vars,
     # put back parcel-based scores to voxel-level scale
     ret = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(_compute_counting_statistic_from_parcel_level_scores)
-        (perm_lot, perm_lot_slice, n_tested_vars, parcellation_masks,
+        (perm_lot, perm_lot_slice, parcellation_masks,
          n_parcellations, n_parcels_all_parcellations)
         for perm_lot, perm_lot_slice in zip(perm_lots, perm_lots_slices))
     # reduce results
     counting_stats_original_data, h0 = zip(*ret)
-    counting_stats_original_data = counting_stats_original_data[0]
+    counting_stats_original_data = np.ravel(counting_stats_original_data[0])
     h0 = np.sort(np.concatenate(h0))
 
     ### Convert H1 to neg. log. p-values
@@ -755,11 +730,11 @@ def rpbi_core(tested_vars, target_vars,
         (n_perm + 1 - np.searchsorted(h0, counting_stats_original_data))
         / float(n_perm + 1))
 
-    return p_values, counting_stats_original_data, h0
+    return np.ravel(p_values), counting_stats_original_data, h0
 
 
 def randomized_parcellation_based_inference(
-    tested_vars, imaging_vars, mask_img, confounding_vars=None,
+    tested_var, imaging_vars, mask_img, confounding_vars=None,
     model_intercept=True, n_parcellations=100, n_parcels=1000,
     threshold='auto', n_perm=1000, random_state=None,
     memory=Memory(cachedir=None), n_jobs=1, verbose=True):
@@ -770,8 +745,8 @@ def randomized_parcellation_based_inference(
 
     Parameters
     ----------
-    tested_vars : array-like, shape=(n_subjs, n_test_vars),
-      Explanatory variates, fitted and tested independently from each others.
+    tested_var : array-like, shape=(n_subjs, 1),
+      Explanatory variate, fitted and tested.
 
     imaging_vars : array-like, shape=(n_samples, n_descriptors)
       Masked subject images as an array.
@@ -823,13 +798,13 @@ def randomized_parcellation_based_inference(
 
     Returns
     -------
-    neg_log_pvals : np.ndarray, shape=(n_tested_vars, n_voxels)
+    neg_log_pvals : np.ndarray, shape=(n_voxels,)
       Negative log10 p-values associated with the significance test of the
-      n_regressors explanatory variates against the n_tested_vars target
-      variates, assessed with Randomized Parcellation Based Inference.
+      explanatory variate against the target variate, assessed with
+      Randomized Parcellation Based Inference.
       Family-wise corrected p-values (max-type procedure).
 
-    counting_stats_original_data : np.ndarray, shape=(n_tested_vars, n_voxels)
+    counting_stats_original_data : np.ndarray, shape=(n_voxels,)
       Counting statistic (i.e. RPBI score) associated with original
       (non-permuted) data.
 
@@ -839,8 +814,8 @@ def randomized_parcellation_based_inference(
 
     """
     # check explanatory variates dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
+    if tested_var.ndim == 1:
+        tested_var = np.atleast_2d(tested_var).T
 
     ### Build parcellations
     if not isinstance(mask_img, np.ndarray):
@@ -858,7 +833,7 @@ def randomized_parcellation_based_inference(
     if verbose:
         print "Statistical inference"
     neg_log_pvals, counting_stats_original_data, h0 = rpbi_core(
-        tested_vars, parcelled_imaging_vars,
+        tested_var, parcelled_imaging_vars,
         n_parcellations, parcellations_labels, n_parcels,
         confounding_vars=confounding_vars, model_intercept=model_intercept,
         threshold=threshold, n_perm=n_perm,

@@ -20,37 +20,33 @@ def test_gsarray_append_data():
     """
     # Simplest example
     gs_array = GrowableSparseArray(n_rows=1)
-    gs_array.append(0, np.ones((5, 1)))
+    gs_array.append(0, np.ones(5))
     assert_array_equal(gs_array.get_data()['i'], np.zeros(5))
-    assert_array_equal(gs_array.get_data()['j'], np.zeros(5))
-    assert_array_equal(gs_array.get_data()['k'], np.arange(5))
+    assert_array_equal(gs_array.get_data()['j'], np.arange(5))
     assert_array_equal(gs_array.get_data()['data'], np.ones(5))
 
     # Append with no structure extension needed
     gs_array = GrowableSparseArray(n_rows=1, max_elts=10)
-    gs_array.append(0, np.ones((5, 1)))
+    gs_array.append(0, np.ones(5))
     assert_array_equal(gs_array.get_data()['i'], np.zeros(5))
-    assert_array_equal(gs_array.get_data()['j'], np.zeros(5))
-    assert_array_equal(gs_array.get_data()['k'], np.arange(5))
+    assert_array_equal(gs_array.get_data()['j'], np.arange(5))
     assert_array_equal(gs_array.get_data()['data'], np.ones(5))
 
     # Void array
     gs_array = GrowableSparseArray(n_rows=1)
-    gs_array.append(0, np.zeros((5, 1)))
+    gs_array.append(0, np.zeros(5))
     assert_array_equal(gs_array.get_data()['i'], [])
     assert_array_equal(gs_array.get_data()['j'], [])
-    assert_array_equal(gs_array.get_data()['k'], [])
     assert_array_equal(gs_array.get_data()['data'], [])
 
     # Toy example
     gs_array = GrowableSparseArray(n_rows=10)
     for i in range(10):
-        data = (np.arange(10) - i).reshape((-1, 1))
+        data = np.arange(10) - i
         data[data < 8] = 0
         gs_array.append(i, data)
     assert_array_equal(gs_array.get_data()['i'], np.array([0., 0., 1.]))
-    assert_array_equal(gs_array.get_data()['j'], np.zeros(3))
-    assert_array_equal(gs_array.get_data()['k'], [8, 9, 9])
+    assert_array_equal(gs_array.get_data()['j'], [8, 9, 9])
     assert_array_equal(gs_array.get_data()['data'], [8., 9., 8.])
 
 
@@ -63,29 +59,26 @@ def test_gsarray_merge():
     """
     # Basic merge
     gs_array = GrowableSparseArray(n_rows=1)
-    gs_array.append(0, np.ones((5, 1)))
+    gs_array.append(0, np.ones(5))
     gs_array2 = GrowableSparseArray(n_rows=1)
     gs_array2.merge(gs_array)
     assert_array_equal(gs_array.get_data()['i'],
                        gs_array2.get_data()['i'])
     assert_array_equal(gs_array.get_data()['j'],
                        gs_array2.get_data()['j'])
-    assert_array_equal(gs_array.get_data()['k'],
-                       gs_array2.get_data()['k'])
     assert_array_equal(gs_array.get_data()['data'],
                        gs_array2.get_data()['data'])
 
     # Merge list
     gs_array = GrowableSparseArray(n_rows=2)
-    gs_array.append(0, np.ones((5, 1)))
+    gs_array.append(0, np.ones(5))
     gs_array2 = GrowableSparseArray(n_rows=2)
-    gs_array2.append(1, 2 * np.ones((5, 1)))
+    gs_array2.append(1, 2 * np.ones(5))
     gs_array3 = GrowableSparseArray(n_rows=2)
     gs_array3.merge([gs_array, gs_array2])
     assert_array_equal(gs_array3.get_data()['i'],
                        np.array([0.] * 5 + [1.] * 5))
-    assert_array_equal(gs_array3.get_data()['j'], np.zeros(10))
-    assert_array_equal(gs_array3.get_data()['k'], np.tile(np.arange(5), 2))
+    assert_array_equal(gs_array3.get_data()['j'], np.tile(np.arange(5), 2))
     assert_array_equal(gs_array3.get_data()['data'],
                        np.array([1.] * 5 + [2.] * 5))
     # failure case
@@ -93,8 +86,8 @@ def test_gsarray_merge():
 
     # Test failure case (merging arrays with different n_rows)
     gs_array_wrong = GrowableSparseArray(n_rows=2)
-    gs_array_wrong.append(0, np.ones((5, 1)))
-    gs_array_wrong.append(1, np.ones((5, 1)))
+    gs_array_wrong.append(0, np.ones(5))
+    gs_array_wrong.append(1, np.ones(5))
     gs_array = GrowableSparseArray(n_rows=1)
     assert_raises(ValueError, gs_array.merge, gs_array_wrong)
 
@@ -227,10 +220,10 @@ def test_compute_counting_statistic_from_parcel_level_scores(random_state=1):
         # make sure we use observations 1 and 2 at least once
         n_bootstrap_samples=6, random_state=rng)
     parcel_level_results = GrowableSparseArray(n_rows=2)
-    data_tmp = parcelled_data[0].reshape((-1, 1))
+    data_tmp = parcelled_data[0]
     data_tmp[data_tmp < 2] = 0
     parcel_level_results.append(0, data_tmp)
-    data_tmp = parcelled_data[1].reshape((-1, 1))
+    data_tmp = parcelled_data[1]
     data_tmp[data_tmp < 2] = 0
     parcel_level_results.append(1, data_tmp)
     parcellation_masks = np.zeros((n_parcellations * n_parcels, n_voxels))
@@ -249,7 +242,7 @@ def test_compute_counting_statistic_from_parcel_level_scores(random_state=1):
     thresholded_data[thresholded_data < 2] = 0.
     thresholded_data *= 2.
     res = _compute_counting_statistic_from_parcel_level_scores(
-        parcel_level_results.get_data(), slice(0, 2), 1, parcellation_masks,
+        parcel_level_results.get_data(), slice(0, 2), parcellation_masks,
         n_parcellations, n_parcellations * n_parcels)
     counting_stats_original_data, h0 = res
     assert_array_equal(counting_stats_original_data,
@@ -258,7 +251,7 @@ def test_compute_counting_statistic_from_parcel_level_scores(random_state=1):
 
     # Same thing but only for the permuted data
     res = _compute_counting_statistic_from_parcel_level_scores(
-        parcel_level_results.get_data()[2:], slice(1, 2), 1,
+        parcel_level_results.get_data()[2:], slice(1, 2),
         parcellation_masks, n_parcellations, n_parcellations * n_parcels)
     counting_stats_original_data, h0 = res
     assert_array_equal(counting_stats_original_data, [])
@@ -382,7 +375,7 @@ def test_rpbi_core_withcovars(random_state=0):
         # make sure we use observations 1 and 2 at least once
         n_bootstrap_samples=6, random_state=rng)
 
-    # Covariates
+    # Covariates (dummy)
     covars = 0.1 * rng.randn(8).reshape((-1, 1))
 
     # RPBI from already parcelled data
@@ -426,7 +419,7 @@ def test_rpbi_core_withcovars(random_state=0):
 
     # Replace intercept test with a more complex test
     rng = check_random_state(random_state)
-    tested_var = np.ones((8, 1))
+    tested_var = np.ones(8)
     tested_var[0:4] = 0
     parcelled_data[0:4] *= -1
     pvalues, counting_statistic_original_data, h0 = rpbi_core(
@@ -492,7 +485,7 @@ def test_randomized_parcellation_based_inference(random_state=1):
     n_parcels = 3
     neg_log_pvals, counting_statistic_original_data, h0 = (
         randomized_parcellation_based_inference(
-            np.ones((8, 1)), data, mask, confounding_vars=None,
+            np.ones(8), data, mask, confounding_vars=None,
             model_intercept=True,
             n_parcellations=n_parcellations, n_parcels=n_parcels,
             threshold=0.05 / n_parcels, n_perm=9, random_state=rng,
@@ -538,27 +531,3 @@ def test_randomized_parcellation_based_inference(random_state=1):
     # h0
     assert_equal(h0.shape, (9,))
     assert_array_almost_equal(h0, np.zeros(9))
-
-    ### Test with several tested_vars
-    # check random state
-    rng = check_random_state(random_state)
-    rng.randn(data.shape[0], data.shape[1])
-    # Randomized Parcellation Based Inference
-    tested_vars = np.hstack((np.arange(8).reshape((-1, 1)),
-                             np.arange(8)[::-1].reshape((-1, 1))))
-    n_parcellations = 2
-    n_parcels = 3
-    neg_log_pvals, counting_statistic_original_data, h0 = (
-        randomized_parcellation_based_inference(
-            tested_vars, data, mask, confounding_vars=None,
-            model_intercept=True,
-            n_parcellations=n_parcellations, n_parcels=n_parcels,
-            threshold=0.05 / n_parcels, n_perm=9, random_state=rng,
-            verbose=True))
-    # check pvalues
-    assert_equal(neg_log_pvals.shape, (2, n_voxels))
-    assert_array_almost_equal(neg_log_pvals, np.zeros((2, n_voxels)))
-    # check counting statistic (shape only)
-    assert_equal(counting_statistic_original_data.shape, (2, n_voxels))
-    # h0 (shape only)
-    assert_equal(h0.shape, (9,))
