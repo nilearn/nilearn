@@ -10,7 +10,7 @@ from sklearn.utils import check_random_state
 import sklearn.externals.joblib as joblib
 
 from nilearn._utils import check_n_jobs
-from nilearn.mass_univariate.utils import (
+from .utils import (
     orthogonalize_design, t_score_with_covars_and_normalized_design)
 
 

@@ -4,10 +4,8 @@ Randomized Parcellation Based Inference
 """
 # Authors: Virgile Fritsch <virgile.fritsch@inria.fr>, feb. 2014
 #          Benoit Da Mota, jun. 2013
-import warnings
 import numpy as np
-from scipy import stats
-import scipy.sparse as sps
+from scipy import stats, sparse
 import sklearn.externals.joblib as joblib
 from sklearn.externals.joblib import Memory
 from sklearn.utils import gen_even_slices, check_random_state
@@ -15,71 +13,70 @@ from sklearn.preprocessing import binarize
 
 from nilearn._utils import check_niimg, check_n_jobs
 from nilearn._utils.cache_mixin import cache
-from nilearn.mass_univariate.utils import (
+from .utils import (
     orthogonalize_design, t_score_with_covars_and_normalized_design)
 
 
 ### GrowableSparseArray data structure ########################################
 class GrowableSparseArray(object):
-    """Data structure to contain data from numerous estimations.
+    """Sparse data array that supports memory-efficient, fast data appending.
 
-    Examples of application are all resampling schemes
-    (bootstrap, permutations, ...)
+    GrowableSparseArray is a sparse numpy recarray.
+    It is similar to a scipy.sparse COO matrix, except that:
+    (i) it is three-dimensional;
+    (ii) memory is pre-allocated from an estimation of the number of
+         scores the array will eventually contain.  The allocated
+         space can be extended if needed, but we want to avoid this
+         because it is costly. User should carefully initialize the
+         structure.
 
-    GrowableSparseArray can be seen as a three-dimensional array that contains
-    scores associated with three position indices corresponding to
-    (i) an iteration (or estimation),
-    (ii) a test variate,
-    (iii) a target variate.
-    Memory is pre-allocated to store a large number of scores. The structure
-    can be indexed efficiently according to three dimensions to add new
-    scores at the right position fast.
-    The allocated space can be extended if needed, but we want to avoid this
-    because it is costly. User should carefully initialize the structure.
-    Only scores above a predetermined threshold are actually stored, others
-    are ignored.
+    The structure can be indexed efficiently according to three
+    dimensions ('i', 'j' and 'k' axes) to add new data at the right
+    position fast.
+
+    Only non-zero scores are actually stored; others are
+    ignored. However, this is the responsibility of the user to
+    provide thresholded values to the GrowableSparseArray.
+
+    GrowableSparseArrays support memory-efficient, fast data appending.
+    Several GrowableSparseArrays can thus be merged efficiently.
+    The only constraint is that they should have the same number of rows
+    (i.e. their 'i' axis should have the same size).
 
     Attributes
     ----------
-    n_elts: int
-      The total number of scores actually stored into the data structure
+    n_elts : int
+      The total number of values actually stored into the data structure
 
-    n_iter: int
-      Number of trials (using as many iterators)
+    n_rows : int
+      Number of rows ('i' axis) of the GrowableSparseArray.
+      Only arrays with the same value of `n_rows` can be merged together.
 
-    max_elts: int
-      Maximum number of scores that can be stored into the structure
+    max_elts : int
+      Maximum number of values that can be stored into the structure.
+      It can be changed after the initialization of the object, but that
+      operation is costly and one should therefore carefully estimate
+      correctly `max_elts` at initialization time.
 
-    data: array-like, own-designed dtype
-      The actual scores corresponding to all the estimations.
-      dtype is built so that every score is associated with three position
-      GrowableSparseArray can be seen as a three-dimensional array so every
-      score is associated with three position indices corresponding to
-      (i) an iteration (or an estimator) ('iter_id'),
-      (ii) a test variate ('x_id') and
-      (iii) a target variate ('y_id').
+    data : array-like, own-designed dtype
+      The actual data contained in the structure.
+      These can be indexed with three dimensions ('i', 'j' and 'k' axes).
 
-    sizes: array-like, shape=(n_iter, )
-      The number of scores stored for each estimation.
-      Useful to select a range of values from iteration ids.
+    sizes : array-like, shape=(n_perm, )
+      The number of data stored for each estimation.
+      Useful to select a range of values from row ids.
 
-    threshold: float,
-      Sparsity threshold used to discard scores that are to low to have a
-      chance to correspond to a maximum value amongst all the scores of
-      a given iteration.
 
     """
-    def __init__(self, n_iter=10000, n_elts=0, max_elts=None,
-                 threshold=-np.inf):
+    def __init__(self, n_rows=10000, n_elts=0, max_elts=None):
         self.n_elts = n_elts
-        self.n_iter = n_iter
+        self.n_rows = n_rows
         self.max_elts = max(max_elts, n_elts)
         self.data = np.empty(
             self.max_elts,
-            dtype=[('iter_id', np.int32), ('x_id', np.int32),
-                   ('y_id', np.int32), ('score', np.float32)])
-        self.sizes = np.zeros((n_iter))
-        self.threshold = threshold
+            dtype=[('i', np.int32), ('j', np.int32),
+                   ('k', np.int32), ('data', np.float32)])
+        self.sizes = np.zeros((n_rows))
 
     def get_data(self):
         return self.data[:self.n_elts]
@@ -89,102 +86,87 @@ class GrowableSparseArray(object):
 
         Parameters
         ----------
-        others: list of GrowableSparseArray or GrowableSparseArray
+        others : list of GrowableSparseArray or GrowableSparseArray
           The structures to be merged into the current structure.
 
         """
         if isinstance(others, GrowableSparseArray):
             return self.merge([others])
         if not isinstance(others, list) and not isinstance(others, tuple):
-            raise TypeError(
-                '\'others\' is not a list/tuple of GrowableSparseArray '
-                'or a GrowableSparseArray.')
+            raise TypeError("The 'others' parameter should be a list or a "
+                            "tuple of GrowableSparseArray, you gave %s."
+                            % type(others))
         for gs_array in others:
             if not isinstance(gs_array, GrowableSparseArray):
-                raise TypeError('List element is not a GrowableSparseArray.')
-            if gs_array.n_iter != self.n_iter:
-                raise ValueError('Cannot merge a structure with %d iterations '
-                                'into a structure with %d iterations.'
-                                % (gs_array.n_iter, self.n_iter))
+                raise TypeError("List element is not a GrowableSparseArray.")
+            if gs_array.n_rows != self.n_rows:
+                raise ValueError("Cannot merge a structure with %d rows "
+                                 "into a structure with %d rows."
+                                 % (gs_array.n_rows, self.n_rows))
 
         acc_sizes = [self.sizes]
         acc_data = [self.get_data()]
         for gs_array in others:
-            # threshold the data to respect self.threshold
-            if gs_array.threshold < self.threshold:
-                gs_array_data_thresholded = (
-                    gs_array.get_data()[gs_array.get_data()['score']
-                                       >= self.threshold])
-                acc_sizes.append([gs_array_data_thresholded.size])
-                acc_data.append(gs_array_data_thresholded)
-            elif gs_array.threshold > self.threshold:
-                warnings.warn('Merging a GrowableSparseArray into another '
-                              'with a lower threshold: parent array may '
-                              'contain less scores than its threshold '
-                              'suggests.')
-                acc_sizes.append(gs_array.sizes)
-                acc_data.append(gs_array.get_data())
-            else:
-                acc_sizes.append(gs_array.sizes)
-                acc_data.append(gs_array.get_data())
+            acc_sizes.append(gs_array.sizes)
+            acc_data.append(gs_array.get_data())
 
         self.sizes = np.array(acc_sizes).sum(axis=0)
         self.data = np.concatenate(acc_data)
         self.n_elts = self.sizes.sum()
         self.max_elts = self.n_elts
-        self.data = np.sort(self.data, order=['iter_id', 'x_id', 'y_id'])
+        self.data = np.sort(self.data, order=['i', 'j', 'k'])
 
         return
 
-    def append(self, iter_id, iter_data):
-        """Add the data of one estimation (iteration) into the structure.
+    def append(self, row_id, row_data):
+        """Add data corresponding to one row (dimension indexed by 'i').
 
         This is done in a memory-efficient way, by taking into account
         pre-allocated space.
 
         Parameters
         ----------
-        iter_id: int,
-          ID of the estimation we are inserting into the structure
+        row_id : int,
+          Index of the row we are inserting into the structure.
 
-        iter_data: array-like, shape=(n_targets_chunk, n_regressors)
-          Scores corresponding to the iteration chunk to be inserted into
-          the data structure.
+        row_data : array-like, shape=(n_targets_chunk, n_regressors)
+          Data to be inserted into the data structure.
 
         """
-        # store scores as float32 to save space
-        iter_data = iter_data.astype('float32')
-        # sparsify the matrix with respect to threshold using coordinates list
-        y_idx, x_idx = (iter_data >= self.threshold).nonzero()
-        score_size = len(x_idx)
+        # store values as float32 to save space
+        row_data = row_data.astype('float32')
+        # sparsify the matrix using coordinates list
+        k_idx, j_idx = row_data.nonzero()
+        score_size = len(j_idx)
         if score_size == 0:  # early return if nothing to add
             return
 
         new_n_elts = score_size + self.n_elts
+        # check whether or not the current structure is big enough for the
+        # new data to be appended without increasing `self.max_elts`.
         if (new_n_elts > self.max_elts or
-            self.sizes[iter_id + 1:].sum() > 0):  # insertion (costly)
+            self.sizes[row_id + 1:].sum() > 0):  # insertion (costly)
             new_data = np.empty(score_size,
-                        dtype=[('iter_id', np.int32), ('x_id', np.int32),
-                               ('y_id', np.int32), ('score', np.float32)])
-            new_data['x_id'][:] = x_idx
-            new_data['y_id'][:] = y_idx
-            new_data['score'][:] = iter_data[y_idx, x_idx]
-            new_data['iter_id'][:] = iter_id
-            gs_array = GrowableSparseArray(self.n_iter,
-                                           threshold=self.threshold)
+                        dtype=[('i', np.int32), ('j', np.int32),
+                               ('k', np.int32), ('data', np.float32)])
+            new_data['i'][:] = row_id
+            new_data['j'][:] = j_idx
+            new_data['k'][:] = k_idx
+            new_data['data'][:] = row_data[k_idx, j_idx]
+            gs_array = GrowableSparseArray(self.n_rows)
             gs_array.data = new_data
-            gs_array.sizes = np.zeros((gs_array.n_iter))
-            gs_array.sizes[iter_id] = score_size
+            gs_array.sizes = np.zeros((gs_array.n_rows))
+            gs_array.sizes[row_id] = score_size
             gs_array.n_elts = score_size
             gs_array.max_elts = score_size
             self.merge(gs_array)
         else:  # it fits --> updates (efficient)
-            self.data['x_id'][self.n_elts:new_n_elts] = x_idx
-            self.data['y_id'][self.n_elts:new_n_elts] = y_idx
-            self.data['score'][self.n_elts:new_n_elts] = (
-                iter_data[y_idx, x_idx])
-            self.data['iter_id'][self.n_elts:new_n_elts] = iter_id
-            self.sizes[iter_id] += score_size
+            self.data['i'][self.n_elts:new_n_elts] = row_id
+            self.data['j'][self.n_elts:new_n_elts] = j_idx
+            self.data['k'][self.n_elts:new_n_elts] = k_idx
+            self.data['data'][self.n_elts:new_n_elts] = (
+                row_data[k_idx, j_idx])
+            self.sizes[row_id] += score_size
             self.n_elts = new_n_elts
         return
 
@@ -208,30 +190,30 @@ def _ward_fit_transform(all_subjects_data, fit_samples_indices,
 
     Parameters
     ----------
-    all_subjects_data: array_like, shape=(n_samples, n_voxels)
+    all_subjects_data : array_like, shape=(n_samples, n_voxels)
       Masked subject images as an array.
 
-    fit_samples_indices: array-like,
+    fit_samples_indices : array-like,
       Indices of the samples used to compute the parcellation.
 
-    connectivity: scipy.sparse.coo_matrix,
+    connectivity : scipy.sparse.coo_matrix,
       Graph representing the spatial structure of the images (i.e. connections
       between voxels).
 
-    n_parcels: int,
+    n_parcels : int,
       Number of parcels for the parcellations.
 
-    offset_labels: int,
+    offset_labels : int,
       Offset for labels numbering.
       The purpose is to have different labels in all the parcellations that
       can be built by multiple calls to the current function.
 
     Returns
     -------
-    parcelled_data: numpy.ndarray, shape=(n_samples, n_parcels)
+    parcelled_data : numpy.ndarray, shape=(n_samples, n_parcels)
       Average signal within each parcel for each subject.
 
-    labels: np.ndarray, shape=(n_voxels,)
+    labels : np.ndarray, shape=(n_voxels,)
       Labels giving the correspondance between voxels and parcels.
 
     """
@@ -253,27 +235,27 @@ def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
 
     Parameters
     ----------
-    all_subjects_data: array_like, shape=(n_samples, n_voxels)
+    all_subjects_data : array_like, shape=(n_samples, n_voxels)
       Masked subject images as an array.
 
-    mask: ndarray of booleans
+    mask : ndarray of booleans
       Mask that has been applied on the initial images to obtain
       `all_subjects_data`.
 
-    n_parcellations: int,
+    n_parcellations : int,
       The number of parcellations to be built and used to extract
       signal averages from the data.
 
-    n_parcels: int,
+    n_parcels : int,
       Number of parcels for the parcellations.
 
-    n_bootstrap_samples: int,
+    n_bootstrap_samples : int,
       Number of subjects to be used to build the parcellations. The subjects
       are randomly drawn with replacement.
       If set to None, n_samples subjects are drawn, which correspond to
       a bootstrap draw.
 
-    random_state: int,
+    random_state : int,
       Random numbers seed for reproducible results.
 
     memory : instance of joblib.Memory or string
@@ -281,22 +263,22 @@ def _build_parcellations(all_subjects_data, mask, n_parcellations=100,
       By default, no caching is done. If a string is given, it is the
       path to the caching directory.
 
-    n_jobs: int,
+    n_jobs : int,
       Number of parallel workers.
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
       will be used.
 
-    verbose: boolean,
+    verbose : boolean,
       Activate verbose mode (default is False).
 
     Returns
     -------
-    parcelled_data: np.ndarray, shape=(n_parcels_tot, n_subjs)
+    parcelled_data : np.ndarray, shape=(n_parcels_tot, n_subjs)
       Data for all subjects after mean signal extraction with all the
       parcellations that have been created.
 
-    ward_labels: np.ndarray, shape=(n_vox * n_wards, )
+    ward_labels : np.ndarray, shape=(n_vox * n_wards, )
       Voxel-to-parcel map for all the parcellations. Useful to perform
       inverse transforms.
 
@@ -346,17 +328,17 @@ def max_csr(csr_matrix, n_x):
 
     Parameters
     ----------
-    csr_matrix: scipy.sparse.csr matrix
+    csr_matrix : scipy.sparse.csr matrix
       The matrix from which to compute each line's maximum value.
 
-    n_x: int,
+    n_x : int,
       Size of the blocks of rows in case some rows should be grouped before
       the maximum value in each block is computed.
       `csr_matrix.shape[1]` has to be a multiple of `n_x`.
 
     Returns
     -------
-    res: array-like, shape=(n_rows, )
+    res : array-like, shape=(n_rows, )
       Max value of each row of the input CSR matrix.
       Empty lines will have a maximum set to 0.
 
@@ -411,39 +393,39 @@ def _compute_counting_statistic_from_parcel_level_scores(
 
     Parameters
     ----------
-    perm_lot_results: GrowableSparseArray,
+    perm_lot_results : GrowableSparseArray,
       Scores obtained for the permutations considered in the bunch.
       Keep in mind that GrowableSparseArray structures only contain scores
       above a given threshold (to save memory).
 
-    perm_lot_slice: slice object,
+    perm_lot_slice : slice object,
       Slice that defines the permutations for which the scores are being
       inverse transformed.
 
-    n_regressors: int,
+    n_regressors : int,
       Number of variates that have been tested independently in a massively
-      univariate analysis. It corresponds to the 'x_id' dimension/entry
+      univariate analysis. It corresponds to the 'j' dimension/entry
       of the GrowableSparseArray structure.
 
-    parcellation_masks: scipy.sparse.csc_matrix, shape=(n_parcels, n_voxels)
+    parcellation_masks : scipy.sparse.csc_matrix, shape=(n_parcels, n_voxels)
       Correspondance between the 3D-image voxels and the labels of the
       parcels of every parcellation. The mapping is encoded as a
       sparse matrix containing binary values: "1" indicates a correspondance
       between a parcel (defined by the row number) and a voxel
       (defined by the column number).
 
-    n_parcellations: int,
+    n_parcellations : int,
       Total number of parcellations.
 
-    n_parcels_all_parcellations: int,
+    n_parcels_all_parcellations : int,
       Total number of parcels (summed across all parcellations).
 
     Returns
     -------
-    counting_stats_original_data: np.ndarray, shape=(n_regressors, n_voxels)
+    counting_stats_original_data : np.ndarray, shape=(n_regressors, n_voxels)
       Counting statistics corresponding to the original data.
 
-    h0_samples: np.ndarray, shape=(n_perm, n_regressors)
+    h0_samples : np.ndarray, shape=(n_perm, n_regressors)
       Counting statistics corresponding to the permuted data.
       Yields the maximum count across all voxels for each
       permutation/regressor pair.
@@ -453,11 +435,11 @@ def _compute_counting_statistic_from_parcel_level_scores(
 
     # Convert chunk results to a CSR matrix
     regressors_ids = (
-        (perm_lot_results['iter_id'] - perm_lot_slice.start) * n_regressors
-        + perm_lot_results['x_id'])
-    perm_lot_as_csr = sps.csr_matrix(
-        (perm_lot_results['score'],
-         (regressors_ids, perm_lot_results['y_id'])),
+        (perm_lot_results['i'] - perm_lot_slice.start) * n_regressors
+        + perm_lot_results['j'])
+    perm_lot_as_csr = sparse.csr_matrix(
+        (perm_lot_results['data'],
+         (regressors_ids, perm_lot_results['k'])),
         shape=(n_perm_in_perm_lot * n_regressors, n_parcels_all_parcellations))
     # counting statistic as a dot product (efficient between CSR x CSC)
     counting_statistic = perm_lot_as_csr.dot(parcellation_masks)
@@ -484,39 +466,39 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
     In the context of RPBI, we choose to split the chunks on permutations,
     i.e. each chunk will perform a part of the total amount of permutations
     but processes the whole data.
-    This is the converse in the permuted OLS approach. The reason for the
+    This is the converse in the permuted OLS approach. The reason for this
     choice here is that we use the GrowableSparseArray structure, that is
     filled efficiently by appending the complete range of values corresponding
     to a given permutation in-a-row.
 
     Parameters
     ----------
-    n_perm: int,
+    n_perm : int,
       The total number of permutations performed in the complete analysis.
 
-    perm_chunk_start: int
+    perm_chunk_start : int
       Together with `perm_chunk_stop`, defines the permutations that are
       delegated to the current function.
       `perm_chunk_start` also serves as an offset regarding
       the total number of permutations performed by parallel workers.
 
-    perm_chunk_stop: int
+    perm_chunk_stop : int
       Together with `perm_chunk_start`, defines the permutations that
       are delegated to the current function.
 
-    tested_vars: array-like, shape=(n_samples, n_tested_vars),
+    tested_vars : array-like, shape=(n_samples, n_tested_vars),
       Explanatory variates, fitted and tested independently from each others.
 
     target_vars: array-like, shape=(n_samples, n_parcels_tot)
       Average signal within parcels of all parcellations, for every subject.
 
-    confounding_vars: array-like, shape=(n_samples, n_covars)
+    confounding_vars : array-like, shape=(n_samples, n_covars)
       Confounding variates (covariates), fitted but not tested.
       If None (default), no confounding variate is added to the model
       (except maybe a constant column according to the value of
       `model_intercept`)
 
-    lost_dof: int,
+    lost_dof : int,
       Degress of freedom that are lost during the model estimation.
       Beware that tested variates are fitted independently so `lost_dof`
       only depends on confounding variates.
@@ -525,15 +507,10 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise). See [1]
 
-    sparsity_threshold: float, 0. < sparsity_threshold <= 1.
-      Approximate amount of sparsity that is desired when storing the scores
-      of a massively univariate analysis (i.e. proportion of values to
-      be actually stored, as a percentage).
-      It also corresponds to the uncorrected significance threshold of the
-      independent parcel-based analyses that are performed from the different
-      parcellations.
+    sparsity_threshold : float, 0. < sparsity_threshold <= 1.
+      Proportion of scores that will be actually stored in memory.
       The higher the threshold, the more scores will be stored,
-      potentially resulting in memory issues. Conversely, a sparsity threshold
+      potentially resulting in memory issues. Conversely, a threshold
       that is too low can miss significant scores.
 
     random_state : int or None,
@@ -542,8 +519,8 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
 
     Returns
     -------
-    gs_array: GrowableSparseArray,
-      Structure containing the (thresholded) scores corresponding to some
+    gs_array : GrowableSparseArray,
+      Structure containing the thresholded scores corresponding to some
       permutations, defined by `perm_chunk`.
 
     """
@@ -554,17 +531,23 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
     n_descriptors = target_vars.shape[1]
     n_perm_chunk = perm_chunk_stop - perm_chunk_start
 
-    # We use a special data structure to store the results of the permutations
+    # We use a special data structure to store the results of the permutations.
+    sparsity_threshold_as_t_value = stats.t(n_samples - lost_dof - 1).isf(
+        sparsity_threshold)
     # max_elts is used to preallocate memory
-    threshold = stats.t(n_samples - lost_dof - 1).isf(sparsity_threshold)
-    max_elts = int(n_regressors * n_descriptors
-                   * np.sqrt(sparsity_threshold) * n_perm_chunk)
-    gs_array = GrowableSparseArray(n_perm + 1, max_elts=max_elts,
-                                   threshold=threshold)
+    # We expect the number of stored values to decrease non-linearly
+    # with the sparsity_threshold value. Using a square-root is thus useful
+    # to better estimate max_elts.
+    max_elts = int(n_regressors * n_descriptors * n_perm_chunk
+                   * np.sqrt(sparsity_threshold))
+    gs_array = GrowableSparseArray(n_perm + 1, max_elts=max_elts)
 
     if perm_chunk_start == 0:  # add original data results as permutation 0
         scores_original_data = t_score_with_covars_and_normalized_design(
             tested_vars, target_vars, confounding_vars)
+        # threshold scores according to sparsity_threshold
+        scores_original_data[
+            scores_original_data < sparsity_threshold_as_t_value] = 0
         gs_array.append(0, scores_original_data)
         perm_chunk_start = 1
 
@@ -581,7 +564,6 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
             # Also, it is important to shuffle tested_vars and covars
             # jointly to simplify f_score computation (null dot product).
             shuffle_idx = rng.permutation(n_samples)
-            #rng.shuffle(shuffle_idx)
             tested_vars = tested_vars[shuffle_idx]
             if confounding_vars is not None:
                 confounding_vars = confounding_vars[shuffle_idx]
@@ -589,6 +571,8 @@ def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
         # OLS regression on randomized data
         perm_scores = t_score_with_covars_and_normalized_design(
             tested_vars, target_vars, confounding_vars)
+        # threshold scores according to sparsity_threshold
+        perm_scores[perm_scores < sparsity_threshold_as_t_value] = 0
         gs_array.append(i, perm_scores)
 
     return gs_array
@@ -604,43 +588,43 @@ def rpbi_core(tested_vars, target_vars,
 
     Parameters
     ----------
-    tested_vars: array-like, shape=(n_samples, n_regressors),
+    tested_vars : array-like, shape=(n_samples, n_regressors),
       Explanatory variates, fitted and tested independently from each others.
 
-    target_vars: array-like, shape=(n_samples, n_parcels_tot)
+    target_vars : array-like, shape=(n_samples, n_parcels_tot)
       Average signal within parcels of all parcellations, for every subject.
 
-    n_parcellations: int,
+    n_parcellations : int,
       Number of (randomized) parcellations.
 
-    parcellations_labels: array-like, (n_parcellations * n_voxels,)
+    parcellations_labels : array-like, (n_parcellations * n_voxels,)
       All parcellation's labels ("labels to voxels" map).
 
-    n_parcels: list of int,
+    n_parcels : list of int,
       Number of parcels for the parcellations.
 
-    confounding_vars: array-like, shape=(n_samples, n_confounds)
+    confounding_vars : array-like, shape=(n_samples, n_confounds)
       Confounding variates (covariates), fitted but not tested.
       If None (default), no confounding variate is added to the model
       (except maybe a constant column according to the value of
       `model_intercept`)
 
-    model_intercept: bool,
+    model_intercept : bool,
       If True (default), a constant column is added to the confounding variates
       unless the tested variate is already the intercept.
 
-    threshold: float, 0. < threshold < 1.,
+    threshold : float, 0. < threshold < 1.,
       RPBI's threshold to discretize individual parcel-based analysis results.
 
-    n_perm: int, n_perm > 1,
+    n_perm : int, n_perm > 1,
       Number of permutation to convert the counting statistic into p-values.
       The higher n_perm, the more precise the results, at the cost of
       computation time.
 
-    random_state: int,
+    random_state : int,
       Random numbers seed for reproducible results.
 
-    n_jobs: int,
+    n_jobs : int,
       Number of parallel workers. Default is 1.
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
@@ -648,27 +632,23 @@ def rpbi_core(tested_vars, target_vars,
 
     Returns
     -------
-    p-values: np.ndarray, shape=(n_tested_vars, n_voxels)
+    p-values : np.ndarray, shape=(n_tested_vars, n_voxels)
       Negative log10 p-values associated with the significance test of the
       n_regressors explanatory variates against the n_tested_vars target
       variates, assessed with Randomized Parcellation Based Inference.
       Family-wise corrected p-values (max-type procedure).
 
-    counting_stats_original_data: np.ndarray, shape=(n_tested_vars, n_voxels)
+    counting_stats_original_data : np.ndarray, shape=(n_tested_vars, n_voxels)
       Counting statistic (i.e. RPBI score) associated with original
       (non-permuted) data.
 
-    h0: np.ndarray, shape=(n_perm,)
+    h0 : np.ndarray, shape=(n_perm,)
       Maximum value of the counting statistic (i.e. RPBI score)
       across voxels obtained under each permutation of the original data.
 
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
-
-    # check threshold
-    if threshold is None:
-        threshold = 0.1 / n_parcels
 
     # check n_jobs (number of CPUs)
     n_jobs = check_n_jobs(n_jobs)
@@ -680,7 +660,6 @@ def rpbi_core(tested_vars, target_vars,
                          % (target_vars.ndim,
                             "s" if target_vars.ndim > 1 else ""))
     target_vars = np.asfortranarray(target_vars)
-    n_descriptors = target_vars.shape[1]
 
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
@@ -709,10 +688,10 @@ def rpbi_core(tested_vars, target_vars,
     covars_orthonormed = orthogonalized_design[2]
     lost_dof = orthogonalized_design[3]
 
-    # set threshold
-    # we will only retain the score for which the associated p-value is below
-    # the threshold (we use a F distribution as an approximation of the scores
-    # distribution)
+    # set RPBI threshold
+    # In RPBI, only the scores for which the associated p-value is
+    # below the threshold are considered (we use a F distribution as
+    # an approximation of the scores distribution)
     if threshold == 'auto' or threshold is None:
         threshold = 0.1 / n_parcels  # Bonferroni correction for parcels
 
@@ -728,18 +707,14 @@ def rpbi_core(tested_vars, target_vars,
          sparsity_threshold=threshold,
          random_state=rng.random_integers(np.iinfo(np.int32).max))
         for (perm_chunk_start, perm_chunk_stop) in perm_chunks)
-    # reduce results
-    # We expect the number of stored values to decrease non-linerly
-    # with the sparsity_threshold value. Using a square-root is thus useful
-    # to better estimate max_elts.
-    max_elts = int(n_tested_vars * n_descriptors
-                   * np.sqrt(threshold) * (n_perm + 1))
-    all_results = GrowableSparseArray(
-        n_perm + 1, max_elts=max_elts,
-        threshold=all_chunks_results[0].threshold)  # same threshold everywhere
+    # reduce results (merge chunks in one big GrowableSparseArray)
+    n_chunks = len(perm_chunks)
+    max_elts_chunk = all_chunks_results[0].max_elts
+    all_results = GrowableSparseArray(n_perm + 1,
+                                      max_elts=max_elts_chunk * n_chunks)
     all_results.merge(all_chunks_results)
     # scores binarization (to be summed later to yield the counting statistic)
-    all_results.data['score'] = binarize(all_results.get_data()['score'])
+    all_results.data['data'] = binarize(all_results.get_data()['data'])
 
     ### Inverse transforms (map back masked voxels into a brain)
     n_voxels_all_parcellations = parcellations_labels.size
@@ -751,7 +726,7 @@ def rpbi_core(tested_vars, target_vars,
     # we need a CSC sparse matrix for efficient computation. we can build
     # it efficiently using a COO sparse matrix constructor.
     voxel_ids = np.arange(n_voxels_all_parcellations) % n_voxels
-    parcellation_masks = sps.coo_matrix(
+    parcellation_masks = sparse.coo_matrix(
         (np.ones(n_voxels_all_parcellations),
          (parcellations_labels, voxel_ids)),
         shape=(n_parcels_all_parcellations, n_voxels),
@@ -795,41 +770,41 @@ def randomized_parcellation_based_inference(
 
     Parameters
     ----------
-    tested_vars: array-like, shape=(n_subjs, n_test_vars),
+    tested_vars : array-like, shape=(n_subjs, n_test_vars),
       Explanatory variates, fitted and tested independently from each others.
 
-    imaging_vars: array-like, shape=(n_samples, n_descriptors)
+    imaging_vars : array-like, shape=(n_samples, n_descriptors)
       Masked subject images as an array.
       Imaging data to be explained by explanatory and confounding variates.
 
-    mask_img: niimg
+    mask_img : niimg
       Mask image that has been used to mask data in `imaging_vars`.
 
-    confounding_vars: array-like, shape=(n_samples, n_covars)
+    confounding_vars : array-like, shape=(n_samples, n_covars)
       Confounding variates (covariates), fitted but not tested.
       If None (default), no confounding variate is added to the model
       (except maybe a constant column according to the value of
       `model_intercept`)
 
-    model_intercept: bool,
+    model_intercept : bool,
       If True (default), a constant column is added to the confounding variates
       unless the tested variate is already the intercept.
 
-    n_parcellations: int,
+    n_parcellations : int,
       Number of (randomized) parcellations.
 
-    n_parcels: list of int,
+    n_parcels : list of int,
       Number of parcels for the parcellations.
 
-    threshold: float, 0. < threshold < 1.,
+    threshold : float, 0. < threshold < 1.,
       RPBI's threshold to discretize individual parcel-based analysis results.
 
-    n_perm: int, n_perm > 1,
+    n_perm : int, n_perm > 1,
       Number of permutation to convert the counting statistic into p-values.
       The higher n_perm, the more precise the results, at the cost of
       computation time.
 
-    random_state: int,
+    random_state : int,
       Random numbers seed for reproducible results.
 
     memory : instance of joblib.Memory or string
@@ -837,28 +812,28 @@ def randomized_parcellation_based_inference(
       By default, no caching is done. If a string is given, it is the
       path to the caching directory.
 
-    n_jobs: int,
+    n_jobs : int,
       Number of parallel workers. Default is 1.
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
       must be used.
 
-    verbose: boolean,
+    verbose : boolean,
       Activate verbose mode (default is False).
 
     Returns
     -------
-    neg_log_pvals: np.ndarray, shape=(n_tested_vars, n_voxels)
+    neg_log_pvals : np.ndarray, shape=(n_tested_vars, n_voxels)
       Negative log10 p-values associated with the significance test of the
       n_regressors explanatory variates against the n_tested_vars target
       variates, assessed with Randomized Parcellation Based Inference.
       Family-wise corrected p-values (max-type procedure).
 
-    counting_stats_original_data: np.ndarray, shape=(n_tested_vars, n_voxels)
+    counting_stats_original_data : np.ndarray, shape=(n_tested_vars, n_voxels)
       Counting statistic (i.e. RPBI score) associated with original
       (non-permuted) data.
 
-    h0: np.ndarray, shape=(n_perm,)
+    h0 : np.ndarray, shape=(n_perm,)
       Maximum value of the counting statistic (i.e. RPBI score)
       across voxels obtained under each permutation of the original data.
 
