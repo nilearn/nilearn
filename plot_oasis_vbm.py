@@ -97,8 +97,7 @@ coef = feature_selection.inverse_transform(coef)
 # reverse masking
 weight_niimg = nifti_masker.inverse_transform(coef)
 
-# We use a masked array so that the voxels at '-1' are displayed
-# transparently
+# We use a masked array so that the voxels at '-1' are transparent
 weights = np.ma.masked_array(weight_niimg.get_data(),
                              weight_niimg.get_data() == 0)
 
@@ -134,7 +133,7 @@ print "Massively univariate model"
 from nilearn.mass_univariate import permuted_ols
 neg_log_pvals, all_scores, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=5000,  # In the interest of time; 10000 would be better
+    n_perm=1000,  # 1,000 in the interest of time; 10000 would be better
     n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals).get_data()[..., 0]
