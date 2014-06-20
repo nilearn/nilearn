@@ -55,7 +55,7 @@ from nilearn.mass_univariate import permuted_ols
 print "Massively univariate model"
 neg_log_pvals, all_scores, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=5000,  # In the interest of time; 10000 would be better
+    n_perm=1000,  # 1,000 for the sake of time. 10,000 is recommended
     two_sided_test=False,  # RPBI does not perform a two-sided test
     n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
@@ -90,7 +90,7 @@ neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     n_parcellations=30,  # 30 for the sake of time, 100 is recommended
     n_parcels=1000,
     threshold='auto',
-    n_perm=5000,  # 5,000 for the sake of time. 10,000 is recommended
+    n_perm=1000,  # 1,000 for the sake of time. 10,000 is recommended
     random_state=0, memory='nilearn_cache', n_jobs=1, verbose=True)
 neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_rpbi)).get_data()
