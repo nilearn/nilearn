@@ -246,7 +246,7 @@ def test_compute_counting_statistic_from_parcel_level_scores(random_state=1):
         n_parcellations, n_parcellations * n_parcels)
     counting_stats_original_data, h0 = res
     assert_array_equal(counting_stats_original_data,
-                       thresholded_data[0].reshape((1, -1)))
+                       thresholded_data[0])
     assert_array_equal(h0, [8])
 
     # Same thing but only for the permuted data
@@ -294,11 +294,12 @@ def test_rpbi_core(random_state=2):
     # check pvalues
     expected_pvalues = np.zeros(shape)
     expected_pvalues[1:3, 1:3, 1:3] = 1.
-    expected_pvalues = expected_pvalues.reshape((1, -1))
-    assert_equal(pvalues.shape, (1, n_voxels))
+    expected_pvalues = np.ravel(expected_pvalues)
+    print pvalues.shape, n_voxels
+    assert_equal(pvalues.shape, (n_voxels,))
     assert_array_equal(pvalues, expected_pvalues)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_equal(counting_statistic_original_data, 2 * expected_pvalues)
     # h0
     assert_equal(h0.shape, (9,))
@@ -313,11 +314,11 @@ def test_rpbi_core(random_state=2):
     # check pvalues
     expected_pvalues = np.zeros(shape)
     expected_pvalues[1:3, 1:3, 1:3] = 1.
-    expected_pvalues = expected_pvalues.reshape((1, -1))
-    assert_equal(pvalues.shape, (1, n_voxels))
+    expected_pvalues = np.ravel(expected_pvalues)
+    assert_equal(pvalues.shape, (n_voxels,))
     assert_array_almost_equal(pvalues, expected_pvalues)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_pvalues)
     # h0
@@ -336,11 +337,11 @@ def test_rpbi_core(random_state=2):
     # check pvalues
     expected_pvalues = np.zeros(shape)
     expected_pvalues[1:3, 1:3, 1:3] = 1.
-    expected_pvalues = expected_pvalues.reshape((1, -1))
-    assert_equal(pvalues.shape, (1, n_voxels))
+    expected_pvalues = np.ravel(expected_pvalues)
+    assert_equal(pvalues.shape, (n_voxels,))
     assert_array_almost_equal(pvalues, expected_pvalues)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_pvalues)
     # h0
@@ -387,11 +388,11 @@ def test_rpbi_core_withcovars(random_state=0):
     # check pvalues
     expected_pvalues = np.zeros(shape)
     expected_pvalues[1:3, 1:3, 1:3] = 1.
-    expected_pvalues = expected_pvalues.reshape((1, -1))
-    assert_equal(pvalues.shape, (1, n_voxels))
+    expected_pvalues = np.ravel(expected_pvalues)
+    assert_equal(pvalues.shape, (n_voxels,))
     assert_array_equal(pvalues, expected_pvalues)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_equal(counting_statistic_original_data, 2 * expected_pvalues)
     # h0
     assert_equal(h0.shape, (9,))
@@ -406,11 +407,11 @@ def test_rpbi_core_withcovars(random_state=0):
     # check pvalues
     expected_pvalues = np.zeros(shape)
     expected_pvalues[1:3, 1:3, 1:3] = 1.
-    expected_pvalues = expected_pvalues.reshape((1, -1))
-    assert_equal(pvalues.shape, (1, n_voxels))
+    expected_pvalues = np.ravel(expected_pvalues)
+    assert_equal(pvalues.shape, (n_voxels,))
     assert_array_almost_equal(pvalues, expected_pvalues)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_pvalues)
     # h0
@@ -429,11 +430,11 @@ def test_rpbi_core_withcovars(random_state=0):
     # check pvalues
     expected_pvalues = np.zeros(shape)
     expected_pvalues[1:3, 1:3, 1:3] = 1.
-    expected_pvalues = expected_pvalues.reshape((1, -1))
-    assert_equal(pvalues.shape, (1, n_voxels))
+    expected_pvalues = np.ravel(expected_pvalues)
+    assert_equal(pvalues.shape, (n_voxels,))
     assert_array_almost_equal(pvalues, expected_pvalues)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_pvalues)
     # h0
@@ -449,11 +450,11 @@ def test_rpbi_core_withcovars(random_state=0):
     # check pvalues
     expected_pvalues = np.zeros(shape)
     expected_pvalues[1:3, 1:3, 1:3] = 1.
-    expected_pvalues = expected_pvalues.reshape((1, -1))
-    assert_equal(pvalues.shape, (1, n_voxels))
+    expected_pvalues = np.ravel(expected_pvalues)
+    assert_equal(pvalues.shape, (n_voxels,))
     assert_array_almost_equal(pvalues, expected_pvalues)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_pvalues)
     # h0
@@ -493,11 +494,11 @@ def test_randomized_parcellation_based_inference(random_state=1):
     # check pvalues
     expected_neg_log_pvals = np.zeros(shape)
     expected_neg_log_pvals[1:3, 1:3, 1:3] = 1.
-    expected_neg_log_pvals = expected_neg_log_pvals.reshape((1, -1))
-    assert_equal(neg_log_pvals.shape, (1, n_voxels))
+    expected_neg_log_pvals = np.ravel(expected_neg_log_pvals)
+    assert_equal(neg_log_pvals.shape, (n_voxels,))
     assert_array_almost_equal(neg_log_pvals, expected_neg_log_pvals)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_neg_log_pvals)
     # h0
@@ -521,11 +522,11 @@ def test_randomized_parcellation_based_inference(random_state=1):
     # check pvalues
     expected_neg_log_pvals = np.zeros(shape)
     expected_neg_log_pvals[1:3, 1:3, 1:3] = 1.
-    expected_neg_log_pvals = expected_neg_log_pvals.reshape((1, -1))
-    assert_equal(neg_log_pvals.shape, (1, n_voxels))
+    expected_neg_log_pvals = np.ravel(expected_neg_log_pvals)
+    assert_equal(neg_log_pvals.shape, (n_voxels,))
     assert_array_almost_equal(neg_log_pvals, expected_neg_log_pvals)
     # check counting statistic
-    assert_equal(counting_statistic_original_data.shape, (1, n_voxels))
+    assert_equal(counting_statistic_original_data.shape, (n_voxels,))
     assert_array_almost_equal(counting_statistic_original_data,
                               2 * expected_neg_log_pvals)
     # h0

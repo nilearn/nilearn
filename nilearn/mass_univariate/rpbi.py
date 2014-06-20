@@ -334,9 +334,9 @@ def max_csr(csr_matrix):
     >>> import numpy as np
     >>> from scipy import sparse
     >>> from nilearn.mass_univariate.rpbi import max_csr
-    >>> max_csr(sparse.eye(5, 5).tocsr(), 1)
+    >>> max_csr(sparse.eye(5, 5).tocsr())
     array([ 1.,  1.,  1.,  1.,  1.])
-    >>> max_csr(sparse.dia_matrix(np.diag(np.arange(6))).tocsr(), 1)
+    >>> max_csr(sparse.dia_matrix(np.diag(np.arange(6))).tocsr())
     array([ 0.,  1.,  2.,  3.,  4.,  5.])
 
     """
@@ -430,7 +430,7 @@ def _compute_counting_statistic_from_parcel_level_scores(
         counting_stats_original_data = []
         h0_samples = max_csr(counting_statistic)
 
-    return counting_stats_original_data, h0_samples
+    return np.ravel(counting_stats_original_data), h0_samples
 
 
 def _univariate_analysis_on_chunk(n_perm, perm_chunk_start, perm_chunk_stop,
@@ -722,7 +722,7 @@ def rpbi_core(tested_var, target_vars,
         for perm_lot, perm_lot_slice in zip(perm_lots, perm_lots_slices))
     # reduce results
     counting_stats_original_data, h0 = zip(*ret)
-    counting_stats_original_data = np.ravel(counting_stats_original_data[0])
+    counting_stats_original_data = counting_stats_original_data[0]
     h0 = np.sort(np.concatenate(h0))
 
     ### Convert H1 to neg. log. p-values
@@ -730,7 +730,7 @@ def rpbi_core(tested_var, target_vars,
         (n_perm + 1 - np.searchsorted(h0, counting_stats_original_data))
         / float(n_perm + 1))
 
-    return np.ravel(p_values), counting_stats_original_data, h0
+    return p_values, counting_stats_original_data, h0
 
 
 def randomized_parcellation_based_inference(
