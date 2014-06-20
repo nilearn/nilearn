@@ -418,6 +418,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         testedvars_resid_covars, targetvars_resid_covars.T,
         covars_orthonormalized)
     if two_sided_test:
+        sign_scores_original_data = np.sign(scores_original_data)
         scores_original_data = np.fabs(scores_original_data)
 
     ### Permutations
@@ -434,6 +435,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                       'ressources.' % (n_perm, n_jobs, n_perm))
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
+        if two_sided_test:
+            scores_original_data = (scores_original_data
+                                    * sign_scores_original_data)
         return np.asarray([]), scores_original_data,  np.asarray([])
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
@@ -452,5 +456,10 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         scores_as_ranks += scores_as_ranks_part
     # convert ranks into p-values
     pvals = (n_perm + 1 - scores_as_ranks) / float(1 + n_perm)
+
+    # put back sign on scores if it was removed in the case of a two-sided test
+    # (useful to distinguish between positive and negative effects)
+    if two_sided_test:
+        scores_original_data = scores_original_data * sign_scores_original_data
 
     return - np.log10(pvals), scores_original_data.T, h0_fmax[0]

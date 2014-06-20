@@ -54,7 +54,7 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
     test_matrix = np.array([[1.] + [0.] * n_covars])
 
     ### t-values computation
-    try:  # try with statsmodels is available (more concise)
+    try:  # try with statsmodels if available (more concise)
         from statsmodels.regression.linear_model import OLS
         t_values = np.empty((n_targets, n_regressors))
         for i in range(n_targets):
@@ -259,6 +259,7 @@ def test_permuted_ols_nocovar(random_state=0):
     _, own_score, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         n_perm=0, random_state=random_state)
+    #1/0
     assert_array_almost_equal(ref_score, own_score, decimal=6)
 
     # test with ravelized tested_var
@@ -455,8 +456,7 @@ def test_permuted_ols_intercept_nocovar_multivariate(random_state=0):
     assert_array_almost_equal(own_scores, own_scores_intercept, decimal=6)
 
 
-def test_permuted_ols_intercept_withcovar_multivariate(
-    random_state=0):
+def test_permuted_ols_intercept_withcovar_multivariate(random_state=0):
     rng = check_random_state(random_state)
     # design parameters
     n_samples = 50
@@ -483,6 +483,8 @@ def test_permuted_ols_intercept_withcovar_multivariate(
 
 ### Test one-sided versus two-sided ###########################################
 def test_sided_test(random_state=0):
+    """Check that a positive effect is always better recovered with one-sided.
+    """
     rng = check_random_state(random_state)
     # design parameters
     n_samples = 50
@@ -494,12 +496,44 @@ def test_sided_test(random_state=0):
     neg_log_pvals_onesided, _, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         two_sided_test=False, n_perm=100, random_state=random_state)
+    # two-sided
+    neg_log_pvals_twosided, _, _ = permuted_ols(
+        tested_var, target_var, model_intercept=False,
+        two_sided_test=True, n_perm=100, random_state=random_state)
+
+    positive_effect_location = neg_log_pvals_onesided > 1
+    assert_equal(
+        np.sum(neg_log_pvals_twosided[positive_effect_location]
+               - neg_log_pvals_onesided[positive_effect_location] > 0),
+        0)
+
+
+def test_sided_test2(random_state=0):
+    """Check that two-sided can actually recover positive and negative effects.
+    """
+    # create design
+    target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
+    target_var = np.hstack((target_var1, - target_var1))
+
+    tested_var = np.arange(0, 20, 2)
+    # permuted OLS
+    # one-sided
+    neg_log_pvals_onesided, _, _ = permuted_ols(
+        tested_var, target_var, model_intercept=False,
+        two_sided_test=False, n_perm=100, random_state=random_state)
+    # one-sided (other side)
+    neg_log_pvals_onesided2, _, _ = permuted_ols(
+        tested_var, -target_var, model_intercept=False,
+        two_sided_test=False, n_perm=100, random_state=random_state)
     # two-sdided
     neg_log_pvals_twosided, _, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         two_sided_test=True, n_perm=100, random_state=random_state)
-    assert_equal(
-        np.sum(neg_log_pvals_twosided - neg_log_pvals_onesided > 0), 0)
+
+    assert_array_almost_equal(neg_log_pvals_onesided[0],
+                              neg_log_pvals_onesided2[0][::-1])
+    assert_array_almost_equal(neg_log_pvals_onesided + neg_log_pvals_onesided2,
+                              neg_log_pvals_twosided)
 
 if __name__ == '__main__':
     nose.run(argv=['', __file__])
