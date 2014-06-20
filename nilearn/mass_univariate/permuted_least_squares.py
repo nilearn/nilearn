@@ -248,10 +248,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     ### OLS regression (t-scores) on original data
     scores_original_data = t_score_with_covars_and_normalized_design(
-        testedvars_resid_covars, targetvars_resid_covars.T,
-        covars_orthonormalized)
-    if two_sided_test:
-        scores_original_data = np.fabs(scores_original_data)
+        tested_vars_resid_covars, target_vars_resid_covars,
+        covars_orthonormed)
 
     ### Permutations
     # parallel computing units perform a reduced number of permutations each
