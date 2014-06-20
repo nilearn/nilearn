@@ -152,7 +152,7 @@ im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
 plt.axis('off')
 plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values'
-          + '\n(Non-parametric + max-type correction)\n')
+          + '\n(Non-parametric + max-type correction)')
 plt.tight_layout()
 
 plt.show()
