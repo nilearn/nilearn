@@ -259,7 +259,6 @@ def test_permuted_ols_nocovar(random_state=0):
     _, own_score, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         n_perm=0, random_state=random_state)
-    #1/0
     assert_array_almost_equal(ref_score, own_score, decimal=6)
 
     # test with ravelized tested_var
