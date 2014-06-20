@@ -29,7 +29,7 @@ class GrowableSparseArray(object):
     should carefully initialize the structure.
 
     The structure can be indexed efficiently according to two
-    dimensions ('i' and 'j' axes) to add new data at the right
+    dimensions ('row' and 'col' axes) to add new data at the right
     position fast.
 
     Only non-zero scores are actually stored; others are
@@ -39,7 +39,6 @@ class GrowableSparseArray(object):
     GrowableSparseArrays support memory-efficient, fast data appending.
     Several GrowableSparseArrays can thus be merged efficiently.
     The only constraint is that they should have the same number of rows
-    (i.e. their 'i' axis should have the same size).
 
     Attributes
     ----------
@@ -47,7 +46,7 @@ class GrowableSparseArray(object):
       The total number of values actually stored into the data structure
 
     n_rows : int
-      Number of rows ('i' axis) of the GrowableSparseArray.
+      Number of rows of the GrowableSparseArray.
       Only arrays with the same value of `n_rows` can be merged together.
 
     max_elts : int
@@ -58,7 +57,7 @@ class GrowableSparseArray(object):
 
     data : array-like, own-designed dtype
       The actual data contained in the structure.
-      These can be indexed with three dimensions ('i' and 'j' axes).
+      These can be indexed with two dimensions ('row' and 'col' axes).
 
     sizes : array-like, shape=(n_perm, )
       The number of data stored for each estimation.
@@ -72,7 +71,7 @@ class GrowableSparseArray(object):
         self.max_elts = max(max_elts, n_elts)
         self.data = np.empty(
             self.max_elts,
-            dtype=[('i', np.int32), ('j', np.int32), ('data', np.float32)])
+            dtype=[('row', np.int32), ('col', np.int32), ('data', np.float32)])
         self.sizes = np.zeros((n_rows))
 
     def get_data(self):
@@ -111,12 +110,12 @@ class GrowableSparseArray(object):
         self.data = np.concatenate(acc_data)
         self.n_elts = self.sizes.sum()
         self.max_elts = self.n_elts
-        self.data = np.sort(self.data, order=['i', 'j'])
+        self.data = np.sort(self.data, order=['row', 'col'])
 
         return
 
     def append(self, row_id, row_data):
-        """Add data corresponding to one row (dimension indexed by 'i').
+        """Add data corresponding to one row (dimension indexed by 'row').
 
         This is done in a memory-efficient way, by taking into account
         pre-allocated space.
@@ -133,8 +132,8 @@ class GrowableSparseArray(object):
         # store values as float32 to save space
         row_data = np.ravel(row_data.astype('float32'))
         # sparsify the matrix using coordinates list
-        j_idx = row_data.nonzero()[0]
-        score_size = len(j_idx)
+        col_idx = row_data.nonzero()[0]
+        score_size = len(col_idx)
         if score_size == 0:  # early return if nothing to add
             return
 
@@ -144,11 +143,11 @@ class GrowableSparseArray(object):
         if (new_n_elts > self.max_elts or
             self.sizes[row_id + 1:].sum() > 0):  # insertion (costly)
             new_data = np.empty(score_size,
-                                dtype=[('i', np.int32), ('j', np.int32),
+                                dtype=[('row', np.int32), ('col', np.int32),
                                        ('data', np.float32)])
-            new_data['i'][:] = row_id
-            new_data['j'][:] = j_idx
-            new_data['data'][:] = row_data[j_idx]
+            new_data['row'][:] = row_id
+            new_data['col'][:] = col_idx
+            new_data['data'][:] = row_data[col_idx]
             gs_array = GrowableSparseArray(self.n_rows)
             gs_array.data = new_data
             gs_array.sizes = np.zeros((gs_array.n_rows))
@@ -157,9 +156,9 @@ class GrowableSparseArray(object):
             gs_array.max_elts = score_size
             self.merge(gs_array)
         else:  # it fits --> updates (efficient)
-            self.data['i'][self.n_elts:new_n_elts] = row_id
-            self.data['j'][self.n_elts:new_n_elts] = j_idx
-            self.data['data'][self.n_elts:new_n_elts] = row_data[j_idx]
+            self.data['row'][self.n_elts:new_n_elts] = row_id
+            self.data['col'][self.n_elts:new_n_elts] = col_idx
+            self.data['data'][self.n_elts:new_n_elts] = row_data[col_idx]
             self.sizes[row_id] += score_size
             self.n_elts = new_n_elts
         return
@@ -413,10 +412,10 @@ def _compute_counting_statistic_from_parcel_level_scores(
     n_perm_in_perm_lot = perm_lot_slice.stop - perm_lot_slice.start
 
     # Convert chunk results to a CSR matrix
-    regressors_ids = perm_lot_results['i'] - perm_lot_slice.start
+    regressors_ids = perm_lot_results['row'] - perm_lot_slice.start
     perm_lot_as_csr = sparse.csr_matrix(
         (perm_lot_results['data'],
-         (regressors_ids, perm_lot_results['j'])),
+         (regressors_ids, perm_lot_results['col'])),
         shape=(n_perm_in_perm_lot, n_parcels_all_parcellations))
     # counting statistic as a dot product (efficient between CSR x CSC)
     counting_statistic = perm_lot_as_csr.dot(parcellation_masks)

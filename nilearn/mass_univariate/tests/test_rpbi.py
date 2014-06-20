@@ -21,22 +21,22 @@ def test_gsarray_append_data():
     # Simplest example
     gs_array = GrowableSparseArray(n_rows=1)
     gs_array.append(0, np.ones(5))
-    assert_array_equal(gs_array.get_data()['i'], np.zeros(5))
-    assert_array_equal(gs_array.get_data()['j'], np.arange(5))
+    assert_array_equal(gs_array.get_data()['row'], np.zeros(5))
+    assert_array_equal(gs_array.get_data()['col'], np.arange(5))
     assert_array_equal(gs_array.get_data()['data'], np.ones(5))
 
     # Append with no structure extension needed
     gs_array = GrowableSparseArray(n_rows=1, max_elts=10)
     gs_array.append(0, np.ones(5))
-    assert_array_equal(gs_array.get_data()['i'], np.zeros(5))
-    assert_array_equal(gs_array.get_data()['j'], np.arange(5))
+    assert_array_equal(gs_array.get_data()['row'], np.zeros(5))
+    assert_array_equal(gs_array.get_data()['col'], np.arange(5))
     assert_array_equal(gs_array.get_data()['data'], np.ones(5))
 
     # Void array
     gs_array = GrowableSparseArray(n_rows=1)
     gs_array.append(0, np.zeros(5))
-    assert_array_equal(gs_array.get_data()['i'], [])
-    assert_array_equal(gs_array.get_data()['j'], [])
+    assert_array_equal(gs_array.get_data()['row'], [])
+    assert_array_equal(gs_array.get_data()['col'], [])
     assert_array_equal(gs_array.get_data()['data'], [])
 
     # Toy example
@@ -45,8 +45,8 @@ def test_gsarray_append_data():
         data = np.arange(10) - i
         data[data < 8] = 0
         gs_array.append(i, data)
-    assert_array_equal(gs_array.get_data()['i'], np.array([0., 0., 1.]))
-    assert_array_equal(gs_array.get_data()['j'], [8, 9, 9])
+    assert_array_equal(gs_array.get_data()['row'], np.array([0., 0., 1.]))
+    assert_array_equal(gs_array.get_data()['col'], [8, 9, 9])
     assert_array_equal(gs_array.get_data()['data'], [8., 9., 8.])
 
 
@@ -62,10 +62,10 @@ def test_gsarray_merge():
     gs_array.append(0, np.ones(5))
     gs_array2 = GrowableSparseArray(n_rows=1)
     gs_array2.merge(gs_array)
-    assert_array_equal(gs_array.get_data()['i'],
-                       gs_array2.get_data()['i'])
-    assert_array_equal(gs_array.get_data()['j'],
-                       gs_array2.get_data()['j'])
+    assert_array_equal(gs_array.get_data()['row'],
+                       gs_array2.get_data()['row'])
+    assert_array_equal(gs_array.get_data()['col'],
+                       gs_array2.get_data()['col'])
     assert_array_equal(gs_array.get_data()['data'],
                        gs_array2.get_data()['data'])
 
@@ -76,9 +76,9 @@ def test_gsarray_merge():
     gs_array2.append(1, 2 * np.ones(5))
     gs_array3 = GrowableSparseArray(n_rows=2)
     gs_array3.merge([gs_array, gs_array2])
-    assert_array_equal(gs_array3.get_data()['i'],
+    assert_array_equal(gs_array3.get_data()['row'],
                        np.array([0.] * 5 + [1.] * 5))
-    assert_array_equal(gs_array3.get_data()['j'], np.tile(np.arange(5), 2))
+    assert_array_equal(gs_array3.get_data()['col'], np.tile(np.arange(5), 2))
     assert_array_equal(gs_array3.get_data()['data'],
                        np.array([1.] * 5 + [2.] * 5))
     # failure case
