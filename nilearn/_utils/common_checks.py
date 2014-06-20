@@ -30,7 +30,7 @@ def check_n_jobs(n_jobs):
                          "for all CPUs, or a negative number (-i) for "
                          "'all but (i-1)' CPUs (joblib conventions).")
     elif n_jobs < 0:
-        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
+        n_jobs = max(1, joblib.cpu_count() + n_jobs + 1)
     else:
         n_jobs = min(n_jobs, joblib.cpu_count())
 
