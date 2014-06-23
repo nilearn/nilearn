@@ -114,7 +114,6 @@ im = plt.imshow(np.rot90(data_for_plot), cmap=plt.cm.Spectral_r,
 plt.axis('off')
 plt.colorbar(im)
 plt.title('SVM weights')
-plt.tight_layout()
 
 ### Measure accuracy with cross validation
 from sklearn.cross_validation import cross_val_score
@@ -156,6 +155,5 @@ plt.axis('off')
 plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values'
           + '\n(Non-parametric + max-type correction)\n')
-plt.tight_layout()
 
 plt.show()
