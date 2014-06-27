@@ -32,7 +32,7 @@ SmoothLasso{Regressor|Classifier}.fit
 
 import warnings
 import numpy as np
-from sklearn.base import is_classifier
+from .._utils.fixes import is_classifier
 from sklearn.preprocessing import LabelBinarizer
 from .common import (logistic, logistic_grad,
                      compute_logistic_lipschitz_constant)

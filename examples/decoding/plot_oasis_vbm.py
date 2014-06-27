@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
-n_subjects = 100  # more subjects requires more memory
+n_subjects = 100   # more subjects requires more memory
 
 ### Load Oasis dataset ########################################################
 oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
@@ -57,6 +57,8 @@ print('First gray-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.gray_matter_maps[0])  # 3D data
 print('First white-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.white_matter_maps[0])  # 3D data
+
+assert 0
 
 ### Preprocess data ###########################################################
 nifti_masker = NiftiMasker(
