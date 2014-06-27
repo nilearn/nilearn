@@ -58,17 +58,10 @@ class EarlyStoppingCallback(object):
 
     def __call__(self, variables):
         i = variables['counter']
-        if i <= 1:
+        if i == 0:
             # Reset the test_errors list
             self.test_errors = list()
-        # Do the computation only every 10 steps, and just before the
-        # ADMM recomputes rho:
-        if not (i > 20 and (i % 10) == 2):
-            return
         w = variables['w']
-        if not np.all(np.isfinite(w)):
-            # Something has gone wrong. Iterating more won't help
-            return True
         w = np.ravel(w)
         # Correlation to output
         y_pred = np.dot(self.X_test, w)
@@ -77,6 +70,8 @@ class EarlyStoppingCallback(object):
             y_pred /= sqrt(_squared_norm(y_pred))
         error = .5 * (1 - np.dot(self.scaled_y_test, y_pred))
         self.test_errors.append(error)
+        if not (i > 20 and (i % 10) == 2):
+            return
         if len(self.test_errors) > 4:
             if np.mean(np.diff(self.test_errors[-5:])) >= 1e-4:
                 if self.verbose:

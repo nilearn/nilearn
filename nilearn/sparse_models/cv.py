@@ -334,6 +334,7 @@ class _BaseCV(_BaseEstimator):
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
             normalize=normalize, standardize=standardize)
+
         self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
@@ -343,6 +344,12 @@ class _BaseCV(_BaseEstimator):
         self.bagging = bagging
         self.screening_percentile = 10
         assert 0. <= screening_percentile <= 100.
+
+        # sanitize path_scores_func
+        if self.path_scores_func is None:
+            raise ValueError(
+                "Class '%s' doesn't have a `path_scores_func` attribute!" % (
+                    self.__class__.__name__))
 
     @property
     def short_name(self):
