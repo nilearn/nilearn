@@ -56,8 +56,7 @@ from nilearn.sparse_models.cv import SmoothLassoClassifierCV
 import os
 n_jobs = int(os.environ.get("N_JOBS", 1))
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
-slcv = SmoothLassoClassifierCV(n_alphas=10, tol=1e-4, max_iter=1000,
-                               l1_ratio=.5, verbose=1, memory=memory,
+slcv = SmoothLassoClassifierCV(l1_ratio=.5, verbose=1, memory=memory,
                                mask=mask, n_jobs=n_jobs
                                ).fit(fmri_masked, target)
 
@@ -74,7 +73,7 @@ import nibabel
 nibabel.save(coef_niimg, 'haxby_slcv_weights.nii')
 
 ### Visualization #############################################################
-import pylab as plt
+import matplotlib.pyplot as plt
 from nilearn.image.image import mean_img
 from nilearn.plotting import plot_stat_map
 
