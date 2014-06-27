@@ -1182,12 +1182,12 @@ def plot_cv_scores(cvobj, i_best_alpha=None, title=None, ylabel=None,
         if title is None:
             title = cvobj.short_name
         if ylabel is None:
-            if cvobj.is_classifier:
+            if is_classifier(cvobj):
                 ylabel = "1 - AUC"
             else:
                 ylabel = "Mean-Squared Error"
 
-        if cvobj.is_classifier and cvobj.n_classes_ > 2:
+        if is_classifier(cvobj) and cvobj.n_classes_ > 2:
             for c in xrange(cvobj.n_classes_):
                 i = None if i_best_alpha is None else i_best_alpha[c]
                 plot_cv_scores((alphas, scores[c]), i_best_alpha=i,
