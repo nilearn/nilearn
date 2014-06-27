@@ -3,10 +3,8 @@
 from distutils.version import LooseVersion
 import sklearn
 
-if (LooseVersion(sklearn.__version__) < LooseVersion('0.15') or
-      sklearn.__version__ == '0.15-git'):
-    from .sklearn_f_regression_nosparse import (
-        f_regression_nosparse as f_regression)
+if (LooseVersion(sklearn.__version__) < LooseVersion('0.14')):
+    from .sklearn_center_data import center_data
 else:
     from sklearn.feature_selection import f_regression
 

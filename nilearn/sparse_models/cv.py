@@ -2,7 +2,7 @@ from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
-from sklearn.linear_model.base import center_data
+from .._utils.fixes.sklearn_center_data import center_data
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import roc_auc_score
 from .common import _sigmoid
