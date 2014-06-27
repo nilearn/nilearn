@@ -224,6 +224,10 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
         b[y == 1] = m_minus / m
         b[y == -1] = - m_plus / m
         alpha_max = np.max(np.abs(X.T.dot(b)))
+
+        # XXX It may happen that b is in the kernel of X.T!
+        if alpha_max == 0.:
+            alpha_max = np.abs(np.dot(X.T, y)).max()
     else:
         alpha_max = np.abs(np.dot(X.T, y)).max()
 
