@@ -1,4 +1,4 @@
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
@@ -6,6 +6,8 @@ from sklearn.linear_model.coordinate_descent import _alpha_grid
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
                   SmoothLassoClassifierCV, SmoothLassoRegressorCV,
                   _my_alpha_grid)
+from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
+                          EarlyStoppingCallback)
 
 
 def test_same_lasso_classifier_cv():
@@ -93,3 +95,66 @@ def test_my_alpha_grid_same_as_sk():
                     fit_intercept=fit_intercept, standardize=True),
                     _alpha_grid(X, y, n_alphas=5, normalize=normalize,
                                 fit_intercept=fit_intercept))
+
+
+def test_featureselectors():
+    import random
+    rng = np.random.RandomState(42)
+    random.seed(0)
+    from sklearn.datasets import load_iris
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    for ndim in range(1, 4):
+        shape = [4] * ndim
+        for percentile in [0, 10, 100]:
+            for n_samples in [X.shape[0], X.shape[1] - 1]:
+                for with_mask in [True, False]:
+                    if with_mask:
+                        mask = np.zeros(np.prod(shape)).astype(np.bool)
+                        support = random.sample(xrange(np.prod(mask.shape)),
+                                                X.shape[1])
+                        mask[support] = 1
+                        mask = mask.reshape(shape)
+                    else:
+                        mask = None
+
+                    for selector_class in [RegressorFeatureSelector,
+                                           ClassifierFeatureSelector]:
+                        selector = selector_class(percentile=percentile,
+                                                  mask=mask)
+                        salt = int("Classifier" in selector_class.__name__)
+                        X_ = X[:n_samples]
+                        y_ = y[:n_samples]
+                        X_ = selector.fit_transform(X_, y_)
+                        if not mask is None:
+                            assert_true(selector.mask_ is not None)
+                        else:
+                            assert_true(selector.mask_ is None)
+                        coef_ = selector.unmask(rng.randn(
+                                selector.support_.sum() + salt))
+                        assert_equal(len(coef_), X.shape[1] + salt)
+
+
+def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
+    # This test evolves w so that every line of th EarlyStoppingCallback
+    # code is executed a some point. This a kind of code fuzzing.
+    rng = np.random.RandomState(42)
+    X_test = rng.randn(n_samples, n_features)
+    y_test = np.dot(X_test, np.ones(n_features))
+    w = np.zeros(n_features)
+    escb = EarlyStoppingCallback(X_test, y_test, 1., verbose=1)
+    for counter in xrange(50):
+        k = min(counter, n_features - 1)
+        w[k] = 1
+
+        # jitter
+        if k > 0 and rng.rand() > .9:
+            w[k - 1] = 1 - w[k - 1]
+
+        escb(dict(w=w, counter=counter))
+        assert_equal(len(escb.test_errors), counter + 1)
+        print np.mean(np.diff(escb.test_errors[-5:])), len(escb.test_errors)
+
+        # restart
+        if counter > 20:
+            w *= 0.
