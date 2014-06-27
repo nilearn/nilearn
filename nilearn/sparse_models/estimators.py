@@ -2,11 +2,11 @@ from functools import partial
 import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.externals.joblib import Memory, Parallel, delayed
-from sklearn.linear_model.base import LinearModel, LinearClassifierMixin
-from .._utils.fixes.sklearn_center_data import center_data
+from sklearn.linear_model.base import LinearModel
+from sklearn.preprocessing import LabelBinarizer
+from .._utils.fixes import center_data, LinearClassifierMixin
 from .common import (compute_mse_lipschitz_constant,
                      compute_logistic_lipschitz_constant)
-from sklearn.preprocessing import LabelBinarizer
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 
@@ -89,14 +89,6 @@ class _BaseEstimator(object):
         self.backtracking = backtracking
         self.standardize = standardize
         self.normalize = normalize
-
-    @property
-    def is_classifier(self):
-        return "Classifier" in self.__class__.__name__
-
-    @property
-    def is_regressor(self):
-        return "Regressor" in self.__class__.__name__
 
     def _rescale_alpha(self, X):
         """Rescale alpha parameter (= amount of regularization) to handle

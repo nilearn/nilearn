@@ -45,11 +45,13 @@ import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
-n_subjects = 100  # more subjects requires more memory
+n_subjects = 100   # more subjects requires more memory
 
 ### Load Oasis dataset ########################################################
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars['age'].astype(float)
+
+assert 0
 
 ### Preprocess data ###########################################################
 nifti_masker = NiftiMasker(

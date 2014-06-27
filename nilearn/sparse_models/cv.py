@@ -2,7 +2,7 @@ from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
-from .._utils.fixes.sklearn_center_data import center_data
+from .._utils.fixes import center_data
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import roc_auc_score
 from .common import _sigmoid
@@ -13,6 +13,7 @@ from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 from ._cv_tricks import (EarlyStoppingCallback, RegressorFeatureSelector,
                          ClassifierFeatureSelector)
+from .._utils.fixes import is_regressor, is_classifier
 
 
 def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
@@ -376,7 +377,7 @@ class _BaseCV(_BaseEstimator):
             X, y, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=self.normalize,
                 fit_intercept=self.fit_intercept)
-            if self.is_regressor:
+            if is_regressor(self):
                 tricky_kwargs["ymean"] = ymean
 
         # make / sanitize alpha grid
@@ -388,7 +389,7 @@ class _BaseCV(_BaseEstimator):
                                     normalize=self.normalize,
                                     alpha_min=self.alpha_min,
                                     fit_intercept=self.fit_intercept,
-                                    logistic=self.is_classifier)
+                                    logistic=is_classifier(self))
         else:
             alphas = np.array(self.alphas)
 
@@ -399,15 +400,15 @@ class _BaseCV(_BaseEstimator):
         self.n_folds_ = len(cv)
 
         # misc (different for classifier and regressor)
-        if self.is_classifier:
+        if is_classifier(self):
             X, y = self._pre_fit(X, y)
-        if self.is_classifier and self.n_classes_ > 2:
+        if is_classifier(self) and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
             y = y.ravel()
         self.scores_ = [[]] * n_problems
-        w = np.zeros((n_problems, X.shape[1] + int(self.is_classifier)))
+        w = np.zeros((n_problems, X.shape[1] + int(is_classifier(self))))
 
         # parameter to path_scores function
         path_params = dict(mask=self.mask, tol=self.tol, verbose=self.verbose,
@@ -416,7 +417,8 @@ class _BaseCV(_BaseEstimator):
                            screening_percentile=self.screening_percentile)
         path_params.update(tricky_kwargs)
 
-        _ovr_y = lambda c: y[:, c] if self.is_classifier and self.n_classes_ > 2 else y
+        _ovr_y = lambda c: y[:, c] if is_classifier(
+            self) and self.n_classes_ > 2 else y
 
         # main loop: loop on classes and folds
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
@@ -444,11 +446,12 @@ class _BaseCV(_BaseEstimator):
             w /= self.n_folds_
         else:
             # re-fit model with best params
+            # XXX run this in parallel (use n_jobs)!
             for c in xrange(n_problems):
                 params = dict((k, v) for k, v in self.get_params().iteritems()
                               if k in model_class().get_params())
                 params["alpha"] = self.alpha_[c]
-                if self.is_regressor:
+                if is_regressor(self):
                     selector = RegressorFeatureSelector(
                         percentile=self.screening_percentile,
                         mask=self.mask)
@@ -460,7 +463,7 @@ class _BaseCV(_BaseEstimator):
                 params["mask"] = selector.mask_
                 w[c] = selector.unmask(model_class(**params).fit(X, y).w_)
 
-        if self.is_classifier:
+        if is_classifier(self):
             self._set_coef_and_intercept(w)
         else:
             self.coef_ = w
