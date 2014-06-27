@@ -2,8 +2,8 @@ from functools import partial
 import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.externals.joblib import Memory, Parallel, delayed
-from sklearn.linear_model.base import (center_data, LinearModel,
-                                       LinearClassifierMixin)
+from sklearn.linear_model.base import LinearModel, LinearClassifierMixin
+from .._utils.fixes.sklearn_center_data import center_data
 from .common import (compute_mse_lipschitz_constant,
                      compute_logistic_lipschitz_constant)
 from sklearn.preprocessing import LabelBinarizer
