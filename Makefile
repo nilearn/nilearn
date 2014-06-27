@@ -68,7 +68,3 @@ pdf:
 install: 
 	cd doc && make install
  
-
-uml:
-	pyreverse -o png -p sparse_models nilearn/sparse_models/estimators.py nilearn/sparse_models/cv.py nilearn/sparse_models/tv.py nilearn/sparse_models/fista.py nilearn/sparse_models/operators.py nilearn/sparse_models/common.py nilearn/sparse_models/prox_tv_l1.py nilearn/sparse_models/smooth_lasso.py nilearn/sparse_models/_cv_tricks.py
-	echo "Out put images writen to *_sparse_models.png"
