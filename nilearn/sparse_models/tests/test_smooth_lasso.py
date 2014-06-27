@@ -297,6 +297,7 @@ def test_tikhonov_regularization_vs_smooth_lasso():
     assert_almost_equal(smooth_lasso_perf, optimal_model_perf, decimal=4)
 
 
+@nottest
 def test_smooth_lasso_cv_vs_lasso_cv():
     """Test that, with l1_ratio = 1 (pure Lasso) no normalization and
     no debiasing, the SmoothLassoRegressorCV picks the same alpha as the
