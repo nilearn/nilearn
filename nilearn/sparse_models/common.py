@@ -2,8 +2,6 @@
 Common functions and base classes. Used by more specialized modules like
 tv.py, smooth_lasso.py, etc.
 
-XXX TODO: Factor out code specific to estimator and cv classes, into seperate modules
-
 """
 
 from functools import partial
