@@ -918,7 +918,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
                  verbose=0, n_jobs=1, callback=None, debias=False,
                  fit_intercept=True, normalize=True, n_alphas=10,
                  standardize=True, cv=10, backtracking=False, alpha_min=1e-6,
-                 bagging=True):
+                 bagging=True, screening_percentile=10.):
         super(SmoothLassoRegressorCV, self).__init__(
             self, l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
@@ -931,6 +931,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.bagging = bagging
+        self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
         """Fit is on grid of alphas and best alpha estimated by
