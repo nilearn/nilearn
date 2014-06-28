@@ -6,6 +6,8 @@ Here is a simple example of decoding, reproducing the Haxby 2001
 study on a face vs house discrimination task in a mask of the ventral
 stream.
 
+Author: DOHMATOB Elvis Dopgima
+
 """
 
 ### Load haxby dataset ########################################################
@@ -84,7 +86,7 @@ slicer.contour_map(nifti_masker.mask_img_, levels=[.5], colors='r')
 
 # CV
 from nilearn.sparse_models.cv import plot_cv_scores
-plot_cv_scores(slcv, errorbars=False)
+plot_cv_scores(slcv)
 print ("Accurarcy: %g" % ((slcv.predict(fmri_masked) == target
                            ).mean() * 100.)) + "%"
 plt.show()
