@@ -2,7 +2,12 @@
 Ninja tricks (early stopping, etc.) to make CV a better place to live...
 
 """
-# Author: DOHMATOB Elvis Dopgima, ...
+# Author: DOHMATOB Elvis Dopgima,
+#         Gael Varoquaux,
+#         Michael Eickenberg,
+#         Alexandre Gramfort,
+#         Bertrand Thirion,
+#         and others.
 # License: simplified BSD
 
 from functools import partial

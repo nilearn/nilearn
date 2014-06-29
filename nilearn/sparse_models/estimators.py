@@ -1,3 +1,15 @@
+"""
+sklearn-compatible estimators for TV-l1, S-LASSO, etc. models.
+
+"""
+# Author: DOHMATOB Elvis Dopgima,
+#         Gaspar Pizarro,
+#         Gael Varoquaux,
+#         Alexandre Gramfort,
+#         Bertrand Thirion,
+#         and others.
+# License: simplified BSD
+
 from functools import partial
 import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator

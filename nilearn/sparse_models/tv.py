@@ -2,7 +2,11 @@
 TV-l1 regression. Handles squared loss and logistic too.
 
 """
-# Author: DOHMATOB Elvis Dopgima, ...
+# Author: DOHMATOB Elvis Dopgima,
+#         Gael Varoquaux,
+#         Alexandre Gramfort,
+#         Bertrand Thirion,
+#         and others.
 # License: simplified BSD
 
 import numpy as np
