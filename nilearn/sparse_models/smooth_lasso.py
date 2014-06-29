@@ -28,7 +28,8 @@ SmoothLasso{Regressor|Classifier}.fit
      -> mfista
 """
 
-# XXX : add authors + license
+# Author: DOHMATOB Elvis Dopgima, ...
+# License: simplified BSD
 
 import warnings
 import numpy as np
@@ -152,7 +153,7 @@ def smooth_lasso_squared_loss_dual_objective(X, y, w, mask, l1_weight,
 
     Returns
     -------
-    dual_objective : float
+    dual_objective: float
         the value of the objective function of the dual problem, that is:
         - 0.5 * np.dot(z, z) - np.dot(y, z), with
 
@@ -333,10 +334,10 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info : float
+    solver_info: float
         Solver information, for warm start.
 
-    objective : array of floats
+    objective: array of floats
         Objective function (fval) computed on every iteration.
 
     """
@@ -405,10 +406,10 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask=None, init=None,
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info : float
+    solver_info: float
         Solver information, for warm start.
 
-    objective : array of floats
+    objective: array of floats
         Objective function (fval) computed on every iteration.
 
     """

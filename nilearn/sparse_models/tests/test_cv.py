@@ -4,10 +4,9 @@ from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
 from sklearn.linear_model.coordinate_descent import _alpha_grid
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
-                  SmoothLassoClassifierCV, SmoothLassoRegressorCV,
-                  _my_alpha_grid)
+                  SmoothLassoClassifierCV, SmoothLassoRegressorCV)
 from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
-                          EarlyStoppingCallback)
+                          EarlyStoppingCallback, _my_alpha_grid)
 
 
 def test_same_lasso_classifier_cv():

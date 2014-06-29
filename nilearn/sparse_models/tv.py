@@ -1,8 +1,9 @@
 """
-Synopsis: TV-l1 regression. Handles squared loss and logistic too.
-Author: DOHMATOB Elvis Dopgima <gmdopp@gmail.com> <elvis.dohmatob@inria.fr>
+TV-l1 regression. Handles squared loss and logistic too.
 
 """
+# Author: DOHMATOB Elvis Dopgima
+# License: simplified BSD
 
 import numpy as np
 from .common import (compute_mse_lipschitz_constant, gradient_id,
@@ -70,18 +71,18 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
                 rescale_alpha=True, lipschitz_constant=None,
                 prox_max_iter=5000, verbose=0, tol=1e-4, **kwargs):
     """Minimizes empirical risk for TV-l1 penalized least-squares (
-    mean square error --a.k.a mse) or logisitc regression. The same solver
-    works for both of this losses.
+    mean square error --a.k.a mse) or logistic regression. The same solver
+    works for both of these losses.
 
     This function invokes the mfista backend (from fista.py) to solver the
     underlying optimization problem.
 
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
@@ -115,17 +116,17 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info : float
+    solver_info: float
         Solver information, for warm start.
 
-    objective : array of floats
+    objective: array of floats
         Objective function (fval) computed on every iteration.
 
 
     """
 
     # sanitize loss
-    if loss is None or loss not in ["mse", "logistic"]:
+    if loss not in ["mse", "logistic"]:
         raise ValueError("'%s' loss not implemented. Should be 'mse' or "
                          "'logistic" % loss)
 

@@ -2,10 +2,13 @@
 Ninja tricks (early stopping, etc.) to make CV a better place to live...
 
 """
+# Author: DOHMATOB Elvis Dopgima, ...
+# License: simplified BSD
 
 from functools import partial
 from math import sqrt
 import numpy as np
+from .._utils.fixes import center_data
 from sklearn.feature_selection import (
     f_regression, f_classif, SelectPercentile)
 
@@ -159,3 +162,75 @@ class ClassifierFeatureSelector(_BaseFeatureSelector):
             w_ = w
 
         return w_
+
+
+def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
+                   standardize=False, normalize=False, fit_intercept=False,
+                   logistic=False):
+    """ Compute the grid of alpha values for elastic net parameter search
+
+    Parameters
+    ----------
+    X: 2d array, shape (n_samples, n_features)
+        Training data (design matrix).
+
+    y: ndarray, shape = (n_samples,)
+        Target values
+
+    l1_ratio: float
+        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
+        For ``l1_ratio = 0`` the penalty is an L2 penalty. ``For
+        l1_ratio = 1`` it is an L1 penalty.  For ``0 < l1_ratio <
+        1``, the penalty is a combination of L1 and L2.
+
+    eps: float, optional
+        Length of the path. ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``
+
+    n_alphas: int, optional
+        Number of alphas along the regularization path
+
+    fit_intercept: bool
+        Fit or not an intercept
+
+    normalize: boolean, optional, default False
+        If ``True``, the regressors X will be normalized before regression.
+
+    """
+
+    if standardize:
+        X, y, _, _, _ = center_data(X, y, fit_intercept=fit_intercept,
+                                    normalize=normalize, copy=True)
+
+    if logistic:
+        # Computes the theoretical upper bound for the overall
+        # regularization, as derived in "An Interior-Point Method for
+        # Large-Scale l1-Regularized Logistic Regression", by Koh, Kim,
+        # Boyd, in Journal of Machine Learning Research, 8:1519-1555,
+        # July 2007.
+        # url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
+        # XXX uncovered / untested code!
+        m = float(y.size)
+        m_plus = float(y[y == 1].size)
+        m_minus = float(y[y == -1].size)
+        b = np.zeros(y.size)
+        b[y == 1] = m_minus / m
+        b[y == -1] = - m_plus / m
+        alpha_max = np.max(np.abs(X.T.dot(b)))
+
+        # XXX It may happen that b is in the kernel of X.T!
+        if alpha_max == 0.:
+            alpha_max = np.abs(np.dot(X.T, y)).max()
+    else:
+        alpha_max = np.abs(np.dot(X.T, y)).max()
+
+    alpha_max /= (X.shape[0] * l1_ratio)
+
+    if n_alphas == 1:
+        return np.array([alpha_max])
+    if not alpha_min:
+        alpha_min = alpha_max * eps
+    else:
+        assert 0 <= alpha_min < alpha_max
+    return np.logspace(np.log10(alpha_min), np.log10(alpha_max),
+                      num=n_alphas)[::-1]
