@@ -45,14 +45,13 @@ class EarlyStoppingCallback(object):
 
     a = 1
 
-    def __init__(self, X_test, y_test, X_std, verbose=False):
+    def __init__(self, X_test, y_test, verbose=False):
         n_test_samples = len(y_test)
         self.X_test = np.reshape(X_test, (n_test_samples, -1))
         self.scaled_y_test = y_test - y_test.mean()
         y_norm = sqrt(_squared_norm(self.scaled_y_test))
         if y_norm != 0 and np.isfinite(y_norm):
             self.scaled_y_test /= y_norm
-        self.X_std = np.ravel(X_std)
         self.test_errors = list()
         self.verbose = verbose
 
@@ -110,7 +109,7 @@ class _BaseFeatureSelector(object):
 
         return X
 
-    def unmask(self, w):
+    def inverse_transform(self, w):
         """Unmasks the input vector `w`, according to the mask learned by the
         ANOVA.
 
@@ -146,7 +145,7 @@ class ClassifierFeatureSelector(_BaseFeatureSelector):
         super(ClassifierFeatureSelector, self).__init__(
             f_classif, percentile=percentile, mask=mask)
 
-    def unmask(self, w):
+    def inverse_transform(self, w):
         """Unmasks the input vector `w`, according to the mask learned by the
         ANOVA.
 

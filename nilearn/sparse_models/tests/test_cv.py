@@ -130,7 +130,7 @@ def test_featureselectors():
                             assert_true(selector.mask_ is not None)
                         else:
                             assert_true(selector.mask_ is None)
-                        coef_ = selector.unmask(rng.randn(
+                        coef_ = selector.inverse_transform(rng.randn(
                                 selector.support_.sum() + salt))
                         assert_equal(len(coef_), X.shape[1] + salt)
 
@@ -142,7 +142,7 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
     X_test = rng.randn(n_samples, n_features)
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
-    escb = EarlyStoppingCallback(X_test, y_test, 1., verbose=1)
+    escb = EarlyStoppingCallback(X_test, y_test, verbose=1)
     for counter in xrange(50):
         k = min(counter, n_features - 1)
         w[k] = 1
