@@ -1,35 +1,86 @@
 """
-Synopsis: TV-l1 regression. Handles squared loss and logistic too.
-Author: DOHMATOB Elvis Dopgima <gmdopp@gmail.com> <elvis.dohmatob@inria.fr>
+TV-l1 regression. Handles squared loss and logistic too.
 
 """
+# Author: DOHMATOB Elvis Dopgima
+# License: simplified BSD
 
 import numpy as np
-from .common import (compute_mse_lipschitz_constant,
+from .common import (compute_mse_lipschitz_constant, gradient_id,
                      compute_logistic_lipschitz_constant,
-                     tv_l1_reg_objective, mse_loss, mse_loss_grad,
+                     mse_loss, mse_loss_grad,
                      logistic_grad as logistic_loss_grad,
                      logistic as logistic_loss)
 from .prox_tv_l1 import prox_tv_l1, intercepted_prox_tv_l1
 from .fista import mfista
 
 
+def _tvl1_objective_from_gradient(gradient):
+    """Our total-variation like norm: TV + l1
+
+    Parameters
+    ----------
+    gradient: array, of shape [3] + list(img_shape)
+       precomputed "gradient + id" array
+
+    """
+
+    tv_term = np.sum(np.sqrt(np.sum(gradient[:-1] * gradient[:-1],
+                                    axis=0)))
+    l1_term = np.abs(gradient[-1]).sum()
+    return l1_term + tv_term
+
+
+def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
+                   loss="mse"):
+    """The TV + l1 squared loss regression objective functions,
+
+        w can be a 2D or 3D array
+
+    """
+
+    if shape is None:
+        if mask is not None:
+            shape = mask.shape
+        else:
+            if loss == "mse":
+                shape = w.shape
+            else:
+                shape = (len(np.ravel(w)) - 1,)
+
+    # if not mask is None: mask = mask.ravel()
+    loss = loss.lower()
+    assert loss in ['mse', 'logistic']
+
+    w = w.ravel()
+    if loss == "mse":
+        out = mse_loss(X, y, w, mask=mask)
+    else:
+        out = logistic_loss(X, y, w, mask=mask)
+        w = w[:-1]
+
+    grad_id = gradient_id(w.reshape(shape), l1_ratio=l1_ratio)
+    out += alpha * _tvl1_objective_from_gradient(grad_id)
+
+    return out
+
+
 def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
                 rescale_alpha=True, lipschitz_constant=None,
                 prox_max_iter=5000, verbose=0, tol=1e-4, **kwargs):
     """Minimizes empirical risk for TV-l1 penalized least-squares (
-    mean square error --a.k.a mse) or logisitc regression. The same solver
-    works for both of this losses.
+    mean square error --a.k.a mse) or logistic regression. The same solver
+    works for both of these losses.
 
     This function invokes the mfista backend (from fista.py) to solver the
     underlying optimization problem.
 
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
@@ -63,17 +114,17 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info : float
+    solver_info: float
         Solver information, for warm start.
 
-    objective : array of floats
+    objective: array of floats
         Objective function (fval) computed on every iteration.
 
 
     """
 
     # sanitize loss
-    if loss is None or loss not in ["mse", "logistic"]:
+    if loss not in ["mse", "logistic"]:
         raise ValueError("'%s' loss not implemented. Should be 'mse' or "
                          "'logistic" % loss)
 
@@ -108,7 +159,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
             return mse_loss_grad(X, y, w, mask=mask)
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
-    total_energy = lambda w: tv_l1_reg_objective(
+    total_energy = lambda w: tvl1_objective(
         X, y, w, alpha=alpha, l1_ratio=l1_ratio, mask=mask, loss=loss)
 
     # lispschitz constant of f1_grad

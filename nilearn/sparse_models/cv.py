@@ -1,3 +1,10 @@
+"""
+sklearn-compatible Cross-Validation module.
+
+"""
+# Author: DOHMATOB Elvis Dopgima, ...
+# License: simplified BSD
+
 from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
@@ -12,7 +19,7 @@ from .estimators import (_BaseRegressor, _BaseClassifier, _BaseEstimator,
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 from ._cv_tricks import (EarlyStoppingCallback, RegressorFeatureSelector,
-                         ClassifierFeatureSelector)
+                         ClassifierFeatureSelector, _my_alpha_grid)
 from .._utils.fixes import is_regressor, is_classifier
 
 
@@ -21,7 +28,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
                          mask=None, verbose=0, key=None,
                          screening_percentile=10., memory=Memory(None),
                          **kwargs):
-    """Function to compute scores of different alphas in classification.
+    """Function to compute scores of different alphas in classification
     used by CV objects.
 
     Parameters
@@ -29,12 +36,12 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
     alphas: list of floats
         List of regularization parameters being considered.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
     solver: function handle
-       See for example tv.TVl1Classifier documenetation.
+       See for example tv.TVl1Classifier documentation.
 
     """
 
@@ -52,7 +59,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
         return 1. - roc_auc_score(
             (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
 
-    # setup callback mechanisim for ealry stopping
+    # setup callback mechanism for ealry stopping
     callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
     env = dict(counter=0)
 
@@ -99,6 +106,18 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     """Function to compute scores of different alphas in regression.
     used by CV objects.
 
+    Parameters
+    ----------
+    alphas: list of floats
+        List of regularization parameters being considered.
+
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+        Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
+        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+
+    solver: function handle
+       See for example tv.TVl1Regressor documentation.
+
     """
 
     # univariate feature screening
@@ -128,7 +147,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
         score = .5 * np.mean((y_test - y_pred) ** 2)
         return score
 
-    # setup callback mechanisim for ealry stopping
+    # setup callback mechanism for ealry stopping
     callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
     env = dict(counter=0)
 
@@ -170,83 +189,11 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     return test_scores, best_w, key
 
 
-def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
-                   standardize=False, normalize=False, fit_intercept=False,
-                   logistic=False):
-    """ Compute the grid of alpha values for elastic net parameter search
-
-    Parameters
-    ----------
-    X : 2d array, shape (n_samples, n_features)
-        Training data (design matrix).
-
-    y : ndarray, shape = (n_samples,)
-        Target values
-
-    l1_ratio : float
-        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
-        For ``l1_ratio = 0`` the penalty is an L2 penalty. ``For
-        l1_ratio = 1`` it is an L1 penalty.  For ``0 < l1_ratio <
-        1``, the penalty is a combination of L1 and L2.
-
-    eps : float, optional
-        Length of the path. ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
-
-    n_alphas : int, optional
-        Number of alphas along the regularization path
-
-    fit_intercept : bool
-        Fit or not an intercept
-
-    normalize : boolean, optional, default False
-        If ``True``, the regressors X will be normalized before regression.
-
-    """
-
-    if standardize:
-        X, y, _, _, _ = center_data(X, y, fit_intercept=fit_intercept,
-                                    normalize=normalize, copy=True)
-
-    if logistic:
-        # Computes the theoretical upper bound for the overall
-        # regularization, as derived in "An Interior-Point Method for
-        # Large-Scale l1-Regularized Logistic Regression", by Koh, Kim,
-        # Boyd, in Journal of Machine Learning Research, 8:1519-1555,
-        # July 2007.
-        # url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
-        # XXX uncovered / untested code!
-        m = float(y.size)
-        m_plus = float(y[y == 1].size)
-        m_minus = float(y[y == -1].size)
-        b = np.zeros(y.size)
-        b[y == 1] = m_minus / m
-        b[y == -1] = - m_plus / m
-        alpha_max = np.max(np.abs(X.T.dot(b)))
-
-        # XXX It may happen that b is in the kernel of X.T!
-        if alpha_max == 0.:
-            alpha_max = np.abs(np.dot(X.T, y)).max()
-    else:
-        alpha_max = np.abs(np.dot(X.T, y)).max()
-
-    alpha_max /= (X.shape[0] * l1_ratio)
-
-    if n_alphas == 1:
-        return np.array([alpha_max])
-    if not alpha_min:
-        alpha_min = alpha_max * eps
-    else:
-        assert 0 <= alpha_min < alpha_max
-    return np.logspace(np.log10(alpha_min), np.log10(alpha_max),
-                      num=n_alphas)[::-1]
-
-
 class _BaseCV(_BaseEstimator):
     """
     Parameters
     ----------
-    alphas : list of floats, optional (default None)
+    alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
@@ -254,7 +201,7 @@ class _BaseCV(_BaseEstimator):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
+    eps: float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -262,7 +209,7 @@ class _BaseCV(_BaseEstimator):
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -283,18 +230,18 @@ class _BaseCV(_BaseEstimator):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     n_jobs: int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv: int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -305,13 +252,13 @@ class _BaseCV(_BaseEstimator):
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -355,11 +302,6 @@ class _BaseCV(_BaseEstimator):
         return '%s(l1_ratio=%g)' % (self.__class__.__name__, self.l1_ratio)
 
     def fit(self, X, y):
-        """Fit is on grid of alphas and best alpha estimated by
-        cross-validation.
-
-        """
-
         # misc
         self.__class__.__name__.endswith("CV")
         model_class = eval(self.__class__.__name__[:-2])
@@ -482,7 +424,7 @@ class _BaseRegressorCV(_BaseRegressor, _BaseCV):
     """
     Parameters
     ----------
-    alphas : list of floats, optional (default None)
+    alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
@@ -490,7 +432,7 @@ class _BaseRegressorCV(_BaseRegressor, _BaseCV):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
+    eps: float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -498,7 +440,7 @@ class _BaseRegressorCV(_BaseRegressor, _BaseCV):
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -519,18 +461,18 @@ class _BaseRegressorCV(_BaseRegressor, _BaseCV):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     n_jobs: int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv: int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -541,13 +483,13 @@ class _BaseRegressorCV(_BaseRegressor, _BaseCV):
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -586,7 +528,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
     """
     Parameters
     ----------
-    alphas : list of floats, optional (default None)
+    alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
@@ -594,7 +536,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
+    eps: float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -602,7 +544,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -623,18 +565,18 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     n_jobs: int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv: int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -645,13 +587,13 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -724,7 +666,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
 
     Parameters
     ----------
-    alphas : list of floats, optional (default None)
+    alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
@@ -732,7 +674,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
+    eps: float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -740,7 +682,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio : float
+    l1_ratio: float
         Constant that mixes L1 and G2 penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
@@ -762,18 +704,18 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-w    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     n_jobs: int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv: int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -784,13 +726,13 @@ w    callback : callable(dict) -> bool
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -840,13 +782,13 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
 
     Parameters
     ----------
-    alphas : list of floats, optional (default None)
+    alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
 
     n_alphas: int, optional (default 10).
         Generate this number of alphas per regularization path.
 
-    eps : float, optional
+    eps: float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -854,7 +796,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio : float
+    l1_ratio: float
         Constant that mixes L1 and G2 penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
@@ -876,18 +818,18 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     n_jobs: int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv: int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -898,13 +840,13 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -952,7 +894,7 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
 
     Parameters
     ----------
-    alphas : list of floats, optional (default None)
+    alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
@@ -960,7 +902,7 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
+    eps: float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -968,7 +910,7 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -993,18 +935,18 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     n_jobs: int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv: int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1015,13 +957,13 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -1066,7 +1008,7 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
 
     Parameters
     ----------
-    alphas : list of floats, optional (default None)
+    alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
@@ -1074,7 +1016,7 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
+    eps: float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -1082,7 +1024,7 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -1107,18 +1049,18 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     n_jobs: int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv: int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1129,13 +1071,13 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 

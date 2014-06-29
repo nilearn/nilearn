@@ -15,10 +15,10 @@ class _BaseEstimator(object):
     """
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -35,11 +35,11 @@ class _BaseEstimator(object):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
@@ -48,13 +48,13 @@ class _BaseEstimator(object):
     `alpha_`: float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -106,10 +106,10 @@ class _BaseRegressor(_BaseEstimator, LinearModel, RegressorMixin):
 
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
@@ -127,11 +127,11 @@ class _BaseRegressor(_BaseEstimator, LinearModel, RegressorMixin):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
@@ -143,10 +143,10 @@ class _BaseRegressor(_BaseEstimator, LinearModel, RegressorMixin):
     `alpha_`: float
         Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function (weights map).
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
@@ -336,10 +336,10 @@ class SmoothLassoRegressor(_BaseRegressor):
 
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float
+    l1_ratio: float
         Constant that mixes L1 and G2 penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
@@ -357,23 +357,23 @@ class SmoothLassoRegressor(_BaseRegressor):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     Attributes
     ----------
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
@@ -392,10 +392,10 @@ class SmoothLassoClassifier(_BaseClassifier):
 
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float
+    l1_ratio: float
         Constant that mixes L1 and G2 penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
@@ -413,11 +413,11 @@ class SmoothLassoClassifier(_BaseClassifier):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
@@ -426,13 +426,13 @@ class SmoothLassoClassifier(_BaseClassifier):
 
     Attributes
     ----------
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
@@ -454,10 +454,10 @@ class TVl1Regressor(_BaseRegressor):
 
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -474,23 +474,23 @@ class TVl1Regressor(_BaseRegressor):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     Attributes
     ----------
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
@@ -515,10 +515,10 @@ class TVl1Classifier(_BaseClassifier):
 
     Parameters
     ----------
-    alpha : float
+    alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio: float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -535,11 +535,11 @@ class TVl1Classifier(_BaseClassifier):
     verbose: int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
@@ -551,10 +551,10 @@ class TVl1Classifier(_BaseClassifier):
     `alpha_`: float
         Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_`: array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function (weights map).
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_`: array, shape = [n_classes-1]
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 

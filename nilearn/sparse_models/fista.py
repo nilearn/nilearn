@@ -17,13 +17,13 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
 
     Parameters
     ----------
-    f1 : callable(w) -> float
+    f1: callable(w) -> float
          Gmooth part of energy (= the loss term).
 
-    f1_grad : callable(w) -> np.array
+    f1_grad: callable(w) -> np.array
         Gradient of smooth part of energy
 
-    f2_prox : callable(w, stepsize, dgap_tol, init?) -> float, dict
+    f2_prox: callable(w, stepsize, dgap_tol, init?) -> float, dict
         Proximal operator of non-smooth part of energy (f2).
         The returned dict should have a key "converged", whose value
         indicates whether the prox computation converged.
@@ -31,33 +31,33 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
     total_energy: callable(w) -> float
         total energy (i.e smooth (f1) + nonsmooth (f2) parts)
 
-    lipschitz_constant : float
+    lipschitz_constant: float
         Lipschitz constant of gradient of f1_grad.
 
-    w_size : int
+    w_size: int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.size = w_size
 
-    backtracking : bool
+    backtracking: bool
         If True, the solver does backtracking in the step size for the proximal
         operator
 
-    tol : float
+    tol: float
         Tolerance on the variation of the objective function before breaking.
         The meaning of tol can be manipulated with the callback function
 
-    dgap_tol : float
+    dgap_tol: float
         If None, the nonsmooth_prox argument returns a float, with the value,
         if not 0, the nonsmooth_prox accepts a third parameter tol, which is
         the tolerance on the computation of the proximal operator and returns a
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
-    callback : callable(dict) -> bool
+    callback: callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    max_iter : int
+    max_iter: int
         Maximum number of iterations for the solver.
 
     pure_ista: bool, optional (default False)
@@ -68,10 +68,10 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
     w: np.array of size w_size
        The Solution.
 
-    solver_info : float
+    solver_info: float
         Solver information, for warm start.
 
-    objective : array of floats
+    objective: array of floats
         Objective function (fval) computed on every iteration.
 
     """

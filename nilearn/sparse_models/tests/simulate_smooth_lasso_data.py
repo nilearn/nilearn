@@ -2,7 +2,7 @@
 Simple code to simulate data
 """
 
-# Licence : BSD
+# Licence: BSD
 
 import numpy as np
 from scipy import linalg, ndimage

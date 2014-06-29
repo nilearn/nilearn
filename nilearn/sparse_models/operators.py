@@ -30,7 +30,7 @@ def prox_l1(y, alpha, copy=True):
 
 # def estimate_lipschitz_constant_graph(w0, L):
 #     """Compute approximate lipschitz constant
-#     of callable linear operator : x -> Lx
+#     of callable linear operator: x -> Lx
 #     using a power method"""
 #     a = np.random.randn(*w0.shape)
 #     a /= linalg.norm(a)
