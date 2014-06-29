@@ -38,7 +38,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
 
     """
 
-    # ANOVA screening
+    # univariate feature screening
     selector = ClassifierFeatureSelector(percentile=screening_percentile,
                                          mask=mask)
     X = selector.fit_transform(X, y)
@@ -85,7 +85,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
         X, y, best_alpha, l1_ratio, mask=mask, tol=tol, max_iter=max_iter,
         verbose=verbose, **kwargs)
 
-    # Unmask ANOVA screening
+    # unmask univariate screening
     best_w = selector.inverse_transform(best_w)
 
     return test_scores, best_w, key
@@ -101,7 +101,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
 
     """
 
-    # ANOVA screenin
+    # univariate feature screening
     selector = RegressorFeatureSelector(percentile=screening_percentile,
                                         mask=mask)
     X = selector.fit_transform(X, y)
@@ -164,7 +164,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
         X, y, best_alpha, l1_ratio, mask=mask, tol=tol, max_iter=max_iter,
         verbose=verbose, **kwargs)
 
-    # unmask ANOVA screening
+    # Unmask univariate screening
     best_w = selector.inverse_transform(best_w)
 
     return test_scores, best_w, key

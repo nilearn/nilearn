@@ -110,8 +110,8 @@ class _BaseFeatureSelector(object):
         return X
 
     def inverse_transform(self, w):
-        """Unmasks the input vector `w`, according to the mask learned by the
-        ANOVA.
+        """Unmasks the input vector `w`, according to the mask learned by
+        Univariate screening.
 
         """
 
@@ -146,8 +146,8 @@ class ClassifierFeatureSelector(_BaseFeatureSelector):
             f_classif, percentile=percentile, mask=mask)
 
     def inverse_transform(self, w):
-        """Unmasks the input vector `w`, according to the mask learned by the
-        ANOVA.
+        """Unmasks the input vector `w`, according to the mask learned by
+        Univariate screening.
 
         """
 
