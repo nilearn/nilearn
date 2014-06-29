@@ -99,9 +99,6 @@ def compute_logistic_lipschitz_constant(X):
 
          w -> \sum_i log(1+exp(-y_i*(x_i*w + v)))
 
-    In fact, the function only computes an upper bound for the desired
-    Lipschitz constant.
-
     """
     # N.B: we handle intercept!
     X = np.hstack((X, np.ones(X.shape[0])[:, np.newaxis]))
