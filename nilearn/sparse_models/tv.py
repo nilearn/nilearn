@@ -85,6 +85,12 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
 
     Parameters
     ----------
+    X: 2D array of shape (n_samples, n_features)
+        Design matrix.
+
+    y: 1D array of length n_samples
+        Target / response vector.
+
     alpha: float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
