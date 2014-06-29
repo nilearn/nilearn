@@ -2,7 +2,7 @@
 TV-l1 regression. Handles squared loss and logistic too.
 
 """
-# Author: DOHMATOB Elvis Dopgima
+# Author: DOHMATOB Elvis Dopgima, ...
 # License: simplified BSD
 
 import numpy as np
@@ -11,7 +11,7 @@ from .common import (compute_mse_lipschitz_constant, gradient_id,
                      mse_loss, mse_loss_grad,
                      logistic_grad as logistic_loss_grad,
                      logistic as logistic_loss)
-from .prox_tv_l1 import prox_tv_l1, intercepted_prox_tv_l1
+from .operators import prox_tv_l1, intercepted_prox_tv_l1
 from .fista import mfista
 
 

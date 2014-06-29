@@ -3,6 +3,7 @@ from ..operators import prox_l1
 import itertools
 import numpy as np
 
+
 def test_prox_l1():
     """Tests non-expansivity of proximal operator"""
     x = np.arange(10)[np.newaxis, :]
@@ -15,5 +16,3 @@ def test_prox_l1():
     for (a, b), (pa, pb), (sa, sb) in zip(*[itertools.product(z[0], z[0])
                                             for z in [x, p, s]]):
         assert (sa - sb) ** 2 <= (a - b) ** 2 - (pa - pb) ** 2
-
-
