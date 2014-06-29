@@ -2,12 +2,9 @@ import os
 import sys
 import numpy as np
 import scipy as sp
-from nose.tools import nottest
 from numpy.testing import assert_almost_equal
-from sklearn.linear_model import Lasso, LassoCV, LogisticRegression
-from sklearn.utils import check_random_state
-from sklearn.datasets import load_iris
 from sklearn.utils import extmath
+from sklearn.utils import check_random_state
 from ..image import grad as gradient
 from ..image import div as divergence
 from ..smooth_lasso import (
@@ -27,8 +24,6 @@ from ..smooth_lasso import (
     mfista)
 from ..estimators import (SmoothLassoRegressor,
                           SmoothLassoClassifier)
-from ..cv import SmoothLassoRegressorCV
-
 
 # Data used in almost all tests
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
@@ -256,23 +251,6 @@ def test_max_alpha_squared_loss():
         assert_almost_equal(reg.coef_, 0)
 
 
-def test_lasso_vs_smooth_lasso():
-    # Test for one of the extreme cases of Smooth Lasso: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's performance with
-    # Scikit-Learn lasso
-    lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
-    smooth_lasso = SmoothLassoRegressor(mask=mask, alpha=1, l1_ratio=1,
-                                        max_iter=400, normalize=False)
-    lasso.fit(X, y)
-    smooth_lasso.fit(X, y)
-    lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
-        X, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
-    smooth_lasso_perf = 0.5 / y.size * extmath.norm(
-        np.dot(X, smooth_lasso.coef_) - y) ** 2\
-        + np.sum(np.abs(smooth_lasso.coef_))
-    assert_almost_equal(smooth_lasso_perf, lasso_perf, decimal=3)
-
-
 def test_tikhonov_regularization_vs_smooth_lasso():
     # Test for one of the extreme cases of Smooth Lasso: That is, with
     # l1_ratio = 0 (pure Smooth), we compare Smooth Lasso's performance
@@ -295,21 +273,6 @@ def test_tikhonov_regularization_vs_smooth_lasso():
         np.dot(X, optimal_model) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, optimal_model)) ** 2
     assert_almost_equal(smooth_lasso_perf, optimal_model_perf, decimal=4)
-
-
-@nottest
-def test_smooth_lasso_cv_vs_lasso_cv():
-    """Test that, with l1_ratio = 1 (pure Lasso) no normalization and
-    no debiasing, the SmoothLassoRegressorCV picks the same alpha as the
-    LassoCV
-    """
-    smooth_lasso_cv = SmoothLassoRegressorCV(
-        mask=mask, l1_ratio=1, fit_intercept=True, n_alphas=10, n_jobs=-1,
-        debias=False, normalize=False)
-    lasso_cv = LassoCV(fit_intercept=True, n_alphas=10, normalize=False)
-    smooth_lasso_cv.fit(X, y)
-    lasso_cv.fit(X, y)
-    assert_almost_equal(smooth_lasso_cv.alpha_, lasso_cv.alpha_)
 
 
 def test_debiasing_model():
@@ -354,67 +317,3 @@ def test_mfista_solver_just_smooth():
 
     solution = np.array([-10, 5])
     assert_almost_equal(estimate_solution, solution, decimal=4)
-
-
-def test_smooth_lasso_works_without_mask():
-    rng = np.random.RandomState(42)
-    n_samples = 10
-    n_features = 125
-    for l1_ratio in [0., .5, 1.]:
-        X = rng.randn(n_samples, n_features)
-        y = rng.randn(n_samples)
-        SmoothLassoRegressor(l1_ratio=l1_ratio, mask=None).fit(X, y)
-        SmoothLassoClassifier(l1_ratio=l1_ratio, mask=None).fit(X, (y > 0))
-
-
-def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-6):
-    # Test for one of the extreme cases of Smooth Lasso: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's coefficients'
-    # performance with the coefficients obtained from Scikit-Learn's
-    # LogisticRegression, with l1 penalty, in a 2 classes classification task
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    y = 2 * (y > 0) - 1
-    sl = SmoothLassoClassifier(alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol
-                               ).fit(X, y)
-    sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
-                                  tol=tol, C=C).fit(X, y)
-
-    np.testing.assert_array_equal((sl.coef_ == 0.), (sklogreg.coef_ == 0.))
-
-    np.testing.assert_array_equal(sl.predict(X), sklogreg.predict(X))
-
-
-@nottest
-def test_log_reg_vs_smooth_lasso_multiclass(C=1., tol=1e-6):
-    # Test for one of the extreme cases of Smooth Lasso: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's coefficients'
-    # performance with the coefficients obtained from Scikit-Learn's
-    # LogisticRegression, with l1 penalty, in a 4 classes classification task
-    iris = load_iris()
-    sl = SmoothLassoClassifier(alpha=1. / C / iris.data.shape[0],
-                               l1_ratio=1., tol=tol).fit(
-        iris.data, iris.target)
-    sklogreg = LogisticRegression(penalty="l1", C=C, fit_intercept=True,
-                                  tol=tol).fit(iris.data, iris.target)
-
-    # compare supports
-    np.testing.assert_array_equal((sl.coef_ == 0.), (sklogreg.coef_ == 0.))
-
-    # compare predictions
-    np.testing.assert_array_equal(sl.predict(iris.data),
-                                  sklogreg.predict(iris.data))
-
-
-@nottest
-def test_mfista_monotonous():
-    """Tests if mfista solver is monotonously decreasing"""
-    # XXX This test is senseless as we solver reports even history of
-    # points abandoned by the monotone trick!
-    alpha = 1
-    l1_ratio = 0.5
-    reg = SmoothLassoRegressor(mask=mask, alpha=alpha, l1_ratio=l1_ratio,
-                               normalize=False)
-    reg.fit(X, y)
-    objs = reg.objective_
-    for i in xrange(1, len(objs)): assert objs[i] < objs[i - 1]
