@@ -214,7 +214,7 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 dgap = dual_gap(input_img_norm, -negated_output,
                                 gap, weight, l1_ratio=l1_ratio)
                 if verbose:
-                    print 'Iteration % 2i, dual gap: % 6.3e' % (i, dgap)
+                    print '\tIteration % 2i, dual gap: % 6.3e' % (i, dgap)
                 if dgap < dgap_tol:
                     break
                 if old_dgap < dgap:
@@ -228,7 +228,7 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 diff = np.max(np.abs(negated_output_old - negated_output))
                 diff /= np.max(np.abs(negated_output))
                 if verbose:
-                    print ('Iteration % 2i, relative difference: % 6.3e,'
+                    print ('\t Iteration % 2i, relative difference: % 6.3e,'
                            'energy: % 6.3e' % (i, diff,
                            _objective_function(
                                 input_img, -negated_output,
