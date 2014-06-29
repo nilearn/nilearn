@@ -1,7 +1,15 @@
 """
-:Synopsis: FISTA for solving TV-l1, S-Lasso, etc.
+FISTA for solving TV-l1, S-Lasso, etc., problems.
 
 """
+# Author: DOHMATOB Elvis Dopgima,
+#         Gaspar Pizarro,
+#         Gael Varoquaux,
+#         Alexandre Gramfort,
+#         Bertrand Thirion,
+#         and others.
+# License: simplified BSD
+
 from math import sqrt
 from functools import partial
 import numpy as np

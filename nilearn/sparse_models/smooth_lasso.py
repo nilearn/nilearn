@@ -27,8 +27,12 @@ SmoothLasso{Regressor|Classifier}.fit
  -> smooth_lasso_{squared|logistic}_loss
      -> mfista
 """
-
-# Author: DOHMATOB Elvis Dopgima, ...
+# Author: DOHMATOB Elvis Dopgima,
+#         Gaspar Pizarro,
+#         Gael Varoquaux,
+#         Alexandre Gramfort,
+#         Bertrand Thirion,
+#         and others.
 # License: simplified BSD
 
 import warnings

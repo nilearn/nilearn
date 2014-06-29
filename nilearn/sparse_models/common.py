@@ -3,7 +3,13 @@ Common functions and base classes. Used by more specialized modules like
 tv.py, smooth_lasso.py, etc.
 
 """
-# Author: DOHMATOB Elvis Dopgima
+# Author: DOHMATOB Elvis Dopgima,
+#         Gaspar Pizarro,
+#         Fabian Pedragosa,
+#         Gael Varoquaux,
+#         Alexandre Gramfort,
+#         Bertrand Thirion,
+#         and others.
 # License: simplified BSD
 
 from functools import partial
