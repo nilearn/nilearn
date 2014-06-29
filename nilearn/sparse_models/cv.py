@@ -18,7 +18,7 @@ from .._utils.fixes import is_regressor, is_classifier
 
 def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
                          test, tol=1e-4, max_iter=1000, init=None,
-                         mask=None, X_std=1., verbose=0, key=None,
+                         mask=None, verbose=0, key=None,
                          screening_percentile=10., memory=Memory(None),
                          **kwargs):
     """Function to compute scores of different alphas in classification.
@@ -53,12 +53,12 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
             (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
 
     # setup callback mechanisim for ealry stopping
-    callerback = EarlyStoppingCallback(X_test, y_test, X_std, verbose=verbose)
+    callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
     env = dict(counter=0)
 
     def _callback(_env):
         if not isinstance(_env, dict):
-            _env = dict(w=w)
+            _env = dict(w=_env)
 
         _env['w'] = _env['w'][:-1]  # strip off intercept
         env["counter"] += 1
@@ -82,18 +82,18 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
     # N.B: This work is cached, just in case another worker on another fold
     # reports the same best alpha.
     best_w, _, init = memory.cache(solver)(
-        X, y, best_alpha, l1_ratio, mask=mask, tol=tol,
-        max_iter=max_iter, init=init, verbose=verbose, **kwargs)
+        X, y, best_alpha, l1_ratio, mask=mask, tol=tol, max_iter=max_iter,
+        verbose=verbose, **kwargs)
 
     # Unmask ANOVA screening
-    best_w = selector.unmask(best_w)
+    best_w = selector.inverse_transform(best_w)
 
     return test_scores, best_w, key
 
 
 def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
                              tol=1e-4, max_iter=1000, init=None, mask=None,
-                             debias=False, X_std=1., ymean=0., verbose=0,
+                             debias=False, ymean=0., verbose=0,
                              key=None, screening_percentile=10.,
                              memory=Memory(None), **kwargs):
     """Function to compute scores of different alphas in regression.
@@ -129,7 +129,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
         return score
 
     # setup callback mechanisim for ealry stopping
-    callerback = EarlyStoppingCallback(X_test, y_test, X_std, verbose=verbose)
+    callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
     env = dict(counter=0)
 
     def _callback(_env):
@@ -162,10 +162,10 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     # reports the same best alpha.
     best_w, _, init = memory.cache(solver)(
         X, y, best_alpha, l1_ratio, mask=mask, tol=tol, max_iter=max_iter,
-        init=init, verbose=verbose, **kwargs)
+        verbose=verbose, **kwargs)
 
     # unmask ANOVA screening
-    best_w = selector.unmask(best_w)
+    best_w = selector.inverse_transform(best_w)
 
     return test_scores, best_w, key
 
@@ -205,10 +205,8 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
     """
 
     if standardize:
-        # X can be touched inplace thanks to the above line
-        if standardize:
-            X, y, _, _, _ = center_data(X, y, fit_intercept=fit_intercept,
-                                        normalize=normalize, copy=True)
+        X, y, _, _, _ = center_data(X, y, fit_intercept=fit_intercept,
+                                    normalize=normalize, copy=True)
 
     if logistic:
         # Computes the theoretical upper bound for the overall
@@ -461,7 +459,8 @@ class _BaseCV(_BaseEstimator):
                         mask=self.mask)
                 X = selector.fit_transform(X, y)
                 params["mask"] = selector.mask_
-                w[c] = selector.unmask(model_class(**params).fit(X, y).w_)
+                w[c] = selector.inverse_transform(model_class(
+                        **params).fit(X, y).w_)
 
         if is_classifier(self):
             self._set_coef_and_intercept(w)
@@ -808,7 +807,7 @@ w    callback : callable(dict) -> bool
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10,
                  alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False,
-                 bagging=True):
+                 bagging=True, screening_percentile=10.):
         super(SmoothLassoClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
@@ -820,6 +819,7 @@ w    callback : callable(dict) -> bool
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.bagging = bagging
+        self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
         """Fit is on grid of alphas and best alpha estimated by
@@ -1038,7 +1038,7 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10,
                  fit_intercept=True, cv=10, backtracking=False,
-                 alpha_min=1e-6, bagging=True):
+                 alpha_min=1e-6, bagging=True, screening_percentile=10.):
         super(TVl1ClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -1050,6 +1050,7 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.bagging = bagging
+        self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
         return _BaseClassifierCV.fit(self, X, y)
@@ -1148,7 +1149,7 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
                  verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, debias=False, normalize=True,
                  backtracking=False, standardize=True, alpha_min=1e-6,
-                 bagging=True):
+                 bagging=True, screening_percentile=10.):
         super(TVl1RegressorCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -1161,6 +1162,7 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.bagging = bagging
+        self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
         return _BaseRegressorCV.fit(self, X, y)
