@@ -3,6 +3,8 @@ Common functions and base classes. Used by more specialized modules like
 tv.py, smooth_lasso.py, etc.
 
 """
+# Author: DOHMATOB Elvis Dopgima
+# License: simplified BSD
 
 from functools import partial
 import numpy as np
@@ -10,8 +12,7 @@ from scipy import linalg
 from sklearn.utils import check_random_state
 
 
-def check_lipschitz_continuous(f, ndim, L, n_trials=10,
-                               err_msg=None, random_state=None):
+def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the
@@ -36,14 +37,11 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10,
     n_trials: int,
       Number of tests performed when assessing the Lipschitz continuity of
       function `f`. The more tests, the more confident we are in the
-      Lipschitz continuity of `f`if the test passes.
+      Lipschitz continuity of `f` if the test passes.
 
     err_msg: {str, or None},
       String used to tune the output message when the test fails.
-      xxx: useful?
-
-    random_state: {int, None},
-      Random numbers seed for reproducible results.
+      If `None`, we'll generate our own.
 
     Notes
     -----
@@ -54,8 +52,9 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10,
     way you are bounding their Lipschitz constant!
 
     """
+
     # check random state
-    rng = check_random_state(random_state)
+    rng = check_random_state(42)
 
     for x in rng.randn(n_trials, ndim):
         for y in rng.randn(n_trials, ndim):
@@ -68,7 +67,7 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10,
 
 # xxx: isn't it a more generic function?
 def compute_mse_lipschitz_constant(X):
-    """Compute the Lipschitz constant of the gradient of a map:
+    """Compute the Lipschitz constant (upper bound) for the gradient of a map:
 
         w -> ||y - Xw||^2
 
@@ -89,7 +88,8 @@ def compute_mse_lipschitz_constant(X):
 
 
 def compute_logistic_lipschitz_constant(X):
-    """Compute the Lipschitz constant for the gradient of the logistic sum:
+    """Compute the Lipschitz constant (upper bound) for the gradient of the
+    logistic sum:
 
          w -> \sum_i log(1+exp(-y_i*(x_i*w + v)))
 
@@ -99,8 +99,7 @@ def compute_logistic_lipschitz_constant(X):
     """
     # N.B: we handle intercept!
     X = np.hstack((X, np.ones(X.shape[0])[:, np.newaxis]))
-
-    return linalg.norm(X, 2) ** 2
+    return compute_mse_lipschitz_constant(X)  # XXX doubtful
 
 
 # XXX: functions that return variable number of outputs are bad
@@ -118,31 +117,33 @@ def compute_mse(X, y, w, mask=None, compute_energy=True, compute_grad=True,
     Parameters
     ----------
     X: 2D array of shape (n_samples, n_features)
-        design matrix
+        Design matrix.
 
     y: 1D array of length n_samples
-        target
+        Target / response vector.
 
-    w: array_like, shape=(n_voxels,)
-        unmasked, ravelized input map.
+    w: array_like, shape (n_voxels,)
+        Unmasked, ravelized input map.
 
     mask: array_like of same shape as w, optional (default None)
         mask for ROI
 
     compute_energy: bool, optional (default True)
-        if set then energy is computed, otherwise only gradient is computed
+        If set then energy is computed, otherwise only gradient is computed.
 
     compute_grad: bool, optional (default True)
-        if set then energy is computed, otherwise only energy is computed
+        If set then energy is computed, otherwise only energy is computed.
 
     unmask_grad: bool, optional (default True)
-        if set, then computed gradient is unmasked before returned
+        If set, then computed gradient is unmasked before returned.
 
     Returns
     -------
-    (energy, grad): if both compute_energy and compute_grad are set
-    energy: if compute_energy is set but compute_grad is off
-    grad: if compute_energy is off and compute_grad is set
+    energy: float
+        Energy (returned if `compute_energy` is set.
+
+    gradient: 1D array
+        Gradient of energy (returned if `compute_grad` is set.
 
     """
     assert compute_energy or compute_grad
@@ -151,15 +152,15 @@ def compute_mse(X, y, w, mask=None, compute_energy=True, compute_grad=True,
     w = w.ravel()
     if mask is not None:
         w = w[mask.ravel()]
-    aux = np.dot(X, w) - y
+    residual = np.dot(X, w) - y
 
     # compute energy
     if compute_energy:
-        energy = .5 * np.dot(aux, aux)
+        energy = .5 * np.dot(residual, residual)
         if not compute_grad:
             return energy
 
-    grad = np.dot(X.T, aux)  # XXX use sk's fast_dot
+    grad = np.dot(X.T, residual)  # XXX use sk's fast_dot
     if unmask_grad and mask is not None:
         grad = _unmask(grad, mask).ravel()
 
@@ -220,11 +221,6 @@ def div_id(grad, l1_ratio=.5):
         TV+L1 penalty will be (alpha not shown here):
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
 
-    with_id: bool, optional (default True)
-        set if the id transformation is being considered too; set
-        to False if you are only interested in the (3, ...) gradient,
-        and you don't care about the identity part
-
     Returns
     -------
     res: ndarray of shape grad.shape[1:]
@@ -269,11 +265,6 @@ def gradient_id(img, l1_ratio=.5):
         relative weight of l1; float between 0 and 1 inclusive.
         TV+L1 penalty will be (alpha not shown here):
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
-
-    with_id: bool, optional (default True)
-        set if the id transformation is being considered too; set
-        to False if you are only interested in the (3, ...) gradient,
-        and you don't care about the identity part
 
     Returns
     -------
@@ -365,8 +356,8 @@ def logistic(X, y, w, mask=None):
     yz = y * z
     idx = yz > 0
     out = np.empty_like(yz)
-    out[idx] = np.log(1 + np.exp(-yz[idx]))
-    out[~idx] = (-yz[~idx] + np.log(1 + np.exp(yz[~idx])))
+    out[idx] = np.log1p(np.exp(-yz[idx]))
+    out[~idx] = -yz[~idx] + np.log1p(np.exp(yz[~idx]))
     out = out.sum()
     return out
 
@@ -392,7 +383,3 @@ mse_loss = squared_loss = partial(compute_mse, compute_grad=False)
 mse_loss_grad = squared_loss_grad = partial(compute_mse, compute_energy=False)
 squared_loss_lipschitz_constant = compute_mse_lipschitz_constant
 logistic_lipschitz_constant = compute_logistic_lipschitz_constant
-
-if __name__ == '__main__':
-    # Our test
-    test_grad_div_adjoint_arbitrary_ndim()
