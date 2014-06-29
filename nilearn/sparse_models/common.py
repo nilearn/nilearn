@@ -16,16 +16,13 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10,
 
     If this test is passed, then we are empirically confident in the
     Lipschitz continuity of the function with respect to the given
-    constant `L`.
-    This confidence increases with the `n_trials` parameter, and of course
-    in the limit `n_trials` -> infinity, the certificate in fact becomes a
-    proof.
+    constant `L`. This confidence increases with the `n_trials` parameter.
 
     Parameters
     ----------
     f: callable,
       The function to be checked for Lipschitz continuity.
-      `f` takes a vector of float as unique argument and also returns ones.
+      `f` takes a vector of float as unique argument.
       The size of the input vector is determined by `ndim`.
 
     ndim: int,
@@ -54,7 +51,7 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10,
     then you should strongly consider testing Lipschitz continuity of your
     smooth terms. Failure of this test typically implies you have a bug in
     the way you are computing the gradient of your smooth terms, or the
-    way you are bounding their Lipschitz constant.
+    way you are bounding their Lipschitz constant!
 
     """
     # check random state
@@ -310,40 +307,6 @@ def gradient_id(img, l1_ratio=.5):
     gradient[-1] = l1_ratio * img
 
     return gradient
-
-
-def tv_l1_reg_objective(X, y, w, alpha, l1_ratio, mask=None,
-                        shape=None, loss="mse"):
-    """The TV + l1 squared loss regression objective functions,
-
-        w can be a 2D or 3D array
-
-    """
-
-    if shape is None:
-        if mask is not None:
-            shape = mask.shape
-        else:
-            if loss == "mse":
-                shape = w.shape
-            else:
-                shape = (len(np.ravel(w)) - 1,)
-
-    # if not mask is None: mask = mask.ravel()
-    loss = loss.lower()
-    assert loss in ['mse', 'logistic']
-
-    w = w.ravel()
-    if loss == "mse":
-        out = squared_loss(X, y, w, mask=mask)
-    else:
-        out = logistic(X, y, w, mask=mask)
-        w = w[:-1]
-
-    grad_id = gradient_id(w.reshape(shape), l1_ratio=l1_ratio)
-    out += alpha * tv_l1_from_gradient(grad_id)
-
-    return out
 
 
 def _unmask(w, mask):

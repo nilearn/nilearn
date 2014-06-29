@@ -5,13 +5,65 @@ Author: DOHMATOB Elvis Dopgima <gmdopp@gmail.com> <elvis.dohmatob@inria.fr>
 """
 
 import numpy as np
-from .common import (compute_mse_lipschitz_constant,
+from .common import (compute_mse_lipschitz_constant, gradient_id,
                      compute_logistic_lipschitz_constant,
-                     tv_l1_reg_objective, mse_loss, mse_loss_grad,
+                     mse_loss, mse_loss_grad,
                      logistic_grad as logistic_loss_grad,
                      logistic as logistic_loss)
 from .prox_tv_l1 import prox_tv_l1, intercepted_prox_tv_l1
 from .fista import mfista
+
+
+def _tvl1_objective_from_gradient(gradient):
+    """Our total-variation like norm: TV + l1
+
+    Parameters
+    ----------
+    gradient: array
+       precomputed "gradient + id" array
+
+    """
+
+    tv_term = np.sum(np.sqrt(np.sum(gradient[:-1] * gradient[:-1],
+                                    axis=0)))
+
+    l1_term = np.abs(gradient[-1]).sum()
+
+    return l1_term + tv_term
+
+
+def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
+                   loss="mse"):
+    """The TV + l1 squared loss regression objective functions,
+
+        w can be a 2D or 3D array
+
+    """
+
+    if shape is None:
+        if mask is not None:
+            shape = mask.shape
+        else:
+            if loss == "mse":
+                shape = w.shape
+            else:
+                shape = (len(np.ravel(w)) - 1,)
+
+    # if not mask is None: mask = mask.ravel()
+    loss = loss.lower()
+    assert loss in ['mse', 'logistic']
+
+    w = w.ravel()
+    if loss == "mse":
+        out = mse_loss(X, y, w, mask=mask)
+    else:
+        out = logistic_loss(X, y, w, mask=mask)
+        w = w[:-1]
+
+    grad_id = gradient_id(w.reshape(shape), l1_ratio=l1_ratio)
+    out += alpha * _tvl1_objective_from_gradient(grad_id)
+
+    return out
 
 
 def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
@@ -108,7 +160,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
             return mse_loss_grad(X, y, w, mask=mask)
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
-    total_energy = lambda w: tv_l1_reg_objective(
+    total_energy = lambda w: tvl1_objective(
         X, y, w, alpha=alpha, l1_ratio=l1_ratio, mask=mask, loss=loss)
 
     # lispschitz constant of f1_grad
