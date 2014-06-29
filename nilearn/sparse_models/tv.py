@@ -75,9 +75,10 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
 def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
                 rescale_alpha=True, lipschitz_constant=None,
                 prox_max_iter=5000, verbose=0, tol=1e-4, **kwargs):
-    """Minimizes empirical risk for TV-l1 penalized least-squares (
-    mean square error --a.k.a mse) or logistic regression. The same solver
-    works for both of these losses.
+    """Minimizes empirical risk for TV-l1 penalized models.
+
+    Can handle least-squares (mean square error --a.k.a mse) or logistic
+    regression. The same solver works for both of these losses.
 
     This function invokes the mfista backend (from fista.py) to solver the
     underlying optimization problem.
