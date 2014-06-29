@@ -6,6 +6,7 @@ sklearn-compatible estimators for TV-l1, S-LASSO, etc. models.
 #         Gaspar Pizarro,
 #         Gael Varoquaux,
 #         Alexandre Gramfort,
+#         Virgile Fritsch,
 #         Bertrand Thirion,
 #         and others.
 # License: simplified BSD

@@ -8,21 +8,19 @@ import numpy as np
 from scipy import linalg, ndimage
 import pylab as pl
 from sklearn.utils import check_random_state
-from sklearn.feature_selection import f_regression
 
 
 def create_simulation_data(snr=1., n_samples=200, size=12, roi_size=2,
                            random_state=1, task="regression"):
     """
     Function to generate data
-    
+
     Parameters
     ---------
-    
     task: "classification" | "regression"
         If "classification", examples are drawn randomly from {-1, 1}, with no
         guarantee that the classes are equally weighted
-        If "regression", examples are drawn from a normal distribution, with 
+        If "regression", examples are drawn from a normal distribution, with
         mean 0, variance 1.
     """
 
@@ -68,6 +66,7 @@ def create_simulation_data(snr=1., n_samples=200, size=12, roi_size=2,
 
     return X, y, w, mask
 
+
 def create_smooth_simulation_data(snr=1., n_samples=200,
         size=20, n_points=10, random_state=42, task="regression"):
     """
@@ -79,12 +78,12 @@ def create_smooth_simulation_data(snr=1., n_samples=200,
     ### Coefs
     w = np.zeros((size, size, size))
     for _ in xrange(n_points):
-        point = (generator.randint(0, size), generator.randint(0, size), generator.randint(0, size))
+        point = (generator.randint(0, size), generator.randint(0, size),
+                 generator.randint(0, size))
         w[point] = 1.0
     mask = np.ones((size, size, size), dtype=np.bool)
     w = ndimage.gaussian_filter(w, sigma=1)
     w = w[mask]
-    
 
     ### Generate smooth background noise
     XX = generator.randn(n_samples, size, size, size)
