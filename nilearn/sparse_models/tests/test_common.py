@@ -6,10 +6,8 @@ Test module for common.py
 import numpy as np
 from scipy.optimize import check_grad
 import itertools
-from ..common import (gradient_id,
-                      tv_l1_reg_objective,
-                      tv_l1_from_gradient, compute_mse, logistic,
-                      logistic_grad,
+from ..common import (gradient_id, compute_mse, logistic,
+                      logistic_grad, _unmask,
                       compute_logistic_lipschitz_constant,
                       check_lipschitz_continuous,
                       compute_mse_lipschitz_constant,
@@ -17,7 +15,7 @@ from ..common import (gradient_id,
 from ..estimators import _BaseEstimator
 from ..prox_tv_l1 import prox_tv_l1
 from ..operators import prox_l1
-from nose.tools import assert_true, assert_equal, raises
+from nose.tools import assert_true, raises
 
 
 def test_1D_gradient_id():
@@ -91,27 +89,6 @@ def test_prox_tv_l1_approximates_prox_l1_for_lasso(size=15, random_state=42,
                                            0., decimal=decimal)
 
 
-def test_tv_l1_from_gradient(size=5, n_samples=10, random_state=42,
-                             decimal=8):
-
-    rng = np.random.RandomState(random_state)
-
-    shape = [size] * 3
-    n_voxels = np.prod(shape)
-    X = rng.randn(n_samples, n_voxels)
-    y = rng.randn(n_samples)
-    w = rng.randn(*shape)
-
-    for alpha in [0., 1e-1, 1e-3]:
-        for l1_ratio in [0., .5, 1.]:
-            gradid = gradient_id(w, l1_ratio=l1_ratio)
-            assert_equal(tv_l1_reg_objective(
-                X, y, w.copy(), alpha, l1_ratio, shape=shape),
-                compute_mse(X, y, w.copy(),
-                            compute_grad=False) + alpha * tv_l1_from_gradient(
-                    gradid))
-
-
 def test_logistic_loss_derivative(n_samples=4, n_features=10, random_state=42,
                                   decimal=5):
 
@@ -165,3 +142,15 @@ def test_grad_div_adjoint_arbitrary_ndim_():
 @raises(ValueError)
 def test_baseestimator_invalide_l1_ratio():
     _BaseEstimator(l1_ratio=2.)
+
+
+def test_unmasl(size=5):
+    rng = np.random.RandomState(42)
+    for ndim in xrange(1, 4):
+        shape = [size] * ndim
+        mask = np.zeros(shape).astype(np.bool)
+        mask[rng.rand(*shape) > .8] = 1
+        support = rng.randn(mask.sum())
+        full = _unmask(support, mask)
+        np.testing.assert_array_equal(full.shape, shape)
+        np.testing.assert_array_equal(full[mask], support)
