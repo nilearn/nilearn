@@ -229,7 +229,8 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 dgap = dual_gap(input_img_norm, -negated_output,
                                 gap, weight, l1_ratio=l1_ratio)
                 if verbose:
-                    print '\tIteration % 2i, dual gap: % 6.3e' % (i, dgap)
+                    print '\tProxTVl1: Iteration % 2i, dual gap: % 6.3e' % (
+                        i, dgap)
                 if dgap < dgap_tol:
                     break
                 if old_dgap < dgap:
@@ -243,12 +244,12 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 diff = np.max(np.abs(negated_output_old - negated_output))
                 diff /= np.max(np.abs(negated_output))
                 if verbose:
-                    print ('\t Iteration % 2i, relative difference: % 6.3e,'
-                           'energy: % 6.3e' % (i, diff,
-                           _objective_function(
-                                input_img, -negated_output,
-                                gradient_id(negated_output, l1_ratio=l1_ratio),
-                                l1_ratio, weight)))
+                    print ('\tProxTVl1 iteration % 2i, relative difference:'
+                           ' % 6.3e, energy: % 6.3e') % (
+                        i, diff, _objective_function(
+                                   input_img, -negated_output, gradient_id(
+                                       negated_output, l1_ratio=l1_ratio),
+                                   l1_ratio, weight))
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output
@@ -267,7 +268,7 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
 
 
 def intercepted_prox_tv_l1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
-                           init=None):
+                           init=None, verbose=False):
     """
     Computation of TV-l1 prox, taking into account the intercept.
 
@@ -292,7 +293,7 @@ def intercepted_prox_tv_l1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
     out, prox_info = prox_tv_l1(
         w[:-1].reshape(shape), weight=weight,
         l1_ratio=l1_ratio, dgap_tol=dgap_tol, return_info=True,
-        init=init, max_iter=max_iter, verbose=False)
+        init=init, max_iter=max_iter, verbose=verbose)
 
     return np.append(out, w[-1]), prox_info
 
@@ -307,6 +308,42 @@ def intercepted_prox_tv_l1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
 #     shrink[nz] = np.maximum(1 - alpha / l2_norms[nz], 0)
 #     Y *= shrink
 #     return Y
+
+
+def prox_l21(x, l1_ratio, tau, isotropic=True):
+    """
+    Prox tau * L21 inplace,
+
+    where l21 is the l2 norm of the first ndim (=1, 2, 3, etc.) lines of x,
+    and the l1 of all the rest (including the group defined by these, and
+    the remaing  last line of x).
+
+    Parameters
+    ----------
+    l1_ratio: positive float in the interval [0, 1]
+        the usual trade-off parameter between l1 and TV terms of the
+        underlying penalty.
+
+    tau: positive float
+        the radius of the l21 ball of the projection (note that
+        s(a) = a - P_tau(a) as usual)
+
+    """
+
+    shrink = np.zeros_like(x)
+
+    if isotropic:
+        shrink[:-1] = np.sqrt((x[:-1] * x[:-1]).sum(axis=0))
+    else:
+        shrink[:-1] = np.abs(x[:-1]).sum(axis=0)
+
+    shrink[-1] = np.abs(x[-1])
+
+    shrink[shrink == 0.] = 1.
+    shrink = np.maximum(shrink - tau, 0) / shrink
+    x *= shrink
+
+    return x
 
 
 # def estimate_lipschitz_constant_graph(w0, L):
