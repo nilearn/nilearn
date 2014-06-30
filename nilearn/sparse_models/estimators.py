@@ -16,8 +16,7 @@ import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model.base import LinearModel
-from sklearn.preprocessing import LabelBinarizer
-from .._utils.fixes import center_data, LinearClassifierMixin
+from .._utils.fixes import center_data, LinearClassifierMixin, LabelBinarizer
 from .common import (compute_mse_lipschitz_constant,
                      compute_logistic_lipschitz_constant)
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
