@@ -13,6 +13,7 @@ Ninja tricks (early stopping, etc.) to make CV a better place to live...
 from functools import partial
 from math import sqrt
 import numpy as np
+from scipy import stats
 from .._utils.fixes import center_data
 from sklearn.feature_selection import (
     f_regression, f_classif, SelectPercentile)
@@ -44,22 +45,16 @@ def _squared_norm(x):
 
 
 class EarlyStoppingCallback(object):
-    """ Out-of-bag early stopping
+    """ Out-of-bag early stopping.
 
         A callable that returns True when the test error starts
-        rising. We use a regression loss, because it is more sensitive to
-        improvements than a classification loss.
+        rising. We use a Spearman correlation (btween X_test.w and y_test)
+        for scoring.
     """
 
-    a = 1
-
     def __init__(self, X_test, y_test, verbose=False):
-        n_test_samples = len(y_test)
-        self.X_test = np.reshape(X_test, (n_test_samples, -1))
-        self.scaled_y_test = y_test - y_test.mean()
-        y_norm = sqrt(_squared_norm(self.scaled_y_test))
-        if y_norm != 0 and np.isfinite(y_norm):
-            self.scaled_y_test /= y_norm
+        self.y_test = y_test
+        self.X_test = X_test
         self.test_errors = list()
         self.verbose = verbose
 
@@ -70,12 +65,11 @@ class EarlyStoppingCallback(object):
             self.test_errors = list()
         w = variables['w']
         w = np.ravel(w)
-        # Correlation to output
+
+        # Correlation (Spearman) to output
         y_pred = np.dot(self.X_test, w)
         y_pred -= y_pred.mean()
-        if np.any(y_pred != 0):
-            y_pred /= sqrt(_squared_norm(y_pred))
-        error = .5 * (1 - np.dot(self.scaled_y_test, y_pred))
+        error = stats.spearmanr(y_pred, self.y_test)
         self.test_errors.append(error)
         if not (i > 20 and (i % 10) == 2):
             return

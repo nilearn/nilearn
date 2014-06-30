@@ -2,7 +2,6 @@ from nose.tools import assert_equal, assert_true
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
-from sklearn.linear_model.coordinate_descent import _alpha_grid
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
                   SmoothLassoClassifierCV, SmoothLassoRegressorCV)
 from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
@@ -84,16 +83,20 @@ def test_my_alpha_grid(n_samples=4, n_features=3):
 
 
 def test_my_alpha_grid_same_as_sk():
-    iris = load_iris()
-    X = iris.data
-    y = iris.target
-    for normalize in [True]:
-        for fit_intercept in [True, False]:
-            np.testing.assert_array_equal(_my_alpha_grid(
-                    X, y, n_alphas=5, normalize=normalize,
-                    fit_intercept=fit_intercept, standardize=True),
-                    _alpha_grid(X, y, n_alphas=5, normalize=normalize,
-                                fit_intercept=fit_intercept))
+    try:
+        from sklearn.linear_model.coordinate_descent import _alpha_grid
+        iris = load_iris()
+        X = iris.data
+        y = iris.target
+        for normalize in [True]:
+            for fit_intercept in [True, False]:
+                np.testing.assert_array_equal(_my_alpha_grid(
+                        X, y, n_alphas=5, normalize=normalize,
+                        fit_intercept=fit_intercept, standardize=True),
+                        _alpha_grid(X, y, n_alphas=5, normalize=normalize,
+                                    fit_intercept=fit_intercept))
+    except ImportError:
+        pass
 
 
 def test_featureselectors():
