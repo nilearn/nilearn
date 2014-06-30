@@ -6,6 +6,7 @@ for computing image gradient, loss functins, etc.).
 
 import os
 import sys
+from nose.tools import nottest
 import numpy as np
 from sklearn.datasets import load_iris
 from ..common import (squared_loss, squared_loss_grad,
@@ -197,3 +198,9 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
+
+
+@nottest
+def test_w_shapes():
+    """Test that solvers handle w of same shape (during callbacks, etc.)."""
+    pass
