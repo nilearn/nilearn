@@ -160,10 +160,18 @@ class LinearClassifierMixin(ClassifierMixin):
 
 
 def is_classifier(estimator):
-    """Returns True if the given estimator is (probably) a classifier."""
+    """Returns True if the given estimator is (probably) a classifier.
+
+    XXX the sklearn version does some weird checks (that fail for our
+    estimators).
+    """
     return isinstance(estimator, ClassifierMixin)
 
 
 def is_regressor(estimator):
-    """Returns True if the given estimator is (probably) a regressor."""
+    """Returns True if the given estimator is (probably) a regressor.
+
+    XXX the sklearn version does some weird checks (that fail for our
+    estimators).
+    """
     return isinstance(estimator, RegressorMixin)
