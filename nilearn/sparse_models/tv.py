@@ -13,7 +13,7 @@ TV-l1 regression. Handles squared loss and logistic too.
 import numpy as np
 from .common import (compute_mse_lipschitz_constant, gradient_id,
                      compute_logistic_lipschitz_constant,
-                     mse_loss, mse_loss_grad,
+                     mse_loss, mse_loss_grad, _unmask,
                      logistic_grad as logistic_loss_grad,
                      logistic as logistic_loss)
 from .operators import prox_tv_l1, intercepted_prox_tv_l1
@@ -106,7 +106,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
     max_iter: int
         Defines the iterations for the solver. Defaults to 1000
 
-    prox_max_iter: int, optional (default 5000)
+    prox_max_iter: int, optional (default 10)
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
@@ -114,7 +114,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
         Defines the tolerance for convergence. Defaults to 1e-4.
 
     loss: string
-        Loss model for regression. Cab be "mse" (for squared loss) or
+        Loss model for regression. Can be "mse" (for squared loss) or
         "logistic" (for logistic loss).
 
     lipschitz_constant: float, optional (default None)
@@ -144,37 +144,56 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
 
     # shape of image box
     if mask is not None:
+        flat_mask = mask.ravel()
         volume_shape = mask.shape
     else:
         # when no mask is provided, the volume is assumed to be a flat image
         volume_shape = (X.shape[1],)
+        flat_mask = None
 
     # XXX We'll work on the full brain, and do the masking / unmasking
     # magic when needed
-    w_size = np.prod(volume_shape) + int(loss == "logistic")
+    w_size = X.shape[1] + int(loss == "logistic")
 
     # rescale alpha parameter (= amount of regularization) to handle
     # 1 / n_samples factor in model
     if rescale_alpha:
         alpha *= X.shape[0]
 
+    def unmaskvec(w):
+        if None in [w, mask]:
+            return w
+        elif loss == "mse":
+            return _unmask(w, mask)
+        else:
+            return np.append(_unmask(w[:-1], mask), w[-1])
+
+    def maskvec(w):
+        if None in [w, mask]:
+            return w
+        elif loss == "mse":
+            return w[flat_mask]
+        else:
+            return np.append(w[:-1][flat_mask], w[-1])
+
     # fuction to compute f1 = smooth part of energy = the loss term
     def f1(w):
         if loss == "logistic":
-            return logistic_loss(X, y, w, mask=mask)
+            return logistic_loss(X, y, w)
         else:
-            return mse_loss(X, y, w, mask=mask)
+            return mse_loss(X, y, w)
 
     # function to compute derivative of f1
     def f1_grad(w):
         if loss == "logistic":
-            return logistic_loss_grad(X, y, w, mask=mask)
+            return logistic_loss_grad(X, y, w)
         else:
-            return mse_loss_grad(X, y, w, mask=mask)
+            return mse_loss_grad(X, y, w)
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
     total_energy = lambda w: tvl1_objective(
-        X, y, w, alpha=alpha, l1_ratio=l1_ratio, mask=mask, loss=loss)
+        X, y, unmaskvec(w), alpha=alpha, l1_ratio=l1_ratio, mask=mask,
+        loss=loss)
 
     # lispschitz constant of f1_grad
     if lipschitz_constant is None:
@@ -185,26 +204,24 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
 
     # proximal operator of nonsmooth proximable part of energy (f2)
     if loss == "mse":
-        f2_prox = lambda w, stepsize, dgap_tol, init=None: prox_tv_l1(
-            w.reshape(volume_shape), weight=alpha * stepsize,
-            l1_ratio=l1_ratio, dgap_tol=dgap_tol, return_info=True,
-            init=init.reshape(volume_shape) if init is not None else init,
-            max_iter=prox_max_iter, verbose=False)
+        def f2_prox(w, stepsize, dgap_tol, init=None):
+            out, info = prox_tv_l1(
+                unmaskvec(w), weight=alpha * stepsize, l1_ratio=l1_ratio,
+                dgap_tol=dgap_tol, return_info=True, init=unmaskvec(init),
+                max_iter=prox_max_iter, verbose=verbose)
+            return maskvec(out.ravel()), info
     else:
-        f2_prox = lambda w, stepsize, dgap_tol, init=None: (
-            intercepted_prox_tv_l1(
-                w, volume_shape, l1_ratio, alpha * stepsize, dgap_tol,
-                prox_max_iter, init=init[:-1] if init is not None else None))
+        def f2_prox(w, stepsize, dgap_tol, init=None):
+            out, info = intercepted_prox_tv_l1(
+                unmaskvec(w), volume_shape, l1_ratio, alpha * stepsize,
+                dgap_tol, prox_max_iter, init=_unmask(
+                    init[:-1], mask) if init is not None else None,
+                verbose=verbose)
+            return maskvec(out.ravel()), info
 
     # invoke m-FISTA solver
     w, obj, init = mfista(
         f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         dgap_factor=(.1 + l1_ratio) ** 2, tol=tol, verbose=verbose, **kwargs)
-    # assert mask is not None
-    if mask is not None:
-        if loss == "mse":
-            w = w[mask.ravel()]
-        else:
-            w = np.append(w[:-1][mask.ravel()], w[-1])
-
+ 
     return w, obj, init
