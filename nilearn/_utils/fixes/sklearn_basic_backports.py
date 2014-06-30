@@ -3,6 +3,7 @@ ClassifierMixin and LinearClassifierMixin have been copied from sklearn
 so we don't have to fight back-compat problems every second.
 
 """
+# Author: DOHMATOB Elvis
 
 import numbers
 import numpy as np
