@@ -79,7 +79,7 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
 def compute_mse_lipschitz_constant(X):
     """Compute the Lipschitz constant (upper bound) for the gradient of a map:
 
-        w -> ||y - Xw||^2
+        w -> .5 * ||y - Xw||^2
 
     Parameters
     ----------
@@ -89,7 +89,7 @@ def compute_mse_lipschitz_constant(X):
     Returns
     -------
     lipschitz_constant: float,
-      Lipschitz constant of the gradient of the input map
+      Lipschitz constant of the gradient of the input map.
 
     """
     # On big matrices like those that we have in neuroimaging, svdvals
@@ -117,7 +117,7 @@ def compute_mse(X, y, w, mask=None, compute_energy=True, compute_grad=True,
 
     The energy is
 
-        MSE = ||y - Xw||^2 / n_samples
+        MSE = .5 * ||y - Xw||^2 / n_samples
 
     A (1 / n_samples) factor is applied to the MSE.
 
@@ -271,6 +271,7 @@ def gradient_id(img, l1_ratio=.5):
     l1_ratio: float, optional (default .5)
         relative weight of l1; float between 0 and 1 inclusive.
         TV+L1 penalty will be (alpha not shown here):
+
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
 
     Returns
@@ -279,7 +280,7 @@ def gradient_id(img, l1_ratio=.5):
     or of shape (img.ndim + 1, *img.shape) otherwise
         gradient of the image: the i-th component along the first
         axis is the gradient along the i-th axis of the original
-        array img
+        array img.
 
     """
 
