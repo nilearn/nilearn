@@ -48,7 +48,7 @@ class EarlyStoppingCallback(object):
 
         A callable that returns True when the test error starts
         rising. We use a regression loss, because it is more sensitive to
-        improvements than a classification loss
+        improvements than a classification loss.
     """
 
     a = 1
@@ -179,8 +179,8 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
     X: 2d array, shape (n_samples, n_features)
         Training data (design matrix).
 
-    y: ndarray, shape = (n_samples,)
-        Target values
+    y: ndarray, shape (n_samples,)
+        Target / response vector.
 
     l1_ratio: float
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
@@ -193,10 +193,10 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
         ``alpha_min / alpha_max = 1e-3``
 
     n_alphas: int, optional
-        Number of alphas along the regularization path
+        Number of alphas along the regularization path.
 
     fit_intercept: bool
-        Fit or not an intercept
+        Fit or not an intercept.
 
     normalize: boolean, optional, default False
         If ``True``, the regressors X will be normalized before regression.

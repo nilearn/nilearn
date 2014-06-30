@@ -797,7 +797,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
 
     eps: float, optional
         Length of the path. ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        ``alpha_min / alpha_max = 1e-3``.
 
     alpha_min: float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
