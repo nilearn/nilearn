@@ -30,7 +30,7 @@ from .sklearn_basic_backports import is_classifier, is_regressor
 try:
     from sklearn.metrics import roc_auc_score
 except ImportError:
-    from sklearn.metrics import auc_score as roc_auc_score
+    from sklearn.metrics import auc as roc_auc_score
 
 # LabelBinarizer backport
 from .sklearn_basic_backports import MyLabelBinarizer as LabelBinarizer
