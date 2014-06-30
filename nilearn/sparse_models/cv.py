@@ -14,9 +14,7 @@ from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
-from .._utils.fixes import center_data
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import roc_auc_score
+from .._utils.fixes import center_data, LabelBinarizer, roc_auc_score
 from .common import _sigmoid
 from .estimators import (_BaseRegressor, _BaseClassifier, _BaseEstimator,
                          SmoothLassoRegressor, SmoothLassoClassifier,
