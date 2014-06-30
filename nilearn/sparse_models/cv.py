@@ -92,10 +92,11 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
     # N.B: This work is cached, just in case another worker on another fold
-    # reports the same best alpha.
+    # reports the same best alpha. Also note that the re-fit is done only on
+    # the train (i.e X_train), a piece of the design X.
     best_w, _, init = memory.cache(solver)(
-        X, y, best_alpha, l1_ratio, mask=mask, tol=tol, max_iter=max_iter,
-        verbose=verbose, **kwargs)
+        X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
+        max_iter=max_iter, verbose=verbose, **kwargs)
 
     # unmask univariate screening
     best_w = selector.inverse_transform(best_w)
@@ -183,10 +184,11 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
     # N.B: This work is cached, just in case another worker on another fold
-    # reports the same best alpha.
+    # reports the same best alpha. Also note that the re-fit is done only on
+    # the train (i.e X_train), a piece of the design X.
     best_w, _, init = memory.cache(solver)(
-        X, y, best_alpha, l1_ratio, mask=mask, tol=tol, max_iter=max_iter,
-        verbose=verbose, **kwargs)
+        X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
+        max_iter=max_iter, verbose=verbose, **kwargs)
 
     # Unmask univariate screening
     best_w = selector.inverse_transform(best_w)
