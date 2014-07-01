@@ -35,7 +35,7 @@ mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 print n_samples, "subjects, ", n_features, "features"
 
 import os
-from nilearn.sparse_models.cv import SmoothLassoRegressorCV, plot_cv_scores
+from nilearn.decoding.sparse_models.cv import SmoothLassoRegressorCV
 n_jobs = int(os.environ.get("N_JOBS", 1))
 slcv = SmoothLassoRegressorCV(verbose=1, n_jobs=n_jobs, memory=memory,
                               mask=mask, screening_percentile=20)
@@ -45,15 +45,13 @@ slcv.fit(gm_maps_masked, age)
 age_pred = slcv.predict(gm_maps_masked).ravel()
 
 ### Visualisation
-### Look at the SLCV's discriminating weights
+### Look at the S-LASSOCV's discriminating weights
 # reverse masking
 weight_niimg = nifti_masker.inverse_transform(slcv.coef_)
 
 # We use a masked array so that the voxels at '-1' are transparent
 weights = np.ma.masked_array(weight_niimg.get_data(),
                              weight_niimg.get_data() == 0)
-
-### Create the figure
 background_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
 picked_slice = 36
 plt.figure(figsize=(5.5, 5.5))
@@ -67,6 +65,9 @@ plt.axis('off')
 plt.colorbar(im)
 plt.title('S-LASSO weights')
 plot_cv_scores(slcv, errorbars=False)
+
+# plot CV errors
+from nilearn.decoding.sparse_models.cv import plot_cv_scores
 plt.figure()
 linewidth = 3
 ax1 = plt.subplot('211')
