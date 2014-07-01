@@ -285,7 +285,6 @@ class _BaseCV(_BaseEstimator):
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
             normalize=normalize, standardize=standardize)
-
         self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
@@ -425,7 +424,7 @@ class _BaseCV(_BaseEstimator):
         return self
 
 
-class _BaseRegressorCV(_BaseRegressor, _BaseCV):
+class _BaseRegressorCV(_BaseCV, _BaseRegressor):
     """
     Parameters
     ----------
@@ -621,8 +620,8 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         super(_BaseClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking,
-            n_jobs=n_jobs)
+            fit_intercept=fit_intercept, backtracking=backtracking)
+        self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
         self.eps = eps
@@ -758,8 +757,8 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
         super(SmoothLassoClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking,
-            n_jobs=n_jobs)
+            fit_intercept=fit_intercept, backtracking=backtracking)
+        self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
         self.eps = eps
@@ -870,7 +869,8 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
             self, l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
-            n_jobs=n_jobs, normalize=normalize, standardize=standardize)
+            normalize=normalize, standardize=standardize)
+        self.n_jobs = n_jobs
         self.cv = cv
         self.debias = debias
         self.eps = eps
@@ -989,8 +989,8 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
         super(TVl1ClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking,
-            n_jobs=n_jobs)
+            fit_intercept=fit_intercept, backtracking=backtracking)
+        self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
         self.eps = eps
@@ -1101,7 +1101,8 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
-            n_jobs=n_jobs, standardize=standardize, normalize=normalize)
+            standardize=standardize, normalize=normalize)
+        self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
         self.debias = debias
