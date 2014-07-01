@@ -140,12 +140,13 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
 
 
 def test_params_correctly_propagated_in_constructors():
-    for cv_class, n_alphas, l1_ratio, n_jobs, cv in itertools.product(
+    for cv_class, n_alphas, l1_ratio, n_jobs, cv, perc in itertools.product(
         [SmoothLassoRegressorCV, SmoothLassoClassifierCV, TVl1RegressorCV,
-         TVl1ClassifierCV], [.1, .01], [.5, 1.], [1, -1], [2, 3]):
+         TVl1ClassifierCV], [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
         cvobj = cv_class(n_alphas=n_alphas, n_jobs=n_jobs, l1_ratio=l1_ratio,
-                         cv=cv)
+                         cv=cv, screening_percentile=perc)
         assert_equal(cvobj.n_alphas, n_alphas)
         assert_equal(cvobj.l1_ratio, l1_ratio)
         assert_equal(cvobj.n_jobs, n_jobs)
         assert_equal(cvobj.cv, cv)
+        assert_equal(cvobj.screening_percentile, perc)
