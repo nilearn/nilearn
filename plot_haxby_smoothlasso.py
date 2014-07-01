@@ -54,7 +54,7 @@ session_labels = labels['chunks'][condition_mask]
 
 ### Cross-validation ##########################################################
 # Here we use a SmoothLasso classifier
-from nilearn.sparse_models.cv import SmoothLassoClassifierCV
+from nilearn.decoding.sparse_models.cv import SmoothLassoClassifierCV
 import os
 n_jobs = int(os.environ.get("N_JOBS", 1))
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
@@ -85,7 +85,7 @@ slicer = plot_stat_map(coef_niimg, mean_epi, title="Smooth Lasso weights")
 slicer.contour_map(nifti_masker.mask_img_, levels=[.5], colors='r')
 
 # CV
-from nilearn.sparse_models.cv import plot_cv_scores
+from nilearn.decoding.sparse_models.cv import plot_cv_scores
 plot_cv_scores(slcv)
 print ("Accurarcy: %g" % ((slcv.predict(fmri_masked) == target
                            ).mean() * 100.)) + "%"
