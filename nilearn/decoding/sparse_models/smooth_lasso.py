@@ -37,7 +37,7 @@ SmoothLasso{Regressor|Classifier}.fit
 
 import warnings
 import numpy as np
-from .._utils.fixes import is_classifier, LabelBinarizer
+from ..._utils.fixes import is_classifier, LabelBinarizer
 from .common import (logistic, logistic_grad,
                      compute_logistic_lipschitz_constant)
 from .image import grad as gradient, div as divergence

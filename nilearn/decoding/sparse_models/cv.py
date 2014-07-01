@@ -14,7 +14,8 @@ from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
-from .._utils.fixes import center_data, LabelBinarizer, roc_auc_score
+from ..._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
+                              is_regressor, is_classifier)
 from .common import _sigmoid
 from .estimators import (_BaseRegressor, _BaseClassifier, _BaseEstimator,
                          SmoothLassoRegressor, SmoothLassoClassifier,
@@ -23,7 +24,6 @@ from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 from ._cv_tricks import (EarlyStoppingCallback, RegressorFeatureSelector,
                          ClassifierFeatureSelector, _my_alpha_grid)
-from .._utils.fixes import is_regressor, is_classifier
 
 
 def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,

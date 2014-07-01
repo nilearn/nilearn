@@ -6,7 +6,7 @@ from sklearn.datasets import load_iris
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
                   SmoothLassoClassifierCV, SmoothLassoRegressorCV)
 from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
-                          EarlyStoppingCallback, _my_alpha_grid)
+                            EarlyStoppingCallback, _my_alpha_grid)
 
 
 @nottest

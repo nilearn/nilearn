@@ -11,10 +11,9 @@ Ninja tricks (early stopping, etc.) to make CV a better place to live...
 # License: simplified BSD
 
 from functools import partial
-from math import sqrt
 import numpy as np
 from scipy import stats
-from .._utils.fixes import center_data
+from ..._utils.fixes import center_data
 from sklearn.feature_selection import (
     f_regression, f_classif, SelectPercentile)
 
