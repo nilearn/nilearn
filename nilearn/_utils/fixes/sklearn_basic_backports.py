@@ -268,8 +268,8 @@ class MyLabelBinarizer(LabelBinarizer):
 
         y_ = LabelBinarizer.fit_transform(self, y)
 
-        # fix for sklearn version 0.10 (for example)
-        if np.min(y_) == 0.:
+        if np.min(y_) == 0. and self.neg_label == -1:
+            # fix for old sklearn versions (0.10 for example)
             y_ = 2. * (y_ == 1.) - 1.
 
         return y_
