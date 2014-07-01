@@ -69,7 +69,7 @@ class EarlyStoppingCallback(object):
         # Correlation (Spearman) to output
         y_pred = np.dot(self.X_test, w)
         y_pred -= y_pred.mean()
-        error = stats.spearmanr(y_pred, self.y_test)
+        error = .5 * (1. - stats.spearmanr(y_pred, self.y_test)[0])
         self.test_errors.append(error)
         if not (i > 20 and (i % 10) == 2):
             return

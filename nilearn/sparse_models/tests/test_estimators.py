@@ -1,6 +1,7 @@
 import os
 import sys
-from nose.tools import nottest
+import itertools
+from nose.tools import nottest, assert_equal
 import numpy as np
 from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
@@ -125,3 +126,12 @@ def test_lasso_vs_smooth_lasso():
         np.dot(X, smooth_lasso.coef_) - y) ** 2\
         + np.sum(np.abs(smooth_lasso.coef_))
     np.testing.assert_almost_equal(smooth_lasso_perf, lasso_perf, decimal=3)
+
+
+def test_params_correctly_propagated_in_constructors():
+    for model_class, alpha, l1_ratio in itertools.product(
+        [SmoothLassoRegressor, SmoothLassoClassifier, TVl1Regressor,
+         TVl1Classifier], [.4, .01], [.5, 1.]):
+        cvobj = model_class(alpha=alpha, l1_ratio=l1_ratio)
+        assert_equal(cvobj.alpha, alpha)
+        assert_equal(cvobj.l1_ratio, l1_ratio)
