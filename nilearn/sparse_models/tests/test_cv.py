@@ -1,4 +1,5 @@
-from nose.tools import assert_equal, assert_true
+import itertools
+from nose.tools import assert_equal, assert_true, nottest
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
@@ -8,7 +9,9 @@ from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
                           EarlyStoppingCallback, _my_alpha_grid)
 
 
+@nottest
 def test_same_lasso_classifier_cv():
+    # XXX test fails with early stopping in CV
     l1_ratio = 1.
     memory = Memory("cache")
     iris = load_iris()
@@ -23,9 +26,7 @@ def test_same_lasso_classifier_cv():
                                         l1_ratio=l1_ratio, tol=tol).fit(X, y)
     slclassifiercv = SmoothLassoClassifierCV(n_alphas=n_alphas, memory=memory,
                                    cv=2, l1_ratio=l1_ratio, tol=tol).fit(X, y)
-    if 0:
-        # XXX test fails with early stopping in CV
-        assert_equal(tvl1classifiercv.alpha_, slclassifiercv.alpha_)
+    assert_equal(tvl1classifiercv.alpha_, slclassifiercv.alpha_)
 
     # regression
     tvl1regressorcv = TVl1RegressorCV(n_alphas=n_alphas, memory=memory, cv=2,
@@ -33,31 +34,7 @@ def test_same_lasso_classifier_cv():
     slregressorcv = SmoothLassoRegressorCV(n_alphas=n_alphas, memory=memory,
                                            cv=2, l1_ratio=l1_ratio, tol=tol
                                            ).fit(X, y)
-    if 0:
-        # XXX test fails with early stopping in CV
-        assert_equal(tvl1regressorcv.alpha_, slregressorcv.alpha_)
-
-    # plot cv curves
-    if 0:
-        import pylab as pl
-        for cv in [tvl1classifiercv, tvl1regressorcv, slclassifiercv,
-                   slregressorcv]:
-            pl.figure()
-            means = cv.scores_.mean(axis=-1)
-            stds = cv.scores_.std(axis=-1)
-            best_score = np.mean(cv.scores_[cv.alphas_ == cv.alpha_])
-            pl.errorbar(-np.log10(cv.alphas_), means, yerr=stds,
-                        label="test error")
-            pl.axvline(-np.log10(cv.alpha_), linestyle="--",
-                       c='r', label="best alpha")
-            pl.axhline(best_score, linestyle="-.", c='r',
-                       label="best mean test error")
-            pl.ylabel("mean test error (misclassification)")
-            pl.xlabel("-Log10(alpha)")
-            pl.legend(loc="best")
-            pl.title("sk iris data: %s (l1_ratio=%g)" % (
-                    cv.__class__.__name__, l1_ratio))
-        pl.show()
+    assert_equal(tvl1regressorcv.alpha_, slregressorcv.alpha_)
 
 
 def test_my_alpha_grid(n_samples=4, n_features=3):
@@ -160,3 +137,15 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
         # restart
         if counter > 20:
             w *= 0.
+
+
+def test_params_correctly_propagated_in_constructors():
+    for cv_class, n_alphas, l1_ratio, n_jobs, cv in itertools.product(
+        [SmoothLassoRegressorCV, SmoothLassoClassifierCV, TVl1RegressorCV,
+         TVl1ClassifierCV], [.1, .01], [.5, 1.], [1, -1], [2, 3]):
+        cvobj = cv_class(n_alphas=n_alphas, n_jobs=n_jobs, l1_ratio=l1_ratio,
+                         cv=cv)
+        assert_equal(cvobj.n_alphas, n_alphas)
+        assert_equal(cvobj.l1_ratio, l1_ratio)
+        assert_equal(cvobj.n_jobs, n_jobs)
+        assert_equal(cvobj.cv, cv)
