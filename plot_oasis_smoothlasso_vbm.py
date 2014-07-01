@@ -38,7 +38,7 @@ import os
 from nilearn.sparse_models.cv import SmoothLassoRegressorCV, plot_cv_scores
 n_jobs = int(os.environ.get("N_JOBS", 1))
 slcv = SmoothLassoRegressorCV(verbose=1, n_jobs=n_jobs, memory=memory,
-                              mask=mask, screening_percentile=10)
+                              mask=mask, screening_percentile=20)
 
 ### Fit and predict
 slcv.fit(gm_maps_masked, age)
