@@ -61,6 +61,18 @@ different heuristics to find cutting coordinates.
                   General-purpose function, with no specific presets
 ================= =========================================================
 
+.. warning:: **Opening too many figures without closing**
+
+   Each call to a plotting function creates a new figure by default. When
+   used in non-interactive settings, such as a script or a program, these
+   are not displayed, but still accumulate and eventually lead to slowing
+   the execution and running out of memory.
+
+   To avoid this, you must close the plot as follow::
+
+    >>> from nilearn import plotting
+    >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
+    >>> display.close()     # doctest: +SKIP
 
 Different display modes
 ========================
@@ -150,7 +162,7 @@ functions. Indeed, these return a slicer object, such as the
 :class:`nilearn.plotting.slicers.OrthoSlicer`. This object represents the
 plot, and has methods to add overlays, contours or edge maps::
 
-        slices = plotting.plot_epi(...)
+        slicer = plotting.plot_epi(...)
 
 .. |plot_edges| image:: ../auto_examples/images/plot_demo_plotting_13.png
      :target: ../auto_examples/plot_demo_plotting.html

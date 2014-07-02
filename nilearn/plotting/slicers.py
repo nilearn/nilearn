@@ -253,7 +253,7 @@ class BaseSlicer(object):
         return cls(cut_coords, axes, black_bg)
 
 
-    def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None, 
+    def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None,
               alpha=1, **kwargs):
         """ Write a title to the view.
 
@@ -331,7 +331,6 @@ class BaseSlicer(object):
         if colorbar:
             self._colorbar_show(ims[0])
 
-
     def add_contours(self, img, **kwargs):
         """ Contour a 3D map in all the views.
 
@@ -348,7 +347,6 @@ class BaseSlicer(object):
                 these contours.
         """
         self._map_show(img, type='contour', **kwargs)
-
 
     def _map_show(self, img, type='imshow', **kwargs):
         img = reorder_img(img)
@@ -398,7 +396,7 @@ class BaseSlicer(object):
                             type=type, **kwargs)
             ims.append(im)
         return ims
-    
+
     def _colorbar_show(self, im):
         adjusted_width = self._colorbar_width/len(self.axes)
         adjusted_right_margin = 0.01/len(self.axes)
@@ -487,6 +485,11 @@ class BaseSlicer(object):
             for cut_ax in self.axes.values():
                 cut_ax.draw_position(size=size, bg_color=bg_color,
                                        **kwargs)
+
+    def close(self):
+        """ Close the figure. This is necessary to avoid leaking memory.
+        """
+        pl.close(self.frame_axes.figure.number)
 
 
 ################################################################################
