@@ -81,8 +81,8 @@ def test_plot_functions():
         # Smoke test coordinate finder, with and without mask
         masked_img = nibabel.Nifti1Image(np.ma.masked_equal(data, 0),
                                          mni_affine)
-        plot_img(masked_img, display_mode='x')
-        plot_img(img, display_mode='y')
+        func(masked_img, display_mode='x')
+        func(img, display_mode='y')
 
         out = func(img, output_file=tempfile.TemporaryFile(suffix='.png'))
         assert_true(out is None)
