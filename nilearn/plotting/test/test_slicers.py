@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import nose
-
+import tempfile
 
 try:
     import matplotlib as mp
@@ -39,6 +39,8 @@ def test_stacked_slicer():
     img = load_mni152_template()
     slicer = XSlicer.init_with_figure(img=img, cut_coords=3)
     slicer.add_overlay(img, cmap=pl.cm.gray)
+    # Forcing a layout here, to test the locator code
+    slicer.savefig(tempfile.TemporaryFile())
     slicer.close()
 
 

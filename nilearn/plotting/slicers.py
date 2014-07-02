@@ -743,12 +743,12 @@ class BaseStackedSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
         cut_ax_dict = self.axes
-        
+
         if self._colorbar:
             adjusted_width = self._colorbar_width/len(self.axes)
             ticks_margin = adjusted_width*self._colorbar_labels_margin
             x1 = x1 - (adjusted_width+ticks_margin)
-            
+
         for cut_ax in cut_ax_dict.itervalues():
             bounds = cut_ax.get_object_bounds()
             if not bounds:
