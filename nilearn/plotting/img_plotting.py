@@ -35,10 +35,11 @@ from .find_cuts import find_cut_slices
 ################################################################################
 # Core, usage-agnostic functions
 
-def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
+def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
+             output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False,
-             bg_vmin=None, bg_vmax=None, interpolation="nearest", 
+             bg_vmin=None, bg_vmax=None, interpolation="nearest",
              colorbar=False, **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
@@ -106,12 +107,16 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
         slicer.draw_cross()
     if title is not None and not title == '':
         slicer.title(title)
+    if output_file is not None:
+        slicer.savefig(output_file)
+        slicer.close()
+        slicer = None
     return slicer
 
 
-def plot_img(niimg, cut_coords=None, display_mode='ortho', figure=None,
-             axes=None, title=None, threshold=None,
-             annotate=True, draw_cross=True, black_bg=False, **kwargs):
+def plot_img(niimg, cut_coords=None, output_file=None, display_mode='ortho',
+            figure=None, axes=None, title=None, threshold=None,
+            annotate=True, draw_cross=True, black_bg=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
@@ -126,6 +131,10 @@ def plot_img(niimg, cut_coords=None, display_mode='ortho', figure=None,
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
         display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
@@ -160,8 +169,9 @@ def plot_img(niimg, cut_coords=None, display_mode='ortho', figure=None,
             Extra keyword arguments passed to pylab.imshow
     """
     slicer = _plot_img_with_bg(niimg, cut_coords=cut_coords,
-                    display_mode=display_mode, figure=figure, axes=axes,
-                    title=title, threshold=threshold, annotate=annotate,
+                    output_file=output_file, display_mode=display_mode,
+                    figure=figure, axes=axes, title=title,
+                    threshold=threshold, annotate=annotate,
                     draw_cross=draw_cross,
                     black_bg=black_bg, **kwargs)
     return slicer
@@ -277,10 +287,10 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 # Usage-specific functions
 
 
-def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, display_mode='ortho',
-              figure=None, axes=None, title=None, annotate=True,
-              draw_cross=True, black_bg='auto', dim=False, cmap=pl.cm.gray,
-              **kwargs):
+def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
+              output_file=None, display_mode='ortho', figure=None,
+              axes=None, title=None, annotate=True, draw_cross=True,
+              black_bg='auto', dim=False, cmap=pl.cm.gray, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -297,15 +307,18 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, display_mode='ortho',
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
         display_mode: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -333,7 +346,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, display_mode='ortho',
     anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
                                                 dim=dim, black_bg=black_bg)
     slicer = plot_img(anat_img, cut_coords=cut_coords,
-                      display_mode=display_mode,
+                      output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
@@ -341,9 +354,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, display_mode='ortho',
     return slicer
 
 
-def plot_epi(epi_img=None, cut_coords=None, display_mode='ortho',
-             figure=None, axes=None, title=None, annotate=True,
-             draw_cross=True, black_bg=True, cmap=pl.cm.spectral, **kwargs):
+def plot_epi(epi_img=None, cut_coords=None, output_file=None,
+             display_mode='ortho', figure=None, axes=None, title=None,
+             annotate=True, draw_cross=True, black_bg=True,
+             cmap=pl.cm.spectral, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -359,6 +373,10 @@ def plot_epi(epi_img=None, cut_coords=None, display_mode='ortho',
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
         display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
@@ -392,7 +410,7 @@ def plot_epi(epi_img=None, cut_coords=None, display_mode='ortho',
         ordered.
     """
     slicer = plot_img(epi_img, cut_coords=cut_coords,
-                      display_mode=display_mode,
+                      output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
@@ -401,17 +419,17 @@ def plot_epi(epi_img=None, cut_coords=None, display_mode='ortho',
 
 
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
-             display_mode='ortho', figure=None, axes=None, title=None,
-             annotate=True, draw_cross=True, black_bg='auto', alpha=0.7,
-             cmap=pl.cm.gist_ncar, dim=True, **kwargs):
+             output_file=None, display_mode='ortho', figure=None, axes=None,
+             title=None, annotate=True, draw_cross=True, black_bg='auto',
+             alpha=0.7, cmap=pl.cm.gist_ncar, dim=True, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
         Parameters
         ----------
         roi_img : a nifti-image like object or a filename
-            The ROI/mask image, it could be binary mask or an atlas or ROIs with 
-            integer values.
+            The ROI/mask image, it could be binary mask or an atlas or ROIs
+            with integer values.
         bg_img : a nifti-image like object or a filename
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
@@ -422,15 +440,18 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
         display_mode: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal, 
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal 
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -447,19 +468,14 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             you whish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
-        cmap: matplotlib colormap, optional
-            The colormap for the anat
 
-        Notes
-        -----
-        Arrays should be passed in numpy convention: (x, y, z)
-        ordered.
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
     slicer = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
                                cut_coords=cut_coords,
+                               output_file=output_file,
                                display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, draw_cross=draw_cross,
@@ -470,18 +486,17 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
 
 def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
-                  display_mode='ortho', figure=None, axes=None, title=None,
-                  threshold=1e-6, annotate=True, draw_cross=True,
-                  black_bg='auto', cmap=cm.cold_hot, dim=True, colorbar=True,
-                  **kwargs):
-    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
+                  output_file=None, display_mode='ortho', figure=None,
+                  axes=None, title=None, threshold=1e-6, annotate=True,
+                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
+                  dim=True, colorbar=True, **kwargs):
+    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
         Parameters
         ----------
         stat_map_img : a nifti-image like object or a filename
-            The ROI/mask image, it could be binary mask or an atlas or ROIs with 
-            integer values.
+            The statistical map image
         bg_img : a nifti-image like object or a filename
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
@@ -493,6 +508,10 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
         display_mode: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
@@ -500,8 +519,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -540,6 +558,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords,
+                               output_file=output_file,
                                display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, draw_cross=draw_cross,

@@ -195,3 +195,27 @@ plot, and has methods to add overlays, contours or edge maps::
 
 ================= =========================================================
 
+Saving to an image file
+========================
+
+The simplest way to output an image file from the plotting functions is
+to specify the `output_file` argument::
+
+    >>> from nilearn import plotting
+    >>> plotting.plot_stat_map(img, output_file='pretty_brain.png')     # doctest: +SKIP
+
+In this case, the display is closed automatically and the plotting
+function returns None.
+
+|
+
+The slicer object returned by the plotting function has a savefig method
+that can be used to save the plot to an image file::
+
+    >>> from nilearn import plotting
+    >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
+    >>> display.savefig('pretty_brain.png')     # doctest: +SKIP
+    # Don't forget to close the display
+    >>> display.close()     # doctest: +SKIP
+
+

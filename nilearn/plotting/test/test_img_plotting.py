@@ -5,7 +5,7 @@ import tempfile
 import numpy as np
 
 from nose import SkipTest
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_true
 
 try:
     import matplotlib as mp
@@ -19,7 +19,8 @@ except ImportError:
 import nibabel
 
 from ...image.resampling import coord_transform
-from ..img_plotting import MNI152TEMPLATE, plot_anat, plot_img, plot_roi
+from ..img_plotting import MNI152TEMPLATE, plot_anat, plot_img, plot_roi,\
+    plot_stat_map, plot_epi
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                         [   0.,    2.,    0., -126.],
@@ -51,8 +52,11 @@ def test_demo_plot_roi():
     # Test the black background code path
     demo_plot_roi(black_bg=True)
 
+    out = demo_plot_roi(output_file=tempfile.TemporaryFile(suffix='.png'))
+    assert_true(out is None)
 
-def test_plot_anat():
+
+def test_plot_functions():
     # This is only a smoke test
     mp.use('svg', warn=False)
     import pylab as pl
@@ -61,22 +65,28 @@ def test_plot_anat():
     data[3:-3, 3:-3, 3:-3] = 1
     img = nibabel.Nifti1Image(data, mni_affine)
     ortho_slicer = plot_anat(img, dim=True)
-    ortho_slicer = plot_anat(img, cut_coords=(80, -120, -60))
-    # Saving forces a draw, and thus smoke-tests the axes locators
-    pl.savefig(tempfile.TemporaryFile())
-    ortho_slicer.add_edges(img, color='c')
-
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
-    pl.savefig(tempfile.TemporaryFile())
+    ortho_slicer.savefig(tempfile.TemporaryFile())
     z_slicer = plot_anat(display_mode='z')
-    pl.savefig(tempfile.TemporaryFile())
+    ortho_slicer.savefig(tempfile.TemporaryFile())
     z_slicer.add_edges(img, color='c')
-    # Smoke test coordinate finder, with and without mask
-    masked_img = nibabel.Nifti1Image(np.ma.masked_equal(data, 0),
-                                     mni_affine)
-    plot_img(masked_img, display_mode='x')
-    plot_img(img, display_mode='y')
+
+    for func in plot_anat, plot_img, plot_stat_map, plot_epi:
+        ortho_slicer = func(img, cut_coords=(80, -120, -60))
+        # Saving forces a draw, and thus smoke-tests the axes locators
+        ortho_slicer.savefig(tempfile.TemporaryFile())
+        ortho_slicer.add_edges(img, color='c')
+
+        # Smoke test coordinate finder, with and without mask
+        masked_img = nibabel.Nifti1Image(np.ma.masked_equal(data, 0),
+                                         mni_affine)
+        plot_img(masked_img, display_mode='x')
+        plot_img(img, display_mode='y')
+
+        out = func(img, output_file=tempfile.TemporaryFile(suffix='.png'))
+        assert_true(out is None)
+    pl.close('all')
 
 
 def test_plot_img_empty():
@@ -89,7 +99,8 @@ def test_plot_img_empty():
     data = np.zeros((20, 20, 20))
     img = nibabel.Nifti1Image(data, mni_affine)
     plot_anat(img)
-    plot_img(img, display_mode='y', threshold=1)
+    slicer = plot_img(img, display_mode='y', threshold=1)
+    slicer.close()
     pl.close('all')
 
 

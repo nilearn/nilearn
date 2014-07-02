@@ -491,6 +491,22 @@ class BaseSlicer(object):
         """
         pl.close(self.frame_axes.figure.number)
 
+    def savefig(self, filename, dpi=None):
+        """ Save the figure to a file
+
+            Parameters
+            ==========
+            filename: string
+                The file name to save to. It's extension determines the
+                file type, typically '.png', '.svg' or '.pdf'.
+
+            dpi: None or scalar
+                The resolution in dots per inch.
+        """
+        facecolor = edgecolor = 'k' if self._black_bg else 'w'
+        self.frame_axes.figure.savefig(filename, dpi=dpi,
+                                       facecolor=facecolor,
+                                       edgecolor=edgecolor)
 
 ################################################################################
 # class OrthoSlicer
