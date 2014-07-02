@@ -10,6 +10,7 @@ import operator
 import numpy as np
 import nibabel
 from .._utils.testing import skip_if_running_nose
+from .. import _utils
 
 try:
     import pylab as pl
@@ -211,15 +212,8 @@ class BaseSlicer(object):
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False, colorbar=False):
         # deal with "fake" 4D images
-        if img is not None and img is not False and len(img.shape) > 3:
-            if len(img.shape) == 4 and img.shape[3] == 1:
-                data = img.get_data()
-                data = data[:,:,:,0]
-                img = nibabel.Nifti1Image(data, img.get_affine())
-            else:
-                raise ValueError("The provided volume has %d dimensions. Only" \
-                                 " three dimensional volumes volumes are " \
-                                 "supported."%len(data.shape))
+        if img is not None and img is not False:
+            img = _utils.check_niimg(img, ensure_3d=True)
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
@@ -320,17 +314,8 @@ class BaseSlicer(object):
                              "colorbar.")
         else:
             self._colorbar = colorbar
-        
-        # deal with "fake" 4D images
-        if len(img.shape) > 3:
-            if len(img.shape) == 4 and img.shape[3] == 1:
-                data = img.get_data()
-                data = data[:,:,:,0]
-                img = nibabel.Nifti1Image(data, img.get_affine())
-            else:
-                raise ValueError("The provided volume has %d dimensions. Only" \
-                                 " three dimensional volumes volumes are " \
-                                 "supported."%len(data.shape))
+
+        img = _utils.check_niimg(img, ensure_3d=True)
 
         if threshold is not None:
             data = img.get_data()
@@ -342,7 +327,7 @@ class BaseSlicer(object):
             img = nibabel.Nifti1Image(data, img.get_affine())
 
         ims = self._map_show(img, type='imshow', **kwargs)
-        
+
         if colorbar:
             self._colorbar_show(ims[0])
 

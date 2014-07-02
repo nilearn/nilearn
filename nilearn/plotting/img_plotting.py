@@ -26,7 +26,6 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
-from ..image.resampling import coord_transform
 from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
 from .slicers import get_slicer
@@ -44,7 +43,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, display_mode='ortho',
     """ Internal function, please refer to the docstring of plot_img
     """
     if img is not False and img is not None:
-        img = _utils.check_niimg(img)
+        img = _utils.check_niimg(img, ensure_3d=True)
         data = img.get_data()
         affine = img.get_affine()
 
@@ -234,7 +233,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
             if black_bg == 'auto':
                 black_bg = False
         else:
-            anat_img = _utils.check_niimg(anat_img)
+            anat_img = _utils.check_niimg(anat_img, ensure_3d=True)
             if dim or black_bg == 'auto':
                 # We need to inspect the values of the image
                 data = anat_img.get_data()
@@ -532,7 +531,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                                     black_bg=black_bg)
 
     # make sure that the color range is symmetrical
-    stat_map_img = _utils.check_niimg(stat_map_img)
+    stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
     stat_map_data = stat_map_img.get_data()
     stat_map_max = np.nanmax(stat_map_data)
     stat_map_min = np.nanmin(stat_map_data)

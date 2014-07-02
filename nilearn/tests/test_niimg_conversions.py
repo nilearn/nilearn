@@ -46,6 +46,12 @@ def test_check_niimg():
         _utils.check_niimg([])
     assert_true('image' in cm.exception.message
                 or 'affine' in cm.exception.message)
+
+    # Test ensure_3d
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg(['test.nii', ], ensure_3d=True)
+    assert_true('3D' in cm.exception.message)
+
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -54,6 +60,11 @@ def test_check_niimg():
     with testing.write_tmp_imgs(data_img, create_files=True)\
                 as filename:
         _utils.check_niimg(filename)
+
+    # Test ensure_3d with a in-memory object
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg(data, ensure_3d=True)
+    assert_true('3D' in cm.exception.message)
 
 
 def test_check_niimgs():
