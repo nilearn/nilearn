@@ -38,7 +38,7 @@ import os
 from nilearn.decoding.sparse_models.cv import SmoothLassoRegressorCV
 n_jobs = int(os.environ.get("N_JOBS", 1))
 slcv = SmoothLassoRegressorCV(verbose=1, n_jobs=n_jobs, memory=memory,
-                              mask=mask, screening_percentile=20)
+                              mask=mask, screening_percentile=5)
 
 ### Fit and predict
 slcv.fit(gm_maps_masked, age)
@@ -64,10 +64,11 @@ im = plt.imshow(np.rot90(data_for_plot), cmap=plt.cm.Spectral_r,
 plt.axis('off')
 plt.colorbar(im)
 plt.title('S-LASSO weights')
-plot_cv_scores(slcv, errorbars=False)
 
 # plot CV errors
 from nilearn.decoding.sparse_models.cv import plot_cv_scores
+plot_cv_scores(slcv, errorbars=False)
+
 plt.figure()
 linewidth = 3
 ax1 = plt.subplot('211')
