@@ -62,7 +62,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
         return 1. - roc_auc_score(
             (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
 
-    # setup callback mechanism for ealry stopping
+    # setup callback mechanism for early stopping
     callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
     env = dict(counter=0)
 
@@ -151,7 +151,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
         score = .5 * np.mean((y_test - y_pred) ** 2)
         return score
 
-    # setup callback mechanism for ealry stopping
+    # setup callback mechanism for early stopping
     callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
     env = dict(counter=0)
 
@@ -178,6 +178,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
         test_scores.append(score)
         if score <= best_score:
             best_alpha = alpha
+
             best_score = score
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
@@ -279,7 +280,7 @@ class _BaseCV(_BaseEstimator):
                  standardize=False, normalize=False, alpha_min=1e-6,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, backtracking=False,
-                 bagging=True, screening_percentile=10.):
+                 screening_percentile=10.):
         super(_BaseCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -291,7 +292,6 @@ class _BaseCV(_BaseEstimator):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.bagging = bagging
         self.screening_percentile = 10
         assert 0. <= screening_percentile <= 100.
 
@@ -308,7 +308,6 @@ class _BaseCV(_BaseEstimator):
     def fit(self, X, y):
         # misc
         self.__class__.__name__.endswith("CV")
-        model_class = eval(self.__class__.__name__[:-2])
         solver = eval(self.solver)
         path_scores_func = eval(self.path_scores_func)
         tricky_kwargs = {}
@@ -375,8 +374,7 @@ class _BaseCV(_BaseEstimator):
                 self.scores_[c] = test_scores
             else:
                 self.scores_[c] = np.hstack((self.scores_[c], test_scores))
-            if self.bagging:
-                w[c] += best_w
+            w[c] += best_w
 
         self.alphas_ = alphas
         self.i_alpha_ = [np.argmin(np.mean(self.scores_[c], axis=-1))
@@ -385,28 +383,7 @@ class _BaseCV(_BaseEstimator):
             self.i_alpha_ = self.i_alpha_
         self.alpha_ = alphas[self.i_alpha_]
 
-        if self.bagging:
-            # take average of best weights maps over folds
-            w /= self.n_folds_
-        else:
-            # re-fit model with best params
-            # XXX run this in parallel (use n_jobs)!
-            for c in xrange(n_problems):
-                params = dict((k, v) for k, v in self.get_params().iteritems()
-                              if k in model_class().get_params())
-                params["alpha"] = self.alpha_[c]
-                if is_regressor(self):
-                    selector = RegressorFeatureSelector(
-                        percentile=self.screening_percentile,
-                        mask=self.mask)
-                else:
-                    selector = ClassifierFeatureSelector(
-                        percentile=self.screening_percentile,
-                        mask=self.mask)
-                X = selector.fit_transform(X, y)
-                params["mask"] = selector.mask_
-                w[c] = selector.inverse_transform(model_class(
-                        **params).fit(X, y).w_)
+        w /= self.n_folds_
 
         if is_classifier(self):
             self._set_coef_and_intercept(w)
