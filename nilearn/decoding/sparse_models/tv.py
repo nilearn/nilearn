@@ -70,9 +70,10 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
     return out
 
 
-def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
-                rescale_alpha=True, lipschitz_constant=None,
-                prox_max_iter=5000, verbose=0, tol=1e-4, **kwargs):
+def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
+                rescale_alpha=True, lipschitz_constant=None, init=None,
+                prox_max_iter=5000, tol=1e-4, callback=None, verbose=1,
+                backtracking=False):
     """Minimizes empirical risk for TV-l1 penalized models.
 
     Can handle least-squares (mean square error --a.k.a mse) or logistic
@@ -120,6 +121,10 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
+    callback: callable(dict) -> bool
+        Function called at the end of every energy descendent iteration of the
+        solver. If it returns True, the loop breaks.
+
     Returns
     -------
     w: np.array of size w_size
@@ -131,7 +136,6 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
 
     objective: array of floats
         Objective function (fval) computed on every iteration.
-
 
     """
 
@@ -220,6 +224,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
     # invoke m-FISTA solver
     w, obj, init = mfista(
         f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
-        dgap_factor=(.1 + l1_ratio) ** 2, tol=tol, verbose=verbose, **kwargs)
+        dgap_factor=(.1 + l1_ratio) ** 2, tol=tol, init=init, verbose=verbose,
+        max_iter=max_iter, callback=callback, backtracking=backtracking)
  
     return w, obj, init
