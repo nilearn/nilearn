@@ -7,7 +7,7 @@ import os
 import sys
 from nose.tools import assert_equal
 import numpy as np
-from ..common import gradient_id, compute_mse
+from ..common import gradient_id, squared_loss
 from ..tv import tvl1_objective, _tvl1_objective_from_gradient
 
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
@@ -32,6 +32,6 @@ def test_tv_l1_from_gradient(size=5, n_samples=10, random_state=42,
             gradid = gradient_id(w, l1_ratio=l1_ratio)
             assert_equal(tvl1_objective(
                 X, y, w.copy(), alpha, l1_ratio, shape=shape),
-                compute_mse(X, y, w.copy(), compute_grad=False
+                squared_loss(X, y, w.copy(), compute_grad=False
                             ) + alpha * _tvl1_objective_from_gradient(
                     gradid))

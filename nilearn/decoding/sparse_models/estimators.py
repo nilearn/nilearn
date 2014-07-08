@@ -17,8 +17,8 @@ from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model.base import LinearModel
 from ..._utils.fixes import center_data, LinearClassifierMixin, LabelBinarizer
-from .common import (compute_mse_lipschitz_constant,
-                     compute_logistic_lipschitz_constant)
+from .common import (squared_loss_lipschitz_constant,
+                     logistic_loss_lipschitz_constant)
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 
@@ -511,7 +511,7 @@ class TVl1Regressor(_BaseRegressor):
     solver = "partial(tvl1_solver, loss='mse')"
 
     def compute_lipschitz_constant(self, X):
-        return 1.05 * compute_mse_lipschitz_constant(X)
+        return 1.05 * squared_loss_lipschitz_constant(X)
 
 
 class TVl1Classifier(_BaseClassifier):
@@ -575,4 +575,4 @@ class TVl1Classifier(_BaseClassifier):
     solver = "partial(tvl1_solver, loss='logistic')"
 
     def compute_lipschitz_constant(self, X):
-        return 1.1 * compute_logistic_lipschitz_constant(X)
+        return 1.1 * logistic_loss_lipschitz_constant(X)
