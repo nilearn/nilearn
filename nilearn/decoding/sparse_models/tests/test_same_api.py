@@ -10,7 +10,7 @@ from nose.tools import nottest
 import numpy as np
 from sklearn.datasets import load_iris
 from ..common import (squared_loss, squared_loss_grad,
-                      compute_logistic_lipschitz_constant,
+                      logistic_loss_lipschitz_constant,
                       squared_loss_lipschitz_constant)
 from ..smooth_lasso import (squared_loss_and_spatial_grad,
                             logistic_derivative_lipschitz_constant,
@@ -88,7 +88,7 @@ def test_lipschitz_constant_lass_logreg():
     mask = np.ones(X.shape[1]).astype(np.bool)
     grad_weight = alpha * X.shape[0] * (1. - l1_ratio)
     a = logistic_derivative_lipschitz_constant(X, mask, grad_weight)
-    b = compute_logistic_lipschitz_constant(X)
+    b = logistic_loss_lipschitz_constant(X)
     assert_equal(a, b)
 
 

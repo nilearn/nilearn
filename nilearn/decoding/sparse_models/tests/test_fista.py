@@ -2,7 +2,7 @@ from nose.tools import assert_equal, assert_true
 import numpy as np
 from ..fista import mfista
 from ..operators import prox_l1
-from ..common import compute_mse
+from ..common import squared_loss
 
 
 def test_input_args_and_kwargs():
@@ -20,8 +20,8 @@ def test_input_args_and_kwargs():
     alpha_ = alpha * X.shape[0]
     l1_ratio = .2
     l1_weight = alpha_ * l1_ratio
-    f1 = lambda w: compute_mse(X, y, w, mask, compute_grad=False)
-    f1_grad = lambda w: compute_mse(X, y, w, mask, compute_grad=True,
+    f1 = lambda w: squared_loss(X, y, w, mask, compute_grad=False)
+    f1_grad = lambda w: squared_loss(X, y, w, mask, compute_grad=True,
                                compute_energy=False)
     f2_prox = lambda w, l, *args, **kwargs: (prox_l1(w, l * l1_weight),
                                              dict(converged=True))

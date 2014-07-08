@@ -5,16 +5,14 @@ Test module for common.py
 
 import numpy as np
 from scipy.optimize import check_grad
-import itertools
-from ..common import (gradient_id, compute_mse, logistic,
+from ..common import (gradient_id, squared_loss_grad, logistic,
                       logistic_grad, _unmask,
-                      compute_logistic_lipschitz_constant,
+                      logistic_loss_lipschitz_constant,
                       check_lipschitz_continuous,
-                      compute_mse_lipschitz_constant,
+                      squared_loss_lipschitz_constant,
                       test_grad_div_adjoint_arbitrary_ndim)
 from ..estimators import _BaseEstimator
-from ..operators import prox_l1
-from nose.tools import assert_true, raises
+from nose.tools import raises
 
 
 def test_1D_gradient_id():
@@ -76,12 +74,12 @@ def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):
         y = rng.randn(n_samples)
         n_features = X.shape[1]
 
-        L = compute_logistic_lipschitz_constant(X)
+        L = logistic_loss_lipschitz_constant(X)
         check_lipschitz_continuous(lambda w: logistic(
             X, y, w), n_features + 1, L)
 
 
-def test_mse_lipschitz(n_samples=4, n_features=2, random_state=42):
+def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
     rng = np.random.RandomState(random_state)
 
     for scaling in np.logspace(-3, 3, num=7):
@@ -89,9 +87,9 @@ def test_mse_lipschitz(n_samples=4, n_features=2, random_state=42):
         y = rng.randn(n_samples)
         n_features = X.shape[1]
 
-        L = compute_mse_lipschitz_constant(X)
-        check_lipschitz_continuous(lambda w: compute_mse(
-            X, y, w, compute_energy=False), n_features, L)
+        L = squared_loss_lipschitz_constant(X)
+        check_lipschitz_continuous(lambda w: squared_loss_grad(
+            X, y, w), n_features, L)
 
 
 def test_grad_div_adjoint_arbitrary_ndim_():
