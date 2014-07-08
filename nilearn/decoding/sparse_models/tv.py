@@ -11,9 +11,9 @@ TV-l1 regression. Handles squared loss and logistic too.
 # License: simplified BSD
 
 import numpy as np
-from .common import (compute_mse_lipschitz_constant, gradient_id,
-                     compute_logistic_lipschitz_constant,
-                     mse_loss, mse_loss_grad, _unmask,
+from .common import (squared_loss_lipschitz_constant, gradient_id,
+                     logistic_loss_lipschitz_constant,
+                     squared_loss, squared_loss_grad, _unmask,
                      logistic_grad as logistic_loss_grad,
                      logistic as logistic_loss)
 from .operators import prox_tv_l1, intercepted_prox_tv_l1
@@ -59,7 +59,7 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
 
     w = w.ravel()
     if loss == "mse":
-        out = mse_loss(X, y, w, mask=mask)
+        out = squared_loss(X, y, w, mask=mask)
     else:
         out = logistic_loss(X, y, w, mask=mask)
         w = w[:-1]
@@ -179,14 +179,14 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
         if loss == "logistic":
             return logistic_loss(X, y, w)
         else:
-            return mse_loss(X, y, w)
+            return squared_loss(X, y, w)
 
     # function to compute derivative of f1
     def f1_grad(w):
         if loss == "logistic":
             return logistic_loss_grad(X, y, w)
         else:
-            return mse_loss_grad(X, y, w)
+            return squared_loss_grad(X, y, w)
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
     total_energy = lambda w: tvl1_objective(
@@ -196,9 +196,9 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None,
     # lispschitz constant of f1_grad
     if lipschitz_constant is None:
         if loss == "mse":
-            lipschitz_constant = 1.05 * compute_mse_lipschitz_constant(X)
+            lipschitz_constant = 1.05 * squared_loss_lipschitz_constant(X)
         else:
-            lipschitz_constant = 1.1 * compute_logistic_lipschitz_constant(X)
+            lipschitz_constant = 1.1 * logistic_loss_lipschitz_constant(X)
 
     # proximal operator of nonsmooth proximable part of energy (f2)
     if loss == "mse":

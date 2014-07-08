@@ -39,7 +39,7 @@ import warnings
 import numpy as np
 from ..._utils.fixes import is_classifier, LabelBinarizer
 from .common import (logistic, logistic_grad,
-                     compute_logistic_lipschitz_constant)
+                     logistic_loss_lipschitz_constant)
 from .image import grad as gradient, div as divergence
 from .operators import prox_l1
 from .fista import mfista
@@ -223,7 +223,7 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     """
     # L. constant for the data term (logistic)
     # data_constant = sp.linalg.norm(X, 2) ** 2
-    data_constant = compute_logistic_lipschitz_constant(X)
+    data_constant = logistic_loss_lipschitz_constant(X)
 
     a = np.random.randn(X.shape[1])
     a /= np.sqrt(np.dot(a, a))
