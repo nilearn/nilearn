@@ -4,9 +4,11 @@ import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
-                  SmoothLassoClassifierCV, SmoothLassoRegressorCV)
+                  SmoothLassoClassifierCV, SmoothLassoRegressorCV,
+                  logistic_path_scores, squared_loss_path_scores)
 from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
                             EarlyStoppingCallback, _my_alpha_grid)
+from ..smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 
 
 @nottest
@@ -80,7 +82,6 @@ def test_featureselectors():
     import random
     rng = np.random.RandomState(42)
     random.seed(0)
-    from sklearn.datasets import load_iris
     iris = load_iris()
     X, y = iris.data, iris.target
     for ndim in range(1, 4):
@@ -150,3 +151,25 @@ def test_params_correctly_propagated_in_constructors():
         assert_equal(cvobj.n_jobs, n_jobs)
         assert_equal(cvobj.cv, cv)
         assert_equal(cvobj.screening_percentile, perc)
+
+
+def test_logistic_path_scores():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    alphas = [1., .1, .01]
+    test_scores, best_w, _ = logistic_path_scores(
+        smooth_lasso_logistic, X, y, alphas, .5,
+        range(len(X)), range(len(X)))
+    assert_equal(len(test_scores), len(alphas))
+    assert_equal(X.shape[1] + 1, len(best_w))
+
+
+def test_squared_loss_path_scores():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    alphas = [1., .1, .01]
+    test_scores, best_w, _ = squared_loss_path_scores(
+        smooth_lasso_squared_loss, X, y, alphas, .5,
+        range(len(X)), range(len(X)))
+    assert_equal(len(test_scores), len(alphas))
+    assert_equal(X.shape[1], len(best_w))
