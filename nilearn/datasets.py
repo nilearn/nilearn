@@ -1836,10 +1836,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if url is None:
         url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
                    % (root_url, urllib.quote("Any X WHERE X is Subject")))
-        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s"
+        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
                     % (root_url,
                        urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
-                                    "X identifier XI, X datetime XD", safe=',')
+                                    "X identifier XI, X datetime "
+                                    "XD", safe=',')
                        ))
     else:
         url_csv = "%s/cubicwebexport.csv" % url
