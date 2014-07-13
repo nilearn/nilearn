@@ -10,6 +10,7 @@ sklearn-compatible Cross-Validation module for TV-l1, S-LASSO, etc. models
 #         and others.
 # License: simplified BSD
 
+import inspect
 from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
@@ -1161,7 +1162,7 @@ class TVl1RegressorCV(_BaseRegressorCV):
 
 
 def plot_cv_scores(cvobj, i_best_alpha=None, title=None, ylabel=None,
-                   errorbars=True):
+                   errorbars=True, show_best=False):
     """Plots CV scores against regularization parameter values (alpha grid).
 
     `cvobj` can be a CV object (_BaseCV instance) or a pair (alphas, scores).
@@ -1170,7 +1171,7 @@ def plot_cv_scores(cvobj, i_best_alpha=None, title=None, ylabel=None,
 
     import pylab as pl
 
-    if isinstance(cvobj, _BaseCV):
+    if hasattr(cvobj, '__class__'):
         alphas = cvobj.alphas_
         scores = cvobj.scores_
         i_best_alpha = cvobj.i_alpha_
@@ -1205,7 +1206,7 @@ def plot_cv_scores(cvobj, i_best_alpha=None, title=None, ylabel=None,
             pl.axhline(means[i_best_alpha], linestyle="--")
     else:
         pl.plot(lalphas_, scores, "s-")
-    if not i_best_alpha is None:
+    if not i_best_alpha is None and show_best:
         pl.axvline(lalphas_[i_best_alpha], linestyle="--",
                    label="Best alpha: %.1e" % alphas[i_best_alpha])
     pl.ylabel(ylabel)
@@ -1213,6 +1214,7 @@ def plot_cv_scores(cvobj, i_best_alpha=None, title=None, ylabel=None,
     pl.legend(loc="best")
     if title:
         pl.title(title)
+    pl.grid('on')
 
 
 TVl1Regressor = TVl1RegressorCV
