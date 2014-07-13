@@ -8,8 +8,8 @@ from sklearn.linear_model import Lasso
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from ..estimators import (TVl1Regressor, TVl1Classifier, SmoothLassoClassifier,
-                          SmoothLassoRegressor)
+from ..cv import (TVl1Regressor, TVl1Classifier, SmoothLassoClassifier,
+                  SmoothLassoRegressor)
 
 # Data used in almost all tests
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
@@ -86,8 +86,10 @@ def test_smooth_lasso_works_without_mask():
     for l1_ratio in [0., .5, 1.]:
         X = rng.randn(n_samples, n_features)
         y = rng.randn(n_samples)
-        SmoothLassoRegressor(l1_ratio=l1_ratio, mask=None).fit(X, y)
-        SmoothLassoClassifier(l1_ratio=l1_ratio, mask=None).fit(X, (y > 0))
+        SmoothLassoRegressor(l1_ratio=l1_ratio, mask=None,
+                             max_iter=10, alpha=1.).fit(X, y)
+        SmoothLassoClassifier(alpha=1., l1_ratio=l1_ratio, mask=None,
+                              max_iter=10).fit(X, (y > 0))
 
 
 @nottest
@@ -117,7 +119,7 @@ def test_lasso_vs_smooth_lasso():
     # Scikit-Learn lasso
     lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
     smooth_lasso = SmoothLassoRegressor(mask=mask, alpha=1, l1_ratio=1,
-                                        max_iter=400, normalize=False)
+                                        max_iter=100, normalize=False)
     lasso.fit(X, y)
     smooth_lasso.fit(X, y)
     lasso_perf = 0.5 / y.size * extmath.norm(np.dot(

@@ -2,9 +2,9 @@ import numpy as np
 from nose.tools import assert_true, assert_false
 from ...._utils.fixes import LabelBinarizer, is_classifier, is_regressor
 from ..cv import (SmoothLassoRegressorCV, SmoothLassoClassifierCV,
-                  TVl1RegressorCV, TVl1ClassifierCV)
-from ..estimators import (SmoothLassoRegressor, SmoothLassoClassifier,
-                          TVl1Regressor, TVl1Classifier)
+                  TVl1RegressorCV, TVl1ClassifierCV,
+                  SmoothLassoRegressor, SmoothLassoClassifier,
+                  TVl1Regressor, TVl1Classifier)
 
 
 def test_is_classifier():

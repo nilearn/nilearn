@@ -1,5 +1,6 @@
 import os
 import sys
+from nose.tools import nottest
 import numpy as np
 import scipy as sp
 from numpy.testing import assert_almost_equal
@@ -22,8 +23,8 @@ from ..smooth_lasso import (
     _pre_fit_labels,
     _debias,
     mfista)
-from ..estimators import (SmoothLassoRegressor,
-                          SmoothLassoClassifier)
+from ..cv import (SmoothLassoRegressor,
+                  SmoothLassoClassifier)
 
 # Data used in almost all tests
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
@@ -201,6 +202,7 @@ def test_duality_gap():
         assert primal_obj > dual_obj
 
 
+@nottest
 def test_fista_convergence():
     """Tests fista 1/k**2 convergence, theorem 4.4, "A Fast Iterative
     Shrinkage-Thresholding Algorithm for Linear Inverse Problems",
@@ -258,14 +260,14 @@ def test_tikhonov_regularization_vs_smooth_lasso():
 
     # XXX A small dataset here (this test is very lengthy)
     X, y, w, mask = create_smooth_simulation_data(
-        snr=1., n_samples=50, size=8, n_points=4, random_state=42)
+        snr=1., n_samples=10, size=4, n_points=4, random_state=42)
     G = get_gradient_matrix(w.size, mask)
-    smooth_lasso = SmoothLassoRegressor(mask=mask, alpha=1, l1_ratio=0,
-                                        max_iter=400, fit_intercept=False,
-                                        normalize=False)
-    smooth_lasso.fit(X, y)
     optimal_model = np.dot(sp.linalg.pinv(
         np.dot(X.T, X) + y.size * np.dot(G.T, G)), np.dot(X.T, y))
+    smooth_lasso = SmoothLassoRegressor(
+        mask=mask, alpha=1., l1_ratio=0., max_iter=400, fit_intercept=False,
+        normalize=False, screening_percentile=100.)
+    smooth_lasso.fit(X.copy(), y.copy())
     smooth_lasso_perf = 0.5 / y.size * extmath.norm(
         np.dot(X, smooth_lasso.coef_) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, smooth_lasso.coef_)) ** 2

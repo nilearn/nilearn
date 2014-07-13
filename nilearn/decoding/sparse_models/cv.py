@@ -15,11 +15,9 @@ import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
-                              is_regressor, is_classifier)
+                             is_regressor, is_classifier)
 from .common import _sigmoid
-from .estimators import (_BaseRegressor, _BaseClassifier, _BaseEstimator,
-                         SmoothLassoRegressor, SmoothLassoClassifier,
-                         TVl1Classifier, TVl1Regressor)
+from .estimators import _BaseRegressor, _BaseClassifier, _BaseEstimator
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 from ._cv_tricks import (EarlyStoppingCallback, RegressorFeatureSelector,
@@ -48,6 +46,8 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
 
     """
 
+    alphas = sorted(alphas)[::-1]
+
     # univariate feature screening
     selector = ClassifierFeatureSelector(percentile=screening_percentile,
                                          mask=mask)
@@ -58,35 +58,37 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
     X_test, y_test = X[test], y[test]
     test_scores = []
 
-    def _test_score(w):
-        return 1. - roc_auc_score(
-            (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
+    best_alpha = alphas[0]
+    if len(test) > 0.:
+        def _test_score(w):
+            return 1. - roc_auc_score(
+                (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
 
-    # setup callback mechanism for early stopping
-    callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
-    env = dict(counter=0)
+        # setup callback mechanism for early stopping
+        callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
+        env = dict(counter=0)
 
-    def _callback(_env):
-        if not isinstance(_env, dict):
-            _env = dict(w=_env)
+        def _callback(_env):
+            if not isinstance(_env, dict):
+                _env = dict(w=_env)
 
-        _env['w'] = _env['w'][:-1]  # strip off intercept
-        env["counter"] += 1
-        _env["counter"] = env["counter"]
+            _env['w'] = _env['w'][:-1]  # strip off intercept
+            env["counter"] += 1
+            _env["counter"] = env["counter"]
 
-        return callerback(_env)
+            return callerback(_env)
 
-    best_score = np.inf
-    for alpha in alphas:
-        w, _, init = solver(
-            X_train, y_train, alpha, l1_ratio, mask=mask, tol=tol,
-            max_iter=max_iter, init=init, verbose=verbose, callback=_callback,
-            **kwargs)
-        score = _test_score(w)
-        test_scores.append(score)
-        if score <= best_score:
-            best_score = score
-            best_alpha = alpha
+        best_score = np.inf
+        for alpha in alphas:
+            w, _, init = solver(
+                X_train, y_train, alpha, l1_ratio, mask=mask, tol=tol,
+                max_iter=max_iter, init=init, verbose=verbose,
+                callback=_callback, **kwargs)
+            score = _test_score(w)
+            test_scores.append(score)
+            if score <= best_score:
+                best_score = score
+                best_alpha = alpha
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
     # N.B: This work is cached, just in case another worker on another fold
@@ -95,6 +97,9 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
     best_w, _, init = memory.cache(solver)(
         X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
         max_iter=max_iter, verbose=verbose, **kwargs)
+
+    if len(test) == 0.:
+        test_scores.append(np.nan)
 
     # unmask univariate screening
     best_w = selector.inverse_transform(best_w)
@@ -124,6 +129,8 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
 
     """
 
+    alphas = sorted(alphas)[::-1]
+
     # univariate feature screening
     selector = RegressorFeatureSelector(percentile=screening_percentile,
                                         mask=mask)
@@ -133,6 +140,8 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     # make train / test datasets
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
+
+    test_scores = []
 
     def _test_score(w):
         """Helper function to compute score of model with given wieghts map (
@@ -151,35 +160,36 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
         score = .5 * np.mean((y_test - y_pred) ** 2)
         return score
 
-    # setup callback mechanism for early stopping
-    callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
-    env = dict(counter=0)
+    best_alpha = alphas[0]
+    if len(test) > 0.:
+        # setup callback mechanism for early stopping
+        callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
+        env = dict(counter=0)
 
-    def _callback(_env):
-        if not isinstance(_env, dict):
-            _env = dict(w=_env)
+        def _callback(_env):
+            if not isinstance(_env, dict):
+                _env = dict(w=_env)
 
-        env["counter"] += 1
-        _env["counter"] = env["counter"]
+            env["counter"] += 1
+            _env["counter"] = env["counter"]
 
-        return callerback(_env)
+            return callerback(_env)
 
-    # rumble down regularization path (with warm-starts)
-    test_scores = []
-    best_score = np.inf
-    for alpha in alphas:
-        w, _, init = solver(
-            X_train, y_train, alpha, l1_ratio, mask=mask, tol=tol,
-            max_iter=max_iter, init=init, callback=_callback, verbose=verbose,
-            **kwargs)
+        # rumble down regularization path (with warm-starts)
+        best_score = np.inf
+        for alpha in alphas:
+            w, _, init = solver(
+                X_train, y_train, alpha, l1_ratio, mask=mask, tol=tol,
+                max_iter=max_iter, init=init, callback=_callback,
+                verbose=verbose, **kwargs)
 
-        # compute score on test data
-        score = _test_score(w)
-        test_scores.append(score)
-        if score <= best_score:
-            best_alpha = alpha
+            # compute score on test data
+            score = _test_score(w)
+            test_scores.append(score)
+            if score <= best_score:
+                best_alpha = alpha
 
-            best_score = score
+                best_score = score
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
     # N.B: This work is cached, just in case another worker on another fold
@@ -188,6 +198,9 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     best_w, _, init = memory.cache(solver)(
         X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
         max_iter=max_iter, verbose=verbose, **kwargs)
+
+    if len(test) == 0.:
+        test_scores.append(np.nan)
 
     # Unmask univariate screening
     best_w = selector.inverse_transform(best_w)
@@ -223,9 +236,20 @@ class _BaseCV(_BaseEstimator):
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screeing_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile: float in the interval [0, 100]; Optional (default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
+
+    standardize: bool, optional (default False):
+       If set, then input data (X, y) will be standardized (i.e converted to
+       standard Gaussian) before model is fitted.
+
+    normalize: boolean, optional, default False
+        Parameter passed to sklearn's `center_data` function for centralizing
+        the input data (X, y)
+
+    fit_intercept: bool
+        Fit or not an intercept.
 
     max_iter: int
         Defines the iterations for the solver. Defaults to 1000
@@ -275,8 +299,8 @@ class _BaseCV(_BaseEstimator):
 
     path_scores_func = None
 
-    def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
-                 tol=1e-4, memory=Memory(None), copy_data=True,
+    def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  standardize=False, normalize=False, alpha_min=1e-6,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, backtracking=False,
@@ -288,6 +312,7 @@ class _BaseCV(_BaseEstimator):
             normalize=normalize, standardize=standardize)
         self.n_jobs = n_jobs
         self.cv = cv
+        self.alpha = alpha
         self.n_alphas = n_alphas
         self.eps = eps
         self.alphas = alphas
@@ -306,7 +331,10 @@ class _BaseCV(_BaseEstimator):
         return '%s(l1_ratio=%g)' % (self.__class__.__name__, self.l1_ratio)
 
     def fit(self, X, y):
-        # misc
+        X = np.array(X)
+        y = np.array(y).ravel()
+        n_samples, _ = X.shape
+
         self.__class__.__name__.endswith("CV")
         solver = eval(self.solver)
         path_scores_func = eval(self.path_scores_func)
@@ -324,7 +352,9 @@ class _BaseCV(_BaseEstimator):
                 tricky_kwargs["ymean"] = ymean
 
         # make / sanitize alpha grid
-        if self.alphas is None:
+        if self.alpha is not None:
+            alphas = [self.alpha]
+        elif self.alphas is None:
             # XXX Are these alphas reasonable ?
             alphas = _my_alpha_grid(X, y, l1_ratio=self.l1_ratio,
                                     eps=self.eps, n_alphas=self.n_alphas,
@@ -339,7 +369,10 @@ class _BaseCV(_BaseEstimator):
         # always sort alphas from largest to smallest
         alphas = np.array(sorted(alphas)[::-1])
 
-        cv = list(check_cv(self.cv, X=X, y=y, classifier=True))
+        if len(alphas) > 1:
+            cv = list(check_cv(self.cv, X=X, y=y, classifier=True))
+        else:
+            cv = [(range(n_samples), [])]
         self.n_folds_ = len(cv)
 
         # misc (different for classifier and regressor)
@@ -394,8 +427,8 @@ class _BaseCV(_BaseEstimator):
             else:
                 self.intercept_ = 0.
 
-        if n_problems == 1:
-            w = w[0]
+        if is_regressor(self):
+            self.coef_ = self.coef_[0]
             self.scores_ = self.scores_[0]
 
         return self
@@ -429,7 +462,18 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screeing_percentile: float in the interval [0, 100]; Optional (default 10)
+    standardize: bool, optional (default False):
+       If set, then input data (X, y) will be standardized (i.e converted to
+       standard Gaussian) before model is fitted.
+
+    normalize: boolean, optional, default False
+        Parameter passed to sklearn's `center_data` function for centralizing
+        the input data (X, y)
+
+    fit_intercept: bool
+        Fit or not an intercept.
+
+    screening_percentile: float in the interval [0, 100]; Optional (default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
@@ -485,8 +529,7 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
                  tol=1e-4, memory=Memory(None), copy_data=True,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, debias=False, normalize=True,
-                 backtracking=False, standardize=True, alpha_min=1e-6,
-                 bagging=True):
+                 backtracking=False, standardize=True, alpha_min=1e-6):
         super(_BaseRegressorCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -499,7 +542,6 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.bagging = bagging
 
     def fit(self, X, y):
         return _BaseCV.fit(self, X, y)
@@ -533,7 +575,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screeing_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile: float in the interval [0, 100]; Optional (default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
@@ -592,8 +634,8 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
     def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10,
-                 alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False,
-                 bagging=True):
+                 alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False
+                 ):
         super(_BaseClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -604,13 +646,10 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.bagging = bagging
 
     def _pre_fit(self, X, y):
         X = np.array(X)
         y = np.array(y)
-
-        self._rescale_alpha(X)
 
         # encode target classes as -1 and 1
         self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
@@ -636,7 +675,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         return _BaseCV.fit(self, X, y)
 
 
-class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
+class SmoothLassoClassifierCV(_BaseClassifierCV):
     """
     Cross-valided Smooth-Lasso logistic regression model with L1 + L2
     regularization.
@@ -675,7 +714,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
     max_iter: int
         Defines the iterations for the solver. Defaults to 1000
 
-    screeing_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile: float in the interval [0, 100]; Optional (default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
@@ -726,22 +765,24 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
 
     """
 
-    def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
-                 tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
-                 verbose=0, n_jobs=1, callback=None, n_alphas=10,
+    solver = "smooth_lasso_logistic"
+
+    def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
+                 eps=1e-3, verbose=0, n_jobs=1, callback=None, n_alphas=10,
                  alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False,
-                 bagging=True, screening_percentile=10.):
+                 screening_percentile=10.):
         super(SmoothLassoClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking)
         self.n_jobs = n_jobs
         self.cv = cv
+        self.alpha = alpha
         self.n_alphas = n_alphas
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.bagging = bagging
         self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
@@ -753,7 +794,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV, SmoothLassoClassifier):
         return _BaseClassifierCV.fit(self, X, y)
 
 
-class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
+class SmoothLassoRegressorCV(_BaseRegressorCV):
     """
     Cross-valided Smooth-Lasso logistic regression model with L1 + L2
     regularization.
@@ -786,9 +827,20 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screeing_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile: float in the interval [0, 100]; Optional (default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
+
+    standardize: bool, optional (default False):
+       If set, then input data (X, y) will be standardized (i.e converted to
+       standard Gaussian) before model is fitted.
+
+    normalize: boolean, optional, default False
+        Parameter passed to sklearn's `center_data` function for centralizing
+        the input data (X, y)
+
+    fit_intercept: bool
+        Fit or not an intercept.
 
     max_iter: int
         Defines the iterations for the solver. Defaults to 1000
@@ -836,12 +888,14 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
 
     """
 
-    def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
-                 tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
-                 verbose=0, n_jobs=1, callback=None, debias=False,
+    solver = 'smooth_lasso_squared_loss'
+
+    def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
+                 eps=1e-3, verbose=0, n_jobs=1, callback=None, debias=False,
                  fit_intercept=True, normalize=True, n_alphas=10,
                  standardize=True, cv=10, backtracking=False, alpha_min=1e-6,
-                 bagging=True, screening_percentile=10.):
+                 screening_percentile=10.):
         super(SmoothLassoRegressorCV, self).__init__(
             self, l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
@@ -851,10 +905,10 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
         self.cv = cv
         self.debias = debias
         self.eps = eps
+        self.alpha = alpha
         self.n_alphas = n_alphas
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.bagging = bagging
         self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
@@ -866,7 +920,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV, SmoothLassoRegressor):
         return _BaseRegressorCV.fit(self, X, y)
 
 
-class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
+class TVl1ClassifierCV(_BaseClassifierCV):
     """Cross-validated TV-l1 penalized logisitic regression.
 
     The underlying optimization problem is the following:
@@ -900,7 +954,7 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screeing_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile: float in the interval [0, 100]; Optional (default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
@@ -958,29 +1012,31 @@ class TVl1ClassifierCV(_BaseClassifierCV, TVl1Classifier):
 
     """
 
-    def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
-                 tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
-                 verbose=0, n_jobs=1, callback=None, n_alphas=10,
-                 fit_intercept=True, cv=10, backtracking=False,
-                 alpha_min=1e-6, bagging=True, screening_percentile=10.):
+    solver = "partial(tvl1_solver, loss='logistic')"
+
+    def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
+                 eps=1e-3, verbose=0, n_jobs=1, callback=None, n_alphas=10,
+                 fit_intercept=True, cv=10, backtracking=False, alpha_min=1e-6,
+                 screening_percentile=10.):
         super(TVl1ClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking)
         self.n_jobs = n_jobs
         self.cv = cv
+        self.alpha = alpha
         self.n_alphas = n_alphas
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.bagging = bagging
         self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
         return _BaseClassifierCV.fit(self, X, y)
 
 
-class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
+class TVl1RegressorCV(_BaseRegressorCV):
     """Cross-validated TV-l1 penalized logisitic regression.
 
     The underlying optimization problem is the following:
@@ -1014,7 +1070,18 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screeing_percentile: float in the interval [0, 100]; Optional (default 10)
+    standardize: bool, optional (default False):
+       If set, then input data (X, y) will be standardized (i.e converted to
+       standard Gaussian) before model is fitted.
+
+    normalize: boolean, optional, default False
+        Parameter passed to sklearn's `center_data` function for centralizing
+        the input data (X, y)
+
+    fit_intercept: bool
+        Fit or not an intercept.
+
+    screening_percentile: float in the interval [0, 100]; Optional (default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
@@ -1068,12 +1135,14 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
 
     """
 
-    def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
-                 tol=1e-4, memory=Memory(None), copy_data=True,
-                 verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
-                 fit_intercept=True, cv=10, debias=False, normalize=True,
-                 backtracking=False, standardize=True, alpha_min=1e-6,
-                 bagging=True, screening_percentile=10.):
+    solver = "partial(tvl1_solver, loss='mse')"
+
+    def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 max_iter=1000, tol=1e-4, memory=Memory(None),
+                 copy_data=True, verbose=0, n_jobs=1, callback=None,
+                 n_alphas=10, eps=1e-3, fit_intercept=True,
+                 cv=10, debias=False, normalize=True, backtracking=False,
+                 standardize=True, alpha_min=1e-6, screening_percentile=10.):
         super(TVl1RegressorCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -1081,12 +1150,12 @@ class TVl1RegressorCV(_BaseRegressorCV, TVl1Regressor):
             standardize=standardize, normalize=normalize)
         self.n_jobs = n_jobs
         self.cv = cv
+        self.alpha = alpha
         self.n_alphas = n_alphas
         self.debias = debias
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.bagging = bagging
         self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
@@ -1146,3 +1215,9 @@ def plot_cv_scores(cvobj, i_best_alpha=None, title=None, ylabel=None,
     pl.legend(loc="best")
     if title:
         pl.title(title)
+
+
+TVl1Regressor = TVl1RegressorCV
+SmoothLassoRegressor = SmoothLassoRegressorCV
+SmoothLassoClassifier = SmoothLassoClassifierCV
+TVl1Classifier = TVl1ClassifierCV
