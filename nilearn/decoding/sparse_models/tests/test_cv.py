@@ -1,5 +1,5 @@
 import itertools
-from nose.tools import assert_equal, assert_true, nottest
+from nose.tools import assert_equal, assert_true
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
@@ -7,11 +7,10 @@ from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
                   SmoothLassoClassifierCV, SmoothLassoRegressorCV,
                   logistic_path_scores, squared_loss_path_scores)
 from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
-                            EarlyStoppingCallback, _my_alpha_grid)
+                          EarlyStoppingCallback, _my_alpha_grid)
 from ..smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 
 
-@nottest
 def test_same_lasso_classifier_cv():
     # XXX test fails with early stopping in CV
     l1_ratio = 1.
@@ -173,3 +172,14 @@ def test_squared_loss_path_scores():
         range(len(X)), range(len(X)))
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1], len(best_w))
+
+
+def test_estimators_are_special_cv_objects():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    alpha = 1.
+    for cv_class in [SmoothLassoRegressorCV, SmoothLassoClassifierCV,
+                     TVl1RegressorCV, TVl1ClassifierCV]:
+        cv = cv_class(alpha=alpha)
+        cv.fit(X, y)
+        np.testing.assert_array_equal([alpha], cv.alphas_)

@@ -1,6 +1,6 @@
 import numpy as np
-from ..estimators import (TVl1Classifier, TVl1Regressor,
-                          SmoothLassoClassifier, SmoothLassoRegressor)
+from ..cv import (TVl1Classifier, TVl1Regressor,
+                  SmoothLassoClassifier, SmoothLassoRegressor)
 from ..cv import TVl1ClassifierCV, SmoothLassoClassifierCV
 from nose.tools import assert_true
 import traceback

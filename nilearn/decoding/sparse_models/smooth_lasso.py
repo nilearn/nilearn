@@ -370,7 +370,6 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
             X, mask, grad_weight)
 
         # it's always a good idea to use somethx a bit bigger
-        # assert 0, X.sum()
         lipschitz_constant *= 1.05
 
     # smooth part of energy, and gradient of
