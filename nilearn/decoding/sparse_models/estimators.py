@@ -72,8 +72,6 @@ class _BaseEstimator(object):
 
     """
 
-    solver = None
-
     def __init__(self, alpha=1., l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, fit_intercept=True, standardize=False,
                  memory=Memory(None), copy_data=True, normalize=False,
@@ -81,10 +79,6 @@ class _BaseEstimator(object):
         if not 0. <= l1_ratio <= 1.:
             raise ValueError(("l1_ratio parameter must be in the interval "
                               "[0, 1]; got %g" % l1_ratio))
-        if self.solver is None:
-            raise RuntimeError(
-                "Class attribute `solver` not set in class %s" % (
-                    self.__class__.__name__))
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.mask = mask

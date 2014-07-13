@@ -336,7 +336,7 @@ class _BaseCV(_BaseEstimator):
         n_samples, _ = X.shape
 
         self.__class__.__name__.endswith("CV")
-        solver = eval(self.solver)
+        solver = self.solver  # eval(self.solver)
         path_scores_func = eval(self.path_scores_func)
         tricky_kwargs = {}
         if hasattr(self, "debias"):
@@ -765,17 +765,16 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
 
     """
 
-    solver = "smooth_lasso_logistic"
-
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  eps=1e-3, verbose=0, n_jobs=1, callback=None, n_alphas=10,
                  alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False,
-                 screening_percentile=10.):
+                 solver=smooth_lasso_logistic, screening_percentile=10.):
         super(SmoothLassoClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking)
+        self.solver = solver
         self.n_jobs = n_jobs
         self.cv = cv
         self.alpha = alpha
@@ -888,19 +887,18 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
 
     """
 
-    solver = 'smooth_lasso_squared_loss'
-
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  eps=1e-3, verbose=0, n_jobs=1, callback=None, debias=False,
                  fit_intercept=True, normalize=True, n_alphas=10,
                  standardize=True, cv=10, backtracking=False, alpha_min=1e-6,
-                 screening_percentile=10.):
+                 solver=smooth_lasso_squared_loss, screening_percentile=10.):
         super(SmoothLassoRegressorCV, self).__init__(
             self, l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
             normalize=normalize, standardize=standardize)
+        self.solver = solver
         self.n_jobs = n_jobs
         self.cv = cv
         self.debias = debias
@@ -1012,12 +1010,11 @@ class TVl1ClassifierCV(_BaseClassifierCV):
 
     """
 
-    solver = "partial(tvl1_solver, loss='logistic')"
-
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  eps=1e-3, verbose=0, n_jobs=1, callback=None, n_alphas=10,
                  fit_intercept=True, cv=10, backtracking=False, alpha_min=1e-6,
+                 solver=partial(tvl1_solver, loss='logistic'),
                  screening_percentile=10.):
         super(TVl1ClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
@@ -1031,6 +1028,7 @@ class TVl1ClassifierCV(_BaseClassifierCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
+        self.solver = solver
 
     def fit(self, X, y):
         return _BaseClassifierCV.fit(self, X, y)
@@ -1135,19 +1133,19 @@ class TVl1RegressorCV(_BaseRegressorCV):
 
     """
 
-    solver = "partial(tvl1_solver, loss='mse')"
-
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None),
                  copy_data=True, verbose=0, n_jobs=1, callback=None,
-                 n_alphas=10, eps=1e-3, fit_intercept=True,
-                 cv=10, debias=False, normalize=True, backtracking=False,
-                 standardize=True, alpha_min=1e-6, screening_percentile=10.):
+                 solver=partial(tvl1_solver, loss='mse'), n_alphas=10,
+                 eps=1e-3, fit_intercept=True, cv=10, debias=False,
+                 normalize=True, backtracking=False, standardize=True,
+                 alpha_min=1e-6, screening_percentile=10.):
         super(TVl1RegressorCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
             standardize=standardize, normalize=normalize)
+        self.solver = solver
         self.n_jobs = n_jobs
         self.cv = cv
         self.alpha = alpha
