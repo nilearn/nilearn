@@ -60,9 +60,10 @@ def _check_dependencies():
             # Monkey-patch gzip to have faster reads on large
             # gzip files
             gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024  # 100Mb
-    except ImportError:
-        raise ImportError('Python has been compiled without gzip,'
-                          ' reading nii.gz files will be impossible.')
+    except ImportError as exc:
+        exc.args += ('Python has been compiled without gzip, '
+                     'reading nii.gz files will be impossible.',)
+        raise
 
 _check_dependencies()
 
