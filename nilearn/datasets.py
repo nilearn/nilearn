@@ -186,8 +186,8 @@ def _get_dataset_dir(dataset_name, data_dir=None,
     This function retrieve the datasets directory (or data directory) using
     the following priority :
     1. the keyword argument data_dir
-    2. the user environment variable NILEARN_DATA
-    3. the global environment variable NILEARN_SHARED
+    2. the global environment variable NILEARN_SHARED
+    3. the user environment variable NILEARN_DATA
     4. "nilearn_data" directory into the current working directory
     """
     # We build an array of successive paths by priority
@@ -197,13 +197,13 @@ def _get_dataset_dir(dataset_name, data_dir=None,
     if data_dir is not None:
         paths = data_dir.split(':')
     else:
-        local_data = os.getenv('NILEARN_DATA')
-        if local_data is not None:
-            paths.extend(local_data.split(':'))
-
         global_data = os.getenv('NILEARN_SHARED')
         if global_data is not None:
             paths.extend(global_data.split(':'))
+
+        local_data = os.getenv('NILEARN_DATA')
+        if local_data is not None:
+            paths.extend(local_data.split(':'))
 
         paths.append(os.path.join(os.getcwd(), 'nilearn_data'))
 
