@@ -467,8 +467,12 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
+    # Create destination dir
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
     # Abortion flag, in case of error
-    abort = False
+    abort = None
 
     files_ = []
     for file_, url, opts in files:
@@ -482,7 +486,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
         target_file = os.path.join(data_dir, file_)
         # Target file in temp dir
         temp_target_file = os.path.join(temp_dir, file_)
-        if (not os.path.exists(target_file) and not
+        if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
 
             # We may be in a global read-only repository. If so, we cannot
@@ -511,21 +515,21 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
                         _uncompress_file(dl_file)
                     else:
                         os.remove(dl_file)
-                except:
-                    abort = True
-        if (not os.path.exists(target_file) and not
+                except Exception as e:
+                    abort = str(e)
+        if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
-                abort = True
+                abort = "Target file cannot be found"
             else:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
                 open(temp_target_file, 'w').close()
-        if abort:
+        if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-            raise IOError('Fetching aborted. See error above')
+            raise IOError('Fetching aborted: ' + abort)
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
