@@ -21,7 +21,8 @@ rules ordered by priority (the first rule override the others and so on):
 1. the keyword argument *data_dir* can be given ton any dataset fetching
    function to force the storage directory.
 2. the environment variable *NILEARN_DATA*
-3. by default, a directory called *nilearn_data* is created in the current working
+3. the environment variable *GLOBAL_NILEARN_DATA*
+4. by default, a directory called *nilearn_data* is created in the current working
    directory.
 
 Loading a dataset

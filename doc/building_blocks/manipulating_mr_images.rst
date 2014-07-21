@@ -60,6 +60,7 @@ following directories (in order of priority):
   * the folder specified by `data_dir` parameter in the fetching function
     if it is specified
   * the environment variable `NILEARN_DATA` if it exists
+  * the environment variable `GLOBAL_NILEARN_DATA` if it exists
   * the `nilearn_data` folder in the current directory
 
 Note that you can copy that folder across computers to avoid
