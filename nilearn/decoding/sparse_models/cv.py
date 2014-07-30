@@ -10,7 +10,6 @@ sklearn-compatible Cross-Validation module for TV-l1, S-LASSO, etc. models
 #         and others.
 # License: simplified BSD
 
-import inspect
 from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
@@ -29,7 +28,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
                          test, tol=1e-4, max_iter=1000, init=None,
                          mask=None, verbose=0, key=None,
                          screening_percentile=10., memory=Memory(None),
-                         **kwargs):
+                         callback=None, **kwargs):
     """Function to compute scores of different alphas in classification
     used by CV objects.
 
@@ -70,6 +69,10 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
         env = dict(counter=0)
 
         def _callback(_env):
+            if callback:
+                if callback(_env):
+                    return 1
+
             if not isinstance(_env, dict):
                 _env = dict(w=_env)
 
@@ -112,7 +115,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
                              tol=1e-4, max_iter=1000, init=None, mask=None,
                              debias=False, ymean=0., verbose=0,
                              key=None, screening_percentile=10.,
-                             memory=Memory(None), **kwargs):
+                             memory=Memory(None), callback=None, **kwargs):
     """Function to compute scores of different alphas in regression.
     used by CV objects.
 
@@ -165,9 +168,15 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     if len(test) > 0.:
         # setup callback mechanism for early stopping
         callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
+
         env = dict(counter=0)
 
         def _callback(_env):
+            if callback:
+                return callback(_env)
+                if callback(_env):
+                    return 1
+
             if not isinstance(_env, dict):
                 _env = dict(w=_env)
 
@@ -198,7 +207,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     # the train (i.e X_train), a piece of the design X.
     best_w, _, init = memory.cache(solver)(
         X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
-        max_iter=max_iter, verbose=verbose, **kwargs)
+        max_iter=max_iter, verbose=verbose, callback=callback, **kwargs)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
@@ -319,6 +328,7 @@ class _BaseCV(_BaseEstimator):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = 10
+        self.callback = callback
         assert 0. <= screening_percentile <= 100.
 
         # sanitize path_scores_func
@@ -391,7 +401,8 @@ class _BaseCV(_BaseEstimator):
         path_params = dict(mask=self.mask, tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
                            backtracking=self.backtracking, memory=self.memory,
-                           screening_percentile=self.screening_percentile)
+                           screening_percentile=self.screening_percentile,
+                           callback=self.callback)
         path_params.update(tricky_kwargs)
 
         _ovr_y = lambda c: y[:, c] if is_classifier(
@@ -543,6 +554,7 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
+        self.callback = callback
 
     def fit(self, X, y):
         return _BaseCV.fit(self, X, y)
@@ -647,6 +659,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
+        self.callback = callback
 
     def _pre_fit(self, X, y):
         X = np.array(X)
@@ -784,6 +797,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
+        self.callback = callback
 
     def fit(self, X, y):
         """Fit is on grid of alphas and best alpha estimated by
@@ -909,6 +923,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
+        self.callback = callback
 
     def fit(self, X, y):
         """Fit is on grid of alphas and best alpha estimated by
@@ -1030,6 +1045,7 @@ class TVl1ClassifierCV(_BaseClassifierCV):
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
         self.solver = solver
+        self.callback = callback
 
     def fit(self, X, y):
         return _BaseClassifierCV.fit(self, X, y)
@@ -1156,6 +1172,7 @@ class TVl1RegressorCV(_BaseRegressorCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
+        self.callback = callback
 
     def fit(self, X, y):
         return _BaseRegressorCV.fit(self, X, y)
