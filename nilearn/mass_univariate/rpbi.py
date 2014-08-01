@@ -11,7 +11,7 @@ from sklearn.externals.joblib import Memory
 from sklearn.utils import gen_even_slices, check_random_state
 from sklearn.preprocessing import binarize
 
-from nilearn._utils import check_niimg, check_n_jobs
+from nilearn._utils import check_n_jobs
 from nilearn._utils.cache_mixin import cache
 from .utils import (
     orthogonalize_design, t_score_with_covars_and_normalized_design)
@@ -589,6 +589,8 @@ def rpbi_core(tested_var, target_vars,
 
     threshold : float, 0. < threshold < 1.,
       RPBI's threshold to discretize individual parcel-based analysis results.
+      'auto' (or None) correspond to a threshold of 0.1 divided by the
+      number of parcels per parcellation.
 
     n_perm : int, n_perm > 1,
       Number of permutation to convert the counting statistic into p-values.
@@ -733,7 +735,7 @@ def rpbi_core(tested_var, target_vars,
 
 
 def randomized_parcellation_based_inference(
-    tested_var, imaging_vars, mask_img, confounding_vars=None,
+    tested_var, imaging_vars, mask, confounding_vars=None,
     model_intercept=True, n_parcellations=100, n_parcels=1000,
     threshold='auto', n_perm=1000, random_state=None,
     memory=Memory(cachedir=None), n_jobs=1, verbose=True):
@@ -751,8 +753,8 @@ def randomized_parcellation_based_inference(
       Masked subject images as an array.
       Imaging data to be explained by explanatory and confounding variates.
 
-    mask_img : niimg
-      Mask image that has been used to mask data in `imaging_vars`.
+    mask : array-like
+      Mask that has been used to mask data in `imaging_vars`.
 
     confounding_vars : array-like, shape=(n_samples, n_covars)
       Confounding variates (covariates), fitted but not tested.
@@ -817,13 +819,11 @@ def randomized_parcellation_based_inference(
         tested_var = np.atleast_2d(tested_var).T
 
     ### Build parcellations
-    if not isinstance(mask_img, np.ndarray):
-        mask_img = check_niimg(mask_img)
-    mask_img = np.asarray(mask_img).astype(bool)
+    mask = np.asarray(mask).astype(bool)
     if verbose:
         print "Build parcellations"
     parcelled_imaging_vars, parcellations_labels = _build_parcellations(
-        imaging_vars, mask_img,
+        imaging_vars, mask,
         n_parcellations=n_parcellations, n_parcels=n_parcels,
         random_state=random_state, memory=memory, n_jobs=n_jobs,
         verbose=verbose)
