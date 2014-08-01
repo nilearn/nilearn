@@ -38,7 +38,7 @@ import os
 from nilearn.decoding.sparse_models.cv import SmoothLassoRegressorCV
 n_jobs = int(os.environ.get("N_JOBS", 1))
 slcv = SmoothLassoRegressorCV(verbose=1, n_jobs=n_jobs, memory=memory,
-                              mask=mask, screening_percentile=5)
+                              mask=mask, screening_percentile=10)
 
 ### Fit and predict
 slcv.fit(gm_maps_masked, age)
@@ -55,7 +55,7 @@ weights = np.ma.masked_array(weight_niimg.get_data(),
 background_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
 picked_slice = 36
 plt.figure(figsize=(5.5, 5.5))
-data_for_plot = weights[:, :, picked_slice, 0]
+data_for_plot = weights[:, :, picked_slice]
 vmax = max(np.min(data_for_plot), np.max(data_for_plot)) * 0.5
 plt.imshow(np.rot90(background_img[:, :, picked_slice]), cmap=plt.cm.gray,
           interpolation='nearest')
