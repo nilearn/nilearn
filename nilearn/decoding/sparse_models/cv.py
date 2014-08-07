@@ -65,22 +65,22 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
                 (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
 
         # setup callback mechanism for early stopping
-        callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
+        earlystopper = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
         env = dict(counter=0)
 
         def _callback(_env):
             if callback:
-                if callback(_env):
-                    return 1
+                # they wan't us to use their callback
+                return callback(_env)
 
+            # our callback
             if not isinstance(_env, dict):
                 _env = dict(w=_env)
 
             _env['w'] = _env['w'][:-1]  # strip off intercept
             env["counter"] += 1
             _env["counter"] = env["counter"]
-
-            return callerback(_env)
+            return earlystopper(_env)
 
         best_score = np.inf
         for alpha in alphas:
@@ -148,7 +148,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     test_scores = []
 
     def _test_score(w):
-        """Helper function to compute score of model with given wieghts map (
+        """Helper function to compute score of model with given weights map (
         loadings vector).
 
         """
@@ -167,23 +167,20 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     best_alpha = alphas[0]
     if len(test) > 0.:
         # setup callback mechanism for early stopping
-        callerback = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
-
+        earlystopper = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
         env = dict(counter=0)
 
         def _callback(_env):
             if callback:
+                # they wan't us to use their callback
                 return callback(_env)
-                if callback(_env):
-                    return 1
 
+            # our callback
             if not isinstance(_env, dict):
                 _env = dict(w=_env)
-
             env["counter"] += 1
             _env["counter"] = env["counter"]
-
-            return callerback(_env)
+            return earlystopper(_env)
 
         # rumble down regularization path (with warm-starts)
         best_score = np.inf
@@ -314,7 +311,7 @@ class _BaseCV(_BaseEstimator):
                  standardize=False, normalize=False, alpha_min=1e-6,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, backtracking=False,
-                 screening_percentile=10.):
+                 screening_percentile=10., solver=None):
         super(_BaseCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -327,8 +324,9 @@ class _BaseCV(_BaseEstimator):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.screening_percentile = 10
+        self.screening_percentile = screening_percentile
         self.callback = callback
+        self.solver = solver
         assert 0. <= screening_percentile <= 100.
 
         # sanitize path_scores_func
@@ -342,12 +340,14 @@ class _BaseCV(_BaseEstimator):
         return '%s(l1_ratio=%g)' % (self.__class__.__name__, self.l1_ratio)
 
     def fit(self, X, y):
+        assert self.solver is not None
+
         X = np.array(X)
         y = np.array(y).ravel()
         n_samples, _ = X.shape
 
         self.__class__.__name__.endswith("CV")
-        solver = self.solver  # eval(self.solver)
+        solver = self.solver
         path_scores_func = eval(self.path_scores_func)
         tricky_kwargs = {}
         if hasattr(self, "debias"):
