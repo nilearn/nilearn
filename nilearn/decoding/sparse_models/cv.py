@@ -691,7 +691,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
 
 class SmoothLassoClassifierCV(_BaseClassifierCV):
     """
-    Cross-valided Smooth-Lasso logistic regression model with L1 + L2
+    Cross-validated Smooth-Lasso logistic regression model with L1 + L2
     regularization.
 
     w = argmin - (1 / n_samples) * log(sigmoid(y * w.T * X)) +
@@ -810,7 +810,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
 
 class SmoothLassoRegressorCV(_BaseRegressorCV):
     """
-    Cross-valided Smooth-Lasso logistic regression model with L1 + L2
+    Cross-Validated Smooth-Lasso logistic regression model with L1 + L2
     regularization.
 
     w = argmin  n_samples^(-1) * || y - X w ||^2 + alpha * l1_ratio ||w||_1
