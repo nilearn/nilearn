@@ -26,7 +26,7 @@ def fast_abs_percentile(map, percentile=80):
         # Partial sort: faster than sort
         return partition(map, index)[index + 1]
     map.sort()
-    return map[index]
+    return map[index + 1]
 
 
 
