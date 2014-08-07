@@ -304,14 +304,12 @@ class _BaseCV(_BaseEstimator):
 
     """
 
-    path_scores_func = None
-
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  standardize=False, normalize=False, alpha_min=1e-6,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, backtracking=False,
-                 screening_percentile=10., solver=None):
+                 screening_percentile=10., solver=None, path_scores_func=None):
         super(_BaseCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -324,16 +322,14 @@ class _BaseCV(_BaseEstimator):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.screening_percentile = screening_percentile
         self.callback = callback
         self.solver = solver
-        assert 0. <= screening_percentile <= 100.
-
-        # sanitize path_scores_func
-        if self.path_scores_func is None:
+        self.path_scores_func = path_scores_func
+        if not (0. <= screening_percentile <= 100.):
             raise ValueError(
-                "Class '%s' doesn't have a `path_scores_func` attribute!" % (
-                    self.__class__.__name__))
+                ("screening_percentile should be in the interval"
+                 " [0, 100], got %g" % screening_percentile))
+        self.screening_percentile = screening_percentile
 
     @property
     def short_name(self):
@@ -342,13 +338,19 @@ class _BaseCV(_BaseEstimator):
     def fit(self, X, y):
         assert self.solver is not None
 
+        # sanitize path_scores_func
+        if self.path_scores_func is None:
+            raise ValueError(
+                "Class '%s' doesn't have a `path_scores_func` attribute!" % (
+                    self.__class__.__name__))
+
         X = np.array(X)
         y = np.array(y).ravel()
         n_samples, _ = X.shape
 
         self.__class__.__name__.endswith("CV")
         solver = self.solver
-        path_scores_func = eval(self.path_scores_func)
+        path_scores_func = self.path_scores_func
         tricky_kwargs = {}
         if hasattr(self, "debias"):
             tricky_kwargs["debias"] = getattr(self, "debias")
@@ -535,8 +537,6 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
 
     """
 
-    path_scores_func = "squared_loss_path_scores"
-
     def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, memory=Memory(None), copy_data=True,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
@@ -555,6 +555,7 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.callback = callback
+        self.path_scores_func = squared_loss_path_scores
 
     def fit(self, X, y):
         return _BaseCV.fit(self, X, y)
@@ -642,8 +643,6 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
 
     """
 
-    path_scores_func = "logistic_path_scores"
-
     def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
                  verbose=0, n_jobs=1, callback=None, n_alphas=10,
@@ -660,6 +659,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.callback = callback
+        self.path_scores_func = logistic_path_scores
 
     def _pre_fit(self, X, y):
         X = np.array(X)
