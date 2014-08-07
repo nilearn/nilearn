@@ -394,7 +394,7 @@ class _BaseCV(_BaseEstimator):
         else:
             n_problems = 1
             y = y.ravel()
-        self.scores_ = [[]] * n_problems
+        self.scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + int(is_classifier(self))))
 
         # parameter to path_scores function
