@@ -131,11 +131,11 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info: float
-        Solver information, for warm start.
-
     objective: array of floats
         Objective function (fval) computed on every iteration.
+
+    solver_info: float
+        Solver information, for warm start.
 
     """
 
