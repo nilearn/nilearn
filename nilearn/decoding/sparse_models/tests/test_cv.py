@@ -1,4 +1,5 @@
 import itertools
+from nose import SkipTest
 from nose.tools import assert_equal, assert_true
 import numpy as np
 from sklearn.externals.joblib import Memory
@@ -74,7 +75,7 @@ def test_my_alpha_grid_same_as_sk():
                         _alpha_grid(X, y, n_alphas=5, normalize=normalize,
                                     fit_intercept=fit_intercept))
     except ImportError:
-        pass
+        raise SkipTest
 
 
 def test_featureselectors():
