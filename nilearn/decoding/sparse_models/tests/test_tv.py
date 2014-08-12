@@ -16,17 +16,13 @@ CACHE = os.path.join(ROOT, "cache")
 sys.path.append(os.path.join(ROOT, "examples/proximal"))
 
 
-def test_tv_l1_from_gradient(size=5, n_samples=10, random_state=42,
-                             decimal=8):
-
+def test_tv_l1_from_gradient(size=5, n_samples=10, random_state=42):
     rng = np.random.RandomState(random_state)
-
     shape = [size] * 3
     n_voxels = np.prod(shape)
     X = rng.randn(n_samples, n_voxels)
     y = rng.randn(n_samples)
     w = rng.randn(*shape)
-
     for alpha in [0., 1e-1, 1e-3]:
         for l1_ratio in [0., .5, 1.]:
             gradid = gradient_id(w, l1_ratio=l1_ratio)
@@ -46,4 +42,3 @@ def test_tvl1_solver_raises_value_error_if_invalid_loss():
     assert_raises(ValueError, lambda loss: tvl1_solver(
             np.array([[1]]), None, None, None, mask=None, loss=loss),
             "bingo!")
-
