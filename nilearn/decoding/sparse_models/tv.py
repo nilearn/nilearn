@@ -55,7 +55,9 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
 
     # if not mask is None: mask = mask.ravel()
     loss = loss.lower()
-    assert loss in ['mse', 'logistic']
+    if loss not in ['mse', 'logistic']:
+        raise ValueError(
+            "loss must be one of 'mse' or 'logistic'; got '%s'" % loss)
 
     w = w.ravel()
     if loss == "mse":
