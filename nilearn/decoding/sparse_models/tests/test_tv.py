@@ -8,7 +8,7 @@ import sys
 from nose.tools import assert_equal, assert_raises
 import numpy as np
 from ..common import gradient_id, squared_loss
-from ..tv import tvl1_objective, _tvl1_objective_from_gradient
+from ..tv import tvl1_objective, _tvl1_objective_from_gradient, tvl1_solver
 
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
 ROOT = fn(os.path.dirname, os.path.dirname(__file__), 4)
@@ -37,6 +37,13 @@ def test_tv_l1_from_gradient(size=5, n_samples=10, random_state=42,
                     gradid))
 
 
-def test_tvl1_objective():
+def test_tvl1_objective_raises_value_error_if_invalid_loss():
     assert_raises(ValueError, lambda loss: tvl1_objective(
             None, None, None, None, None, mask=None, loss=loss), "bingo!")
+
+
+def test_tvl1_solver_raises_value_error_if_invalid_loss():
+    assert_raises(ValueError, lambda loss: tvl1_solver(
+            np.array([[1]]), None, None, None, mask=None, loss=loss),
+            "bingo!")
+
