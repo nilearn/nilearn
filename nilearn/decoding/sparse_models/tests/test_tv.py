@@ -5,7 +5,7 @@
 
 import os
 import sys
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 import numpy as np
 from ..common import gradient_id, squared_loss
 from ..tv import tvl1_objective, _tvl1_objective_from_gradient
@@ -33,5 +33,10 @@ def test_tv_l1_from_gradient(size=5, n_samples=10, random_state=42,
             assert_equal(tvl1_objective(
                 X, y, w.copy(), alpha, l1_ratio, shape=shape),
                 squared_loss(X, y, w.copy(), compute_grad=False
-                            ) + alpha * _tvl1_objective_from_gradient(
+                             ) + alpha * _tvl1_objective_from_gradient(
                     gradid))
+
+
+def test_tvl1_objective():
+    assert_raises(ValueError, lambda loss: tvl1_objective(
+            None, None, None, None, None, mask=None, loss=loss), "bingo!")
