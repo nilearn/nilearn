@@ -203,7 +203,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.target_affine is None:
             # Load the first image and use it as a reference for all other
             # subjects
-            reference_affine = _utils.check_niimgs(niimgs_list[0]).get_affine()
+            reference_affine = _utils.check_niimgs(niimgs_list[0],
+                                                   accept_3d=True).get_affine()
 
         func = self._cache(_safe_filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
