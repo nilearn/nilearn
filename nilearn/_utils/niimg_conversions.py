@@ -152,13 +152,30 @@ def check_niimg(niimg):
     return result
 
 
-def concat_niimgs(niimgs, dtype=np.float32):
+def _to_4d(data):
+    """ Internal function to cast a 3D ndarray to a 4D one by adding a
+        new axis at the end
+    """
+    if len(data.shape) == 4:
+        return data
+    out = data.view()
+    out.shape = data.shape + (1, )
+    return out
+
+
+def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
     """Concatenate a list of niimgs
 
     Parameters
     ----------
     niimgs: iterable of niimgs
         niimgs to concatenate.
+
+    dtype: numpy dtype, optional
+        the dtype of the returned image
+
+    accept_4d: boolean, optional
+        Accept 4D images
 
     Returns
     -------
@@ -170,14 +187,30 @@ def concat_niimgs(niimgs, dtype=np.float32):
     affine = first_niimg.get_affine()
     first_data = first_niimg.get_data()
     first_data_shape = first_data.shape
+    sizes = []
+    for index, niimg in enumerate(niimgs):
+        this_shape = _get_shape(check_niimg(niimg))
+        if len(this_shape) == 3:
+            sizes.append(1)
+        else:
+            if not accept_4d:
+                if (isinstance(niimg, basestring)):
+                    i_error = "Image " + niimg
+                else:
+                    i_error = "Image #" + str(index)
+                raise ValueError("%s is a 4D shape (shape: %s), but this "
+                                 "function accepts only 3D images"
+                                % (i_error, this_shape))
+            sizes.append(this_shape[3])
+
     # Using fortran order makes concatenation much faster than with C order,
     # because the voxels for a given image are grouped together in memory.
-    data = np.ndarray(first_data_shape + (len(niimgs),),
+    data = np.ndarray(first_data_shape[:3] + (sum(sizes), ),
                       order="F", dtype=dtype)
-    data[..., 0] = first_data
+    data[..., :sizes[0]] = _to_4d(first_data)
     del first_data, first_niimg
 
-    for index, iter_niimg in enumerate(niimgs):
+    for index, (iter_niimg, size) in enumerate(zip(niimgs, sizes)):
         if index == 0:
             continue
         niimg = check_niimg(iter_niimg)
@@ -194,14 +227,14 @@ def concat_niimgs(niimgs, dtype=np.float32):
                              % (i_error,
                              repr(affine), repr(niimg.get_affine())))
         this_data = niimg.get_data()
-        if this_data.shape != first_data_shape:
+        if this_data.shape[:3] != first_data_shape[:3]:
             if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
             else:
                 i_error = "image #" + str(index)
             raise ValueError("Shape of %s is different from first image shape."
                              % i_error)
-        data[..., index] = this_data
+        data[..., index:index + size] = _to_4d(this_data)
     return nibabel.Nifti1Image(data, affine)
 
 
