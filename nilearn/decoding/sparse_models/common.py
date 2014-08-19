@@ -386,4 +386,9 @@ def logistic_grad(X, y, w, mask=None):
         grad = np.append(_unmask(grad[:-1], mask), grad[-1])
     return grad
 
-squared_loss_grad = partial(squared_loss, compute_energy=False, compute_grad=True)
+# Wrappers.
+# XXX div (see below) could be computed more efficienty!
+gradient = lambda w: gradient_id(w, l1_ratio=0.)[:-1]  # pure nabla
+div = lambda v: div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.)
+squared_loss_grad = partial(squared_loss, compute_energy=False,
+                            compute_grad=True)

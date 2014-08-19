@@ -6,8 +6,7 @@ import scipy as sp
 from numpy.testing import assert_almost_equal
 from sklearn.utils import extmath
 from sklearn.utils import check_random_state
-from ..image import grad as gradient
-from ..image import div as divergence
+from ..common import gradient, div
 from ..smooth_lasso import (
     data_function,
     adjoint_data_function,
@@ -70,12 +69,12 @@ def test_grad_matrix():
 
 
 def test_adjointness(size=4):
-    """Tests for adjointness between gradient and divergence operators"""
+    """Tests for adjointness between gradient and div operators"""
     for _ in xrange(3):
         image_1 = rng.rand(size, size, size)
         image_2 = rng.rand(3, size, size, size)
         Axdoty = np.dot((gradient(image_1).ravel()), image_2.ravel())
-        xdotAty = np.dot((divergence(image_2).ravel()), image_1.ravel())
+        xdotAty = np.dot((div(image_2).ravel()), image_1.ravel())
         assert_almost_equal(Axdoty, - xdotAty)
 
 
