@@ -1,6 +1,6 @@
 """
-Measuring connectivity in tangent space of symmetric positive definite matrices
-===============================================================================
+Comparing different connectivity measures
+=========================================
 
 This example shows how to extract signals from regions defined by an atlas,
 and to estimate different connectivity measures based on these signals.
@@ -17,9 +17,7 @@ plt.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
 
 
 def corr_to_Z(corr):
-    """
-    Applies Z-Fisher transform.
-    """
+    """Applies Z-Fisher transform. """
     Z = corr.copy()  # avoid side effects
     corr_is_one = 1.0 - abs(corr) < 1e-15
     Z[corr_is_one] = np.inf * np.sign(Z[corr_is_one])
@@ -33,7 +31,7 @@ def plot_matrix(mean_conn, title="connectivity", ticks=[], tick_labels=[]):
 
     mean_conn = mean_conn.copy()
 
-    # Put zeros on the diagonal, for graph clarity.
+    # Put zeros on the diagonal, for graph clarity
     size = mean_conn.shape[0]
     mean_conn[range(size), range(size)] = 0
     vmax = np.abs(mean_conn).max()
@@ -59,7 +57,7 @@ def scatterplot_matrix(coefs1, coefs2, coefs_ref, names,
                        title_ref='reference measure'):
     """Plot a scatterplot matrix of subplots. Each connectivity coefficient is
     scatter plotted for two given measures against a reference measure. The
-    line of best fit is plotted for significantly correlated coefficients."""
+    line of best fit is plotted for significantly correlated coefficients. """
     n_subjects = coefs1.shape[0]
     n_coefs = coefs1[0].size
     fig, axes = plt.subplots(nrows=n_coefs, ncols=n_coefs, figsize=(8, 8))
@@ -152,38 +150,37 @@ for subject_n in range(n_subjects):
 
 
 import nilearn.connectivity
-print("-- Measuring connecivity by correlation ...")
-estimator = {'kind': 'correlation', 'cov_estimator': None}
-cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
-covariances = nilearn.connectivity.vec_to_sym(
-    cov_embedding.fit_transform(subjects))
-
-print("-- Measuring connecivity by partial correlation ...")
-estimator = {'kind': 'partial correlation', 'cov_estimator': None}
-cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
-partial_correlations = nilearn.connectivity.vec_to_sym(
-    cov_embedding.fit_transform(subjects))
-
-print("-- Measuring connecivity in tangent space...")
-estimator = {'kind': 'tangent', 'cov_estimator': None}
-cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
-tangents = nilearn.connectivity.vec_to_sym(
-    cov_embedding.fit_transform(subjects))
+print("-- Measuring connecivity ...")
+all_matrices = []
+mean_matrices = []
+for kind in ['correlation', 'partial correlation', 'tangent']:
+    estimator = {'kind': kind}
+    cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
+    matrices = nilearn.connectivity.vec_to_sym(
+        cov_embedding.fit_transform(subjects))
+    all_matrices.append(matrices)
+    if kind == 'tangent':
+        mean = cov_embedding.mean_cov_
+    else:
+        mean = matrices.mean(axis=0)
+    mean_matrices.append(mean)
 
 print("-- Displaying results")
 regions = ['L DMN', 'med DMN', 'front DMN', 'R DMN']
-matrices = [covariances.mean(axis=0),
-            partial_correlations.mean(axis=0),
-            cov_embedding.mean_cov_]
 titles = ['correlations mean', 'partial correlations mean',
           'covariances geometric mean']
-for matrix, title in zip(matrices, titles):
+for matrix, title in zip(mean_matrices, titles):
     plot_matrix(matrix, title=title, ticks=range(3, 7), tick_labels=regions)
 
-coefs1 = corr_to_Z(covariances[:, 3:5, 5:7])
-coefs2 = corr_to_Z(partial_correlations[:, 3:5, 5:7])
-coefs_ref = tangents[:, 3:5, 5:7]
-scatterplot_matrix(coefs1, coefs2, coefs_ref,
+Z_correlations = corr_to_Z(all_matrices[0])
+Z_partials = corr_to_Z(all_matrices[1])
+tangents = all_matrices[2]
+
+# Scatter plot connectivity coefficients between some regions of the Default
+# Mode Network
+scatterplot_matrix(Z_correlations[:, 3:5, 5:7],
+                   Z_partials[:, 3:5, 5:7],
+                   tangents[:, 3:5, 5:7],
                    names=['L DMN/\nfront DMN', 'L DMN/\nR DMN',
                           'med DMN/\nfront DMN', 'med DMN/\nR DMN'],
                    title1='correlation\n(Z-transformed)',

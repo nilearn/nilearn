@@ -242,6 +242,23 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+:mod:`nilearn.connectivity`: Connectivity
+=========================================
+
+.. automodule:: nilearn.connectivity
+   :no-members:
+   :no-inherited-members:
+
+Classes
+---------
+.. currentmodule:: nilearn.connectivity
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+   
+   CovEmbedding
+   geometric_mean
+   grad_geometric_mean
+
    clean
-
-
