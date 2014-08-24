@@ -2,7 +2,7 @@
 Ward clustering to learn a brain parcellation from rest fMRI
 ====================================================================
 
-We use spatial-constrained Ward-clustering to create a set of
+We use spatially-constrained Ward-clustering to create a set of
 parcels. These parcels are particularly interesting for creating a
 'compressed' representation of the data, replacing the data in the fMRI
 images by mean on the parcellation.

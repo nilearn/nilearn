@@ -41,7 +41,7 @@ Applying Ward clustering
 Before applying Ward's method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
 contiguous parcels (see `the scikit-learn documentation
-<http://www.scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
+<http://scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
 
 .. literalinclude:: ../../plot_rest_clustering.py
     :start-after: # Compute connectivity matrix: which voxel is connected to which

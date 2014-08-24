@@ -207,7 +207,7 @@ Cross-validation
 However, the last analysis is *wrong*, as we have learned and tested on
 the same set of data. We need to use a cross-validation to split the data
 into different sets, called "folds", in a `K-Fold strategy
-<http://en.wikipedia.org/wiki/Cross-validation_(statistics)#K-fold_cross-validation>`_.
+<http://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation>`_.
 
 We use a cross-validation object,
 :class:`sklearn.cross_validation.KFold`, that simply generates the
