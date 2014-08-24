@@ -1,8 +1,8 @@
 .. _data_manipulation:
 
-===============================================================
-fMRI data manipulation: input/output, masking, visualization...
-===============================================================
+=================================================================
+MRI data manipulation: input/output, masking, ROIs, smoothing...
+=================================================================
 
 This chapter presents the structure of brain image data and tools to
 manipulation them.
@@ -182,29 +182,6 @@ presented to the subject::
      'shoe']
 
 |
-
-.. _visualizing:
-
-Visualizing brain images
-========================
-
-Once that NIfTI data are loaded, visualization is simply the display of the
-desired slice (the first three dimensions) at a desired time point (fourth
-dimension). For *haxby*, data is rotated so we have to turn each image
-counter-clockwise.
-
-.. literalinclude:: ../../plot_visualization.py
-     :start-after: ### Visualization #############################################################
-     :end-before: ### Visualization function ####################################################
-
-.. figure:: ../auto_examples/images/plot_visualization_1.png
-    :target: ../auto_examples/plot_visualization.html
-    :align: center
-    :scale: 60
-
-For convenience, further visualizations will be made thanks to a helper
-function `plot_brain`.
-
 
 Masking data manually
 =====================

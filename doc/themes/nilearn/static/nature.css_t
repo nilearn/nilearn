@@ -1362,10 +1362,10 @@ div.index-paragraph p {
 
 /************ The carrousel *******************/
 div.body .jcarousel-wrapper {
-    margin: 0px auto 10px auto;
+    margin: 0px -40px 10px 20px;
     position: relative;
     border: 10px solid #fff;
-    width: 300px;
+    width: 420px;
     -webkit-border-radius: 10px;
        -moz-border-radius: 10px;
             border-radius: 10px;
@@ -1383,7 +1383,7 @@ div.body .jcarousel-wrapper {
 div.body .jcarousel {
     position: relative;
     overflow: hidden;
-    width: 300px;
+    width: 420px;
     height: 250px;
 }
 
@@ -1397,13 +1397,13 @@ div.body .jcarousel ul {
 
 div.body .jcarousel li {
     float: left;
-    width: 300px;
+    width: 420px;
     line-height : 240px;
     text-align: center;
 }
 
 div.body div.jcarousel img {
-    max-width: 300px;
+    max-width: 420px;
     max-height: 250px;
 }
 
@@ -1454,7 +1454,7 @@ div.body .jcarousel-control-next.inactive {
 div.body .jcarousel-pagination {
     position: absolute;
     bottom: -10px;
-    left: 96px; /* This value must be adjusted with the number of imgs */
+    left: 156px; /* This value must be adjusted with the number of imgs */
 }
 
 div.body .jcarousel-pagination a {

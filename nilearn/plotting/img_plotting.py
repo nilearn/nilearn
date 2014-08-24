@@ -26,24 +26,25 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
-from ..image.resampling import coord_transform
-from .coord_tools import get_cut_coords
-from .slicers import SLICERS
 from .._utils.fast_maths import fast_abs_percentile
 from ..datasets import load_mni152_template
+from .slicers import get_slicer
 from . import cm
+from .find_cuts import find_cut_slices
 
 ################################################################################
 # Core, usage-agnostic functions
 
-def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
+def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
+             output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False,
-             bg_vmin=None, bg_vmax=None, **kwargs):
+             bg_vmin=None, bg_vmax=None, interpolation="nearest",
+             colorbar=False, **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
     if img is not False and img is not None:
-        img = _utils.check_niimg(img)
+        img = _utils.check_niimg(img, ensure_3d=True)
         data = img.get_data()
         affine = img.get_affine()
 
@@ -60,53 +61,45 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
             # voxels are indeed threshold
             threshold = fast_abs_percentile(data) + 1e-5
 
-        if cut_coords is None and slicer in 'xyz':
-            cut_coords = get_cut_coords(data)
-            
+        if display_mode in ('x', 'y', 'z'):
+            # Here we use a heuristic for cut indices that is well suited to
+            # finding a small number of objects
+            if cut_coords is None:
+                cut_coords = 12
+            if operator.isNumberType(cut_coords):
+                cut_coords = find_cut_slices(nibabel.Nifti1Image(data, affine),
+                                             direction=display_mode,
+                                             n_cuts=cut_coords)
+
         if len(data.shape) > 3:
             if len(data.shape) == 4 and data.shape[3] == 1:
                 data = data[:,:,:,0]
             else:
                 raise ValueError("The provided volume has %d dimensions. Only" \
                                  " three dimensional volumes volumes are " \
-                                 "supported."%len(data.shape))
+                                 "supported." % len(data.shape))
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
-    slicer = SLICERS[slicer].init_with_figure(img,
-                                          threshold=threshold,
-                                          cut_coords=cut_coords,
-                                          figure=figure, axes=axes,
-                                          black_bg=black_bg)
+    slicer = get_slicer(display_mode).init_with_figure(img,
+                                              threshold=threshold,
+                                              cut_coords=cut_coords,
+                                              figure=figure, axes=axes,
+                                              black_bg=black_bg, 
+                                              colorbar=colorbar)
 
 
     if bg_img is not None:
-        bg_img = _utils.check_niimg(bg_img)
-        bg_data = bg_img.get_data()
-        bg_affine = bg_img.get_affine()
-        if len(bg_data.shape) > 3:
-            if len(bg_data.shape) == 4 and bg_data.shape[3] == 1:
-                bg_data = bg_data[:,:,:,0]
-            else:
-                raise ValueError("The provided volume has %d dimensions. Only" \
-                                 " three dimensional volumes volumes are " \
-                                 "supported."%len(bg_data.shape))
-        slicer.add_overlay(nibabel.Nifti1Image(bg_data, bg_affine),
+        slicer.add_overlay(bg_img,
                            vmin=bg_vmin, vmax=bg_vmax,
-                           cmap=pl.cm.gray)
+                           cmap=pl.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
         if threshold:
             data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-        slicer.add_overlay(nibabel.Nifti1Image(data, affine), **kwargs)
-
-    if black_bg:
-        # To have a black background in PDF, we need to create a
-        # patch in black for the background
-        for ax in slicer.axes.values():
-            ax.ax.imshow(np.zeros((2, 2, 3)),
-                         extent=[-5000, 5000, -5000, 5000],
-                         zorder=-500)
+        slicer.add_overlay(nibabel.Nifti1Image(data, affine),
+                           interpolation=interpolation, colorbar=colorbar,
+                           **kwargs)
 
     if annotate:
         slicer.annotate()
@@ -114,33 +107,42 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None, slicer='ortho',
         slicer.draw_cross()
     if title is not None and not title == '':
         slicer.title(title)
+    if output_file is not None:
+        slicer.savefig(output_file)
+        slicer.close()
+        slicer = None
     return slicer
 
 
-def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
-             axes=None, title=None, threshold=None,
-             annotate=True, draw_cross=True, black_bg=False, **kwargs):
+def plot_img(niimg, cut_coords=None, output_file=None, display_mode='ortho',
+            figure=None, axes=None, title=None, threshold=None,
+            annotate=True, draw_cross=True, black_bg=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
         ----------
         niimg: a nifti-image like object or a filename
             Path to a nifti file or nifti-like object
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -167,7 +169,8 @@ def plot_img(niimg, cut_coords=None, slicer='ortho', figure=None,
             Extra keyword arguments passed to pylab.imshow
     """
     slicer = _plot_img_with_bg(niimg, cut_coords=cut_coords,
-                    slicer=slicer, figure=figure, axes=axes, title=title,
+                    output_file=output_file, display_mode=display_mode,
+                    figure=figure, axes=axes, title=title,
                     threshold=threshold, annotate=annotate,
                     draw_cross=draw_cross,
                     black_bg=black_bg, **kwargs)
@@ -186,6 +189,7 @@ class _MNI152Template(object):
     data   = None
     affine = None
     vmax   = None
+    _shape  = None
 
     def load(self):
         if self.data is None:
@@ -197,6 +201,7 @@ class _MNI152Template(object):
             self.affine = anat_img.get_affine()
             self.data = data
             self.vmax = data.max()
+            self._shape = anat_img.shape
 
     def get_data(self):
         self.load()
@@ -205,6 +210,15 @@ class _MNI152Template(object):
     def get_affine(self):
         self.load()
         return self.affine
+    
+    @property
+    def shape(self):
+        self.load()
+        return self._shape
+    
+    def get_shape(self):
+        self.load()
+        return self._shape
 
     def __str__(self):
         return "<MNI152Template>"
@@ -229,7 +243,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
             if black_bg == 'auto':
                 black_bg = False
         else:
-            anat_img = _utils.check_niimg(anat_img)
+            anat_img = _utils.check_niimg(anat_img, ensure_3d=True)
             if dim or black_bg == 'auto':
                 # We need to inspect the values of the image
                 data = anat_img.get_data()
@@ -255,11 +269,13 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
         if dim:
             vmean = .5 * (vmin + vmax)
             ptp = .5 * (vmax - vmin)
-            if not operator.isNumberType(dim):
-                dim = .6
             if black_bg:
+                if not operator.isNumberType(dim):
+                    dim = .8
                 vmax = vmean + (1 + dim) * ptp
             else:
+                if not operator.isNumberType(dim):
+                    dim = .6
                 vmin = vmean - (1 + dim) * ptp
     if black_bg == 'auto':
         # No anatomy given: no need to turn black_bg on
@@ -271,9 +287,10 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 # Usage-specific functions
 
 
-def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
-              figure=None, axes=None, title=None, annotate=True,
-              draw_cross=True, black_bg='auto', dim=False, cmap=pl.cm.gray):
+def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
+              output_file=None, display_mode='ortho', figure=None,
+              axes=None, title=None, annotate=True, draw_cross=True,
+              black_bg='auto', dim=False, cmap=pl.cm.gray, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -282,21 +299,26 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
         anat_img : a nifti-image like object or a filename
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -323,17 +345,19 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
     """
     anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
                                                 dim=dim, black_bg=black_bg)
-    slicer = plot_img(anat_img, cut_coords=cut_coords, slicer=slicer,
+    slicer = plot_img(anat_img, cut_coords=cut_coords,
+                      output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      vmin=vmin, vmax=vmax, cmap=cmap)
+                      vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
     return slicer
 
 
-def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
-             figure=None, axes=None, title=None, annotate=True,
-             draw_cross=True, black_bg=True, cmap=pl.cm.spectral):
+def plot_epi(epi_img=None, cut_coords=None, output_file=None,
+             display_mode='ortho', figure=None, axes=None, title=None,
+             annotate=True, draw_cross=True, black_bg=True,
+             cmap=pl.cm.spectral, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -341,21 +365,26 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
         ----------
         epi_img : a nifti-image like object or a filename
             The EPI (T2*) image
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -380,43 +409,49 @@ def plot_epi(epi_img=None, cut_coords=None, slicer='ortho',
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    slicer = plot_img(epi_img, cut_coords=cut_coords, slicer=slicer,
+    slicer = plot_img(epi_img, cut_coords=cut_coords,
+                      output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      cmap=cmap)
+                      cmap=cmap, **kwargs)
     return slicer
 
-def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
-             figure=None, axes=None, title=None, annotate=True, draw_cross=True,
-             black_bg='auto', alpha=0.7, cmap=pl.cm.gist_rainbow, dim=True, 
-             **kwargs):
-    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
+
+def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+             output_file=None, display_mode='ortho', figure=None, axes=None,
+             title=None, annotate=True, draw_cross=True, black_bg='auto',
+             alpha=0.7, cmap=pl.cm.gist_ncar, dim=True, **kwargs):
+    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
         Parameters
         ----------
         roi_img : a nifti-image like object or a filename
-            The ROI/mask image, it could be binary mask or an atlas or ROIs with 
-            integer values.
+            The ROI/mask image, it could be binary mask or an atlas or ROIs
+            with integer values.
         bg_img : a nifti-image like object or a filename
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -433,57 +468,58 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, slicer='ortho',
             you whish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
-        cmap: matplotlib colormap, optional
-            The colormap for the anat
 
-        Notes
-        -----
-        Arrays should be passed in numpy convention: (x, y, z)
-        ordered.
     """
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim, 
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
+
     slicer = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
-                               cut_coords=cut_coords, slicer=slicer,
+                               cut_coords=cut_coords,
+                               output_file=output_file,
+                               display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=0.5,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
-                               alpha=alpha, cmap=cmap)
+                               alpha=alpha, cmap=cmap, **kwargs)
     return slicer
 
 
-def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None, 
-                  slicer='ortho', figure=None, axes=None, title=None,
-                  threshold=1e-6, annotate=True, draw_cross=True, 
-                  black_bg='auto', cmap=cm.cold_hot, dim=True, 
-                  **kwargs):
-    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and 
+def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+                  output_file=None, display_mode='ortho', figure=None,
+                  axes=None, title=None, threshold=1e-6, annotate=True,
+                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
+                  dim=True, colorbar=True, **kwargs):
+    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
         Parameters
         ----------
         stat_map_img : a nifti-image like object or a filename
-            The ROI/mask image, it could be binary mask or an atlas or ROIs with 
-            integer values.
+            The statistical map image
         bg_img : a nifti-image like object or a filename
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
-        cut_coords: None, or a tuple of floats
-            The MNI coordinates of the point where the cut is performed, in
-            MNI coordinates and order.
-            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
-            For slicer == 'x', 'y', or 'z', then these are the
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        slicer: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts. With 'ortho' three cuts are
-            performed in orthogonal directions
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), 
-            optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -509,39 +545,27 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         ordered.
     """
     # dim the background
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim, 
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
-    
+
     # make sure that the color range is symmetrical
-    stat_map_img = _utils.check_niimg(stat_map_img)
+    stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
     stat_map_data = stat_map_img.get_data()
-    stat_map_max = stat_map_data.max()
-    stat_map_min = stat_map_data.min()
+    stat_map_max = np.nanmax(stat_map_data)
+    stat_map_min = np.nanmin(stat_map_data)
     vmax = max(-stat_map_min, stat_map_max)
     vmin = -vmax
-    
+
     slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
-                               cut_coords=cut_coords, slicer=slicer,
+                               cut_coords=cut_coords,
+                               output_file=output_file,
+                               display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=threshold,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
-                               vmin=vmin, vmax=vmax)
+                               vmin=vmin, vmax=vmax, colorbar=colorbar,
+                               **kwargs)
     return slicer
 
-################################################################################
-# Demo functions
 
-def demo_plot_roi(**kwargs):
-    """ Demo plotting an ROI
-    """
-    mni_affine = MNI152TEMPLATE.get_affine()
-    data = np.zeros((91, 109, 91))
-    # Color a asymetric rectangle around Broca area:
-    x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z,
-                                          np.linalg.inv(mni_affine))
-    data[int(x_map)-5:int(x_map)+5, int(y_map)-3:int(y_map)+3, 
-         int(z_map)-10:int(z_map)+10] = 1
-    img = nibabel.Nifti1Image(data, mni_affine)
-    return plot_roi(img, title="Broca's area", **kwargs)

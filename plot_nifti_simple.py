@@ -19,20 +19,18 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 nifti_masker = NiftiMasker(standardize=False, mask_strategy='epi',
                            memory="nilearn_cache", memory_level=2)
 nifti_masker.fit(dataset.func[0])
-mask = nifti_masker.mask_img_.get_data()
+mask_img = nifti_masker.mask_img_
 
 ### Visualize the mask ########################################################
 import matplotlib.pyplot as plt
-import numpy as np
-import nibabel
-plt.figure()
-plt.axis('off')
-plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
-          interpolation='nearest', cmap=plt.cm.gray)
-ma = np.ma.masked_equal(mask, False)
-plt.imshow(np.rot90(ma[..., 20]), interpolation='nearest', cmap=plt.cm.autumn,
-          alpha=0.5)
-plt.title("Mask")
+from nilearn.plotting import plot_roi
+from nilearn.image.image import mean_img
+
+# calculate mean image for the background
+mean_func_img = mean_img(dataset.func[0])
+
+plot_roi(mask_img, mean_func_img, display_mode='y', cut_coords=4, title="Mask")
+
 
 ### Preprocess data ###########################################################
 nifti_masker.fit(dataset.func[0])
@@ -48,11 +46,11 @@ components_masked = ica.fit_transform(fmri_masked.T).T
 components = nifti_masker.inverse_transform(components_masked)
 
 ### Show results ##############################################################
-components_data = np.ma.masked_equal(components.get_data(), 0)
-plt.figure()
-plt.axis('off')
-plt.imshow(np.rot90(nibabel.load(dataset.func[0]).get_data()[..., 20, 0]),
-          interpolation='nearest', cmap=plt.cm.gray)
-plt.imshow(np.rot90(components_data[..., 20, 7]), interpolation='nearest',
-          cmap=plt.cm.hot)
+import nibabel
+from nilearn.plotting import plot_stat_map
+
+plot_stat_map(nibabel.Nifti1Image(components.get_data()[:,:,:,0],
+                                  components.get_affine()), mean_func_img,
+              display_mode='y', cut_coords=4, title="Component 0")
+
 plt.show()
