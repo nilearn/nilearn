@@ -72,7 +72,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=np.bool)
     larger_mask[1:-1, 1:-1, 1:-1] = mask
     # Use nans as missing value: ugly
-    masked_data = np.zeros(larger_mask.shape)
+    masked_data = np.zeros(larger_mask.shape + data.shape[3:])
     masked_data[1:-1, 1:-1, 1:-1] = data.copy()
     masked_data[np.logical_not(larger_mask)] = np.nan
     outer_shell = larger_mask.copy()

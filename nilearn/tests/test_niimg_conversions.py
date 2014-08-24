@@ -124,6 +124,7 @@ def test_concat_niimgs():
     niimg1 = Nifti1Image(np.ones(shape), affine)
     niimg2 = Nifti1Image(np.ones(shape), 2 * affine)
     niimg3 = Nifti1Image(np.zeros(shape), affine)
+    niimg4d = Nifti1Image(np.ones(shape + (2, )), affine)
 
     concatenated = _utils.concat_niimgs((niimg1, niimg3, niimg1))
     concatenate_true = np.ones(shape + (3,))
@@ -131,6 +132,11 @@ def test_concat_niimgs():
     np.testing.assert_almost_equal(concatenated.get_data(), concatenate_true)
 
     assert_raises(ValueError, _utils.concat_niimgs, [niimg1, niimg2])
+
+    # Smoke-test the accept_4d
+    assert_raises(ValueError, _utils.concat_niimgs, [niimg1, niimg4d])
+    concatenated = _utils.concat_niimgs([niimg1, niimg4d], accept_4d=True)
+    assert_equal(concatenated.shape[3], 3)
 
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     _, tmpimg2 = tempfile.mkstemp(suffix='.nii')

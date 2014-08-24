@@ -46,4 +46,3 @@ def fast_abs_percentile(data, percentile=80):
     return data.sort()[index]
 
 
-
