@@ -49,7 +49,7 @@ process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
-n_jobs = 8
+n_jobs = 1
 
 ### Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the session, which corresponds to
