@@ -163,7 +163,7 @@ def check_niimg(niimg, ensure_3d=False):
             shape = _get_shape(niimg)
             if len(shape) == 3:
                 pass
-            elif (len(shape) == 4 and shape[4] == 1):
+            elif (len(shape) == 4 and shape[3] == 1):
                 # "squeeze" the image.
                 data = _safe_get_data(niimg)
                 affine = niimg.get_affine()
