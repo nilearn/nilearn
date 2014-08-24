@@ -312,6 +312,8 @@ class BaseSlicer(object):
                 If None is given, the maps are not thresholded.
                 If a number is given, it is used to threshold the maps:
                 values below the threshold are plotted as transparent.
+            colorbar: boolean, optional
+                If True, display a colorbar on the right of the plots.
             kwargs:
                 Extra keyword arguments are passed to imshow.
         """
@@ -369,7 +371,7 @@ class BaseSlicer(object):
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                     get_mask_bounds(nibabel.Nifti1Image(not_mask.astype(np.int),
                                     affine))
-            if kwargs.get('vmin') is None and kwargs.get('vmax') is None:
+            if kwargs.get('vmin') is None or kwargs.get('vmax') is None:
                 # Avoid dealing with masked arrays: they are slow
                 if not np.any(not_mask):
                     # Everything is masked
@@ -380,7 +382,7 @@ class BaseSlicer(object):
                     vmax = masked_map.max()
                 if kwargs.get('vmin') is None:
                     kwargs['vmin'] = vmin
-                if kwargs.get('max') is None:
+                if kwargs.get('vmax') is None:
                     kwargs['vmax'] = vmax
         else:
             if not 'vmin' in kwargs:
@@ -404,8 +406,8 @@ class BaseSlicer(object):
         return ims
 
     def _colorbar_show(self, im):
-        adjusted_width = self._colorbar_width/len(self.axes)
-        adjusted_right_margin = 0.01/len(self.axes)
+        adjusted_width = self._colorbar_width / len(self.axes)
+        adjusted_right_margin = 0.01 / len(self.axes)
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
         self._colorbar_ax = figure.add_axes([
@@ -417,7 +419,7 @@ class BaseSlicer(object):
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
         figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
         self._colorbar_ax.yaxis.tick_left()
-        self._colorbar_ax.set_yticklabels(["% 2.2g"%t for t in ticks])
+        self._colorbar_ax.set_yticklabels(["% 2.2g" % t for t in ticks])
 
         if self._black_bg:
             color = 'w'
