@@ -4,7 +4,7 @@ People
 ------
 
 This tutorial is brought to you by the `INRIA Parietal Project Team
-<https://team.inria.fr/parietal/>`_ and `scikit-learn
+<https://parietal.saclay.inria.fr/>`_ and `scikit-learn
 <http://scikit-learn.org/>`_ folks, in particular:
 
 .. hlist::
