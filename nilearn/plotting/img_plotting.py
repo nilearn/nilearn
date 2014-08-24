@@ -65,7 +65,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             # Here we use a heuristic for cut indices that is well suited to
             # finding a small number of objects
             if cut_coords is None:
-                cut_coords = 12
+                cut_coords = 7
             if operator.isNumberType(cut_coords):
                 cut_coords = find_cut_slices(nibabel.Nifti1Image(data, affine),
                                              direction=display_mode,
@@ -85,7 +85,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                                               threshold=threshold,
                                               cut_coords=cut_coords,
                                               figure=figure, axes=axes,
-                                              black_bg=black_bg, 
+                                              black_bg=black_bg,
                                               colorbar=colorbar)
 
 
