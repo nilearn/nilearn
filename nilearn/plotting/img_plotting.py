@@ -66,7 +66,9 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             # finding a small number of objects
             if cut_coords is None:
                 cut_coords = 7
-            if operator.isNumberType(cut_coords):
+            # arrays and NumberType but also SequenceType
+            if (operator.isNumberType(cut_coords)
+                and not operator.isSequenceType(cut_coords)):
                 cut_coords = find_cut_slices(nibabel.Nifti1Image(data, affine),
                                              direction=display_mode,
                                              n_cuts=cut_coords)
