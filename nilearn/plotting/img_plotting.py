@@ -37,10 +37,10 @@ from .find_cuts import find_cut_slices
 
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
              output_file=None, display_mode='ortho',
-             figure=None, axes=None, title=None, threshold=None,
-             annotate=True, draw_cross=True, black_bg=False,
+             colorbar=False, figure=None, axes=None, title=None,
+             threshold=None, annotate=True, draw_cross=True, black_bg=False,
              bg_vmin=None, bg_vmax=None, interpolation="nearest",
-             colorbar=False, **kwargs):
+             **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
     if img is not False and img is not None:
@@ -486,10 +486,10 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
 
 def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
-                  output_file=None, display_mode='ortho', figure=None,
-                  axes=None, title=None, threshold=1e-6, annotate=True,
-                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
-                  dim=True, colorbar=True, **kwargs):
+                  output_file=None, display_mode='ortho', colorbar=True,
+                  figure=None, axes=None, title=None, threshold=1e-6,
+                  annotate=True, draw_cross=True, black_bg='auto',
+                  cmap=cm.cold_hot, dim=True, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -500,7 +500,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_img : a nifti-image like object or a filename
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
-        cut_coords: None, a tuple of floats, or an integer
+        cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
@@ -508,14 +508,16 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        output_file: string, or None, optional
+        output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
+        display_mode : {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
+        colorbar : boolean, optional
+            If True, display a colorbar on the right of the plots.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
