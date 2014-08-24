@@ -16,6 +16,7 @@ from nilearn import plotting, datasets, image
 haxby = datasets.fetch_haxby(n_subjects=1)
 
 localizer = datasets.fetch_localizer_contrasts(["left vs right button press"],
+                                               n_subjects=4,
                                                get_anats=True)
 
 

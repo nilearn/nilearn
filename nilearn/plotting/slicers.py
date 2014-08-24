@@ -402,16 +402,17 @@ class BaseSlicer(object):
         adjusted_right_margin = 0.01/len(self.axes)
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
-        self._colorbar_ax = figure.add_axes([x1-(adjusted_width+adjusted_right_margin), 
-                                             y0+0.05,
-                                             adjusted_width-adjusted_right_margin, 
-                                             y1-0.10])
-        
+        self._colorbar_ax = figure.add_axes([
+            x1 - (adjusted_width + adjusted_right_margin),
+            y0 + 0.05,
+            adjusted_width - adjusted_right_margin,
+            y1 - 0.10])
+
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
         figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
         self._colorbar_ax.yaxis.tick_left()
         self._colorbar_ax.set_yticklabels(["% 2.2g"%t for t in ticks])
-        
+
         if self._black_bg:
             color = 'w'
         else:
@@ -556,7 +557,7 @@ class OrthoSlicer(BaseSlicer):
         # Create our axes:
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
-            ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0],
+            ax = pl.axes([0.3*index*(x1 - x0) + x0, y0, .3*(x1 - x0), y1 - y0],
                          axisbg=axisbg)
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
@@ -588,12 +589,12 @@ class OrthoSlicer(BaseSlicer):
         dummy_ax = CutAxes(None, None, None)
         width_dict[dummy_ax.ax] = 0
         cut_ax_dict = self.axes
-        
+
         if self._colorbar:
-            adjusted_width = self._colorbar_width/len(self.axes)
-            ticks_margin = adjusted_width*self._colorbar_labels_margin
-            x1 = x1 - (adjusted_width+ticks_margin)
-            
+            adjusted_width = self._colorbar_width / len(self.axes)
+            ticks_margin = adjusted_width * self._colorbar_labels_margin
+            x1 = x1 - (adjusted_width + ticks_margin)
+
         for cut_ax in cut_ax_dict.itervalues():
             bounds = cut_ax.get_object_bounds()
             if not bounds:
