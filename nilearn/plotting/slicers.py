@@ -283,15 +283,21 @@ class BaseSlicer(object):
             color = 'k' if self._black_bg else 'w'
         if bgcolor is None:
             bgcolor = 'w' if self._black_bg else 'k'
-        self.axes.values()[0].ax.text(x, y, text,
-                    transform=self.frame_axes.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='top',
-                    size=size, color=color,
-                    bbox=dict(boxstyle="square,pad=.3",
-                              ec=bgcolor, fc=bgcolor, alpha=alpha),
-                    zorder=1000,
-                    **kwargs)
+        if hasattr(self, '_cut_displayed'):
+            first_axe = self._cut_displayed[0]
+        else:
+            first_axe = self.cut_coords[0]
+        ax = self.axes[first_axe].ax
+        ax.text(x, y, text,
+                transform=self.frame_axes.transAxes,
+                horizontalalignment='left',
+                verticalalignment='top',
+                size=size, color=color,
+                bbox=dict(boxstyle="square,pad=.3",
+                          ec=bgcolor, fc=bgcolor, alpha=alpha),
+                zorder=1000,
+                **kwargs)
+        ax.set_zorder(1000)
 
 
     def add_overlay(self, img, threshold=1e-6, colorbar=False, **kwargs):
@@ -637,7 +643,7 @@ class OrthoSlicer(BaseSlicer):
             coord = None
             if direction in self._cut_displayed:
                 coord = cut_coords[sorted(self._cut_displayed).index(direction)]
-            coords[direction] = coord 
+            coords[direction] = coord
         x, y, z = coords['x'], coords['y'], coords['z']
 
         kwargs = kwargs.copy()
