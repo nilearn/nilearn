@@ -1,7 +1,7 @@
 import itertools
 from nose.tools import assert_true
 import numpy as np
-from ..operators import prox_l1, prox_tv_l1
+from ..operators import prox_l1, prox_tv_l1, _projector_on_dual
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):
@@ -40,3 +40,15 @@ def test_prox_tv_l1_approximates_prox_l1_for_lasso(size=15, random_state=42,
             # results shoud be close in l-infinity norm
             np.testing.assert_almost_equal(np.abs(a - b).max(),
                                            0., decimal=decimal)
+
+
+def test_proj_lpinty(p=10):
+    import sys
+    import os
+    sys.path.append(os.path.join(os.environ["HOME"],
+                                 "CODE/FORKED/parietal-python"))
+    from parietal.learn.proximal.projections import proj_lpinfty
+    rng = np.random.RandomState(42)
+    z = np.ones((4, p))
+    np.testing.assert_array_equal(_projector_on_dual(z.copy(), 0.)[:-1],
+                                  proj_lpinfty(z[:-1], 1., p=2, inplace=False))
