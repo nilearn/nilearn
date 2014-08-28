@@ -193,7 +193,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.mask_img_.get_data()
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, n_hv_confounds=None):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -204,6 +204,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
         confounds: CSV file path or 2D matrix
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
+
+        n_hv_confounds: unsigned integer
+            Parameter is passed to image.high_variance_confounds. Please see
+            related documentation for details
         """
         return self.transform_single_niimgs(
-            niimgs, confounds)
+            niimgs, confounds, n_hv_confounds)

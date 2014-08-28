@@ -180,8 +180,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 self.mask_img_ = image.resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.get_affine(),
-                    target_shape=_utils._get_shape(
-                                                self.labels_img_)[:3],
+                    target_shape=_utils._get_shape(self.labels_img_)[:3],
                     interpolation="nearest",
                     copy=True)
 
@@ -193,10 +192,11 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def fit_transform(self, niimgs, confounds=None):
-        return self.fit().transform(niimgs, confounds=confounds)
+    def fit_transform(self, niimgs, confounds=None, n_hv_confounds=None):
+        return self.fit().transform(niimgs, confounds=confounds,
+                                    n_hv_confounds=n_hv_confounds)
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, n_hv_confounds=None):
         """Extract signals from images.
 
         Parameters
@@ -209,6 +209,12 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
+
+        n_hv_confounds: unsigned integer, optional
+            This parameter is passed on to
+            nilearn.image.high_variance_confounds.
+            Please see related documentation for details
+
 
         Returns
         =======
@@ -247,7 +253,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        t_r=self.t_r,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
-                                       confounds=confounds)
+                                       confounds=confounds,
+                                       n_hv_confounds=n_hv_confounds)
         return region_signals
 
     def inverse_transform(self, signals):
@@ -414,8 +421,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # Since a copy is required, order can be forced as well.
             maps_data = _utils.as_ndarray(self.maps_img_.get_data(),
                                           copy=True, order="C")
-            maps_affine = _utils.as_ndarray(
-                                            self.maps_img_.get_affine())
+            maps_affine = _utils.as_ndarray(self.maps_img_.get_affine())
             self.maps_img_ = nibabel.Nifti1Image(maps_data, maps_affine)
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
@@ -438,10 +444,11 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def fit_transform(self, niimgs, confounds=None):
-        return self.fit().transform(niimgs, confounds=confounds)
+    def fit_transform(self, niimgs, confounds=None, n_hv_confounds=None):
+        return self.fit().transform(niimgs, confounds=confounds,
+                                    n_hv_confounds=n_hv_confounds)
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, n_hv_confounds=None):
         """Extract signals from images.
 
         Parameters
@@ -454,6 +461,11 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
+
+        n_hv_confounds: unsigned integer, optional
+            This parameter is passed on to
+            nilearn.image.high_variance_confounds.
+            Please see related documentation for details
 
         Returns
         =======
@@ -499,7 +511,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        t_r=self.t_r,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
-                                       confounds=confounds)
+                                       confounds=confounds,
+                                       n_hv_confounds=n_hv_confounds)
         return region_signals
 
     def inverse_transform(self, region_signals):

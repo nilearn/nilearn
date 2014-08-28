@@ -212,7 +212,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         self.mask_img_.get_data()
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, n_hv_confounds=None):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -224,6 +224,11 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
+        n_hv_confounds: unsigned integer, optional
+            Parameter passed to image.high_variance_confounds. Please see
+            corresponding documentation for details
+
+
         Returns
         -------
         data: {list of numpy arrays}
@@ -232,4 +237,5 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         if not hasattr(niimgs, '__iter__')\
                     or isinstance(niimgs, basestring):
                 return self.transform_single_niimgs(niimgs)
-        return self.transform_niimgs(niimgs, confounds, n_jobs=self.n_jobs)
+        return self.transform_niimgs(niimgs, confounds, n_hv_confounds,
+                                     n_jobs=self.n_jobs)

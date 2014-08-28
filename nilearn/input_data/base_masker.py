@@ -26,6 +26,7 @@ def filter_and_mask(niimgs, mask_img_,
                     memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
+                    n_hv_confounds=None,
                     copy=True):
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
@@ -90,7 +91,9 @@ def filter_and_mask(niimgs, mask_img_,
         data = cache(signal.clean, memory, ref_memory_level,
                      memory_level=clean_memory_level)(
                          data,
-                         confounds=confounds, low_pass=parameters['low_pass'],
+                         confounds=confounds,
+                         n_hv_confounds=n_hv_confounds,
+                         low_pass=parameters['low_pass'],
                          high_pass=parameters['high_pass'],
                          t_r=parameters['t_r'],
                          detrend=parameters['detrend'],
@@ -104,6 +107,7 @@ def filter_and_mask(niimgs, mask_img_,
                 cache(signal.clean, memory, ref_memory_level, memory_level=2)(
                     data[:, sessions == s],
                     confounds=confounds,
+                    n_hv_confounds=n_hv_confounds,
                     low_pass=parameters['low_pass'],
                     high_pass=parameters['high_pass'],
                     t_r=parameters['t_r'],
@@ -121,13 +125,14 @@ def filter_and_mask(niimgs, mask_img_,
 
 
 def _safe_filter_and_mask(niimgs, mask_img_,
-                         parameters,
-                         ref_memory_level=0,
-                         memory=Memory(cachedir=None),
-                         verbose=0,
-                         confounds=None,
-                         reference_affine=None,
-                         copy=True):
+                          parameters,
+                          ref_memory_level=0,
+                          memory=Memory(cachedir=None),
+                          verbose=0,
+                          confounds=None,
+                          n_hv_confounds=None,
+                          reference_affine=None,
+                          copy=True):
     niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
 
     # If there is a reference affine, we may have to force resampling
@@ -141,14 +146,15 @@ def _safe_filter_and_mask(niimgs, mask_img_,
         parameters['target_affine'] = reference_affine
 
     return filter_and_mask(niimgs, mask_img_, parameters, ref_memory_level,
-            memory, verbose, confounds, copy)
+            memory, verbose, confounds, n_hv_confounds, copy)
 
 
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
 
-    def transform_single_niimgs(self, niimgs, confounds=None, copy=True):
+    def transform_single_niimgs(self, niimgs, confounds=None,
+                                n_hv_confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fit. '
                              'You must call fit() before calling transform().'
@@ -167,11 +173,13 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                               memory=self.memory,
                               verbose=self.verbose,
                               confounds=confounds,
+                              n_hv_confounds=n_hv_confounds,
                               copy=copy
                             )
         return data
 
-    def transform_niimgs(self, niimgs_list, confounds=None, copy=True, n_jobs=1):
+    def transform_niimgs(self, niimgs_list, confounds=None,
+                         n_hv_confounds=None, copy=True, n_jobs=1):
         ''' Prepare multi subject data in parallel
 
         Parameters
@@ -182,6 +190,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         confounds: list of confounds, optional
             List of confounds. Must be of same length than niimgs_list.
+
+        n_hv_confounds: unsigned integer, optional
+            number of high variance confounds (same for all)
 
         copy: boolean, optional
             If True, guarantees that output array has no memory in common with
@@ -217,12 +228,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                               memory=self.memory,
                               verbose=self.verbose,
                               confounds=confounds,
+                              n_hv_confounds=n_hv_confounds,
                               reference_affine=reference_affine,
                               copy=copy)
                           for niimgs, confounds in zip(niimgs_list, confounds))
         return zip(*data)[0]
 
-    def fit_transform(self, X, y=None, confounds=None, **fit_params):
+    def fit_transform(self, X, y=None, confounds=None, n_hv_confounds=None,
+                      **fit_params):
         """Fit to data, then transform it
 
         Fits transformer to X and y with optional parameters fit_params
@@ -248,20 +261,26 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # fit method of arity 1 (unsupervised transformation)
             if self.mask is None:
                 return self.fit(X, **fit_params
-                                ).transform(X, confounds=confounds)
+                                ).transform(X, confounds=confounds,
+                                            n_hv_confounds=n_hv_confounds)
             else:
-                return self.fit(**fit_params).transform(X, confounds=confounds)
+                return self.fit(**fit_params).transform(X, confounds=confounds,
+                                                        n_hv_confounds=
+                                                        n_hv_confounds)
         else:
             # fit method of arity 2 (supervised transformation)
             if self.mask is None:
                 return self.fit(X, y, **fit_params
-                                ).transform(X, confounds=confounds)
+                                ).transform(X, confounds=confounds,
+                                            n_hv_confounds=n_hv_confounds)
             else:
                 warnings.warn('[%s.fit] Generation of a mask has been'
                               ' requested (y != None) while a mask has'
                               ' been provided at masker creation. Given mask'
                               ' will be used.' % self.__class__.__name__)
-                return self.fit(**fit_params).transform(X, confounds=confounds)
+                return self.fit(**fit_params).transform(X, confounds=confounds,
+                                                        n_hv_confounds=
+                                                        n_hv_confounds)
 
     def inverse_transform(self, X):
         return self._cache(masking.unmask, memory_level=1,
