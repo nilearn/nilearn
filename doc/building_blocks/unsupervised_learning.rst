@@ -19,7 +19,7 @@ clustering and finding meaningful components (e.g. using ICA).
 
 .. seealso::
    
-    The `scikit-learn unsupervised learning documentation <http://scikit-learn.com/stable/unsupervised_learning.html>`_ is a useful reference.
+    The `scikit-learn unsupervised learning documentation <http://scikit-learn.org/stable/unsupervised_learning.html>`_ is a useful reference.
 
 ____
 

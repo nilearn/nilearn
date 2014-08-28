@@ -46,6 +46,12 @@ def test_check_niimg():
         _utils.check_niimg([])
     assert_true('image' in cm.exception.message
                 or 'affine' in cm.exception.message)
+
+    # Test ensure_3d
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg(['test.nii', ], ensure_3d=True)
+    assert_true('3D' in cm.exception.message)
+
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -54,6 +60,16 @@ def test_check_niimg():
     with testing.write_tmp_imgs(data_img, create_files=True)\
                 as filename:
         _utils.check_niimg(filename)
+
+    # Test ensure_3d with a in-memory object
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg(data, ensure_3d=True)
+    assert_true('3D' in cm.exception.message)
+
+    # Test ensure_3d with a 4D image with a length 1 4th dim
+    data = np.zeros((40, 40, 40, 1))
+    data_img = Nifti1Image(data, np.eye(4))
+    _utils.check_niimg(data_img, ensure_3d=True)
 
 
 def test_check_niimgs():
@@ -113,6 +129,7 @@ def test_concat_niimgs():
     niimg1 = Nifti1Image(np.ones(shape), affine)
     niimg2 = Nifti1Image(np.ones(shape), 2 * affine)
     niimg3 = Nifti1Image(np.zeros(shape), affine)
+    niimg4d = Nifti1Image(np.ones(shape + (2, )), affine)
 
     concatenated = _utils.concat_niimgs((niimg1, niimg3, niimg1))
     concatenate_true = np.ones(shape + (3,))
@@ -120,6 +137,11 @@ def test_concat_niimgs():
     np.testing.assert_almost_equal(concatenated.get_data(), concatenate_true)
 
     assert_raises(ValueError, _utils.concat_niimgs, [niimg1, niimg2])
+
+    # Smoke-test the accept_4d
+    assert_raises(ValueError, _utils.concat_niimgs, [niimg1, niimg4d])
+    concatenated = _utils.concat_niimgs([niimg1, niimg4d], accept_4d=True)
+    assert_equal(concatenated.shape[3], 3)
 
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     _, tmpimg2 = tempfile.mkstemp(suffix='.nii')

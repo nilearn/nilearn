@@ -19,18 +19,12 @@ an explicit model of the signal. The reference papers are:
 Pre-prints for both papers are available on hal
 (http://hal.archives-ouvertes.fr)
 """
-import numpy as np
 
 ### Load ADHD rest dataset ####################################################
 from nilearn import datasets
 
 dataset = datasets.fetch_adhd()
 func_files = dataset.func # The list of 4D nifti files for each subject
-
-### Compute a mean epi ########################################################
-from nilearn import image
-
-mean_epi = image.mean_img(func_files[0]).get_data()
 
 ### Apply CanICA ##############################################################
 from nilearn.decomposition.canica import CanICA
@@ -49,23 +43,14 @@ components_img.to_filename('canica_resting_state.nii.gz')
 
 ### Visualize the results #####################################################
 # Show some interesting components
+import nibabel
 import matplotlib.pyplot as plt
-from scipy import ndimage
-
-# First retrieve the numpy array from the Nifti image
-components = components_img.get_data()
-
-# Using a masked array is important to have transparency in the figures
-components = np.ma.masked_equal(components, 0, copy=False)
+from nilearn.plotting import plot_stat_map
 
 for i in range(n_components):
-    plt.figure()
-    plt.axis('off')
-    cut_coord = ndimage.maximum_position(np.abs(components[..., i]))[2]
-    vmax = np.max(np.abs(components[:, :, cut_coord, i]))
-    plt.imshow(np.rot90(mean_epi[:, :, cut_coord]), interpolation='nearest',
-              cmap=plt.cm.gray)
-    plt.imshow(np.rot90(components[:, :, cut_coord, i]),
-              interpolation='nearest', cmap=plt.cm.jet, vmax=vmax, vmin=-vmax)
+    plot_stat_map(nibabel.Nifti1Image(components_img.get_data()[..., i],
+                                      components_img.get_affine()),
+                  display_mode="z", title="IC %d"%i, cut_coords=1,
+                  colorbar=False)
 
 plt.show()

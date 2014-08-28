@@ -103,7 +103,15 @@ def copy_niimg(niimg):
                                niimg.get_affine().copy())
 
 
-def check_niimg(niimg):
+def short_repr(niimg):
+    this_repr = repr(niimg)
+    if len(this_repr) > 20:
+        # Shorten the repr to have a useful error message
+        this_repr = this_repr[:18] + '...'
+    return this_repr
+
+
+def check_niimg(niimg, ensure_3d=False):
     """Check that niimg is a proper niimg. Turn filenames into objects.
 
     Parameters
@@ -112,6 +120,10 @@ def check_niimg(niimg):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
+
+    ensure_3d: boolean, optional
+        If ensure_3d is true, the code checks that the image passed is a
+        3D image and raises an error if not
 
     Returns
     -------
@@ -133,6 +145,9 @@ def check_niimg(niimg):
         # data is a filename, we load it
         result = nibabel.load(niimg)
     elif hasattr(niimg, "__iter__"):
+        if ensure_3d:
+            raise TypeError("A 3D image is expected, but an iterable was"
+                "given: %s" % short_repr(niimg))
         if hasattr(niimg, "__len__") and len(niimg) == 0:
             raise TypeError('An empty object - %r - was passed instead of an '
                             'image or a list of images' % niimg)
@@ -140,25 +155,50 @@ def check_niimg(niimg):
     else:
         # it is an object, it should have get_data and get_affine methods
         if not is_a_niimg(niimg):
-            this_repr = repr(niimg)
-            if len(this_repr) > 20:
-                # Shorten the repr to have a useful error message
-                this_repr = this_repr[:18] + '...'
             raise TypeError("Data given cannot be converted to a nifti"
                             " image: this object -'%s'- does not expose"
                             " get_data or get_affine methods"
-                            % this_repr)
+                            % short_repr(niimg))
+        if ensure_3d:
+            shape = _get_shape(niimg)
+            if len(shape) == 3:
+                pass
+            elif (len(shape) == 4 and shape[3] == 1):
+                # "squeeze" the image.
+                data = _safe_get_data(niimg)
+                affine = niimg.get_affine()
+                niimg = nibabel.Nifti1Image(data[:, :, :, 0], affine)
+            else:
+                raise TypeError("A 3D image is expected, but an image"
+                    "whith a shape of %s was given." % shape)
         result = niimg
     return result
 
 
-def concat_niimgs(niimgs, dtype=np.float32):
+def _to_4d(data):
+    """ Internal function to cast a 3D ndarray to a 4D one by adding a
+        new axis at the end
+    """
+    if len(data.shape) == 4:
+        return data
+    out = data.view()
+    out.shape = data.shape + (1, )
+    return out
+
+
+def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
     """Concatenate a list of niimgs
 
     Parameters
     ----------
     niimgs: iterable of niimgs
         niimgs to concatenate.
+
+    dtype: numpy dtype, optional
+        the dtype of the returned image
+
+    accept_4d: boolean, optional
+        Accept 4D images
 
     Returns
     -------
@@ -170,14 +210,30 @@ def concat_niimgs(niimgs, dtype=np.float32):
     affine = first_niimg.get_affine()
     first_data = first_niimg.get_data()
     first_data_shape = first_data.shape
+    sizes = []
+    for index, niimg in enumerate(niimgs):
+        this_shape = _get_shape(check_niimg(niimg))
+        if len(this_shape) == 3:
+            sizes.append(1)
+        else:
+            if not accept_4d:
+                if (isinstance(niimg, basestring)):
+                    i_error = "Image " + niimg
+                else:
+                    i_error = "Image #" + str(index)
+                raise ValueError("%s is a 4D shape (shape: %s), but this "
+                                 "function accepts only 3D images"
+                                % (i_error, this_shape))
+            sizes.append(this_shape[3])
+
     # Using fortran order makes concatenation much faster than with C order,
     # because the voxels for a given image are grouped together in memory.
-    data = np.ndarray(first_data_shape + (len(niimgs),),
+    data = np.ndarray(first_data_shape[:3] + (sum(sizes), ),
                       order="F", dtype=dtype)
-    data[..., 0] = first_data
+    data[..., :sizes[0]] = _to_4d(first_data)
     del first_data, first_niimg
 
-    for index, iter_niimg in enumerate(niimgs):
+    for index, (iter_niimg, size) in enumerate(zip(niimgs, sizes)):
         if index == 0:
             continue
         niimg = check_niimg(iter_niimg)
@@ -194,14 +250,14 @@ def concat_niimgs(niimgs, dtype=np.float32):
                              % (i_error,
                              repr(affine), repr(niimg.get_affine())))
         this_data = niimg.get_data()
-        if this_data.shape != first_data_shape:
+        if this_data.shape[:3] != first_data_shape[:3]:
             if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
             else:
                 i_error = "image #" + str(index)
             raise ValueError("Shape of %s is different from first image shape."
                              % i_error)
-        data[..., index] = this_data
+        data[..., index:index + size] = _to_4d(this_data)
     return nibabel.Nifti1Image(data, affine)
 
 

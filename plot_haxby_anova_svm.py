@@ -74,33 +74,22 @@ coef = svc.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
 # reverse masking
-weight_niimg = nifti_masker.inverse_transform(coef)
+weight_img = nifti_masker.inverse_transform(coef)
 
-# We use a masked array so that the voxels at '-1' are displayed
-# transparently
-weights = np.ma.masked_array(weight_niimg.get_data(),
-                             weight_niimg.get_data() == 0)
 
 ### Create the figure
+from nilearn import image
 import matplotlib.pyplot as plt
-plt.figure(figsize=(3, 5))
+from nilearn.plotting import plot_stat_map
 
 # Plot the mean image because we have no anatomic data
-from nilearn import image
-mean_img = image.mean_img(dataset_files.func).get_data()
+mean_img = image.mean_img(dataset_files.func)
 
-plt.imshow(np.rot90(mean_img[..., 27]), cmap=plt.cm.gray,
-          interpolation='nearest')
-plt.imshow(np.rot90(weights[..., 27, 0]), cmap=plt.cm.hot,
-          interpolation='nearest')
-plt.axis('off')
-plt.title('SVM weights')
-plt.tight_layout()
-plt.show()
+plot_stat_map(weight_img, mean_img, title='SVM weights')
 
 ### Saving the results as a Nifti file may also be important
 import nibabel
-nibabel.save(weight_niimg, 'haxby_face_vs_house.nii')
+nibabel.save(weight_img, 'haxby_face_vs_house.nii')
 
 ### Cross validation ##########################################################
 
@@ -128,3 +117,5 @@ print "=== ANOVA ==="
 print "Classification accuracy: %f" % classification_accuracy, \
     " / Chance level: %f" % (1. / n_conditions)
 # Classification accuracy: 0.986111  / Chance level: 0.500000
+
+plt.show()

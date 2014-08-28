@@ -84,9 +84,9 @@ from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi, plot_stat_map
 
 mean_epi = mean_img(data.func[0])
-plot_stat_map(coef_niimg, mean_epi, title="SVM weights")
+plot_stat_map(coef_niimg, mean_epi, title="SVM weights", display_mode="yx")
 
-plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask")
+plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask", display_mode="yx")
 
 plt.show()
 

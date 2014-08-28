@@ -1836,10 +1836,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if url is None:
         url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
                    % (root_url, urllib.quote("Any X WHERE X is Subject")))
-        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s"
+        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
                     % (root_url,
                        urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
-                                    "X identifier XI, X datetime XD", safe=',')
+                                    "X identifier XI, X datetime "
+                                    "XD", safe=',')
                        ))
     else:
         url_csv = "%s/cubicwebexport.csv" % url
@@ -1905,11 +1906,15 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
             Paths to nifti contrast maps
 
     """
-    return fetch_localizer_contrasts(["calculation vs sentences"],
+    data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
                                      url=url, resume=True, verbose=0)
+    data.pop('tmaps')
+    data.pop('masks')
+    data.pop('anats')
+    return data
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,

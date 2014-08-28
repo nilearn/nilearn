@@ -78,7 +78,6 @@ fmri_masked = nifti_masker.fit_transform(fmri_img)
 from sklearn.feature_selection import f_classif
 f_values, p_values = f_classif(fmri_masked, y)
 p_values = -np.log10(p_values)
-p_values[np.isnan(p_values)] = 0
 p_values[p_values > 10] = 10
 p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
@@ -87,26 +86,19 @@ import matplotlib.pyplot as plt
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
-mean_fmri = image.mean_img(fmri_img).get_data()
+from nilearn.plotting import plot_stat_map
+mean_fmri = image.mean_img(fmri_img)
 
-### Searchlight results
-plt.figure(1)
-# searchlight.scores_ contains per voxel cross validation scores
-s_scores = np.ma.array(searchlight.scores_, mask=np.logical_not(process_mask))
-plt.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.gray)
-plt.imshow(np.rot90(s_scores[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.hot, vmax=1)
-plt.axis('off')
-plt.title('Searchlight')
+plot_stat_map(nibabel.Nifti1Image(searchlight.scores_,
+                                  mean_fmri.get_affine()), mean_fmri,
+              title="Searchlight", display_mode="z", cut_coords=[-16],
+              colorbar=False)
 
 ### F_score results
-plt.figure(2)
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-plt.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.gray)
-plt.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.hot)
-plt.title('F-scores')
-plt.axis('off')
+plot_stat_map(nibabel.Nifti1Image(p_ma,
+                                  mean_fmri.get_affine()), mean_fmri,
+              title="F-scores", display_mode="z", cut_coords=[-16],
+              colorbar=False)
+
 plt.show()

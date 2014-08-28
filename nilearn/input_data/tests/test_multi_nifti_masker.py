@@ -4,7 +4,7 @@ Test the multi_nifti_masker module
 # Author: Gael Varoquaux
 # License: simplified BSD
 
-from nose.tools import assert_true, assert_false, assert_raises
+from nose.tools import assert_true, assert_false, assert_raises, assert_equal
 from nose import SkipTest
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -79,6 +79,20 @@ def test_different_affines():
     epis = masker.fit_transform([epi_img1, epi_img2])
     for this_epi in epis:
         masker.inverse_transform(this_epi)
+
+
+def test_3d_images():
+    # Test that the MultiNiftiMasker works with 3D images
+    mask_img = Nifti1Image(np.ones((2, 2, 2), dtype=np.int8),
+                           affine=np.diag((4, 4, 4, 1)))
+    epi_img1 = Nifti1Image(np.ones((2, 2, 2)),
+                           affine=np.diag((4, 4, 4, 1)))
+    epi_img2 = Nifti1Image(np.ones((2, 2, 2)),
+                           affine=np.diag((2, 2, 2, 1)))
+    masker = MultiNiftiMasker(mask=mask_img)
+    epis = masker.fit_transform([epi_img1, epi_img2])
+    # This is mostly a smoke test
+    assert_equal(len(epis), 2)
 
 
 def test_joblib_cache():

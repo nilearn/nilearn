@@ -54,24 +54,17 @@ components = np.ma.masked_equal(components, 0, copy=False)
 # Show some interesting components
 
 # Use the mean as a background
+import nibabel
+import pylab as plt
 from nilearn import image
+from nilearn.plotting import plot_stat_map
+
 mean_img = image.mean_img(dataset.func[0])
 
-mean_epi = mean_img.get_data()
-import matplotlib.pyplot as plt
-plt.figure()
-plt.axis('off')
-vmax = np.max(np.abs(components[:, :, 25, 5]))
-plt.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
-          cmap=plt.cm.gray)
-plt.imshow(np.rot90(components[:, :, 25, 5]), interpolation='nearest',
-          cmap=plt.cm.jet, vmax=vmax, vmin=-vmax)
+plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:,:,:,5], 
+                                  component_img.get_affine()), mean_img)
 
-plt.figure()
-plt.axis('off')
-vmax = np.max(np.abs(components[:, :, 23, 12]))
-plt.imshow(np.rot90(mean_epi[:, :, 23]), interpolation='nearest',
-          cmap=plt.cm.gray)
-plt.imshow(np.rot90(components[:, :, 23, 12]), interpolation='nearest',
-          cmap=plt.cm.jet, vmax=vmax, vmin=-vmax)
+plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:,:,:,12], 
+                                  component_img.get_affine()), mean_img)
+
 plt.show()
