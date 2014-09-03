@@ -147,10 +147,10 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
     Returns
     -------
     energy: float
-        Energy (returned if `compute_energy` is set.
+        Energy (returned if `compute_energy` is set).
 
     gradient: 1D array
-        Gradient of energy (returned if `compute_grad` is set.
+        Gradient of energy (returned if `compute_grad` is set).
 
     """
     assert compute_energy or compute_grad
