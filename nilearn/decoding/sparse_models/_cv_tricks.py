@@ -1,5 +1,6 @@
 """
-Ninja tricks (early stopping, etc.) to make CV a better place to live...
+Code for doing things like early stopping (in CV), univariate feature
+selection, creation of parameter grids (for alpha), etc.
 
 """
 # Author: DOHMATOB Elvis Dopgima,
@@ -165,7 +166,7 @@ class ClassifierFeatureSelector(_BaseFeatureSelector):
 def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
                    standardize=False, normalize=False, fit_intercept=False,
                    logistic=False):
-    """ Compute the grid of alpha values for elastic net parameter search
+    """Compute the grid of alpha values for TV-l1 and S-Lasso.
 
     Parameters
     ----------
