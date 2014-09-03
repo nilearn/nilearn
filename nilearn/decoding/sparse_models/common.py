@@ -359,7 +359,28 @@ def _sigmoid(t, copy=True):
 
 
 def logistic(X, y, w, mask=None):
-    """Compute the logistic function of the data: sum(sigmoid(yXw))"""
+    """Compute the logistic function of the data: sum(sigmoid(yXw))
+
+    Parameters
+    ----------
+    X: 2D array of shape (n_samples, n_features)
+        Design matrix.
+
+    y: 1D array of length n_samples
+        Target / response vector.
+
+    w: array_like, shape (n_voxels,)
+        Unmasked, ravelized input map.
+
+    mask: array_like of same shape as w, optional (default None)
+        mask for ROI
+
+    Returns
+    -------
+    energy: float
+        Energy contribution due to logistic data-fit term.
+    """
+
     if mask is not None:
         mask = mask.ravel()
         # last coef of w is the intercept_
