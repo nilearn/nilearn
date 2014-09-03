@@ -219,14 +219,14 @@ def div_id(grad, l1_ratio=.5):
 
     Parameters
     ----------
+    grad: ndarray of shape (n_axes + 1, *img_shape).
+        where `img_shape` is the shape of the brain bounding box, and
+        n_axes = len(img_shape).
+
     l1_ratio: float, optional (default .5)
         relative weight of l1; float between 0 and 1 inclusive.
         TV+L1 penalty will be (alpha not shown here):
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
-
-    grad: ndarray of shape (n_axes + 1, *img_shape).
-        where `img_shape` is the shape of the brain bounding box, and
-        n_axes = len(img_shape).
 
     Returns
     -------
@@ -286,8 +286,6 @@ def gradient_id(img, l1_ratio=.5):
     assert 0. <= l1_ratio <= 1., (
         "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
 
-    # shape = [img.ndim * int(l1_ratio < 1.) + int(l1_ratio > 0.)
-    #          ] + list(img.shape)
     shape = [img.ndim + 1] + list(img.shape)
     gradient = np.zeros(shape, dtype=np.float)  # xxx: img.dtype?
 
@@ -308,17 +306,22 @@ def gradient_id(img, l1_ratio=.5):
 
 
 def _unmask(w, mask):
-    """Unmask an image into whole brain, with off-mask voxels cast to 0.
+    """Unmask an image into whole brain, with off-mask voxels set to 0.
 
     Parameters
     ----------
-    w: np.ndarray,
+    w: 1d array,
       The image to be unmasked.
 
     mask: np.ndarray or None,
       The mask used in the unmasking operation.
 
+    Returns
+    -------
+    out: ndarry of same shape as `mask`.
+        The unmasked version of `w`
     """
+
     if mask is None:
         return w
 
