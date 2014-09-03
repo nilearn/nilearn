@@ -196,21 +196,23 @@ def get_gradient_id_shape(img_shape):
     return [len(img_shape) + 1] + list(img_shape)
 
 
-def tv_l1_from_gradient(gradient):
-    """Our total-variation like norm: TV + l1
+def tv_l1_from_gradient(spatial_grad):
+    """Energy contribution due to penalized gradient, in TV-l1 model.
 
     Parameters
     ----------
-    gradient: array
+    spatial_grad: array
        precomputed "gradient + id" array
 
+    Returns
+    -------
+    out: float
+        Energy contribution due to penalized gradient.
     """
 
-    tv_term = np.sum(np.sqrt(np.sum(gradient[:-1] * gradient[:-1],
+    tv_term = np.sum(np.sqrt(np.sum(spatial_grad[:-1] * spatial_grad[:-1],
                                     axis=0)))
-
-    l1_term = np.abs(gradient[-1]).sum()
-
+    l1_term = np.abs(spatial_grad[-1]).sum()
     return l1_term + tv_term
 
 
