@@ -135,7 +135,7 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
         If set then energy is computed, otherwise only gradient is computed.
 
     compute_grad: bool, optional (default True)
-        If set then energy is computed, otherwise only energy is computed.
+        If set then gradient is computed, otherwise only energy is computed.
 
     unmask_grad: bool, optional (default True)
         If set, then computed gradient is unmasked before returned.
