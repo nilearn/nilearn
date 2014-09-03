@@ -224,6 +224,10 @@ def div_id(grad, l1_ratio=.5):
         TV+L1 penalty will be (alpha not shown here):
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
 
+    grad: ndarray of shape (n_axes + 1, *img_shape).
+        where `img_shape` is the shape of the brain bounding box, and
+        n_axes = len(img_shape).
+
     Returns
     -------
     res: ndarray of shape grad.shape[1:]
@@ -272,9 +276,8 @@ def gradient_id(img, l1_ratio=.5):
 
     Returns
     -------
-    gradient: ndarray of shape (img.ndim, *img.shape) if `with_id` is True,
-    or of shape (img.ndim + 1, *img.shape) otherwise
-        gradient of the image: the i-th component along the first
+    gradient: ndarray of shape (img.ndim, *img.shape).
+        Spatial gradient of the image: the i-th component along the first
         axis is the gradient along the i-th axis of the original
         array img.
 
