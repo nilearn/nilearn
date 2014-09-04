@@ -113,7 +113,7 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
 
     The energy is
 
-        MSE = .5 * ||y - Xw||^2 / n_samples
+        MSE = .5 * ||y - Xw||^2
 
     A (1 / n_samples) factor is applied to the MSE.
 
