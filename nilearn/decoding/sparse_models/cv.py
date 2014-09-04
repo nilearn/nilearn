@@ -369,7 +369,7 @@ class _BaseCV(_BaseEstimator):
             alphas = np.array(self.alphas)
 
         # always sort alphas from largest to smallest
-        alphas = np.array(sorted(alphas)[::-1])
+        alphas = np.sort(alphas)[::-1]
 
         if len(alphas) > 1:
             cv = list(check_cv(self.cv, X=X, y=y, classifier=True))
