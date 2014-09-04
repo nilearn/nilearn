@@ -24,12 +24,12 @@ from ._cv_tricks import (EarlyStoppingCallback, RegressorFeatureSelector,
                          ClassifierFeatureSelector, _my_alpha_grid)
 
 
-def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
-                         test, tol=1e-4, max_iter=1000, init=None,
-                         mask=None, verbose=0, key=None,
-                         screening_percentile=10., **kwargs):
-    """Function to compute scores of different alphas in classification
-    used by CV objects.
+def path_scores(solver, X, y, alphas, l1_ratio, train,
+                test, logistic=False, tol=1e-4, max_iter=1000, init=None,
+                mask=None, verbose=0, key=None, debias=False, ymean=0.,
+                screening_percentile=10., **kwargs):
+    """Function to compute scores of different alphas in regression and
+    classification used by CV objects.
 
     Parameters
     ----------
@@ -48,8 +48,13 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
     alphas = sorted(alphas)[::-1]
 
     # univariate feature screening
-    selector = ClassifierFeatureSelector(percentile=screening_percentile,
-                                         mask=mask)
+    if logistic:
+        selector = ClassifierFeatureSelector(percentile=screening_percentile,
+                                             mask=mask)
+    else:
+        selector = RegressorFeatureSelector(percentile=screening_percentile,
+                                            mask=mask)
+
     X = selector.fit_transform(X, y)
     mask = selector.mask_
 
@@ -59,9 +64,22 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
 
     best_alpha = alphas[0]
     if len(test) > 0.:
-        def _test_score(w):
-            return 1. - roc_auc_score(
-                (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
+        if logistic:
+            def _test_score(w):
+                return 1. - roc_auc_score(
+                    (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
+        else:
+            def _test_score(w):
+                # debias to correct for DoF
+                if debias:
+                    y_pred = np.dot(X_test, w)
+                    scaling = np.dot(y_pred, y_pred)
+                    if scaling > 0.:
+                        scaling = np.dot(y_pred, y_test) / scaling
+                        w *= scaling
+                y_pred = np.dot(X_test, w) + ymean  # the intercept!
+                score = .5 * np.mean((y_test - y_pred) ** 2)
+                return score
 
         # setup callback mechanism for early stopping
         earlystopper = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
@@ -72,7 +90,8 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
             if not isinstance(_env, dict):
                 _env = dict(w=_env)
 
-            _env['w'] = _env['w'][:-1]  # strip off intercept
+            if logistic:
+                _env['w'] = _env['w'][:-1]  # strip off intercept
             env["counter"] += 1
             _env["counter"] = env["counter"]
             return earlystopper(_env)
@@ -101,107 +120,6 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
         test_scores.append(np.nan)
 
     # unmask univariate screening
-    best_w = selector.inverse_transform(best_w)
-
-    return test_scores, best_w, key
-
-
-def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
-                             tol=1e-4, max_iter=1000, init=None, mask=None,
-                             debias=False, ymean=0., verbose=0,
-                             key=None, screening_percentile=10.,
-                             **kwargs):
-    """Function to compute scores of different alphas in regression.
-    used by CV objects.
-
-    Parameters
-    ----------
-    alphas : list of floats
-        List of regularization parameters being considered.
-
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
-
-    solver : function handle
-        See for example tv.TVl1Regressor documentation.
-
-    """
-
-    alphas = sorted(alphas)[::-1]
-
-    # univariate feature screening
-    selector = RegressorFeatureSelector(percentile=screening_percentile,
-                                        mask=mask)
-    X = selector.fit_transform(X, y)
-    mask = selector.mask_
-
-    # make train / test datasets
-    X_train, y_train = X[train], y[train]
-    X_test, y_test = X[test], y[test]
-
-    test_scores = []
-
-    def _test_score(w):
-        """Helper function to compute score of model with given weights map (
-        loadings vector).
-
-        """
-
-        # debias to correct for DoF
-        if debias:
-            y_pred = np.dot(X_test, w)
-            scaling = np.dot(y_pred, y_pred)
-            if scaling > 0.:
-                scaling = np.dot(y_pred, y_test) / scaling
-                w *= scaling
-        y_pred = np.dot(X_test, w) + ymean  # don't forget to add intercept!
-        score = .5 * np.mean((y_test - y_pred) ** 2)
-        return score
-
-    best_alpha = alphas[0]
-    if len(test) > 0.:
-        # setup callback mechanism for early stopping
-        earlystopper = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
-        env = dict(counter=0)
-
-        def _callback(_env):
-
-            # our callback
-            if not isinstance(_env, dict):
-                _env = dict(w=_env)
-            env["counter"] += 1
-            _env["counter"] = env["counter"]
-            return earlystopper(_env)
-
-        # rumble down regularization path (with warm-starts)
-        best_score = np.inf
-        for alpha in alphas:
-            w, _, init = solver(
-                X_train, y_train, alpha, l1_ratio, mask=mask, tol=tol,
-                max_iter=max_iter, init=init, callback=_callback,
-                verbose=verbose, **kwargs)
-
-            # compute score on test data
-            score = _test_score(w)
-            test_scores.append(score)
-            if score <= best_score:
-                best_alpha = alpha
-
-                best_score = score
-
-    # Re-fit best model to high precision (i.e without early stopping, etc.).
-    # N.B: This work is cached, just in case another worker on another fold
-    # reports the same best alpha. Also note that the re-fit is done only on
-    # the train (i.e X_train), a piece of the design X.
-    best_w, _, init = solver(
-        X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
-        max_iter=max_iter, verbose=verbose, **kwargs)
-
-    if len(test) == 0.:
-        test_scores.append(np.nan)
-
-    # Unmask univariate screening
     best_w = selector.inverse_transform(best_w)
 
     return test_scores, best_w, key
@@ -312,7 +230,7 @@ class _BaseCV(_BaseEstimator):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.solver = solver
-        self.path_scores_func = path_scores_func
+        self.path_scores_func = path_scores
         if not (0. <= screening_percentile <= 100.):
             raise ValueError(
                 ("screening_percentile should be in the interval"
@@ -538,7 +456,7 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.path_scores_func = squared_loss_path_scores
+        self.path_scores_func = partial(path_scores, logistic=False)
 
 
 class _BaseClassifierCV(_BaseClassifier, _BaseCV):
@@ -635,7 +553,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.path_scores_func = logistic_path_scores
+        self.path_scores_func = partial(path_scores, logistic=True)
 
     def _pre_fit(self, X, y):
         X = np.array(X)
