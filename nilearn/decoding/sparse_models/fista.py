@@ -13,7 +13,65 @@ FISTA for solving TV-l1, S-Lasso, etc., problems.
 from math import sqrt
 from functools import partial
 import numpy as np
-from common import check_lipschitz_continuous
+from scipy import linalg
+from sklearn.utils import check_random_state
+
+
+def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
+    """Empirically check Lipschitz continuity of a function.
+
+    If this test is passed, then we are empirically confident in the
+    Lipschitz continuity of the function with respect to the given
+    constant `L`. This confidence increases with the `n_trials` parameter.
+
+    Parameters
+    ----------
+    f : callable,
+      The function to be checked for Lipschitz continuity.
+      `f` takes a vector of float as unique argument.
+      The size of the input vector is determined by `ndim`.
+
+    ndim : int,
+      Dimension of the input of the function to be checked for Lipschitz
+      continuity (i.e. it corresponds to the size of the vector that `f`
+      takes as an argument).
+
+    L : float,
+      Constant associated to the Lipschitz continuity.
+
+    n_trials : int,
+      Number of tests performed when assessing the Lipschitz continuity of
+      function `f`. The more tests, the more confident we are in the
+      Lipschitz continuity of `f` if the test passes.
+
+    err_msg : {str, or None},
+      String used to tune the output message when the test fails.
+      If `None`, we'll generate our own.
+
+    Notes
+    -----
+    If you are implementing a proximal gradient type algorithm (FISTA, etc.),
+    then you should strongly consider testing Lipschitz continuity of your
+    smooth terms. Failure of this test typically implies you have a bug in
+    the way you are computing the gradient of your smooth terms, or the
+    way you are bounding their Lipschitz constant!
+
+    Raises
+    ------
+    AssertionError
+
+    """
+
+    # check random state
+    rng = check_random_state(42)
+
+    for x in rng.randn(n_trials, ndim):
+        for y in rng.randn(n_trials, ndim):
+            err_msg = "LC counter example: (%s, %s)" % (
+                x, y) if err_msg is None else err_msg
+            a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
+            b = L * linalg.norm(x - y, 2)
+            assert a <= b, err_msg + ("(a = %g >= %g)" % (a, b))
 
 
 def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
