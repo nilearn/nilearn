@@ -6,7 +6,6 @@ Simple code to simulate data
 
 import numpy as np
 from scipy import linalg, ndimage
-import pylab as pl
 from sklearn.utils import check_random_state
 
 
@@ -112,41 +111,3 @@ def create_smooth_simulation_data(snr=1., n_samples=200,
     X /= X.std(axis=-1)[:, np.newaxis]
 
     return X, y, w, mask
-
-
-def plot_slices(data, slices=None, slicer='z', title=None,
-                output_filename=None, vmax=None):
-    """
-    Parameters
-    ----------
-    slices: list of ints, optional (default None)
-        list of slices to consider; if None, then defaults to
-        [0th, middle, last]
-
-    """
-
-    pl.figure(figsize=(5.5, 2.2))
-    if not vmax:
-        vmax = np.abs(data).max()
-    if data.ndim == 1:
-        pl.plot(data)
-    else:
-        slicer = 'xyz'.index(slicer)
-        if slices is None:
-            n_slices = data.shape[slicer]
-            slices = (0, n_slices // 2, n_slices - 1)
-
-        for idx, i in enumerate(slices):
-            pl.subplot(1, 3, idx + 1)
-            pl.imshow(data[..., i, ...], vmin=-vmax, vmax=vmax,
-                      interpolation="nearest", cmap=pl.cm.RdBu_r)
-            pl.xticks(())
-            pl.yticks(())
-        pl.colorbar()
-
-    pl.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97, top=.9)
-    if title is not None:
-        pl.suptitle(title, y=.95)
-
-    if not output_filename is None:
-        pl.savefig(output_filename)
