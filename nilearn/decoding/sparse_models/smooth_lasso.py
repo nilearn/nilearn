@@ -52,11 +52,11 @@ def squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
 
     Parameters
     ----------
-    X: design matrix
-    y: sampled data
-    w: model candidate
-    mask: mask for w
-    g2_weight: weight of the gradient operator
+    X : design matrix
+    y : sampled data
+    w : model candidate
+    mask : mask for w
+    g2_weight : weight of the gradient operator
     """
     data_section = np.dot(X, w) - y
     grad_buffer = np.zeros(mask.shape)
@@ -73,11 +73,11 @@ def squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
 
     Parameters
     ----------
-    X: design matrix
-    y: sampled data
-    w: model candidate
-    mask: mask for w
-    grad_weight: weight of the gradient operator
+    X : design matrix
+    y : sampled data
+    w : model candidate
+    mask : mask for w
+    grad_weight : weight of the gradient operator
     """
     data_section = np.dot(X, w) - y
     image_buffer = np.zeros(mask.shape)
@@ -93,10 +93,10 @@ def data_function(X, w, mask, grad_weight):
 
     Parameters
     ----------
-    X: design matrix
-    w: data vector
-    mask: mask matrix. It has the "shape" of w
-    grad_weight: weight of the gradient operator
+    X : design matrix
+    w : data vector
+    mask : mask matrix. It has the "shape" of w
+    grad_weight : weight of the gradient operator
     """
     data_buffer = np.zeros(mask.shape)
     data_buffer[mask] = w
@@ -115,11 +115,11 @@ def adjoint_data_function(X, w, adjoint_mask, grad_weight):
 
     Parameters
     ----------
-    X: design matrix
-    w: vector to evaluate to. It Has a n+{2|3}p shape
-    adjoint_mask: mask of the data, with gradient shape, for example
+    X : design matrix
+    w : vector to evaluate to. It Has a n+{2|3}p shape
+    adjoint_mask : mask of the data, with gradient shape, for example
         adjoint_mask.shape = (2, 512, 512)
-    grad_weight: weight of the gradient operator
+    grad_weight : weight of the gradient operator
     """
     n_samples, _ = X.shape
     out = X.T.dot(w[:n_samples])
@@ -156,7 +156,7 @@ def smooth_lasso_squared_loss_dual_objective(X, y, w, mask, l1_weight,
 
     Returns
     -------
-    dual_objective: float
+    dual_objective : float
         the value of the objective function of the dual problem, that is:
         - 0.5 * np.dot(z, z) - np.dot(y, z), with
 
@@ -333,14 +333,14 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
 
     Returns
     -------
-    w: np.array of size w_size
+    w : np.array of size w_size
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info: float
+    solver_info : float
         Solver information, for warm start.
 
-    objective: array of floats
+    objective : array of floats
         Objective function (fval) computed on every iteration.
 
     """
@@ -404,14 +404,14 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask=None, init=None,
 
     Returns
     -------
-    w: np.array of size w_size
+    w : np.array of size w_size
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info: float
+    solver_info : float
         Solver information, for warm start.
 
-    objective: array of floats
+    objective : array of floats
         Objective function (fval) computed on every iteration.
 
     """

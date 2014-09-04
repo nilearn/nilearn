@@ -27,25 +27,25 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
 
     Parameters
     ----------
-    f: callable,
+    f : callable,
       The function to be checked for Lipschitz continuity.
       `f` takes a vector of float as unique argument.
       The size of the input vector is determined by `ndim`.
 
-    ndim: int,
+    ndim : int,
       Dimension of the input of the function to be checked for Lipschitz
       continuity (i.e. it corresponds to the size of the vector that `f`
       takes as an argument).
 
-    L: float,
+    L : float,
       Constant associated to the Lipschitz continuity.
 
-    n_trials: int,
+    n_trials : int,
       Number of tests performed when assessing the Lipschitz continuity of
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
-    err_msg: {str, or None},
+    err_msg : {str, or None},
       String used to tune the output message when the test fails.
       If `None`, we'll generate our own.
 
@@ -83,12 +83,12 @@ def squared_loss_lipschitz_constant(X):
 
     Parameters
     ----------
-    X: np.ndarray,
+    X : np.ndarray,
       Input map.
 
     Returns
     -------
-    lipschitz_constant: float,
+    lipschitz_constant : float,
       Lipschitz constant of the gradient of the input map.
 
     """
@@ -123,33 +123,33 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
 
     Parameters
     ----------
-    X: 2D array of shape (n_samples, n_features)
+    X : 2D array of shape (n_samples, n_features)
         Design matrix.
 
-    y: 1D array of length n_samples
+    y : 1D array of length n_samples
         Target / response vector.
 
-    w: array_like, shape (n_voxels,)
+    w : array_like, shape (n_voxels,)
         Unmasked, ravelized input map.
 
-    mask: array_like of same shape as w, optional (default None)
+    mask : array_like of same shape as w, optional (default None)
         mask for ROI
 
-    compute_energy: bool, optional (default True)
+    compute_energy : bool, optional (default True)
         If set then energy is computed, otherwise only gradient is computed.
 
-    compute_grad: bool, optional (default True)
+    compute_grad : bool, optional (default True)
         If set then gradient is computed, otherwise only energy is computed.
 
-    unmask_grad: bool, optional (default True)
+    unmask_grad : bool, optional (default True)
         If set, then computed gradient is unmasked before returned.
 
     Returns
     -------
-    energy: float
+    energy : float
         Energy (returned if `compute_energy` is set).
 
-    gradient: 1D array
+    gradient : 1D array
         Gradient of energy (returned if `compute_grad` is set).
 
     """
@@ -205,12 +205,12 @@ def tv_l1_from_gradient(spatial_grad):
 
     Parameters
     ----------
-    spatial_grad: array
+    spatial_grad : array
        precomputed "gradient + id" array
 
     Returns
     -------
-    out: float
+    out : float
         Energy contribution due to penalized gradient.
     """
 
@@ -225,18 +225,18 @@ def div_id(grad, l1_ratio=.5):
 
     Parameters
     ----------
-    grad: ndarray of shape (n_axes + 1, *img_shape).
+    grad : ndarray of shape (n_axes + 1, *img_shape).
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 
-    l1_ratio: float, optional (default .5)
+    l1_ratio : float, optional (default .5)
         relative weight of l1; float between 0 and 1 inclusive.
         TV+L1 penalty will be (alpha not shown here):
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
 
     Returns
     -------
-    res: ndarray of shape grad.shape[1:]
+    res : ndarray of shape grad.shape[1:]
     otherwise
         the computed divergent or divergent + id, operator
 
@@ -268,13 +268,11 @@ def gradient_id(img, l1_ratio=.5):
     """Compute gradient + id of an image
 
     Parameters
-    ===========
-    img: ndarray
+    ----------
+    img : ndarray
         N-dimensional image
 
-    Parameters
-    ----------
-    l1_ratio: float, optional (default .5)
+    l1_ratio : float, optional (default .5)
         relative weight of l1; float between 0 and 1 inclusive.
         TV+L1 penalty will be (alpha not shown here):
 
@@ -282,7 +280,7 @@ def gradient_id(img, l1_ratio=.5):
 
     Returns
     -------
-    gradient: ndarray of shape (img.ndim, *img.shape).
+    gradient : ndarray of shape (img.ndim, *img.shape).
         Spatial gradient of the image: the i-th component along the first
         axis is the gradient along the i-th axis of the original
         array img.
@@ -316,15 +314,15 @@ def _unmask(w, mask):
 
     Parameters
     ----------
-    w: 1d array,
+    w : 1d array,
       The image to be unmasked.
 
-    mask: np.ndarray or None,
+    mask : np.ndarray or None,
       The mask used in the unmasking operation.
 
     Returns
     -------
-    out: ndarry of same shape as `mask`.
+    out : ndarry of same shape as `mask`.
         The unmasked version of `w`
     """
 
@@ -367,21 +365,21 @@ def logistic(X, y, w, mask=None):
 
     Parameters
     ----------
-    X: 2D array of shape (n_samples, n_features)
+    X : 2D array of shape (n_samples, n_features)
         Design matrix.
 
-    y: 1D array of length n_samples
+    y : 1D array of length n_samples
         Target / response vector.
 
-    w: array_like, shape (n_voxels,)
+    w : array_like, shape (n_voxels,)
         Unmasked, ravelized input map.
 
-    mask: array_like of same shape as w, optional (default None)
+    mask : array_like of same shape as w, optional (default None)
         mask for ROI
 
     Returns
     -------
-    energy: float
+    energy : float
         Energy contribution due to logistic data-fit term.
     """
 

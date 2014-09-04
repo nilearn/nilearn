@@ -13,61 +13,59 @@ sklearn-compatible estimators for TV-l1, S-LASSO, etc. models.
 
 import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from sklearn.externals.joblib import Memory
 from sklearn.linear_model.base import LinearModel
-from ..._utils.fixes import center_data, LinearClassifierMixin, LabelBinarizer
-from .common import (squared_loss_lipschitz_constant,
-                     logistic_loss_lipschitz_constant)
+from ..._utils.fixes import LinearClassifierMixin, LabelBinarizer
 
 
 class _BaseEstimator(object):
     """
     Parameters
     ----------
-    alpha: float
+    alpha : float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     """
@@ -101,47 +99,47 @@ class _BaseRegressor(_BaseEstimator, LinearModel, RegressorMixin):
 
     Parameters
     ----------
-    alpha: float
+    alpha : float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
         Defaults to 0.5.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
         Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function (weights map).
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
@@ -170,7 +168,7 @@ class _BaseClassifier(_BaseEstimator, BaseEstimator, LinearClassifierMixin):
 
     Parameters
     ----------
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
     See _BaseEstimator for the documentation of the the other parameters.
