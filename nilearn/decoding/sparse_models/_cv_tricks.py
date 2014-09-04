@@ -17,6 +17,7 @@ from scipy import stats
 from ..._utils.fixes import center_data
 from sklearn.feature_selection import (
     f_regression, f_classif, SelectPercentile)
+from sklearn.base import BaseEstimator
 
 np_version = []
 for x in np.__version__.split('.'):
@@ -87,7 +88,7 @@ class EarlyStoppingCallback(object):
         return False
 
 
-class _BaseFeatureSelector(object):
+class _BaseFeatureSelector(BaseEstimator):
     def __init__(self, score_func, percentile=10., mask=None):
         self.score_func = score_func
         self.percentile = percentile
