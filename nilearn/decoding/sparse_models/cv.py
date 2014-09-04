@@ -27,8 +27,7 @@ from ._cv_tricks import (EarlyStoppingCallback, RegressorFeatureSelector,
 def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
                          test, tol=1e-4, max_iter=1000, init=None,
                          mask=None, verbose=0, key=None,
-                         screening_percentile=10., memory=Memory(None),
-                         **kwargs):
+                         screening_percentile=10., **kwargs):
     """Function to compute scores of different alphas in classification
     used by CV objects.
 
@@ -94,7 +93,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
     # N.B: This work is cached, just in case another worker on another fold
     # reports the same best alpha. Also note that the re-fit is done only on
     # the train (i.e X_train), a piece of the design X.
-    best_w, _, init = memory.cache(solver)(
+    best_w, _, init = solver(
         X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
         max_iter=max_iter, verbose=verbose, **kwargs)
 
@@ -111,7 +110,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
                              tol=1e-4, max_iter=1000, init=None, mask=None,
                              debias=False, ymean=0., verbose=0,
                              key=None, screening_percentile=10.,
-                             memory=Memory(None), **kwargs):
+                             **kwargs):
     """Function to compute scores of different alphas in regression.
     used by CV objects.
 
@@ -195,7 +194,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     # N.B: This work is cached, just in case another worker on another fold
     # reports the same best alpha. Also note that the re-fit is done only on
     # the train (i.e X_train), a piece of the design X.
-    best_w, _, init = memory.cache(solver)(
+    best_w, _, init = solver(
         X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
         max_iter=max_iter, verbose=verbose, **kwargs)
 
@@ -391,7 +390,7 @@ class _BaseCV(_BaseEstimator):
         # parameter to path_scores function
         path_params = dict(mask=self.mask, tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
-                           backtracking=self.backtracking, memory=self.memory,
+                           backtracking=self.backtracking,
                            screening_percentile=self.screening_percentile)
         path_params.update(special_kwargs)
 
