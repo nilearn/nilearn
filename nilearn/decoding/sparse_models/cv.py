@@ -28,7 +28,7 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
                          test, tol=1e-4, max_iter=1000, init=None,
                          mask=None, verbose=0, key=None,
                          screening_percentile=10., memory=Memory(None),
-                         callback=None, **kwargs):
+                         **kwargs):
     """Function to compute scores of different alphas in classification
     used by CV objects.
 
@@ -69,10 +69,6 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
         env = dict(counter=0)
 
         def _callback(_env):
-            if callback:
-                # they wan't us to use their callback
-                return callback(_env)
-
             # our callback
             if not isinstance(_env, dict):
                 _env = dict(w=_env)
@@ -115,7 +111,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
                              tol=1e-4, max_iter=1000, init=None, mask=None,
                              debias=False, ymean=0., verbose=0,
                              key=None, screening_percentile=10.,
-                             memory=Memory(None), callback=None, **kwargs):
+                             memory=Memory(None), **kwargs):
     """Function to compute scores of different alphas in regression.
     used by CV objects.
 
@@ -171,9 +167,6 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
         env = dict(counter=0)
 
         def _callback(_env):
-            if callback:
-                # they wan't us to use their callback
-                return callback(_env)
 
             # our callback
             if not isinstance(_env, dict):
@@ -204,7 +197,7 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
     # the train (i.e X_train), a piece of the design X.
     best_w, _, init = memory.cache(solver)(
         X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
-        max_iter=max_iter, verbose=verbose, callback=callback, **kwargs)
+        max_iter=max_iter, verbose=verbose, **kwargs)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
@@ -272,10 +265,6 @@ class _BaseCV(_BaseEstimator):
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -308,7 +297,7 @@ class _BaseCV(_BaseEstimator):
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  standardize=False, normalize=False, alpha_min=1e-6,
-                 verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
+                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, backtracking=False,
                  screening_percentile=10., solver=None, path_scores_func=None):
         super(_BaseCV, self).__init__(
@@ -323,7 +312,6 @@ class _BaseCV(_BaseEstimator):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.callback = callback
         self.solver = solver
         self.path_scores_func = path_scores_func
         if not (0. <= screening_percentile <= 100.):
@@ -404,8 +392,7 @@ class _BaseCV(_BaseEstimator):
         path_params = dict(mask=self.mask, tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
                            backtracking=self.backtracking, memory=self.memory,
-                           screening_percentile=self.screening_percentile,
-                           callback=self.callback)
+                           screening_percentile=self.screening_percentile)
         path_params.update(tricky_kwargs)
 
         _ovr_y = lambda c: y[:, c] if is_classifier(
@@ -506,10 +493,6 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -541,7 +524,7 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
 
     def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, memory=Memory(None), copy_data=True,
-                 verbose=0, n_jobs=1, callback=None, n_alphas=10, eps=1e-3,
+                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, debias=False, normalize=True,
                  backtracking=False, standardize=True, alpha_min=1e-6):
         super(_BaseRegressorCV, self).__init__(
@@ -556,11 +539,7 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.callback = callback
         self.path_scores_func = squared_loss_path_scores
-
-    def fit(self, X, y):
-        return _BaseCV.fit(self, X, y)
 
 
 class _BaseClassifierCV(_BaseClassifier, _BaseCV):
@@ -609,10 +588,6 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -648,7 +623,7 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
 
     def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
-                 verbose=0, n_jobs=1, callback=None, n_alphas=10,
+                 verbose=0, n_jobs=1, n_alphas=10,
                  alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False
                  ):
         super(_BaseClassifierCV, self).__init__(
@@ -661,7 +636,6 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         self.eps = eps
         self.alphas = alphas
         self.alpha_min = alpha_min
-        self.callback = callback
         self.path_scores_func = logistic_path_scores
 
     def _pre_fit(self, X, y):
@@ -687,9 +661,6 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
         self.intercept_ = self.w_[:, -1]
-
-    def fit(self, X, y):
-        return _BaseCV.fit(self, X, y)
 
 
 class SmoothLassoClassifierCV(_BaseClassifierCV):
@@ -746,11 +717,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
-
-    n_jobs : int, optional (default 1)
+     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
     cv : int, a cv generator instance, or None (default 10)
@@ -785,7 +752,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
 
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 eps=1e-3, verbose=0, n_jobs=1, callback=None, n_alphas=10,
+                 eps=1e-3, verbose=0, n_jobs=1, n_alphas=10,
                  alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False,
                  solver=smooth_lasso_logistic, screening_percentile=10.):
         super(SmoothLassoClassifierCV, self).__init__(
@@ -801,15 +768,6 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
-        self.callback = callback
-
-    def fit(self, X, y):
-        """Fit is on grid of alphas and best alpha estimated by
-        cross-validation.
-
-        """
-
-        return _BaseClassifierCV.fit(self, X, y)
 
 
 class SmoothLassoRegressorCV(_BaseRegressorCV):
@@ -874,10 +832,6 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -909,7 +863,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
 
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 eps=1e-3, verbose=0, n_jobs=1, callback=None, debias=False,
+                 eps=1e-3, verbose=0, n_jobs=1, debias=False,
                  fit_intercept=True, normalize=True, n_alphas=10,
                  standardize=True, cv=10, backtracking=False, alpha_min=1e-6,
                  solver=smooth_lasso_squared_loss, screening_percentile=10.):
@@ -928,15 +882,6 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
-        self.callback = callback
-
-    def fit(self, X, y):
-        """Fit is on grid of alphas and best alpha estimated by
-        cross-validation.
-
-        """
-
-        return _BaseRegressorCV.fit(self, X, y)
 
 
 class TVl1ClassifierCV(_BaseClassifierCV):
@@ -995,10 +940,6 @@ class TVl1ClassifierCV(_BaseClassifierCV):
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -1034,7 +975,7 @@ class TVl1ClassifierCV(_BaseClassifierCV):
 
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 eps=1e-3, verbose=0, n_jobs=1, callback=None, n_alphas=10,
+                 eps=1e-3, verbose=0, n_jobs=1, n_alphas=10,
                  fit_intercept=True, cv=10, backtracking=False, alpha_min=1e-6,
                  solver=partial(tvl1_solver, loss='logistic'),
                  screening_percentile=10.):
@@ -1051,10 +992,6 @@ class TVl1ClassifierCV(_BaseClassifierCV):
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
         self.solver = solver
-        self.callback = callback
-
-    def fit(self, X, y):
-        return _BaseClassifierCV.fit(self, X, y)
 
 
 class TVl1RegressorCV(_BaseRegressorCV):
@@ -1124,10 +1061,6 @@ class TVl1RegressorCV(_BaseRegressorCV):
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -1159,7 +1092,7 @@ class TVl1RegressorCV(_BaseRegressorCV):
 
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None),
-                 copy_data=True, verbose=0, n_jobs=1, callback=None,
+                 copy_data=True, verbose=0, n_jobs=1,
                  solver=partial(tvl1_solver, loss='mse'), n_alphas=10,
                  eps=1e-3, fit_intercept=True, cv=10, debias=False,
                  normalize=True, backtracking=False, standardize=True,
@@ -1179,7 +1112,6 @@ class TVl1RegressorCV(_BaseRegressorCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.screening_percentile = screening_percentile
-        self.callback = callback
 
     def fit(self, X, y):
         return _BaseRegressorCV.fit(self, X, y)
