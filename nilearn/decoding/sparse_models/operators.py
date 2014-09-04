@@ -5,7 +5,7 @@ Teboulle approach (actually Chambolle) to keep the identity and thus to
 end up with an l1.
 
 """
-# Author: DOHMATOB Elvis Dopgima, ...
+# Author: DOHMATOB Elvis Dopgima, Alexandre GRAMFORT, ...
 # License: simplified BSD
 
 from math import sqrt
@@ -82,54 +82,54 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
 
     Parameters
     ----------
-    im: ndarray of floats (2-d or 3-d)
+    im : ndarray of floats (2-d or 3-d)
         input data to be denoised. `im` can be of any numeric type,
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
 
-    weight: float, optional
+    weight : float, optional
         denoising weight. The greater ``weight``, the more denoising (at
         the expense of fidelity to ``input``)
 
-    dgap_tol: float, optional
+    dgap_tol : float, optional
         precision required. The distance to the exact solution is computed
         by the dual gap of the optimization problem and rescaled by the
         squared l2 norm of the image (for contrast invariance).
 
-    x_tol: float or None, optional
+    x_tol : float or None, optional
         The maximal relative difference between input and output. If
         specified, this specifies a stopping criterion on x, rather than
         the dual gap
 
-    max_iter: int, optional
+    max_iter : int, optional
         maximal number of iterations used for the optimization.
 
-    val_min: None or float, optional
+    val_min : None or float, optional
         an optional lower bound constraint on the reconstructed image
 
-    val_max: None or float, optional
+    val_max : None or float, optional
         an optional upper bound constraint on the reconstructed image
 
-    verbose: bool, optional
+    verbose : bool, optional
         if True, print the dual gap of the optimization
 
-    fista: bool, optional
+    fista : bool, optional
         if True, uses a FISTA loop to perform the optimization.
         if False, uses an ISTA loop
 
-    callback: callable
+    callback : callable
         Callable that takes the local variables at each
         steps. Useful for tracking
 
-    init: array of shape shape as im
+    init : array of shape shape as im
         Starting point for the optimization
 
-    return_info: boolean
+    return_info : boolean
         If True, a dictionnary of inner variables is returned in addition
 
     Returns
     -------
-    out: ndarray
+    out : ndarray
         denoised array
 
     Notes
@@ -274,17 +274,17 @@ def intercepted_prox_tv_l1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
 
     Parameters
     ----------
-    weight: float
+    weight : float
        Weight in prox. This would be something like `alpha_ * stepsize`,
        where `alpha_` is the effective (i.e re-scaled) alpha.
 
-    w: np.array of `w_size` floats
+    w : np.array of `w_size` floats
         The point at which the prox is being computed
 
-    init: np.array of `w_size` - 1 floats, optional (default None)
+    init : np.array of `w_size` - 1 floats, optional (default None)
         Initialization vector for the prox.
 
-    dgap_tol: float
+    dgap_tol : float
         Dual-gap tolerance for TV-l1 prox operator approximation loop.
 
     """
@@ -320,11 +320,11 @@ def prox_l21(x, l1_ratio, tau, isotropic=True):
 
     Parameters
     ----------
-    l1_ratio: positive float in the interval [0, 1]
+    l1_ratio : positive float in the interval [0, 1]
         the usual trade-off parameter between l1 and TV terms of the
         underlying penalty.
 
-    tau: positive float
+    tau : positive float
         the radius of the l21 ball of the projection (note that
         s(a) = a - P_tau(a) as usual)
 
@@ -344,17 +344,3 @@ def prox_l21(x, l1_ratio, tau, isotropic=True):
     x *= shrink
 
     return x
-
-
-# def estimate_lipschitz_constant_graph(w0, L):
-#     """Compute approximate lipschitz constant
-#     of callable linear operator: x -> Lx
-#     using a power method"""
-#     a = np.random.randn(*w0.shape)
-#     a /= linalg.norm(a)
-#     for i in range(100):
-#         b = L(a)
-#         a = b / linalg.norm(b)
-
-#     lipschitz_constant = (b * a).sum()
-#     return 1.1 * lipschitz_constant
