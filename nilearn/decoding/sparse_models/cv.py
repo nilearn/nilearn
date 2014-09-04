@@ -16,7 +16,7 @@ from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
                              is_regressor, is_classifier)
-from .common import _sigmoid
+from .objective_functions import _sigmoid
 from .estimators import _BaseRegressor, _BaseClassifier, _BaseEstimator
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
