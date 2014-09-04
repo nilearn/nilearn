@@ -18,7 +18,7 @@ def test_get_params():
         if model.__name__.endswith('CV'):
             kwargs['alphas'] = np.logspace(-3, 1, num=5)
         for param in ["max_iter", "alpha", "l1_ratio", "verbose",
-                      "callback", "tol", "mask", "memory", "backtracking",
+                      "tol", "mask", "memory", "backtracking",
                       "copy_data", "fit_intercept", "alphas"] + [
             [], cv_addition_params][model.__name__.endswith("CV")]:
             if model.__name__.endswith("CV"):
