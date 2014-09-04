@@ -1,4 +1,5 @@
 import itertools
+from functools import partial
 from nose import SkipTest
 from nose.tools import assert_equal, assert_true
 import numpy as np
@@ -6,10 +7,13 @@ from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
                   SmoothLassoClassifierCV, SmoothLassoRegressorCV,
-                  logistic_path_scores, squared_loss_path_scores)
+                  path_scores)
 from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
                           EarlyStoppingCallback, _my_alpha_grid)
 from ..smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
+
+logistic_path_scores = partial(path_scores, logistic=True)
+squared_loss_path_scores = partial(path_scores, logistic=False)
 
 
 @SkipTest
