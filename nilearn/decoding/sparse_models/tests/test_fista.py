@@ -2,7 +2,36 @@ from nose.tools import assert_equal, assert_true
 import numpy as np
 from ..fista import mfista
 from ..operators import prox_l1
-from ..common import squared_loss
+from ..common import (squared_loss, logistic, squared_loss_grad,
+                     logistic_loss_lipschitz_constant,
+                      squared_loss_lipschitz_constant)
+from ..fista import check_lipschitz_continuous
+
+
+def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):
+    rng = np.random.RandomState(random_state)
+
+    for scaling in np.logspace(-3, 3, num=7):
+        X = rng.randn(n_samples, n_features) * scaling
+        y = rng.randn(n_samples)
+        n_features = X.shape[1]
+
+        L = logistic_loss_lipschitz_constant(X)
+        check_lipschitz_continuous(lambda w: logistic(
+            X, y, w), n_features + 1, L)
+
+
+def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
+    rng = np.random.RandomState(random_state)
+
+    for scaling in np.logspace(-3, 3, num=7):
+        X = rng.randn(n_samples, n_features) * scaling
+        y = rng.randn(n_samples)
+        n_features = X.shape[1]
+
+        L = squared_loss_lipschitz_constant(X)
+        check_lipschitz_continuous(lambda w: squared_loss_grad(
+            X, y, w), n_features, L)
 
 
 def test_input_args_and_kwargs():

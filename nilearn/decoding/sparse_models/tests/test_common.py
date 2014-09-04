@@ -5,11 +5,8 @@ Test module for common.py
 
 import numpy as np
 from scipy.optimize import check_grad
-from ..common import (gradient_id, squared_loss_grad, logistic,
+from ..common import (gradient_id, logistic,
                       logistic_grad, _unmask,
-                      logistic_loss_lipschitz_constant,
-                      check_lipschitz_continuous,
-                      squared_loss_lipschitz_constant,
                       test_grad_div_adjoint_arbitrary_ndim)
 from ..estimators import _BaseEstimator
 from nose.tools import raises
@@ -64,32 +61,6 @@ def test_logistic_loss_derivative(n_samples=4, n_features=10, random_state=42,
     np.testing.assert_almost_equal(check_grad(
         lambda w: logistic(X, y, w),
         lambda w: logistic_grad(X, y, w), w), 0., decimal=decimal)
-
-
-def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):
-    rng = np.random.RandomState(random_state)
-
-    for scaling in np.logspace(-3, 3, num=7):
-        X = rng.randn(n_samples, n_features) * scaling
-        y = rng.randn(n_samples)
-        n_features = X.shape[1]
-
-        L = logistic_loss_lipschitz_constant(X)
-        check_lipschitz_continuous(lambda w: logistic(
-            X, y, w), n_features + 1, L)
-
-
-def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
-    rng = np.random.RandomState(random_state)
-
-    for scaling in np.logspace(-3, 3, num=7):
-        X = rng.randn(n_samples, n_features) * scaling
-        y = rng.randn(n_samples)
-        n_features = X.shape[1]
-
-        L = squared_loss_lipschitz_constant(X)
-        check_lipschitz_continuous(lambda w: squared_loss_grad(
-            X, y, w), n_features, L)
 
 
 def test_grad_div_adjoint_arbitrary_ndim_():
