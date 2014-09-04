@@ -1,13 +1,13 @@
 """
-Test module for common.py
+Test module for functions related cost functions (including penalties).
 
 """
 
 import numpy as np
 from scipy.optimize import check_grad
-from ..common import (gradient_id, logistic,
-                      logistic_grad, _unmask,
-                      test_grad_div_adjoint_arbitrary_ndim)
+from ..objective_functions import (gradient_id, logistic,
+                                   logistic_grad, _unmask,
+                                   test_grad_div_adjoint_arbitrary_ndim)
 from ..estimators import _BaseEstimator
 from nose.tools import raises
 

@@ -10,8 +10,8 @@ end up with an l1.
 
 from math import sqrt
 import numpy as np
-from .common import (tv_l1_from_gradient, div_id, gradient_id,
-                     get_gradient_id_shape)
+from .objective_functions import (tv_l1_from_gradient, div_id, gradient_id,
+                                  get_gradient_id_shape)
 
 
 def prox_l1(y, alpha, copy=True):
