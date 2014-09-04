@@ -340,9 +340,9 @@ class _BaseCV(_BaseEstimator):
         self.__class__.__name__.endswith("CV")
         solver = self.solver
         path_scores_func = self.path_scores_func
-        tricky_kwargs = {}
+        special_kwargs = {}
         if hasattr(self, "debias"):
-            tricky_kwargs["debias"] = getattr(self, "debias")
+            special_kwargs["debias"] = getattr(self, "debias")
 
         # always a good idea to centralize / normalize data
         ymean = 0.
@@ -351,7 +351,7 @@ class _BaseCV(_BaseEstimator):
                 X, y, copy=True, normalize=self.normalize,
                 fit_intercept=self.fit_intercept)
             if is_regressor(self):
-                tricky_kwargs["ymean"] = ymean
+                special_kwargs["ymean"] = ymean
 
         # make / sanitize alpha grid
         if self.alpha is not None:
@@ -393,7 +393,7 @@ class _BaseCV(_BaseEstimator):
                            max_iter=self.max_iter, rescale_alpha=True,
                            backtracking=self.backtracking, memory=self.memory,
                            screening_percentile=self.screening_percentile)
-        path_params.update(tricky_kwargs)
+        path_params.update(special_kwargs)
 
         _ovr_y = lambda c: y[:, c] if is_classifier(
             self) and self.n_classes_ > 2 else y
