@@ -88,54 +88,54 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
 
     Parameters
     ----------
-    X: 2D array of shape (n_samples, n_features)
+    X : 2D array of shape (n_samples, n_features)
         Design matrix.
 
-    y: 1D array of length n_samples
+    y : 1D array of length n_samples
         Target / response vector.
 
-    alpha: float
+    alpha : float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
         Defaults to 0.5.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    prox_max_iter: int, optional (default 10)
+    prox_max_iter : int, optional (default 10)
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    loss: string
+    loss : string
         Loss model for regression. Can be "mse" (for squared loss) or
         "logistic" (for logistic loss).
 
-    lipschitz_constant: float, optional (default None)
+    lipschitz_constant : float, optional (default None)
         Lipschitz constant (i.e an upper bound of) of gradient of smooth part
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
     Returns
     -------
-    w: np.array of size w_size
+    w : np.array of size w_size
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    objective: array of floats
+    objective : array of floats
         Objective function (fval) computed on every iteration.
 
     solver_info: float

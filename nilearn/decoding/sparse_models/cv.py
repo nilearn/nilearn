@@ -34,14 +34,14 @@ def logistic_path_scores(solver, X, y, alphas, l1_ratio, train,
 
     Parameters
     ----------
-    alphas: list of floats
+    alphas : list of floats
         List of regularization parameters being considered.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
-    solver: function handle
+    solver : function handle
        See for example tv.TVl1Classifier documentation.
 
     """
@@ -121,15 +121,15 @@ def squared_loss_path_scores(solver, X, y, alphas, l1_ratio, train, test,
 
     Parameters
     ----------
-    alphas: list of floats
+    alphas : list of floats
         List of regularization parameters being considered.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
-    solver: function handle
-       See for example tv.TVl1Regressor documentation.
+    solver : function handle
+        See for example tv.TVl1Regressor documentation.
 
     """
 
@@ -223,62 +223,63 @@ class _BaseCV(_BaseEstimator):
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
-    n_alphas: int, optional (default 10).
+    n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps: float, optional
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min: float, optional (default 1e-6)
+    alpha_min : float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screening_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
-    standardize: bool, optional (default False):
+    standardize : bool, optional (default False):
        If set, then input data (X, y) will be standardized (i.e converted to
        standard Gaussian) before model is fitted.
 
-    normalize: boolean, optional, default False
+    normalize : boolean, optional, default False
         Parameter passed to sklearn's `center_data` function for centralizing
         the input data (X, y)
 
-    fit_intercept: bool
+    fit_intercept : bool
         Fit or not an intercept.
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv: int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -286,20 +287,20 @@ class _BaseCV(_BaseEstimator):
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     """
@@ -452,66 +453,67 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
     """
     Parameters
     ----------
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
-    n_alphas: int, optional (default 10).
+    n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps: float, optional
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min: float, optional (default 1e-6)
+    alpha_min : float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    standardize: bool, optional (default False):
+    standardize : bool, optional (default False):
        If set, then input data (X, y) will be standardized (i.e converted to
        standard Gaussian) before model is fitted.
 
-    normalize: boolean, optional, default False
+    normalize : boolean, optional, default False
         Parameter passed to sklearn's `center_data` function for centralizing
         the input data (X, y)
 
-    fit_intercept: bool
+    fit_intercept : bool
         Fit or not an intercept.
 
-    screening_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv: int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -519,20 +521,20 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     """
@@ -565,55 +567,56 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
     """
     Parameters
     ----------
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
-    n_alphas: int, optional (default 10).
+    n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps: float, optional
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min: float, optional (default 1e-6)
+    alpha_min : float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV, etc., penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screening_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv: int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -621,20 +624,20 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     Notes
@@ -700,56 +703,57 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
 
     Parameters
     ----------
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
-    n_alphas: int, optional (default 10).
+    n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps: float, optional
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min: float, optional (default 1e-6)
+    alpha_min : float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio: float
+    l1_ratio : float
         Constant that mixes L1 and G2 penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
         Defaults to 0.5.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    screening_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv: int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -757,20 +761,20 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     Notes
@@ -818,65 +822,66 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
 
     Parameters
     ----------
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
 
-    n_alphas: int, optional (default 10).
+    n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
 
-    eps: float, optional
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    alpha_min: float, optional (default 1e-6)
+    alpha_min : float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio: float
+    l1_ratio : float
         Constant that mixes L1 and G2 penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
         Defaults to 0.5.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screening_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
-    standardize: bool, optional (default False):
+    standardize : bool, optional (default False):
        If set, then input data (X, y) will be standardized (i.e converted to
        standard Gaussian) before model is fitted.
 
-    normalize: boolean, optional, default False
+    normalize : boolean, optional, default False
         Parameter passed to sklearn's `center_data` function for centralizing
         the input data (X, y)
 
-    fit_intercept: bool
+    fit_intercept : bool
         Fit or not an intercept.
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv: int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -884,20 +889,20 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     """
@@ -944,59 +949,60 @@ class TVl1ClassifierCV(_BaseClassifierCV):
 
     Parameters
     ----------
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
-    n_alphas: int, optional (default 10).
+    n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps: float, optional
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min: float, optional (default 1e-6)
+    alpha_min : float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    screening_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    prox_max_iter: int, optional (default 5000)
+    prox_max_iter : int, optional (default 5000)
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv: int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1004,20 +1010,20 @@ class TVl1ClassifierCV(_BaseClassifierCV):
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     Notes
@@ -1061,70 +1067,71 @@ class TVl1RegressorCV(_BaseRegressorCV):
 
     Parameters
     ----------
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
-    n_alphas: int, optional (default 10).
+    n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps: float, optional
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min: float, optional (default 1e-6)
+    alpha_min : float, optional (default 1e-6)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
-    l1_ratio: float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
 
-    mask: multidimensional array of booleans, optional (default None)
+    mask : multidimensional array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    standardize: bool, optional (default False):
+    standardize : bool, optional (default False):
        If set, then input data (X, y) will be standardized (i.e converted to
        standard Gaussian) before model is fitted.
 
-    normalize: boolean, optional, default False
+    normalize : boolean, optional, default False
         Parameter passed to sklearn's `center_data` function for centralizing
         the input data (X, y)
 
-    fit_intercept: bool
+    fit_intercept : bool
         Fit or not an intercept.
 
-    screening_percentile: float in the interval [0, 100]; Optional (default 10)
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 10)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means "keep all features".
 
-    max_iter: int
+    max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol: float
+    tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    prox_max_iter: int, optional (default 5000)
+    prox_max_iter : int, optional (default 5000)
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking: bool
+    backtracking : bool
         If True, the solver does backtracking in the step size for the proximal
         operator.
 
-    callback: callable(dict) -> bool
+    callback : callable(dict) -> bool
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
-    n_jobs: int, optional (default 1)
+    n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
-    cv: int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1132,20 +1139,20 @@ class TVl1RegressorCV(_BaseRegressorCV):
 
     Attributes
     ----------
-    `alpha_`: float
+    `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_`: array, shape = [n_classes-1, n_features]
+    `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that \
         follows the internal memory layout of liblinear.
 
-    `intercept_`: array, shape = [n_classes-1]
+    `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_`: 2d array of shape (n_alphas, n_folds)
+    `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     """
