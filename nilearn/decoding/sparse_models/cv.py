@@ -14,8 +14,8 @@ from functools import partial
 import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
-from ..._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
-                             is_regressor, is_classifier)
+from ..._utils.fixes import center_data, LabelBinarizer, roc_auc_score
+from sklearn.base import is_classifier
 from .objective_functions import _sigmoid
 from .estimators import _BaseRegressor, _BaseClassifier, _BaseEstimator
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
@@ -267,7 +267,7 @@ class _BaseCV(_BaseEstimator):
             X, y, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=self.normalize,
                 fit_intercept=self.fit_intercept)
-            if is_regressor(self):
+            if not is_classifier(self):
                 special_kwargs["ymean"] = ymean
 
         # make / sanitize alpha grid
@@ -346,7 +346,7 @@ class _BaseCV(_BaseEstimator):
             else:
                 self.intercept_ = 0.
 
-        if is_regressor(self):
+        if not is_classifier(self):
             self.coef_ = self.coef_[0]
             self.scores_ = self.scores_[0]
 
