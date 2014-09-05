@@ -22,9 +22,6 @@ try:
 except ImportError:
     from .sklearn_basic_backports import center_data
 
-# is_[classifier|regressor] backports
-#  XXX the sklearn version does some weird checks (that fail for our
-from .sklearn_basic_backports import is_classifier, is_regressor
 
 # roc_auc_score
 try:

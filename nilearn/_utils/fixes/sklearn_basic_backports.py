@@ -141,24 +141,6 @@ class LinearClassifierMixin(ClassifierMixin):
         return self.classes_[indices]
 
 
-def is_classifier(estimator):
-    """Returns True if the given estimator is (probably) a classifier.
-
-    XXX the sklearn version does some weird checks (that fail for our
-    estimators).
-    """
-    return isinstance(estimator, ClassifierMixin)
-
-
-def is_regressor(estimator):
-    """Returns True if the given estimator is (probably) a regressor.
-
-    XXX the sklearn version does some weird checks (that fail for our
-    estimators).
-    """
-    return isinstance(estimator, RegressorMixin)
-
-
 class MyLabelBinarizer(LabelBinarizer):
     """Binarize labels in a one-vs-all fashion
 
