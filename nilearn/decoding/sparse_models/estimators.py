@@ -14,8 +14,8 @@ sklearn-compatible estimators for TV-l1, S-LASSO, etc. models.
 import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.externals.joblib import Memory
-from sklearn.linear_model.base import LinearModel
-from ..._utils.fixes import LinearClassifierMixin, LabelBinarizer
+from sklearn.linear_model.base import LinearModel, LinearClassifierMixin
+from ..._utils.fixes import LabelBinarizer
 
 
 class _BaseEstimator(object):
