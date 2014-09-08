@@ -1,6 +1,7 @@
 import os
 import sys
 from nose.tools import nottest
+from nose import SkipTest
 import numpy as np
 import scipy as sp
 from numpy.testing import assert_almost_equal
@@ -292,6 +293,7 @@ def test_debiasing_model():
     assert unbiased_score >= biased_score
 
 
+@SkipTest
 def test_pre_fit():
     # Mostly a smoke test
     sm_reg = SmoothLassoRegressor(mask=mask)
