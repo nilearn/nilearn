@@ -8,7 +8,7 @@ import numbers
 import numpy as np
 import scipy.sparse as sp
 from sklearn.utils import as_float_array
-from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import LabelBinarizer as SklLabelBinarizer
 
 
 def center_data(X, y, fit_intercept, normalize=False, copy=True,
@@ -59,73 +59,13 @@ def center_data(X, y, fit_intercept, normalize=False, copy=True,
     return X, y, X_mean, y_mean, X_std
 
 
-class _LabelBinarizer(LabelBinarizer):
-    """XXX Backport (fix for old sklearn versions (0.10 for example)
-
-    Binarize labels in a one-vs-all fashion
-
-    Several regression and binary classification algorithms are
-    available in the scikit. A simple way to extend these algorithms
-    to the multi-class classification case is to use the so-called
-    one-vs-all scheme.
-
-    At learning time, this simply consists in learning one regressor
-    or binary classifier per class. In doing so, one needs to convert
-    multi-class labels to binary labels (belong or does not belong
-    to the class). LabelBinarizer makes this process easy with the
-    transform method.
-
-    At prediction time, one assigns the class for which the corresponding
-    model gave the greatest confidence. LabelBinarizer makes this easy
-    with the inverse_transform method.
-
-    Parameters
-    ----------
-
-    neg_label : int (default: 0)
-        Value with which negative labels must be encoded.
-
-    pos_label : int (default: 1)
-        Value with which positive labels must be encoded.
-
-    Attributes
-    ----------
-    `classes_` : array of shape [n_class]
-        Holds the label for each class.
-
-    `multilabel_` : boolean
-        True if the transformer was fitted on a multilabel rather than a
-        multiclass set of labels.
-
-    Examples
-    --------
-    >>> from sklearn import preprocessing
-    >>> lb = preprocessing.LabelBinarizer()
-    >>> lb.fit([1, 2, 6, 4, 2])
-    LabelBinarizer(neg_label=0, pos_label=1)
-    >>> lb.classes_
-    array([1, 2, 4, 6])
-    >>> lb.multilabel_
-    False
-    >>> lb.transform([1, 6])
-    array([[1, 0, 0, 0],
-           [0, 0, 0, 1]])
-
-    >>> lb.fit_transform([(1, 2), (3,)])
-    array([[1, 1, 0],
-           [0, 0, 1]])
-    >>> lb.classes_
-    array([1, 2, 3])
-    >>> lb.multilabel_
-    True
-
-    See also
-    --------
-    label_binarize : function to perform the transform operation of
-        LabelBinarizer with fixed classes.
-    """
+# Catter for the fact that in 0.10 the LabelBinarizer did not have a
+# neg_label
+class _LabelBinarizer(SklLabelBinarizer):
 
     def __init__(self, neg_label=0, pos_label=1):
+        # Always call the super class's init method
+        SklLabelBinarizer.__init__(self)
         if neg_label >= pos_label:
             raise ValueError("neg_label must be strictly less than pos_label.")
 
@@ -149,9 +89,15 @@ class _LabelBinarizer(LabelBinarizer):
         Y : numpy array of shape [n_samples, n_classes]
         """
 
-        y_ = LabelBinarizer.fit_transform(self, y)
+        y_ = SklLabelBinarizer.fit_transform(self, y)
 
         if np.min(y_) == 0. and self.neg_label == -1:
             y_ = 2. * (y_ == 1.) - 1.
 
         return y_
+
+
+if hasattr(SklLabelBinarizer(), 'neg_label'):
+    LabelBinarizer = SklLabelBinarizer
+else:
+    LabelBinarizer = _LabelBinarizer

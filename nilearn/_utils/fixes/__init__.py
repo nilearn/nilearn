@@ -21,8 +21,8 @@ except ImportError:
 try:
     from sklearn.utils import atleast2d_or_csr
 except ImportError:
-    from .sklearn_basic_backports import atleast2d_or_csr
-
+    # Changed in 0.15
+    from sklearn.utils import check_array as atleast2d_or_csr
 
 # roc_auc_score
 try:
@@ -31,4 +31,4 @@ except ImportError:
     from sklearn.metrics import auc as roc_auc_score
 
 # LabelBinarizer backport
-from .sklearn_basic_backports import _LabelBinarizer as LabelBinarizer
+from .sklearn_basic_backports import LabelBinarizer
