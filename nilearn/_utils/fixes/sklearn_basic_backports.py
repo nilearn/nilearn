@@ -83,7 +83,7 @@ class ClassifierMixin(object):
         return accuracy_score(y, self.predict(X))
 
 
-class MyLabelBinarizer(LabelBinarizer):
+class _LabelBinarizer(LabelBinarizer):
     """Binarize labels in a one-vs-all fashion
 
     Several regression and binary classification algorithms are
