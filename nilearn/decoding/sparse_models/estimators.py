@@ -14,8 +14,9 @@ sklearn-compatible estimators for TV-l1, S-LASSO, etc. models.
 import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.externals.joblib import Memory
-from sklearn.linear_model.base import LinearModel, LinearClassifierMixin
-from ..._utils.fixes import LabelBinarizer
+from sklearn.linear_model.base import LinearModel
+from ..._utils.fixes import LabelBinarizer, atleast2d_or_csr
+from sklearn.utils.extmath import safe_sparse_dot
 
 
 class _BaseEstimator(object):
@@ -161,7 +162,7 @@ class _BaseRegressor(_BaseEstimator, LinearModel, RegressorMixin):
         self.backtracking = backtracking
 
 
-class _BaseClassifier(_BaseEstimator, BaseEstimator, LinearClassifierMixin):
+class _BaseClassifier(_BaseEstimator, BaseEstimator):
     """Base Classifier class for SmoothLasso and TVl1.
 
     Each child must implement a compute_lipschitz_constant(X) method.
@@ -207,6 +208,56 @@ class _BaseClassifier(_BaseEstimator, BaseEstimator, LinearClassifierMixin):
             # OvR normalization, like LibLinear's predict_probability
             prob /= prob.sum(axis=1).reshape((prob.shape[0], -1))
             return prob
+
+    def decision_function(self, X):
+        """Predict confidence scores for samples.
+
+        The confidence score for a sample is the signed distance of that
+        sample to the hyperplane.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
+            Confidence scores per (sample, class) combination. In the binary
+            case, confidence score for self.classes_[1] where >0 means this
+            class would be predicted.
+        """
+
+        X = atleast2d_or_csr(X)
+
+        n_features = self.coef_.shape[1]
+        if X.shape[1] != n_features:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], n_features))
+
+        scores = safe_sparse_dot(X, self.coef_.T,
+                                 dense_output=True) + self.intercept_
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
+            Samples.
+
+        Returns
+        -------
+        C : array, shape = [n_samples]
+            Predicted class label per sample.
+        """
+        scores = self.decision_function(X)
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(np.int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
 
     def _pre_fit(self, X, y):
         X = np.array(X)

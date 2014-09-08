@@ -15,13 +15,14 @@ import numpy as np
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..._utils.fixes import center_data, LabelBinarizer, roc_auc_score
-from sklearn.base import is_classifier
 from .objective_functions import _sigmoid
 from .estimators import _BaseRegressor, _BaseClassifier, _BaseEstimator
 from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 from ._cv_tricks import (EarlyStoppingCallback, RegressorFeatureSelector,
                          ClassifierFeatureSelector, _my_alpha_grid)
+
+is_classifier = lambda obj: "Classifier" in obj.__class__.__name__
 
 
 def path_scores(solver, X, y, alphas, l1_ratio, train,

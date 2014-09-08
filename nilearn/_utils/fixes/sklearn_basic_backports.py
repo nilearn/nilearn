@@ -10,7 +10,6 @@ import numpy as np
 import scipy.sparse as sp
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import atleast2d_or_csr, as_float_array
-from sklearn.base import RegressorMixin
 from sklearn.preprocessing import LabelBinarizer
 
 
