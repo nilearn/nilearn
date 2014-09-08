@@ -13,11 +13,11 @@ selection, creation of parameter grids (for alpha), etc.
 
 import numpy as np
 from scipy import stats
-from ..._utils.fixes import center_data
+from .._utils.fixes import center_data
 from sklearn.feature_selection import (
     f_regression, f_classif, SelectPercentile)
 from sklearn.base import BaseEstimator
-from ..._utils.fixes._ravel import _ravel
+from .._utils.fixes._ravel import _ravel
 
 
 def _squared_norm(x):
