@@ -47,7 +47,6 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('nilearn/_utils')
     config.add_subpackage('nilearn/_utils/fixes')
     config.add_subpackage("nilearn/plotting")
-    config.add_subpackage("nilearn/decoding/sparse_models")
     return config
 
 
