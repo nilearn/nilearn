@@ -1,24 +1,23 @@
 """
-Generic FISTA for solving TV-L1, S-LASSO, etc., problems. For problems on
-which the prox of the nonsmooth term cannot be computed closed-form
-(e.g TV-L1), we approximate the prox using an inner FISTA loop.
+FISTA for solving TV-l1, S-Lasso, etc., problems.
 
 """
 # Author: DOHMATOB Elvis Dopgima,
-#         PIZARRO Gaspar,
-#         VAROQUAUX Gael,
-#         GRAMFORT Alexandre,
-#         THIRION Bertrand
+#         Gaspar Pizarro,
+#         Gael Varoquaux,
+#         Alexandre Gramfort,
+#         Bertrand Thirion,
+#         and others.
 # License: simplified BSD
 
 from math import sqrt
+from functools import partial
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
 
 
-def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
-                                random_state=42):
+def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the
@@ -37,7 +36,7 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
       continuity (i.e. it corresponds to the size of the vector that `f`
       takes as an argument).
 
-    lispchitz_constant : float,
+    L : float,
       Constant associated to the Lipschitz continuity.
 
     n_trials : int,
@@ -45,34 +44,48 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
-    random_state : int, optional (default 42)
-        Random state for initializing local rng.
+    err_msg : {str, or None},
+      String used to tune the output message when the test fails.
+      If `None`, we'll generate our own.
+
+    Notes
+    -----
+    If you are implementing a proximal gradient type algorithm (FISTA, etc.),
+    then you should strongly consider testing Lipschitz continuity of your
+    smooth terms. Failure of this test typically implies you have a bug in
+    the way you are computing the gradient of your smooth terms, or the
+    way you are bounding their Lipschitz constant!
 
     Raises
     ------
-    RuntimeError
+    AssertionError
+
     """
 
-    rng = check_random_state(random_state)
+    # check random state
+    rng = check_random_state(42)
+
     for x in rng.randn(n_trials, ndim):
         for y in rng.randn(n_trials, ndim):
+            err_msg = "LC counter example: (%s, %s)" % (
+                x, y) if err_msg is None else err_msg
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
-            b = lipschitz_constant * linalg.norm(x - y, 2)
-            if a > b:
-                raise RuntimeError("Counter example: (%s, %s)" % (x, y))
+            b = L * linalg.norm(x - y, 2)
+            assert a <= b, err_msg + ("(a = %g >= %g)" % (a, b))
 
 
-def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
-           dgap_tol=None, init=None, max_iter=1000, tol=1e-4,
-           check_lipschitz=False, dgap_factor=None, callback=None,
-           verbose=2):
-    """Generic FISTA solver
-
-    Minimizes the a sum `f + g` of two convex functions f (smooth)
-    and g (proximable nonsmooth).
+def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
+           w_size, dgap_tol=None, init=None, backtracking=False,
+           max_iter=1000, tol=1e-4, pure_ista=False, callback=None,
+           verbose=2, check_lipschitz=False, check_monotonous=False,
+           dgap_factor=None):
+    """
 
     Parameters
     ----------
+    f1 : callable(w) -> float
+         Gmooth part of energy (= the loss term).
+
     f1_grad : callable(w) -> np.array
         Gradient of smooth part of energy
 
@@ -89,10 +102,15 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
-        accept a w such that w.shape = (w_size,).
+        accept a w such that w.size = w_size
+
+    backtracking : bool
+        If True, the solver does backtracking in the step size for the proximal
+        operator
 
     tol : float
-        Tolerance on the (primal) cost function.
+        Tolerance on the variation of the objective function before breaking.
+        The meaning of tol can be manipulated with the callback function
 
     dgap_tol : float
         If None, the nonsmooth_prox argument returns a float, with the value,
@@ -101,39 +119,30 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
-    init : dict-like, optional (default None)
-        Dictionary of initialization parameters. Possible keys are 'w',
-        'stepsize', 'z', 't', 'dgap_factor'.
-
     callback : callable(dict) -> bool
-        Function called on every iteration. If it returns True, then the loop
-        breaks.
+        Function called at the end of every energy descendent iteration of the
+        solver. If it returns True, the loop breaks.
 
     max_iter : int
         Maximum number of iterations for the solver.
 
+    pure_ista : bool, optional (default False)
+        if set, then solver defaults to a pure ISTA algorithm
+
     Returns
     -------
-    w : ndarray, shape (w_size,)
-       A minimizer for `f + g`.
+    w : np.array of size w_size
+       The Solution.
 
     solver_info : float
-        Solver information, for warm starting.
+        Solver information, for warm start.
 
-    cost : array of floats
-        Cost function (fval) computed on every iteration.
+    objective : array of floats
+        Objective function (fval) computed on every iteration.
 
-    Notes
-    -----
-    A motivation for the choice of FISTA as a solver for the TV-L1
-    penalized problems emerged in the paper: Elvis Dohmatob,
-    Alexandre Gramfort, Bertrand Thirion, Gael Varoquaux,
-    "Benchmarking solvers for TV-L1 least-squares and logistic regression
-    in brain imaging". Pattern Recoginition in Neuroimaging (PRNI),
-    Jun 2014, Tubingen, Germany. IEEE
     """
 
-    # initialization
+    # initializations
     if init is None:
         init = dict()
     w = init.get('w', np.zeros(w_size))
@@ -145,74 +154,125 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     if dgap_factor is None:
         dgap_factor = init.get("dgap_factor", 1.)
 
-    # check Lipschitz continuity of gradient of smooth part
+    # check lipschitz continuity of gradient of smooth part
     if check_lipschitz:
-        _check_lipschitz_continuous(f1_grad, w_size, lipschitz_constant)
+        check_lipschitz_continuous(f1_grad, w_size, lipschitz_constant)
 
     # aux variables
+    gradient_buffer = np.zeros(w.shape, dtype=w.dtype)
     old_energy = total_energy(w)
     energy_delta = np.inf
     best_w = w.copy()
     best_energy = old_energy
     best_dgap_tol = dgap_tol
-    ista_step = False
+    ista_step = pure_ista
     best_z = z.copy()
     best_t = t
+    best_dgap_tol = dgap_tol
     prox_info = dict(converged=True)
-    stepsize = 1. / lipschitz_constant
-    history = []
-    w_old = w.copy()
+    objective = []
 
     # FISTA loop
-    for i in range(max_iter):
-        history.append(old_energy)
-        w_old[:] = w
+    rho = .5
+    name = "%s%s" % ("mISTA" if pure_ista else "mFISTA",
+                     "-BT" if backtracking else "")
+    for i in xrange(int(max_iter)):
+        objective.append(old_energy)
+        w_old = w.copy()
 
-        # invoke callback
         if verbose:
-            print('mFISTA: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
-                  i + 1, max_iter, old_energy, energy_delta))
+            print '%s: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
+                name, i + 1, max_iter, old_energy, energy_delta)
+
         if callback and callback(locals()):
             break
+
         if np.abs(energy_delta) < tol:
             if verbose:
-                print("\tConverged (|dE| < %g)" % tol)
+                print "\tConverged (|dE| < %g)" % tol
             break
 
-        # forward (gradient) step
+        # The gradient of the smooth function is computed only in the
+        # mask
         gradient_buffer = f1_grad(z)
 
-        # backward (prox) step
-        for _ in range(10):
-            w, prox_info = f2_prox(z - stepsize * gradient_buffer, stepsize,
-                                   dgap_factor * dgap_tol, init=w)
-            energy = total_energy(w)
+        # Backtracking: Find largest stepsize (s) verifying the inequality:
+        #    g(p_s) <= f(z) + <p_s - z, grad_f(z)> + 1 / (2s) ||p_s - z||^2
+        #    , where p_s := prox_s(z - s * grad_f(z))
+        if backtracking:
+            if verbose:
+                print "%s: Starting backtracking loop..." % name
+        else:
+            stepsize = 1. / lipschitz_constant
+        while True:
+            if backtracking and verbose:
+                print "\tTrying stepsize %g..." % stepsize
 
-            if ista_step and prox_info['converged'] and old_energy <= energy:
-                # Even when doing ISTA steps we are not decreasing.
-                # Thus we need a tighter dual_gap on the prox_tv
-                # This corresponds to a line search on the dual_gap
-                # tolerance.
-                dgap_factor *= .2
-                if verbose:
-                    print("decreased dgap_tol")
-            else:
+            # This loop is a line-search like strategy on the dual gap of
+            # the prox
+            for _ in range(10):
+                w, prox_info = f2_prox(z - stepsize * gradient_buffer,
+                                       stepsize, dgap_factor * dgap_tol,
+                                       init=w)
+                w = w.ravel()
+                energy = total_energy(w)
+
+                if ista_step and prox_info[
+                        'converged'] and old_energy <= energy:
+                    # Even when doing ISTA steps we are not decreasing.
+                    # Thus we need a tighter dual_gap on the prox_tv
+                    # This corresponds to a line search on the dual_gap
+                    # tolerance.
+                    dgap_factor *= .2
+                    if verbose:
+                        print "decreased dgap_tol"
+                else:
+                    break
+
+            # if backtracking disabled then we're done here
+            if not backtracking:
                 break
+
+            # check if current stepsize does the job
+            aux = w - z
+            F = f1(w)
+            Q = f1(z) + np.dot(aux, gradient_buffer) + (
+                .5 / stepsize) * np.dot(aux, aux)
+            if F <= Q:
+                if verbose:
+                    print (
+                        "\tHurray! Last stepsize of %g worked like a "
+                        "charm!" % stepsize)
+                break
+
+            # OK, decrease stepsize
+            stepsize *= rho
+
+        # ISTA is provably monotonous
+        if i > 0 and check_monotonous:
+            assert energy <= 1.1 * old_energy, (
+                "Oops! old_energy = %g < energy = %g. This is "
+                "unacceptable since ISTA and mFISTA are provably monotonous."
+                " The must be a bug in the code. For example, maybe "
+                "you are assuming a wrong lipschitz constant or you "
+                "have bugs in the way you compute the gradient of"
+                " the smooth part of the energy.") % (old_energy, energy)
 
         # energy house-keeping
         energy_delta = old_energy - energy
         old_energy = energy
 
         # z update
+        # if (not ista_step) and energy_delta <= 0 and (not pure_ista):
         if energy_delta < 0.:
             # M-FISTA strategy: rewind and switch temporarily to an ISTA step
-            z[:] = w_old
-            w[:] = w_old
+            z = w_old.copy()
+            w = w_old.copy()
             ista_step = True
             if verbose:
-                print('Monotonous FISTA: Switching to ISTA')
+                print 'Monotonous FISTA: Switching to ISTA'
         else:
-            if ista_step:
+            if ista_step or pure_ista:
                 z = w
             else:
                 t0 = t
@@ -220,28 +280,32 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
                 z = w + ((t0 - 1.) / t) * (w - w_old)
             ista_step = False
 
-        # misc
+        # miscellaneous
         if energy_delta != 0.:
             # We need to decrease the tolerance on the dual_gap as 1/i**4
             # (see Mark Schmidt, Nicolas le Roux and Francis Bach, NIPS
             # 2011), thus we need to count how many times we are called,
-            # hence the callable class. In practice, empirically I (Gael)
+            # thus the callable class. In practice, empirically I (Gael)
             # have found that such a sharp decrease was counter
             # productive in terms of computation time, as it leads to too
-            # much time spent in the prox_tvl1 calls.
+            # much time spent in the prox_tv_l1 calls.
             #
-            # For this reason, we rely more on the linesearch-like
+            # For this reason, we rely more on the line-search like
             # strategy to set the dgap_tol
             dgap_tol = abs(energy_delta) / (i + 1.)
 
-        # dgap_tol house-keeping
         if energy < best_energy:
             best_energy = energy
-            best_w[:] = w
-            best_z[:] = z
+            best_w = w.copy()
+            best_z = z.copy()
             best_t = t
             best_dgap_tol = dgap_tol
+            best_dgap_tol = dgap_tol
 
-    init = dict(w=best_w.copy(), z=best_z, t=best_t, dgap_tol=best_dgap_tol,
-                stepsize=stepsize)
-    return best_w, history, init
+    return (best_w,
+            objective,
+            dict(w=best_w.copy(), z=best_z, t=best_t, dgap_tol=best_dgap_tol,
+                 stepsize=stepsize))
+
+# pure ISTA
+ista = partial(mfista, pure_ista=True)

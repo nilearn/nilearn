@@ -1,5 +1,34 @@
 import numpy as np
-from nilearn._utils.fixes import LabelBinarizer
+from nose.tools import assert_true, assert_false
+from ..._utils.fixes import LabelBinarizer
+from ..cv import (SmoothLassoRegressorCV, SmoothLassoClassifierCV,
+                  TVl1RegressorCV, TVl1ClassifierCV,
+                  SmoothLassoRegressor, SmoothLassoClassifier,
+                  TVl1Regressor, TVl1Classifier, is_classifier)
+
+is_regressor = lambda x: not is_classifier(x)
+
+
+def test_is_classifier():
+    assert_true(is_classifier(SmoothLassoClassifier()))
+    assert_true(is_classifier(SmoothLassoClassifierCV()))
+    assert_true(is_classifier(TVl1Classifier()))
+    assert_true(is_classifier(TVl1ClassifierCV()))
+    assert_false(is_regressor(SmoothLassoClassifier()))
+    assert_false(is_regressor(SmoothLassoClassifierCV()))
+    assert_false(is_regressor(TVl1Classifier()))
+    assert_false(is_regressor(TVl1ClassifierCV()))
+
+
+def test_is_regressor():
+    assert_true(is_regressor(SmoothLassoRegressor()))
+    assert_true(is_regressor(SmoothLassoRegressorCV()))
+    assert_true(is_regressor(TVl1Regressor()))
+    assert_true(is_regressor(TVl1RegressorCV()))
+    assert_false(is_classifier(SmoothLassoRegressor()))
+    assert_false(is_classifier(SmoothLassoRegressorCV()))
+    assert_false(is_classifier(TVl1Regressor()))
+    assert_false(is_classifier(TVl1RegressorCV()))
 
 
 def test_labelbinarizer_backport():
@@ -27,6 +56,12 @@ def test_labelbinarizer_misc_use_cases():
                                    [0, 0, 0, 1]])
 
     lb = LabelBinarizer()
+    # np.testing.assert_array_equal(lb.fit_transform(['yes', 'no', 'no', 'yes']),
+    #                               [[1],
+    #                                [0],
+    #                                [0],
+    #                                [1]])
+
     np.testing.assert_array_equal(lb.fit([[0, 1, 1], [1, 0, 0]]).classes_,
                                   [0, 1])
 

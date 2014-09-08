@@ -15,7 +15,7 @@ import numpy as np
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model.base import LinearModel
-from ..._utils.fixes import LabelBinarizer, atleast2d_or_csr
+from .._utils.fixes import LabelBinarizer, atleast2d_or_csr
 from sklearn.utils.extmath import safe_sparse_dot
 
 
