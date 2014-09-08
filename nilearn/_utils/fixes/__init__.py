@@ -10,12 +10,6 @@ if (LooseVersion(sklearn.__version__) < LooseVersion('0.15') or
 else:
     from sklearn.feature_selection import f_regression
 
-# LinearClassifierMixin backport
-try:
-    from sklearn.linear_models.base import LinearClassifierMixin
-except ImportError:
-    from .sklearn_basic_backports import LinearClassifierMixin
-
 # center_data backport
 try:
     from sklearn.linear_models.base import center_data

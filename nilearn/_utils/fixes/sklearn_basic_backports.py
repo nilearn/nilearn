@@ -1,6 +1,6 @@
 """
-ClassifierMixin and LinearClassifierMixin have been copied from sklearn
-so we don't have to fight back-compat problems every second.
+ClassifierMixin has been copied from sklearn so we don't have to fight
+back-compat problems every second.
 
 """
 # Author: DOHMATOB Elvis
@@ -8,8 +8,7 @@ so we don't have to fight back-compat problems every second.
 import numbers
 import numpy as np
 import scipy.sparse as sp
-from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.utils import atleast2d_or_csr, as_float_array
+from sklearn.utils import as_float_array
 from sklearn.preprocessing import LabelBinarizer
 
 
@@ -82,62 +81,6 @@ class ClassifierMixin(object):
         """
         from sklearn.metrics import accuracy_score
         return accuracy_score(y, self.predict(X))
-
-
-class LinearClassifierMixin(ClassifierMixin):
-    """Mixin for linear classifiers.
-
-    Handles prediction for sparse and dense X.
-    """
-
-    def decision_function(self, X):
-        """Predict confidence scores for samples.
-
-        The confidence score for a sample is the signed distance of that
-        sample to the hyperplane.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
-            Confidence scores per (sample, class) combination. In the binary
-            case, confidence score for self.classes_[1] where >0 means this
-            class would be predicted.
-        """
-        X = atleast2d_or_csr(X)
-
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], n_features))
-
-        scores = safe_sparse_dot(X, self.coef_.T,
-                                 dense_output=True) + self.intercept_
-        return scores.ravel() if scores.shape[1] == 1 else scores
-
-    def predict(self, X):
-        """Predict class labels for samples in X.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
-            Samples.
-
-        Returns
-        -------
-        C : array, shape = [n_samples]
-            Predicted class label per sample.
-        """
-        scores = self.decision_function(X)
-        if len(scores.shape) == 1:
-            indices = (scores > 0).astype(np.int)
-        else:
-            indices = scores.argmax(axis=1)
-        return self.classes_[indices]
 
 
 class MyLabelBinarizer(LabelBinarizer):
