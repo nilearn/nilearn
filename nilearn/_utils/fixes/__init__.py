@@ -23,6 +23,13 @@ except ImportError:
     from .sklearn_basic_backports import center_data
 
 
+# atleast2d_or_csr
+try:
+    from sklearn.utils import atleast2d_or_csr
+except ImportError:
+    from .sklearn_basic_backports import atleast2d_or_csr
+
+
 # roc_auc_score
 try:
     from sklearn.metrics import roc_auc_score
