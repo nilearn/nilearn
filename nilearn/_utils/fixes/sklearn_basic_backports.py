@@ -60,7 +60,9 @@ def center_data(X, y, fit_intercept, normalize=False, copy=True,
 
 
 class _LabelBinarizer(LabelBinarizer):
-    """Binarize labels in a one-vs-all fashion
+    """XXX Backport (fix for old sklearn versions (0.10 for example)
+
+    Binarize labels in a one-vs-all fashion
 
     Several regression and binary classification algorithms are
     available in the scikit. A simple way to extend these algorithms
@@ -150,7 +152,6 @@ class _LabelBinarizer(LabelBinarizer):
         y_ = LabelBinarizer.fit_transform(self, y)
 
         if np.min(y_) == 0. and self.neg_label == -1:
-            # fix for old sklearn versions (0.10 for example)
             y_ = 2. * (y_ == 1.) - 1.
 
         return y_
