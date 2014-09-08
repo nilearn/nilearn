@@ -1,6 +1,5 @@
 """
-ClassifierMixin has been copied from sklearn so we don't have to fight
-back-compat problems every second.
+Back-porting some fundamental sklearn API.
 
 """
 # Author: DOHMATOB Elvis
@@ -58,29 +57,6 @@ def center_data(X, y, fit_intercept, normalize=False, copy=True,
         X_std = np.ones(X.shape[1])
         y_mean = 0. if y.ndim == 1 else np.zeros(y.shape[1], dtype=X.dtype)
     return X, y, X_mean, y_mean, X_std
-
-
-class ClassifierMixin(object):
-    """Mixin class for all classifiers in scikit-learn."""
-
-    def score(self, X, y):
-        """Returns the mean accuracy on the given test data and labels.
-
-        Parameters
-        ----------
-        X : array-like, shape = [n_samples, n_features]
-            Training set.
-
-        y : array-like, shape = [n_samples]
-            Labels for X.
-
-        Returns
-        -------
-        z : float
-
-        """
-        from sklearn.metrics import accuracy_score
-        return accuracy_score(y, self.predict(X))
 
 
 class _LabelBinarizer(LabelBinarizer):
