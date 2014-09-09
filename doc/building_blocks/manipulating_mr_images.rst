@@ -61,7 +61,7 @@ following directories (in order of priority):
     if it is specified
   * the environment variable `NILEARN_DATA` if it exists
   * the `nilearn_data` folder in the current directory
-   
+
 Note that you can copy that folder across computers to avoid
 downloading the data twice.
 
@@ -79,7 +79,7 @@ Python also provides helpers to work with filepaths. In particular,
 :func:`glob.glob` is useful to
 list many files with a "wild-card": \*.nii
 
-.. warning:: 
+.. warning::
    The result of :func:`glob.glob` is not sorted. For neuroimaging, you
    should always sort the output of glob using the :func:`sorted`
    function.
@@ -92,7 +92,7 @@ list many files with a "wild-card": \*.nii
    ['dataset/subject1.nii', 'dataset/subject2.nii']
 
 
-Understanding Neuroimaging data 
+Understanding Neuroimaging data
 ===============================
 
 Nifti and Analyze files
@@ -104,12 +104,12 @@ Nifti and Analyze files
     the standard way of sharing data in neuroimaging. We may be
     interested in the following three main components:
 
-     :data: 
+     :data:
          raw scans bundled in a numpy array: ``data = img.get_data()``
-     :affine: 
-         gives the correspondance between voxel index and spatial location: 
+     :affine:
+         gives the correspondance between voxel index and spatial location:
          ``affine = img.get_affine()``
-     :header: 
+     :header:
          informations about the data (slice duration...):
          ``header = img.get_header()``
 
@@ -126,11 +126,11 @@ downloaded, a single line is needed to load it.
     We can find two main representations for MRI scans:
 
     - a big 4D matrix representing 3D MRI along time, stored in a big 4D
-      NifTi file. 
-      `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to 
+      NifTi file.
+      `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to
       prefer this format.
-    - several 3D matrices representing each volume (time point) of the 
-      session, stored in set of 3D Nifti or analyse files. 
+    - several 3D matrices representing each volume (time point) of the
+      session, stored in set of 3D Nifti or analyse files.
       `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 
@@ -176,7 +176,7 @@ presented to the subject::
     >>> haxby_files = datasets.fetch_haxby(n_subjects=1)
     >>> import numpy as np
     >>> labels = np.genfromtxt(haxby_files.session_target[0], skip_header=1,
-                               usecols=[0], dtype=basestring)
+    ...                        usecols=[0], dtype=basestring)
     >>> print np.unique(labels)
     ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
      'shoe']
@@ -283,7 +283,7 @@ Functional MRI data has a low signal-to-noise ratio. When using simple methods
 that are not robust to noise, it is useful to smooth the data. Smoothing is
 usually applied using a Gaussian function with 4mm to 8mm full-width at
 half-maximum. The function :func:`nilearn.image.smooth_img` accounts for potential
-anisotropy in the image affine. As many nilearn functions, it can also 
+anisotropy in the image affine. As many nilearn functions, it can also
 use file names as input parameters.
 
 
@@ -324,7 +324,7 @@ more discriminative is the voxel.
     :scale: 50%
 
 This feature selection method is available in the scikit-learn where it has been
-extended to several classes, using the 
+extended to several classes, using the
 :func:`sklearn.feature_selection.f_classif` function.
 
 Thresholding
@@ -349,7 +349,7 @@ We now want to restrict our study to the ventral temporal area. The
 corresponding mask is provided in `haxby.mask_vt`. We want to compute the
 intersection of this mask with our mask. The first step is to load it with
 nibabel's :func:`nibabel.load`. We then use a logical "and"
--- :func:`numpy.logical_and` -- to keep only voxels 
+-- :func:`numpy.logical_and` -- to keep only voxels
 that are selected in both masks.
 
 .. literalinclude:: ../../plot_roi_extraction.py
