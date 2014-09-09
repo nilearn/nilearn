@@ -393,7 +393,7 @@ that we will put before the SVC in a `pipeline`
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Dimension reduction #######################################################
-    :end-before: ### Visualisation #############################################################
+    :end-before: ### Visualization #############################################################
 We can use our ``anova_svc`` object exactly as we were using our ``svc``
 object previously.
 
@@ -413,7 +413,7 @@ To visualize the results, we need to:
    :scale: 65
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Visualisation #############################################################
+    :start-after: ### Visualization #############################################################
     :end-before: ### Cross validation ##########################################################
 
 .. seealso::
