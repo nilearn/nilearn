@@ -347,6 +347,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     """
     anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
                                                 dim=dim, black_bg=black_bg)
+    # vmin and/or vmax could have been provided in the kwargs
+    vmin = kwargs.pop('vmin', vmin)
+    vmax = kwargs.pop('vmax', vmax)
     slicer = plot_img(anat_img, cut_coords=cut_coords,
                       output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
