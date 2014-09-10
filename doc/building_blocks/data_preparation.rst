@@ -293,7 +293,7 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
 
 - labels: a single region is defined as the set of all the voxels that have a
   common label (usually an integer) in the region definition array. The set of
-  region is defined by a single 3D array, containing at each location the label
+  regions is defined by a single 3D array, containing at each location the label
   of the region the voxel is in. This technique has one big advantage: the
   amount of memory required is independent of the number of regions, allowing
   for representing a large number of regions. On the other hand, there are
