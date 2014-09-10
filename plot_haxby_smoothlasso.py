@@ -54,7 +54,7 @@ session_labels = labels['chunks'][condition_mask]
 
 ### Cross-validation ##########################################################
 # Here we use a SmoothLasso classifier
-from nilearn.decoding.cv import SmoothLassoClassifierCV
+from nilearn.decoding.space_net import SmoothLassoClassifierCV
 import os
 n_jobs = int(os.environ.get("N_JOBS", 1))
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
