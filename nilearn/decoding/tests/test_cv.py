@@ -8,8 +8,8 @@ from sklearn.datasets import load_iris
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
                   SmoothLassoClassifierCV, SmoothLassoRegressorCV,
                   path_scores)
-from .._cv_tricks import (RegressorFeatureSelector, ClassifierFeatureSelector,
-                          EarlyStoppingCallback, _my_alpha_grid)
+from ..cv import (RegressorFeatureSelector, ClassifierFeatureSelector,
+                  EarlyStoppingCallback, _my_alpha_grid)
 from ..smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
 
 logistic_path_scores = partial(path_scores, logistic=True)
