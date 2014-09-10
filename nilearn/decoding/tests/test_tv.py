@@ -8,7 +8,8 @@ import sys
 from nose.tools import assert_equal, assert_raises
 import numpy as np
 from ..objective_functions import gradient_id, squared_loss
-from ..tv import tvl1_objective, _tvl1_objective_from_gradient, tvl1_solver
+from ..space_net_solvers import (tvl1_objective, _tvl1_objective_from_gradient,
+                                 tvl1_solver)
 
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
 ROOT = fn(os.path.dirname, os.path.dirname(__file__), 4)

@@ -13,11 +13,12 @@ from ..objective_functions import (squared_loss, squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
                                    squared_loss_lipschitz_constant)
 from ..space_net_solvers import (squared_loss_and_spatial_grad,
-                            logistic_derivative_lipschitz_constant,
-                            squared_loss_derivative_lipschitz_constant,
-                            smooth_lasso_squared_loss, smooth_lasso_logistic,
-                            squared_loss_and_spatial_grad_derivative)
-from ..tv import tvl1_solver
+                                 logistic_derivative_lipschitz_constant,
+                                 squared_loss_derivative_lipschitz_constant,
+                                 smooth_lasso_squared_loss,
+                                 smooth_lasso_logistic,
+                                 squared_loss_and_spatial_grad_derivative,
+                                 tvl1_solver)
 from ..cv import (TVl1Regressor, TVl1Classifier, SmoothLassoRegressor,
                   SmoothLassoClassifier)
 from nose.tools import assert_equal
