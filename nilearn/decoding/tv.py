@@ -1,14 +1,3 @@
-"""
-TV-l1 regression. Handles squared loss and logistic too.
-
-"""
-# Author: DOHMATOB Elvis Dopgima,
-#         Gael Varoquaux,
-#         Alexandre Gramfort,
-#         Virgile Fritsch,
-#         Bertrand Thirion,
-#         and others.
-# License: simplified BSD
 
 import numpy as np
 from .objective_functions import (squared_loss_lipschitz_constant,

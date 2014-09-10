@@ -21,7 +21,7 @@ from sklearn.cross_validation import check_cv
 from .._utils.fixes import center_data, LabelBinarizer, roc_auc_score
 from .objective_functions import _sigmoid
 from .estimators import _BaseRegressor, _BaseClassifier, _BaseEstimator
-from .smooth_lasso import smooth_lasso_logistic, smooth_lasso_squared_loss
+from .space_net_solvers import smooth_lasso_logistic, smooth_lasso_squared_loss
 from .tv import tvl1_solver
 from .._utils.fixes._ravel import _ravel
 
