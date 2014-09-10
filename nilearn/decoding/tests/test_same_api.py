@@ -19,8 +19,8 @@ from ..space_net_solvers import (squared_loss_and_spatial_grad,
                                  smooth_lasso_logistic,
                                  squared_loss_and_spatial_grad_derivative,
                                  tvl1_solver)
-from ..cv import (TVl1Regressor, TVl1Classifier, SmoothLassoRegressor,
-                  SmoothLassoClassifier)
+from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoRegressor,
+                         SmoothLassoClassifier)
 from nose.tools import assert_equal
 
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)

@@ -8,9 +8,11 @@ from sklearn.datasets import load_iris
 from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
                   SmoothLassoClassifierCV, SmoothLassoRegressorCV,
                   path_scores)
-from ..cv import (RegressorFeatureSelector, ClassifierFeatureSelector,
-                  EarlyStoppingCallback, _my_alpha_grid)
-from ..space_net_solvers import smooth_lasso_logistic, smooth_lasso_squared_loss
+from ..space_net import (
+    RegressorFeatureSelector, ClassifierFeatureSelector,
+    EarlyStoppingCallback, _my_alpha_grid)
+from ..space_net_solvers import (smooth_lasso_logistic,
+                                 smooth_lasso_squared_loss)
 
 logistic_path_scores = partial(path_scores, logistic=True)
 squared_loss_path_scores = partial(path_scores, logistic=False)
