@@ -6,6 +6,7 @@ sklearn-compatible Cross-Validation module for TV-l1, S-LASSO, etc. models
 #         Gaspar Pizarro,
 #         Gael Varoquaux,
 #         Alexandre Gramfort,
+#         Michael Eickenberg,
 #         Bertrand Thirion,
 #         and others.
 # License: simplified BSD
@@ -13,14 +14,16 @@ sklearn-compatible Cross-Validation module for TV-l1, S-LASSO, etc. models
 from functools import partial
 import numpy as np
 from scipy import stats
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (
     f_regression, f_classif, SelectPercentile)
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
-from .._utils.fixes import center_data, LabelBinarizer, roc_auc_score
+from .._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
+                            atleast2d_or_csr)
 from .objective_functions import _sigmoid
-from .estimators import _BaseRegressor, _BaseClassifier, _BaseEstimator
 from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
 from .._utils.fixes._ravel import _ravel
@@ -330,7 +333,7 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
     return test_scores, best_w, key
 
 
-class _BaseCV(_BaseEstimator):
+class _BaseCV(BaseEstimator):
     """
     Parameters
     ----------
@@ -421,12 +424,19 @@ class _BaseCV(_BaseEstimator):
                  standardize=False, normalize=False, alpha_min=1e-6,
                  verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, backtracking=False,
-                 screening_percentile=10., solver=None, path_scores_func=None):
-        super(_BaseCV, self).__init__(
-            l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
-            memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking,
-            normalize=normalize, standardize=standardize)
+                 screening_percentile=10., solver=None):
+        super(_BaseCV, self).__init__()
+        self.l1_ratio = l1_ratio
+        self.mask = mask
+        self.fit_intercept = fit_intercept
+        self.memory = memory
+        self.max_iter = max_iter
+        self.tol = tol
+        self.copy_data = copy_data
+        self.verbose = verbose
+        self.backtracking = backtracking
+        self.standardize = standardize
+        self.normalize = normalize
         self.n_jobs = n_jobs
         self.cv = cv
         self.alpha = alpha
@@ -558,7 +568,7 @@ class _BaseCV(_BaseEstimator):
         return self
 
 
-class _BaseRegressorCV(_BaseCV, _BaseRegressor):
+class _BaseRegressorCV(_BaseCV, LinearModel, RegressorMixin):
     """
     Parameters
     ----------
@@ -664,7 +674,7 @@ class _BaseRegressorCV(_BaseCV, _BaseRegressor):
         self.path_scores_func = partial(path_scores, logistic=False)
 
 
-class _BaseClassifierCV(_BaseClassifier, _BaseCV):
+class _BaseClassifierCV(_BaseCV):
     """
     Parameters
     ----------
@@ -745,9 +755,8 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
 
     def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
-                 verbose=0, n_jobs=1, n_alphas=10,
-                 alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False
-                 ):
+                 verbose=0, n_jobs=1, n_alphas=10, alpha_min=1e-6,
+                 fit_intercept=True, cv=10, backtracking=False):
         super(_BaseClassifierCV, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
@@ -759,6 +768,75 @@ class _BaseClassifierCV(_BaseClassifier, _BaseCV):
         self.alphas = alphas
         self.alpha_min = alpha_min
         self.path_scores_func = partial(path_scores, logistic=True)
+
+    def _predict_proba_lr(self, X):
+        """Probability estimation for OvR logistic regression.
+
+        Positive class probabilities are computed as
+        1. / (1. + np.exp(-self.decision_function(X)));
+        multiclass is handled by normalizing that over all classes.
+        """
+        prob = self.decision_function(X)
+        prob *= -1
+        np.exp(prob, prob)
+        prob += 1
+        np.reciprocal(prob, prob)
+        if len(prob.shape) == 1:
+            return np.vstack([1 - prob, prob]).T
+        else:
+            # OvR normalization, like LibLinear's predict_probability
+            prob /= prob.sum(axis=1).reshape((prob.shape[0], -1))
+            return prob
+
+    def decision_function(self, X):
+        """Predict confidence scores for samples.
+
+        The confidence score for a sample is the signed distance of that
+        sample to the hyperplane.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
+            Confidence scores per (sample, class) combination. In the binary
+            case, confidence score for self.classes_[1] where >0 means this
+            class would be predicted.
+        """
+
+        X = atleast2d_or_csr(X)
+
+        n_features = self.coef_.shape[1]
+        if X.shape[1] != n_features:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], n_features))
+
+        scores = safe_sparse_dot(X, self.coef_.T,
+                                 dense_output=True) + self.intercept_
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
+            Samples.
+
+        Returns
+        -------
+        C : array, shape = [n_samples]
+            Predicted class label per sample.
+        """
+        scores = self.decision_function(X)
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(np.int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
 
     def _pre_fit(self, X, y):
         X = np.array(X)

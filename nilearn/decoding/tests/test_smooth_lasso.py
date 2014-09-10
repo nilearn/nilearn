@@ -23,8 +23,7 @@ from ..space_net_solvers import (
     _pre_fit_labels,
     _debias,
     mfista)
-from ..cv import (SmoothLassoRegressor,
-                  SmoothLassoClassifier)
+from ..space_net import SmoothLassoRegressor, SmoothLassoClassifier
 
 # Data used in almost all tests
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)

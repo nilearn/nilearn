@@ -1,10 +1,10 @@
 import numpy as np
 from nose.tools import assert_true, assert_false
 from ..._utils.fixes import LabelBinarizer
-from ..cv import (SmoothLassoRegressorCV, SmoothLassoClassifierCV,
-                  TVl1RegressorCV, TVl1ClassifierCV,
-                  SmoothLassoRegressor, SmoothLassoClassifier,
-                  TVl1Regressor, TVl1Classifier, is_classifier)
+from ..space_net import (
+    SmoothLassoRegressorCV, SmoothLassoClassifierCV, TVl1RegressorCV,
+    TVl1ClassifierCV, SmoothLassoRegressor, SmoothLassoClassifier,
+    TVl1Regressor, TVl1Classifier, is_classifier)
 
 is_regressor = lambda x: not is_classifier(x)
 
