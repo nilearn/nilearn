@@ -95,17 +95,28 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(recovered.get_data(), fmri.get_data())
 
 
-def test_joblib_cache():
-    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
-        # Old nibabel do not pickle
-        raise SkipTest
-    from sklearn.externals.joblib import hash
+def test_mask_3d():
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, np.eye(4))
 
     with testing.write_tmp_imgs(data_img, create_files=True)\
+                as filename:
+        masker = NiftiMasker(mask=filename)
+        assert_raises(TypeError, masker.fit)
+
+
+def test_joblib_cache():
+    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
+        # Old nibabel do not pickle
+        raise SkipTest
+    from sklearn.externals.joblib import hash, Memory
+    mask = np.zeros((40, 40, 40))
+    mask[20, 20, 20] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    with testing.write_tmp_imgs(mask_img, create_files=True)\
                 as filename:
         masker = NiftiMasker(mask=filename)
         masker.fit()
