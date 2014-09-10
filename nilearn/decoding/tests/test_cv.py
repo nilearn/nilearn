@@ -5,12 +5,11 @@ from nose.tools import assert_equal, assert_true
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
-from ..cv import (TVl1ClassifierCV, TVl1RegressorCV,
-                  SmoothLassoClassifierCV, SmoothLassoRegressorCV,
-                  path_scores)
 from ..space_net import (
     RegressorFeatureSelector, ClassifierFeatureSelector,
-    EarlyStoppingCallback, _my_alpha_grid)
+    EarlyStoppingCallback, _my_alpha_grid, TVl1ClassifierCV,
+    TVl1RegressorCV, SmoothLassoClassifierCV, SmoothLassoRegressorCV,
+    path_scores)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
