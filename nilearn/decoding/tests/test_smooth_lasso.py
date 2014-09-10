@@ -8,7 +8,7 @@ from numpy.testing import assert_almost_equal
 from sklearn.utils import extmath
 from sklearn.utils import check_random_state
 from ..objective_functions import gradient, div
-from ..smooth_lasso import (
+from ..space_net_solvers import (
     data_function,
     adjoint_data_function,
     squared_loss_and_spatial_grad,

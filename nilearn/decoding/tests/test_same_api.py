@@ -12,7 +12,7 @@ from sklearn.datasets import load_iris
 from ..objective_functions import (squared_loss, squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
                                    squared_loss_lipschitz_constant)
-from ..smooth_lasso import (squared_loss_and_spatial_grad,
+from ..space_net_solvers import (squared_loss_and_spatial_grad,
                             logistic_derivative_lipschitz_constant,
                             squared_loss_derivative_lipschitz_constant,
                             smooth_lasso_squared_loss, smooth_lasso_logistic,
