@@ -42,7 +42,7 @@ from .._utils.fixes.sklearn_basic_backports import LabelBinarizer
 from .objective_functions import (logistic, logistic_grad,
                      logistic_loss_lipschitz_constant)
 from .objective_functions import gradient, div as divergence
-from .operators import prox_l1
+from .proximal_operators import prox_l1
 from .fista import mfista
 
 

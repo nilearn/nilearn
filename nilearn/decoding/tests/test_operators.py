@@ -1,7 +1,7 @@
 import itertools
 from nose.tools import assert_true
 import numpy as np
-from ..operators import prox_l1, prox_tv_l1, _projector_on_dual
+from ..proximal_operators import prox_l1, prox_tv_l1, _projector_on_dual
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):

@@ -17,7 +17,7 @@ from .objective_functions import (squared_loss_lipschitz_constant,
                                   squared_loss, squared_loss_grad, _unmask,
                                   logistic_grad as logistic_loss_grad,
                                   logistic as logistic_loss)
-from .operators import prox_tv_l1, intercepted_prox_tv_l1
+from .proximal_operators import prox_tv_l1, intercepted_prox_tv_l1
 from .fista import mfista
 
 
