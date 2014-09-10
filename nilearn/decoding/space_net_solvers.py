@@ -1,36 +1,12 @@
 """
-Smooth-Lasso
+Regression with spatial priors like TV-l1 and Smooth LASSO.
 
-Module that implements a sklearn-like estimator for Smooth-Lasso regression
-
-For the regression task, the data-dependent function to minimize is the mean
-squared error: 1./(2 * n_samples)||Xw - y||^2
-For the classification task, given labels in {-1, 1}^n_samples, the
-data-dependent function to minimize is the logistic loss:
-    - sum(log(sigmoid(y_i*w.T*X_i)))
-
-Implements two estimators:
-SmoothLassoRegressor
-SmoothLassoClassifier
-
-And their cross-validated variants:
-SmoothLassoRegressorCV
-SmoothLassoClassifierCV
-
-General call graph:
-SmoothLasso{Regressor|Classifier}CV.fit
- -> path_scores
-     -> smooth_lasso_{squared|logistic}_loss
-         -> mfista
-
-SmoothLasso{Regressor|Classifier}.fit
- -> smooth_lasso_{squared|logistic}_loss
-     -> mfista
 """
 # Author: DOHMATOB Elvis Dopgima,
-#         Gaspar Pizarro,
 #         Gael Varoquaux,
 #         Alexandre Gramfort,
+#         Gaspar Pizarro,
+#         Virgile Fritsch,
 #         Bertrand Thirion,
 #         and others.
 # License: simplified BSD
