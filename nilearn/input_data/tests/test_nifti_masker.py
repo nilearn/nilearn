@@ -7,6 +7,9 @@ test_signal.py for this.
 """
 # Author: Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
+from tempfile import mkdtemp
+import shutil
+import os
 from distutils.version import LooseVersion
 
 from nose.tools import assert_true, assert_false, assert_raises
@@ -123,3 +126,18 @@ def test_joblib_cache():
         mask_hash = hash(masker.mask_img_)
         masker.mask_img_.get_data()
         assert_true(mask_hash == hash(masker.mask_img_))
+
+    # Test a tricky issue with memmapped joblib.memory that makes
+    # niimgs return by inverse_transform impossible to save
+    cachedir = mkdtemp()
+    try:
+        masker.memory = Memory(cachedir=cachedir, mmap_mode='r',
+                               verbose=0)
+        X = masker.transform(mask_img)
+        # inverse_transform a first time, so that the result is cached
+        out_img = masker.inverse_transform(X)
+        out_img = masker.inverse_transform(X)
+        out_img.to_filename(os.path.join(cachedir, 'test.nii'))
+    finally:
+        shutil.rmtree(cachedir, ignore_errors=True)
+
