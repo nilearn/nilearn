@@ -1239,62 +1239,6 @@ class TVl1RegressorCV(_BaseRegressorCV):
         return _BaseRegressorCV.fit(self, X, y)
 
 
-def plot_cv_scores(cvobj, i_best_alpha=None, title=None, ylabel=None,
-                   errorbars=True, show_best=False):
-    """Plots CV scores against regularization parameter values (alpha grid).
-
-    `cvobj` can be a CV object (_BaseCV instance) or a pair (alphas, scores).
-
-    """
-
-    import pylab as pl
-
-    if hasattr(cvobj, '__class__'):
-        alphas = cvobj.alphas_
-        scores = cvobj.scores_
-        i_best_alpha = cvobj.i_alpha_
-        if title is None:
-            title = cvobj.short_name
-        if ylabel is None:
-            if is_classifier(cvobj):
-                ylabel = "1 - AUC"
-            else:
-                ylabel = "Mean-Squared Error"
-
-        if is_classifier(cvobj) and cvobj.n_classes_ > 2:
-            for c in xrange(cvobj.n_classes_):
-                i = None if i_best_alpha is None else i_best_alpha[c]
-                plot_cv_scores((alphas, scores[c]), i_best_alpha=i,
-                               title="class %i vrs rest: %s" % (c, title),
-                               ylabel=ylabel, errorbars=errorbars)
-            return
-    else:
-        assert hasattr(cvobj, "__iter__")
-        alphas, scores = cvobj
-        if ylabel is None:
-            ylabel = "Error (Out-of-Bag)"
-
-    pl.figure()
-    lalphas_ = -np.log10(alphas)
-    if errorbars:
-        means = np.mean(scores, axis=-1)
-        stds = np.std(scores, axis=-1)
-        pl.errorbar(lalphas_, means, yerr=stds)
-        if i_best_alpha is not None:
-            pl.axhline(means[i_best_alpha], linestyle="--")
-    else:
-        pl.plot(lalphas_, scores, "s-")
-    if not i_best_alpha is None and show_best:
-        pl.axvline(lalphas_[i_best_alpha], linestyle="--",
-                   label="Best alpha: %.1e" % alphas[i_best_alpha])
-    pl.ylabel(ylabel)
-    pl.xlabel("-Log10(alpha)")
-    pl.legend(loc="best")
-    if title:
-        pl.title(title)
-    pl.grid('on')
-
-
 TVl1Regressor = TVl1RegressorCV
 SmoothLassoRegressor = SmoothLassoRegressorCV
 SmoothLassoClassifier = SmoothLassoClassifierCV
