@@ -8,8 +8,8 @@ from sklearn.linear_model import Lasso
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from ..cv import (TVl1Regressor, TVl1Classifier, SmoothLassoClassifier,
-                  SmoothLassoRegressor)
+from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoClassifier,
+                         SmoothLassoRegressor)
 
 # Data used in almost all tests
 fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
