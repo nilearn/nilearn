@@ -1,7 +1,7 @@
 from nose.tools import assert_equal, assert_true
 import numpy as np
 from ..fista import mfista
-from ..operators import prox_l1
+from ..proximal_operators import prox_l1
 from ..objective_functions import (squared_loss, logistic,
                                    squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
