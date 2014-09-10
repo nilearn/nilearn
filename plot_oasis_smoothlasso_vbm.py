@@ -35,7 +35,7 @@ mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 print n_samples, "subjects, ", n_features, "features"
 
 import os
-from nilearn.decoding.sparse_models.cv import SmoothLassoRegressorCV
+from nilearn.decoding.sparse_models.space_net import SmoothLassoRegressorCV
 n_jobs = int(os.environ.get("N_JOBS", 1))
 slcv = SmoothLassoRegressorCV(verbose=1, n_jobs=n_jobs, memory=memory,
                               mask=mask, screening_percentile=10)
