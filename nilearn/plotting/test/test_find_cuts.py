@@ -18,6 +18,8 @@ def test_find_cut_coords():
     x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
     np.testing.assert_allclose((x, y, z),
                                (x_map, y_map, z_map),
+                               # Need such a high tolerance for the test to
+                               # pass. x, y, z = [49.5, 9.5, 39.5]
                                rtol=6e-2)
 
     # non-trivial affine
@@ -26,6 +28,8 @@ def test_find_cut_coords():
     x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
     np.testing.assert_allclose((x, y, z),
                                (x_map / 2., y_map / 3., z_map / 4.),
+                               # Need such a high tolerance for the test to
+                               # pass. x, y, z = [24.75, 3.17, 9.875]
                                rtol=6e-2)
 
 
