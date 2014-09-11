@@ -55,12 +55,9 @@ session_labels = labels['chunks'][condition_mask]
 ### Cross-validation ##########################################################
 # Here we use a SmoothLasso classifier
 from nilearn.decoding.space_net import SmoothLassoClassifier
-import os
-n_jobs = int(os.environ.get("N_JOBS", 1))
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
-slcv = SmoothLassoClassifier(l1_ratio=.5, verbose=1, memory=memory,
-                             mask=mask, n_jobs=n_jobs
-                             ).fit(fmri_masked, target)
+slcv = SmoothLassoClassifier(l1_ratio=.5, memory=memory,
+                             mask=mask).fit(fmri_masked, target)
 
 ### Unmasking #################################################################
 

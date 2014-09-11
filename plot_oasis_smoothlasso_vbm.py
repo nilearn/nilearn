@@ -34,11 +34,9 @@ n_samples, n_features = gm_maps_masked.shape
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 print n_samples, "subjects, ", n_features, "features"
 
-import os
 from nilearn.decoding.space_net import SmoothLassoRegressor
-n_jobs = int(os.environ.get("N_JOBS", 1))
-slcv = SmoothLassoRegressor(verbose=1, n_jobs=n_jobs, memory=memory,
-                            mask=mask, screening_percentile=10)
+slcv = SmoothLassoRegressor(verbose=1, memory=memory, mask=mask,
+                            screening_percentile=10)
 
 ### Fit and predict
 slcv.fit(gm_maps_masked, age)
