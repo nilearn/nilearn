@@ -261,6 +261,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
                                      smooth=(1 if opening else False))
 
     if ensure_finite:
+        # Get rid of memmapping
+        mean_epi = _utils.as_ndarray(mean_epi)
         # SPM tends to put NaNs in the data outside the brain
         mean_epi[np.logical_not(np.isfinite(mean_epi))] = 0
     sorted_input = np.sort(np.ravel(mean_epi))
