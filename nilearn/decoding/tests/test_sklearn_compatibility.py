@@ -1,6 +1,6 @@
 import numpy as np
-from ..space_net import (TVl1ClassifierCV, TVl1RegressorCV,
-                         SmoothLassoClassifierCV, SmoothLassoRegressorCV)
+from ..space_net import (TVl1Classifier, TVl1Regressor,
+                         SmoothLassoClassifier, SmoothLassoRegressor)
 from nose.tools import assert_true
 import traceback
 
@@ -10,8 +10,8 @@ def test_get_params():
     # get_params() methods returned empty dicts.
 
     cv_addition_params = ["n_alphas", "eps", "cv", "alpha_min"]
-    for model in [SmoothLassoClassifierCV, TVl1ClassifierCV,
-                  TVl1RegressorCV, SmoothLassoRegressorCV]:
+    for model in [SmoothLassoClassifier, TVl1Classifier,
+                  TVl1Regressor, SmoothLassoRegressor]:
         kwargs = {}
         if model.__name__.endswith('CV'):
             kwargs['alphas'] = np.logspace(-3, 1, num=5)

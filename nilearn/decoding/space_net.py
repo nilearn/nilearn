@@ -571,7 +571,7 @@ class _BaseCV(BaseEstimator):
         return self
 
 
-class _BaseRegressorCV(_BaseCV, LinearModel, RegressorMixin):
+class _BaseRegressor(_BaseCV, LinearModel, RegressorMixin):
     """
     Parameters
     ----------
@@ -662,7 +662,7 @@ class _BaseRegressorCV(_BaseCV, LinearModel, RegressorMixin):
                  verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, debias=False, normalize=True,
                  backtracking=False, standardize=True, alpha_min=1e-6):
-        super(_BaseRegressorCV, self).__init__(
+        super(_BaseRegressor, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
@@ -677,7 +677,7 @@ class _BaseRegressorCV(_BaseCV, LinearModel, RegressorMixin):
         self.path_scores_func = partial(path_scores, logistic=False)
 
 
-class _BaseClassifierCV(_BaseCV):
+class _BaseClassifier(_BaseCV):
     """
     Parameters
     ----------
@@ -760,7 +760,7 @@ class _BaseClassifierCV(_BaseCV):
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
                  verbose=0, n_jobs=1, n_alphas=10, alpha_min=1e-6,
                  fit_intercept=True, cv=10, backtracking=False):
-        super(_BaseClassifierCV, self).__init__(
+        super(_BaseClassifier, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking)
@@ -866,7 +866,7 @@ class _BaseClassifierCV(_BaseCV):
         self.intercept_ = self.w_[:, -1]
 
 
-class SmoothLassoClassifierCV(_BaseClassifierCV):
+class SmoothLassoClassifier(_BaseClassifier):
     """
     Cross-validated Smooth-Lasso logistic regression model with L1 + L2
     regularization.
@@ -958,7 +958,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
                  eps=1e-3, verbose=0, n_jobs=1, n_alphas=10,
                  alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False,
                  solver=smooth_lasso_logistic, screening_percentile=10.):
-        super(SmoothLassoClassifierCV, self).__init__(
+        super(SmoothLassoClassifier, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking)
@@ -973,7 +973,7 @@ class SmoothLassoClassifierCV(_BaseClassifierCV):
         self.screening_percentile = screening_percentile
 
 
-class SmoothLassoRegressorCV(_BaseRegressorCV):
+class SmoothLassoRegressor(_BaseRegressor):
     """
     Cross-Validated Smooth-Lasso logistic regression model with L1 + L2
     regularization.
@@ -1070,7 +1070,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
                  fit_intercept=True, normalize=True, n_alphas=10,
                  standardize=True, cv=10, backtracking=False, alpha_min=1e-6,
                  solver=smooth_lasso_squared_loss, screening_percentile=10.):
-        super(SmoothLassoRegressorCV, self).__init__(
+        super(SmoothLassoRegressor, self).__init__(
             self, l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
@@ -1087,7 +1087,7 @@ class SmoothLassoRegressorCV(_BaseRegressorCV):
         self.screening_percentile = screening_percentile
 
 
-class TVl1ClassifierCV(_BaseClassifierCV):
+class TVl1Classifier(_BaseClassifier):
     """Cross-validated TV-l1 penalized logisitic regression.
 
     The underlying optimization problem is the following:
@@ -1182,7 +1182,7 @@ class TVl1ClassifierCV(_BaseClassifierCV):
                  fit_intercept=True, cv=10, backtracking=False, alpha_min=1e-6,
                  solver=partial(tvl1_solver, loss='logistic'),
                  screening_percentile=10.):
-        super(TVl1ClassifierCV, self).__init__(
+        super(TVl1Classifier, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking)
@@ -1197,7 +1197,7 @@ class TVl1ClassifierCV(_BaseClassifierCV):
         self.solver = solver
 
 
-class TVl1RegressorCV(_BaseRegressorCV):
+class TVl1Regressor(_BaseRegressor):
     """Cross-validated TV-l1 penalized logisitic regression.
 
     The underlying optimization problem is the following:
@@ -1300,7 +1300,7 @@ class TVl1RegressorCV(_BaseRegressorCV):
                  eps=1e-3, fit_intercept=True, cv=10, debias=False,
                  normalize=True, backtracking=False, standardize=True,
                  alpha_min=1e-6, screening_percentile=10.):
-        super(TVl1RegressorCV, self).__init__(
+        super(TVl1Regressor, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
             fit_intercept=fit_intercept, backtracking=backtracking,
@@ -1317,10 +1317,4 @@ class TVl1RegressorCV(_BaseRegressorCV):
         self.screening_percentile = screening_percentile
 
     def fit(self, X, y):
-        return _BaseRegressorCV.fit(self, X, y)
-
-
-TVl1Regressor = TVl1RegressorCV
-SmoothLassoRegressor = SmoothLassoRegressorCV
-SmoothLassoClassifier = SmoothLassoClassifierCV
-TVl1Classifier = TVl1ClassifierCV
+        return _BaseRegressor.fit(self, X, y)
