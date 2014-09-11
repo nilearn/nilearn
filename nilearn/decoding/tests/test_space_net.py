@@ -10,15 +10,14 @@ from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoClassifier,
-                         SmoothLassoRegressor)
-from ..space_net import (
-    RegressorFeatureSelector, ClassifierFeatureSelector,
-    EarlyStoppingCallback, _my_alpha_grid, TVl1Classifier,
-    TVl1Regressor, SmoothLassoClassifier, SmoothLassoRegressor,
-    path_scores)
+                         SmoothLassoRegressor,
+                         RegressorFeatureSelector, ClassifierFeatureSelector,
+                         EarlyStoppingCallback, _my_alpha_grid,
+                         path_scores)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
+rng = check_random_state(42)
 logistic_path_scores = partial(path_scores, logistic=True)
 squared_loss_path_scores = partial(path_scores, logistic=False)
 
@@ -26,7 +25,6 @@ squared_loss_path_scores = partial(path_scores, logistic=False)
 from .simulate_smooth_lasso_data import create_smooth_simulation_data
 X, y, w, mask = create_smooth_simulation_data(
     snr=1., n_samples=10, size=4, n_points=5, random_state=42)
-rng = check_random_state(42)
 
 
 @SkipTest
@@ -58,7 +56,6 @@ def test_same_lasso_classifier_cv():
 
 
 def test_my_alpha_grid(n_samples=4, n_features=3):
-    rng = np.random.RandomState(42)
     X = rng.randn(n_samples, n_features)
     y = np.arange(n_samples)
 
@@ -98,8 +95,6 @@ def test_my_alpha_grid_same_as_sk():
 
 def test_featureselectors():
     import random
-    rng = np.random.RandomState(42)
-    random.seed(0)
     iris = load_iris()
     X, y = iris.data, iris.target
     for ndim in range(1, 4):
@@ -136,7 +131,6 @@ def test_featureselectors():
 def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
     # This test evolves w so that every line of th EarlyStoppingCallback
     # code is executed a some point. This a kind of code fuzzing.
-    rng = np.random.RandomState(42)
     X_test = rng.randn(n_samples, n_features)
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
@@ -262,7 +256,6 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
 
 
 def test_smooth_lasso_works_without_mask():
-    rng = np.random.RandomState(42)
     n_samples = 10
     n_features = 125
     for l1_ratio in [0., .5, 1.]:
