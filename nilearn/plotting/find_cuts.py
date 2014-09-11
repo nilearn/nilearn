@@ -21,29 +21,30 @@ from ..image.resampling import get_mask_bounds, coord_transform
 ################################################################################
 
 
-def find_xyz_cut_coords(data, mask=None, activation_threshold=None):
+def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
 
         Parameters
         -----------
-        data : 3D ndarray
-            The activation map, as a 3D numpy array.
+        img : 3D Nifti1Image
+            The activation map data.
         mask : 3D ndarray, boolean, optional
             An optional brain mask.
         activation_threshold : float, optional
             The lower threshold to the positive activation. If None, the
-            activation threshold is computed using the 80% percentil of
+            activation threshold is computed using the 80% percentile of
             the absolute value of the map.
 
         Returns
         -------
         x : float
-            the x coordinate in voxels.
+            the x world coordinate.
         y : float
-            the y coordinate in voxels.
+            the y world coordinate.
         z : float
-            the z coordinate in voxels.
+            the z world coordinate.
     """
+    data = img.get_data()
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
     offset = np.zeros(3)
@@ -84,7 +85,11 @@ def find_xyz_cut_coords(data, mask=None, activation_threshold=None):
     if second_mask.sum() > 50:
         my_map *= largest_connected_component(second_mask)
     cut_coords = ndimage.center_of_mass(np.abs(my_map))
-    return cut_coords + offset
+    x_map, y_map, z_map = cut_coords + offset
+
+    return coord_transform(x_map, y_map, z_map,
+                           img.get_affine())
+
 
 
 ################################################################################

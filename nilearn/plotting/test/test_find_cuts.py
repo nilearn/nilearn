@@ -6,14 +6,27 @@ import nibabel
 
 from ..find_cuts import find_xyz_cut_coords, find_cut_slices
 
+
 def test_find_cut_coords():
     data = np.zeros((100, 100, 100))
     x_map, y_map, z_map = 50, 10, 40
     data[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
-    x, y, z = find_xyz_cut_coords(data, mask=np.ones(data.shape, np.bool))
-    np.testing.assert_array_equal(
-                        (int(round(x)), int(round(y)), int(round(z))),
-                                (x_map, y_map, z_map))
+
+    # identity affine
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(data, affine)
+    x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
+    np.testing.assert_allclose((x, y, z),
+                               (x_map, y_map, z_map),
+                               rtol=6e-2)
+
+    # non-trivial affine
+    affine = np.diag([1./2, 1/3., 1/4., 1.])
+    img = nibabel.Nifti1Image(data, affine)
+    x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
+    np.testing.assert_allclose((x, y, z),
+                               (x_map / 2., y_map / 3., z_map / 4.),
+                               rtol=6e-2)
 
 
 def test_find_cut_slices():
