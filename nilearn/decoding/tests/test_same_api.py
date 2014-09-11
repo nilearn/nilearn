@@ -4,8 +4,6 @@ for computing image gradient, loss functins, etc.).
 
 """
 
-import os
-import sys
 from nose.tools import nottest
 import numpy as np
 from sklearn.datasets import load_iris
@@ -22,11 +20,6 @@ from ..space_net_solvers import (squared_loss_and_spatial_grad,
 from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoRegressor,
                          SmoothLassoClassifier)
 from nose.tools import assert_equal
-
-fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
-ROOT = fn(os.path.dirname, os.path.dirname(__file__), 4)
-CACHE = os.path.join(ROOT, "cache")
-sys.path.append(os.path.join(ROOT, "examples/proximal"))
 
 
 def _make_data():
