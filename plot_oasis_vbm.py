@@ -89,7 +89,7 @@ anova_svr = Pipeline([('anova', feature_selection), ('svr', svr)])
 anova_svr.fit(gm_maps_masked, age)
 age_pred = anova_svr.predict(gm_maps_masked)
 
-### Visualisation
+### Visualization
 ### Look at the SVR's discriminating weights
 coef = svr.coef_
 # reverse feature selection

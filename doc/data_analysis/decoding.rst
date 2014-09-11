@@ -111,8 +111,8 @@ n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
 
 .. note::
-   
-   simingly-minor data preparation can matter a lot on the final score,
+
+   seemingly minor data preparation can matter a lot on the final score,
    for instance standardizing the data.
 
 
@@ -188,9 +188,9 @@ In scikit-learn, the prediction objects have two important methods:
     :start-after: # And we run it
     :end-before: ### Cross-validation ##########################################################
 
-.. warning:: 
+.. warning::
 
-    **Do predict on data used by the fit:** the prediction that we obtain here
+    **Do not predict on data used by the fit:** the prediction that we obtain here
     is to good to be true (see next paragraph). Here we are just doing a sanity
     check.
 
@@ -287,9 +287,9 @@ We have a total prediction accuracy of 77% across the different sessions.
 Choice of the prediction accuracy measure
 ..........................................
 
-The default metric used for measuring errors is the accuracy score, ie
+The default metric used for measuring errors is the accuracy score, i.e.
 the number of total errors. It is not always a sensible metric,
-especially in the case of very imbalance classes, as in such situation
+especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
 Other metrics, such as the f1-score, can be used::
@@ -304,7 +304,7 @@ Other metrics, such as the f1-score, can be used::
 Measuring the chance level
 ...........................
 
-**Dummy estimators**: The simplest way to measure prediction performance 
+**Dummy estimators**: The simplest way to measure prediction performance
 at chance, is to use a dummy classifier,
 :class:`sklearn.dummy.DummyClassifier`::
 
@@ -384,16 +384,16 @@ face vs cat prediction. We thus add a `feature selection
 procedure. The idea is to select the `k` voxels most correlated to the
 task.
 
-For this, we need to import the :mod:`sklearn.feature_selection` module and use 
+For this, we need to import the :mod:`sklearn.feature_selection` module and use
 :func:`sklearn.feature_selection.f_classif`, a simple F-score
-based feature selection (a.k.a. 
+based feature selection (a.k.a.
 `Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
 that we will put before the SVC in a `pipeline`
 (:class:`sklearn.pipeline.Pipeline`):
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Dimension reduction #######################################################
-    :end-before: ### Visualisation #############################################################
+    :end-before: ### Visualization #############################################################
 We can use our ``anova_svc`` object exactly as we were using our ``svc``
 object previously.
 
@@ -413,8 +413,8 @@ To visualize the results, we need to:
    :scale: 65
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Visualisation #############################################################
-    :end-before: ### Cross validation ########################################################## 
+    :start-after: ### Visualization #############################################################
+    :end-before: ### Cross validation ##########################################################
 
 .. seealso::
 
@@ -423,7 +423,7 @@ To visualize the results, we need to:
 
 .. topic:: **Final script**
 
-    The complete script to do an SVM-Anova analysis can be found as 
+    The complete script to do an SVM-Anova analysis can be found as
     :ref:`an example <example_plot_haxby_anova_svm.py>`.
 
 
@@ -449,7 +449,7 @@ Changing the prediction engine
     >>> clf = LinearSVC()
 
 We now see how one can easily change the prediction engine, if needed.
-We can try Fisher's `Linear Discriminant Analysis (LDA) 
+We can try Fisher's `Linear Discriminant Analysis (LDA)
 <http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
 
 Import the module::
@@ -475,7 +475,7 @@ Changing the feature selection
 ------------------------------
 
 Let's say that you want a more sophisticated feature selection, for example a
-`Recursive Feature Elimination (RFE) 
+`Recursive Feature Elimination (RFE)
 <http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 
 Import the module::
@@ -507,5 +507,3 @@ But, be aware that this can take A WHILE...
     has very detailed explanations on a large variety of estimators and
     machine learning techniques. To become better at decoding, you need
     to study it.
-
-

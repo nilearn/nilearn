@@ -140,11 +140,7 @@ def check_niimg(niimg, ensure_3d=False):
 
     Its application is idempotent.
     """
-
-    if isinstance(niimg, basestring):
-        # data is a filename, we load it
-        result = nibabel.load(niimg)
-    elif hasattr(niimg, "__iter__"):
+    if hasattr(niimg, "__iter__"):
         if ensure_3d:
             raise TypeError("A 3D image is expected, but an iterable was"
                 "given: %s" % short_repr(niimg))
@@ -152,27 +148,28 @@ def check_niimg(niimg, ensure_3d=False):
             raise TypeError('An empty object - %r - was passed instead of an '
                             'image or a list of images' % niimg)
         return concat_niimgs(niimg)
-    else:
-        # it is an object, it should have get_data and get_affine methods
-        if not is_a_niimg(niimg):
-            raise TypeError("Data given cannot be converted to a nifti"
-                            " image: this object -'%s'- does not expose"
-                            " get_data or get_affine methods"
-                            % short_repr(niimg))
-        if ensure_3d:
-            shape = _get_shape(niimg)
-            if len(shape) == 3:
-                pass
-            elif (len(shape) == 4 and shape[3] == 1):
-                # "squeeze" the image.
-                data = _safe_get_data(niimg)
-                affine = niimg.get_affine()
-                niimg = nibabel.Nifti1Image(data[:, :, :, 0], affine)
-            else:
-                raise TypeError("A 3D image is expected, but an image"
-                    "whith a shape of %s was given." % shape)
-        result = niimg
-    return result
+
+    if isinstance(niimg, basestring):
+        # data is a filename, we load it
+        niimg = nibabel.load(niimg)
+    elif not is_a_niimg(niimg):
+        raise TypeError("Data given cannot be converted to a nifti"
+                        " image: this object -'%s'- does not expose"
+                        " get_data or get_affine methods"
+                        % short_repr(niimg))
+    if ensure_3d:
+        shape = _get_shape(niimg)
+        if len(shape) == 3:
+            pass
+        elif (len(shape) == 4 and shape[3] == 1):
+            # "squeeze" the image.
+            data = _safe_get_data(niimg)
+            affine = niimg.get_affine()
+            niimg = nibabel.Nifti1Image(data[:, :, :, 0], affine)
+        else:
+            raise TypeError("A 3D image is expected, but an image"
+                "whith a shape of %s was given." % (shape, ))
+    return niimg
 
 
 def _to_4d(data):

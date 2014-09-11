@@ -46,8 +46,8 @@ def filter_and_mask(niimgs, mask_img_,
     # as small as possible in order to speed up the process
 
     resampling_is_necessary = (
-        (not np.allclose(niimgs.get_affine(), mask_img_.get_affine()))
-     or (np.array(niimgs.shape[:3]) != np.array(mask_img_.shape)).any())
+            (not np.allclose(niimgs.get_affine(), mask_img_.get_affine()))
+        or np.any(np.array(niimgs.shape[:3]) != np.array(mask_img_.shape)))
 
     if resampling_is_necessary:
         # now we can crop
@@ -264,5 +264,12 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        return self._cache(masking.unmask, memory_level=1,
+        img = self._cache(masking.unmask, memory_level=1,
             )(X, self.mask_img_)
+        # Be robust again memmapping that will create read-only arrays in
+        # internal structures of the header: remove the memmaped array
+        try:
+            img._header._structarr = np.array(img._header._structarr).copy()
+        except:
+            pass
+        return img

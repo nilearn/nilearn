@@ -347,6 +347,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     """
     anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
                                                 dim=dim, black_bg=black_bg)
+    # vmin and/or vmax could have been provided in the kwargs
+    vmin = kwargs.pop('vmin', vmin)
+    vmax = kwargs.pop('vmax', vmax)
     slicer = plot_img(anat_img, cut_coords=cut_coords,
                       output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
@@ -553,11 +556,19 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                                     black_bg=black_bg)
 
     # make sure that the color range is symmetrical
-    stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
-    stat_map_data = stat_map_img.get_data()
-    stat_map_max = np.nanmax(stat_map_data)
-    stat_map_min = np.nanmin(stat_map_data)
-    vmax = max(-stat_map_min, stat_map_max)
+    if 'vmax' in kwargs:
+        vmax = kwargs.pop('vmax')
+    else:
+        stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
+        stat_map_data = stat_map_img.get_data()
+        stat_map_max = np.nanmax(stat_map_data)
+        stat_map_min = np.nanmin(stat_map_data)
+        vmax = max(-stat_map_min, stat_map_max)
+    if 'vmin' in kwargs:
+        raise ValueError('plot_stat_map does not accept a "vmin" '
+                         'argument, as it uses a symmetrical range '
+                         'defined via the vmax argument. To threshold '
+                         'the map, use the "threshold" argument')
     vmin = -vmax
 
     slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,

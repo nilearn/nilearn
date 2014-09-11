@@ -106,7 +106,7 @@ can use as a reference.
     :scale: 50%
 
 The first step is to generate a mask with default parameters and take
-a look at it. 
+a look at it.
 
 .. literalinclude:: ../../plot_mask_computation.py
     :start-after: # Simple mask extraction from EPI images
@@ -162,7 +162,7 @@ Common data preparation steps: resampling, smoothing, filtering
 .. seealso::
 
    If you don't want to use the :class:`NiftiMasker` to perform these
-   simple operations on data, note that they are 
+   simple operations on data, note that they are
    :ref:`corresponding functions <preprocessing_functions>`.
 
 .. _resampling:
@@ -287,13 +287,13 @@ these signals once you have an atlas or a parcellation.
 Regions definition
 ------------------
 
-Nilearn understands two different way of defining regions, which are called
+Nilearn understands two different ways of defining regions, which are called
 labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
 :class:`NiftiMapsMasker`.
 
 - labels: a single region is defined as the set of all the voxels that have a
   common label (usually an integer) in the region definition array. The set of
-  region is defined by a single 3D array, containing at each location the label
+  regions is defined by a single 3D array, containing at each location the label
   of the region the voxel is in. This technique has one big advantage: the
   amount of memory required is independent of the number of regions, allowing
   for representing a large number of regions. On the other hand, there are

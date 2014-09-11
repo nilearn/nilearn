@@ -67,7 +67,7 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 anova_svc.fit(X, y)
 y_pred = anova_svc.predict(X)
 
-### Visualisation #############################################################
+### Visualization #############################################################
 
 ### Look at the SVC's discriminating weights
 coef = svc.coef_
