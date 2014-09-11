@@ -426,6 +426,13 @@ class _BaseCV(BaseEstimator):
                  fit_intercept=True, cv=10, backtracking=False,
                  screening_percentile=10., solver=None):
         super(_BaseCV, self).__init__()
+        if not (0. <= screening_percentile <= 100.):
+            raise ValueError(
+                ("screening_percentile should be in the interval"
+                 " [0, 100], got %g" % screening_percentile))
+        if not 0 <= l1_ratio <= 1.:
+            raise ValueError(
+                "l1_ratio must be in the interval [0, 1]; got %g" % l1_ratio)
         self.l1_ratio = l1_ratio
         self.mask = mask
         self.fit_intercept = fit_intercept
@@ -446,10 +453,6 @@ class _BaseCV(BaseEstimator):
         self.alpha_min = alpha_min
         self.solver = solver
         self.path_scores_func = path_scores
-        if not (0. <= screening_percentile <= 100.):
-            raise ValueError(
-                ("screening_percentile should be in the interval"
-                 " [0, 100], got %g" % screening_percentile))
         self.screening_percentile = screening_percentile
 
     @property

@@ -8,7 +8,7 @@ from scipy.optimize import check_grad
 from ..objective_functions import (gradient_id, logistic,
                                    logistic_grad, _unmask,
                                    test_grad_div_adjoint_arbitrary_ndim)
-from ..estimators import _BaseEstimator
+from ..space_net import _BaseCV as _BaseEstimator
 from nose.tools import raises
 
 
