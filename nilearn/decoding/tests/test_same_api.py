@@ -7,6 +7,7 @@ for computing image gradient, loss functins, etc.).
 from nose.tools import nottest
 import numpy as np
 from sklearn.datasets import load_iris
+from sklearn.utils import check_random_state
 from ..objective_functions import (squared_loss, squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
                                    squared_loss_lipschitz_constant)
@@ -20,6 +21,8 @@ from ..space_net_solvers import (squared_loss_and_spatial_grad,
 from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoRegressor,
                          SmoothLassoClassifier)
 from nose.tools import assert_equal
+
+rng = check_random_state(42)
 
 
 def _make_data():
@@ -38,7 +41,6 @@ def _make_data():
 
 
 def test_same_energy_calculus_pure_lasso():
-    rng = np.random.RandomState(42)
     dim = (16, 16)
     np.random.seed(0)
     n = 40
@@ -61,7 +63,6 @@ def test_same_energy_calculus_pure_lasso():
 
 
 def test_lipschitz_constant_lass_mse():
-    rng = np.random.RandomState(42)
     l1_ratio = 1.
     alpha = .1
     n, p = 4, 10
@@ -74,7 +75,6 @@ def test_lipschitz_constant_lass_mse():
 
 
 def test_lipschitz_constant_lass_logreg():
-    rng = np.random.RandomState(42)
     l1_ratio = 1.
     alpha = .1
     n, p = 4, 10
@@ -145,7 +145,6 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=10,
 
 
 def test_logreg_with_mask_issue_10():
-    rng = np.random.RandomState(42)
     shape = (3, 4, 5)
     n_samples = 10
     mask = np.zeros(np.prod(shape))
