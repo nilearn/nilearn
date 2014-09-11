@@ -57,4 +57,4 @@ def test_find_cut_slices():
     for direction in 'xz':
         # Only a smoke test
         cuts = find_cut_slices(img, direction=direction,
-                                n_cuts=n_cuts, spacing=2)
+                               n_cuts=n_cuts, spacing=2)
