@@ -561,6 +561,10 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     else:
         stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
         stat_map_data = stat_map_img.get_data()
+        # Avoid dealing with masked_array:
+        if hasattr(stat_map_data, '_mask'):
+            stat_map_data = np.asarray(stat_map_data[
+                    np.logical_not(stat_map_data._mask)])
         stat_map_max = np.nanmax(stat_map_data)
         stat_map_min = np.nanmin(stat_map_data)
         vmax = max(-stat_map_min, stat_map_max)
