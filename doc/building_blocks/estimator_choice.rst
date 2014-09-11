@@ -33,9 +33,9 @@ Classification: two classes or multi-class
 A classification task consists in predicting a *class* label for each
 observation. In other words, the variable to predict is categorical.
 
-Often classification is performed between two classes, but is may well be 
+Often classification is performed between two classes, but it may well be
 applied to multiple classes, in which case it is known as a multi-class
-problem. It is important to keep in mind that the large the number of
+problem. It is important to keep in mind that the larger the number of
 classes, the harder the prediction problem.
 
 Some estimators support multi-class prediction out of the box, but many
@@ -61,8 +61,8 @@ All" (it scales as the square of the number of classes, whereas OvA is
 linear with the number of classes).
 
 .. seealso::
-   
-    `Multi-class prediction in scikit-learn's documenation
+
+    `Multi-class prediction in scikit-learn's documentation
     <http://scikit-learn.org/stable/modules/multiclass.html>`_
 
 
