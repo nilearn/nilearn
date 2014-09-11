@@ -1,5 +1,3 @@
-import os
-import sys
 from nose.tools import nottest
 from nose import SkipTest
 import numpy as np
@@ -26,10 +24,6 @@ from ..space_net_solvers import (
 from ..space_net import SmoothLassoRegressor, SmoothLassoClassifier
 
 # Data used in almost all tests
-fn = lambda f, x, n: f(fn(f, x, n - 1)) if n > 1 else f(x)
-ROOT = fn(os.path.dirname, os.path.dirname(__file__), 4)
-CACHE = os.path.join(ROOT, "cache")
-sys.path.append(os.path.join(ROOT, "examples/proximal"))
 from .simulate_smooth_lasso_data import (
     create_smooth_simulation_data, create_simulation_data)
 X, y, w, mask = create_smooth_simulation_data(
