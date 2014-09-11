@@ -13,8 +13,8 @@ from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoClassifier,
                          SmoothLassoRegressor)
 from ..space_net import (
     RegressorFeatureSelector, ClassifierFeatureSelector,
-    EarlyStoppingCallback, _my_alpha_grid, TVl1ClassifierCV,
-    TVl1RegressorCV, SmoothLassoClassifierCV, SmoothLassoRegressorCV,
+    EarlyStoppingCallback, _my_alpha_grid, TVl1Classifier,
+    TVl1Regressor, SmoothLassoClassifier, SmoothLassoRegressor,
     path_scores)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
@@ -42,16 +42,16 @@ def test_same_lasso_classifier_cv():
 
     # classification
     n_alphas = 5
-    tvl1classifiercv = TVl1ClassifierCV(n_alphas=n_alphas, memory=memory, cv=2,
+    tvl1classifiercv = TVl1Classifier(n_alphas=n_alphas, memory=memory, cv=2,
                                         l1_ratio=l1_ratio, tol=tol).fit(X, y)
-    slclassifiercv = SmoothLassoClassifierCV(n_alphas=n_alphas, memory=memory,
+    slclassifiercv = SmoothLassoClassifier(n_alphas=n_alphas, memory=memory,
                                    cv=2, l1_ratio=l1_ratio, tol=tol).fit(X, y)
     assert_equal(tvl1classifiercv.alpha_, slclassifiercv.alpha_)
 
     # regression
-    tvl1regressorcv = TVl1RegressorCV(n_alphas=n_alphas, memory=memory, cv=2,
+    tvl1regressorcv = TVl1Regressor(n_alphas=n_alphas, memory=memory, cv=2,
                                       l1_ratio=l1_ratio, tol=tol).fit(X, y)
-    slregressorcv = SmoothLassoRegressorCV(n_alphas=n_alphas, memory=memory,
+    slregressorcv = SmoothLassoRegressor(n_alphas=n_alphas, memory=memory,
                                            cv=2, l1_ratio=l1_ratio, tol=tol
                                            ).fit(X, y)
     assert_equal(tvl1regressorcv.alpha_, slregressorcv.alpha_)
@@ -160,8 +160,8 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
 
 def test_params_correctly_propagated_in_constructors():
     for cv_class, n_alphas, l1_ratio, n_jobs, cv, perc in itertools.product(
-        [SmoothLassoRegressorCV, SmoothLassoClassifierCV, TVl1RegressorCV,
-         TVl1ClassifierCV], [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
+        [SmoothLassoRegressor, SmoothLassoClassifier, TVl1Regressor,
+         TVl1Classifier], [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
         cvobj = cv_class(n_alphas=n_alphas, n_jobs=n_jobs, l1_ratio=l1_ratio,
                          cv=cv, screening_percentile=perc)
         assert_equal(cvobj.n_alphas, n_alphas)
@@ -197,8 +197,8 @@ def test_estimators_are_special_cv_objects():
     iris = load_iris()
     X, y = iris.data, iris.target
     alpha = 1.
-    for cv_class in [SmoothLassoRegressorCV, SmoothLassoClassifierCV,
-                     TVl1RegressorCV, TVl1ClassifierCV]:
+    for cv_class in [SmoothLassoRegressor, SmoothLassoClassifier,
+                     TVl1Regressor, TVl1Classifier]:
         cv = cv_class(alpha=alpha)
         cv.fit(X, y)
         np.testing.assert_array_equal([alpha], cv.alphas_)
@@ -300,7 +300,7 @@ def test_lasso_vs_smooth_lasso():
     # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's performance with
     # Scikit-Learn lasso
     lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
-    smooth_lasso = SmoothLassoRegressorCV(mask=mask, alpha=1, l1_ratio=1,
+    smooth_lasso = SmoothLassoRegressor(mask=mask, alpha=1, l1_ratio=1,
                                           max_iter=100, normalize=False)
     lasso.fit(X, y)
     smooth_lasso.fit(X, y)
@@ -314,8 +314,8 @@ def test_lasso_vs_smooth_lasso():
 
 def test_params_correctly_propagated_in_constructors_biz():
     for model_class, alpha, l1_ratio in itertools.product(
-        [SmoothLassoRegressorCV, SmoothLassoClassifierCV, TVl1RegressorCV,
-         TVl1ClassifierCV], [.4, .01], [.5, 1.]):
+        [SmoothLassoRegressor, SmoothLassoClassifier, TVl1Regressor,
+         TVl1Classifier], [.4, .01], [.5, 1.]):
         cvobj = model_class(alpha=alpha, l1_ratio=l1_ratio)
         assert_equal(cvobj.alpha, alpha)
         assert_equal(cvobj.l1_ratio, l1_ratio)
