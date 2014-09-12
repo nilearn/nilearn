@@ -27,7 +27,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         Parameters
         -----------
         img : 3D Nifti1Image
-            The activation map data.
+            The brain map.
         mask : 3D ndarray, boolean, optional
             An optional brain mask.
         activation_threshold : float, optional
@@ -126,7 +126,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     Parameters
     ----------
     img: 3D Nifti1Image
-        the data under consideration
+        the brain map
     direction: string, optional (default "z")
         sectional direction; possible values are "x", "y", or "z"
     n_cuts: int, optional (default 12)
