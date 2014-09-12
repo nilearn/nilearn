@@ -385,7 +385,7 @@ Finding help
 
     * The documentation of scikit-learn explains each method with tips on
       practical use and examples: 
-      `http://scikit-learn.org/ <http://scikit-learn.org/>`_
+      `http://scikit-learn.org/ <http://scikit-learn.org/>`_.
       While not specific to neuroimaging, it is often a recommended read.
       Be careful to consult the documentation relative to the version of
       scikit-learn that you are using.
