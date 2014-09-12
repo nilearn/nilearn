@@ -209,13 +209,6 @@ interactive scientific environment. Start it with::
 
     $ ipython --matplotlib
 
-.. note::
-
-   the ``--matplotlib`` flag, which configures matplotlib for
-   interactive use inside IPython, is available for IPython versions
-   from 1.0 onwards. If you are using versions older than this,
-   e.g. 0.13, you can use the ``--pylab`` flag instead.
-
 which will open an interactive prompt::
 
     IPython ?.?.? -- An enhanced Interactive Python.
@@ -226,6 +219,13 @@ which will open an interactive prompt::
 
     In [1]: 1 + 2 * 3
     Out[1]: 7
+
+.. note::
+
+   The ``--matplotlib`` flag, which configures matplotlib for
+   interactive use inside IPython, is available for IPython versions
+   from 1.0 onwards. If you are using versions older than this,
+   e.g. 0.13, you can use the ``--pylab`` flag instead.
 
 .. topic:: `>>>` **Prompt**
 
