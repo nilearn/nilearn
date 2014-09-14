@@ -59,9 +59,12 @@ following directories (in order of priority):
 
   * the folder specified by `data_dir` parameter in the fetching function
     if it is specified
-  * the environment variable `NILEARN_DATA` if it exists
+  * the global environment variable `NILEARN_SHARED_DATA` if it exists
+  * the user environment variable `NILEARN_DATA` if it exists
   * the `nilearn_data` folder in the current directory
 
+Two different environment variables are provided to distinguish a global dataset
+repository that may be read-only from a user-level one.
 Note that you can copy that folder across computers to avoid
 downloading the data twice.
 
