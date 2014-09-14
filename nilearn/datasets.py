@@ -280,6 +280,78 @@ def _uncompress_file(file_, delete_archive=True):
         raise
 
 
+def _filter_column(array, col, criteria):
+    """ Return index array matching criteria
+
+    Parameters
+    ----------
+
+    array: numpy array with columns
+        Array in which data will be filtered
+
+    col: string
+        Name of the column
+
+    criteria: integer (or float), pair of integers, string or list of these
+        if integer, select elements in column matching integer
+        if a tuple, select elements between the limits given by the tuple
+        if a string, select elements that match the string
+    """
+    # Raise an error if the column does not exist
+    array[col]
+
+    if not isinstance(criteria, basestring) and \
+            not isinstance(criteria, tuple) and \
+            isinstance(criteria, collections.Iterable):
+        filter = np.zeros(array.shape, dtype=np.bool)
+        for criterion in criteria:
+            filter = np.logical_or(filter,
+                        _filter_column(array, col, criterion))
+        return filter
+
+    if isinstance(criteria, tuple):
+        if len(criteria) != 2:
+            raise ValueError("An interval must have 2 values")
+        if criteria[0] is None:
+            return array[col] <= criteria[1]
+        if criteria[1] is None:
+            return array[col] >= criteria[0]
+        filter = array[col] <= criteria[1]
+        return np.logical_and(filter, array[col] >= criteria[0])
+
+    return array[col] == criteria
+
+
+def _filter_columns(array, filters, combination='and'):
+    """ Return indices of recarray entries that match criteria.
+
+    Parameters
+    ----------
+
+    array: numpy array with columns
+        Array in which data will be filtered
+
+    filters: list of criteria
+        See _filter_column
+
+    combination: string, optional
+        String describing the combination operator. Possible values are "and"
+        and "or".
+    """
+    if combination == 'and':
+        fcomb = np.logical_and
+        mask = np.ones(array.shape, dtype=np.bool)
+    elif combination == 'or':
+        fcomb = np.logical_or
+        mask = np.zeros(array.shape, dtype=np.bool)
+    else:
+        raise ValueError('Combination mode not known: %s' % combination)
+
+    for column in filters:
+        mask = fcomb(mask, _filter_column(array, column, filters[column]))
+    return mask
+
+
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 md5sum=None, verbose=0):
     """Load requested file, downloading it if needed or requested.
