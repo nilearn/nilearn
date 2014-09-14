@@ -17,6 +17,8 @@ import hashlib
 import fnmatch
 import warnings
 import cPickle as pickle
+from matplotlib import mlab
+import collections
 
 import numpy as np
 from scipy import ndimage
@@ -2252,3 +2254,133 @@ def load_mni152_template():
     path = os.path.join(package_directory, "data", "avg152T1_brain.nii.gz")
 
     return nibabel.load(path)
+
+
+def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
+                    strategy='nofilt_noglobal', derivatives=['func_preproc'],
+                    quality_checked=True, verbose=0, **kwargs):
+    """ Fetch ABIDE dataset
+
+    Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
+    that can be passed as parameter. Note that this is the preprocessed
+    version of ABIDE provided by the preprocess connectome projects (PCP).
+
+    Parameters
+    ----------
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
+
+    pipeline: string, optional
+        Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
+
+    strategy: string, optional
+        Nuisance removal strategy. The first part describe the band filtering
+        strategy (either "filt" or "nofilt") and the second part indicate the
+        global signal regression strategy ("global" or "noglobal").
+
+    derivatives: string list, optional
+        Types of downloaded files. Possible values are: alff, degree_binarize,
+        degree_weighted, dual_regression, eigenvector_binarize,
+        eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
+        reho, rois_aal, rois_cc200, rois_cc400, rois_dosenbach160, rois_ez,
+        rois_ho, rois_tt, and vmhc. Please refer to the PCP site for more
+        details.
+
+    quality_checked: boolean, optional
+        if true (default), restrict the list of the subjects to the one that
+        passed quality assessment for all raters.
+
+    kwargs: parameter list, optional
+        Any extra keyword argument will be used to filter downloaded subjects
+        according to the CSV phenotypic file. Some examples of filters are
+        indicated below.
+
+    SUB_ID: list of integers in [50001, 50607], optional
+        Ids of the subjects to be loaded.
+
+    DX_GROUP: integer in {1, 2}, optional
+        1 is autism, 2 is control
+
+    DSM_IV_TR: integer in [0, 4], optional
+        O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
+        4 is Asperger or PPD-NOS
+
+    AGE_AT_SCAN: float in [6.47, 64], optional
+        Age of the subject
+
+    SEX: integer in {1, 2}, optional
+        1 is male, 2 is female
+
+    HANDEDNESS_CATEGORY: string in {'R', 'L', 'Mixed', 'Ambi'}, optional
+        R = Right, L = Left, Ambi = Ambidextrous
+
+    HANDEDNESS_SCORE: integer in [-100, 100], optional
+        Positive = Right, Negative = Left, 0 = Ambidextrous
+
+    Notes
+    -----
+    Code and description of preprocessing pipelines are provided on the
+    `PCP website <http://preprocessed-connectomes-project.github.io/>`.
+
+    References
+    ----------
+    Nielsen, Jared A., et al. "Multisite functional connectivity MRI
+    classification of autism: ABIDE results." Frontiers in human neuroscience
+    7 (2013).
+    """
+    # General file: phenotypic information
+    data_dir = _get_dataset_dir('ABIDE_pcp', data_dir=data_dir)
+    url = 'https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative'
+
+    if quality_checked:
+        kwargs['qc_rater_1'] = 'OK'
+        kwargs['qc_anat_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_func_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_anat_rater_3'] = 'OK'
+        kwargs['qc_func_rater_3'] = 'OK'
+
+    # Fetch the phenotypic file and load it
+    csv = 'Phenotypic_V1_0b_preprocessed1.csv'
+    path_csv = _fetch_files(data_dir, [(csv, url + '/' + csv, {})])[0]
+
+    # Note: the phenotypic file contains string that contains comma which mess
+    # up numpy array csv loading. Here I use matplotlib and I load the names
+    # manually otherwise matplotlib convert them to lowercase. This can be
+    # done simply with pandas but we don't want such dependency ATM
+    # pheno = pandas.read_csv(path_csv).to_records()
+    pheno_f = open(path_csv, 'r')
+    names = pheno_f.readline()[:-1].split(',')
+    pheno = mlab.csv2rec(pheno_f, names=names, skiprows=1)
+
+    # First, filter subjects with no filename
+    pheno = pheno[pheno['FILE_ID'] != 'no_filename']
+    # Apply user defined filters
+    filter = _filter_columns(pheno, kwargs)
+    pheno = pheno[filter]
+
+    # Go into specific data folder and url
+    data_dir = os.path.join(data_dir, pipeline, strategy)
+    url = '/'.join([url, 'Outputs', pipeline, strategy])
+
+    # Get the files
+    results = {}
+    file_ids = pheno['FILE_ID']
+    if n_subjects is not None:
+        file_ids = file_ids[:n_subjects]
+        pheno = pheno[:n_subjects]
+
+    results['phenotypic'] = pheno
+    for derivative in derivatives:
+        files = [(file_id + '_' + derivative + '.nii.gz',
+                  '/'.join([url, derivative,
+                            file_id + '_' + derivative + '.nii.gz']),
+                  {}) for file_id in file_ids]
+        results[derivative] = _fetch_files(data_dir, files)
+
+    return Bunch(**results)
