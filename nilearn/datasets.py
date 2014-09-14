@@ -160,8 +160,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None,
-                     create_dir=True, verbose=0):
+def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -173,9 +172,6 @@ def _get_dataset_dir(dataset_name, data_dir=None,
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    create_dir: bool, optional
-        If the directory does not exist, determine whether or not it is created
-
     Returns
     -------
     data_dir: string
@@ -186,7 +182,7 @@ def _get_dataset_dir(dataset_name, data_dir=None,
     This function retrieve the datasets directory (or data directory) using
     the following priority :
     1. the keyword argument data_dir
-    2. the global environment variable NILEARN_SHARED
+    2. the global environment variable NILEARN_SHARED_DATA
     3. the user environment variable NILEARN_DATA
     4. "nilearn_data" directory into the current working directory
     """
@@ -197,7 +193,7 @@ def _get_dataset_dir(dataset_name, data_dir=None,
     if data_dir is not None:
         paths = data_dir.split(':')
     else:
-        global_data = os.getenv('NILEARN_SHARED')
+        global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
             paths.extend(global_data.split(':'))
 
@@ -493,8 +489,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
             # download files.
             if not os.access(data_dir, os.W_OK):
                 raise ValueError('Dataset files are missing but dataset'
-                'repository is read-only. Contact your data administrator to'
-                'solve the problem')
+                                 ' repository is read-only. Contact your data'
+                                 ' administrator to solve the problem')
 
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
