@@ -475,7 +475,7 @@ class _BaseCV(BaseEstimator):
         if hasattr(self, "debias"):
             special_kwargs["debias"] = getattr(self, "debias")
 
-        # always a good idea to centralize / normalize data
+        # always a good idea to centralize / normalize data in regression
         ymean = 0.
         if self.standardize:
             X, y, Xmean, ymean, Xstd = center_data(
