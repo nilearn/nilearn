@@ -119,6 +119,34 @@ def _get_auto_mask_bounds(img):
             get_mask_bounds(nibabel.Nifti1Image(mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
+def simple_smoothing(data, copy=True):
+    """Simple smoothing which is less computationally expensive than
+    scipy.ndimage.gaussian_filter
+
+    Parameters
+    ----------
+    data: 3D ndarray
+
+    copy: boolean
+        Whether to take a copy of the input data. If set to False, the
+        input data will be modified in place.
+
+    Returns
+    -------
+    smoothed_data: 3D ndarray
+
+    """
+    if copy:
+        smoothed_data = data.copy()
+
+    smoothed_data[:-1] += .2 * data[1:]
+    smoothed_data[1:]  += .2 * data[:-1]
+    smoothed_data[:, :-1] += .2 * data[:, 1:]
+    smoothed_data[:, 1:]  += .2 * data[:, :-1]
+    smoothed_data[:, :, :-1] += .2 * data[:, :, 1:]
+    smoothed_data[:, :, 1:]  += .2 * data[:, :, :-1]
+
+    return smoothed_data
 
 def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
@@ -165,7 +193,9 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         data = data.astype(np.float)
         # We have discreete values: we smooth them in order to have
         # maxima located at the center of peaks
-        data = ndimage.gaussian_filter(data, 3)
+        # 'data' is already a copy of the input data
+        # so no need to copy it again
+        data = simple_smoothing(data, copy=False)
 
     if spacing == 'auto':
         spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
