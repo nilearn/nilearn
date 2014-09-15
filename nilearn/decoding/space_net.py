@@ -28,6 +28,7 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
 from .._utils.fixes._ravel import _ravel
 
+# heuristic function to determine whether a give object is a classifier
 is_classifier = lambda obj: "Classifier" in obj.__class__.__name__
 
 
