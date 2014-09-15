@@ -1,5 +1,7 @@
 """
-FISTA for solving TV-l1, S-Lasso, etc., problems.
+Generic FISTA for solving TV-l1, S-Lasso, etc., problems.
+For problems on which the prox of the nonsmooth term cannot be computed
+closed-form (e.g TV-l1), approximate it using a inner FISTA loop.
 
 """
 # Author: DOHMATOB Elvis Dopgima,
@@ -11,10 +13,12 @@ FISTA for solving TV-l1, S-Lasso, etc., problems.
 # License: simplified BSD
 
 from math import sqrt
-from functools import partial
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
+
+# global random number generator
+rng = check_random_state(42)
 
 
 def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
@@ -62,9 +66,6 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
 
     """
 
-    # check random state
-    rng = check_random_state(42)
-
     for x in rng.randn(n_trials, ndim):
         for y in rng.randn(n_trials, ndim):
             err_msg = "LC counter example: (%s, %s)" % (
@@ -74,11 +75,10 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
             assert a <= b, err_msg + ("(a = %g >= %g)" % (a, b))
 
 
-def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
-           w_size, dgap_tol=None, init=None, backtracking=False,
-           max_iter=1000, tol=1e-4, pure_ista=False, callback=None,
-           verbose=2, check_lipschitz=False, check_monotonous=False,
-           dgap_factor=None):
+def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
+           dgap_tol=None, init=None, max_iter=1000, tol=1e-4, pure_ista=False,
+           check_lipschitz=False, check_monotonous=False,
+           dgap_factor=None, callback=None, verbose=2):
     """
 
     Parameters
@@ -103,10 +103,6 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.size = w_size
-
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator
 
     tol : float
         Tolerance on the variation of the objective function before breaking.
@@ -170,83 +166,48 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
     best_t = t
     best_dgap_tol = dgap_tol
     prox_info = dict(converged=True)
+    stepsize = 1. / lipschitz_constant
+    name = "%s" % ("mISTA" if pure_ista else "mFISTA")
     objective = []
 
     # FISTA loop
-    rho = .5
-    name = "%s%s" % ("mISTA" if pure_ista else "mFISTA",
-                     "-BT" if backtracking else "")
     for i in xrange(int(max_iter)):
         objective.append(old_energy)
         w_old = w.copy()
 
+        # Invoke callback.
         if verbose:
             print '%s: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
                 name, i + 1, max_iter, old_energy, energy_delta)
-
         if callback and callback(locals()):
             break
-
         if np.abs(energy_delta) < tol:
             if verbose:
                 print "\tConverged (|dE| < %g)" % tol
             break
 
-        # The gradient of the smooth function is computed only in the
-        # mask
+        # Forward (gradient) step: The gradient of the smooth function is
+        # computed only in the mask.
         gradient_buffer = f1_grad(z)
 
-        # Backtracking: Find largest stepsize (s) verifying the inequality:
-        #    g(p_s) <= f(z) + <p_s - z, grad_f(z)> + 1 / (2s) ||p_s - z||^2
-        #    , where p_s := prox_s(z - s * grad_f(z))
-        if backtracking:
-            if verbose:
-                print "%s: Starting backtracking loop..." % name
-        else:
-            stepsize = 1. / lipschitz_constant
-        while True:
-            if backtracking and verbose:
-                print "\tTrying stepsize %g..." % stepsize
+        # Backward (prox) step
+        for _ in range(10):
+            w, prox_info = f2_prox(z - stepsize * gradient_buffer,
+                                   stepsize, dgap_factor * dgap_tol,
+                                   init=w)
+            w = w.ravel()
+            energy = total_energy(w)
 
-            # This loop is a line-search like strategy on the dual gap of
-            # the prox
-            for _ in range(10):
-                w, prox_info = f2_prox(z - stepsize * gradient_buffer,
-                                       stepsize, dgap_factor * dgap_tol,
-                                       init=w)
-                w = w.ravel()
-                energy = total_energy(w)
-
-                if ista_step and prox_info[
-                        'converged'] and old_energy <= energy:
-                    # Even when doing ISTA steps we are not decreasing.
-                    # Thus we need a tighter dual_gap on the prox_tv
-                    # This corresponds to a line search on the dual_gap
-                    # tolerance.
-                    dgap_factor *= .2
-                    if verbose:
-                        print "decreased dgap_tol"
-                else:
-                    break
-
-            # if backtracking disabled then we're done here
-            if not backtracking:
-                break
-
-            # check if current stepsize does the job
-            aux = w - z
-            F = f1(w)
-            Q = f1(z) + np.dot(aux, gradient_buffer) + (
-                .5 / stepsize) * np.dot(aux, aux)
-            if F <= Q:
+            if ista_step and prox_info['converged'] and old_energy <= energy:
+                # Even when doing ISTA steps we are not decreasing.
+                # Thus we need a tighter dual_gap on the prox_tv
+                # This corresponds to a line search on the dual_gap
+                # tolerance.
+                dgap_factor *= .2
                 if verbose:
-                    print (
-                        "\tHurray! Last stepsize of %g worked like a "
-                        "charm!" % stepsize)
+                    print "decreased dgap_tol"
+            else:
                 break
-
-            # OK, decrease stepsize
-            stepsize *= rho
 
         # ISTA is provably monotonous
         if i > 0 and check_monotonous:
@@ -263,7 +224,6 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
         old_energy = energy
 
         # z update
-        # if (not ista_step) and energy_delta <= 0 and (not pure_ista):
         if energy_delta < 0.:
             # M-FISTA strategy: rewind and switch temporarily to an ISTA step
             z = w_old.copy()
@@ -294,6 +254,7 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
             # strategy to set the dgap_tol
             dgap_tol = abs(energy_delta) / (i + 1.)
 
+        # dgap_tol house-keepinig
         if energy < best_energy:
             best_energy = energy
             best_w = w.copy()
@@ -306,6 +267,3 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
             objective,
             dict(w=best_w.copy(), z=best_z, t=best_t, dgap_tol=best_dgap_tol,
                  stepsize=stepsize))
-
-# pure ISTA
-ista = partial(mfista, pure_ista=True)

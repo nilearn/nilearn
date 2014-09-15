@@ -386,10 +386,6 @@ class _BaseCV(BaseEstimator):
     verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -423,8 +419,8 @@ class _BaseCV(BaseEstimator):
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  standardize=False, normalize=False, alpha_min=1e-6,
                  verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
-                 fit_intercept=True, cv=10, backtracking=False,
-                 screening_percentile=10., solver=None):
+                 fit_intercept=True, cv=10, screening_percentile=10.,
+                 solver=None):
         super(_BaseCV, self).__init__()
         if not (0. <= screening_percentile <= 100.):
             raise ValueError(
@@ -441,7 +437,6 @@ class _BaseCV(BaseEstimator):
         self.tol = tol
         self.copy_data = copy_data
         self.verbose = verbose
-        self.backtracking = backtracking
         self.standardize = standardize
         self.normalize = normalize
         self.n_jobs = n_jobs
@@ -526,7 +521,6 @@ class _BaseCV(BaseEstimator):
         # parameter to path_scores function
         path_params = dict(mask=self.mask, tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
-                           backtracking=self.backtracking,
                            screening_percentile=self.screening_percentile)
         path_params.update(special_kwargs)
 
@@ -624,10 +618,6 @@ class _BaseRegressor(_BaseCV, LinearModel, RegressorMixin):
     verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -661,12 +651,12 @@ class _BaseRegressor(_BaseCV, LinearModel, RegressorMixin):
                  tol=1e-4, memory=Memory(None), copy_data=True,
                  verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  fit_intercept=True, cv=10, debias=False, normalize=True,
-                 backtracking=False, standardize=True, alpha_min=1e-6):
+                 standardize=True, alpha_min=1e-6):
         super(_BaseRegressor, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking,
-            standardize=standardize, normalize=normalize)
+            fit_intercept=fit_intercept, standardize=standardize,
+            normalize=normalize)
         self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
@@ -719,10 +709,6 @@ class _BaseClassifier(_BaseCV):
     verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -759,11 +745,11 @@ class _BaseClassifier(_BaseCV):
     def __init__(self, alphas=None, l1_ratio=.5, mask=None, max_iter=1000,
                  tol=1e-4, memory=Memory(None), copy_data=True, eps=1e-3,
                  verbose=0, n_jobs=1, n_alphas=10, alpha_min=1e-6,
-                 fit_intercept=True, cv=10, backtracking=False):
+                 fit_intercept=True, cv=10):
         super(_BaseClassifier, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking)
+            fit_intercept=fit_intercept)
         self.n_jobs = n_jobs
         self.cv = cv
         self.n_alphas = n_alphas
@@ -916,10 +902,6 @@ class SmoothLassoClassifier(_BaseClassifier):
     verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator.
-
      n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -956,12 +938,12 @@ class SmoothLassoClassifier(_BaseClassifier):
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  eps=1e-3, verbose=0, n_jobs=1, n_alphas=10,
-                 alpha_min=1e-6, fit_intercept=True, cv=10, backtracking=False,
+                 alpha_min=1e-6, fit_intercept=True, cv=10,
                  solver=smooth_lasso_logistic, screening_percentile=10.):
         super(SmoothLassoClassifier, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking)
+            fit_intercept=fit_intercept)
         self.solver = solver
         self.n_jobs = n_jobs
         self.cv = cv
@@ -1031,10 +1013,6 @@ class SmoothLassoRegressor(_BaseRegressor):
     verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -1068,13 +1046,13 @@ class SmoothLassoRegressor(_BaseRegressor):
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  eps=1e-3, verbose=0, n_jobs=1, debias=False,
                  fit_intercept=True, normalize=True, n_alphas=10,
-                 standardize=True, cv=10, backtracking=False, alpha_min=1e-6,
+                 standardize=True, cv=10, alpha_min=1e-6,
                  solver=smooth_lasso_squared_loss, screening_percentile=10.):
         super(SmoothLassoRegressor, self).__init__(
             self, l1_ratio=l1_ratio, mask=mask, max_iter=max_iter,
             tol=tol, memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking,
-            normalize=normalize, standardize=standardize)
+            fit_intercept=fit_intercept, normalize=normalize,
+            standardize=standardize)
         self.solver = solver
         self.n_jobs = n_jobs
         self.cv = cv
@@ -1139,10 +1117,6 @@ class TVl1Classifier(_BaseClassifier):
     verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -1179,13 +1153,13 @@ class TVl1Classifier(_BaseClassifier):
     def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  eps=1e-3, verbose=0, n_jobs=1, n_alphas=10,
-                 fit_intercept=True, cv=10, backtracking=False, alpha_min=1e-6,
+                 fit_intercept=True, cv=10, alpha_min=1e-6,
                  solver=partial(tvl1_solver, loss='logistic'),
                  screening_percentile=10.):
         super(TVl1Classifier, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking)
+            fit_intercept=fit_intercept)
         self.n_jobs = n_jobs
         self.cv = cv
         self.alpha = alpha
@@ -1260,10 +1234,6 @@ class TVl1Regressor(_BaseRegressor):
     verbose : int, optional (default 0)
         Verbosity level.
 
-    backtracking : bool
-        If True, the solver does backtracking in the step size for the proximal
-        operator.
-
     n_jobs : int, optional (default 1)
         Number of jobs to use for One-vs-All classification.
 
@@ -1298,13 +1268,13 @@ class TVl1Regressor(_BaseRegressor):
                  copy_data=True, verbose=0, n_jobs=1,
                  solver=partial(tvl1_solver, loss='mse'), n_alphas=10,
                  eps=1e-3, fit_intercept=True, cv=10, debias=False,
-                 normalize=True, backtracking=False, standardize=True,
-                 alpha_min=1e-6, screening_percentile=10.):
+                 normalize=True, standardize=True, alpha_min=1e-6,
+                 screening_percentile=10.):
         super(TVl1Regressor, self).__init__(
             l1_ratio=l1_ratio, mask=mask, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, verbose=verbose,
-            fit_intercept=fit_intercept, backtracking=backtracking,
-            standardize=standardize, normalize=normalize)
+            fit_intercept=fit_intercept, standardize=standardize,
+            normalize=normalize)
         self.solver = solver
         self.n_jobs = n_jobs
         self.cv = cv
