@@ -305,7 +305,7 @@ def _pre_fit_labels(model, y):
 def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
                               max_iter=1000, tol=1e-4, callback=None,
                               lipschitz_constant=None, rescale_alpha=True,
-                              verbose=0, backtracking=True):
+                              verbose=0):
     """Computes a solution for the Smooth Lasso regression problem, as in the
     SmoothLassoRegressor estimator, with no data preprocessing.
 
@@ -369,14 +369,12 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
     return mfista(
         f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
         model_size, dgap_factor=(.1 + l1_ratio) ** 2, callback=callback,
-        tol=tol, max_iter=max_iter, verbose=verbose, init=init,
-        backtracking=backtracking)
+        tol=tol, max_iter=max_iter, verbose=verbose, init=init)
 
 
 def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask=None, init=None,
-                          max_iter=1000, tol=1e-4, backtracking=True,
-                          callback=None, verbose=0, lipschitz_constant=None,
-                          rescale_alpha=True):
+                          max_iter=1000, tol=1e-4, callback=None, verbose=0,
+                          lipschitz_constant=None, rescale_alpha=True):
     """Computes a solution for the Smooth Lasso classification problem, with
     response vector in {-1, 1}^n_samples.
 
@@ -443,8 +441,7 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask=None, init=None,
     return mfista(
         f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
         model_size, dgap_factor=(.1 + l1_ratio) ** 2, callback=callback,
-        tol=tol, max_iter=max_iter, verbose=verbose, init=init,
-        backtracking=backtracking)
+        tol=tol, max_iter=max_iter, verbose=verbose, init=init)
 
 
 def _tvl1_objective_from_gradient(gradient):
@@ -501,8 +498,7 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
 
 def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
                 rescale_alpha=True, lipschitz_constant=None, init=None,
-                prox_max_iter=5000, tol=1e-4, callback=None, verbose=1,
-                backtracking=False):
+                prox_max_iter=5000, tol=1e-4, callback=None, verbose=1):
     """Minimizes empirical risk for TV-l1 penalized models.
 
     Can handle least-squares (mean square error --a.k.a mse) or logistic
@@ -654,6 +650,6 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
     w, obj, init = mfista(
         f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         dgap_factor=(.1 + l1_ratio) ** 2, tol=tol, init=init, verbose=verbose,
-        max_iter=max_iter, callback=callback, backtracking=backtracking)
+        max_iter=max_iter, callback=callback)
  
     return w, obj, init
