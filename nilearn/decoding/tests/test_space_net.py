@@ -10,10 +10,9 @@ from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoClassifier,
-                         SmoothLassoRegressor,
-                         RegressorFeatureSelector, ClassifierFeatureSelector,
-                         EarlyStoppingCallback, _my_alpha_grid,
-                         path_scores)
+                         SmoothLassoRegressor, RegressorFeatureSelector,
+                         ClassifierFeatureSelector, EarlyStoppingCallback,
+                         _my_alpha_grid, path_scores)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
