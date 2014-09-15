@@ -199,6 +199,7 @@ uses.
    plot_epi
    plot_roi
    plot_stat_map
+   find_xyz_cut_coords
 
 **Classes**:
 

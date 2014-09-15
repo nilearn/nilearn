@@ -547,10 +547,8 @@ class OrthoSlicer(BaseSlicer):
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
             else:
-                x_map, y_map, z_map = find_xyz_cut_coords(img.get_data(),
-                                        activation_threshold=threshold)
-                cut_coords = coord_transform(x_map, y_map, z_map,
-                                             img.get_affine())
+                cut_coords = find_xyz_cut_coords(img,
+                                                 activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
                           for c in sorted(self._cut_displayed)]
         return cut_coords
