@@ -125,23 +125,20 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=10,
     max_iter = 10
 
     # results should be exactly the same for pure lasso
-    for bt in [True, False]:
-        a = smooth_lasso_logistic(X, y, alpha, 1., mask=mask,
-                                  max_iter=max_iter,
-                                  backtracking=bt)[0]
-        b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
-                        max_iter=max_iter, backtracking=bt)[0]
-        sl = SmoothLassoClassifier(alpha=alpha, l1_ratio=1., verbose=0,
-                                   max_iter=max_iter, mask=mask,
-                                   backtracking=bt).fit(X, y)
-        tvl1 = TVl1Classifier(alpha=alpha, l1_ratio=1.,
-                              max_iter=max_iter, mask=mask,
-                              backtracking=bt).fit(X, y)
+    a = smooth_lasso_logistic(X, y, alpha, 1., mask=mask,
+                              max_iter=max_iter)[0]
+    b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
+                    max_iter=max_iter)[0]
+    sl = SmoothLassoClassifier(alpha=alpha, l1_ratio=1., verbose=0,
+                               max_iter=max_iter, mask=mask
+                               ).fit(X, y)
+    tvl1 = TVl1Classifier(alpha=alpha, l1_ratio=1.,
+                          max_iter=max_iter, mask=mask).fit(X, y)
 
-        # should be exactly the same (except for numerical errors)
-        np.testing.assert_array_almost_equal(a, b, decimal=decimal)
-        np.testing.assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0],
-                                             decimal=decimal)
+    # should be exactly the same (except for numerical errors)
+    np.testing.assert_array_almost_equal(a, b, decimal=decimal)
+    np.testing.assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0],
+                                         decimal=decimal)
 
 
 def test_logreg_with_mask_issue_10():
