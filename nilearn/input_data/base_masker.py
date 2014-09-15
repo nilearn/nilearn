@@ -89,26 +89,26 @@ def filter_and_mask(niimgs, mask_img_,
 
         data = cache(signal.clean, memory, ref_memory_level,
                      memory_level=clean_memory_level)(
-                         data,
-                         confounds=confounds, low_pass=parameters['low_pass'],
-                         high_pass=parameters['high_pass'],
-                         t_r=parameters['t_r'],
-                         detrend=parameters['detrend'],
-                         standardize=parameters['standardize'])
+                        data,
+                        confounds=confounds, low_pass=parameters['low_pass'],
+                        high_pass=parameters['high_pass'],
+                        t_r=parameters['t_r'],
+                        detrend=parameters['detrend'],
+                        standardize=parameters['standardize'])
     else:
         sessions = parameters['sessions']
         for s in np.unique(sessions):
             if confounds is not None:
                 confounds = confounds[sessions == s]
-            data[:, sessions == s] = \
+            data[sessions == s, :] = \
                 cache(signal.clean, memory, ref_memory_level, memory_level=2)(
-                    data[:, sessions == s],
-                    confounds=confounds,
-                    low_pass=parameters['low_pass'],
-                    high_pass=parameters['high_pass'],
-                    t_r=parameters['t_r'],
-                    detrend=parameters['detrend'],
-                    standardize=parameters['standardize']
+                        data[sessions == s, :],
+                        confounds=confounds,
+                        low_pass=parameters['low_pass'],
+                        high_pass=parameters['high_pass'],
+                        t_r=parameters['t_r'],
+                        detrend=parameters['detrend'],
+                        standardize=parameters['standardize']
                 )
 
     # For _later_: missing value removal or imputing of missing data
