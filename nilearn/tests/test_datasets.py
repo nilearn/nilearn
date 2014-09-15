@@ -186,8 +186,8 @@ def test_fail_fetch_haxby_simple():
             (os.path.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
-    assert_raises(IOError, datasets._fetch_files, 'haxby2001_simple', files,
-            data_dir=tmpdir)
+    assert_raises(IOError, datasets._fetch_files,
+            os.path.join(tmpdir, 'haxby2001_simple'), files)
     dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
     stuff = dummy.read(5)
     dummy.close()
