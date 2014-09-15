@@ -2258,7 +2258,7 @@ def load_mni152_template():
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     strategy='nofilt_noglobal', derivatives=['func_preproc'],
-                    quality_checked=True, verbose=0, **kwargs):
+                    quality_checked=True, url=None, verbose=0, **kwargs):
     """ Fetch ABIDE dataset
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -2336,7 +2336,9 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     """
     # General file: phenotypic information
     data_dir = _get_dataset_dir('ABIDE_pcp', data_dir=data_dir)
-    url = 'https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative'
+    if url is None:
+        url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
+               'ABIDE_Initiative')
 
     if quality_checked:
         kwargs['qc_rater_1'] = 'OK'

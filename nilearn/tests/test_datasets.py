@@ -448,8 +448,60 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
     assert_equal(len(url_mock.urls), 4)
 
+
 def test_load_mni152_template():
     # All subjects
     template_nii = datasets.load_mni152_template()
     assert_equal(template_nii.shape, (91, 109, 91))
     assert_equal(template_nii.get_header().get_zooms(), (2.0, 2.0, 2.0))
+
+
+@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+def test_fetch_abide_pcp():
+    local_url = "file://" + datadir
+    ids = ['50%03d' % i for i in range(800)]
+    filenames = ['no_filename'] * 800
+    filenames[::2] = ['filename'] * 400
+    pheno = np.asarray(zip(ids, filenames), dtype=[('subject_id', int),
+                                                   ('FILE_ID', 'S11')])
+    #pheno = pheno.T.view()
+    file_mock.add_csv('Phenotypic_V1_0b_preprocessed1.csv', pheno)
+
+    # All subjects
+    dataset = datasets.fetch_abide_pcp(data_dir=tmpdir, url=local_url,
+            quality_checked=False)
+    assert_equal(len(dataset.func_preproc), 400)
+
+
+def test_filter_columns():
+    # Create fake recarray
+    value1 = np.arange(500)
+    strings = np.asarray(['a', 'b', 'c'])
+    value2 = strings[value1 % 3]
+
+    values = np.asarray(zip(value1, value2),
+                        dtype=[('INT', int), ('STR', 'S1')])
+
+    f = datasets._filter_columns(values, {'INT': (23, 46)})
+    assert_equal(np.sum(f), 24)
+
+    f = datasets._filter_columns(values, {'INT': [0, 9, (12, 24)]})
+    assert_equal(np.sum(f), 15)
+
+    value1 = value1 % 2
+    values = np.asarray(zip(value1, value2),
+                        dtype=[('INT', int), ('STR', 'S1')])
+
+    # No filter
+    f = datasets._filter_columns(values, [])
+    assert_equal(np.sum(f), 500)
+
+    f = datasets._filter_columns(values, {'STR': 'b'})
+    assert_equal(np.sum(f), 167)
+
+    f = datasets._filter_columns(values, {'INT': 1, 'STR': 'b'})
+    assert_equal(np.sum(f), 84)
+
+    f = datasets._filter_columns(values, {'INT': 1, 'STR': 'b'},
+            combination='or')
+    assert_equal(np.sum(f), 333)
