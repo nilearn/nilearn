@@ -186,8 +186,7 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
                 print "\tConverged (|dE| < %g)" % tol
             break
 
-        # Forward (gradient) step: The gradient of the smooth function is
-        # computed only in the mask.
+        # Forward (gradient) step
         gradient_buffer = f1_grad(z)
 
         # Backward (prox) step
