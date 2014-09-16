@@ -234,7 +234,7 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
 
 
 def path_scores(solver, X, y, alphas, l1_ratio, train,
-                test, logistic=False, tol=1e-4, max_iter=1000, init=None,
+                test, classif=False, tol=1e-4, max_iter=1000, init=None,
                 mask=None, verbose=0, key=None, debias=False, ymean=0.,
                 screening_percentile=10., **kwargs):
     """Function to compute scores of different alphas in regression and
@@ -257,7 +257,7 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
     alphas = sorted(alphas)[::-1]
 
     # univariate feature screening
-    if logistic:
+    if classif:
         selector = ClassifierFeatureSelector(percentile=screening_percentile,
                                              mask=mask)
     else:
@@ -273,7 +273,7 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
 
     best_alpha = alphas[0]
     if len(test) > 0.:
-        if logistic:
+        if classif:
             def _test_score(w):
                 return 1. - roc_auc_score(
                     (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
@@ -299,7 +299,7 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
             if not isinstance(_env, dict):
                 _env = dict(w=_env)
 
-            if logistic:
+            if classif:
                 _env['w'] = _env['w'][:-1]  # strip off intercept
             env["counter"] += 1
             _env["counter"] = env["counter"]
@@ -334,10 +334,16 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
     return test_scores, best_w, key
 
 
-class _BaseCV(BaseEstimator):
+class SpaceNet(LinearModel, RegressorMixin):
     """
+    Cross-validated regression and classification learners with sparsity and
+    spatial penalties (like TVl1, Smooth-Lasso, etc.).
+
     Parameters
     ----------
+    penalty: string, optional (default 'smooth-lasso')
+        Penalty to used in the model. Can be 'smooth-lasso' or 'tvl1'
+        
     alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
@@ -355,17 +361,17 @@ class _BaseCV(BaseEstimator):
         `eps` parameter.
 
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and TV, etc., penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        Constant that mixes L1 and TV (resp. SL) terms in penalization.
+        l1_ratio == 1 corresponds to pure LASSO.
 
-    mask : multidimensional array of booleans, optional (default None)
+    mask : 3D array of booleans, optional (default None)
         The support of this mask defines the ROIs being considered in
         the problem.
 
     screening_percentile : float in the interval [0, 100]; Optional (
     default 10)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means "keep all features".
+        100 means 'keep all features'.
 
     standardize : bool, optional (default False):
        If set, then input data (X, y) will be standardized (i.e converted to
@@ -396,6 +402,9 @@ class _BaseCV(BaseEstimator):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
+    debias: bool, optional (default False)
+        If set, then the estimated weigghts maps will be debiased.
+
     Attributes
     ----------
     `alpha_` : float
@@ -416,13 +425,15 @@ class _BaseCV(BaseEstimator):
 
     """
 
-    def __init__(self, alpha=None, alphas=None, l1_ratio=.5, mask=None,
+    SUPPORTED_PENALTIES = ["smooth-lasso", "tvl1"]
+
+    def __init__(self, penalty="smooth-lasso", classif=False,
+                 alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  standardize=False, normalize=False, alpha_min=1e-6,
-                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
-                 fit_intercept=True, cv=10, screening_percentile=10.,
-                 solver=None):
-        super(_BaseCV, self).__init__()
+                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3, cv=10,
+                 fit_intercept=True, screening_percentile=10., debias=False):
+        super(SpaceNet, self).__init__()
         if not (0. <= screening_percentile <= 100.):
             raise ValueError(
                 ("screening_percentile should be in the interval"
@@ -430,6 +441,18 @@ class _BaseCV(BaseEstimator):
         if not 0 <= l1_ratio <= 1.:
             raise ValueError(
                 "l1_ratio must be in the interval [0, 1]; got %g" % l1_ratio)
+        if penalty not in self.SUPPORTED_PENALTIES:
+            raise ValueError(
+                "'penalty' parameter must be one of %s, or %s; got %s" % (
+                    ",".join(self.SUPPORTED_PENALTIES[:-1]),
+                    self.SUPPORTED_PENALTIES[-1], penalty))
+        self.penalty = penalty
+        self.classif = classif
+        self.alpha = alpha
+        self.n_alphas = n_alphas
+        self.eps = eps
+        self.alphas = alphas
+        self.alpha_min = alpha_min
         self.l1_ratio = l1_ratio
         self.mask = mask
         self.fit_intercept = fit_intercept
@@ -442,35 +465,104 @@ class _BaseCV(BaseEstimator):
         self.normalize = normalize
         self.n_jobs = n_jobs
         self.cv = cv
-        self.alpha = alpha
-        self.n_alphas = n_alphas
-        self.eps = eps
-        self.alphas = alphas
-        self.alpha_min = alpha_min
-        self.solver = solver
-        self.path_scores_func = path_scores
         self.screening_percentile = screening_percentile
+        self.debias = debias
 
-    @property
-    def short_name(self):
-        return '%s(l1_ratio=%g)' % (self.__class__.__name__, self.l1_ratio)
+    def _pre_fit(self, X, y):
+        """Helper function invoked just before fitting a classifier."""
+        X = np.array(X)
+        y = np.array(y)
+
+        # encode target classes as -1 and 1
+        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
+        y = self._enc.fit_transform(y)
+        self.classes_ = self._enc.classes_
+        self.n_classes_ = len(self.classes_)
+
+        if self.mask is not None:
+            self.n_features_ = np.prod(self.mask.shape)
+        else:
+            self.n_features_ = X.shape[1]
+
+        return X, y
+
+    def _set_coef_and_intercept(self, w):
+        self.w_ = np.array(w)
+        if self.w_.ndim == 1:
+            self.w_ = self.w_[np.newaxis, :]
+        self.coef_ = self.w_[:, :-1]
+        self.intercept_ = self.w_[:, -1]
+
+    def decision_function(self, X):
+        """Predict confidence scores for samples
+
+        The confidence score for a sample is the signed distance of that
+        sample to the hyperplane.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
+            Confidence scores per (sample, class) combination. In the binary
+            case, confidence score for self.classes_[1] where >0 means this
+            class would be predicted.
+        """
+
+        X = atleast2d_or_csr(X)
+
+        n_features = self.coef_.shape[1]
+        if X.shape[1] != n_features:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], n_features))
+
+        scores = safe_sparse_dot(X, self.coef_.T,
+                                 dense_output=True) + self.intercept_
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
+            Samples.
+
+        Returns
+        -------
+        C : array, shape = [n_samples]
+            Predicted class label per sample.
+        """
+
+        if not self.classif:
+            return LinearR
+        scores = self.decision_function(X)
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(np.int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
 
     def fit(self, X, y):
-        assert self.solver is not None
-
-        # sanitize path_scores_func
-        if self.path_scores_func is None:
-            raise ValueError(
-                "Class '%s' doesn't have a `path_scores_func` attribute!" % (
-                    self.__class__.__name__))
-
         X = np.array(X)
         y = np.array(y).ravel()
         n_samples, _ = X.shape
 
-        self.__class__.__name__.endswith("CV")
-        solver = self.solver
-        path_scores_func = self.path_scores_func
+        # set backend solver
+        if self.penalty == "smooth-lasso":
+            if self.classif:
+                solver = smooth_lasso_logistic
+            else:
+                solver = smooth_lasso_squared_loss
+        else:
+            if self.classif:
+                solver = partial(tvl1_solver, loss="logistic")
+            else:
+                solver = partial(tvl1_solver, loss="mse")
+
         special_kwargs = {}
         if hasattr(self, "debias"):
             special_kwargs["debias"] = getattr(self, "debias")
@@ -481,7 +573,7 @@ class _BaseCV(BaseEstimator):
             X, y, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=self.normalize,
                 fit_intercept=self.fit_intercept)
-            if not is_classifier(self):
+            if not self.classif:
                 special_kwargs["ymean"] = ymean
 
         # make / sanitize alpha grid
@@ -495,7 +587,7 @@ class _BaseCV(BaseEstimator):
                                     normalize=self.normalize,
                                     alpha_min=self.alpha_min,
                                     fit_intercept=self.fit_intercept,
-                                    logistic=is_classifier(self))
+                                    logistic=self.classif)
         else:
             alphas = np.array(self.alphas)
 
@@ -503,34 +595,35 @@ class _BaseCV(BaseEstimator):
         alphas = np.sort(alphas)[::-1]
 
         if len(alphas) > 1:
-            cv = list(check_cv(self.cv, X=X, y=y, classifier=True))
+            cv = list(check_cv(self.cv, X=X, y=y, classifier=self.classif))
         else:
             cv = [(range(n_samples), [])]
         self.n_folds_ = len(cv)
 
         # misc (different for classifier and regressor)
-        if is_classifier(self):
+        if self.classif:
             X, y = self._pre_fit(X, y)
-        if is_classifier(self) and self.n_classes_ > 2:
+        if self.classif and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
             y = y.ravel()
         self.scores_ = [[] for _ in xrange(n_problems)]
-        w = np.zeros((n_problems, X.shape[1] + int(is_classifier(self))))
+        w = np.zeros((n_problems, X.shape[1] + int(self.classif > 0)))
 
         # parameter to path_scores function
         path_params = dict(mask=self.mask, tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
-                           screening_percentile=self.screening_percentile)
+                           screening_percentile=self.screening_percentile,
+                           classif=self.classif)
         path_params.update(special_kwargs)
 
-        _ovr_y = lambda c: y[:, c] if is_classifier(
-            self) and self.n_classes_ > 2 else y
+        _ovr_y = lambda c: y[:, c] if self.classif and (
+            self.n_classes_ > 2) else y
 
         # main loop: loop on classes and folds
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
-            delayed(self.memory.cache(path_scores_func))(
+            delayed(self.memory.cache(path_scores))(
                 solver, X, _ovr_y(c), alphas, self.l1_ratio, train, test,
                 key=c, **path_params) for c in xrange(n_problems) for (
                 train, test) in cv):
@@ -550,7 +643,7 @@ class _BaseCV(BaseEstimator):
 
         w /= self.n_folds_
 
-        if is_classifier(self):
+        if self.classif:
             self._set_coef_and_intercept(w)
         else:
             self.coef_ = w
@@ -559,14 +652,14 @@ class _BaseCV(BaseEstimator):
             else:
                 self.intercept_ = 0.
 
-        if not is_classifier(self):
+        if not self.classif:
             self.coef_ = self.coef_[0]
             self.scores_ = self.scores_[0]
 
         return self
 
 
-class _BaseRegressor(_BaseCV, LinearModel, RegressorMixin):
+class _BaseRegressor(SpaceNet, LinearModel, RegressorMixin):
     """
     Parameters
     ----------
@@ -668,7 +761,7 @@ class _BaseRegressor(_BaseCV, LinearModel, RegressorMixin):
         self.path_scores_func = partial(path_scores, logistic=False)
 
 
-class _BaseClassifier(_BaseCV):
+class _BaseClassifier(SpaceNet):
     """
     Parameters
     ----------
@@ -779,7 +872,7 @@ class _BaseClassifier(_BaseCV):
             return prob
 
     def decision_function(self, X):
-        """Predict confidence scores for samples.
+        """Predict confidence scores for samples
 
         The confidence score for a sample is the signed distance of that
         sample to the hyperplane.
@@ -895,7 +988,7 @@ class SmoothLassoClassifier(_BaseClassifier):
     screening_percentile : float in the interval [0, 100]; Optional (
     default 10)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means "keep all features".
+        100 means 'keep all features'.
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
