@@ -191,7 +191,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     data = orig_data.copy()
     if data.dtype.kind == 'i':
         data = data.astype(np.float)
-        # We have discreete values: we smooth them in order to have
+        # We have discrete values: we smooth them in order to have
         # maxima located at the center of peaks
         # 'data' is already a copy of the input data
         # so no need to copy it again
