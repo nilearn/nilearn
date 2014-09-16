@@ -82,7 +82,7 @@ def test_matrix_orientation():
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
     fmri, mask = testing.generate_fake_fmri(shape=(40, 41, 42), kind="step")
-    masker = NiftiMasker(mask=mask, standardize=True, detrend=True)
+    masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
     assert(timeseries.shape[0] == fmri.shape[3])
     assert(timeseries.shape[1] == mask.get_data().sum())
@@ -91,7 +91,7 @@ def test_matrix_orientation():
     assert(not np.any(std < 0.1))
 
     # Test inverse transform
-    masker = NiftiMasker(mask=mask, standardize=False, detrend=False)
+    masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
@@ -106,7 +106,7 @@ def test_mask_3d():
 
     with testing.write_tmp_imgs(data_img, create_files=True)\
                 as filename:
-        masker = NiftiMasker(mask=filename)
+        masker = NiftiMasker(mask_img=filename)
         assert_raises(TypeError, masker.fit)
 
 
@@ -121,7 +121,7 @@ def test_joblib_cache():
 
     with testing.write_tmp_imgs(mask_img, create_files=True)\
                 as filename:
-        masker = NiftiMasker(mask=filename)
+        masker = NiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
         masker.mask_img_.get_data()

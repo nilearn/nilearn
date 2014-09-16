@@ -157,7 +157,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         params = get_params(NiftiMasker, self)
         # Remove the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
-        for name in ('mask', 'mask_args'):
+        for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
         data, _ = self._cache(filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])(
@@ -246,14 +246,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # method is possible for a given clustering algorithm
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
-            if self.mask is None:
+            if self.mask_img is None:
                 return self.fit(X, **fit_params
                                 ).transform(X, confounds=confounds)
             else:
                 return self.fit(**fit_params).transform(X, confounds=confounds)
         else:
             # fit method of arity 2 (supervised transformation)
-            if self.mask is None:
+            if self.mask_img is None:
                 return self.fit(X, y, **fit_params
                                 ).transform(X, confounds=confounds)
             else:
