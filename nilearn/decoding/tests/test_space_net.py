@@ -17,8 +17,8 @@ from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
 rng = check_random_state(42)
-logistic_path_scores = partial(path_scores, logistic=True)
-squared_loss_path_scores = partial(path_scores, logistic=False)
+logistic_path_scores = partial(path_scores, classif=True)
+squared_loss_path_scores = partial(path_scores, classif=False)
 
 # Data used in almost all tests
 from .simulate_smooth_lasso_data import create_smooth_simulation_data
