@@ -204,7 +204,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             # single-subject list of 3D filenames
         # First, learn the mask
         if not isinstance(self.mask, MultiNiftiMasker):
-            self.masker_ = MultiNiftiMasker(mask=self.mask,
+            self.masker_ = MultiNiftiMasker(mask_img=self.mask,
                                             smoothing_fwhm=self.smoothing_fwhm,
                                             target_affine=self.target_affine,
                                             target_shape=self.target_shape,
@@ -240,7 +240,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                   % param_name)
                 setattr(self.masker_, param_name,
                         getattr(self, param_name))
-        if self.masker_.mask is None:
+        if self.masker_.mask_img is None:
             self.masker_.fit(niimgs)
         else:
             self.masker_.fit()

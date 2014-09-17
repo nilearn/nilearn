@@ -75,7 +75,7 @@ def test_different_affines():
                            affine=np.diag((2, 2, 2, 1)))
     epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)),
                            affine=np.diag((3, 3, 3, 1)))
-    masker = MultiNiftiMasker(mask=mask_img)
+    masker = MultiNiftiMasker(mask_img=mask_img)
     epis = masker.fit_transform([epi_img1, epi_img2])
     for this_epi in epis:
         masker.inverse_transform(this_epi)
@@ -89,7 +89,7 @@ def test_3d_images():
                            affine=np.diag((4, 4, 4, 1)))
     epi_img2 = Nifti1Image(np.ones((2, 2, 2)),
                            affine=np.diag((2, 2, 2, 1)))
-    masker = MultiNiftiMasker(mask=mask_img)
+    masker = MultiNiftiMasker(mask_img=mask_img)
     epis = masker.fit_transform([epi_img1, epi_img2])
     # This is mostly a smoke test
     assert_equal(len(epis), 2)
@@ -107,7 +107,7 @@ def test_joblib_cache():
 
     with testing.write_tmp_imgs(data_img, create_files=True)\
                 as filename:
-        masker = MultiNiftiMasker(mask=filename)
+        masker = MultiNiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
         masker.mask_img_.get_data()

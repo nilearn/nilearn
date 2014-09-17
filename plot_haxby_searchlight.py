@@ -70,7 +70,7 @@ searchlight.fit(fmri_img, y)
 from nilearn.input_data import NiftiMasker
 
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask=mask_img, sessions=session,
+nifti_masker = NiftiMasker(mask_img=mask_img, sessions=session,
                            standardize=True, memory='nilearn_cache',
                            memory_level=1)
 fmri_masked = nifti_masker.fit_transform(fmri_img)
@@ -95,7 +95,7 @@ plot_stat_map(nibabel.Nifti1Image(searchlight.scores_,
               colorbar=False)
 
 ### F_score results
-p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
+p_ma = np.ma.array(p_unmasked, mask_img=np.logical_not(process_mask))
 plot_stat_map(nibabel.Nifti1Image(p_ma,
                                   mean_fmri.get_affine()), mean_fmri,
               title="F-scores", display_mode="z", cut_coords=[-16],

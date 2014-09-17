@@ -29,7 +29,7 @@ session_labels = labels["chunks"][resting_state == False]
 from nilearn.input_data import NiftiMasker
 
 # For decoding, standardizing is often very important
-masker = NiftiMasker(mask=data_files['mask_vt'][0], standardize=True)
+masker = NiftiMasker(mask_img=data_files['mask_vt'][0], standardize=True)
 masked_timecourses = masker.fit_transform(
     data_files.func[0])[resting_state == False]
 

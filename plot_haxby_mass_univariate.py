@@ -40,7 +40,7 @@ dataset_files = datasets.fetch_haxby_simple()
 ### Mask data #################################################################
 mask_img = nibabel.load(dataset_files.mask)
 nifti_masker = NiftiMasker(
-    mask=dataset_files.mask,
+    mask_img=dataset_files.mask,
     memory='nilearn_cache', memory_level=1)  # cache options
 fmri_masked = nifti_masker.fit_transform(dataset_files.func)
 
