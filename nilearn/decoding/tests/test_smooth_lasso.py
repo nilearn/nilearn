@@ -21,7 +21,7 @@ from ..space_net_solvers import (
     _pre_fit_labels,
     _debias,
     mfista)
-from ..space_net import SmoothLassoRegressor, SmoothLassoClassifier
+from ..space_net import SpaceNet
 
 # Data used in almost all tests
 from .simulate_smooth_lasso_data import (
@@ -202,7 +202,7 @@ def test_fista_convergence():
     url:http://mechroom.technion.ac.il/~becka/papers/71654.pdf"""
     alpha = 1
     l1_ratio = 0.5
-    reg = SmoothLassoRegressor(mask=mask, alpha=alpha, l1_ratio=l1_ratio)
+    reg = SpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio)
     reg.fit(X, y)
     objs = reg.objective_
     # Since we don't have the optimum, we just aproximate the optimum
@@ -225,7 +225,7 @@ def test_max_alpha_logistic():
     are full of zeros, for logistic regression"""
     X, y, w, mask = create_smooth_simulation_data(task="classification")
     l1_ratios = np.linspace(0.1, 1, 3)
-    clf = SmoothLassoClassifier(mask=mask, max_iter=10)
+    clf = SpaceNet(mask=mask, max_iter=10, classif=True)
     for l1_ratio in l1_ratios:
         clf.l1_ratio = l1_ratio
         # We set alpha bigger than the theoretic bound
@@ -238,7 +238,8 @@ def test_max_alpha_squared_loss():
     """Tests that models with l1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
     l1_ratios = np.linspace(0.1, 1, 3)
-    reg = SmoothLassoRegressor(mask=mask, max_iter=10)
+    reg = SpaceNet(mask=mask, max_iter=10, penalty="smooth-lasso",
+                   classif=False)
     for l1_ratio in l1_ratios:
         reg.l1_ratio = l1_ratio
         reg.alpha = np.max(np.dot(X.T, y)) / (l1_ratio * y.size) * 1.1
@@ -257,7 +258,7 @@ def test_tikhonov_regularization_vs_smooth_lasso():
     G = get_gradient_matrix(w.size, mask)
     optimal_model = np.dot(sp.linalg.pinv(
         np.dot(X.T, X) + y.size * np.dot(G.T, G)), np.dot(X.T, y))
-    smooth_lasso = SmoothLassoRegressor(
+    smooth_lasso = SpaceNet(
         mask=mask, alpha=1., l1_ratio=0., max_iter=400, fit_intercept=False,
         normalize=False, screening_percentile=100.)
     smooth_lasso.fit(X.copy(), y.copy())
@@ -278,7 +279,7 @@ def test_debiasing_model():
     y_train = y[:100]
     X_test = X[100:]
     y_test = y[100:]
-    smooth_lasso = SmoothLassoRegressor(mask=mask, alpha=0.01)
+    smooth_lasso = SpaceNet(mask=mask, alpha=0.01)
     smooth_lasso.fit(X_train, y_train)
     biased_score = smooth_lasso.score(X_test, y_test)
     smooth_lasso.coef_ = _debias(smooth_lasso.coef_, X_test, y_test)
@@ -289,8 +290,8 @@ def test_debiasing_model():
 @SkipTest
 def test_pre_fit():
     # Mostly a smoke test
-    sm_reg = SmoothLassoRegressor(mask=mask)
-    sm_clf = SmoothLassoClassifier(mask=mask)
+    sm_reg = SpaceNet(mask=mask)
+    sm_clf = SpaceNet(mask=mask, classif=True)
     assert not hasattr(sm_reg, "_enc")
     assert not hasattr(sm_clf, "_enc")
     _pre_fit_labels(sm_reg, y)
