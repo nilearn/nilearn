@@ -8,7 +8,7 @@ from scipy.optimize import check_grad
 from ..objective_functions import (gradient_id, logistic,
                                    logistic_grad, _unmask,
                                    test_grad_div_adjoint_arbitrary_ndim)
-from ..space_net import _BaseCV as _BaseEstimator
+from ..space_net import SpaceNet
 from nose.tools import raises
 
 
@@ -70,7 +70,7 @@ def test_grad_div_adjoint_arbitrary_ndim_():
 
 @raises(ValueError)
 def test_baseestimator_invalide_l1_ratio():
-    _BaseEstimator(l1_ratio=2.)
+    SpaceNet(l1_ratio=2.)
 
 
 def test_unmasl(size=5):

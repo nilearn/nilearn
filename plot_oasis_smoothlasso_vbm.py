@@ -34,9 +34,8 @@ n_samples, n_features = gm_maps_masked.shape
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 print n_samples, "subjects, ", n_features, "features"
 
-from nilearn.decoding.space_net import SmoothLassoRegressor
-slcv = SmoothLassoRegressor(verbose=1, memory=memory, mask=mask,
-                            screening_percentile=10)
+from nilearn.decoding.space_net import SpaceNet
+slcv = SpaceNet(verbose=1, memory=memory, mask=mask, screening_percentile=10)
 
 ### Fit and predict
 slcv.fit(gm_maps_masked, age)
@@ -62,10 +61,6 @@ im = plt.imshow(np.rot90(data_for_plot), cmap=plt.cm.Spectral_r,
 plt.axis('off')
 plt.colorbar(im)
 plt.title('S-LASSO weights')
-
-# plot CV errors
-from nilearn.decoding.sparse_models.cv import plot_cv_scores
-plot_cv_scores(slcv, errorbars=False)
 
 plt.figure()
 linewidth = 3
