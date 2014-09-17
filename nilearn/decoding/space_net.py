@@ -26,20 +26,6 @@ from .._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
 from .objective_functions import _sigmoid
 from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
-from .._utils.fixes._ravel import _ravel
-
-# heuristic function to determine whether a give object is a classifier
-is_classifier = lambda obj: "Classifier" in obj.__class__.__name__
-
-
-def _squared_norm(x):
-    """Squared Euclidean or Frobenius norm of x.
-
-    Returns the Euclidean norm when x is a vector, the Frobenius norm when x
-    is a matrix (2-d array). Faster than norm(x) ** 2.
-    """
-    x = _ravel(x)
-    return np.dot(x, x)
 
 
 class EarlyStoppingCallback(object):

@@ -18,8 +18,7 @@ from ..space_net_solvers import (squared_loss_and_spatial_grad,
                                  smooth_lasso_logistic,
                                  squared_loss_and_spatial_grad_derivative,
                                  tvl1_solver)
-from ..space_net import (TVl1Regressor, TVl1Classifier, SmoothLassoRegressor,
-                         SmoothLassoClassifier)
+from ..space_net import SpaceNet
 from nose.tools import assert_equal
 
 rng = check_random_state(42)
@@ -98,10 +97,10 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=20, decimal=2):
     # results should be exactly the same for pure lasso
     a = tvl1_solver(X, y, alpha, 1., loss="mse", max_iter=max_iter)[0]
     b = smooth_lasso_squared_loss(X, y, alpha, 1., max_iter=max_iter)[0]
-    sl = SmoothLassoRegressor(alpha=alpha, l1_ratio=1.,
-                              max_iter=max_iter).fit(X, y)
-    tvl1 = TVl1Regressor(alpha=alpha, l1_ratio=1.,
-                         max_iter=max_iter).fit(X, y)
+    sl = SpaceNet(alpha=alpha, l1_ratio=1., penalty="smooth-lasso",
+                  max_iter=max_iter).fit(X, y)
+    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., penalty="tvl1",
+                    max_iter=max_iter).fit(X, y)
 
     # Should be exactly the same (except for numerical errors).
     # However because of the TV-l1 prox approx, results might be 'slightly'
@@ -129,11 +128,12 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=10,
                               max_iter=max_iter)[0]
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
-    sl = SmoothLassoClassifier(alpha=alpha, l1_ratio=1., verbose=0,
-                               max_iter=max_iter, mask=mask
-                               ).fit(X, y)
-    tvl1 = TVl1Classifier(alpha=alpha, l1_ratio=1.,
-                          max_iter=max_iter, mask=mask).fit(X, y)
+    sl = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, classif=True,
+                  max_iter=max_iter, mask=mask, penalty="smooth-lasso",
+                  ).fit(X, y)
+    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, classif=True,
+                  max_iter=max_iter, mask=mask, penalty="tvl1",
+                  ).fit(X, y)
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(a, b, decimal=decimal)
@@ -152,10 +152,11 @@ def test_logreg_with_mask_issue_10():
     alpha = 1.
     l1_ratio = .5
 
-    for model in [TVl1Regressor, TVl1Classifier, SmoothLassoRegressor,
-                  SmoothLassoClassifier]:
-        # ensure that our fix didn't break anythx else
-        model(alpha=alpha, l1_ratio=l1_ratio, mask=mask).fit(X, y)
+    for penalty in ["smooth-lasso", "tvl1"]:
+        for classif in [True, False]:
+            # ensure that our fix didn't break anythx else
+            SpaceNet(penalty=penalty, classif=classif, alpha=alpha,
+                     l1_ratio=l1_ratio, mask=mask).fit(X, y)
 
 
 def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
@@ -178,12 +179,12 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
     l1_ratio = 1.
     max_iter = 20
 
-    sl = SmoothLassoRegressor(alpha=alpha, l1_ratio=l1_ratio,
-                              max_iter=max_iter, mask=mask,
-                              verbose=0).fit(X, y)
-    tvl1 = TVl1Regressor(alpha=alpha, l1_ratio=l1_ratio,
-                         max_iter=max_iter, mask=mask,
-                         verbose=0).fit(X, y)
+    sl = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="smooth-lasso",
+                  max_iter=max_iter, mask=mask, classif=False,
+                  verbose=0).fit(X, y)
+    tvl1 = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="tvl1",
+                  max_iter=max_iter, mask=mask, classif=False,
+                  verbose=0).fit(X, y)
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
@@ -192,12 +193,12 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
 def test_coef_shape():
     iris = load_iris()
     X, y = iris.data, iris.target
-    for cv_class in [SmoothLassoRegressor, TVl1Regressor]:
-        cv = cv_class(max_iter=3).fit(X, y)
+    for penalty in ["smooth-lasso", "tvl1"]:
+        cv = SpaceNet(max_iter=3, penalty=penalty, classif=False).fit(X, y)
         assert_equal(cv.coef_.ndim, 1)
 
-    for cv_class in [SmoothLassoClassifier, TVl1Classifier]:
-        cv = cv_class(max_iter=3).fit(X, y)
+    for penalty in ["smooth-lasso", "tvl1"]:
+        cv = SpaceNet(max_iter=3, penalty=penalty, classif=True).fit(X, y)
         assert_equal(cv.coef_.ndim, 2)
 
 
