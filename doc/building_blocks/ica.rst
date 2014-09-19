@@ -56,8 +56,7 @@ Visualizing the results
 ========================
 
 Visualization follows similarly as in other examples (for details, see
-:ref:`visualizing`). We use masked arrays (`np.ma`) to create
-transparency in the overlays.
+:ref:`visualizing`).
 
 .. literalinclude:: ../../plot_ica_resting_state.py
     :start-after: ### Visualize the results #####################################################

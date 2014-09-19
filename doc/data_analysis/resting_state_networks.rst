@@ -56,8 +56,7 @@ object.
 Visualizing the results
 ========================
 
-We can visualize the components as in the previous examples. As before,
-we use masked arrays (`np.ma`) to create transparency in the overlays.
+We can visualize the components as in the previous examples.
 
 .. literalinclude:: ../../plot_canica_resting_state.py
     :start-after: ### Visualize the results #####################################################
