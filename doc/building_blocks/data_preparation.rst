@@ -101,7 +101,7 @@ scratch. The Haxby dataset will be used since it provides a mask that we
 can use as a reference.
 
 .. figure:: ../auto_examples/images/plot_mask_computation_2.png
-    :target: auto_examples/plot_mask_computation.html
+    :target: ../auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
 
@@ -115,7 +115,7 @@ a look at it.
 ____
 
 .. figure:: ../auto_examples/images/plot_mask_computation_3.png
-    :target: auto_examples/plot_mask_computation.html
+    :target: ../auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
 
@@ -187,13 +187,13 @@ specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
 computes automatically the translation part of the affine.
 
 .. image:: ../auto_examples/images/plot_affine_transformation_2.png
-    :target: auto_examples/plot_affine_transformation.html
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 .. image:: ../auto_examples/images/plot_affine_transformation_4.png
-    :target: auto_examples/plot_affine_transformation.html
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 .. image:: ../auto_examples/images/plot_affine_transformation_3.png
-    :target: auto_examples/plot_affine_transformation.html
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 
 
