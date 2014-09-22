@@ -139,7 +139,7 @@ expected result.
 
 .. seealso::
 
-   * :ref:`visualizing`
+   * :ref:`plotting`
 
 Comparing to massively univariate analysis: F_score or SPM
 ----------------------------------------------------------

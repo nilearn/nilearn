@@ -368,7 +368,7 @@ We can visualize the weights of the decoder:
 
 .. seealso::
 
-   * :ref:`visualizing`
+   * :ref:`plotting`
 
 
 Decoding without a mask: Anova-SVM
@@ -418,7 +418,7 @@ To visualize the results, we need to:
 
 .. seealso::
 
-   * :ref:`visualizing`
+   * :ref:`plotting`
 
 
 .. topic:: **Final script**

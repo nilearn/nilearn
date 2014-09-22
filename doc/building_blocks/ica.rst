@@ -56,7 +56,7 @@ Visualizing the results
 ========================
 
 Visualization follows similarly as in other examples (for details, see
-:ref:`visualizing`).
+:ref:`plotting`).
 
 .. literalinclude:: ../../plot_ica_resting_state.py
     :start-after: ### Visualize the results #####################################################
