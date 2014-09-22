@@ -155,7 +155,7 @@ K-Means) on less dimensions.
 
 **Compute an affinity matrix**
 An affinity matrix has the same structure as a connectivity matrix, except that
-each edge value represent the affinity between 2 time series. Scikit-learn's spectral
+each edge value represents the affinity between 2 time series. Scikit-learn's spectral
 clustering does not offer to compute an affinity matrix using Pearson's
 correlation coefficient. We therefore have to compute it using an ad-hoc for
 loop. Note that a threshold is applied to sparsify the matrix and make spectral
