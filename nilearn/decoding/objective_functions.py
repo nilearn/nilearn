@@ -52,9 +52,7 @@ def logistic_loss_lipschitz_constant(X):
 
 
 # XXX: functions that return variable number of outputs are bad
-def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
-                unmask_grad=True, compute_hess=False, unmask_hess=True):
-
+def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """Compute the MSE error, and optionally, its gradient too.
 
     The energy is
@@ -74,17 +72,11 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
     w : array_like, shape (n_voxels,)
         Unmasked, ravelized input map.
 
-    mask : array_like of same shape as w, optional (default None)
-        mask for ROI
-
     compute_energy : bool, optional (default True)
         If set then energy is computed, otherwise only gradient is computed.
 
     compute_grad : bool, optional (default True)
         If set then gradient is computed, otherwise only energy is computed.
-
-    unmask_grad : bool, optional (default True)
-        If set, then computed gradient is unmasked before returned.
 
     Returns
     -------
@@ -97,10 +89,6 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
     """
     assert compute_energy or compute_grad
 
-    # mask the input vector w
-    w = w.ravel()
-    if mask is not None:
-        w = w[mask.ravel()]
     residual = np.dot(X, w) - y
 
     # compute energy
@@ -110,29 +98,11 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
             return energy
 
     grad = np.dot(X.T, residual)  # XXX use sk's fast_dot
-    if unmask_grad and mask is not None:
-        grad = _unmask(grad, mask).ravel()
-
-    if not compute_energy and not compute_hess:
-        return grad
-
-    if compute_energy and not compute_hess:
-        return energy, grad
-
-    def hess_matvec(vec):
-        if mask is not None:
-            vec = vec[mask]
-
-        out = np.dot(X.T, np.dot(X, vec))  # XXX use sk's fast_dot
-        if unmask_hess and mask is not None:
-            out = _unmask(out, mask)
-
-        return out
 
     if not compute_energy:
-        return grad, hess_matvec
+        return grad
 
-    return energy, grad, hess_matvec
+    return energy, grad
 
 
 def tv_l1_from_gradient(spatial_grad):
@@ -294,7 +264,7 @@ def _sigmoid(t, copy=True):
     return t
 
 
-def logistic(X, y, w, mask=None):
+def logistic(X, y, w):
     """Compute the logistic function of the data: sum(sigmoid(yXw))
 
     Parameters
@@ -308,19 +278,12 @@ def logistic(X, y, w, mask=None):
     w : array_like, shape (n_voxels,)
         Unmasked, ravelized input map.
 
-    mask : array_like of same shape as w, optional (default None)
-        mask for ROI
-
     Returns
     -------
     energy : float
         Energy contribution due to logistic data-fit term.
     """
 
-    if mask is not None:
-        mask = mask.ravel()
-        # last coef of w is the intercept_
-        w = np.append(w[:-1][mask], w[-1])
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
     idx = yz > 0
@@ -331,20 +294,15 @@ def logistic(X, y, w, mask=None):
     return out
 
 
-def logistic_grad(X, y, w, mask=None):
+def logistic_grad(X, y, w):
     """Computes the derivative of logistic"""
-    if mask is not None:
-        mask = mask.ravel()
-        w = np.append(w[:-1][mask], w[-1])
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
     z = _sigmoid(yz, copy=False)
-    z0 = (z - 1) * y
+    z0 = (z - 1.) * y
     grad = np.empty(w.shape)
     grad[:-1] = np.dot(X.T, z0)
     grad[-1] = np.sum(z0)
-    if mask is not None:
-        grad = np.append(_unmask(grad[:-1], mask), grad[-1])
     return grad
 
 # Wrappers.
