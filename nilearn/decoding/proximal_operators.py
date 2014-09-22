@@ -10,8 +10,7 @@ end up with an l1.
 
 from math import sqrt
 import numpy as np
-from .objective_functions import (tv_l1_from_gradient, div_id, gradient_id,
-                                  get_gradient_id_shape)
+from .objective_functions import tv_l1_from_gradient, div_id, gradient_id
 
 
 def prox_l1(y, alpha, copy=True):
@@ -157,7 +156,7 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     input_img_norm = (im.ravel() * im.ravel()).sum()
     if not input_img.dtype.kind == 'f':
         input_img = input_img.astype(np.float)
-    shape = get_gradient_id_shape(im.shape)
+    shape = [len(im.shape) + 1] + list(im.shape)
     grad_im = np.zeros(shape)
     grad_aux = np.zeros(shape)
     t = 1.

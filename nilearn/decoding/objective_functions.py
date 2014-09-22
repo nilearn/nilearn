@@ -189,13 +189,6 @@ def squared_loss(X, y, w, mask=None, compute_energy=True, compute_grad=False,
     return energy, grad, hess_matvec
 
 
-def get_gradient_id_shape(img_shape):
-    """Return the shape of the gradient + id operator output.
-
-    """
-    return [len(img_shape) + 1] + list(img_shape)
-
-
 def tv_l1_from_gradient(spatial_grad):
     """Energy contribution due to penalized gradient, in TV-l1 model.
 
@@ -226,15 +219,14 @@ def div_id(grad, l1_ratio=.5):
         n_axes = len(img_shape).
 
     l1_ratio : float, optional (default .5)
-        relative weight of l1; float between 0 and 1 inclusive.
+        Relative weight of l1; float between 0 and 1 inclusive.
         TV+L1 penalty will be (alpha not shown here):
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
 
     Returns
     -------
     res : ndarray of shape grad.shape[1:]
-    otherwise
-        the computed divergent or divergent + id, operator
+        The computed divergence + id operator.
 
     """
 
