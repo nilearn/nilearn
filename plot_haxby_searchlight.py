@@ -95,7 +95,7 @@ plot_stat_map(nibabel.Nifti1Image(searchlight.scores_,
               colorbar=False)
 
 ### F_score results
-p_ma = np.ma.array(p_unmasked, mask_img=np.logical_not(process_mask))
+p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 plot_stat_map(nibabel.Nifti1Image(p_ma,
                                   mean_fmri.get_affine()), mean_fmri,
               title="F-scores", display_mode="z", cut_coords=[-16],

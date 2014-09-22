@@ -35,12 +35,13 @@ from .find_cuts import find_cut_slices
 ################################################################################
 # Core, usage-agnostic functions
 
+
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
-             output_file=None, display_mode='ortho',
-             colorbar=False, figure=None, axes=None, title=None,
-             threshold=None, annotate=True, draw_cross=True, black_bg=False,
-             bg_vmin=None, bg_vmax=None, interpolation="nearest",
-             **kwargs):
+                      output_file=None, display_mode='ortho',
+                      colorbar=False, figure=None, axes=None, title=None,
+                      threshold=None, annotate=True, draw_cross=True, black_bg=False,
+                      bg_vmin=None, bg_vmax=None, interpolation="nearest",
+                      **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
     if img is not False and img is not None:
@@ -73,23 +74,15 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                                              direction=display_mode,
                                              n_cuts=cut_coords)
 
-        if len(data.shape) > 3:
-            if len(data.shape) == 4 and data.shape[3] == 1:
-                data = data[:,:,:,0]
-            else:
-                raise ValueError("The provided volume has %d dimensions. Only" \
-                                 " three dimensional volumes volumes are " \
-                                 "supported." % len(data.shape))
-
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
     slicer = get_slicer(display_mode).init_with_figure(img,
-                                              threshold=threshold,
-                                              cut_coords=cut_coords,
-                                              figure=figure, axes=axes,
-                                              black_bg=black_bg,
-                                              colorbar=colorbar)
-
+                                                       threshold=threshold,
+                                                       cut_coords=cut_coords,
+                                                       figure=figure,
+                                                       axes=axes,
+                                                       black_bg=black_bg,
+                                                       colorbar=colorbar)
 
     if bg_img is not None:
         slicer.add_overlay(bg_img,
