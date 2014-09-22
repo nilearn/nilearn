@@ -244,16 +244,16 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             # We need to decrease the tolerance on the dual_gap as 1/i**4
             # (see Mark Schmidt, Nicolas le Roux and Francis Bach, NIPS
             # 2011), thus we need to count how many times we are called,
-            # thus the callable class. In practice, empirically I (Gael)
+            # hence the callable class. In practice, empirically I (Gael)
             # have found that such a sharp decrease was counter
             # productive in terms of computation time, as it leads to too
             # much time spent in the prox_tv_l1 calls.
             #
-            # For this reason, we rely more on the line-search like
+            # For this reason, we rely more on the linesearch-like
             # strategy to set the dgap_tol
             dgap_tol = abs(energy_delta) / (i + 1.)
 
-        # dgap_tol house-keepinig
+        # dgap_tol house-keeping
         if energy < best_energy:
             best_energy = energy
             best_w = w.copy()
