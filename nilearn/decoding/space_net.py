@@ -420,6 +420,11 @@ class SpaceNet(LinearModel, RegressorMixin):
                  verbose=0, n_jobs=1, n_alphas=10, eps=1e-3, cv=10,
                  fit_intercept=True, screening_percentile=10., debias=False):
         super(SpaceNet, self).__init__()
+
+        # sanity checks
+        if mask is None:
+            raise ValueError(
+                "You need to supply a valid mask (a 3D array). Got 'None'.")
         if not (0. <= screening_percentile <= 100.):
             raise ValueError(
                 ("screening_percentile should be in the interval"
@@ -432,6 +437,8 @@ class SpaceNet(LinearModel, RegressorMixin):
                 "'penalty' parameter must be one of %s, or %s; got %s" % (
                     ",".join(self.SUPPORTED_PENALTIES[:-1]),
                     self.SUPPORTED_PENALTIES[-1], penalty))
+
+        # continue setting params
         self.penalty = penalty
         self.classif = classif
         self.alpha = alpha

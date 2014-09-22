@@ -372,7 +372,7 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
         tol=tol, max_iter=max_iter, verbose=verbose, init=init)
 
 
-def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask=None, init=None,
+def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
                           max_iter=1000, tol=1e-4, callback=None, verbose=0,
                           lipschitz_constant=None, rescale_alpha=True):
     """Computes a solution for the Smooth Lasso classification problem, with
@@ -396,12 +396,6 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask=None, init=None,
     """
 
     n_samples, n_features = X.shape
-
-    # XXX smooth_lasso code breaks-down if mask is None!
-    if mask is None:
-        warnings.warn(
-            "mask is None. Defaulting to full 1D mask of length = X.shape[1]")
-        mask = np.ones(n_features).astype(np.bool)
 
     # misc
     model_size = n_features + 1
@@ -460,43 +454,29 @@ def _tvl1_objective_from_gradient(gradient):
     return l1_term + tv_term
 
 
-def tvl1_objective(X, y, w, alpha, l1_ratio, mask=None, shape=None,
-                   loss="mse"):
-    """The TV + l1 squared loss regression objective functions,
-
-        w can be a 2D or 3D array
+def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
+    """The TV + l1 squared loss regression objective functions.
 
     """
 
-    if shape is None:
-        if mask is not None:
-            shape = mask.shape
-        else:
-            if loss == "mse":
-                shape = w.shape
-            else:
-                shape = (len(np.ravel(w)) - 1,)
-
-    # if not mask is None: mask = mask.ravel()
     loss = loss.lower()
     if loss not in ['mse', 'logistic']:
         raise ValueError(
             "loss must be one of 'mse' or 'logistic'; got '%s'" % loss)
 
-    w = w.ravel()
     if loss == "mse":
-        out = squared_loss(X, y, w, mask=mask)
+        out = squared_loss(X, y, w)
     else:
-        out = logistic_loss(X, y, w, mask=mask)
+        out = logistic_loss(X, y, w)
         w = w[:-1]
 
-    grad_id = gradient_id(w.reshape(shape), l1_ratio=l1_ratio)
+    grad_id = gradient_id(_unmask(w, mask), l1_ratio=l1_ratio)
     out += alpha * _tvl1_objective_from_gradient(grad_id)
 
     return out
 
 
-def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
+def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
                 rescale_alpha=True, lipschitz_constant=None, init=None,
                 prox_max_iter=5000, tol=1e-4, callback=None, verbose=1):
     """Minimizes empirical risk for TV-l1 penalized models.
@@ -570,13 +550,8 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
                          "'logistic" % loss)
 
     # shape of image box
-    if mask is not None:
-        flat_mask = mask.ravel()
-        volume_shape = mask.shape
-    else:
-        # when no mask is provided, the volume is assumed to be a flat image
-        volume_shape = (X.shape[1],)
-        flat_mask = None
+    flat_mask = mask.ravel()
+    volume_shape = mask.shape
 
     # XXX We'll work on the full brain, and do the masking / unmasking
     # magic when needed
@@ -588,9 +563,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
         alpha *= X.shape[0]
 
     def unmaskvec(w):
-        if None in [w, mask]:
-            return w
-        elif loss == "mse":
+        if loss == "mse":
             return _unmask(w, mask)
         else:
             return np.append(_unmask(w[:-1], mask), w[-1])
@@ -619,8 +592,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask=None, loss=None, max_iter=100,
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
     total_energy = lambda w: tvl1_objective(
-        X, y, unmaskvec(w), alpha=alpha, l1_ratio=l1_ratio, mask=mask,
-        loss=loss)
+        X, y, w, alpha, l1_ratio, mask, loss=loss)
 
     # lispschitz constant of f1_grad
     if lipschitz_constant is None:

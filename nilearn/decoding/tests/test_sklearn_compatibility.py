@@ -14,7 +14,8 @@ def test_get_params():
             for param in ["max_iter", "alpha", "l1_ratio", "verbose",
                           "tol", "mask", "memory", "copy_data",
                           "fit_intercept", "alphas"]:
-                m = SpaceNet(penalty=penalty, classif=classif, **kwargs)
+                m = SpaceNet(mask='dummy',
+                             penalty=penalty, classif=classif, **kwargs)
                 try:
                     params = m.get_params()
                 except AttributeError:

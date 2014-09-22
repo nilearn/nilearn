@@ -51,12 +51,12 @@ def test_same_energy_calculus_pure_lasso():
 
     # check funcvals
     mask = np.ones(dim).astype(np.bool)
-    f1 = squared_loss(X, y, w, mask=mask)
+    f1 = squared_loss(X, y, w[mask])
     f2 = squared_loss_and_spatial_grad(X, y, w.ravel(), mask, 0.)
     assert_equal(f1, f2)
 
     # check derivatives
-    g1 = squared_loss_grad(X, y, w, mask=mask)
+    g1 = squared_loss_grad(X, y, w[mask])
     g2 = squared_loss_and_spatial_grad_derivative(X, y, w.ravel(), mask, 0.)
     np.testing.assert_array_equal(g1, g2)
 
@@ -93,13 +93,15 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=20, decimal=2):
 
     X, y, _ = _make_data()
     alpha = .1
+    mask = np.ones(X.shape[1]).astype(np.bool)
 
     # results should be exactly the same for pure lasso
-    a = tvl1_solver(X, y, alpha, 1., loss="mse", max_iter=max_iter)[0]
+    a = tvl1_solver(X, y, alpha, 1., mask, loss="mse", max_iter=max_iter)[0]
     b = smooth_lasso_squared_loss(X, y, alpha, 1., max_iter=max_iter)[0]
-    sl = SpaceNet(alpha=alpha, l1_ratio=1., penalty="smooth-lasso",
-                  max_iter=max_iter).fit(X, y)
-    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., penalty="tvl1",
+    sl = SpaceNet(
+        alpha=alpha, l1_ratio=1., mask=mask, penalty="smooth-lasso",
+        max_iter=max_iter).fit(X, y)
+    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., mask=mask, penalty="tvl1",
                     max_iter=max_iter).fit(X, y)
 
     # Should be exactly the same (except for numerical errors).
@@ -193,12 +195,15 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
 def test_coef_shape():
     iris = load_iris()
     X, y = iris.data, iris.target
+    mask = np.ones(X.shape[1]).astype(np.bool)
     for penalty in ["smooth-lasso", "tvl1"]:
-        cv = SpaceNet(max_iter=3, penalty=penalty, classif=False).fit(X, y)
+        cv = SpaceNet(
+            mask=mask, max_iter=3, penalty=penalty, classif=False).fit(X, y)
         assert_equal(cv.coef_.ndim, 1)
 
     for penalty in ["smooth-lasso", "tvl1"]:
-        cv = SpaceNet(max_iter=3, penalty=penalty, classif=True).fit(X, y)
+        cv = SpaceNet(mask=mask,
+                      max_iter=3, penalty=penalty, classif=True).fit(X, y)
         assert_equal(cv.coef_.ndim, 2)
 
 
