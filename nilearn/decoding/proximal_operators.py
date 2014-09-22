@@ -161,8 +161,6 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     grad_aux = np.zeros(shape)
     t = 1.
     i = 0
-
-    # XXX should use same formula as in primal_dual.tv_l1.py
     lipschitz_constant = 1.1 * (4 * input_img.ndim * (1 - l1_ratio)
                                 ** 2 + l1_ratio ** 2)
 
