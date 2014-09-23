@@ -68,8 +68,8 @@ def _objective_function(input_img, output_img, gradient, l1_ratio, weight):
 
 def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                max_iter=200, check_gap_frequency=4, val_min=None,
-               val_max=None, verbose=False, fista=True, callback=None,
-               init=None, return_info=False):
+               val_max=None, verbose=False, fista=True, init=None,
+               return_info=False):
     """
     Compute the TV + l1 proximal (ie total-variation +l1 denoising) on
     2-d and 3-d images
@@ -250,8 +250,6 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output
-        if callback is not None:
-            callback(locals())
         i += 1
 
     # Compute the primal variable, however, here we must use the ista
