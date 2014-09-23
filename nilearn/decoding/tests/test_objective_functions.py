@@ -5,11 +5,24 @@ Test module for functions related cost functions (including penalties).
 
 import numpy as np
 from scipy.optimize import check_grad
-from ..objective_functions import (gradient_id, logistic,
-                                   logistic_grad, _unmask,
-                                   test_grad_div_adjoint_arbitrary_ndim)
+from ..objective_functions import (gradient_id, logistic, div_id,
+                                   logistic_grad, _unmask)
 from ..space_net import SpaceNet
 from nose.tools import raises
+
+
+def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5, random_state=42):
+    # We need to check that <D x, y> = <x, DT y> for x and y random vectors
+    random_state = np.random.RandomState(random_state)
+
+    for ndim in xrange(1, max_ndim):
+        shape = tuple([size] * ndim)
+        x = np.random.normal(size=shape)
+        y = np.random.normal(size=[ndim + 1] + list(shape))
+        for l1_ratio in [0., .1, .3, .5, .7, .9, 1.]:
+            np.testing.assert_almost_equal(
+                np.sum(gradient_id(x, l1_ratio=l1_ratio) * y),
+                -np.sum(x * div_id(y, l1_ratio=l1_ratio)))
 
 
 def test_1D_gradient_id():
