@@ -1,7 +1,7 @@
 import itertools
 from nose.tools import assert_true
 import numpy as np
-from ..proximal_operators import prox_l1, prox_tv_l1, _projector_on_dual
+from ..proximal_operators import prox_l1, prox_tv_l1
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):
@@ -40,4 +40,3 @@ def test_prox_tv_l1_approximates_prox_l1_for_lasso(size=15, random_state=42,
             # results shoud be close in l-infinity norm
             np.testing.assert_almost_equal(np.abs(a - b).max(),
                                            0., decimal=decimal)
-
