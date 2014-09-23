@@ -57,8 +57,7 @@ def test_check_niimg():
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, np.eye(4))
 
-    with testing.write_tmp_imgs(data_img, create_files=True)\
-                as filename:
+    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg(filename)
 
     # Test ensure_3d with a in-memory object
