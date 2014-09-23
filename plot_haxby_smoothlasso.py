@@ -52,14 +52,11 @@ fmri_masked = nifti_masker.fit_transform(epi)[condition_mask]
 target = target[condition_mask]
 session_labels = labels['chunks'][condition_mask]
 
-### Cross-validation ##########################################################
-# Here we use a SmoothLasso classifier
+### Fit S-LASSO classifier ##################################################
 from nilearn.decoding.space_net import SpaceNet
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 slcv = SpaceNet(memory=memory, mask=mask, classif=True, verbose=1
                 ).fit(fmri_masked, target)
-
-### Unmasking #################################################################
 
 # Retrieve the SLCV discriminating weights
 coef_ = slcv.coef_
