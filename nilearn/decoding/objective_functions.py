@@ -239,20 +239,6 @@ def _unmask(w, mask):
     return out
 
 
-def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5, random_state=42):
-    # We need to check that <D x, y> = <x, DT y> for x and y random vectors
-    random_state = np.random.RandomState(random_state)
-
-    for ndim in xrange(1, max_ndim):
-        shape = tuple([size] * ndim)
-        x = np.random.normal(size=shape)
-        y = np.random.normal(size=[ndim + 1] + list(shape))
-        for l1_ratio in [0., .1, .3, .5, .7, .9, 1.]:
-            np.testing.assert_almost_equal(
-                np.sum(gradient_id(x, l1_ratio=l1_ratio) * y),
-                -np.sum(x * div_id(y, l1_ratio=l1_ratio)))
-
-
 def _sigmoid(t, copy=True):
     """Helper function: return 1. / (1 + np.exp(-t))"""
     if copy:
