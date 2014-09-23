@@ -167,8 +167,8 @@ def check_niimg(niimg, ensure_3d=False):
             affine = niimg.get_affine()
             niimg = nibabel.Nifti1Image(data[:, :, :, 0], affine)
         else:
-            raise TypeError("A 3D image is expected, but an image"
-                "whith a shape of %s was given." % (shape, ))
+            raise TypeError("A 3D image is expected, but an image "
+                "with a shape of %s was given." % (shape, ))
     return niimg
 
 

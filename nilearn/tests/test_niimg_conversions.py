@@ -66,6 +66,11 @@ def test_check_niimg():
         _utils.check_niimg(data, ensure_3d=True)
     assert_true('3D' in cm.exception.message)
 
+    # Test ensure_3d with a non 3D image
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg(data_img, ensure_3d=True)
+    assert_true('3D' in cm.exception.message)
+
     # Test ensure_3d with a 4D image with a length 1 4th dim
     data = np.zeros((40, 40, 40, 1))
     data_img = Nifti1Image(data, np.eye(4))
