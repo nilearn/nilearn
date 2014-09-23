@@ -13,8 +13,6 @@ from ..space_net_solvers import (
     logistic_data_loss_and_spatial_grad,
     squared_loss_and_spatial_grad_derivative,
     logistic_data_loss_and_spatial_grad_derivative,
-    smooth_lasso_squared_loss_objective,
-    smooth_lasso_squared_loss_dual_objective,
     squared_loss_derivative_lipschitz_constant,
     logistic_derivative_lipschitz_constant,
     max_alpha_logistic,
@@ -178,21 +176,6 @@ def test_logistic_derivative_lipschitz_constant():
                 X, y, x_2, mask, grad_weight))
         point_difference = extmath.norm(x_1 - x_2)
         assert gradient_difference <= lipschitz_constant * point_difference
-
-
-def test_duality_gap():
-    """Tests that the objective function never goes below
-    the dual objective function, because the "primal" is
-    a minimization problem"""
-    alpha = 1
-    l1_ratio = 0.5
-    for _ in xrange(10):
-        point = rng.rand(*w.shape) * rng.randint(100)
-        primal_obj = smooth_lasso_squared_loss_objective(
-            X, y, point, mask, alpha, l1_ratio)
-        dual_obj = smooth_lasso_squared_loss_dual_objective(
-            X, y, w, mask, alpha, l1_ratio)
-        assert primal_obj > dual_obj
 
 
 @nottest

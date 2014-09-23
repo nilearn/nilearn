@@ -110,60 +110,6 @@ def adjoint_data_function(X, w, adjoint_mask, grad_weight):
     return out
 
 
-def smooth_lasso_squared_loss_objective(X, y, w, mask, l1_weight, grad_weight):
-    """
-    Computes the full-blown risk function for SmoothLassoRegressor:
-    squared_loss + gradient + l1_norm
-    """
-    return squared_loss_and_spatial_grad(X, y, w, mask, grad_weight)\
-        + l1_weight * np.sum(np.abs(w))
-
-
-def smooth_lasso_logistic_objective(X, y, w, mask, l1_weight, grad_weight):
-    """
-    Computes the full-blown risk function for SmoothLassoClassifier:
-    squared_loss(X, y, w) + l1_weight * w grad_weight * spatial_gradient
-    """
-    penalty = np.sum(np.abs(w[:-1]))
-    return (logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight)
-            + l1_weight * penalty)
-
-
-def smooth_lasso_squared_loss_dual_objective(X, y, w, mask, l1_weight,
-                                             grad_weight):
-    """
-    Compute dual gap for SmoothLassoRegressor model to check
-    KKT optimality conditions
-
-    Returns
-    -------
-    dual_objective : float
-        the value of the objective function of the dual problem, that is:
-        - 0.5 * np.dot(z, z) - np.dot(y, z), with
-
-        z := alpha * l1_ratio * (Xw - y) / ||Xt(Xw-y)||_inf
-
-    """
-    n_samples, _ = X.shape
-    # Since we are putting the coefficient into the X+G matrix, which
-    # is squared in the data loss function, it must be the
-    # square root of the desired weight
-    actual_grad_weight = np.sqrt(grad_weight)
-
-    dual_var = data_function(X, w, mask, actual_grad_weight)
-    dual_var[:n_samples] -= y
-
-    adjoint_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
-    dual_norm = np.max(np.abs(adjoint_data_function(
-        X, dual_var, adjoint_mask, actual_grad_weight)))
-    const = np.min((l1_weight / dual_norm, 1))
-    dual_var *= const
-
-    dual_objective = (- 0.5 * np.dot(dual_var, dual_var)
-                      - np.dot(y, dual_var[:n_samples]))
-    return dual_objective
-
-
 def squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
                                                n_iterations=100):
     """
