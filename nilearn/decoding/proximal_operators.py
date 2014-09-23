@@ -24,7 +24,7 @@ def prox_l1(y, alpha, copy=True):
     return y
 
 
-def _projector_on_dual(grad, l1_ratio):
+def _projector_on_tvl1_dual(grad, l1_ratio):
     """
     modifies IN PLACE the gradient + id to project it
     on the l21 unit ball in the gradient direction and the l1 ball in the
@@ -193,12 +193,12 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
         grad_tmp = gradient_id(negated_output, l1_ratio=l1_ratio)
         grad_tmp *= 1. / (lipschitz_constant * weight)
         grad_aux += grad_tmp
-        grad_tmp = _projector_on_dual(
+        grad_tmp = _projector_on_tvl1_dual(
             grad_aux, l1_ratio
             )  # XXX this makes grad_aux and grad_tmp point to thesame buffer!
 
         # Carefull, in the next few lines, grad_tmp and grad_aux are a
-        # view on the same array, as _projector_on_dual returns a view
+        # view on the same array, as _projector_on_tvl1_dual returns a view
         # on the input array
         t_new = 0.5 * (1. + sqrt(1. + 4. * t * t))
         t_factor = (t - 1.) / t_new
