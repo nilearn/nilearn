@@ -21,8 +21,6 @@ from ..space_net_solvers import (squared_loss_and_spatial_grad,
 from ..space_net import SpaceNet
 from nose.tools import assert_equal
 
-rng = check_random_state(42)
-
 
 def _make_data():
     dim = (16, 16)
@@ -40,6 +38,7 @@ def _make_data():
 
 
 def test_same_energy_calculus_pure_lasso():
+    rng = check_random_state(42)
     dim = (16, 16)
     np.random.seed(0)
     n = 40
@@ -62,6 +61,7 @@ def test_same_energy_calculus_pure_lasso():
 
 
 def test_lipschitz_constant_lass_mse():
+    rng = check_random_state(42)
     l1_ratio = 1.
     alpha = .1
     n, p = 4, 10
@@ -74,6 +74,7 @@ def test_lipschitz_constant_lass_mse():
 
 
 def test_lipschitz_constant_lass_logreg():
+    rng = check_random_state(42)
     l1_ratio = 1.
     alpha = .1
     n, p = 4, 10
@@ -144,6 +145,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=10,
 
 
 def test_logreg_with_mask_issue_10():
+    rng = check_random_state(42)
     shape = (3, 4, 5)
     n_samples = 10
     mask = np.zeros(np.prod(shape))
