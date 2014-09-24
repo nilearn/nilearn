@@ -36,6 +36,7 @@ def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
 
 
 def test_input_args_and_kwargs():
+    rng = np.random.RandomState(42)
     p = 125
     noise_std = 1e-1
     sig = np.zeros(p)
@@ -43,7 +44,7 @@ def test_input_args_and_kwargs():
     sig[:6] = 2
     sig[-7:] = 2
     sig[60:75] = 1
-    y = sig + noise_std * np.random.randn(*sig.shape)
+    y = sig + noise_std * rng.randn(*sig.shape)
     X = np.eye(p)
     mask = np.ones((p,)).astype(np.bool)
     alpha = .01

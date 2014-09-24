@@ -26,7 +26,6 @@ from .simulate_smooth_lasso_data import (
     create_smooth_simulation_data, create_simulation_data)
 X, y, w, mask = create_smooth_simulation_data(
     snr=1., n_samples=10, size=4, n_points=5, random_state=42)
-rng = check_random_state(42)
 
 
 def get_gradient_matrix(w_size, mask):
@@ -51,6 +50,7 @@ def get_gradient_matrix(w_size, mask):
 
 def test_grad_matrix():
     """Test for matricial form of gradient"""
+    rng = check_random_state(42)
     G = get_gradient_matrix(w.size, mask)
     image_buffer = np.zeros(mask.shape)
     grad_mask = np.array([mask for _ in xrange(mask.ndim)])
@@ -62,6 +62,7 @@ def test_grad_matrix():
 
 def test_adjointness(size=4):
     """Tests for adjointness between gradient and div operators"""
+    rng = check_random_state(42)
     for _ in xrange(3):
         image_1 = rng.rand(size, size, size)
         image_2 = rng.rand(3, size, size, size)
@@ -73,8 +74,11 @@ def test_adjointness(size=4):
 def test_identity_adjointness(size=4):
     """Tests adjointess between data_function and
     adjoint_data_function, with identity design matrix"""
+    rng = check_random_state(42)
+
     # A mask full of ones
     mask = np.ones((size, size, size), dtype=np.bool)
+
     # But with some zeros
     mask[0:3, 0:3, 0:3] = 0
     adjoint_mask = np.array([mask for _ in xrange(mask.ndim)])
@@ -92,8 +96,11 @@ def test_identity_adjointness(size=4):
 
 def test_operators_adjointness(size=4):
     """The same as test_identity_adjointness, but with generic design matrix"""
+    rng = check_random_state(42)
+
     # A mask full of ones
     mask = np.ones((size, size, size), dtype=np.bool)
+
     # But with some zeros
     mask[0:3, 0:3, 0:3] = 0
     adjoint_mask = np.array([mask for _ in xrange(mask.ndim)])
@@ -146,6 +153,7 @@ def test_logistic_gradient_at_simple_points():
 def test_squared_loss_derivative_lipschitz_constant():
     # Tests Lipschitz-continuity of the derivative of squared_loss loss
     # function
+    rng = check_random_state(42)
     grad_weight = 2.08e-1
     lipschitz_constant = squared_loss_derivative_lipschitz_constant(
         X, mask, grad_weight)
@@ -163,6 +171,7 @@ def test_squared_loss_derivative_lipschitz_constant():
 
 def test_logistic_derivative_lipschitz_constant():
     # Tests Lipschitz-continuity of of the derivative of logistic loss
+    rng = check_random_state(42)
     grad_weight = 2.08e-1
     lipschitz_constant = logistic_derivative_lipschitz_constant(
         X, mask, grad_weight)
@@ -183,6 +192,7 @@ def test_fista_convergence():
     """Tests fista 1/k**2 convergence, theorem 4.4, "A Fast Iterative
     Shrinkage-Thresholding Algorithm for Linear Inverse Problems",
     url:http://mechroom.technion.ac.il/~becka/papers/71654.pdf"""
+    rng = check_random_state(42)
     alpha = 1
     l1_ratio = 0.5
     reg = SpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio)
