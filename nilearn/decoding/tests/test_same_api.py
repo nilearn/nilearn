@@ -98,7 +98,8 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=20, decimal=2):
 
     # results should be exactly the same for pure lasso
     a = tvl1_solver(X, y, alpha, 1., mask, loss="mse", max_iter=max_iter)[0]
-    b = smooth_lasso_squared_loss(X, y, alpha, 1., max_iter=max_iter)[0]
+    b = smooth_lasso_squared_loss(X, y, alpha, 1., max_iter=max_iter,
+                                  mask=mask)[0]
     sl = SpaceNet(
         alpha=alpha, l1_ratio=1., mask=mask, penalty="smooth-lasso",
         max_iter=max_iter).fit(X, y)

@@ -12,7 +12,7 @@ from sklearn.externals.joblib import Memory
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
-n_subjects = 100   # more subjects requires more memory
+n_subjects = 20   # more subjects requires more memory
 memory = Memory("cache")
 
 ### Load Oasis dataset ########################################################
@@ -27,19 +27,22 @@ nifti_masker = NiftiMasker(
 # remove features with too low between-subject variance
 gm_maps_masked = nifti_masker.fit_transform(dataset_files.gray_matter_maps)
 gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
+
 # final masking
 new_images = nifti_masker.inverse_transform(gm_maps_masked)
 gm_maps_masked = nifti_masker.fit_transform(new_images)
-n_samples, n_features = gm_maps_masked.shape
-mask = nifti_masker.mask_img_.get_data().astype(np.bool)
-print n_samples, "subjects, ", n_features, "features"
+
+# n_samples, n_features = gm_maps_masked.shape
+# mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+# print n_samples, "subjects, ", n_features, "features"
 
 from nilearn.decoding.space_net import SpaceNet
-slcv = SpaceNet(verbose=1, memory=memory, mask=mask, screening_percentile=10)
+slcv = SpaceNet(memory=memory, screening_percentile=10, verbose=1,
+                mask=nifti_masker)
 
 ### Fit and predict
-slcv.fit(gm_maps_masked, age)
-age_pred = slcv.predict(gm_maps_masked).ravel()
+slcv.fit(new_images, age)
+age_pred = slcv.predict(new_images).ravel()
 
 ### Visualisation
 ### Look at the S-LASSOCV's discriminating weights
