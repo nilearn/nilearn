@@ -11,7 +11,6 @@ Regression with spatial priors like TV-l1 and Smooth LASSO.
 #         and others.
 # License: simplified BSD
 
-import warnings
 import numpy as np
 from sklearn.base import is_classifier
 from .._utils.fixes.sklearn_basic_backports import LabelBinarizer
@@ -273,12 +272,6 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
     """
 
     n_samples, n_features = X.shape
-
-    # XXX smooth_lasso code breaks-down if mask is None!
-    if mask is None:
-        warnings.warn(
-            "mask is None. Defaulting to full 1D mask of length = X.shape[1&]")
-        mask = np.ones(n_features).astype(np.bool)
 
     # misc
     model_size = n_features

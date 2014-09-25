@@ -14,13 +14,14 @@ sklearn-compatible Cross-Validation module for TV-l1, S-LASSO, etc. models
 from functools import partial
 import numpy as np
 from scipy import stats
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (
     f_regression, f_classif, SelectPercentile)
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
+from ..input_data import NiftiMasker
 from .._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
                             atleast2d_or_csr)
 from .objective_functions import _sigmoid
@@ -350,9 +351,31 @@ class SpaceNet(LinearModel, RegressorMixin):
         Constant that mixes L1 and TV (resp. SL) terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO.
 
-    mask : 3D array of booleans, optional (default None)
-        The support of this mask defines the ROIs being considered in
-        the problem.
+    mask: filename, NiImage, MultiNiftiMasker instance, or 3D array (optional)
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given,
+        it will be computed automatically by a MultiNiftiMasker with default
+        parameters.
+
+    target_affine: 3x3 or 4x4 matrix, optional
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    low_pass: False or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: False or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    t_r: float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     screening_percentile : float in the interval [0, 100]; Optional (
     default 10)
@@ -413,12 +436,14 @@ class SpaceNet(LinearModel, RegressorMixin):
 
     SUPPORTED_PENALTIES = ["smooth-lasso", "tvl1"]
 
-    def __init__(self, penalty="smooth-lasso", classif=False,
-                 alpha=None, alphas=None, l1_ratio=.5, mask=None,
-                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 standardize=False, normalize=False, alpha_min=1e-6,
-                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3, cv=10,
-                 fit_intercept=True, screening_percentile=10., debias=False):
+    def __init__(self, penalty="smooth-lasso", classif=False, alpha=None,
+                 alphas=None, l1_ratio=.5, mask=None, smoothing_fwhm=None,
+                 target_affine=None, target_shape=None, low_pass=None,
+                 high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
+                 memory=Memory(None), copy_data=True, standardize=False,
+                 normalize=False, alpha_min=1e-6, verbose=0,
+                 n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
+                 screening_percentile=10., debias=False):
         super(SpaceNet, self).__init__()
 
         # sanity checks
@@ -439,6 +464,12 @@ class SpaceNet(LinearModel, RegressorMixin):
                     self.SUPPORTED_PENALTIES[-1], penalty))
 
         # continue setting params
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
+        self.smoothing_fwhm = smoothing_fwhm
+        self.target_affine = target_affine
+        self.target_shape = target_shape
         self.penalty = penalty
         self.classif = classif
         self.alpha = alpha
@@ -545,7 +576,48 @@ class SpaceNet(LinearModel, RegressorMixin):
         return self.classes_[indices]
 
     def fit(self, X, y):
-        X = np.array(X)
+        """Fit the learner.
+
+        Parameters
+        ----------
+        X: list of filenames or NiImages of length n_samples, or 2D array of
+           shape (n_samples, n_features)
+            Brain images (possibly masked) on which the which a structured
+            weights map is to be learned. This is the independent variable
+            (e.g gray-matter maps from VBM analysis, etc.)
+
+        y: array or list of length n_samples
+            The dependent variable (age, sex, QI, etc.)
+
+        Notes
+        -----
+        Model selection is via cross-validation with bagging.
+
+        """
+
+        # compute / sanitize mask
+        if isinstance(self.mask, np.ndarray):
+            self.mask_ = self.mask.copy()
+            X = np.array(X)
+        else:
+            if isinstance(self.mask, NiftiMasker):
+                self.masker_ = clone(self.mask)
+            else:
+                # compute mask
+                self.masker_ = NiftiMasker(mask_img=self.mask,
+                                           smoothing_fwhm=self.smoothing_fwhm,
+                                           target_affine=self.target_affine,
+                                           target_shape=self.target_shape,
+                                           low_pass=self.low_pass,
+                                           high_pass=self.high_pass,
+                                           mask_strategy='epi',
+                                           t_r=self.t_r,
+                                           memory=self.memory,
+                                           memory_level=self.memory_level,
+                                           n_jobs=self.n_jobs)
+            X = self.masker_.fit_transform(X)
+            self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
+
         y = np.array(y).ravel()
         n_samples, _ = X.shape
 
@@ -610,7 +682,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         w = np.zeros((n_problems, X.shape[1] + int(self.classif > 0)))
 
         # parameter to path_scores function
-        path_params = dict(mask=self.mask, tol=self.tol, verbose=self.verbose,
+        path_params = dict(mask=self.mask_, tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
                            screening_percentile=self.screening_percentile,
                            classif=self.classif)
@@ -639,8 +711,10 @@ class SpaceNet(LinearModel, RegressorMixin):
             self.i_alpha_ = self.i_alpha_
         self.alpha_ = alphas[self.i_alpha_]
 
+        # bagging: average best weights maps over folds
         w /= self.n_folds_
 
+        # set coefs and intercepts
         if self.classif:
             self._set_coef_and_intercept(w)
         else:
@@ -653,5 +727,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         if not self.classif:
             self.coef_ = self.coef_[0]
             self.scores_ = self.scores_[0]
+
+        # unmask weights map as a niimg
+        if hasattr(self, 'masker_'):
+            self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         return self

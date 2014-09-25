@@ -46,9 +46,11 @@ else:
     data[:, data.shape[1] / 2:, :] = 0
     epi = nibabel.Nifti1Image(data, epi.get_affine())
     nifti_masker = NiftiMasker(standardize=True, memory=memory,
-                         mask_strategy='epi')
+                               mask_strategy='epi')
 
 fmri_masked = nifti_masker.fit_transform(epi)[condition_mask]
+assert 0
+
 target = target[condition_mask]
 session_labels = labels['chunks'][condition_mask]
 
