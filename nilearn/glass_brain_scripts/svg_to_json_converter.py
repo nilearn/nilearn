@@ -4,13 +4,6 @@ import re
 import sys
 import json
 
-try:
-    import svg
-except ImportError as exc:
-    exc.args += ('Could not import svg (https://github.com/cjlano/svg)'
-                 ' which is required to parse the svg file')
-    raise
-
 
 class SVGToJSONConverter(object):
     """Reads an svg file and exports paths to a JSON format
@@ -113,7 +106,19 @@ class SVGToJSONConverter(object):
         with open(filename, 'w') as f:
             f.write(json_content)
 
+
+def _import_svg():
+    try:
+        import svg
+        return svg
+    except ImportError as exc:
+        exc.args += ('Could not import svg (https://github.com/cjlano/svg)'
+                     ' which is required to parse the svg file', )
+        raise
+
 if __name__ == '__main__':
+    svg = _import_svg()
+
     svg_filename = sys.argv[1]
     json_filename = sys.argv[2]
     converter = SVGToJSONConverter(svg_filename)
