@@ -28,7 +28,7 @@ from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform,\
             get_mask_bounds
 
-from ..glass_brain_scripts import brain_plotter
+from .glass_brain_scripts import brain_plotter
 
 ################################################################################
 # class CutAxes
@@ -898,7 +898,8 @@ def _get_json_and_transform(direction):
         'y': [0.39, 0, 0, 0.39, -72, -73],
         'z': [0.36, 0, 0, 0.37, -71, -107]}
 
-    dirname = '/home/lesteve/dev/nilearn/nilearn/glass_brain_scripts/generated_json'
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    dirname = os.path.join(dirname, 'glass_brain_scripts', 'generated_json')
     direction_to_filename = {
         direction: os.path.join(dirname,
                                 'brain_schematics_{}.json'.format(view_name))
