@@ -49,8 +49,6 @@ else:
                                mask_strategy='epi')
 
 fmri_masked = nifti_masker.fit_transform(epi)[condition_mask]
-assert 0
-
 target = target[condition_mask]
 session_labels = labels['chunks'][condition_mask]
 
