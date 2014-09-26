@@ -55,11 +55,11 @@ not possible in the case of Searchlight because, to compute the score of
 non-masked voxels, some masked voxels may be needed. This is why two masks will
 be used here :
 
-- *mask* is the anatomical mask
-- *process_mask* is a subset of mask and contains voxels to be processed.
+- *mask_img* is the anatomical mask
+- *process_mask_img* is a subset of mask and contains voxels to be processed.
 
-*process_mask* will then be used to restrain computation to one slice, in the
-back of the brain. *mask* will ensure that no value outside the brain is
+*process_mask_img* will then be used to restrain computation to one slice, in the
+back of the brain. *mask_img* will ensure that no value outside the brain is
 taken into account when iterating with the sphere.
 
 .. literalinclude:: ../../plot_haxby_searchlight.py

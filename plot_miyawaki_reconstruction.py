@@ -42,7 +42,8 @@ sys.stderr.write("Preprocessing data...")
 t0 = time.time()
 
 # Load and mask fMRI data
-masker = MultiNiftiMasker(mask=dataset.mask, detrend=True, standardize=False)
+masker = MultiNiftiMasker(mask_img=dataset.mask, detrend=True,
+                          standardize=False)
 masker.fit()
 X_train = masker.transform(X_random)
 X_test = masker.transform(X_figure)

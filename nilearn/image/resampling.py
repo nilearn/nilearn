@@ -328,7 +328,7 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                          " be specified too.")
 
     if target_shape is not None and not len(target_shape) == 3:
-        raise ValueError('The shape specified should be the shape of'
+        raise ValueError('The shape specified should be the shape of '
                          'the 3D grid, and thus of length 3. %s was specified'
                          % str(target_shape))
 
