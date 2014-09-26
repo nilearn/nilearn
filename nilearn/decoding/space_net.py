@@ -610,11 +610,8 @@ class SpaceNet(LinearModel, RegressorMixin):
                                            target_shape=self.target_shape,
                                            low_pass=self.low_pass,
                                            high_pass=self.high_pass,
-                                           mask_strategy='epi',
-                                           t_r=self.t_r,
-                                           memory=self.memory,
-                                           memory_level=self.memory_level,
-                                           n_jobs=self.n_jobs)
+                                           mask_strategy='epi', t_r=self.t_r,
+                                           memory=self.memory)
             X = self.masker_.fit_transform(X)
             self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
 
