@@ -134,9 +134,6 @@ class CutAxes(object):
         xmin = min(xmins.min(), xmaxs.min())
         ymax = max(ymaxs.max(), ymins.max())
         ymin = min(ymins.min(), ymaxs.min())
-        # TODO: should I do better than adding a arbitrary margin?
-        # For example, add get_object_bounds to brain_plotter? The
-        # problem is that I need to do the data transform.
         xmargin = (xmax - xmin) * 0.05
         ymargin = (ymax - ymin) * 0.05
         return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
