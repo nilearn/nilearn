@@ -86,19 +86,23 @@ def _fast_smooth_array(arr):
     """Simple smoothing which is less computationally expensive than
     applying a gaussian filter.
 
-    The filter is [.2, 1, 2] in each direction with a normalisation to
-    preserve the scale.
+    Only the first three dimensions of the array will be smoothed. The
+    filter uses [0.2, 1, 0.2] weights in each direction and use a
+    normalisation to preserve the scale.
 
     Parameters
-    ----------
-    arr: 3D ndarray
+    ==========
+    arr: numpy.ndarray
+        4D array, with image number as last dimension. 3D arrays are
+        also accepted.
 
     Returns
-    -------
-    smoothed_arr: 3D ndarray
+    =======
+    smoothed_arr: numpy.ndarray
+        Smoothed array.
 
     Note
-    ----
+    ====
     Rather than calling this function directly, users are encouraged
     to call the high-level function :func:`smooth_img` with
     fwhm='fast'.
@@ -146,7 +150,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
         If fwhm='fast', a fast smoothing will be performed with
-        a filter [.2, 1, .2] in each direction and a normalisation
+        a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed).
