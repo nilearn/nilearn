@@ -33,6 +33,32 @@ def test_high_variance_confounds():
     assert_true(confounds2.shape == (length, n_confounds))
 
 
+def test__fast_smooth_array():
+    data = np.ones((4, 4, 4))
+    smooth_data = image._fast_smooth_array(data)
+    expected = np.array([
+        [[0.72727273,  0.81818182,  0.81818182,  0.72727273],
+         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
+         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
+         [0.72727273,  0.81818182,  0.81818182,  0.72727273]],
+
+        [[0.81818182,  0.90909091,  0.90909091,  0.81818182],
+         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
+         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
+         [0.81818182,  0.90909091,  0.90909091,  0.81818182]],
+
+        [[0.81818182,  0.90909091,  0.90909091,  0.81818182],
+         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
+         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
+         [0.81818182,  0.90909091,  0.90909091,  0.81818182]],
+
+        [[0.72727273,  0.81818182,  0.81818182,  0.72727273],
+         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
+         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
+         [0.72727273,  0.81818182,  0.81818182,  0.72727273]]])
+
+    np.testing.assert_allclose(smooth_data, expected)
+
 def test__smooth_array():
     """Test smoothing of images: _smooth_array()"""
     # Impulse in 3D
@@ -80,6 +106,11 @@ def test__smooth_array():
                           axis=axis), axis=-1), axis=-1)
             np.testing.assert_equal(proj.sum(),
                                     fwhm / np.abs(affine[axis, axis]))
+
+    # Check fwhm='fast'
+    for affine in test_affines:
+        np.testing.assert_equal(image._smooth_array(data, affine, fwhm='fast'),
+                                image._fast_smooth_array(data))
 
 
 def test_smooth_img():

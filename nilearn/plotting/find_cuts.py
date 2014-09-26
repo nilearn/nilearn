@@ -15,6 +15,7 @@ from .._utils.ndimage import largest_connected_component
 from .._utils.fast_maths import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
+from ..image.image import smooth_img
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -119,35 +120,6 @@ def _get_auto_mask_bounds(img):
             get_mask_bounds(nibabel.Nifti1Image(mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
-def simple_smoothing(data, copy=True):
-    """Simple smoothing which is less computationally expensive than
-    scipy.ndimage.gaussian_filter
-
-    Parameters
-    ----------
-    data: 3D ndarray
-
-    copy: boolean
-        Whether to take a copy of the input data. If set to False, the
-        input data will be modified in place.
-
-    Returns
-    -------
-    smoothed_data: 3D ndarray
-
-    """
-    if copy:
-        smoothed_data = data.copy()
-
-    smoothed_data[:-1] += .2 * data[1:]
-    smoothed_data[1:]  += .2 * data[:-1]
-    smoothed_data[:, :-1] += .2 * data[:, 1:]
-    smoothed_data[:, 1:]  += .2 * data[:, :-1]
-    smoothed_data[:, :, :-1] += .2 * data[:, :, 1:]
-    smoothed_data[:, :, 1:]  += .2 * data[:, :, :-1]
-
-    return smoothed_data
-
 def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
 
@@ -180,7 +152,6 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
 
     axis = 'xyz'.index(direction)
 
-
     affine = img.get_affine()
     orig_data = np.abs(img.get_data())
     this_shape = orig_data.shape[axis]
@@ -191,11 +162,10 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     data = orig_data.copy()
     if data.dtype.kind == 'i':
         data = data.astype(np.float)
-        # We have discrete values: we smooth them in order to have
-        # maxima located at the center of peaks
-        # 'data' is already a copy of the input data
-        # so no need to copy it again
-        data = simple_smoothing(data, copy=False)
+
+    smoothed_img = nibabel.Nifti1Image(data, affine)
+    smoothed_img = smooth_img(smoothed_img, fwhm='fast')
+    data = smoothed_img.get_data()
 
     if spacing == 'auto':
         spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)

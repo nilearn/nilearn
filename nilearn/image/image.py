@@ -82,6 +82,39 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                                            detrend=detrend)
 
 
+def _fast_smooth_array(data):
+    """Simple smoothing which is less computationally expensive than
+    scipy.ndimage.gaussian_filter
+
+    Parameters
+    ----------
+    data: 3D ndarray
+
+    Returns
+    -------
+    smoothed_data: 3D ndarray
+
+    """
+    # Need to copy because the smoothing is split on different statements
+    smoothed_data = data.copy()
+    neighbor_weight = 0.2
+    # 6 neighbors in 3D if not on an edge
+    nb_neighbors = 6
+    # This scale ensures that a uniform array stays uniform
+    # except on the array edges
+    scale = 1 + nb_neighbors * neighbor_weight
+
+    smoothed_data[:-1] += neighbor_weight * data[1:]
+    smoothed_data[1:] += neighbor_weight * data[:-1]
+    smoothed_data[:, :-1] += neighbor_weight * data[:, 1:]
+    smoothed_data[:, 1:] += neighbor_weight * data[:, :-1]
+    smoothed_data[:, :, :-1] += neighbor_weight * data[:, :, 1:]
+    smoothed_data[:, :, 1:] += neighbor_weight * data[:, :, :-1]
+    smoothed_data /= scale
+
+    return smoothed_data
+
+
 def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """Smooth images by applying a Gaussian filter.
 
@@ -138,7 +171,9 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
 
-    if fwhm is not None:
+    if fwhm == 'fast':
+        arr = _fast_smooth_array(arr)
+    elif fwhm is not None:
         # Convert from a FWHM to a sigma:
         # Do not use /=, fwhm may be a numpy scalar
         fwhm = fwhm / np.sqrt(8 * np.log(2))
