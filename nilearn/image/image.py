@@ -82,21 +82,28 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                                            detrend=detrend)
 
 
-def _fast_smooth_array(data):
+def _fast_smooth_array(arr):
     """Simple smoothing which is less computationally expensive than
-    scipy.ndimage.gaussian_filter
+    applying a gaussian filter.
+
+    The filter is [.2, 1, 2] in each direction with a normalisation to
+    preserve the scale.
 
     Parameters
     ----------
-    data: 3D ndarray
+    arr: 3D ndarray
 
     Returns
     -------
-    smoothed_data: 3D ndarray
+    smoothed_arr: 3D ndarray
+
+    Note
+    ----
+    Rather than calling this function directly, users are encouraged
+    to call the high-level function :func:`smooth_img` with
+    fwhm='fast'.
 
     """
-    # Need to copy because the smoothing is split on different statements
-    smoothed_data = data.copy()
     neighbor_weight = 0.2
     # 6 neighbors in 3D if not on an edge
     nb_neighbors = 6
@@ -104,15 +111,19 @@ def _fast_smooth_array(data):
     # except on the array edges
     scale = 1 + nb_neighbors * neighbor_weight
 
-    smoothed_data[:-1] += neighbor_weight * data[1:]
-    smoothed_data[1:] += neighbor_weight * data[:-1]
-    smoothed_data[:, :-1] += neighbor_weight * data[:, 1:]
-    smoothed_data[:, 1:] += neighbor_weight * data[:, :-1]
-    smoothed_data[:, :, :-1] += neighbor_weight * data[:, :, 1:]
-    smoothed_data[:, :, 1:] += neighbor_weight * data[:, :, :-1]
-    smoothed_data /= scale
+    # Need to copy because the smoothing is done in multiple statements
+    # and there does not seem to be an easy way to do it in place
+    smoothed_arr = arr.copy()
 
-    return smoothed_data
+    smoothed_arr[:-1] += neighbor_weight * arr[1:]
+    smoothed_arr[1:] += neighbor_weight * arr[:-1]
+    smoothed_arr[:, :-1] += neighbor_weight * arr[:, 1:]
+    smoothed_arr[:, 1:] += neighbor_weight * arr[:, :-1]
+    smoothed_arr[:, :, :-1] += neighbor_weight * arr[:, :, 1:]
+    smoothed_arr[:, :, 1:] += neighbor_weight * arr[:, :, :-1]
+    smoothed_arr /= scale
+
+    return smoothed_arr
 
 
 def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
@@ -134,8 +145,12 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         Smoothing strength, as a full-width at half maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If fwhm='fast', a fast smoothing will be performed with
+        a filter [.2, 1, .2] in each direction and a normalisation
+        to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed)
+        of non-finite values is needed).
+
 
     ensure_finite: bool
         if True, replace every non-finite values (like NaNs) by zero before
