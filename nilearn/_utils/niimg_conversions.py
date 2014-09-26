@@ -143,7 +143,7 @@ def check_niimg(niimg, ensure_3d=False):
     if hasattr(niimg, "__iter__"):
         if ensure_3d:
             raise TypeError("A 3D image is expected, but an iterable was"
-                "given: %s" % short_repr(niimg))
+                " given: %s" % short_repr(niimg))
         if hasattr(niimg, "__len__") and len(niimg) == 0:
             raise TypeError('An empty object - %r - was passed instead of an '
                             'image or a list of images' % niimg)
@@ -167,8 +167,8 @@ def check_niimg(niimg, ensure_3d=False):
             affine = niimg.get_affine()
             niimg = nibabel.Nifti1Image(data[:, :, :, 0], affine)
         else:
-            raise TypeError("A 3D image is expected, but an image"
-                "whith a shape of %s was given." % (shape, ))
+            raise TypeError("A 3D image is expected, but an image "
+                "with a shape of %s was given." % (shape, ))
     return niimg
 
 
