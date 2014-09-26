@@ -422,8 +422,19 @@ class SpaceNet(LinearModel, RegressorMixin):
     `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
 
-        `coef_` is readonly property derived from `raw_coef_` that \
+        `coef_` is readonly property derived from `raw_coef_` that
         follows the internal memory layout of liblinear.
+
+    `masker_`: instance of NiftiMasker
+        If a niimg mask (not simply a 3D array) was provided the constructor,
+        then this is the nifti masker used to mask the data.
+
+    `mask_`: 3D array of booleans
+        The mask used for masking the data.
+
+    `mask_img_`: Nifti like image
+        The mask of the data. If no mask was given at masker creation, contains
+        the automatically computed mask.
 
     `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
@@ -613,6 +624,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                                            mask_strategy='epi', t_r=self.t_r,
                                            memory=self.memory)
             X = self.masker_.fit_transform(X)
+            self.mask_img_ = self.masker_.mask_img_
             self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
 
         y = np.array(y).ravel()
