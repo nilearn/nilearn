@@ -6,8 +6,10 @@ the data with different layout of cuts.
 """
 
 import operator
+import os
 
 import numpy as np
+
 import nibabel
 from .._utils.testing import skip_if_running_nose
 from .. import _utils
@@ -26,6 +28,7 @@ from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform,\
             get_mask_bounds
 
+from ..glass_brain_scripts import brain_plotter
 
 ################################################################################
 # class CutAxes
@@ -81,6 +84,17 @@ class CutAxes(object):
                              self.direction)
         return cut
 
+    def add_object_bounds(self, bounds):
+        """A simple function that ensures that axes get rescaled when adding
+        object bounds
+
+        """
+        old_object_bounds = self.get_object_bounds()
+        self._object_bounds.append(bounds)
+        new_object_bounds = self.get_object_bounds()
+
+        if new_object_bounds != old_object_bounds:
+            self.ax.axis(self.get_object_bounds())
 
     def draw_cut(self, cut, data_bounds, bounding_box,
                   type='imshow', **kwargs):
@@ -104,9 +118,8 @@ class CutAxes(object):
         # we change the data
         im = getattr(ax, type)(cut.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs)
 
-        self._object_bounds.append((xmin_, xmax_, zmin_, zmax_))
-        ax.axis(self.get_object_bounds())
-        
+        self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
+
         return im
 
 
@@ -121,7 +134,12 @@ class CutAxes(object):
         xmin = min(xmins.min(), xmaxs.min())
         ymax = max(ymaxs.max(), ymins.max())
         ymin = min(ymins.min(), ymaxs.min())
-        return xmin, xmax, ymin, ymax
+        # TODO: should I do better than adding a arbitrary margin?
+        # For example, add get_object_bounds to brain_plotter? The
+        # problem is that I need to do the data transform.
+        xmargin = (xmax - xmin) * 0.05
+        ymargin = (ymax - ymin) * 0.05
+        return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
 
 
     def draw_left_right(self, size, bg_color, **kwargs):
@@ -172,6 +190,7 @@ class BaseSlicer(object):
     # pseudo absolute value
     _colorbar_width = 0.06
     _colorbar_labels_margin = 2.8
+    axes_class = CutAxes
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -466,6 +485,17 @@ class BaseSlicer(object):
             cut_ax.draw_cut(edge_mask, data_bounds, data_bounds,
                             type='imshow', **kwargs)
 
+    def add_brain_schematics(self):
+        """TODO: doc
+        """
+        for cut_ax in self.axes.itervalues():
+            json_filename, transform = _get_json_and_transform(cut_ax.direction)
+            ax = cut_ax.ax
+            bp = brain_plotter.BrainPlotter(json_filename, transform)
+            bp.plot(ax)
+
+            cut_ax.add_object_bounds(bp.get_object_bounds())
+
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
 
@@ -546,6 +576,7 @@ class OrthoSlicer(BaseSlicer):
         best in the viewing area.
     """
     _cut_displayed = 'yxz'
+    axes_class = CutAxes
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
@@ -573,7 +604,7 @@ class OrthoSlicer(BaseSlicer):
                          axisbg=axisbg)
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
-            cut_ax = CutAxes(ax, direction, coord)
+            cut_ax = self.axes_class(ax, direction, coord)
             self.axes[direction] = cut_ax
             ax.set_axes_locator(self._locator)
 
@@ -598,7 +629,7 @@ class OrthoSlicer(BaseSlicer):
         width_dict = dict()
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
-        dummy_ax = CutAxes(None, None, None)
+        dummy_ax = self.axes_class(None, None, None)
         width_dict[dummy_ax.ax] = 0
         cut_ax_dict = self.axes
 
@@ -681,7 +712,6 @@ class OrthoSlicer(BaseSlicer):
                 ax.axhline(y, **kwargs)
 
 
-
 ################################################################################
 # class BaseStackedSlicer
 ################################################################################
@@ -731,7 +761,7 @@ class BaseStackedSlicer(BaseSlicer):
             ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
                           fraction*(x1-x0), y1-y0])
             ax.axis('off')
-            cut_ax = CutAxes(ax, self._direction, coord)
+            cut_ax = self.axes_class(ax, self._direction, coord)
             self.axes[coord] = cut_ax
             ax.set_axes_locator(self._locator)
 
@@ -843,4 +873,60 @@ def get_slicer(display_mode):
     raise ValueError("%s is not a valid display_mode. Valid options are "
                      "%s" % (display_mode,
                      ", ".join("%r" % k for k in sorted(SLICERS.keys()))))
+
+
+class MyCutAxes(CutAxes):
+
+    # TODO: do_cut should probably be renamed because it has nothing
+    # to do with a cut
+    def do_cut(self, data, affine):
+        sum_axis = 'xyz'.index(self.direction)
+        summed_data = data.sum(axis=sum_axis)
+        return np.rot90(summed_data)
+
+class MyOrthoSlicer(OrthoSlicer):
+    """TODO: Fill out the doc
+
+    """
+    axes_class = MyCutAxes
+
+
+def _get_json_and_transform(direction):
+    direction_to_view_name = {'x': 'side',
+                              'y': 'front',
+                              'z': 'top'}
+
+    direction_to_transform_params = {
+        'x': [0.38, 0, 0, 0.38, -108, -70],
+        'y': [0.39, 0, 0, 0.39, -72, -73],
+        'z': [0.36, 0, 0, 0.37, -71, -107]}
+
+    dirname = '/home/lesteve/dev/nilearn/nilearn/glass_brain_scripts/generated_json'
+    direction_to_filename = {
+        direction: os.path.join(dirname,
+                                'brain_schematics_{}.json'.format(view_name))
+        for direction, view_name in direction_to_view_name.iteritems()
+    }
+
+    direction_to_transforms = {
+        direction: transforms.Affine2D.from_values(*params)
+        for direction, params in direction_to_transform_params.iteritems()
+    }
+
+    direction_to_json_and_transform = {
+        direction: (direction_to_filename[direction],
+                    direction_to_transforms[direction])
+        for direction in direction_to_filename
+    }
+
+    filename_and_transform = direction_to_json_and_transform.get(direction)
+
+    if filename_and_transform is None:
+        message = ("No glass brain view associated with direction '{}'. "
+                   "Possible directions are {}").format(
+                       direction,
+                       direction_to_json_and_transform.keys())
+        raise ValueError(message)
+
+    return filename_and_transform
 

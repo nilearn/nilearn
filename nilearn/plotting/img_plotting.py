@@ -29,6 +29,7 @@ from .. import _utils
 from .._utils.extmath import fast_abs_percentile
 from ..datasets import load_mni152_template
 from .slicers import get_slicer
+from . import slicers
 from . import cm
 from .find_cuts import find_cut_slices
 
@@ -605,4 +606,76 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                **kwargs)
     return slicer
 
+def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
+                     output_file=None, #display_mode='ortho',TODO support display_mode
+                     colorbar=True,
+                     figure=None, axes=None, title=None, threshold=1e-6,
+                     annotate=True, # draw_cross=True,
+                     black_bg='auto',
+                     cmap=cm.cold_hot, # dim=True,
+                     **kwargs):
+    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
+        Lateral). The brain glass schematic views will be added on top of the image.
 
+        Parameters
+        ----------
+        stat_map_img : a nifti-image like object or a filename
+            The statistical map image
+        bg_img : a nifti-image like object or a filename
+            The background image that the ROI/mask will be plotted on top of. If
+            not specified MNI152 template will be used.
+        cut_coords : None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
+        output_file : string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode : {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
+        colorbar : boolean, optional
+            If True, display a colorbar on the right of the plots.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you whish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        cmap: matplotlib colormap, optional
+            The colormap for the anat
+
+        Notes
+        -----
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+    """
+    slicer = slicers.MyOrthoSlicer.init_with_figure(None, black_bg=black_bg)
+    # TODO additional arguments to pass?
+    slicer.add_overlay(stat_map_img, threshold=threshold, colorbar=colorbar, cmap=cmap,
+                       **kwargs)
+    slicer.add_brain_schematics()
+
+    if title is not None:
+        slicer.title(title)
+    return slicer

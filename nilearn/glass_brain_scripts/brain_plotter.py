@@ -60,17 +60,34 @@ class JSONReader(object):
 
         return mpl_patches
 
+    def get_object_bounds(self):
+        pts = [pt for path in self.json_content for item in path['items']
+               for pt in item['pts']]
+        xmin = min(pt[0] for pt in pts)
+        xmax = max(pt[0] for pt in pts)
+        ymin = min(pt[1] for pt in pts)
+        ymax = max(pt[1] for pt in pts)
+
+        return xmin, xmax, ymin, ymax
+
 
 class BrainPlotter(object):
-    def __init__(self, json_filename):
+    def __init__(self, json_filename, transform):
         self.json_filename = json_filename
         self.reader = JSONReader(self.json_filename)
+        self.transform = transform
 
     def plot(self, ax, transform=None):
-        args = () if transform is None else (transform,)
-        mpl_patches = self.reader.to_mpl(*args)
+        mpl_patches = self.reader.to_mpl(self.transform + ax.transData)
         for mpl_patch in mpl_patches:
             ax.add_patch(mpl_patch)
+
+    def get_object_bounds(self):
+        xmin, xmax, ymin, ymax = self.reader.get_object_bounds()
+        xmin, ymin = self.transform.transform((xmin, ymin))
+        xmax, ymax = self.transform.transform((xmax, ymax))
+
+        return xmin, xmax, ymin, ymax
 
 
 if __name__ == '__main__':
