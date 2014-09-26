@@ -320,7 +320,6 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     [1] Anderson, M. J. & Robinson, J. (2001).
         Permutation tests for linear models.
         Australian & New Zealand Journal of Statistics, 43(1), 75-88.
-        (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
     [2] Winkler, A. M. et al. (2014).
         Permutation inference for the general linear model.
         Neuroimage.

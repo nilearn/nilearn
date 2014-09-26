@@ -73,7 +73,7 @@ source_suffix = '.rst'
 plot_gallery = True
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'user_guide'
 
 # General information about the project.
 project = u'NiLearn'

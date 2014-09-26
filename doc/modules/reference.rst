@@ -175,6 +175,43 @@ uses.
 
    permuted_ols
 
+.. _plotting_ref:
+
+:mod:`nilearn.plotting`: Plotting brain data
+================================================
+
+.. automodule:: nilearn.plotting
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.plotting
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   plot_anat
+   plot_img
+   plot_epi
+   plot_roi
+   plot_stat_map
+   find_xyz_cut_coords
+
+**Classes**:
+
+.. currentmodule:: nilearn.plotting.slicers
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+   
+   OrthoSlicer
+
+
 .. _signal_ref:
 
 :mod:`nilearn.signal`: Preprocessing Time Series

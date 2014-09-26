@@ -19,7 +19,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     Parameters
     ----------
-    mask : filename or NiImage, optional
+    mask_img : filename or NiImage, optional
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
         fine tune the mask extraction.
@@ -103,7 +103,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.masking.apply_mask
     nilearn.signal.clean
     """
-    def __init__(self, mask=None, sessions=None, smoothing_fwhm=None,
+    def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
@@ -113,7 +113,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  verbose=0
                  ):
         # Mask is provided or computed
-        self.mask = mask
+        self.mask_img = mask_img
 
         self.sessions = sessions
         self.smoothing_fwhm = smoothing_fwhm
@@ -149,7 +149,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                             _utils._repr_niimgs(niimgs)[:200])
 
         # Compute the mask if not given by the user
-        if self.mask is None:
+        if self.mask_img is None:
             mask_args = (self.mask_args if self.mask_args is not None
                          else {})
             if self.mask_strategy == 'background':
@@ -174,7 +174,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
                              ' requested (niimgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
                              ' will be used.' % self.__class__.__name__)
-            self.mask_img_ = _utils.check_niimg(self.mask)
+            self.mask_img_ = _utils.check_niimg(self.mask_img,
+                                                ensure_3d=True)
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both

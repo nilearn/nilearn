@@ -160,8 +160,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
-                     create_dir=True):
+def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -173,12 +172,6 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    folder: string, optional
-        Folder in which the file must be fetched inside the dataset folder.
-
-    create_dir: bool, optional
-        If the directory does not exist, determine whether or not it is created
-
     Returns
     -------
     data_dir: string
@@ -189,18 +182,47 @@ def _get_dataset_dir(dataset_name, data_dir=None, folder=None,
     This function retrieve the datasets directory (or data directory) using
     the following priority :
     1. the keyword argument data_dir
-    2. the environment variable NILEARN_DATA
-    3. "nilearn_data" directory into the current working directory
+    2. the global environment variable NILEARN_SHARED_DATA
+    3. the user environment variable NILEARN_DATA
+    4. "nilearn_data" directory into the current working directory
     """
-    if not data_dir:
-        data_dir = os.getenv("NILEARN_DATA", os.path.join(os.getcwd(),
-                             'nilearn_data'))
-    data_dir = os.path.join(data_dir, dataset_name)
-    if folder is not None:
-        data_dir = os.path.join(data_dir, folder)
-    if not os.path.exists(data_dir) and create_dir:
-        os.makedirs(data_dir)
-    return data_dir
+    # We build an array of successive paths by priority
+    paths = []
+
+    # Check data_dir which force storage in a specific location
+    if data_dir is not None:
+        paths = data_dir.split(':')
+    else:
+        global_data = os.getenv('NILEARN_SHARED_DATA')
+        if global_data is not None:
+            paths.extend(global_data.split(':'))
+
+        local_data = os.getenv('NILEARN_DATA')
+        if local_data is not None:
+            paths.extend(local_data.split(':'))
+
+        paths.append(os.path.join(os.getcwd(), 'nilearn_data'))
+
+    if verbose > 2:
+        print 'Dataset search paths:', paths
+
+    # Check if the dataset exists somewhere
+    for path in paths:
+        path = os.path.join(path, dataset_name)
+        if os.path.exists(path):
+            if verbose > 1:
+                print 'Dataset found in', path
+            return path
+
+    # If not, create a folder in the first writeable directory
+    for path in paths:
+        if os.access(path, os.W_OK):
+            path = os.path.join(path, dataset_name)
+            os.mkdir(path)
+            print 'Dataset created in', path
+            return path
+
+    raise ValueError('Could not find a writable directory to store dataset')
 
 
 def _uncompress_file(file_, delete_archive=True):
@@ -396,8 +418,7 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
-                 mock=False, verbose=0):
+def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
     """Load requested dataset, downloading it if needed or requested.
 
     If needed, _fetch_files download data in a sandbox and check that all files
@@ -423,9 +444,6 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     resume: bool, optional
         If true, try resuming download if possible
 
-    folder: string, optional
-        Folder in which the file must be fetched inside the dataset folder.
-
     mock: boolean, optional
         If true, create empty files if the file cannot be downloaded. Test use
         only.
@@ -441,13 +459,16 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
     #   files that must be downloaded will be in this directory. If a corrupted
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, folder=folder)
     files_pickle = pickle.dumps(files)
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
+    # Create destination dir
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
     # Abortion flag, in case of error
-    abort = False
+    abort = None
 
     files_ = []
     for file_, url, opts in files:
@@ -461,8 +482,16 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
         target_file = os.path.join(data_dir, file_)
         # Target file in temp dir
         temp_target_file = os.path.join(temp_dir, file_)
-        if (not os.path.exists(target_file) and not
+        if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
+
+            # We may be in a global read-only repository. If so, we cannot
+            # download files.
+            if not os.access(data_dir, os.W_OK):
+                raise ValueError('Dataset files are missing but dataset'
+                                 ' repository is read-only. Contact your data'
+                                 ' administrator to solve the problem')
+
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
             md5sum = opts.get('md5sum', None)
@@ -482,21 +511,21 @@ def _fetch_files(dataset_name, files, data_dir=None, resume=True, folder=None,
                         _uncompress_file(dl_file)
                     else:
                         os.remove(dl_file)
-                except:
-                    abort = True
-        if (not os.path.exists(target_file) and not
+                except Exception as e:
+                    abort = str(e)
+        if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
-                abort = True
+                abort = "Target file cannot be found"
             else:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
                 open(temp_target_file, 'w').close()
-        if abort:
+        if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-            raise IOError('Fetching aborted. See error above')
+            raise IOError('Fetching aborted: ' + abort)
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
@@ -604,8 +633,8 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
             ("random_all.nii.gz", url, opts)
     ]
 
-    sub_files = _fetch_files(dataset_name, filenames, data_dir=data_dir,
-                             resume=resume)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -677,8 +706,9 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
         "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
     ]
 
-    sub_files = _fetch_files(dataset_name, filenames, data_dir=data_dir,
-                             resume=resume)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+            verbose=verbose)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -750,8 +780,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
                               "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
-    sub_files = _fetch_files('icbm152_2009', filenames, data_dir=data_dir,
-                             resume=resume)
+    data_dir = _get_dataset_dir('icbm152_2009', data_dir=data_dir)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -794,9 +824,9 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
     Correspondence of the brain's functional architecture during activation and
     rest. Proc Natl Acad Sci USA (PNAS), 106(31):13040-13045, 2009.
 
-    A.R. Laird, P.M. Fox, S.B. Eickhoff, J.A. Turner, K.L. Ray, D.R. McKay, D.C.
+    A.R. Laird, P.M. Fox, S.B. Eickhoff, J.A. Turner, K.L. Ray, D.R. McKay, D.C
     Glahn, C.F. Beckmann, S.M. Smith, and P.T. Fox. Behavioral interpretations
-    of intrinsic connectivity networks. Journal of Cognitive Neuroscience, 2011.
+    of intrinsic connectivity networks. Journal of Cognitive Neuroscience, 2011
 
     Notes
     -----
@@ -817,8 +847,8 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
              ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
              ]
 
-    files_ = _fetch_files('smith_2009', files, data_dir=data_dir,
-            resume=resume)
+    data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir)
+    files_ = _fetch_files(data_dir, files, resume=resume)
 
     return Bunch(rsn20=files_[0], rsn10=files_[1], rsn70=files_[2],
             bm20=files_[3], bm10=files_[4], bm70=files_[5])
@@ -876,8 +906,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
              url, opts),
     ]
 
-    files = _fetch_files('haxby2001_simple', files, data_dir=data_dir,
-                         resume=resume)
+    data_dir = _get_dataset_dir('haxby2001_simple', data_dir=data_dir)
+    files = _fetch_files(data_dir, files, resume=resume)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -939,11 +969,12 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         warnings.warn('Warning: there are only 6 subjects')
         n_subjects = 6
 
+    data_dir = _get_dataset_dir('haxby2001', data_dir=data_dir)
+
     # Dataset files
     if url is None:
         url = 'http://data.pymvpa.org/datasets/haxby2001/'
-    md5sums = _fetch_files("haxby2001", [('MD5SUMS', url + 'MD5SUMS', {})],
-                           data_dir=data_dir)[0]
+    md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})])[0]
     md5sums = _read_md5_sum_file(md5sums)
 
     # definition of dataset files
@@ -963,8 +994,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
-    files = _fetch_files('haxby2001', files, data_dir=data_dir,
-                         resume=resume)
+    files = _fetch_files(data_dir, files, resume=resume)
 
     if n_subjects == 6:
         files.append(None)  # None value because subject 6 has no anat
@@ -1164,12 +1194,10 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         func += func_files[i - 1][:n_subjects]
         session += [i] * n_subjects
 
-    anat_anon = _fetch_files('nyu_rest', anat_anon, resume=resume,
-                             data_dir=data_dir)
-    anat_skull = _fetch_files('nyu_rest', anat_skull, resume=resume,
-                              data_dir=data_dir)
-    func = _fetch_files('nyu_rest', func, resume=resume,
-                        data_dir=data_dir)
+    data_dir = _get_dataset_dir('nyu_rest', data_dir=data_dir)
+    anat_anon = _fetch_files(data_dir, anat_anon, resume=resume)
+    anat_skull = _fetch_files(data_dir, anat_skull, resume=resume)
+    func = _fetch_files(data_dir, func, resume=resume)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                  session=session)
@@ -1259,12 +1287,11 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subjects_funcs = subjects_funcs[:n_subjects]
     subjects_confounds = subjects_confounds[:n_subjects]
 
-    subjects_funcs = _fetch_files('adhd', subjects_funcs,
-            data_dir=data_dir, resume=resume)
-    subjects_confounds = _fetch_files('adhd', subjects_confounds,
-            data_dir=data_dir, resume=resume)
-    phenotypic = _fetch_files('adhd', phenotypic,
-            data_dir=data_dir, resume=resume)[0]
+    data_dir = _get_dataset_dir('adhd', data_dir=data_dir)
+    subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume)
+    subjects_confounds = _fetch_files(data_dir, subjects_confounds,
+            resume=resume)
+    phenotypic = _fetch_files(data_dir, phenotypic, resume=resume)[0]
 
     # Load phenotypic data
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -1323,8 +1350,8 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
     files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
              (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
-    files = _fetch_files(dataset_name, files, data_dir=data_dir,
-                         resume=resume)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    files = _fetch_files(data_dir, files, resume=resume)
 
     return Bunch(labels=files[0], maps=files[1])
 
@@ -1539,8 +1566,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
                  label_figure + label_random + \
                  file_mask
 
-    files = _fetch_files('miyawaki2008', file_names, resume=resume,
-                         data_dir=data_dir)
+    data_dir = _get_dataset_dir('miyawaki2008', data_dir=data_dir)
+    files = _fetch_files(data_dir, file_names, resume=resume)
 
     # Return the data
     return Bunch(
@@ -1746,7 +1773,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         "left button press (visual cue)": "left visual click",
         "left button press": "left auditory&visual click",
         "left vs right button press": "left auditory & visual click vs "
-           + "right auditory&visual click",
+            + "right auditory&visual click",
         "right button press (auditory cue)": "right auditory click",
         "right button press (visual cue)": "right visual click",
         "right button press": "right auditory & visual click",
@@ -1836,10 +1863,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if url is None:
         url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
                    % (root_url, urllib.quote("Any X WHERE X is Subject")))
-        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s"
+        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
                     % (root_url,
                        urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
-                                    "X identifier XI, X datetime XD", safe=',')
+                                    "X identifier XI, X datetime "
+                                    "XD", safe=',')
                        ))
     else:
         url_csv = "%s/cubicwebexport.csv" % url
@@ -1848,7 +1876,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                   ("cubicwebexport2.csv", url_csv2, {})]
 
     # Actual data fetching
-    files = _fetch_files('brainomics_localizer', filenames, data_dir=data_dir)
+    data_dir = _get_dataset_dir('brainomics_localizer', data_dir=data_dir)
+    files = _fetch_files(data_dir, filenames)
     anats = None
     masks = None
     tmaps = None
@@ -1905,11 +1934,15 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
             Paths to nifti contrast maps
 
     """
-    return fetch_localizer_contrasts(["calculation vs sentences"],
+    data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
                                      url=url, resume=True, verbose=0)
+    data.pop('tmaps')
+    data.pop('masks')
+    data.pop('anats')
+    return data
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
@@ -2092,8 +2125,9 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     file_names = (file_names_gm + file_names_wm
                   + file_names_extvars + file_names_dua)
-    files = _fetch_files('oasis1', file_names, resume=resume,
-                         data_dir=data_dir, verbose=verbose)
+    data_dir = _get_dataset_dir('oasis1', data_dir=data_dir)
+    files = _fetch_files(data_dir, file_names, resume=resume,
+                         verbose=verbose)
 
     # Build Bunch
     gm_maps = files[:n_subjects]

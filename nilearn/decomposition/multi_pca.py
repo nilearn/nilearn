@@ -18,7 +18,7 @@ from ..input_data import MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
-
+from .._utils import as_ndarray
 
 def session_pca(niimgs, mask_img, parameters,
                 n_components=20,
@@ -204,7 +204,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             # single-subject list of 3D filenames
         # First, learn the mask
         if not isinstance(self.mask, MultiNiftiMasker):
-            self.masker_ = MultiNiftiMasker(mask=self.mask,
+            self.masker_ = MultiNiftiMasker(mask_img=self.mask,
                                             smoothing_fwhm=self.smoothing_fwhm,
                                             target_affine=self.target_affine,
                                             target_shape=self.target_shape,
@@ -240,7 +240,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                   % param_name)
                 setattr(self.masker_, param_name,
                         getattr(self, param_name))
-        if self.masker_.mask is None:
+        if self.masker_.mask_img is None:
             self.masker_.fit(niimgs)
         else:
             self.masker_.fit()
@@ -291,7 +291,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                 ref_memory_level=3,
                                 memory_level=self.memory_level)(
                         data.T, n_components=self.n_components)
-            data = data.T
+            # as_ndarray is to get rid of memmapping
+            data = as_ndarray(data.T)
         else:
             data = subject_pcas[0]
         self.components_ = data

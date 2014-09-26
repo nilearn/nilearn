@@ -18,4 +18,5 @@ that is useful to go off the beaten path in terms of data processing.
    data_preparation
    supervised_learning
    unsupervised_learning
+   plotting.rst
    manipulating_mr_images.rst

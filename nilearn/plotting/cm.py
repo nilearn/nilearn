@@ -156,23 +156,12 @@ _cmap_d = dict()
 for _cmapname in _cmaps_data.keys():
     _cmapname_r = _cmapname + '_r'
     _cmapspec = _cmaps_data[_cmapname]
-    if 'red' in _cmapspec:
-        _cmaps_data[_cmapname_r] = _cm.revcmap(_cmapspec)
-        _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
-                                _cmapname, _cmapspec, _cm.LUTSIZE)
-        _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
-                                _cmapname_r, _cmaps_data[_cmapname_r],
-                                _cm.LUTSIZE)
-    else:
-        _revspec = list(reversed(_cmapspec))
-        if len(_revspec[0]) == 2:    # e.g., (1, (1.0, 0.0, 1.0))
-            _revspec = [(1.0 - a, b) for a, b in _revspec]
-        _cmaps_data[_cmapname_r] = _revspec
-
-        _cmap_d[_cmapname] = _colors.LinearSegmentedColormap.from_list(
-                                _cmapname, _cmapspec, _cm.LUTSIZE)
-        _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap.from_list(
-                                _cmapname_r, _revspec, _cm.LUTSIZE)
+    _cmaps_data[_cmapname_r] = _cm.revcmap(_cmapspec)
+    _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
+                            _cmapname, _cmapspec, _cm.LUTSIZE)
+    _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
+                            _cmapname_r, _cmaps_data[_cmapname_r],
+                            _cm.LUTSIZE)
 
 ################################################################################
 # A few transparent colormaps

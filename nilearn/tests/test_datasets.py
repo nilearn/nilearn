@@ -186,8 +186,8 @@ def test_fail_fetch_haxby_simple():
             (os.path.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
-    assert_raises(IOError, datasets._fetch_files, 'haxby2001_simple', files,
-            data_dir=tmpdir)
+    assert_raises(IOError, datasets._fetch_files,
+            os.path.join(tmpdir, 'haxby2001_simple'), files)
     dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
     stuff = dummy.read(5)
     dummy.close()
@@ -406,9 +406,6 @@ def test_fetch_localizer_calculation_task():
     # All subjects
     dataset = datasets.fetch_localizer_calculation_task(data_dir=tmpdir,
                                                         url=local_url)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
     assert_equal(dataset.ext_vars.size, 94)
@@ -418,9 +415,6 @@ def test_fetch_localizer_calculation_task():
     dataset = datasets.fetch_localizer_calculation_task(n_subjects=20,
                                                         data_dir=tmpdir,
                                                         url=local_url)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], basestring))
     assert_equal(dataset.ext_vars.size, 20)
@@ -453,7 +447,7 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, basestring))
     assert_equal(len(url_mock.urls), 4)
-    
+
 def test_load_mni152_template():
     # All subjects
     template_nii = datasets.load_mni152_template()

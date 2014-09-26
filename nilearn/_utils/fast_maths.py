@@ -13,19 +13,37 @@ except ImportError:
     partition = None
 
 
-def fast_abs_percentile(map, percentile=80):
+def fast_abs_percentile(data, percentile=80):
     """ A fast version of the percentile of the absolute value.
+
+    Parameters
+    ==========
+    data: ndarray, possibly masked array
+        The input data
+    percentile: number between 0 and 100
+        The percentile that we are asking for
+
+    Returns
+    =======
+    value: number
+        The score at percentile
+
+    Notes
+    =====
+
+    This is a faster, and less accurate version of
+    scipy.stats.scoreatpercentile(np.abs(data), percentile)
     """
-    if hasattr(map, 'mask'):
+    if hasattr(data, 'mask'):
         # Catter for masked arrays
-        map = np.asarray(map[np.logical_not(map.mask)])
-    map = np.abs(map)
-    map = map.ravel()
-    index = int(map.size * .01 * percentile)
+        data = np.asarray(data[np.logical_not(data.mask)])
+    data = np.abs(data)
+    data = data.ravel()
+    index = int(data.size * .01 * percentile)
     if partition is not None:
         # Partial sort: faster than sort
-        return partition(map, index)[index + 1]
-    return map.sort()[index]
-
+        return partition(data, index)[index + 1]
+    data.sort()
+    return data[index + 1]
 
 

@@ -7,6 +7,9 @@ test_signal.py for this.
 """
 # Author: Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
+from tempfile import mkdtemp
+import shutil
+import os
 from distutils.version import LooseVersion
 
 from nose.tools import assert_true, assert_false, assert_raises
@@ -79,7 +82,7 @@ def test_matrix_orientation():
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
     fmri, mask = testing.generate_fake_fmri(shape=(40, 41, 42), kind="step")
-    masker = NiftiMasker(mask=mask, standardize=True, detrend=True)
+    masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
     assert(timeseries.shape[0] == fmri.shape[3])
     assert(timeseries.shape[1] == mask.get_data().sum())
@@ -88,18 +91,14 @@ def test_matrix_orientation():
     assert(not np.any(std < 0.1))
 
     # Test inverse transform
-    masker = NiftiMasker(mask=mask, standardize=False, detrend=False)
+    masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
     np.testing.assert_array_almost_equal(recovered.get_data(), fmri.get_data())
 
 
-def test_joblib_cache():
-    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
-        # Old nibabel do not pickle
-        raise SkipTest
-    from sklearn.externals.joblib import hash
+def test_mask_3d():
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -107,8 +106,38 @@ def test_joblib_cache():
 
     with testing.write_tmp_imgs(data_img, create_files=True)\
                 as filename:
-        masker = NiftiMasker(mask=filename)
+        masker = NiftiMasker(mask_img=filename)
+        assert_raises(TypeError, masker.fit)
+
+
+def test_joblib_cache():
+    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
+        # Old nibabel do not pickle
+        raise SkipTest
+    from sklearn.externals.joblib import hash, Memory
+    mask = np.zeros((40, 40, 40))
+    mask[20, 20, 20] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    with testing.write_tmp_imgs(mask_img, create_files=True)\
+                as filename:
+        masker = NiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
         masker.mask_img_.get_data()
         assert_true(mask_hash == hash(masker.mask_img_))
+
+    # Test a tricky issue with memmapped joblib.memory that makes
+    # niimgs return by inverse_transform impossible to save
+    cachedir = mkdtemp()
+    try:
+        masker.memory = Memory(cachedir=cachedir, mmap_mode='r',
+                               verbose=0)
+        X = masker.transform(mask_img)
+        # inverse_transform a first time, so that the result is cached
+        out_img = masker.inverse_transform(X)
+        out_img = masker.inverse_transform(X)
+        out_img.to_filename(os.path.join(cachedir, 'test.nii'))
+    finally:
+        shutil.rmtree(cachedir, ignore_errors=True)
+

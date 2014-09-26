@@ -21,7 +21,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
 
     Parameters
     ==========
-    mask: filename or NiImage, optional
+    mask_img: filename or NiImage, optional
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
@@ -106,7 +106,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
     nilearn.signal.clean: confounds removal and general filtering of signals
     """
 
-    def __init__(self, mask=None, smoothing_fwhm=None,
+    def __init__(self, mask_img=None, smoothing_fwhm=None,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
@@ -115,7 +115,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                  n_jobs=1, verbose=0
                  ):
         # Mask is provided or computed
-        self.mask = mask
+        self.mask_img = mask_img
 
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -149,7 +149,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                 self.__class__.__name__,
                 _utils._repr_niimgs(niimgs)[:200])
         # Compute the mask if not given by the user
-        if self.mask is None:
+        if self.mask_img is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing mask" % self.__class__.__name__
             data = []
@@ -192,7 +192,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                              ' requested (niimgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
                              ' will be used.' % self.__class__.__name__)
-            self.mask_img_ = _utils.check_niimg(self.mask)
+            self.mask_img_ = _utils.check_niimg(self.mask_img)
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.

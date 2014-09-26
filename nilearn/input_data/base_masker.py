@@ -46,8 +46,8 @@ def filter_and_mask(niimgs, mask_img_,
     # as small as possible in order to speed up the process
 
     resampling_is_necessary = (
-        (not np.allclose(niimgs.get_affine(), mask_img_.get_affine()))
-     or (np.array(niimgs.shape[:3]) != np.array(mask_img_.shape)).any())
+            (not np.allclose(niimgs.get_affine(), mask_img_.get_affine()))
+        or np.any(np.array(niimgs.shape[:3]) != np.array(mask_img_.shape)))
 
     if resampling_is_necessary:
         # now we can crop
@@ -89,26 +89,26 @@ def filter_and_mask(niimgs, mask_img_,
 
         data = cache(signal.clean, memory, ref_memory_level,
                      memory_level=clean_memory_level)(
-                         data,
-                         confounds=confounds, low_pass=parameters['low_pass'],
-                         high_pass=parameters['high_pass'],
-                         t_r=parameters['t_r'],
-                         detrend=parameters['detrend'],
-                         standardize=parameters['standardize'])
+                        data,
+                        confounds=confounds, low_pass=parameters['low_pass'],
+                        high_pass=parameters['high_pass'],
+                        t_r=parameters['t_r'],
+                        detrend=parameters['detrend'],
+                        standardize=parameters['standardize'])
     else:
         sessions = parameters['sessions']
         for s in np.unique(sessions):
             if confounds is not None:
                 confounds = confounds[sessions == s]
-            data[:, sessions == s] = \
+            data[sessions == s, :] = \
                 cache(signal.clean, memory, ref_memory_level, memory_level=2)(
-                    data[:, sessions == s],
-                    confounds=confounds,
-                    low_pass=parameters['low_pass'],
-                    high_pass=parameters['high_pass'],
-                    t_r=parameters['t_r'],
-                    detrend=parameters['detrend'],
-                    standardize=parameters['standardize']
+                        data[sessions == s, :],
+                        confounds=confounds,
+                        low_pass=parameters['low_pass'],
+                        high_pass=parameters['high_pass'],
+                        t_r=parameters['t_r'],
+                        detrend=parameters['detrend'],
+                        standardize=parameters['standardize']
                 )
 
     # For _later_: missing value removal or imputing of missing data
@@ -157,7 +157,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         params = get_params(NiftiMasker, self)
         # Remove the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
-        for name in ('mask', 'mask_args'):
+        for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
         data, _ = self._cache(filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])(
@@ -203,7 +203,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.target_affine is None:
             # Load the first image and use it as a reference for all other
             # subjects
-            reference_affine = _utils.check_niimgs(niimgs_list[0]).get_affine()
+            reference_affine = _utils.check_niimgs(niimgs_list[0],
+                                                   accept_3d=True).get_affine()
 
         func = self._cache(_safe_filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
@@ -245,14 +246,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # method is possible for a given clustering algorithm
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
-            if self.mask is None:
+            if self.mask_img is None:
                 return self.fit(X, **fit_params
                                 ).transform(X, confounds=confounds)
             else:
                 return self.fit(**fit_params).transform(X, confounds=confounds)
         else:
             # fit method of arity 2 (supervised transformation)
-            if self.mask is None:
+            if self.mask_img is None:
                 return self.fit(X, y, **fit_params
                                 ).transform(X, confounds=confounds)
             else:
@@ -263,5 +264,12 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        return self._cache(masking.unmask, memory_level=1,
+        img = self._cache(masking.unmask, memory_level=1,
             )(X, self.mask_img_)
+        # Be robust again memmapping that will create read-only arrays in
+        # internal structures of the header: remove the memmaped array
+        try:
+            img._header._structarr = np.array(img._header._structarr).copy()
+        except:
+            pass
+        return img
