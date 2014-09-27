@@ -832,9 +832,16 @@ SLICERS = dict(ortho=OrthoSlicer,
 
 def get_slicer(display_mode):
     "Internal function to retrieve a slicer"
-    if display_mode in SLICERS:
-        return SLICERS[display_mode]
+
+    # Fix: We want to interpret "Zy" as "yz", etc.
+    display_mode_ = display_mode
+    if isinstance(display_mode_, basestring):
+        display_mode_ = display_mode_.lower()
+        if display_mode_ not in ["ortho"]:
+            display_mode_ = "".join(sorted(display_mode_))
+
+    if display_mode_ in SLICERS:
+        return SLICERS[display_mode_]
     raise ValueError("%s is not a valid display_mode. Valid options are "
                      "%s" % (display_mode,
                      ", ".join("%r" % k for k in sorted(SLICERS.keys()))))
-

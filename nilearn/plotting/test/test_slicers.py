@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import nose
+from nose.tools import assert_equal
 import tempfile
 
 try:
@@ -12,7 +13,7 @@ try:
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
-from ..slicers import OrthoSlicer, XSlicer
+from ..slicers import OrthoSlicer, XSlicer, get_slicer, YZSlicer, OrthoSlicer
 from ...datasets import load_mni152_template
 
 ################################################################################
@@ -44,3 +45,7 @@ def test_stacked_slicer():
     slicer.close()
 
 
+def test_get_slicer_robustness():
+    assert_equal(get_slicer("zY"), YZSlicer)
+    assert_equal(get_slicer("yz"), YZSlicer)
+    assert_equal(get_slicer("oRtho"), OrthoSlicer)
