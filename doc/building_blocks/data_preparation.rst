@@ -237,8 +237,7 @@ All previous filters operate on images, before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :ref:`plot_haxby_simple.py
-   <auto_examples/plot_haxby_simple>`. Try to enable detrending
+   the parameters in :ref:`example_plot_haxby_simple.py`. Try to enable detrending
    and run the script: does it have a big impact on the result?
 
 
@@ -259,7 +258,7 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Look at the SVC's discriminating weights
-    :end-before: # We use a masked array so that the voxels at '-1' are displayed
+    :end-before: ### Create the figure
 
 
 .. _region:
