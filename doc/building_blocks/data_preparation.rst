@@ -74,19 +74,6 @@ automatically, and it has done a good job. But, on some datasets, the
 default algorithm performs poorly. This is why it is very important to
 **always look at how your data look like**.
 
-Mask Visualization
-...................
-
-Before exploring the subject, we define a helper function to display
-masks. This function will display a background (we can use the mean of
-the input images) and a mask as a red layer over this background.
-
-
-.. literalinclude:: ../../plot_mask_computation.py
-    :start-after: # Simple visualization helper
-    :end-before: ###############################################################################
-
-
 Computing the mask
 ...................
 
