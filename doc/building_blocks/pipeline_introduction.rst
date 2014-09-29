@@ -50,7 +50,7 @@ Loading non image data: experiment description
 
 An experiment may need additional information about subjects, sessions or
 experiments. In the Haxby experiment, fMRI data are acquired while
-presenting different category of pictures to the subject (face, house...)
+presenting different category of pictures to the subject (face, cat, ...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
@@ -59,14 +59,14 @@ These conditions are presented as string into a CSV file. The numpy function
 
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################
-    :end-before: ### Keep only data corresponding to faces or houses ###########################
+    :end-before: ### Keep only data corresponding to faces or cats ###########################
 
 
 For example, we will now remove the *rest* condition from our dataset.
 This can be done as follows:
 
 .. literalinclude:: ../../plot_haxby_simple.py
-    :start-after: ### Keep only data corresponding to faces or houses ###########################
+    :start-after: ### Keep only data corresponding to faces or cats ###########################
     :end-before: ### Prepare the data: apply the mask ##########################################
 
 
