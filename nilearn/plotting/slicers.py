@@ -489,8 +489,8 @@ class BaseSlicer(object):
             json_filename, transform = _get_json_and_transform(cut_ax.direction)
             ax = cut_ax.ax
             bp = brain_plotter.BrainPlotter(json_filename, transform)
-            bp.plot(ax)
-
+            invert_color = self._black_bg
+            bp.plot(ax, invert_color=invert_color)
             cut_ax.add_object_bounds(bp.get_object_bounds())
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):

@@ -5,8 +5,8 @@ import json
 
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
-import matplotlib.patches as patches
-
+from matplotlib import patches
+from matplotlib import colors
 
 class JSONReader(object):
     """Reads path coordinates and metadata from a custom JSON format and
@@ -34,13 +34,31 @@ class JSONReader(object):
     def _codes_segment(self, pts):
         return [Path.MOVETO, Path.LINETO]
 
-    def to_mpl(self, transform=None):
+    @staticmethod
+    def _invert_color(color):
+        """Return inverted color
+
+        If color is (R, G, B) it returns (1 - R, 1 - G, 1 - B). If
+        'color' can not be converted to a color it is returned
+        unmodified.
+
+        """
+        try:
+            color_converter = colors.ColorConverter()
+            color_rgb = color_converter.to_rgb(color)
+            return tuple(1 - level for level in color_rgb)
+        except ValueError:
+            return color
+
+    def to_mpl(self, transform=None, invert_color=False):
         """Returns a list of matplotlib patches
         """
         mpl_patches = []
 
         for path in self.json_content:
             edgecolor = path['edgecolor']
+            if invert_color:
+                edgecolor = JSONReader._invert_color(edgecolor)
             linewidth = path['linewidth']
             path_id = path['id']
 
@@ -77,8 +95,9 @@ class BrainPlotter(object):
         self.reader = JSONReader(self.json_filename)
         self.transform = transform
 
-    def plot(self, ax, transform=None):
-        mpl_patches = self.reader.to_mpl(self.transform + ax.transData)
+    def plot(self, ax, transform=None, invert_color=False):
+        mpl_patches = self.reader.to_mpl(self.transform + ax.transData,
+                                         invert_color)
         for mpl_patch in mpl_patches:
             ax.add_patch(mpl_patch)
 

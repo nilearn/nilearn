@@ -670,6 +670,7 @@ def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
+    # TODO: actually use 'display_mode' to switch between different slicers
     slicer = slicers.MyOrthoSlicer.init_with_figure(None, black_bg=black_bg)
     # TODO additional arguments to pass?
     slicer.add_overlay(stat_map_img, threshold=threshold, colorbar=colorbar, cmap=cmap,
