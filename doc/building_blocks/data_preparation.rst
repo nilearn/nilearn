@@ -169,7 +169,7 @@ Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
 resampled to display overlays.
 
-Automatic compution of offset and bounding box can be performed by
+Automatic computation of offset and bounding box can be performed by
 specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
 computes automatically the translation part of the affine.
 
