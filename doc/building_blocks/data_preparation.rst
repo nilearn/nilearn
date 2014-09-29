@@ -300,10 +300,9 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
    The full example in this section can be found here:
    :doc:`plot_adhd_covariance.py <../auto_examples/plot_adhd_covariance>`
 
-Usage of :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` is very close,
-and very close to the usage of :class:`NiftiMasker`. Only options specific to
-:class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` are described
-in this section.
+Usage of :class:`NiftiMapsMasker` is very close to the usage of
+:class:`NiftiMasker`. Only options specific to
+:class:`NiftiMapsMasker` are described in this section.
 
 Nilearn provides several downloaders to get a brain parcellation. Load
 the `MSDL one
