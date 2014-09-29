@@ -41,44 +41,8 @@ class SVGToJSONConverter(object):
 
         return {'type': my_type, 'pts': pts}
 
-    def to_json(self):
-        """Exports the svg paths into json.
-
-        The json format looks like this:
-        [
-          {
-            "edgecolor": "#b3b3b3",
-            "linewidth": 3.03045774,
-            "id": "path3943",
-            "items": [
-              {
-                "pts": [
-                  [ 571.83955, 751.5887290000001 ],
-                  [ 571.57463, 750.8480390000001 ],
-                  [ 571.44965, 747.969189 ],
-                  [ 571.56178, 745.191269 ]
-                ],
-                "type": "bezier"
-              },
-              {
-                "pts": [
-                  [ 566.41278, 705.415739 ],
-                  [ 566.7642900000001, 696.532339 ]
-                ],
-                "type": "segment"
-              },
-              .
-              .
-              .
-            ]
-          },
-          .
-          .
-          .
-        ]
-        """
-        to_ret = []
-
+    def _get_paths(self):
+        result = []
         for path in self.paths:
             style = path.style
             edgecolor = self._get_style_attr(style, 'stroke')
@@ -96,9 +60,72 @@ class SVGToJSONConverter(object):
             for geom in filtered_items:
                 path_dict['items'].append(self._type_and_pts(geom))
 
-            to_ret.append(path_dict)
+            result.append(path_dict)
 
-        return json.dumps(to_ret, indent=2)
+        return result
+
+    def _get_bounds(self, paths):
+        points = [pt for path in paths for item in path['items']
+                  for pt in item['pts']]
+        x_coords = [pt[0] for pt in points]
+        y_coords = [pt[1] for pt in points]
+
+        xmin, xmax = min(x_coords), max(x_coords)
+        ymin, ymax = min(y_coords), max(y_coords)
+
+        return xmin, xmax, ymin, ymax
+
+    def to_json(self):
+        """Exports the svg paths into json.
+
+        The json format looks like this:
+        {
+          "paths": [
+            {
+              "edgecolor": "#b3b3b3",
+              "linewidth": 3.03045774,
+              "id": "path3943",
+              "items": [
+                {
+                  "pts": [
+                    [ 571.83955, 751.5887290000001 ],
+                    [ 571.57463, 750.8480390000001 ],
+                    [ 571.44965, 747.969189 ],
+                    [ 571.56178, 745.191269 ]
+                  ],
+                  "type": "bezier"
+                },
+                {
+                  "pts": [
+                    [ 566.41278, 705.415739 ],
+                    [ 566.7642900000001, 696.532339 ]
+                  ],
+                  "type": "segment"
+                },
+                .
+                .
+                .
+              ]
+            },
+            .
+            .
+            .
+          ],
+          "metadata": {
+            "bounds": [
+              1.3884929999999542, 398.60061299999995,
+              -0.9977599999999711, 490.82066700000007
+            ]
+          }
+        }
+        """
+        paths = self._get_paths()
+        bounds = self._get_bounds(paths)
+        metadata = {'bounds': bounds}
+        result = {'metadata': metadata,
+                  'paths': paths}
+
+        return json.dumps(result, indent=2)
 
     def save_json(self, filename):
         json_content = self.to_json()

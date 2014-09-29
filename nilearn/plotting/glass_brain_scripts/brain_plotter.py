@@ -55,7 +55,7 @@ class JSONReader(object):
         """
         mpl_patches = []
 
-        for path in self.json_content:
+        for path in self.json_content['paths']:
             edgecolor = path['edgecolor']
             if invert_color:
                 edgecolor = JSONReader._invert_color(edgecolor)
@@ -79,14 +79,8 @@ class JSONReader(object):
         return mpl_patches
 
     def get_object_bounds(self):
-        pts = [pt for path in self.json_content for item in path['items']
-               for pt in item['pts']]
-        xmin = min(pt[0] for pt in pts)
-        xmax = max(pt[0] for pt in pts)
-        ymin = min(pt[1] for pt in pts)
-        ymax = max(pt[1] for pt in pts)
-
-        return xmin, xmax, ymin, ymax
+        alist = self.json_content['metadata']['bounds']
+        return tuple(alist)
 
 
 class BrainPlotter(object):
