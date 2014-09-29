@@ -134,10 +134,8 @@ class CutAxes(object):
         xmin = min(xmins.min(), xmaxs.min())
         ymax = max(ymaxs.max(), ymins.max())
         ymin = min(ymins.min(), ymaxs.min())
-        xmargin = (xmax - xmin) * 0.05
-        ymargin = (ymax - ymin) * 0.05
-        return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
 
+        return xmin, xmax, ymin, ymax
 
     def draw_left_right(self, size, bg_color, **kwargs):
         if self.direction == 'x':

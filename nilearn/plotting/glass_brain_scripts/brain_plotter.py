@@ -100,7 +100,9 @@ class BrainPlotter(object):
         xmin, ymin = self.transform.transform((xmin, ymin))
         xmax, ymax = self.transform.transform((xmax, ymax))
 
-        return xmin, xmax, ymin, ymax
+        xmargin = (xmax - xmin) * 0.05
+        ymargin = (ymax - ymin) * 0.05
+        return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
 
 
 if __name__ == '__main__':
