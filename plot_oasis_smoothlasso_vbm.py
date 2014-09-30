@@ -3,16 +3,15 @@ Voxel-Based Morphometry on Oasis dataset with S-LASSO prior
 ===========================================================
 
 """
-# Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, ...
+# Authors: Elvis DOHMATOB,
+#          Virgile FRITSCH
 
-import numpy as np
-import matplotlib.pyplot as plt
 import nibabel
 from sklearn.externals.joblib import Memory
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
-n_subjects = 20   # more subjects requires more memory
+n_subjects = 100   # more subjects requires more memory
 memory = Memory("cache")
 
 ### Load Oasis dataset ########################################################
@@ -32,38 +31,21 @@ gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 new_images = nifti_masker.inverse_transform(gm_maps_masked)
 gm_maps_masked = nifti_masker.fit_transform(new_images)
 
-# n_samples, n_features = gm_maps_masked.shape
-# mask = nifti_masker.mask_img_.get_data().astype(np.bool)
-# print n_samples, "subjects, ", n_features, "features"
-
 from nilearn.decoding.space_net import SpaceNet
 slcv = SpaceNet(memory=memory, screening_percentile=10, verbose=1,
-                mask=nifti_masker)
+                mask=nifti_masker, n_jobs=14)
 
 ### Fit and predict
 slcv.fit(new_images, age)
+coef_niimg = slcv.coef_img_
 age_pred = slcv.predict(new_images).ravel()
 
-### Visualisation
-### Look at the S-LASSOCV's discriminating weights
-# reverse masking
-weight_niimg = nifti_masker.inverse_transform(slcv.coef_)
-
-# We use a masked array so that the voxels at '-1' are transparent
-weights = np.ma.masked_array(weight_niimg.get_data(),
-                             weight_niimg.get_data() == 0)
-background_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
-picked_slice = 36
-plt.figure(figsize=(5.5, 5.5))
-data_for_plot = weights[:, :, picked_slice]
-vmax = max(np.min(data_for_plot), np.max(data_for_plot)) * 0.5
-plt.imshow(np.rot90(background_img[:, :, picked_slice]), cmap=plt.cm.gray,
-          interpolation='nearest')
-im = plt.imshow(np.rot90(data_for_plot), cmap=plt.cm.Spectral_r,
-                interpolation='nearest', vmin=-vmax, vmax=vmax)
-plt.axis('off')
-plt.colorbar(im)
-plt.title('S-LASSO weights')
+### Visualization #############################################################
+import matplotlib.pyplot as plt
+from nilearn.plotting import plot_stat_map
+background_niimg = nibabel.load(dataset_files.gray_matter_maps[0])
+plot_stat_map(coef_niimg, background_niimg, title="S-LASSO weights",
+              display_mode="z")
 
 plt.figure()
 linewidth = 3
