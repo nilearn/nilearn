@@ -22,7 +22,6 @@ import numpy as np
 labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
 cond1 = "face"
 cond2 = "house"
-vt_masking = False
 
 from sklearn.externals.joblib import Memory
 from nilearn.input_data import NiftiMasker
@@ -32,41 +31,24 @@ condition_mask = np.logical_or(labels['labels'] == cond1,
                                labels['labels'] == cond2)
 _, target = np.unique(labels['labels'], return_inverse=True)
 
-if vt_masking:
-    # ventral mask
-    nifti_masker = NiftiMasker(mask=data_files.mask_vt[0], standardize=True)
-    epi = data_files.func[0]
-else:
-    # occipital mask
-    import nibabel
-    epi = nibabel.load(data_files.func[0])
-
-    # only keep back of the brain
-    data = epi.get_data()
-    data[:, data.shape[1] / 2:, :] = 0
-    epi = nibabel.Nifti1Image(data, epi.get_affine())
-    nifti_masker = NiftiMasker(standardize=True, memory=memory,
-                               mask_strategy='epi')
-
-fmri_masked = nifti_masker.fit_transform(epi)[condition_mask]
-target = target[condition_mask]
-session_labels = labels['chunks'][condition_mask]
-
-### Fit S-LASSO classifier ##################################################
-from nilearn.decoding.space_net import SpaceNet
-mask = nifti_masker.mask_img_.get_data().astype(np.bool)
-slcv = SpaceNet(memory=memory, mask=mask, classif=True, verbose=1
-                ).fit(fmri_masked, target)
-
-# Retrieve the SLCV discriminating weights
-coef_ = slcv.coef_
-
-# Reverse masking thanks to the Nifti Masker
-coef_niimg = nifti_masker.inverse_transform(coef_)
-
-# Use nibabel to save the coefficients as a Nifti image
+# ventral mask
 import nibabel
-nibabel.save(coef_niimg, 'haxby_slcv_weights.nii')
+nifti_masker = NiftiMasker(mask_img=data_files.mask_vt[0], standardize=True)
+
+# make X (design matrix) and y (dependent variate)
+niimgs  = nibabel.load(data_files.func[0])
+X = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask],
+                        niimgs.get_affine())
+y = target[condition_mask]
+
+### Fit S-LASSO classifier and retreive weights map ##########################
+from nilearn.decoding.space_net import SpaceNet
+import time
+tic = time.time()
+slcv = SpaceNet(memory=memory, mask=nifti_masker, classif=True, verbose=1,
+                penalty="tvl1", n_jobs=14).fit(X, y)
+coef_niimg = slcv.coef_img_
+coef_niimg.to_filename('haxby_slcv_weights.nii')
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
@@ -74,7 +56,8 @@ from nilearn.image.image import mean_img
 from nilearn.plotting import plot_stat_map
 
 mean_epi = mean_img(data_files.func[0])
-slicer = plot_stat_map(coef_niimg, mean_epi, title="Smooth Lasso weights")
-print ("Accurarcy: %g" % ((slcv.predict(fmri_masked) == target
-                           ).mean() * 100.)) + "%"
+slicer = plot_stat_map(coef_niimg, mean_epi, title="S-LASSO weights")
+print ("Accurarcy: %g" % ((slcv.predict(X) == y).mean() * 100.)) + "%"
+print "_" * 80
+print "Time Elapsed: %g seconds."  % (time.time() - tic)
 plt.show()
