@@ -86,7 +86,7 @@ def test_baseestimator_invalide_l1_ratio():
     SpaceNet(l1_ratio=2.)
 
 
-def test_unmasl(size=5):
+def test_unmask(size=5):
     rng = np.random.RandomState(42)
     for ndim in xrange(1, 4):
         shape = [size] * ndim
