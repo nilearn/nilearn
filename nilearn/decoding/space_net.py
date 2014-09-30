@@ -1,5 +1,6 @@
 """
-sklearn-compatible Cross-Validation module for TV-l1, S-LASSO, etc. models
+sklearn-compatible implementation of spatially structured learners (
+TV-l1, S-LASSO, etc.)
 
 """
 # Author: DOHMATOB Elvis Dopgima,
@@ -351,11 +352,11 @@ class SpaceNet(LinearModel, RegressorMixin):
         Constant that mixes L1 and TV (resp. SL) terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO.
 
-    mask: filename, NiImage, MultiNiftiMasker instance, or 3D array (optional)
+    mask: filename, NiImage, MultiNiftiMasker instance, (optional,
+        default None)
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+        then its mask will be used. If no mask is it will be computed
+        automatically by a MultiNiftiMasker with default parameters.
 
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -515,7 +516,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.n_classes_ = len(self.classes_)
 
         if self.mask is not None:
-            self.n_features_ = np.prod(self.mask.shape)
+            self.n_features_ = np.prod(self.mask_.shape)
         else:
             self.n_features_ = X.shape[1]
 
@@ -575,6 +576,8 @@ class SpaceNet(LinearModel, RegressorMixin):
             Predicted class label per sample.
         """
 
+        X = self.masker_.transform(X)
+
         # handle regression (least-squared loss)
         if not self.classif:
             return LinearModel.predict(self, X)
@@ -593,9 +596,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         ----------
         X: list of filenames or NiImages of length n_samples, or 2D array of
            shape (n_samples, n_features)
-            Brain images (possibly masked) on which the which a structured
-            weights map is to be learned. This is the independent variable
-            (e.g gray-matter maps from VBM analysis, etc.)
+            Brain images on which the which a structured weights map is to be
+            learned. This is the independent variable (e.g gray-matter maps
+            from VBM analysis, etc.)
 
         y: array or list of length n_samples
             The dependent variable (age, sex, QI, etc.)
@@ -607,25 +610,21 @@ class SpaceNet(LinearModel, RegressorMixin):
         """
 
         # compute / sanitize mask
-        if isinstance(self.mask, np.ndarray):
-            self.mask_ = self.mask.copy()
-            X = np.array(X)
+        if isinstance(self.mask, NiftiMasker):
+            self.masker_ = clone(self.mask)
         else:
-            if isinstance(self.mask, NiftiMasker):
-                self.masker_ = clone(self.mask)
-            else:
-                # compute mask
-                self.masker_ = NiftiMasker(mask_img=self.mask,
-                                           smoothing_fwhm=self.smoothing_fwhm,
-                                           target_affine=self.target_affine,
-                                           target_shape=self.target_shape,
-                                           low_pass=self.low_pass,
-                                           high_pass=self.high_pass,
-                                           mask_strategy='epi', t_r=self.t_r,
-                                           memory=self.memory)
-            X = self.masker_.fit_transform(X)
-            self.mask_img_ = self.masker_.mask_img_
-            self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
+            # compute mask
+            self.masker_ = NiftiMasker(mask_img=self.mask,
+                                       smoothing_fwhm=self.smoothing_fwhm,
+                                       target_affine=self.target_affine,
+                                       target_shape=self.target_shape,
+                                       low_pass=self.low_pass,
+                                       high_pass=self.high_pass,
+                                       mask_strategy='epi', t_r=self.t_r,
+                                       memory=self.memory)
+        X = self.masker_.fit_transform(X)
+        self.mask_img_ = self.masker_.mask_img_
+        self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
 
         y = np.array(y).ravel()
         n_samples, _ = X.shape
@@ -738,7 +737,6 @@ class SpaceNet(LinearModel, RegressorMixin):
             self.scores_ = self.scores_[0]
 
         # unmask weights map as a niimg
-        if hasattr(self, 'masker_'):
-            self.coef_img_ = self.masker_.inverse_transform(self.coef_)
+        self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         return self
