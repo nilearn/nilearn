@@ -57,13 +57,17 @@ def test_check_niimg():
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, np.eye(4))
 
-    with testing.write_tmp_imgs(data_img, create_files=True)\
-                as filename:
+    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg(filename)
 
     # Test ensure_3d with a in-memory object
     with assert_raises(TypeError) as cm:
         _utils.check_niimg(data, ensure_3d=True)
+    assert_true('3D' in cm.exception.message)
+
+    # Test ensure_3d with a non 3D image
+    with assert_raises(TypeError) as cm:
+        _utils.check_niimg(data_img, ensure_3d=True)
     assert_true('3D' in cm.exception.message)
 
     # Test ensure_3d with a 4D image with a length 1 4th dim
