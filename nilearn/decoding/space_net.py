@@ -382,25 +382,6 @@ class SpaceNet(LinearModel, RegressorMixin):
                  n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
                  screening_percentile=10., debias=False):
         super(SpaceNet, self).__init__()
-
-        # sanity checks
-        if mask is None:
-            raise ValueError(
-                "You need to supply a valid mask (a 3D array). Got 'None'.")
-        if not (0. <= screening_percentile <= 100.):
-            raise ValueError(
-                ("screening_percentile should be in the interval"
-                 " [0, 100], got %g" % screening_percentile))
-        if not 0 <= l1_ratio <= 1.:
-            raise ValueError(
-                "l1_ratio must be in the interval [0, 1]; got %g" % l1_ratio)
-        if penalty not in self.SUPPORTED_PENALTIES:
-            raise ValueError(
-                "'penalty' parameter must be one of %s, or %s; got %s" % (
-                    ",".join(self.SUPPORTED_PENALTIES[:-1]),
-                    self.SUPPORTED_PENALTIES[-1], penalty))
-
-        # continue setting params
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
@@ -428,6 +409,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.cv = cv
         self.screening_percentile = screening_percentile
         self.debias = debias
+
+        # sanity check on params
+        self.check_params()
 
     def _binarize_y(self, y):
         """Helper function invoked just before fitting a classifier."""
@@ -507,6 +491,25 @@ class SpaceNet(LinearModel, RegressorMixin):
             indices = scores.argmax(axis=1)
         return self.classes_[indices]
 
+    def check_params(self):
+        """Makes sure parameters are sane."""
+        if self.mask is None:
+            raise ValueError(
+                "You need to supply a valid mask (a 3D array). Got 'None'.")
+        if not (0. <= self.screening_percentile <= 100.):
+            raise ValueError(
+                ("screening_percentile should be in the interval"
+                 " [0, 100], got %g" % self.screening_percentile))
+        if not 0 <= self.l1_ratio <= 1.:
+            raise ValueError(
+                "l1_ratio must be in the interval [0, 1]; got %g" % (
+                    self.l1_ratio))
+        if self.penalty not in self.SUPPORTED_PENALTIES:
+            raise ValueError(
+                "'penalty' parameter must be one of %s, or %s; got %s" % (
+                    ",".join(self.SUPPORTED_PENALTIES[:-1]),
+                    self.SUPPORTED_PENALTIES[-1], self.penalty))
+
     def fit(self, X, y):
         """Fit the learner.
 
@@ -526,6 +529,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         Model selection is via cross-validation with bagging.
 
         """
+
+        # sanity check on params
+        self.check_params()
 
         # compute / sanitize mask
         if isinstance(self.mask, NiftiMasker):
