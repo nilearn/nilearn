@@ -182,17 +182,19 @@ def test_tv_regression_simple():
     W_init = np.zeros(dim)
     W_init[2:3, 1:2, -2:] = 1
     np.random.seed(0)
-    n = 40
+    n = 10
     p = np.prod(dim)
     X = np.ones((n, 1)) + W_init.ravel().T
     X += np.random.randn(n, p)
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
-    alpha = 1.
+    alphas = [.1, 1.]
 
     for l1_ratio in [1.]:
-        SpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio,
-                 penalty="tvl1", classif=False, max_iter=10).fit(X, y)
+        for debias in [True, False]:
+            SpaceNet(mask=mask, alphas=alphas, l1_ratio=l1_ratio,
+                     penalty="tvl1", classif=False, max_iter=10,
+                     debias=debias).fit(X, y)
 
 
 def test_tv_regression_3D_image_doesnt_crash():

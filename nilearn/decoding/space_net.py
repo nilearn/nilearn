@@ -12,6 +12,7 @@ TV-l1, S-LASSO, etc.)
 #         and others.
 # License: simplified BSD
 
+import numbers
 from functools import partial
 import numpy as np
 from scipy import stats
@@ -515,14 +516,20 @@ class SpaceNet(LinearModel, RegressorMixin):
         if self.mask is None:
             raise ValueError(
                 "You need to supply a valid mask (a 3D array). Got 'None'.")
-        if not (0. <= self.screening_percentile <= 100.):
-            raise ValueError(
-                ("screening_percentile should be in the interval"
-                 " [0, 100], got %g" % self.screening_percentile))
+        for param in ["alpha", "l1_ratio"]:
+            value = getattr(self, param)
+            if not (value is None or isinstance(value, numbers.Number)):
+                raise ValueError(
+                    "'%s' parameter must be None or a float; got %s" % (
+                        param, value))
         if not 0 <= self.l1_ratio <= 1.:
             raise ValueError(
                 "l1_ratio must be in the interval [0, 1]; got %g" % (
                     self.l1_ratio))
+        if not (0. <= self.screening_percentile <= 100.):
+            raise ValueError(
+                ("screening_percentile should be in the interval"
+                 " [0, 100], got %g" % self.screening_percentile))
         if self.penalty not in self.SUPPORTED_PENALTIES:
             raise ValueError(
                 "'penalty' parameter must be one of %s, or %s; got %s" % (
@@ -636,7 +643,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         path_params = dict(tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
                            screening_percentile=self.screening_percentile,
-                           classif=self.classif)
+                           classif=self.classif, debias=self.debias)
         path_params.update(special_kwargs)
 
         # create OVR labels
