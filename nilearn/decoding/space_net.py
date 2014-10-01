@@ -629,8 +629,9 @@ class SpaceNet(LinearModel, RegressorMixin):
                            classif=self.classif)
         path_params.update(special_kwargs)
 
-        _ovr_y = lambda c: y[:, c] if self.classif and (
-            self.n_classes_ > 2) else y
+        # create OVR labels
+        _ovr_y = lambda c: y[:, c] if self.classif and (self.n_classes_ > 2
+                                                        ) else y
 
         # main loop: loop on classes and folds
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
@@ -665,6 +666,7 @@ class SpaceNet(LinearModel, RegressorMixin):
             else:
                 self.intercept_ = 0.
 
+        # special treatment for non classif (i.e regression) model
         if not self.classif:
             self.coef_ = self.coef_[0]
             self.scores_ = self.scores_[0]
