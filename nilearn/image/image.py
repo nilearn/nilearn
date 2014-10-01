@@ -88,7 +88,7 @@ def _fast_smooth_array(arr):
 
     Only the first three dimensions of the array will be smoothed. The
     filter uses [0.2, 1, 0.2] weights in each direction and use a
-    normalisation to preserve the scale.
+    normalisation to preserve the local average value.
 
     Parameters
     ==========
@@ -146,13 +146,13 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
 
-    fwhm: scalar or numpy.ndarray
+    fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
-        If fwhm='fast', a fast smoothing will be performed with
+        If fwhm == 'fast', a fast smoothing will be performed with
         a filter [0.2, 1, 0.2] in each direction and a normalisation
-        to preserve the scale.
+        to preserve the local average value.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed).
 
@@ -216,11 +216,11 @@ def smooth_img(niimgs, fwhm):
     niimgs: niimgs or iterable of niimgs
         One or several niimage(s), either 3D or 4D.
 
-    fwhm: scalar or numpy.ndarray
+    fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a Full-Width at Half Maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
-        If fwhm='fast', a fast smoothing will be performed with
+        If fwhm == 'fast', a fast smoothing will be performed with
         a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
