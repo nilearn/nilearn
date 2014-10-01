@@ -118,13 +118,14 @@ def _fast_smooth_array(arr):
     # Need to copy because the smoothing is done in multiple statements
     # and there does not seem to be an easy way to do it in place
     smoothed_arr = arr.copy()
+    weighted_arr = neighbor_weight * arr
 
-    smoothed_arr[:-1] += neighbor_weight * arr[1:]
-    smoothed_arr[1:] += neighbor_weight * arr[:-1]
-    smoothed_arr[:, :-1] += neighbor_weight * arr[:, 1:]
-    smoothed_arr[:, 1:] += neighbor_weight * arr[:, :-1]
-    smoothed_arr[:, :, :-1] += neighbor_weight * arr[:, :, 1:]
-    smoothed_arr[:, :, 1:] += neighbor_weight * arr[:, :, :-1]
+    smoothed_arr[:-1] += weighted_arr[1:]
+    smoothed_arr[1:] += weighted_arr[:-1]
+    smoothed_arr[:, :-1] += weighted_arr[:, 1:]
+    smoothed_arr[:, 1:] += weighted_arr[:, :-1]
+    smoothed_arr[:, :, :-1] += weighted_arr[:, :, 1:]
+    smoothed_arr[:, :, 1:] += weighted_arr[:, :, :-1]
     smoothed_arr /= scale
 
     return smoothed_arr
