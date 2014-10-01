@@ -220,6 +220,9 @@ def smooth_img(niimgs, fwhm):
         Smoothing strength, as a Full-Width at Half Maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If fwhm='fast', a fast smoothing will be performed with
+        a filter [0.2, 1, 0.2] in each direction and a normalisation
+        to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed)
 
