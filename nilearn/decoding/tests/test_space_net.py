@@ -20,9 +20,12 @@ logistic_path_scores = partial(path_scores, classif=True)
 squared_loss_path_scores = partial(path_scores, classif=False)
 
 # Data used in almost all tests
+from .test_same_api import to_niimgs
+size = 4
 from .simulate_smooth_lasso_data import create_smooth_simulation_data
-X, y, w, mask = create_smooth_simulation_data(
-    snr=1., n_samples=10, size=4, n_points=5, random_state=42)
+X_, y, w, mask = create_smooth_simulation_data(
+    snr=1., n_samples=10, size=size, n_points=5, random_state=42)
+X, mask = to_niimgs(X_, [size] * 3)
 
 
 @SkipTest
@@ -35,7 +38,7 @@ def test_same_lasso_classifier_cv():
     y = iris.target
     y = 2 * (y == 2) - 1
     tol = 1e-3
-    mask = np.ones(X.shape[1]).astype(np.bool)
+    X, mask = to_niimgs(X, (2, 2, 2))
 
     # classification
     n_alphas = 5
@@ -201,7 +204,7 @@ def test_estimators_are_special_cv_objects():
     iris = load_iris()
     X, y = iris.data, iris.target
     alpha = 1.
-    mask = np.ones(X.shape[1]).astype(np.bool)
+    X, mask = to_niimgs(X, (2, 2, 2))
 
     for penalty, classif in itertools.product(['smooth-lasso', 'tvl1'],
                                              [True, False]):
@@ -220,6 +223,7 @@ def test_tv_regression_simple():
     X = np.ones((n, 1)) + W_init.ravel().T
     X += np.random.randn(n, p)
     y = np.dot(X, W_init.ravel())
+    X, mask = to_niimgs(X, dim)
     alpha = 1.
 
     for l1_ratio in [1.]:
@@ -239,7 +243,7 @@ def test_tv_regression_3D_image_doesnt_crash():
     X += np.random.randn(n, p)
     y = np.dot(X, W_init.ravel())
     alpha = 1.
-    mask = np.ones(X.shape[1]).astype(np.bool)
+    X, mask = to_niimgs(X, dim)
 
     for l1_ratio in [0., .5, 1.]:
         SpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio, penalty="tvl1",
@@ -255,10 +259,10 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
-    mask = np.ones(X.shape[1]).astype(np.bool)
+    X_, mask = to_niimgs(X, (2, 2, 2))
     tvl1 = SpaceNet(mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
                     verbose=0, max_iter=1000, penalty="tvl1",
-                    classif=True).fit(X, y)
+                    classif=True).fit(X_, y)
     sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
                                   tol=tol, C=C).fit(X, y)
 
@@ -267,7 +271,7 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
                                   (np.abs(sklogreg.coef_) < zero_thr))
 
     # compare predictions
-    np.testing.assert_array_equal(tvl1.predict(X), sklogreg.predict(X))
+    np.testing.assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
 @SkipTest
@@ -301,12 +305,12 @@ def test_lasso_vs_smooth_lasso():
     smooth_lasso = SpaceNet(mask=mask, alpha=1, l1_ratio=1, classif=False,
                             penalty="smooth-lasso",
                             max_iter=100, normalize=False)
-    lasso.fit(X, y)
+    lasso.fit(X_, y)
     smooth_lasso.fit(X, y)
     lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
-        X, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
+        X_, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
     smooth_lasso_perf = 0.5 / y.size * extmath.norm(
-        np.dot(X, smooth_lasso.coef_) - y) ** 2\
+        np.dot(X_, smooth_lasso.coef_) - y) ** 2\
         + np.sum(np.abs(smooth_lasso.coef_))
     np.testing.assert_almost_equal(smooth_lasso_perf, lasso_perf, decimal=3)
 
