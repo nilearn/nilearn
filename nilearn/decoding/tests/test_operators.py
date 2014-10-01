@@ -1,7 +1,7 @@
 import itertools
 from nose.tools import assert_true
 import numpy as np
-from ..proximal_operators import prox_l1, prox_tv_l1
+from ..proximal_operators import prox_l1, prox_tvl1
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):
@@ -18,7 +18,7 @@ def test_prox_l1_nonexpansiveness(n_features=10):
         assert_true((sa - sb) ** 2 <= (a - b) ** 2 - (pa - pb) ** 2)
 
 
-def test_prox_tv_l1_approximates_prox_l1_for_lasso(size=15, random_state=42,
+def test_prox_tvl1_approximates_prox_l1_for_lasso(size=15, random_state=42,
                                                    decimal=4, dgap_tol=1e-7):
 
     rng = np.random.RandomState(random_state)
@@ -28,8 +28,8 @@ def test_prox_tv_l1_approximates_prox_l1_for_lasso(size=15, random_state=42,
         shape = [size] * ndim
         z = rng.randn(*shape)
         for weight in np.logspace(-10, 10, num=10):
-            # use prox_tv_l1 approximation to prox_l1
-            a = prox_tv_l1(z.copy(), weight=weight, l1_ratio=l1_ratio,
+            # use prox_tvl1 approximation to prox_l1
+            a = prox_tvl1(z.copy(), weight=weight, l1_ratio=l1_ratio,
                            dgap_tol=dgap_tol, return_info=False,
                            max_iter=10,
                            )[-1].ravel()
