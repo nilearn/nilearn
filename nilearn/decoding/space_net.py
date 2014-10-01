@@ -15,7 +15,7 @@ TV-l1, S-LASSO, etc.)
 from functools import partial
 import numpy as np
 from scipy import stats
-from sklearn.base import BaseEstimator, RegressorMixin, clone
+from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (
@@ -71,82 +71,6 @@ class EarlyStoppingCallback(object):
             print('Test error: %.8f' % error)
 
         return False
-
-
-class _BaseFeatureSelector(BaseEstimator):
-    def __init__(self, score_func, percentile=10., mask=None):
-        self.score_func = score_func
-        self.percentile = percentile
-        self.mask = mask
-
-    def fit_transform(self, X, y):
-        if self.mask is None:
-            self.mask_ = None
-        else:
-            self.mask_ = np.array(self.mask, dtype=np.bool)
-
-        if self.percentile < 100. and X.shape[1] > X.shape[0]:
-            self.support_ = SelectPercentile(self.score_func,
-                                             percentile=self.percentile
-                                             ).fit(X, y).get_support()
-            X = X[:, self.support_]
-            if not self.mask_ is None:
-                self.mask_[self.mask] = (self.support_ > 0)
-        else:
-            self.support_ = np.ones(X.shape[1]).astype(np.bool)
-
-        return X
-
-    def inverse_transform(self, w):
-        """Unmasks the input vector `w`, according to the mask learned by
-        Univariate screening.
-
-        """
-
-        if self.support_.sum() < len(self.support_):
-            w_ = np.zeros(len(self.support_))
-            w_[self.support_] = w
-        else:
-            w_ = w
-
-        return w_
-
-
-class RegressorFeatureSelector(_BaseFeatureSelector):
-    """Univariate feature selector for spatial regression models with
-    mask (as in fMRI analysis).
-
-    """
-
-    def __init__(self, percentile=10., mask=None):
-        super(RegressorFeatureSelector, self).__init__(
-            f_regression, percentile=percentile, mask=mask)
-
-
-class ClassifierFeatureSelector(_BaseFeatureSelector):
-    """Univariate feature selector for spatial classification models with
-    mask (as in fMRI analysis).
-
-    """
-
-    def __init__(self, percentile=10., mask=None):
-        super(ClassifierFeatureSelector, self).__init__(
-            f_classif, percentile=percentile, mask=mask)
-
-    def inverse_transform(self, w):
-        """Unmasks the input vector `w`, according to the mask learned by
-        Univariate screening.
-
-        """
-
-        if self.support_.sum() < len(self.support_):
-            w_ = np.zeros(len(self.support_))
-            w_ = np.append(w_, w[-1])
-            w_[:-1][self.support_] = w[:-1]
-        else:
-            w_ = w
-
-        return w_
 
 
 def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
@@ -242,18 +166,16 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
 
     """
 
+    mask = mask.copy()
     alphas = sorted(alphas)[::-1]
 
     # univariate feature screening
-    if classif:
-        selector = ClassifierFeatureSelector(percentile=screening_percentile,
-                                             mask=mask)
-    else:
-        selector = RegressorFeatureSelector(percentile=screening_percentile,
-                                            mask=mask)
-
-    X = selector.fit_transform(X, y)
-    mask = selector.mask_
+    if screening_percentile < 100.:
+        selector = SelectPercentile(f_classif if classif else f_regression,
+                                    percentile=screening_percentile).fit(X, y)
+        support = selector.get_support()
+        mask[mask] = (support > 0)
+        X = X[:, support]
 
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
@@ -306,9 +228,6 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
                 best_alpha = alpha
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
-    # N.B: This work is cached, just in case another worker on another fold
-    # reports the same best alpha. Also note that the re-fit is done only on
-    # the train (i.e X_train), a piece of the design X.
     best_w, _, init = solver(
         X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
         max_iter=max_iter, verbose=verbose, **kwargs)
@@ -317,7 +236,14 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
         test_scores.append(np.nan)
 
     # unmask univariate screening
-    best_w = selector.inverse_transform(best_w)
+    if screening_percentile < 100. and support.sum() < len(support):
+        w_ = np.zeros(len(support))
+        if classif:
+            w_ = np.append(w_, best_w[-1])
+            w_[:-1][support] = best_w[:-1]
+        else:
+            w_[support] = best_w
+        best_w = w_
 
     return test_scores, best_w, key
 

@@ -9,9 +9,8 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from ..space_net import (RegressorFeatureSelector,
-                         ClassifierFeatureSelector, EarlyStoppingCallback,
-                         _my_alpha_grid, path_scores, SpaceNet)
+from ..space_net import (EarlyStoppingCallback, _my_alpha_grid, path_scores,
+                         SpaceNet)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
@@ -99,41 +98,6 @@ def test_my_alpha_grid_same_as_sk():
                                     fit_intercept=fit_intercept))
     except ImportError:
         raise SkipTest
-
-
-def test_featureselectors():
-    import random
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    for ndim in range(1, 4):
-        shape = [4] * ndim
-        for percentile in [0, 10, 100]:
-            for n_samples in [X.shape[0], X.shape[1] - 1]:
-                for with_mask in [True, False]:
-                    if with_mask:
-                        mask = np.zeros(np.prod(shape)).astype(np.bool)
-                        support = random.sample(xrange(np.prod(mask.shape)),
-                                                X.shape[1])
-                        mask[support] = 1
-                        mask = mask.reshape(shape)
-                    else:
-                        mask = None
-
-                    for selector_class in [RegressorFeatureSelector,
-                                           ClassifierFeatureSelector]:
-                        selector = selector_class(percentile=percentile,
-                                                  mask=mask)
-                        salt = int("Classifier" in selector_class.__name__)
-                        X_ = X[:n_samples]
-                        y_ = y[:n_samples]
-                        X_ = selector.fit_transform(X_, y_)
-                        if not mask is None:
-                            assert_true(selector.mask_ is not None)
-                        else:
-                            assert_true(selector.mask_ is None)
-                        coef_ = selector.inverse_transform(rng.randn(
-                                selector.support_.sum() + salt))
-                        assert_equal(len(coef_), X.shape[1] + salt)
 
 
 def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
@@ -262,7 +226,7 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
     X_, mask = to_niimgs(X, (2, 2, 2))
     tvl1 = SpaceNet(mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
                     verbose=0, max_iter=1000, penalty="tvl1",
-                    classif=True).fit(X_, y)
+                    classif=True, screening_percentile=100.).fit(X_, y)
     sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
                                   tol=tol, C=C).fit(X, y)
 
