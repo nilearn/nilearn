@@ -48,7 +48,7 @@ def _projector_on_tvl1_dual(grad, l1_ratio):
     return grad
 
 
-def dual_gap(input_img_norm, new, gap, weight, l1_ratio=1.):
+def dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
     """
     dual gap of total variation denoising
     see "Total variation regularization for fMRI-based prediction of behavior",
@@ -60,13 +60,14 @@ def dual_gap(input_img_norm, new, gap, weight, l1_ratio=1.):
     return 0.5 * d_gap
 
 
-def _objective_function(input_img, output_img, gradient, l1_ratio, weight):
+def _objective_function_prox_tvl1(input_img, output_img, gradient, l1_ratio,
+                                  weight):
     diff = (input_img - output_img).ravel()
     return (.5 * (diff * diff).sum()
             + weight * tv_l1_from_gradient(gradient))
 
 
-def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
+def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                max_iter=200, check_gap_frequency=4, val_min=None,
                val_max=None, verbose=False, fista=True, init=None,
                return_info=False):
@@ -75,13 +76,11 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     2-d and 3-d images
 
     Find the argmin `res` of
-        1/2 * ||im - res||^2 + weight * TV(res),
-
-    where TV is the isotropic l1 norm of the gradient.
+        1/2 * ||im - res||^2 + weight * TVl1(res),
 
     Parameters
     ----------
-    im : ndarray of floats (2-d or 3-d)
+    input_img : ndarray of floats (2-d or 3-d)
         input data to be denoised. `im` can be of any numeric type,
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
@@ -152,11 +151,10 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     Teboulle paper.
     """
     weight = float(weight)
-    input_img = im
-    input_img_norm = (im.ravel() * im.ravel()).sum()
+    input_img_norm = (input_img.ravel() * input_img.ravel()).sum()
     if not input_img.dtype.kind == 'f':
         input_img = input_img.astype(np.float)
-    shape = [len(im.shape) + 1] + list(im.shape)
+    shape = [len(input_img.shape) + 1] + list(input_img.shape)
     grad_im = np.zeros(shape)
     grad_aux = np.zeros(shape)
     t = 1.
@@ -218,13 +216,13 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                                                  out=negated_output)
         if (i % check_gap_frequency) == 0:
             if x_tol is None:
-                # Stopping criterion based on the dual_gap
+                # Stopping criterion based on the dual gap
                 if val_min is not None or val_max is not None:
                     # We need to recompute the dual variable
                     gap = negated_output + input_img
                 old_dgap = dgap
-                dgap = dual_gap(input_img_norm, -negated_output,
-                                gap, weight, l1_ratio=l1_ratio)
+                dgap = dual_gap_prox_tvl1(input_img_norm, -negated_output,
+                                          gap, weight, l1_ratio=l1_ratio)
                 if verbose:
                     print '\tProxTVl1: Iteration % 2i, dual gap: % 6.3e' % (
                         i, dgap)
@@ -243,7 +241,7 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 if verbose:
                     print ('\tProxTVl1 iteration % 2i, relative difference:'
                            ' % 6.3e, energy: % 6.3e') % (
-                        i, diff, _objective_function(
+                        i, diff, _objective_function_prox_tvl1(
                                    input_img, -negated_output, gradient_id(
                                        negated_output, l1_ratio=l1_ratio),
                                    l1_ratio, weight))
@@ -262,7 +260,7 @@ def prox_tv_l1(im, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     return output
 
 
-def intercepted_prox_tv_l1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
+def _intercepted_prox_tvl1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
                            init=None, verbose=False):
     """
     Computation of TV-l1 prox, taking into account the intercept.
@@ -285,7 +283,7 @@ def intercepted_prox_tv_l1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
     """
 
     init = init.reshape(shape) if not init is None else init
-    out, prox_info = prox_tv_l1(
+    out, prox_info = prox_tvl1(
         w[:-1].reshape(shape), weight=weight,
         l1_ratio=l1_ratio, dgap_tol=dgap_tol, return_info=True,
         init=init, max_iter=max_iter, verbose=verbose)
