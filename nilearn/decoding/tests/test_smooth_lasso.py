@@ -5,7 +5,7 @@ import scipy as sp
 from numpy.testing import assert_almost_equal
 from sklearn.utils import extmath
 from sklearn.utils import check_random_state
-from ..objective_functions import gradient, div
+from ..objective_functions import gradient, div, _unmask
 from ..space_net_solvers import (
     data_function,
     adjoint_data_function,
@@ -22,10 +22,22 @@ from ..space_net_solvers import (
 from ..space_net import SpaceNet
 
 # Data used in almost all tests
+import nibabel
+from .test_same_api import to_niimgs
 from .simulate_smooth_lasso_data import (
     create_smooth_simulation_data, create_simulation_data)
-X, y, w, mask = create_smooth_simulation_data(
-    snr=1., n_samples=10, size=4, n_points=5, random_state=42)
+
+
+def _make_data(task="regression", size=4):
+    X, y, w, mask = create_smooth_simulation_data(
+        snr=1., n_samples=10, size=size, n_points=5, random_state=42,
+        task=task)
+    X_, _ = to_niimgs(X, [size] * 3)
+    mask_ = nibabel.Nifti1Image(mask.astype(np.float),
+                                X_.get_affine())
+    return X, y, w, mask, mask_, X_
+
+X, y, w, mask, mask_, X_ = _make_data()
 
 
 def get_gradient_matrix(w_size, mask):
@@ -216,14 +228,15 @@ def test_fista_convergence():
 def test_max_alpha_logistic():
     """Tests that models with l1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
-    X, y, w, mask = create_smooth_simulation_data(task="classification")
+    # X, y, w, mask = create_smooth_simulation_data(task="classification")
+    X, y, w, mask, mask_, X_ = _make_data(task="classification")
     l1_ratios = np.linspace(0.1, 1, 3)
-    clf = SpaceNet(mask=mask, max_iter=10, classif=True)
+    clf = SpaceNet(mask=mask_, max_iter=10, classif=True)
     for l1_ratio in l1_ratios:
         clf.l1_ratio = l1_ratio
         # We set alpha bigger than the theoretic bound
         clf.alpha = max_alpha_logistic(X, y, l1_ratio) * 1.1
-        clf.fit(X, y)
+        clf.fit(X_, y)
         assert_almost_equal(clf.coef_, 0)
 
 
@@ -231,12 +244,12 @@ def test_max_alpha_squared_loss():
     """Tests that models with l1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
     l1_ratios = np.linspace(0.1, 1, 3)
-    reg = SpaceNet(mask=mask, max_iter=10, penalty="smooth-lasso",
+    reg = SpaceNet(mask=mask_, max_iter=10, penalty="smooth-lasso",
                    classif=False)
     for l1_ratio in l1_ratios:
         reg.l1_ratio = l1_ratio
         reg.alpha = np.max(np.dot(X.T, y)) / (l1_ratio * y.size) * 1.1
-        reg.fit(X, y)
+        reg.fit(X_, y)
         assert_almost_equal(reg.coef_, 0)
 
 
@@ -246,15 +259,13 @@ def test_tikhonov_regularization_vs_smooth_lasso():
     # with the analytical solution for Tikhonov Regularization
 
     # XXX A small dataset here (this test is very lengthy)
-    X, y, w, mask = create_smooth_simulation_data(
-        snr=1., n_samples=10, size=4, n_points=4, random_state=42)
     G = get_gradient_matrix(w.size, mask)
     optimal_model = np.dot(sp.linalg.pinv(
         np.dot(X.T, X) + y.size * np.dot(G.T, G)), np.dot(X.T, y))
     smooth_lasso = SpaceNet(
-        mask=mask, alpha=1., l1_ratio=0., max_iter=400, fit_intercept=False,
+        mask=mask_, alpha=1., l1_ratio=0., max_iter=400, fit_intercept=False,
         normalize=False, screening_percentile=100.)
-    smooth_lasso.fit(X.copy(), y.copy())
+    smooth_lasso.fit(X_, y.copy())
     smooth_lasso_perf = 0.5 / y.size * extmath.norm(
         np.dot(X, smooth_lasso.coef_) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, smooth_lasso.coef_)) ** 2
@@ -268,15 +279,18 @@ def test_debiasing_model():
     """Tests that a debiased model has better performance that a no debiased
     one
     """
-    X_train = X[:100]
-    y_train = y[:100]
-    X_test = X[100:]
-    y_test = y[100:]
-    smooth_lasso = SpaceNet(mask=mask, alpha=0.01)
-    smooth_lasso.fit(X_train, y_train)
-    biased_score = smooth_lasso.score(X_test, y_test)
+    X, y, w, mask, mask_, X_ = _make_data()
+    X_train = X[:4]
+    y_train = y[:4]
+    X_test = X[4:]
+    y_test = y[4:]
+    X_train_, mask_ = to_niimgs(X_train, mask.shape)
+    X_test_, mask_ = to_niimgs(X_test, mask.shape)
+    smooth_lasso = SpaceNet(mask=mask_, alpha=0.01)
+    smooth_lasso.fit(X_train_, y_train)
+    biased_score = smooth_lasso.score(X_test_, y_test)
     smooth_lasso.coef_ = _debias(smooth_lasso.coef_, X_test, y_test)
-    unbiased_score = smooth_lasso.score(X_test, y_test)
+    unbiased_score = smooth_lasso.score(X_test_, y_test)
     assert unbiased_score >= biased_score
 
 
