@@ -15,7 +15,7 @@ from .._utils.ndimage import largest_connected_component
 from .._utils.fast_maths import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
-from ..image.image import smooth_img
+from ..image.image import _smooth_array
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -163,9 +163,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     if data.dtype.kind == 'i':
         data = data.astype(np.float)
 
-    smoothed_img = nibabel.Nifti1Image(data, affine)
-    smoothed_img = smooth_img(smoothed_img, fwhm='fast')
-    data = smoothed_img.get_data()
+    data = _smooth_array(data, affine, fwhm='fast')
 
     if spacing == 'auto':
         spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
