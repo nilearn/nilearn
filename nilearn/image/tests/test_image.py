@@ -33,6 +33,28 @@ def test_high_variance_confounds():
     assert_true(confounds2.shape == (length, n_confounds))
 
 
+def test__fast_smooth_array():
+    N = 4
+    shape = (N, N, N)
+    # hardcoded in _fast_smooth_array
+    neighbor_weight = 0.2
+    # 6 neighbors in 3D if you are not on an edge
+    nb_neighbors_max = 6
+
+    data = np.ones(shape)
+    smooth_data = image._fast_smooth_array(data)
+
+    # this contains the number of neighbors for each cell in the array
+    nb_neighbors_arr = np.empty(shape)
+    for (i, j, k), __ in np.ndenumerate(nb_neighbors_arr):
+        nb_neighbors_arr[i, j, k] = (3 + (0 < i < N - 1) +
+                                     (0 < j < N - 1) + (0 < k < N - 1))
+
+    expected = ((1 + neighbor_weight * nb_neighbors_arr) /
+                (1 + neighbor_weight * nb_neighbors_max))
+    np.testing.assert_allclose(smooth_data, expected)
+
+
 def test__smooth_array():
     """Test smoothing of images: _smooth_array()"""
     # Impulse in 3D
@@ -80,6 +102,11 @@ def test__smooth_array():
                           axis=axis), axis=-1), axis=-1)
             np.testing.assert_equal(proj.sum(),
                                     fwhm / np.abs(affine[axis, axis]))
+
+    # Check fwhm='fast'
+    for affine in test_affines:
+        np.testing.assert_equal(image._smooth_array(data, affine, fwhm='fast'),
+                                image._fast_smooth_array(data))
 
 
 def test_smooth_img():
