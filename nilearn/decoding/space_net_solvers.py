@@ -21,7 +21,7 @@ from .objective_functions import (squared_loss_lipschitz_constant,
                                   logistic_grad as logistic_loss_grad,
                                   logistic as logistic_loss)
 from .objective_functions import gradient, div as divergence
-from .proximal_operators import prox_l1, prox_tv_l1, intercepted_prox_tv_l1
+from .proximal_operators import prox_l1, prox_tvl1, _intercepted_prox_tvl1
 from .fista import mfista
 
 
@@ -543,14 +543,14 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     # proximal operator of nonsmooth proximable part of energy (f2)
     if loss == "mse":
         def f2_prox(w, stepsize, dgap_tol, init=None):
-            out, info = prox_tv_l1(
+            out, info = prox_tvl1(
                 unmaskvec(w), weight=alpha * stepsize, l1_ratio=l1_ratio,
                 dgap_tol=dgap_tol, return_info=True, init=unmaskvec(init),
                 max_iter=prox_max_iter, verbose=verbose)
             return maskvec(out.ravel()), info
     else:
         def f2_prox(w, stepsize, dgap_tol, init=None):
-            out, info = intercepted_prox_tv_l1(
+            out, info = _intercepted_prox_tvl1(
                 unmaskvec(w), volume_shape, l1_ratio, alpha * stepsize,
                 dgap_tol, prox_max_iter, init=_unmask(
                     init[:-1], mask) if init is not None else None,
