@@ -402,4 +402,37 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     running_mean = running_mean / float(n_imgs)
     return nibabel.Nifti1Image(running_mean, target_affine)
 
+def swap_img_hemispheres(nii):
+    """Performs swapping along x axis on the indicated nifti.
+       This is analogous to the fslswapdim command line tool of the FSL suite
+       ("fslswapdim input.nii -x y z output.nii")
 
+       Supposes a nifti of a brain that is sagitally aligned
+
+       Use case: synchronizing ROIs across hemispheres
+
+       Should be used with caution (confusion might be caused with
+       radio/neuro conventions)
+
+       Note that this does not change the affine matrix
+
+    Parameters
+    -----------
+    nii: nibabel.Nifti1Image
+        Nifti1Image object for a nifti image.
+
+    Returns
+    --------
+    output: nibabel.Nifti1Image
+        hemispherially swapped image
+    """
+
+    # Check input arguments
+    if not isinstance(nii, nibabel.Nifti1Image):
+        raise ValueError('Argument is not a Nifti1Image object!')
+
+    # create swapped nifti object
+    outnii = nibabel.Nifti1Image(nii.get_data()[::-1], nii.get_affine(),
+        header=nii.get_header())
+
+    return outnii
