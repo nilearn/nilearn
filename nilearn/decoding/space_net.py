@@ -430,9 +430,8 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.screening_percentile = screening_percentile
         self.debias = debias
 
-    def _pre_fit(self, X, y):
+    def _binarize_y(self, y):
         """Helper function invoked just before fitting a classifier."""
-        X = np.array(X)
         y = np.array(y)
 
         # encode target classes as -1 and 1
@@ -440,13 +439,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         y = self._enc.fit_transform(y)
         self.classes_ = self._enc.classes_
         self.n_classes_ = len(self.classes_)
-
-        if self.mask is not None:
-            self.n_features_ = np.prod(self.mask_.shape)
-        else:
-            self.n_features_ = X.shape[1]
-
-        return X, y
+        return y
 
     def _set_coef_and_intercept(self, w):
         self.w_ = np.array(w)
@@ -552,7 +545,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
 
-        y = np.array(y).ravel()
+        y = np.array(y).copy().ravel()
         n_samples, _ = X.shape
 
         # set backend solver
@@ -606,7 +599,7 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # misc (different for classifier and regressor)
         if self.classif:
-            X, y = self._pre_fit(X, y)
+            y = self._binarize_y(y)
         if self.classif and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
