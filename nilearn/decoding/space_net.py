@@ -144,6 +144,27 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
                       num=n_alphas)[::-1]
 
 
+def _test_score_classif(X_test, y_test, w):
+    """Compute test score for classification model, given weights map `w`."""
+    return 1. - roc_auc_score(
+        (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
+
+
+def _test_score_regression(X_test, y_test, w, debias=False, ymean=0.):
+    """Compute test score for regression model, given weights map `w`."""
+
+    # debias to correct for DoF
+    if debias:
+        y_pred = np.dot(X_test, w)
+        scaling = np.dot(y_pred, y_pred)
+        if scaling > 0.:
+            scaling = np.dot(y_pred, y_test) / scaling
+            w *= scaling
+    y_pred = np.dot(X_test, w) + ymean  # the intercept!
+    score = .5 * np.mean((y_test - y_pred) ** 2)
+    return score
+
+
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 test, classif=False, tol=1e-4, max_iter=1000, init=None,
                 verbose=0, key=None, debias=False, ymean=0.,
@@ -192,21 +213,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     best_alpha = alphas[0]
     if len(test) > 0.:
         if classif:
-            def _test_score(w):
-                return 1. - roc_auc_score(
-                    (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
+            _test_score = partial(_test_score_classif, X_test, y_test)
         else:
-            def _test_score(w):
-                # debias to correct for DoF
-                if debias:
-                    y_pred = np.dot(X_test, w)
-                    scaling = np.dot(y_pred, y_pred)
-                    if scaling > 0.:
-                        scaling = np.dot(y_pred, y_test) / scaling
-                        w *= scaling
-                y_pred = np.dot(X_test, w) + ymean  # the intercept!
-                score = .5 * np.mean((y_test - y_pred) ** 2)
-                return score
+            _test_score = partial(_test_score_regression, X_test, y_test,
+                                  debias=debias, ymean=ymean)
 
         # setup callback mechanism for early stopping
         earlystopper = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
