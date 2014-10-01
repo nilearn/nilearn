@@ -145,9 +145,9 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
                       num=n_alphas)[::-1]
 
 
-def path_scores(solver, X, y, alphas, l1_ratio, train,
+def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 test, classif=False, tol=1e-4, max_iter=1000, init=None,
-                mask=None, verbose=0, key=None, debias=False, ymean=0.,
+                verbose=0, key=None, debias=False, ymean=0.,
                 screening_percentile=10., **kwargs):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects.
@@ -166,10 +166,10 @@ def path_scores(solver, X, y, alphas, l1_ratio, train,
 
     """
 
-    mask = mask.copy()
     alphas = sorted(alphas)[::-1]
 
     # univariate feature screening
+    mask = mask.copy()
     if screening_percentile < 100.:
         selector = SelectPercentile(f_classif if classif else f_regression,
                                     percentile=screening_percentile).fit(X, y)
@@ -616,7 +616,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         w = np.zeros((n_problems, X.shape[1] + int(self.classif > 0)))
 
         # parameter to path_scores function
-        path_params = dict(mask=self.mask_, tol=self.tol, verbose=self.verbose,
+        path_params = dict(tol=self.tol, verbose=self.verbose,
                            max_iter=self.max_iter, rescale_alpha=True,
                            screening_percentile=self.screening_percentile,
                            classif=self.classif)
@@ -628,8 +628,8 @@ class SpaceNet(LinearModel, RegressorMixin):
         # main loop: loop on classes and folds
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory.cache(path_scores))(
-                solver, X, _ovr_y(c), alphas, self.l1_ratio, train, test,
-                key=c, **path_params) for c in xrange(n_problems) for (
+                solver, X, _ovr_y(c), self.mask_, alphas, self.l1_ratio, train,
+                test, key=c, **path_params) for c in xrange(n_problems) for (
                 train, test) in cv):
             test_scores = np.reshape(test_scores, (-1, 1))
             if not len(self.scores_[c]):

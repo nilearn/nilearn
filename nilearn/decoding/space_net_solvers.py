@@ -247,7 +247,7 @@ def _pre_fit_labels(model, y):
         model.classes_ = model._enc.fit(y).classes_
 
 
-def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask=None, init=None,
+def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
                               max_iter=1000, tol=1e-4, callback=None,
                               lipschitz_constant=None, rescale_alpha=True,
                               verbose=0):
