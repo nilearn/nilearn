@@ -34,30 +34,26 @@ def test_high_variance_confounds():
 
 
 def test__fast_smooth_array():
-    data = np.ones((4, 4, 4))
+    N = 4
+    shape = (N, N, N)
+    # hardcoded in _fast_smooth_array
+    neighbor_weight = 0.2
+    # 6 neighbors in 3D if you are not on an edge
+    nb_neighbors_max = 6
+
+    data = np.ones(shape)
     smooth_data = image._fast_smooth_array(data)
-    expected = np.array([
-        [[0.72727273,  0.81818182,  0.81818182,  0.72727273],
-         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
-         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
-         [0.72727273,  0.81818182,  0.81818182,  0.72727273]],
 
-        [[0.81818182,  0.90909091,  0.90909091,  0.81818182],
-         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
-         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
-         [0.81818182,  0.90909091,  0.90909091,  0.81818182]],
+    # this contains the number of neighbors for each cell in the array
+    nb_neighbors_arr = np.empty(shape)
+    for (i, j, k), __ in np.ndenumerate(nb_neighbors_arr):
+        nb_neighbors_arr[i, j, k] = (3 + (0 < i < N - 1) +
+                                     (0 < j < N - 1) + (0 < k < N - 1))
 
-        [[0.81818182,  0.90909091,  0.90909091,  0.81818182],
-         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
-         [0.90909091,  1.00000000,  1.00000000,  0.90909091],
-         [0.81818182,  0.90909091,  0.90909091,  0.81818182]],
-
-        [[0.72727273,  0.81818182,  0.81818182,  0.72727273],
-         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
-         [0.81818182,  0.90909091,  0.90909091,  0.81818182],
-         [0.72727273,  0.81818182,  0.81818182,  0.72727273]]])
-
+    expected = ((1 + neighbor_weight * nb_neighbors_arr) /
+                (1 + neighbor_weight * nb_neighbors_max))
     np.testing.assert_allclose(smooth_data, expected)
+
 
 def test__smooth_array():
     """Test smoothing of images: _smooth_array()"""
