@@ -82,6 +82,55 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                                            detrend=detrend)
 
 
+def _fast_smooth_array(arr):
+    """Simple smoothing which is less computationally expensive than
+    applying a gaussian filter.
+
+    Only the first three dimensions of the array will be smoothed. The
+    filter uses [0.2, 1, 0.2] weights in each direction and use a
+    normalisation to preserve the local average value.
+
+    Parameters
+    ==========
+    arr: numpy.ndarray
+        4D array, with image number as last dimension. 3D arrays are
+        also accepted.
+
+    Returns
+    =======
+    smoothed_arr: numpy.ndarray
+        Smoothed array.
+
+    Note
+    ====
+    Rather than calling this function directly, users are encouraged
+    to call the high-level function :func:`smooth_img` with
+    fwhm='fast'.
+
+    """
+    neighbor_weight = 0.2
+    # 6 neighbors in 3D if not on an edge
+    nb_neighbors = 6
+    # This scale ensures that a uniform array stays uniform
+    # except on the array edges
+    scale = 1 + nb_neighbors * neighbor_weight
+
+    # Need to copy because the smoothing is done in multiple statements
+    # and there does not seem to be an easy way to do it in place
+    smoothed_arr = arr.copy()
+    weighted_arr = neighbor_weight * arr
+
+    smoothed_arr[:-1] += weighted_arr[1:]
+    smoothed_arr[1:] += weighted_arr[:-1]
+    smoothed_arr[:, :-1] += weighted_arr[:, 1:]
+    smoothed_arr[:, 1:] += weighted_arr[:, :-1]
+    smoothed_arr[:, :, :-1] += weighted_arr[:, :, 1:]
+    smoothed_arr[:, :, 1:] += weighted_arr[:, :, :-1]
+    smoothed_arr /= scale
+
+    return smoothed_arr
+
+
 def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """Smooth images by applying a Gaussian filter.
 
@@ -97,12 +146,16 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
 
-    fwhm: scalar or numpy.ndarray
+    fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If fwhm == 'fast', a fast smoothing will be performed with
+        a filter [0.2, 1, 0.2] in each direction and a normalisation
+        to preserve the local average value.
         If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed)
+        of non-finite values is needed).
+
 
     ensure_finite: bool
         if True, replace every non-finite values (like NaNs) by zero before
@@ -138,7 +191,9 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
 
-    if fwhm is not None:
+    if fwhm == 'fast':
+        arr = _fast_smooth_array(arr)
+    elif fwhm is not None:
         # Convert from a FWHM to a sigma:
         # Do not use /=, fwhm may be a numpy scalar
         fwhm = fwhm / np.sqrt(8 * np.log(2))
@@ -161,10 +216,13 @@ def smooth_img(niimgs, fwhm):
     niimgs: niimgs or iterable of niimgs
         One or several niimage(s), either 3D or 4D.
 
-    fwhm: scalar or numpy.ndarray
+    fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a Full-Width at Half Maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If fwhm == 'fast', a fast smoothing will be performed with
+        a filter [0.2, 1, 0.2] in each direction and a normalisation
+        to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed)
 
