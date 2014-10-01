@@ -153,6 +153,15 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     Parameters
     ----------
+    X : 2D array of shape (n_samples, n_features)
+        Design matrix, one row per sample point.
+
+    y : 1D array of length n_samples
+        Response vector; one value per sample.
+
+    mask : 3D array of booleans.
+        Mask defining brain ROIs.
+
     alphas : list of floats
         List of regularization parameters being considered.
 
