@@ -206,7 +206,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError('Need one or more niimg as an entry, an '
-                    'empty list was given.')
+                             'empty list was given.')
+        if confounds is None:
+            confounds = itertools.repeat(None, len(niimgs))
+
         # First, learn the mask
         if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
             self.masker_ = MultiNiftiMasker(mask_img=self.mask,
@@ -270,7 +273,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 n_components=self.n_components,
                 memory=self.memory,
                 ref_memory_level=self.memory_level,
-                confounds=confounds,
+                confounds=confound,
                 verbose=self.verbose
             )
             for niimg, confound in zip(niimgs, confounds))
