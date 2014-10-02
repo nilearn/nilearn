@@ -14,7 +14,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
-from ..input_data import MultiNiftiMasker, NiftiMapsMasker
+from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
@@ -99,7 +99,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    mask: filename, NiImage or MultiNiftiMasker instance, optional
+    mask: filename, Niimg, instance of NiftiMasker or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
@@ -202,8 +202,13 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             niimgs = [niimgs]
             # This is a very incomplete hack, as it won't work right for
             # single-subject list of 3D filenames
+        if len(niimgs) == 0:
+            # Common error that arises from a null glob. Capture
+            # it early and raise a helpful message
+            raise ValueError('Need one or more niimg as an entry, an '
+                    'empty list was given.')
         # First, learn the mask
-        if not isinstance(self.mask, MultiNiftiMasker):
+        if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
             self.masker_ = MultiNiftiMasker(mask_img=self.mask,
                                             smoothing_fwhm=self.smoothing_fwhm,
                                             target_affine=self.target_affine,
@@ -235,15 +240,15 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'low_pass', 'high_pass',
                                't_r', 'memory', 'memory_level']:
+                our_param = getattr(self, param_name)
+                if our_param is None:
+                    # Default value
+                    continue
                 if getattr(self.masker_, param_name) is not None:
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
-                setattr(self.masker_, param_name,
-                        getattr(self, param_name))
-        if self.masker_.mask_img is None:
-            self.masker_.fit(niimgs)
-        else:
-            self.masker_.fit()
+                setattr(self.masker_, param_name, our_param)
+        self.masker_.fit(niimgs)
         self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(MultiNiftiMasker, self)
@@ -268,7 +273,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 confounds=confounds,
                 verbose=self.verbose
             )
-            for niimg in niimgs)
+            for niimg, confound in zip(niimgs, confounds))
         subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
         if len(niimgs) > 1:
@@ -295,7 +300,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             data = as_ndarray(data.T)
         else:
             data = subject_pcas[0]
+            variance = subject_svd_vals[0]
         self.components_ = data
+        self.variance_ = variance
         return self
 
     def transform(self, niimgs, confounds=None):
