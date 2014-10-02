@@ -32,13 +32,13 @@ new_images = nifti_masker.inverse_transform(gm_maps_masked)
 gm_maps_masked = nifti_masker.fit_transform(new_images)
 
 from nilearn.decoding import SpaceNet
-slcv = SpaceNet(memory=memory, screening_percentile=10, verbose=1,
-                mask=nifti_masker, n_jobs=14)
+decoder = SpaceNet(memory=memory, screening_percentile=10, verbose=1,
+                   mask=nifti_masker, n_jobs=14)
 
 ### Fit and predict
-slcv.fit(new_images, age)
-coef_niimg = slcv.coef_img_
-age_pred = slcv.predict(new_images).ravel()
+decoder.fit(new_images, age)
+coef_niimg = decoder.coef_img_
+age_pred = decoder.predict(new_images).ravel()
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
