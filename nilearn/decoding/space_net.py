@@ -13,14 +13,15 @@ TV-l1, S-LASSO, etc.)
 # License: simplified BSD
 
 import numbers
+import time
 from functools import partial
 import numpy as np
 from scipy import stats
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
-from sklearn.feature_selection import (
-    f_regression, f_classif, SelectPercentile)
+from sklearn.feature_selection import (f_regression, f_classif,
+                                       SelectPercentile)
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..input_data import NiftiMasker
@@ -226,6 +227,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                                              debias=debias, ymean=ymean,
                                              verbose=verbose)
 
+        # score the alphas by model fit
         best_score = np.inf
         for alpha in alphas:
             w, _, init = solver(
@@ -550,6 +552,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         # sanity check on params
         self.check_params()
 
+        if self.verbose:
+            tic = time.time()
+
         # compute / sanitize mask
         if isinstance(self.mask, NiftiMasker):
             self.masker_ = clone(self.mask)
@@ -616,7 +621,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         if len(alphas) > 1:
             cv = list(check_cv(self.cv, X=X, y=y, classifier=self.classif))
         else:
-            cv = [(range(n_samples), [])]
+            cv = [(range(n_samples), [])]  # single fold
         self.n_folds_ = len(cv)
 
         # misc (different for classifier and regressor)
@@ -681,5 +686,9 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # unmask weights map as a niimg
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
+
+        # report time elapsed
+        if self.verbose:
+            print "Time Elapsed: %g seconds."  % (time.time() - tic)
 
         return self
