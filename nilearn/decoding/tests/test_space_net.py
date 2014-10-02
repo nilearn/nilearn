@@ -9,7 +9,7 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from ..space_net import (EarlyStoppingCallback, _my_alpha_grid, path_scores,
+from ..space_net import (EarlyStoppingCallback, _space_net_alpha_grid, path_scores,
                          SpaceNet)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
@@ -62,20 +62,20 @@ def test_same_lasso_classifier_cv():
     assert_equal(tvl1regressorcv.alpha_, slregressorcv.alpha_)
 
 
-def test_my_alpha_grid(n_samples=4, n_features=3):
+def test_space_net_alpha_grid(n_samples=4, n_features=3):
     X = rng.randn(n_samples, n_features)
     y = np.arange(n_samples)
 
     for l1_ratio in [.5, 1.]:
         alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
-        assert_equal(_my_alpha_grid(X, y, n_alphas=1, l1_ratio=l1_ratio),
+        assert_equal(_space_net_alpha_grid(X, y, n_alphas=1, l1_ratio=l1_ratio),
                      alpha_max)
 
     for standardize in [False, True]:
         for l1_ratio in [.5, 1.]:
             alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
             for n_alphas in xrange(1, 10):
-                alphas = _my_alpha_grid(
+                alphas = _space_net_alpha_grid(
                     X, y, n_alphas=n_alphas, l1_ratio=l1_ratio,
                     standardize=standardize)
                 if not standardize:
@@ -83,7 +83,7 @@ def test_my_alpha_grid(n_samples=4, n_features=3):
                 assert_equal(n_alphas, len(alphas))
 
 
-def test_my_alpha_grid_same_as_sk():
+def test_space_net_alpha_grid_same_as_sk():
     try:
         from sklearn.linear_model.coordinate_descent import _alpha_grid
         iris = load_iris()
@@ -91,7 +91,7 @@ def test_my_alpha_grid_same_as_sk():
         y = iris.target
         for normalize in [True]:
             for fit_intercept in [True, False]:
-                np.testing.assert_array_equal(_my_alpha_grid(
+                np.testing.assert_array_equal(_space_net_alpha_grid(
                         X, y, n_alphas=5, normalize=normalize,
                         fit_intercept=fit_intercept, standardize=True),
                         _alpha_grid(X, y, n_alphas=5, normalize=normalize,

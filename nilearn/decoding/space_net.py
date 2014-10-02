@@ -32,9 +32,9 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
 
 
-def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
-                   standardize=False, normalize=False, fit_intercept=False,
-                   logistic=False):
+def _space_net_alpha_grid(
+    X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0., standardize=False,
+    normalize=False, fit_intercept=False, logistic=False):
     """Compute the grid of alpha values for TV-l1 and S-Lasso.
 
     Parameters
@@ -605,7 +605,7 @@ class SpaceNet(LinearModel, RegressorMixin):
             alphas = [self.alpha]
         elif self.alphas is None:
             # XXX Are these alphas reasonable ?
-            alphas = _my_alpha_grid(X, y, l1_ratio=self.l1_ratio,
+            alphas = _space_net_alpha_grid(X, y, l1_ratio=self.l1_ratio,
                                     eps=self.eps, n_alphas=self.n_alphas,
                                     standardize=self.standardize,
                                     normalize=self.normalize,
