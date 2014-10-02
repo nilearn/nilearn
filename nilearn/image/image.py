@@ -18,7 +18,6 @@ from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
 from .._utils.niimg_conversions import _safe_get_data
 from .. import masking
 
-
 def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
     """ Return confounds signals extracted from input signals with highest
@@ -402,37 +401,38 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     running_mean = running_mean / float(n_imgs)
     return nibabel.Nifti1Image(running_mean, target_affine)
 
-def swap_img_hemispheres(nii):
-    """Performs swapping along x axis on the indicated nifti.
-       This is analogous to the fslswapdim command line tool of the FSL suite
-       ("fslswapdim input.nii -x y z output.nii")
-
-       Supposes a nifti of a brain that is sagitally aligned
+def swap_img_hemispheres(niimg):
+    """Performs swapping of hemispheres in the indicated nifti.
 
        Use case: synchronizing ROIs across hemispheres
 
-       Should be used with caution (confusion might be caused with
-       radio/neuro conventions)
-
-       Note that this does not change the affine matrix
-
     Parameters
-    -----------
-    nii: nibabel.Nifti1Image
-        Nifti1Image object for a nifti image.
+    ----------
+    niimg: string or object
+        If niimg is a string, it's considered as a path to Nifti image and
+        calls nibabel.load on it. If it is an object, it's considered to be
+        a nibabel.Nifti1Image object.
 
     Returns
-    --------
+    -------
     output: nibabel.Nifti1Image
-        hemispherially swapped image
+        hemispherically swapped image
+
+    Notes
+    -----
+    Supposes a nifti of a brain that is sagitally aligned
+
+    Should be used with caution (confusion might be caused with
+    radio/neuro conventions)
+
+    Note that this does not require a change of the affine matrix.
     """
 
-    # Check input arguments
-    if not isinstance(nii, nibabel.Nifti1Image):
-        raise ValueError('Argument is not a Nifti1Image object!')
+    # Check input is really a path to a nifti file or a nifti object
+    niimg = check_niimg(niimg)
 
     # create swapped nifti object
-    outnii = nibabel.Nifti1Image(nii.get_data()[::-1], nii.get_affine(),
-        header=nii.get_header())
+    out_img = nibabel.Nifti1Image(niimg.get_data()[::-1], niimg.get_affine(),
+        header=niimg.get_header())
 
-    return outnii
+    return out_img
