@@ -31,48 +31,6 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
 
 
-class EarlyStoppingCallback(object):
-    """ Out-of-bag early stopping.
-
-        A callable that returns True when the test error starts
-        rising. We use a Spearman correlation (btween X_test.w and y_test)
-        for scoring.
-    """
-
-    def __init__(self, X_test, y_test, verbose=False):
-        self.y_test = y_test
-        self.X_test = X_test
-        self.test_errors = list()
-        self.verbose = verbose
-
-    def __call__(self, variables):
-        i = variables['counter']
-        if i == 0:
-            # Reset the test_errors list
-            self.test_errors = list()
-        w = variables['w']
-        w = np.ravel(w)
-
-        # Correlation (Spearman) to output
-        y_pred = np.dot(self.X_test, w)
-        error = .5 * (1. - stats.spearmanr(y_pred, self.y_test)[0])
-        self.test_errors.append(error)
-        if not (i > 20 and (i % 10) == 2):
-            return
-        if len(self.test_errors) > 4:
-            if np.mean(np.diff(self.test_errors[-5:])) >= 1e-4:
-                if self.verbose:
-                    print('Early stopping. Test error: %.8f %s' % (
-                            error, 40 * '-'))
-
-                # Error is steadily increasing
-                return True
-        if self.verbose > 1:
-            print('Test error: %.8f' % error)
-
-        return False
-
-
 def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
                    standardize=False, normalize=False, fit_intercept=False,
                    logistic=False):
@@ -145,25 +103,75 @@ def _my_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
                       num=n_alphas)[::-1]
 
 
-def _test_score_classif(X_test, y_test, w):
-    """Compute test score for classification model, given weights map `w`."""
-    return 1. - roc_auc_score(
-        (y_test > 0.), _sigmoid(np.dot(X_test, w[:-1]) + w[-1]))
+class EarlyStoppingCallback(object):
+    """ Out-of-bag early stopping.
 
+        A callable that returns True when the test error starts
+        rising. We use a Spearman correlation (btween X_test.w and y_test)
+        for scoring.
+    """
 
-def _test_score_regression(X_test, y_test, w, debias=False, ymean=0.):
-    """Compute test score for regression model, given weights map `w`."""
+    def __init__(self, X_test, y_test, classif, debias=False, ymean=0.,
+                 verbose=False):
+        self.X_test = X_test
+        self.y_test = y_test
+        self.classif = classif
+        self.debias = debias
+        self.ymean = ymean
+        self.verbose = verbose
+        self.test_errors = []
+        self.counter = 0.
 
-    # debias to correct for DoF
-    if debias:
-        y_pred = np.dot(X_test, w)
-        scaling = np.dot(y_pred, y_pred)
-        if scaling > 0.:
-            scaling = np.dot(y_pred, y_test) / scaling
-            w *= scaling
-    y_pred = np.dot(X_test, w) + ymean  # the intercept!
-    score = .5 * np.mean((y_test - y_pred) ** 2)
-    return score
+    def __call__(self, variables):
+        # our callback
+        if not isinstance(variables, dict):
+            variables = dict(w=variables)
+
+        if self.classif:
+            variables['w'] = variables['w'][:-1]  # strip off intercept
+        self.counter += 1
+
+        if self.counter == 0:
+            # Reset the test_errors list
+            self.test_errors = list()
+        w = variables['w']
+        w = np.ravel(w)
+
+        # Correlation (Spearman) to output
+        y_pred = np.dot(self.X_test, w)
+        error = .5 * (1. - stats.spearmanr(y_pred, self.y_test)[0])
+        self.test_errors.append(error)
+        if not (self.counter > 20 and (self.counter % 10) == 2):
+            return
+        if len(self.test_errors) > 4:
+            if np.mean(np.diff(self.test_errors[-5:])) >= 1e-4:
+                if self.verbose:
+                    print('Early stopping. Test error: %.8f %s' % (
+                            error, 40 * '-'))
+
+                # Error is steadily increasing
+                return True
+        if self.verbose > 1:
+            print('Test error: %.8f' % error)
+
+        return False
+
+    def test_score(self, w):
+        """Compute test score for model, given weights map `w`."""
+        if self.classif:
+            return 1. - roc_auc_score(
+                (self.y_test > 0.), _sigmoid(
+                    np.dot(self.X_test, w[:-1]) + w[-1]))
+        else:
+            if self.debias:
+                y_pred = np.dot(self.X_test, w)
+                scaling = np.dot(y_pred, y_pred)
+                if scaling > 0.:
+                    scaling = np.dot(y_pred, self.y_test) / scaling
+                    w *= scaling
+            y_pred = np.dot(self.X_test, w) + self.ymean  # the intercept!
+            score = .5 * np.mean((self.y_test - y_pred) ** 2)
+            return score
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
@@ -213,43 +221,27 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     best_alpha = alphas[0]
     if len(test) > 0.:
-        if classif:
-            _test_score = partial(_test_score_classif, X_test, y_test)
-        else:
-            _test_score = partial(_test_score_regression, X_test, y_test,
-                                  debias=debias, ymean=ymean)
-
         # setup callback mechanism for early stopping
-        earlystopper = EarlyStoppingCallback(X_test, y_test, verbose=verbose)
-        env = dict(counter=0)
-
-        def _callback(_env):
-            # our callback
-            if not isinstance(_env, dict):
-                _env = dict(w=_env)
-
-            if classif:
-                _env['w'] = _env['w'][:-1]  # strip off intercept
-            env["counter"] += 1
-            _env["counter"] = env["counter"]
-            return earlystopper(_env)
+        earlystopper = EarlyStoppingCallback(X_test, y_test, classif=classif,
+                                             debias=debias, ymean=ymean,
+                                             verbose=verbose)
 
         best_score = np.inf
         for alpha in alphas:
             w, _, init = solver(
                 X_train, y_train, alpha, l1_ratio, mask=mask, tol=tol,
                 max_iter=max_iter, init=init, verbose=verbose,
-                callback=_callback, **kwargs)
-            score = _test_score(w)
+                callback=earlystopper, **kwargs)
+            score = earlystopper.test_score(w)
             test_scores.append(score)
             if score <= best_score:
                 best_score = score
                 best_alpha = alpha
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
-    best_w, _, init = solver(
-        X_train, y_train, best_alpha, l1_ratio, mask=mask, tol=tol,
-        max_iter=max_iter, verbose=verbose, **kwargs)
+    best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
+                             mask=mask, tol=tol, max_iter=max_iter,
+                             verbose=verbose, **kwargs)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
@@ -372,8 +364,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         follows the internal memory layout of liblinear.
 
     `masker_`: instance of NiftiMasker
-        If a niimg mask (not simply a 3D array) was provided the constructor,
-        then this is the nifti masker used to mask the data.
+        The nifti masker used to mask the data.
 
     `mask_`: 3D array of booleans
         The mask used for masking the data.

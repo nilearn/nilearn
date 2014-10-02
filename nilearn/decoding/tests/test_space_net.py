@@ -1,7 +1,7 @@
 import itertools
 from functools import partial
 from nose import SkipTest
-from nose.tools import assert_equal, assert_true
+from nose.tools import assert_equal
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
@@ -106,7 +106,7 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
     X_test = rng.randn(n_samples, n_features)
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
-    escb = EarlyStoppingCallback(X_test, y_test, verbose=1)
+    escb = EarlyStoppingCallback(X_test, y_test, False, verbose=1)
     for counter in xrange(50):
         k = min(counter, n_features - 1)
         w[k] = 1
