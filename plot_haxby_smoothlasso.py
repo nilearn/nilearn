@@ -43,9 +43,10 @@ y = target[condition_mask]
 
 ### Fit S-LASSO classifier and retreive weights map ##########################
 from nilearn.decoding.space_net import SpaceNet
-slcv = SpaceNet(memory=memory, mask=nifti_masker, classif=True, verbose=1,
-                penalty="tvl1", n_jobs=14).fit(X, y)
-coef_niimg = slcv.coef_img_
+decoder = SpaceNet(memory=memory, mask=nifti_masker, classif=True, verbose=1,
+                penalty="tvl1", n_jobs=14)
+decoder.fit(X, y)
+coef_niimg = decoder.coef_img_
 coef_niimg.to_filename('haxby_slcv_weights.nii')
 
 ### Visualization #############################################################
@@ -55,6 +56,6 @@ from nilearn.plotting import plot_stat_map
 
 mean_epi = mean_img(data_files.func[0])
 slicer = plot_stat_map(coef_niimg, mean_epi, title="S-LASSO weights")
-print ("Accurarcy: %g" % ((slcv.predict(X) == y).mean() * 100.)) + "%"
+print ("Accurarcy: %g" % ((decoder.predict(X) == y).mean() * 100.)) + "%"
 print "_" * 80
 plt.show()
