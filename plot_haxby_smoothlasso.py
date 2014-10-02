@@ -42,7 +42,7 @@ X = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask],
 y = target[condition_mask]
 
 ### Fit S-LASSO classifier and retreive weights map ##########################
-from nilearn.decoding.space_net import SpaceNet
+from nilearn.decoding import SpaceNet
 decoder = SpaceNet(memory=memory, mask=nifti_masker, classif=True, verbose=1,
                 penalty="tvl1", n_jobs=14)
 decoder.fit(X, y)
