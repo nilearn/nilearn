@@ -32,7 +32,6 @@ def _make_data(rng=None, masked=False):
     mask[rng.rand() < .7] = 0
     w = np.zeros(dim)
     w[2:, 3:, :2] = 1
-    np.random.seed(0)
     n = 10
     X = np.ones([n] + list(dim))
     X += rng.randn(*X.shape)

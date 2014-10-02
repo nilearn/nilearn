@@ -178,14 +178,14 @@ def test_estimators_are_special_cv_objects():
 
 
 def test_tv_regression_simple():
+    rng = check_random_state(42)
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
     W_init[2:3, 1:2, -2:] = 1
-    np.random.seed(0)
     n = 10
     p = np.prod(dim)
     X = np.ones((n, 1)) + W_init.ravel().T
-    X += np.random.randn(n, p)
+    X += rng.randn(n, p)
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
     alphas = [.1, 1.]
@@ -198,15 +198,15 @@ def test_tv_regression_simple():
 
 
 def test_tv_regression_3D_image_doesnt_crash():
+    rng = check_random_state(42)
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
 
-    np.random.seed(0)
     n = 10
     p = dim[0] * dim[1] * dim[2]
     X = np.ones((n, 1)) + W_init.ravel().T
-    X += np.random.randn(n, p)
+    X += rng.randn(n, p)
     y = np.dot(X, W_init.ravel())
     alpha = 1.
     X, mask = to_niimgs(X, dim)
