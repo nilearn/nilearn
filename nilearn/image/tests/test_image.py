@@ -227,7 +227,7 @@ def test_mean_img_resample():
     assert_array_equal(mean_img_with_resampling.get_affine(), target_affine)
 
 
-def swap_img_hemispheres():
+def test_swap_img_hemispheres():
     # check bad arguments: a numpy array
     assert_raises(TypeError, image.swap_img_hemispheres, np.zeros((4,5,7)))
     # check bad arguments: non-existing file
