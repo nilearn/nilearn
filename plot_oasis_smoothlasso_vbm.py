@@ -18,19 +18,8 @@ memory = Memory("cache")
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars['age'].astype(float)
 
-### Preprocess data ###########################################################
-nifti_masker = NiftiMasker(
-    standardize=False,
-    smoothing_fwhm=2,
-    memory=memory)  # cache options
-# remove features with too low between-subject variance
-gm_maps_masked = nifti_masker.fit_transform(dataset_files.gray_matter_maps)
-gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 
-# final masking
-new_images = nifti_masker.inverse_transform(gm_maps_masked)
-gm_maps_masked = nifti_masker.fit_transform(new_images)
-
+### Fit and predict ###########################################################
 from nilearn.decoding import SpaceNet
 decoder = SpaceNet(memory=memory, screening_percentile=10, verbose=1,
                    mask=nifti_masker, n_jobs=14)
