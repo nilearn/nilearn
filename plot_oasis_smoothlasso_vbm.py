@@ -31,7 +31,7 @@ gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 new_images = nifti_masker.inverse_transform(gm_maps_masked)
 gm_maps_masked = nifti_masker.fit_transform(new_images)
 
-from nilearn.decoding.space_net import SpaceNet
+from nilearn.decoding import SpaceNet
 slcv = SpaceNet(memory=memory, screening_percentile=10, verbose=1,
                 mask=nifti_masker, n_jobs=14)
 
