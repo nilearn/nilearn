@@ -506,9 +506,6 @@ class SpaceNet(LinearModel, RegressorMixin):
 
     def check_params(self):
         """Makes sure parameters are sane."""
-        if self.mask is None:
-            raise ValueError(
-                "You need to supply a valid mask (a 3D array). Got 'None'.")
         for param in ["alpha", "l1_ratio"]:
             value = getattr(self, param)
             if not (value is None or isinstance(value, numbers.Number)):
