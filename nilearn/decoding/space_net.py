@@ -602,13 +602,11 @@ class SpaceNet(LinearModel, RegressorMixin):
             alphas = [self.alpha]
         elif self.alphas is None:
             # XXX Are these alphas reasonable ?
-            alphas = _space_net_alpha_grid(X, y, l1_ratio=self.l1_ratio,
-                                    eps=self.eps, n_alphas=self.n_alphas,
-                                    standardize=self.standardize,
-                                    normalize=self.normalize,
-                                    alpha_min=self.alpha_min,
-                                    fit_intercept=self.fit_intercept,
-                                    logistic=self.classif)
+            alphas = _space_net_alpha_grid(
+                X, y, l1_ratio=self.l1_ratio, eps=self.eps,
+                n_alphas=self.n_alphas, standardize=self.standardize,
+                normalize=self.normalize, alpha_min=self.alpha_min,
+                fit_intercept=self.fit_intercept, logistic=self.classif)
         else:
             alphas = np.array(self.alphas)
 
@@ -639,7 +637,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                            classif=self.classif, debias=self.debias)
         path_params.update(special_kwargs)
 
-        # create OVR labels
+        # function handle for generating OVR labels
         _ovr_y = lambda c: y[:, c] if self.classif and (self.n_classes_ > 2
                                                         ) else y
 
