@@ -230,9 +230,6 @@ def _unmask(w, mask):
         The unmasked version of `w`
     """
 
-    if mask is None:
-        return w
-
     out = np.zeros(mask.shape, dtype=w.dtype)
     out[mask] = np.ravel(w)
 
