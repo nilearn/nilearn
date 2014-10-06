@@ -401,6 +401,7 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     running_mean = running_mean / float(n_imgs)
     return nibabel.Nifti1Image(running_mean, target_affine)
 
+
 def swap_img_hemispheres(niimg):
     """Performs swapping of hemispheres in the indicated nifti.
 

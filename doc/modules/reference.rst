@@ -100,6 +100,7 @@ uses.
    reorder_img
    crop_img
    mean_img
+   swap_img_hemispheres
 
 
 .. _io_ref:
