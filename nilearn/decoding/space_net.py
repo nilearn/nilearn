@@ -33,8 +33,9 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
 
 
 def _space_net_alpha_grid(
-    X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0., standardize=False,
-    normalize=False, fit_intercept=False, logistic=False):
+        X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
+        standardize=False, normalize=False, fit_intercept=False,
+        logistic=False):
     """Compute the grid of alpha values for TV-l1 and S-Lasso.
 
     Parameters
@@ -77,7 +78,6 @@ def _space_net_alpha_grid(
         # Boyd, in Journal of Machine Learning Research, 8:1519-1555,
         # July 2007.
         # url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
-        # XXX uncovered / untested code!
         m = float(y.size)
         m_plus = float(y[y == 1].size)
         m_minus = float(y[y == -1].size)
@@ -86,7 +86,7 @@ def _space_net_alpha_grid(
         b[y == -1] = - m_plus / m
         alpha_max = np.max(np.abs(X.T.dot(b)))
 
-        # XXX It may happen that b is in the kernel of X.T!
+        # It may happen that b is in the kernel of X.T!
         if alpha_max == 0.:
             alpha_max = np.abs(np.dot(X.T, y)).max()
     else:
@@ -124,7 +124,7 @@ class EarlyStoppingCallback(object):
         self.counter = 0.
 
     def __call__(self, variables):
-        # our callback
+        """The callback proper """
         if not isinstance(variables, dict):
             variables = dict(w=variables)
 
@@ -601,7 +601,6 @@ class SpaceNet(LinearModel, RegressorMixin):
         if self.alpha is not None:
             alphas = [self.alpha]
         elif self.alphas is None:
-            # XXX Are these alphas reasonable ?
             alphas = _space_net_alpha_grid(
                 X, y, l1_ratio=self.l1_ratio, eps=self.eps,
                 n_alphas=self.n_alphas, standardize=self.standardize,
