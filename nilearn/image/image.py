@@ -17,6 +17,7 @@ from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
 from .._utils.niimg_conversions import _safe_get_data
 from .. import masking
+from nilearn.image import reorder_img
 
 def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
@@ -431,6 +432,9 @@ def swap_img_hemispheres(niimg):
 
     # Check input is really a path to a nifti file or a nifti object
     niimg = check_niimg(niimg)
+
+    # get nifti in x-y-z order
+    niimg = reorder_img(niimg)
 
     # create swapped nifti object
     out_img = nibabel.Nifti1Image(niimg.get_data()[::-1], niimg.get_affine(),

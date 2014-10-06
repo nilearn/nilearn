@@ -228,11 +228,6 @@ def test_mean_img_resample():
 
 
 def test_swap_img_hemispheres():
-    # check bad arguments: a numpy array
-    assert_raises(TypeError, image.swap_img_hemispheres, np.zeros((4,5,7)))
-    # check bad arguments: non-existing file
-    assert_raises(IOError, image.swap_img_hemispheres, "/bad/path/foo.nii")
-
     # make sure input image data is not overwritten inside function
     data = np.random.randn(4, 5, 7)
     data_img = nibabel.Nifti1Image(data, np.eye(4))
