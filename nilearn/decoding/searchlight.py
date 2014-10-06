@@ -47,7 +47,7 @@ def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
         object to use to fit the data
 
     A : scipy sparse matrix.
-        adjacency matrix. Defines for each sample the neigbhoring samples
+        adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
 
     scoring : string or callable, optional
