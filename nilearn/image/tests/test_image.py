@@ -1,7 +1,7 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false
+from nose.tools import assert_true, assert_false, assert_raises
 
 import nibabel
 import numpy as np
@@ -252,4 +252,22 @@ def test_mean_img_resample():
     assert_array_equal(resampled_mean_image.get_affine(),
                        mean_img_with_resampling.get_affine())
     assert_array_equal(mean_img_with_resampling.get_affine(), target_affine)
+
+
+def test_swap_img_hemispheres():
+    # make sure input image data is not overwritten inside function
+    data = np.random.randn(4, 5, 7)
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    image.swap_img_hemispheres(data_img)
+    np.testing.assert_array_equal(data_img.get_data(), data)
+
+    # swapping operations work
+    np.testing.assert_array_equal( # one turn
+        image.swap_img_hemispheres(data_img).get_data(),
+        data[::-1])
+    np.testing.assert_array_equal( # two turns -> back to original data
+        image.swap_img_hemispheres(
+            image.swap_img_hemispheres(data_img)).get_data(),
+        data)
+
 
