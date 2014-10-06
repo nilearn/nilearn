@@ -256,7 +256,7 @@ set up your own data preparation procedure:
   see the effect of affine transforms on data and bounding boxes.
 * Computing the mean of images (in the time of 4th direction):
   :func:`nilearn.image.mean_img`
-* shifting voxels of both hemisphere:
+* Swapping voxels of both hemisphere:
   :func:`nilearn.image.swap_img_hemispheres`
 * Smoothing: :func:`nilearn.image.smooth_img`
 * Masking:
