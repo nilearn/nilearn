@@ -48,16 +48,20 @@ class JSONReader(object):
         except ValueError:
             return color
 
-    def to_mpl(self, transform=None, invert_color=False):
+    def to_mpl(self, transform=None, invert_color=False, **kwargs):
         """Returns a list of matplotlib patches
         """
         mpl_patches = []
-
+        kwargs_edgecolor = kwargs.pop('edgecolor', None)
+        kwargs_linewidth = kwargs.pop('linewidth', None)
         for path in self.json_content['paths']:
-            edgecolor = path['edgecolor']
-            if invert_color:
-                edgecolor = JSONReader._invert_color(edgecolor)
-            linewidth = path['linewidth']
+            if kwargs_edgecolor is not None:
+                edgecolor = kwargs_edgecolor
+            else:
+                edgecolor = path['edgecolor']
+                if invert_color:
+                    edgecolor = JSONReader._invert_color(edgecolor)
+            linewidth = kwargs_linewidth or path['linewidth']
             path_id = path['id']
 
             for item in path['items']:
@@ -70,7 +74,8 @@ class JSONReader(object):
                                           linewidth=linewidth,
                                           facecolor='none',
                                           gid=path_id,
-                                          transform=transform)
+                                          transform=transform,
+                                          **kwargs)
 
                 mpl_patches.append(patch)
 
@@ -133,9 +138,9 @@ class BrainSchematics(object):
 
         return filename_and_transform
 
-    def plot(self, ax, transform=None, invert_color=False):
+    def plot(self, ax, transform=None, invert_color=False, **kwargs):
         mpl_patches = self.reader.to_mpl(self.transform + ax.transData,
-                                         invert_color)
+                                         invert_color, **kwargs)
         for mpl_patch in mpl_patches:
             ax.add_patch(mpl_patch)
 

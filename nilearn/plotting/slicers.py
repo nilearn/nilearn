@@ -515,13 +515,13 @@ class BaseSlicer(object):
             cut_ax.draw(edge_mask, data_bounds, data_bounds,
                         type='imshow', **kwargs)
 
-    def add_brain_schematics(self):
+    def add_brain_schematics(self, **kwargs):
         """Add brain schematics to the display axes
         """
         for cut_ax in self.axes.itervalues():
             bp = brain_schematics.BrainSchematics.from_direction(cut_ax.direction)
             invert_color = self._black_bg
-            bp.plot(cut_ax.ax, invert_color=invert_color)
+            bp.plot(cut_ax.ax, invert_color=invert_color, **kwargs)
             cut_ax.add_object_bounds(bp.get_object_bounds())
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):

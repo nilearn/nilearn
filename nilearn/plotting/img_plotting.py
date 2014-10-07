@@ -613,6 +613,7 @@ def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
                      annotate=True, # draw_cross=True,
                      black_bg='auto',
                      cmap=cm.cold_hot, # dim=True,
+                     alpha=1.,
                      **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral). The brain glass schematic views will be added on top of the image.
@@ -664,6 +665,8 @@ def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
             savefig.
         cmap: matplotlib colormap, optional
             The colormap for the anat
+        alpha: float between 0 and 1
+            Alpha transparency for the brain schematics
 
         Notes
         -----
@@ -672,9 +675,8 @@ def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
     """
     slicer = slicers.get_projector(display_mode).init_with_figure(None, black_bg=black_bg)
     # TODO additional arguments to pass?
-    slicer.add_overlay(stat_map_img, threshold=threshold, colorbar=colorbar, cmap=cmap,
-                       **kwargs)
-    slicer.add_brain_schematics()
+    slicer.add_overlay(stat_map_img, threshold=threshold, colorbar=colorbar, cmap=cmap, **kwargs)
+    slicer.add_brain_schematics(alpha=alpha)
 
     if title is not None:
         slicer.title(title)
