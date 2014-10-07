@@ -31,11 +31,11 @@ from ..image.resampling import get_bounds, reorder_img, coord_transform,\
 from .glass_brain import brain_schematics
 
 ################################################################################
-# class CutAxes
+# class BaseAxes
 ################################################################################
 
-class CutAxes(object):
-    """ An MPL axis-like object that displays a cut of 3D volumes
+class BaseAxes(object):
+    """ An MPL axis-like object that displays a 2D view of 3D volumes
     """
 
     def __init__(self, ax, direction, coord):
@@ -46,47 +46,22 @@ class CutAxes(object):
             ax: a MPL axes instance
                 The axes in which the plots will be drawn
             direction: {'x', 'y', 'z'}
-                The directions of the cut
+                The directions of the view
             coord: float
-                The coordinnate along the direction of the cut
+                The coordinate along the direction of the cut
+
         """
         self.ax = ax
         self.direction = direction
         self.coord = coord
         self._object_bounds = list()
 
-
-    def do_cut(self, data, affine):
-        """ Cut the 3D volume into a 2D slice
-
-            Parameters
-            ==========
-            data: 3D ndarray
-                The 3D volume to cut
-            affine: 4x4 ndarray
-                The affine of the volume
-        """
-        coords = [0, 0, 0]
-        coords['xyz'.index(self.direction)] = self.coord
-        x_map, y_map, z_map = [int(np.round(c)) for c in
-                               coord_transform(coords[0],
-                                               coords[1],
-                                               coords[2],
-                                               np.linalg.inv(affine))]
-        if self.direction == 'y':
-            cut = np.rot90(data[:, y_map, :])
-        elif self.direction == 'x':
-            cut = np.rot90(data[x_map, :, :])
-        elif self.direction == 'z':
-            cut = np.rot90(data[:, :, z_map])
-        else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
-        return cut
+    def tranform_2d(self, data, affine):
+        raise NotImplementedError("'transform_2d' needs to be implemented"
+                                  "in derived classes'")
 
     def add_object_bounds(self, bounds):
-        """A simple function that ensures that axes get rescaled when adding
-        object bounds
+        """Ensures that axes get rescaled when adding object bounds
 
         """
         old_object_bounds = self.get_object_bounds()
@@ -96,8 +71,8 @@ class CutAxes(object):
         if new_object_bounds != old_object_bounds:
             self.ax.axis(self.get_object_bounds())
 
-    def draw_cut(self, cut, data_bounds, bounding_box,
-                  type='imshow', **kwargs):
+    def draw(self, cut, data_bounds, bounding_box,
+                 type='imshow', **kwargs):
         # kwargs massaging
         kwargs['origin'] = 'upper'
 
@@ -121,7 +96,6 @@ class CutAxes(object):
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
 
         return im
-
 
     def get_object_bounds(self):
         """ Return the bounds of the objects on this axes.
@@ -158,6 +132,44 @@ class CutAxes(object):
                 bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
                 **kwargs)
 
+    def draw_position(self, size, bg_color, **kwargs):
+        raise NotImplementedError("'draw_position' should be implemented "
+                                  "in derived classes")
+
+################################################################################
+# class CutAxes
+################################################################################
+
+class CutAxes(BaseAxes):
+    """ An MPL axis-like object that displays a cut of 3D volumes
+    """
+    def transform_2d(self, data, affine):
+        """ Cut the 3D volume into a 2D slice
+
+            Parameters
+            ==========
+            data: 3D ndarray
+                The 3D volume to cut
+            affine: 4x4 ndarray
+                The affine of the volume
+        """
+        coords = [0, 0, 0]
+        coords['xyz'.index(self.direction)] = self.coord
+        x_map, y_map, z_map = [int(np.round(c)) for c in
+                               coord_transform(coords[0],
+                                               coords[1],
+                                               coords[2],
+                                               np.linalg.inv(affine))]
+        if self.direction == 'y':
+            cut = np.rot90(data[:, y_map, :])
+        elif self.direction == 'x':
+            cut = np.rot90(data[x_map, :, :])
+        elif self.direction == 'z':
+            cut = np.rot90(data[:, :, z_map])
+        else:
+            raise ValueError('Invalid value for direction %s' %
+                             self.direction)
+        return cut
 
     def draw_position(self, size, bg_color, **kwargs):
         ax = self.ax
@@ -169,6 +181,29 @@ class CutAxes(object):
                 bbox=dict(boxstyle="square,pad=0",
                             ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
+
+
+class ProjectAxes(BaseAxes):
+    """ An MPL axis-like object that displays a 2D projection of 3D volumes
+    """
+    def transform_2d(self, data, affine):
+        """ Sums the 3D volume along an axis
+
+            Parameters
+            ==========
+            data: 3D ndarray
+                The 3D volume to cut
+            affine: 4x4 ndarray
+                The affine of the volume
+        """
+        sum_axis = 'xyz'.index(self.direction)
+        summed_data = data.sum(axis=sum_axis)
+        return np.rot90(summed_data)
+
+    def draw_position(self, size, bg_color, **kwargs):
+        # It does not make sense to draw self.coord
+        # since the data is summed along one axis
+        pass
 
 
 ################################################################################
@@ -198,7 +233,7 @@ class BaseSlicer(object):
                 The axes that will be subdivided in 3.
             black_bg: boolean, optional
                 If True, the background of the figure will be put to
-                black. If you whish to save figures with a black background, 
+                black. If you wish to save figures with a black background,
                 you will need to pass "facecolor='k', edgecolor='k'" to 
                 pylab's savefig.
 
@@ -413,12 +448,12 @@ class BaseSlicer(object):
         ims = []
         for cut_ax in self.axes.itervalues():
             try:
-                cut = cut_ax.do_cut(data, affine)
+                cut = cut_ax.transform_2d(data, affine)
             except IndexError:
                 # We are cutting outside the indices of the data
                 continue
-            im = cut_ax.draw_cut(cut, data_bounds, bounding_box,
-                            type=type, **kwargs)
+            im = cut_ax.draw(cut, data_bounds, bounding_box,
+                             type=type, **kwargs)
             ims.append(im)
         return ims
 
@@ -472,16 +507,16 @@ class BaseSlicer(object):
         # For each ax, cut the data and plot it
         for cut_ax in self.axes.itervalues():
             try:
-                cut = cut_ax.do_cut(data, affine)
+                cut = cut_ax.transform_2d(data, affine)
                 edge_mask = _edge_map(cut)
             except IndexError:
                 # We are cutting outside the indices of the data
                 continue
-            cut_ax.draw_cut(edge_mask, data_bounds, data_bounds,
-                            type='imshow', **kwargs)
+            cut_ax.draw(edge_mask, data_bounds, data_bounds,
+                        type='imshow', **kwargs)
 
     def add_brain_schematics(self):
-        """TODO: doc
+        """Add brain schematics to the display axes
         """
         for cut_ax in self.axes.itervalues():
             bp = brain_schematics.BrainSchematics.from_direction(cut_ax.direction)
@@ -662,7 +697,7 @@ class OrthoSlicer(BaseSlicer):
             ----------
             cut_coords: 3-tuple of floats, optional
                 The position of the cross to draw. If none is passed, the
-                ortho_slicer's cut coordinnates are used.
+                ortho_slicer's cut coordinates are used.
             kwargs:
                 Extra keyword arguments are passed to axhline
         """
@@ -816,7 +851,7 @@ class BaseStackedSlicer(BaseSlicer):
             ----------
             cut_coords: 3-tuple of floats, optional
                 The position of the cross to draw. If none is passed, the
-                ortho_slicer's cut coordinnates are used.
+                ortho_slicer's cut coordinates are used.
             kwargs:
                 Extra keyword arguments are passed to axhline
         """
@@ -859,27 +894,73 @@ SLICERS = dict(ortho=OrthoSlicer,
                z=ZSlicer)
 
 
+class OrthoProjector(OrthoSlicer):
+    """A class to create linked axes for plotting orthogonal projections
+       of 3D maps.
+    """
+    axes_class = ProjectAxes
+
+    @staticmethod
+    def find_cut_coords(img=None, threshold=None, cut_coords=None):
+        return (None, None, None)
+
+    def draw_cross(self, cut_coords=None, **kwargs):
+        # It does not make sense to draw crosses for the position of
+        # the cuts since we are summing along one axis
+        pass
+
+
+class XProjector(OrthoProjector):
+    _direction = 'x'
+    _default_figsize = [2.6, 2.3]
+
+
+class YProjector(OrthoProjector):
+    _cut_displayed = 'y'
+    _default_figsize = [2.2, 2.3]
+
+
+class ZProjector(OrthoProjector):
+    _cut_displayed = 'z'
+    _default_figsize = [2.2, 2.3]
+
+
+class XZProjector(OrthoProjector):
+    _cut_displayed = 'xz'
+
+
+class YXProjector(OrthoProjector):
+    _cut_displayed = 'yx'
+
+
+class YZProjector(OrthoProjector):
+    _cut_displayed = 'yz'
+
+
+PROJECTORS = dict(ortho=OrthoProjector,
+                  xz=XZProjector,
+                  yz=YZProjector,
+                  yx=YXProjector,
+                  x=XProjector,
+                  y=YProjector,
+                  z=ZProjector)
+
+
+def get_display_class(display_mode, class_dict):
+    try:
+        return class_dict[display_mode]
+    except KeyError:
+        message = ('{} is not a valid display_mode. '
+                   'Valid options are {}').format(
+                       display_mode, sorted(class_dict.keys()))
+        raise ValueError(message)
+
+
 def get_slicer(display_mode):
     "Internal function to retrieve a slicer"
-    if display_mode in SLICERS:
-        return SLICERS[display_mode]
-    raise ValueError("%s is not a valid display_mode. Valid options are "
-                     "%s" % (display_mode,
-                     ", ".join("%r" % k for k in sorted(SLICERS.keys()))))
+    return get_display_class(display_mode, SLICERS)
 
 
-class MyCutAxes(CutAxes):
-
-    # TODO: do_cut should probably be renamed because it has nothing
-    # to do with a cut
-    def do_cut(self, data, affine):
-        sum_axis = 'xyz'.index(self.direction)
-        summed_data = data.sum(axis=sum_axis)
-        return np.rot90(summed_data)
-
-class MyOrthoSlicer(OrthoSlicer):
-    """TODO: Fill out the doc
-
-    """
-    axes_class = MyCutAxes
-
+def get_projector(display_mode):
+    "Internal function to retrieve a projector"
+    return get_display_class(display_mode, PROJECTORS)

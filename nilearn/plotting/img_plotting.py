@@ -607,9 +607,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     return slicer
 
 def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
-                     output_file=None, #display_mode='ortho',TODO support display_mode
+                     output_file=None, display_mode='ortho',
                      colorbar=True,
-                     figure=None, axes=None, title=None, threshold=1e-6,
+                     figure=None, axes=None, title=None, threshold=1e-6, # TODO: threshold's default ???
                      annotate=True, # draw_cross=True,
                      black_bg='auto',
                      cmap=cm.cold_hot, # dim=True,
@@ -670,8 +670,7 @@ def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    # TODO: actually use 'display_mode' to switch between different slicers
-    slicer = slicers.MyOrthoSlicer.init_with_figure(None, black_bg=black_bg)
+    slicer = slicers.get_projector(display_mode).init_with_figure(None, black_bg=black_bg)
     # TODO additional arguments to pass?
     slicer.add_overlay(stat_map_img, threshold=threshold, colorbar=colorbar, cmap=cmap,
                        **kwargs)
