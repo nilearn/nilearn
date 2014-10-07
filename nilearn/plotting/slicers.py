@@ -28,7 +28,7 @@ from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform,\
             get_mask_bounds
 
-from .glass_brain_scripts import brain_plotter
+from .glass_brain import brain_schematics
 
 ################################################################################
 # class CutAxes
@@ -484,11 +484,9 @@ class BaseSlicer(object):
         """TODO: doc
         """
         for cut_ax in self.axes.itervalues():
-            json_filename, transform = _get_json_and_transform(cut_ax.direction)
-            ax = cut_ax.ax
-            bp = brain_plotter.BrainPlotter(json_filename, transform)
+            bp = brain_schematics.BrainSchematics.from_direction(cut_ax.direction)
             invert_color = self._black_bg
-            bp.plot(ax, invert_color=invert_color)
+            bp.plot(cut_ax.ax, invert_color=invert_color)
             cut_ax.add_object_bounds(bp.get_object_bounds())
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
@@ -884,45 +882,4 @@ class MyOrthoSlicer(OrthoSlicer):
 
     """
     axes_class = MyCutAxes
-
-
-def _get_json_and_transform(direction):
-    direction_to_view_name = {'x': 'side',
-                              'y': 'front',
-                              'z': 'top'}
-
-    direction_to_transform_params = {
-        'x': [0.38, 0, 0, 0.38, -108, -70],
-        'y': [0.39, 0, 0, 0.39, -72, -73],
-        'z': [0.36, 0, 0, 0.37, -71, -107]}
-
-    dirname = os.path.dirname(os.path.abspath(__file__))
-    dirname = os.path.join(dirname, 'glass_brain_scripts', 'generated_json')
-    direction_to_filename = {
-        direction: os.path.join(dirname,
-                                'brain_schematics_{}.json'.format(view_name))
-        for direction, view_name in direction_to_view_name.iteritems()
-    }
-
-    direction_to_transforms = {
-        direction: transforms.Affine2D.from_values(*params)
-        for direction, params in direction_to_transform_params.iteritems()
-    }
-
-    direction_to_json_and_transform = {
-        direction: (direction_to_filename[direction],
-                    direction_to_transforms[direction])
-        for direction in direction_to_filename
-    }
-
-    filename_and_transform = direction_to_json_and_transform.get(direction)
-
-    if filename_and_transform is None:
-        message = ("No glass brain view associated with direction '{}'. "
-                   "Possible directions are {}").format(
-                       direction,
-                       direction_to_json_and_transform.keys())
-        raise ValueError(message)
-
-    return filename_and_transform
 

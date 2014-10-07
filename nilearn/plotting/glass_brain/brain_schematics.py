@@ -1,17 +1,15 @@
-# coding: utf-8
-
-import sys
 import json
+import os
 
-import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib import patches
 from matplotlib import colors
+from matplotlib import transforms
+
 
 class JSONReader(object):
     """Reads path coordinates and metadata from a custom JSON format and
     can transform that into a list of matplotlib patches
-
     """
     def __init__(self, filename):
         self.filename = filename
@@ -83,11 +81,57 @@ class JSONReader(object):
         return tuple(alist)
 
 
-class BrainPlotter(object):
+class BrainSchematics(object):
+    """Plot brain schematics on a matplotlib axis
+    """
     def __init__(self, json_filename, transform):
         self.json_filename = json_filename
         self.reader = JSONReader(self.json_filename)
         self.transform = transform
+
+    @classmethod
+    def from_direction(cls, direction):
+        json_filename, transform = cls._get_json_and_transform(direction)
+        return cls(json_filename, transform)
+
+    @staticmethod
+    def _get_json_and_transform(direction):
+        direction_to_view_name = {'x': 'side',
+                                  'y': 'front',
+                                  'z': 'top'}
+
+        direction_to_transform_params = {
+            'x': [0.38, 0, 0, 0.38, -108, -70],
+            'y': [0.39, 0, 0, 0.39, -72, -73],
+            'z': [0.36, 0, 0, 0.37, -71, -107]}
+
+        dirname = os.path.dirname(os.path.abspath(__file__))
+        dirname = os.path.join(dirname, 'generated_json')
+        direction_to_filename = {
+            direction: os.path.join(
+                dirname,
+                'brain_schematics_{}.json'.format(view_name))
+            for direction, view_name in direction_to_view_name.iteritems()}
+
+        direction_to_transforms = {
+            direction: transforms.Affine2D.from_values(*params)
+            for direction, params in direction_to_transform_params.iteritems()}
+
+        direction_to_json_and_transform = {
+            direction: (direction_to_filename[direction],
+                        direction_to_transforms[direction])
+            for direction in direction_to_filename}
+
+        filename_and_transform = direction_to_json_and_transform.get(direction)
+
+        if filename_and_transform is None:
+            message = ("No glass brain view associated with direction '{}'. "
+                       "Possible directions are {}").format(
+                           direction,
+                           direction_to_json_and_transform.keys())
+            raise ValueError(message)
+
+        return filename_and_transform
 
     def plot(self, ax, transform=None, invert_color=False):
         mpl_patches = self.reader.to_mpl(self.transform + ax.transData,
@@ -104,11 +148,3 @@ class BrainPlotter(object):
         ymargin = (ymax - ymin) * 0.05
         return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
 
-
-if __name__ == '__main__':
-    fig, ax = plt.subplots()
-    ax.set_xlim((0, 1000))
-    ax.set_ylim((0, 1000))
-    plotter = BrainPlotter(sys.argv[1])
-    plotter.plot(ax)
-    plt.show()
