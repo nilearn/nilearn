@@ -299,8 +299,12 @@ def _filter_column(array, col, criteria):
         if a tuple, select elements between the limits given by the tuple
         if a string, select elements that match the string
     """
-    # Raise an error if the column does not exist
-    array[col]
+    # Raise an error if the column does not exist. This is the only way to
+    # test it across all possible types (pandas, recarray...)
+    try:
+        array[col]
+    except:
+        raise KeyError('Filtering criterion %s does not exist' % col)
 
     if not isinstance(criteria, basestring) and \
             not isinstance(criteria, tuple) and \
@@ -2334,6 +2338,17 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     classification of autism: ABIDE results." Frontiers in human neuroscience
     7 (2013).
     """
+
+    # Parameter check
+    for derivative in derivatives:
+        if not derivative in ['alff', 'degree_binarize', 'degree_weighted',
+                'dual_regression', 'eigenvector_binarize',
+                'eigenvector_weighted', 'falff', 'func_mask', 'func_mean',
+                'func_preproc', 'lfcd', 'reho', 'rois_aal', 'rois_cc200',
+                'rois_cc400', 'rois_dosenbach160', 'rois_ez', 'rois_ho',
+                'rois_tt', 'vmhc']:
+            raise KeyError('%s is not a valid derivative' % derivative)
+
     # General file: phenotypic information
     data_dir = _get_dataset_dir('ABIDE_pcp', data_dir=data_dir)
     if url is None:
@@ -2380,9 +2395,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     results['phenotypic'] = pheno
     for derivative in derivatives:
-        files = [(file_id + '_' + derivative + '.nii.gz',
+        ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
+        files = [(file_id + '_' + derivative + ext,
                   '/'.join([url, derivative,
-                            file_id + '_' + derivative + '.nii.gz']),
+                            file_id + '_' + derivative + ext]),
                   {}) for file_id in file_ids]
         results[derivative] = _fetch_files(data_dir, files)
 
