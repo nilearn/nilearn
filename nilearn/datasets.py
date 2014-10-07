@@ -2359,6 +2359,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     pheno_f = open(path_csv, 'r')
     names = pheno_f.readline()[:-1].split(',')
     pheno = mlab.csv2rec(pheno_f, names=names, skiprows=1)
+    pheno_f.close()
 
     # First, filter subjects with no filename
     pheno = pheno[pheno['FILE_ID'] != 'no_filename']
