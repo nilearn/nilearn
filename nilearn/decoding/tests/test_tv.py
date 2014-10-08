@@ -1,8 +1,3 @@
-# Authors: Alexandre Gramfort <alexandre.gramfort@inria.fr>
-# License: BSD Style.
-
-# $Id: test_tv.py 336 2010-04-21 18:07:26Z gramfort $
-
 from nose.tools import assert_equal, assert_raises
 import numpy as np
 from ..objective_functions import gradient_id, squared_loss
