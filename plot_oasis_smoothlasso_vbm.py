@@ -6,11 +6,9 @@ Voxel-Based Morphometry on Oasis dataset with Graph-Net prior
 # Authors: Elvis DOHMATOB,
 #          Virgile FRITSCH
 
-from sklearn.externals.joblib import Memory
 from nilearn import datasets
 
 n_subjects = 100   # more subjects requires more memory
-memory = Memory("cache")
 
 ### Load Oasis dataset ########################################################
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)

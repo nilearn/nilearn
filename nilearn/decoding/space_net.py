@@ -549,6 +549,12 @@ class SpaceNet(LinearModel, RegressorMixin):
         # sanity check on params
         self.check_params()
 
+        # sanitize object's memory
+        if self.memory is None or isinstance(self.memory, basestring):
+            self.memory_ = Memory(self.memory)
+        else:
+            self.memory_ = self.memory
+
         if self.verbose:
             tic = time.time()
 
@@ -564,7 +570,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
                                        mask_strategy='epi', t_r=self.t_r,
-                                       memory=self.memory)
+                                       memory=self.memory_)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
@@ -642,7 +648,7 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # main loop: loop on classes and folds
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
-            delayed(self.memory.cache(path_scores))(
+            delayed(self.memory_.cache(path_scores))(
                 solver, X, _ovr_y(c), self.mask_, alphas, self.l1_ratio, train,
                 test, key=c, **path_params) for c in xrange(n_problems) for (
                 train, test) in cv):
