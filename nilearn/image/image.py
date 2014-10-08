@@ -145,6 +145,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     affine: numpy.ndarray
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
+        If fwhm='fast', the affine is not used and can be None
 
     fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
