@@ -12,7 +12,7 @@ from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 from ..objective_functions import (squared_loss, squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
-                                   squared_loss_lipschitz_constant, _unmask)
+                                   norm_squared, _unmask)
 from ..space_net_solvers import (squared_loss_and_spatial_grad,
                                  logistic_derivative_lipschitz_constant,
                                  squared_loss_derivative_lipschitz_constant,
@@ -83,7 +83,7 @@ def test_lipschitz_constant_lass_mse():
     mask = np.ones(X.shape[1]).astype(np.bool)
     grad_weight = alpha * X.shape[0] * (1. - l1_ratio)
     a = squared_loss_derivative_lipschitz_constant(X, mask, grad_weight)
-    b = squared_loss_lipschitz_constant(X)
+    b = norm_squared(X)
     np.testing.assert_almost_equal(a, b)
 
 
