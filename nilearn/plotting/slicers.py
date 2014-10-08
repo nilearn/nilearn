@@ -911,7 +911,7 @@ class OrthoProjector(OrthoSlicer):
 
 
 class XProjector(OrthoProjector):
-    _direction = 'x'
+    _cut_displayed = 'x'
     _default_figsize = [2.6, 2.3]
 
 
