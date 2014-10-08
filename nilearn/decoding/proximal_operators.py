@@ -193,7 +193,7 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
         grad_aux += grad_tmp
         grad_tmp = _projector_on_tvl1_dual(
             grad_aux, l1_ratio
-            )  # XXX this makes grad_aux and grad_tmp point to thesame buffer!
+            )
 
         # Carefull, in the next few lines, grad_tmp and grad_aux are a
         # view on the same array, as _projector_on_tvl1_dual returns a view
