@@ -17,9 +17,11 @@ import numpy as np
 from scipy import linalg
 
 
-# xxx: isn't it a more generic function?
-def squared_loss_lipschitz_constant(X):
-    """Compute the Lipschitz constant (upper bound) for the gradient of a map:
+def norm_squared(X):
+    """Computes square of the operator 2-norm (spectral norm) of X
+
+    This corresponds to the lipschitz constant of the gradient of the
+    squared-loss function:
 
         w -> .5 * ||y - Xw||^2
 
@@ -31,7 +33,7 @@ def squared_loss_lipschitz_constant(X):
     Returns
     -------
     lipschitz_constant : float,
-      Lipschitz constant of the gradient of the input map.
+      The square of the spectral norm of X.
 
     """
     # On big matrices like those that we have in neuroimaging, svdvals
@@ -48,10 +50,9 @@ def logistic_loss_lipschitz_constant(X):
     """
     # N.B: we handle intercept!
     X = np.hstack((X, np.ones(X.shape[0])[:, np.newaxis]))
-    return squared_loss_lipschitz_constant(X)  # XXX doubtful
+    return norm_squared(X)
 
 
-# XXX: functions that return variable number of outputs are bad
 def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """Compute the MSE error, and optionally, its gradient too.
 
@@ -97,7 +98,7 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
         if not compute_grad:
             return energy
 
-    grad = np.dot(X.T, residual)  # XXX use sk's fast_dot
+    grad = np.dot(X.T, residual)
 
     if not compute_energy:
         return grad

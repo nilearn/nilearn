@@ -5,7 +5,7 @@ from ..proximal_operators import prox_l1
 from ..objective_functions import (squared_loss, logistic,
                                    squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
-                                   squared_loss_lipschitz_constant)
+                                   norm_squared)
 from ..fista import check_lipschitz_continuous
 
 
@@ -30,7 +30,7 @@ def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
         y = rng.randn(n_samples)
         n_features = X.shape[1]
 
-        L = squared_loss_lipschitz_constant(X)
+        L = norm_squared(X)
         check_lipschitz_continuous(lambda w: squared_loss_grad(
             X, y, w), n_features, L)
 
