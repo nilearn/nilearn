@@ -17,7 +17,7 @@ from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
 from .._utils.niimg_conversions import _safe_get_data
 from .. import masking
-
+from nilearn.image import reorder_img
 
 def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
@@ -461,3 +461,41 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     return nibabel.Nifti1Image(running_mean, target_affine)
 
 
+def swap_img_hemispheres(niimg):
+    """Performs swapping of hemispheres in the indicated nifti.
+
+       Use case: synchronizing ROIs across hemispheres
+
+    Parameters
+    ----------
+    niimg: string or object
+        If niimg is a string, it's considered as a path to Nifti image and
+        calls nibabel.load on it. If it is an object, it's considered to be
+        a nibabel.Nifti1Image object.
+
+    Returns
+    -------
+    output: nibabel.Nifti1Image
+        hemispherically swapped image
+
+    Notes
+    -----
+    Supposes a nifti of a brain that is sagitally aligned
+
+    Should be used with caution (confusion might be caused with
+    radio/neuro conventions)
+
+    Note that this does not require a change of the affine matrix.
+    """
+
+    # Check input is really a path to a nifti file or a nifti object
+    niimg = check_niimg(niimg)
+
+    # get nifti in x-y-z order
+    niimg = reorder_img(niimg)
+
+    # create swapped nifti object
+    out_img = nibabel.Nifti1Image(niimg.get_data()[::-1], niimg.get_affine(),
+        header=niimg.get_header())
+
+    return out_img

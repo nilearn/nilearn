@@ -19,7 +19,7 @@ Dependencies
 ============
 
 The required dependencies to sue the software are Python >= 2.6,
-setuptools, Numpy >= 1.3, SciPy >= 0.7, Scikit-learn >= 0.12.1
+setuptools, Numpy >= 1.3, SciPy >= 0.7, Scikit-learn >= 0.12.1, Nibabel 1.1.0.
 This configuration almost matches the Ubuntu 10.04 LTS release from
 April 2010, except for scikit-learn, which must be installed separately.
 
