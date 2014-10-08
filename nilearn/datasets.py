@@ -224,7 +224,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
             print 'Dataset created in', path
             return path
 
-    raise ValueError('Could not find a writable directory to store dataset')
+    raise IOError('Nilearn tried to store the dataset in the following '
+            'directories, but has no write permission:\n' + '\n'.join(paths))
 
 
 def _uncompress_file(file_, delete_archive=True):
