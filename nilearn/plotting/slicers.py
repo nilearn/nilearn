@@ -28,7 +28,7 @@ from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform,\
             get_mask_bounds
 
-from .glass_brain import brain_schematics
+from . import glass_brain
 
 ################################################################################
 # class BaseAxes
@@ -519,7 +519,7 @@ class BaseSlicer(object):
         """Add brain schematics to the display axes
         """
         for cut_ax in self.axes.itervalues():
-            bp = brain_schematics.BrainSchematics.from_direction(cut_ax.direction)
+            bp = glass_brain.BrainSchematics.from_direction(cut_ax.direction)
             invert_color = self._black_bg
             bp.plot(cut_ax.ax, invert_color=invert_color, **kwargs)
             cut_ax.add_object_bounds(bp.get_object_bounds())

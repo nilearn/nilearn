@@ -111,7 +111,7 @@ class BrainSchematics(object):
             'z': [0.36, 0, 0, 0.37, -71, -107]}
 
         dirname = os.path.dirname(os.path.abspath(__file__))
-        dirname = os.path.join(dirname, 'generated_json')
+        dirname = os.path.join(dirname, 'glass_brain_files')
         direction_to_filename = {
             direction: os.path.join(
                 dirname,
