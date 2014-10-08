@@ -9,8 +9,8 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from ..space_net import (EarlyStoppingCallback, _space_net_alpha_grid, path_scores,
-                         SpaceNet)
+from ..space_net import (EarlyStoppingCallback, _space_net_alpha_grid,
+                         path_scores, SpaceNet)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
@@ -68,8 +68,8 @@ def test_space_net_alpha_grid(n_samples=4, n_features=3):
 
     for l1_ratio in [.5, 1.]:
         alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
-        assert_equal(_space_net_alpha_grid(X, y, n_alphas=1, l1_ratio=l1_ratio),
-                     alpha_max)
+        assert_equal(_space_net_alpha_grid(X, y, n_alphas=1,
+                                           l1_ratio=l1_ratio), alpha_max)
 
     for standardize in [False, True]:
         for l1_ratio in [.5, 1.]:
@@ -106,7 +106,7 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
     X_test = rng.randn(n_samples, n_features)
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
-    escb = EarlyStoppingCallback(X_test, y_test, False, verbose=1)
+    escb = EarlyStoppingCallback(X_test, y_test, False)
     for counter in xrange(50):
         k = min(counter, n_features - 1)
         w[k] = 1
@@ -117,7 +117,6 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
 
         escb(dict(w=w, counter=counter))
         assert_equal(len(escb.test_errors), counter + 1)
-        print np.mean(np.diff(escb.test_errors[-5:])), len(escb.test_errors)
 
         # restart
         if counter > 20:
