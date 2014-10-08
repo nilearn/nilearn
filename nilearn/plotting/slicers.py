@@ -22,7 +22,7 @@ except ImportError:
 
 
 # Local imports
-from .find_cuts import find_xyz_cut_coords, _get_auto_mask_bounds
+from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
 from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform,\
@@ -765,16 +765,18 @@ class BaseStackedSlicer(BaseSlicer):
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         if cut_coords is None:
-            cut_coords = 12
-        if (not operator.isSequenceType(cut_coords) and
-                operator.isNumberType(cut_coords)):
-            # By default: regularly-spaced cuts in the bounds of the data
-            if img is None or img is False:
-                bounds = ((-40, 40), (-30, 30), (-30, 75))
-            else:
-                bounds = _get_auto_mask_bounds(img)
+            cut_coords = 7
+
+        if img is None or img is False:
+            bounds = ((-40, 40), (-30, 30), (-30, 75))
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
+        else:
+            if (not operator.isSequenceType(cut_coords) and
+                    operator.isNumberType(cut_coords)):
+                cut_coords = find_cut_slices(img,
+                                             direction=cls._direction,
+                                             n_cuts=cut_coords)
 
         return cut_coords
 

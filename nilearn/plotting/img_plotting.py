@@ -63,18 +63,6 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             # voxels pass the threshold
             threshold = fast_abs_percentile(data) - 1e-5
 
-        if display_mode in ('x', 'y', 'z'):
-            # Here we use a heuristic for cut indices that is well suited to
-            # finding a small number of objects
-            if cut_coords is None:
-                cut_coords = 7
-            # arrays and NumberType but also SequenceType
-            if (operator.isNumberType(cut_coords)
-                and not operator.isSequenceType(cut_coords)):
-                cut_coords = find_cut_slices(nibabel.Nifti1Image(data, affine),
-                                             direction=display_mode,
-                                             n_cuts=cut_coords)
-
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
     slicer = get_display_fun(display_mode).init_with_figure(
