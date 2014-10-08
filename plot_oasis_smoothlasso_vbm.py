@@ -1,5 +1,5 @@
 """
-Voxel-Based Morphometry on Oasis dataset with Graph-Net prior
+Voxel-Based Morphometry on Oasis dataset with Space-Net prior
 =============================================================
 
 """
