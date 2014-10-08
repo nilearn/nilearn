@@ -184,9 +184,6 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     if copy:
         arr = arr.copy()
 
-    # Keep only the scale part.
-    affine = affine[:3, :3]
-
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
@@ -194,6 +191,9 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     if fwhm == 'fast':
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
+        # Keep only the scale part.
+        affine = affine[:3, :3]
+
         # Convert from a FWHM to a sigma:
         # Do not use /=, fwhm may be a numpy scalar
         fwhm = fwhm / np.sqrt(8 * np.log(2))
