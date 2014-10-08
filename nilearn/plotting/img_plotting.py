@@ -28,8 +28,7 @@ except ImportError:
 from .. import _utils
 from .._utils.extmath import fast_abs_percentile
 from ..datasets import load_mni152_template
-from .slicers import get_slicer
-from . import slicers
+from .slicers import get_slicer, get_projector
 from . import cm
 from .find_cuts import find_cut_slices
 
@@ -42,6 +41,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       colorbar=False, figure=None, axes=None, title=None,
                       threshold=None, annotate=True, draw_cross=True, black_bg=False,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
+                      get_display_fun=get_slicer,
                       **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
@@ -77,13 +77,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
-    slicer = get_slicer(display_mode).init_with_figure(img,
-                                                       threshold=threshold,
-                                                       cut_coords=cut_coords,
-                                                       figure=figure,
-                                                       axes=axes,
-                                                       black_bg=black_bg,
-                                                       colorbar=colorbar)
+    slicer = get_display_fun(display_mode).init_with_figure(
+        img,
+        threshold=threshold,
+        cut_coords=cut_coords,
+        figure=figure, axes=axes,
+        black_bg=black_bg,
+        colorbar=colorbar)
 
     if bg_img is not None:
         slicer.add_overlay(bg_img,
@@ -159,7 +159,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             indicate the cut plosition.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         kwargs: extra keyword arguments, optional
@@ -329,7 +329,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             indicate the cut plosition.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
@@ -404,7 +404,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             indicate the cut plosition.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
@@ -477,7 +477,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             indicate the cut plosition.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         threshold : a number, None, or 'auto'
@@ -559,7 +559,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             indicate the cut plosition.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
@@ -606,33 +606,23 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                **kwargs)
     return slicer
 
-def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
+def plot_glass_brain(stat_map_img,
                      output_file=None, display_mode='ortho',
                      colorbar=True,
                      figure=None, axes=None, title=None, threshold=1e-6, # TODO: threshold's default ???
-                     annotate=True, # draw_cross=True,
+                     annotate=True,
                      black_bg='auto',
-                     cmap=cm.cold_hot, # dim=True,
+                     cmap=cm.cold_hot,
                      alpha=1.,
                      **kwargs):
-    """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
-        Lateral). The brain glass schematic views will be added on top of the image.
+    """Plot 2d projections of an ROI/mask image (by default 3 projections:
+        Frontal, Axial, and Lateral). The brain glass schematics
+        will be added on top of the image.
 
         Parameters
         ----------
         stat_map_img : a nifti-image like object or a filename
             The statistical map image
-        bg_img : a nifti-image like object or a filename
-            The background image that the ROI/mask will be plotted on top of. If
-            not specified MNI152 template will be used.
-        cut_coords : None, a tuple of floats, or an integer
-            The MNI coordinates of the point where the cut is performed
-            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
-            For display_mode == 'x', 'y', or 'z', then these are the
-            coordinates of each cut in the corresponding direction.
-            If None is given, the cuts is calculated automaticaly.
-            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-            in which case it specifies the number of cuts to perform
         output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
@@ -655,12 +645,9 @@ def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
-        draw_cross: boolean, optional
-            If draw_cross is True, a cross is drawn on the plot to
-            indicate the cut plosition.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
@@ -672,12 +659,18 @@ def plot_glass_brain(stat_map_img, #bg_img=MNI152TEMPLATE, cut_coords=None,
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
-    """
-    slicer = slicers.get_projector(display_mode).init_with_figure(None, black_bg=black_bg)
-    # TODO additional arguments to pass?
-    slicer.add_overlay(stat_map_img, threshold=threshold, colorbar=colorbar, cmap=cmap, **kwargs)
-    slicer.add_brain_schematics(alpha=alpha)
 
-    if title is not None:
-        slicer.title(title)
-    return slicer
+    """
+    display = _plot_img_with_bg(img=stat_map_img,
+                                output_file=output_file,
+                                display_mode=display_mode,
+                                figure=figure, axes=axes, title=title,
+                                annotate=annotate,
+                                black_bg=black_bg, threshold=threshold,
+                                cmap=cmap, colorbar=colorbar,
+                                get_display_fun=get_projector,
+                                **kwargs)
+
+    display.add_brain_schematics(alpha=alpha)
+
+    return display
