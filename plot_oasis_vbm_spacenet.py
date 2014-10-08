@@ -21,7 +21,7 @@ decoder = SpaceNet(memory="cache", screening_percentile=20., verbose=1,
                    smoothing_fwhm=2.)
 decoder.fit(dataset_files.gray_matter_maps, age)
 coef_img = decoder.coef_img_
-age_pred = decoder.predict(new_images).ravel()
+age_pred = decoder.predict(dataset_files.gray_matter_maps).ravel()
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
