@@ -6,11 +6,9 @@ Voxel-Based Morphometry on Oasis dataset with Graph-Net prior
 # Authors: Elvis DOHMATOB,
 #          Virgile FRITSCH
 
-from sklearn.externals.joblib import Memory
 from nilearn import datasets
 
 n_subjects = 100   # more subjects requires more memory
-memory = Memory("cache")
 
 ### Load Oasis dataset ########################################################
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
@@ -19,7 +17,7 @@ age = dataset_files.ext_vars['age'].astype(float)
 
 ### Fit and predict ###########################################################
 from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory=memory, screening_percentile=20., verbose=1,
+decoder = SpaceNet(memory="cache", screening_percentile=20., verbose=1,
                    smoothing_fwhm=2.)
 decoder.fit(dataset_files.gray_matter_maps, age)
 coef_img = decoder.coef_img_

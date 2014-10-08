@@ -23,9 +23,7 @@ labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
 cond1 = "face"
 cond2 = "house"
 
-from sklearn.externals.joblib import Memory
 from nilearn.input_data import NiftiMasker
-memory = Memory("cache")
 
 condition_mask = np.logical_or(labels['labels'] == cond1,
                                labels['labels'] == cond2)
@@ -43,8 +41,8 @@ y = target[condition_mask]
 
 ### Fit and predict #########################################################
 from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory=memory, mask=nifti_masker, classif=True, verbose=1,
-                penalty="tvl1")
+decoder = SpaceNet(memory="cache", mask=nifti_masker, classif=True, verbose=1,
+                   penalty="tvl1")
 decoder.fit(X, y)  # fit
 y_pred = decoder.predict(X)  # predict
 coef_niimg = decoder.coef_img_
