@@ -1,6 +1,6 @@
 """
-TV-L1 Simple example of decoding: the Haxby data
-================================================
+Simple example of decoding on the Haxby data, using Space-Net prior
+===================================================================
 
 Here is a simple example of decoding, reproducing the Haxby 2001
 study on a face vs house discrimination task in a mask of the ventral
