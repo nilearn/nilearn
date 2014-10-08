@@ -1,15 +1,13 @@
 """
-Voxel-Based Morphometry on Oasis dataset with S-LASSO prior
-===========================================================
+Voxel-Based Morphometry on Oasis dataset with Graph-Net prior
+=============================================================
 
 """
 # Authors: Elvis DOHMATOB,
 #          Virgile FRITSCH
 
-import nibabel
 from sklearn.externals.joblib import Memory
 from nilearn import datasets
-from nilearn.input_data import NiftiMasker
 
 n_subjects = 100   # more subjects requires more memory
 memory = Memory("cache")
@@ -32,8 +30,8 @@ age_pred = decoder.predict(new_images).ravel()
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
-background_niimg = nibabel.load(dataset_files.gray_matter_maps[0])
-plot_stat_map(coef_niimg, background_niimg, title="S-LASSO weights",
+background_img = dataset_files.gray_matter_maps[0]
+plot_stat_map(coef_img, background_img, title="Graph-Net weights",
               display_mode="z")
 
 plt.figure()
