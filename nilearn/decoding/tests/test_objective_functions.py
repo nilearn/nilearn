@@ -6,7 +6,7 @@ Test module for functions related cost functions (including penalties).
 import numpy as np
 from scipy.optimize import check_grad
 from ..objective_functions import (gradient_id, logistic, div_id,
-                                   logistic_grad, _unmask)
+                                   logistic_loss_grad, _unmask)
 from ..space_net import SpaceNet
 from nose.tools import raises
 
@@ -69,11 +69,11 @@ def test_logistic_loss_derivative(n_samples=4, n_features=10, random_state=42,
 
     np.testing.assert_almost_equal(check_grad(
         lambda w: logistic(X, y, w),
-        lambda w: logistic_grad(X, y, w), w), 0., decimal=decimal)
+        lambda w: logistic_loss_grad(X, y, w), w), 0., decimal=decimal)
 
     np.testing.assert_almost_equal(check_grad(
         lambda w: logistic(X, y, w),
-        lambda w: logistic_grad(X, y, w), w), 0., decimal=decimal)
+        lambda w: logistic_loss_grad(X, y, w), w), 0., decimal=decimal)
 
 
 def test_grad_div_adjoint_arbitrary_ndim_():
