@@ -18,10 +18,10 @@ from .objective_functions import (norm_squared,
                                   gradient_id,
                                   logistic_loss_lipschitz_constant,
                                   squared_loss, squared_loss_grad, _unmask,
-                                  logistic_grad as logistic_loss_grad,
+                                  logistic_loss_grad,
                                   logistic as logistic_loss)
-from .objective_functions import gradient, div as divergence
-from .proximal_operators import prox_l1, prox_tvl1, _intercepted_prox_tvl1
+from .objective_functions import gradient, div
+from .proximal_operators import prox_l1, prox_tvl1, _prox_tvl1_with_intercept
 from .fista import mfista
 
 
@@ -63,7 +63,7 @@ def squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     image_buffer = np.zeros(mask.shape)
     image_buffer[mask] = w
     return (np.dot(X.T, data_section)
-            - grad_weight * divergence(gradient(image_buffer))[mask])
+            - grad_weight * div(gradient(image_buffer))[mask])
 
 
 def data_function(X, w, mask, grad_weight):
@@ -105,7 +105,7 @@ def adjoint_data_function(X, w, adjoint_mask, grad_weight):
     out = X.T.dot(w[:n_samples])
     div_buffer = np.zeros(adjoint_mask.shape)
     div_buffer[adjoint_mask] = w[n_samples:]
-    out -= grad_weight * divergence(div_buffer)[adjoint_mask[0]]
+    out -= grad_weight * div(div_buffer)[adjoint_mask[0]]
     return out
 
 
@@ -156,10 +156,10 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     grad_buffer = np.zeros(mask.shape)
     for _ in xrange(n_iterations):
         grad_buffer[mask] = a
-        a = - divergence(gradient(grad_buffer))[mask] / np.sqrt(np.dot(a, a))
+        a = - div(gradient(grad_buffer))[mask] / np.sqrt(np.dot(a, a))
 
     grad_buffer[mask] = a
-    grad_constant = (- np.dot(divergence(gradient(grad_buffer))[mask], a)
+    grad_constant = (- np.dot(div(gradient(grad_buffer))[mask], a)
                      / np.dot(a, a))
 
     return data_constant + grad_weight * grad_constant
@@ -188,7 +188,7 @@ def logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     image_buffer[mask] = w[:-1]
     data_section = logistic_loss_grad(X, y, w)
     data_section[:-1] = data_section[:-1]\
-        - grad_weight * divergence(gradient(image_buffer))[mask]
+        - grad_weight * div(gradient(image_buffer))[mask]
     return data_section
 
 
@@ -550,7 +550,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
             return maskvec(out.ravel()), info
     else:
         def f2_prox(w, stepsize, dgap_tol, init=None):
-            out, info = _intercepted_prox_tvl1(
+            out, info = _prox_tvl1_with_intercept(
                 unmaskvec(w), volume_shape, l1_ratio, alpha * stepsize,
                 dgap_tol, prox_max_iter, init=_unmask(
                     init[:-1], mask) if init is not None else None,
