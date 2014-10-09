@@ -259,7 +259,7 @@ def logistic(X, y, w):
     y : 1D array of length n_samples
         Target / response vector.
 
-    w : array_like, shape (n_voxels,)
+    w : 1D array of length n_voxels
         Unmasked, ravelized input map.
 
     Returns
