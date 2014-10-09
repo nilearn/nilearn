@@ -291,29 +291,33 @@ class SpaceNet(LinearModel, RegressorMixin):
         Constant that mixes L1 and TV (resp. SL) terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO.
 
-    mask: filename, NiImage, MultiNiftiMasker instance, (optional,
-        default None)
+    mask: filename, NiImage, MultiNiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
 
-    target_affine: 3x3 or 4x4 matrix, optional
+    smoothing_fwhm : float, optional (default None)
+        If not None, it gives the full-width half maximum in
+        millimeters of the spatial smoothing to apply to the data (X) at fit
+        time.
+
+    target_affine: 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional
+    target_shape: 3-tuple of integers, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: False or float, optional
+    low_pass: False or float, optional, (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional
+    high_pass: False or float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r: float, optional
+    t_r: float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
