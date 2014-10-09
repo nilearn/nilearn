@@ -112,11 +112,11 @@ class EarlyStoppingCallback(object):
         for scoring.
     """
 
-    def __init__(self, X_test, y_test, classif, debias=False, ymean=0.,
+    def __init__(self, X_test, y_test, is_classif, debias=False, ymean=0.,
                  verbose=False):
         self.X_test = X_test
         self.y_test = y_test
-        self.classif = classif
+        self.is_classif = is_classif
         self.debias = debias
         self.ymean = ymean
         self.verbose = verbose
@@ -128,7 +128,7 @@ class EarlyStoppingCallback(object):
         if not isinstance(variables, dict):
             variables = dict(w=variables)
 
-        if self.classif:
+        if self.is_classif:
             variables['w'] = variables['w'][:-1]  # strip off intercept
         self.counter += 1
 
@@ -159,7 +159,7 @@ class EarlyStoppingCallback(object):
 
     def test_score(self, w):
         """Compute test score for model, given weights map `w`."""
-        if self.classif:
+        if self.is_classif:
             return 1. - roc_auc_score(
                 (self.y_test > 0.), _sigmoid(
                     np.dot(self.X_test, w[:-1]) + w[-1]))
@@ -176,7 +176,7 @@ class EarlyStoppingCallback(object):
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
-                test, solver_params, classif=False, init=None, key=None,
+                test, solver_params, is_classif=False, init=None, key=None,
                 debias=False, ymean=0., screening_percentile=10.):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects.
@@ -213,7 +213,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     # univariate feature screening
     mask = mask.copy()
     if screening_percentile < 100.:
-        selector = SelectPercentile(f_classif if classif else f_regression,
+        selector = SelectPercentile(f_classif if is_classif else f_regression,
                                     percentile=screening_percentile).fit(X, y)
         support = selector.get_support()
         mask[mask] = (support > 0)
@@ -226,9 +226,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     best_alpha = alphas[0]
     if len(test) > 0.:
         # setup callback mechanism for early stopping
-        earlystopper = EarlyStoppingCallback(X_test, y_test, classif=classif,
-                                             debias=debias, ymean=ymean,
-                                             verbose=verbose)
+        earlystopper = EarlyStoppingCallback(
+            X_test, y_test, is_classif=is_classif, debias=debias, ymean=ymean,
+            verbose=verbose)
 
         # score the alphas by model fit
         best_score = np.inf
@@ -252,7 +252,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     # unmask univariate screening
     if screening_percentile < 100. and support.sum() < len(support):
         w_ = np.zeros(len(support))
-        if classif:
+        if is_classif:
             w_ = np.append(w_, best_w[-1])
             w_[:-1][support] = best_w[:-1]
         else:
@@ -392,7 +392,7 @@ class SpaceNet(LinearModel, RegressorMixin):
 
     SUPPORTED_PENALTIES = ["smooth-lasso", "tvl1"]
 
-    def __init__(self, penalty="smooth-lasso", classif=False, alpha=None,
+    def __init__(self, penalty="smooth-lasso", is_classif=False, alpha=None,
                  alphas=None, l1_ratio=.5, mask=None, smoothing_fwhm=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
@@ -408,7 +408,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.penalty = penalty
-        self.classif = classif
+        self.is_classif = is_classif
         self.alpha = alpha
         self.n_alphas = n_alphas
         self.eps = eps
@@ -470,7 +470,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         """
 
         # handle regression (least-squared loss)
-        if not self.classif:
+        if not self.is_classif:
             return LinearModel.decision_function(self, X)
 
         X = atleast2d_or_csr(X)
@@ -500,7 +500,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         X = self.masker_.transform(X)
 
         # handle regression (least-squared loss)
-        if not self.classif:
+        if not self.is_classif:
             return LinearModel.predict(self, X)
 
         scores = self.decision_function(X)
@@ -586,12 +586,12 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # set backend solver
         if self.penalty == "smooth-lasso":
-            if self.classif:
+            if self.is_classif:
                 solver = smooth_lasso_logistic
             else:
                 solver = smooth_lasso_squared_loss
         else:
-            if self.classif:
+            if self.is_classif:
                 solver = partial(tvl1_solver, loss="logistic")
             else:
                 solver = partial(tvl1_solver, loss="mse")
@@ -611,7 +611,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                 X, y, l1_ratio=self.l1_ratio, eps=self.eps,
                 n_alphas=self.n_alphas, standardize=self.standardize,
                 normalize=self.normalize, alpha_min=self.alpha_min,
-                fit_intercept=self.fit_intercept, logistic=self.classif)
+                fit_intercept=self.fit_intercept, logistic=self.is_classif)
         else:
             alphas = np.array(self.alphas)
 
@@ -619,24 +619,24 @@ class SpaceNet(LinearModel, RegressorMixin):
         alphas = np.sort(alphas)[::-1]
 
         if len(alphas) > 1:
-            cv = list(check_cv(self.cv, X=X, y=y, classifier=self.classif))
+            cv = list(check_cv(self.cv, X=X, y=y, classifier=self.is_classif))
         else:
             cv = [(range(n_samples), [])]  # single fold
         self.n_folds_ = len(cv)
 
         # misc (different for classifier and regressor)
-        if self.classif:
+        if self.is_classif:
             y = self._binarize_y(y)
-        if self.classif and self.n_classes_ > 2:
+        if self.is_classif and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
             y = y.ravel()
         self.scores_ = [[] for _ in xrange(n_problems)]
-        w = np.zeros((n_problems, X.shape[1] + int(self.classif > 0)))
+        w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
 
         # function handle for generating OVR labels
-        _ovr_y = lambda c: y[:, c] if self.classif and (self.n_classes_ > 2
+        _ovr_y = lambda c: y[:, c] if self.is_classif and (self.n_classes_ > 2
                                                         ) else y
 
         # main loop: loop on classes and folds
@@ -645,7 +645,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, _ovr_y(c), self.mask_, alphas, self.l1_ratio, train,
-                test, solver_params, classif=self.classif, key=c,
+                test, solver_params, is_classif=self.is_classif, key=c,
                 debias=self.debias, ymean=ymean,
                 screening_percentile=self.screening_percentile
                 ) for c in xrange(n_problems) for (train, test) in cv):
@@ -667,7 +667,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         w /= self.n_folds_
 
         # set coefs and intercepts
-        if self.classif:
+        if self.is_classif:
             self._set_coef_and_intercept(w)
         else:
             self.coef_ = w
@@ -677,7 +677,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                 self.intercept_ = 0.
 
         # special treatment for non classif (i.e regression) model
-        if not self.classif:
+        if not self.is_classif:
             self.coef_ = self.coef_[0]
             self.scores_ = self.scores_[0]
 

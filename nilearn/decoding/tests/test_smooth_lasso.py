@@ -231,7 +231,7 @@ def test_max_alpha_logistic():
     # X, y, w, mask = create_smooth_simulation_data(task="classification")
     X, y, w, mask, mask_, X_ = _make_data(task="classification")
     l1_ratios = np.linspace(0.1, 1, 3)
-    clf = SpaceNet(mask=mask_, max_iter=10, classif=True)
+    clf = SpaceNet(mask=mask_, max_iter=10, is_classif=True)
     for l1_ratio in l1_ratios:
         clf.l1_ratio = l1_ratio
         # We set alpha bigger than the theoretic bound
@@ -245,7 +245,7 @@ def test_max_alpha_squared_loss():
     are full of zeros, for logistic regression"""
     l1_ratios = np.linspace(0.1, 1, 3)
     reg = SpaceNet(mask=mask_, max_iter=10, penalty="smooth-lasso",
-                   classif=False)
+                   is_classif=False)
     for l1_ratio in l1_ratios:
         reg.l1_ratio = l1_ratio
         reg.alpha = np.max(np.dot(X.T, y)) / (l1_ratio * y.size) * 1.1
@@ -298,7 +298,7 @@ def test_debiasing_model():
 def test_pre_fit():
     # Mostly a smoke test
     sm_reg = SpaceNet(mask=mask)
-    sm_clf = SpaceNet(mask=mask, classif=True)
+    sm_clf = SpaceNet(mask=mask, is_classif=True)
     assert not hasattr(sm_reg, "_enc")
     assert not hasattr(sm_clf, "_enc")
     _pre_fit_labels(sm_reg, y)

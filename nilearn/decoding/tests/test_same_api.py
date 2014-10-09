@@ -151,10 +151,10 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=10,
                               max_iter=max_iter)[0]
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
-    sl = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, classif=True,
+    sl = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, is_classif=True,
                   max_iter=max_iter, mask=mask_, penalty="smooth-lasso",
                   ).fit(X_, y)
-    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, classif=True,
+    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, is_classif=True,
                   max_iter=max_iter, mask=mask_, penalty="tvl1",
                   ).fit(X_, y)
 
@@ -177,9 +177,9 @@ def test_logreg_with_mask_issue_10():
     l1_ratio = .5
 
     for penalty in ["smooth-lasso", "tvl1"]:
-        for classif in [True, False]:
+        for is_classif in [True, False]:
             # ensure that our fix didn't break anythx else
-            SpaceNet(penalty=penalty, classif=classif, alpha=alpha,
+            SpaceNet(penalty=penalty, is_classif=is_classif, alpha=alpha,
                      l1_ratio=l1_ratio, mask=mask).fit(X, y)
 
 
@@ -196,10 +196,10 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
     max_iter = 20
 
     sl = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="smooth-lasso",
-                  max_iter=max_iter, mask=mask, classif=False,
+                  max_iter=max_iter, mask=mask, is_classif=False,
                   verbose=0).fit(X, y)
     tvl1 = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="tvl1",
-                  max_iter=max_iter, mask=mask, classif=False,
+                  max_iter=max_iter, mask=mask, is_classif=False,
                   verbose=0).fit(X, y)
 
     # should be exactly the same (except for numerical errors)
@@ -212,12 +212,12 @@ def test_coef_shape():
     X, mask = to_niimgs(X, (2, 2, 2))
     for penalty in ["smooth-lasso", "tvl1"]:
         cv = SpaceNet(
-            mask=mask, max_iter=3, penalty=penalty, classif=False).fit(X, y)
+            mask=mask, max_iter=3, penalty=penalty, is_classif=False).fit(X, y)
         assert_equal(cv.coef_.ndim, 1)
 
     for penalty in ["smooth-lasso", "tvl1"]:
         cv = SpaceNet(mask=mask,
-                      max_iter=3, penalty=penalty, classif=True).fit(X, y)
+                      max_iter=3, penalty=penalty, is_classif=True).fit(X, y)
         assert_equal(cv.coef_.ndim, 2)
 
 
