@@ -260,8 +260,8 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     return output
 
 
-def _intercepted_prox_tvl1(w, shape, l1_ratio, weight, dgap_tol, max_iter=5000,
-                           init=None, verbose=False):
+def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
+                              max_iter=5000, init=None, verbose=False):
     """
     Computation of TV-l1 prox, taking into account the intercept.
 
