@@ -70,8 +70,8 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     y : 1D array of length n_samples
         Target / response vector.
 
-    w : array_like, shape (n_voxels,)
-        Unmasked, ravelized input map.
+    w : 1D array of length n_features
+        Unmasked, ravelized weights map.
 
     compute_energy : bool, optional (default True)
         If set then energy is computed, otherwise only gradient is computed.
