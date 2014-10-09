@@ -14,7 +14,7 @@ Regression with spatial priors like TV-l1 and Smooth LASSO.
 import numpy as np
 from sklearn.base import is_classifier
 from .._utils.fixes.sklearn_basic_backports import LabelBinarizer
-from .objective_functions import (norm_squared,
+from .objective_functions import (spectral_norm_squared,
                                   gradient_id,
                                   logistic_loss_lipschitz_constant,
                                   squared_loss, squared_loss_grad, _unmask,
@@ -536,7 +536,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     # lispschitz constant of f1_grad
     if lipschitz_constant is None:
         if loss == "mse":
-            lipschitz_constant = 1.05 * norm_squared(X)
+            lipschitz_constant = 1.05 * spectral_norm_squared(X)
         else:
             lipschitz_constant = 1.1 * logistic_loss_lipschitz_constant(X)
 

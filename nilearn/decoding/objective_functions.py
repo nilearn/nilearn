@@ -17,7 +17,7 @@ import numpy as np
 from scipy import linalg
 
 
-def norm_squared(X):
+def spectral_norm_squared(X):
     """Computes square of the operator 2-norm (spectral norm) of X
 
     This corresponds to the lipschitz constant of the gradient of the
@@ -50,7 +50,7 @@ def logistic_loss_lipschitz_constant(X):
     """
     # N.B: we handle intercept!
     X = np.hstack((X, np.ones(X.shape[0])[:, np.newaxis]))
-    return norm_squared(X)
+    return spectral_norm_squared(X)
 
 
 def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
