@@ -176,9 +176,8 @@ class EarlyStoppingCallback(object):
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
-                test, classif=False, tol=1e-4, max_iter=1000, init=None,
-                verbose=0, key=None, debias=False, ymean=0.,
-                screening_percentile=10., **kwargs):
+                test, solver_params, classif=False, init=None, key=None,
+                debias=False, ymean=0., screening_percentile=10.):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects.
 
@@ -203,8 +202,12 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     solver : function handle
        See for example tv.TVl1Classifier documentation.
 
+    solver_params: dict
+       Dictionary of param-value pairs to be passed to solver.
+
     """
 
+    verbose = solver_params.get('verbose', 0)
     alphas = sorted(alphas)[::-1]
 
     # univariate feature screening
@@ -231,9 +234,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         best_score = np.inf
         for alpha in alphas:
             w, _, init = solver(
-                X_train, y_train, alpha, l1_ratio, mask=mask, tol=tol,
-                max_iter=max_iter, init=init, verbose=verbose,
-                callback=earlystopper, **kwargs)
+                X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
+                callback=earlystopper, **solver_params)
             score = earlystopper.test_score(w)
             test_scores.append(score)
             if score <= best_score:
@@ -242,8 +244,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     # Re-fit best model to high precision (i.e without early stopping, etc.).
     best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
-                             mask=mask, tol=tol, max_iter=max_iter,
-                             verbose=verbose, **kwargs)
+                             mask=mask, **solver_params)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
@@ -594,18 +595,12 @@ class SpaceNet(LinearModel, RegressorMixin):
             else:
                 solver = partial(tvl1_solver, loss="mse")
 
-        special_kwargs = {}
-        if hasattr(self, "debias"):
-            special_kwargs["debias"] = getattr(self, "debias")
-
         # always a good idea to centralize / normalize data in regression
         ymean = 0.
         if self.standardize:
             X, y, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=self.normalize,
                 fit_intercept=self.fit_intercept)
-            if not self.classif:
-                special_kwargs["ymean"] = ymean
 
         # make / sanitize alpha grid
         if self.alpha is not None:
@@ -639,23 +634,20 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + int(self.classif > 0)))
 
-        # parameter to path_scores function
-        path_params = dict(tol=self.tol, verbose=self.verbose,
-                           max_iter=self.max_iter, rescale_alpha=True,
-                           screening_percentile=self.screening_percentile,
-                           classif=self.classif, debias=self.debias)
-        path_params.update(special_kwargs)
-
         # function handle for generating OVR labels
         _ovr_y = lambda c: y[:, c] if self.classif and (self.n_classes_ > 2
                                                         ) else y
 
         # main loop: loop on classes and folds
+        solver_params = dict(tol=self.tol, verbose=self.verbose,
+                             max_iter=self.max_iter, rescale_alpha=True)
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, _ovr_y(c), self.mask_, alphas, self.l1_ratio, train,
-                test, key=c, **path_params) for c in xrange(n_problems) for (
-                train, test) in cv):
+                test, solver_params, classif=self.classif, key=c,
+                debias=self.debias, ymean=ymean,
+                screening_percentile=self.screening_percentile
+                ) for c in xrange(n_problems) for (train, test) in cv):
             test_scores = np.reshape(test_scores, (-1, 1))
             if not len(self.scores_[c]):
                 self.scores_[c] = test_scores
