@@ -328,12 +328,13 @@ class SpaceNet(LinearModel, RegressorMixin):
         100 means 'keep all features'.
 
     standardize : bool, optional (default False):
-       If set, then input data (X, y) will be standardized (i.e converted to
-       standard Gaussian) before model is fitted.
+        If set, then we'll center the data (X, y) have mean zero along axis 0.
+        This is here because nearly all linear models will want their data
+        to be centered.
 
-    normalize : boolean, optional, default False
-        Parameter passed to sklearn's `center_data` function for centralizing
-        the input data (X, y)
+    normalize : boolean, optional (default False)
+        If True, then the data (X, y) will be normalized (to have unit std)
+        before regression.
 
     fit_intercept : bool
         Fit or not an intercept.
