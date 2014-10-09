@@ -146,7 +146,7 @@ def test_logistic_path_scores():
     alphas = [1., .1, .01]
     test_scores, best_w, _ = logistic_path_scores(
         smooth_lasso_logistic, X, y, mask, alphas, .5,
-        range(len(X)), range(len(X)))
+        range(len(X)), range(len(X)), {})
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
 
@@ -158,7 +158,7 @@ def test_squared_loss_path_scores():
     alphas = [1., .1, .01]
     test_scores, best_w, _ = squared_loss_path_scores(
         smooth_lasso_squared_loss, X, y, mask, alphas, .5,
-        range(len(X)), range(len(X)))
+        range(len(X)), range(len(X)), {})
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1], len(best_w))
 
