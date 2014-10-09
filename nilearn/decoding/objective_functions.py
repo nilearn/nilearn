@@ -278,7 +278,7 @@ def logistic(X, y, w):
     return out
 
 
-def logistic_grad(X, y, w):
+def logistic_loss_grad(X, y, w):
     """Computes the derivative of logistic"""
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
