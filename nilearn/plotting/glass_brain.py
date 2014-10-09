@@ -7,149 +7,164 @@ from matplotlib import colors
 from matplotlib import transforms
 
 
-class JSONReader(object):
-    """Reads path coordinates and metadata from a custom JSON format and
-    can transform that into a list of matplotlib patches
+def _codes_bezier(pts):
+    bezier_num = len(pts)
+    # Next two lines are meant to handle both Bezier 3 and 4
+    path_attr = 'CURVE{}'.format(bezier_num)
+    codes = [getattr(Path, path_attr)] * (bezier_num - 1)
+    return [Path.MOVETO] + codes
+
+
+def _codes_segment(pts):
+    return [Path.MOVETO, Path.LINETO]
+
+
+def _codes(atype, pts):
+    dispatch = {'bezier': _codes_bezier,
+                'segment': _codes_segment}
+
+    return dispatch[atype](pts)
+
+
+def _invert_color(color):
+    """Return inverted color
+
+    If color is (R, G, B) it returns (1 - R, 1 - G, 1 - B). If
+    'color' can not be converted to a color it is returned
+    unmodified.
+
     """
-    def __init__(self, filename):
-        self.filename = filename
-        with open(self.filename) as f:
-            json_content = f.read()
-
-        self.json_content = json.loads(json_content)
-
-    def _codes(self, type, pts):
-        method = getattr(self, '_codes_{}'.format(type))
-        return method(pts)
-
-    def _codes_bezier(self, pts):
-        bezier_num = len(pts)
-        # Next two lines are meant to handle both Bezier 3 and 4
-        path_attr = 'CURVE{}'.format(bezier_num)
-        codes = [getattr(Path, path_attr)] * (bezier_num - 1)
-        return [Path.MOVETO] + codes
-
-    def _codes_segment(self, pts):
-        return [Path.MOVETO, Path.LINETO]
-
-    @staticmethod
-    def _invert_color(color):
-        """Return inverted color
-
-        If color is (R, G, B) it returns (1 - R, 1 - G, 1 - B). If
-        'color' can not be converted to a color it is returned
-        unmodified.
-
-        """
-        try:
-            color_converter = colors.ColorConverter()
-            color_rgb = color_converter.to_rgb(color)
-            return tuple(1 - level for level in color_rgb)
-        except ValueError:
-            return color
-
-    def to_mpl(self, transform=None, invert_color=False, **kwargs):
-        """Returns a list of matplotlib patches
-        """
-        mpl_patches = []
-        kwargs_edgecolor = kwargs.pop('edgecolor', None)
-        kwargs_linewidth = kwargs.pop('linewidth', None)
-        for path in self.json_content['paths']:
-            if kwargs_edgecolor is not None:
-                edgecolor = kwargs_edgecolor
-            else:
-                edgecolor = path['edgecolor']
-                if invert_color:
-                    edgecolor = JSONReader._invert_color(edgecolor)
-            linewidth = kwargs_linewidth or path['linewidth']
-            path_id = path['id']
-
-            for item in path['items']:
-                type = item['type']
-                pts = item['pts']
-                codes = self._codes(type, pts)
-                path = Path(pts, codes)
-                patch = patches.PathPatch(path,
-                                          edgecolor=edgecolor,
-                                          linewidth=linewidth,
-                                          facecolor='none',
-                                          gid=path_id,
-                                          transform=transform,
-                                          **kwargs)
-
-                mpl_patches.append(patch)
-
-        return mpl_patches
-
-    def get_object_bounds(self):
-        alist = self.json_content['metadata']['bounds']
-        return tuple(alist)
+    try:
+        color_converter = colors.ColorConverter()
+        color_rgb = color_converter.to_rgb(color)
+        return tuple(1 - level for level in color_rgb)
+    except ValueError:
+        return color
 
 
-class BrainSchematics(object):
-    """Plot brain schematics on a matplotlib axis
+def _get_mpl_patches(json_content, transform=None,
+                     invert_color=False, **kwargs):
+    """Walks over the json content and builds a list of matplotlib patches
     """
-    def __init__(self, json_filename, transform):
-        self.json_filename = json_filename
-        self.reader = JSONReader(self.json_filename)
-        self.transform = transform
+    mpl_patches = []
+    kwargs_edgecolor = kwargs.pop('edgecolor', None)
+    kwargs_linewidth = kwargs.pop('linewidth', None)
+    for path in json_content['paths']:
+        if kwargs_edgecolor is not None:
+            edgecolor = kwargs_edgecolor
+        else:
+            edgecolor = path['edgecolor']
+            if invert_color:
+                edgecolor = _invert_color(edgecolor)
+        linewidth = kwargs_linewidth or path['linewidth']
+        path_id = path['id']
 
-    @classmethod
-    def from_direction(cls, direction):
-        json_filename, transform = cls._get_json_and_transform(direction)
-        return cls(json_filename, transform)
+        for item in path['items']:
+            type = item['type']
+            pts = item['pts']
+            codes = _codes(type, pts)
+            path = Path(pts, codes)
+            patch = patches.PathPatch(path,
+                                      edgecolor=edgecolor,
+                                      linewidth=linewidth,
+                                      facecolor='none',
+                                      gid=path_id,
+                                      transform=transform,
+                                      **kwargs)
 
-    @staticmethod
-    def _get_json_and_transform(direction):
-        direction_to_view_name = {'x': 'side',
-                                  'y': 'front',
-                                  'z': 'top'}
+            mpl_patches.append(patch)
 
-        direction_to_transform_params = {
-            'x': [0.38, 0, 0, 0.38, -108, -70],
-            'y': [0.39, 0, 0, 0.39, -72, -73],
-            'z': [0.36, 0, 0, 0.37, -71, -107]}
+    return mpl_patches
 
-        dirname = os.path.dirname(os.path.abspath(__file__))
-        dirname = os.path.join(dirname, 'glass_brain_files')
-        direction_to_filename = {
-            direction: os.path.join(
-                dirname,
-                'brain_schematics_{}.json'.format(view_name))
-            for direction, view_name in direction_to_view_name.iteritems()}
 
-        direction_to_transforms = {
-            direction: transforms.Affine2D.from_values(*params)
-            for direction, params in direction_to_transform_params.iteritems()}
+def _get_json_and_transform(direction):
+    """Returns the json filename and and an affine transform, which has
+    been tweaked by hand to fit the MNI template
+    """
+    direction_to_view_name = {'x': 'side',
+                              'y': 'front',
+                              'z': 'top'}
 
-        direction_to_json_and_transform = {
-            direction: (direction_to_filename[direction],
-                        direction_to_transforms[direction])
-            for direction in direction_to_filename}
+    direction_to_transform_params = {
+        'x': [0.38, 0, 0, 0.38, -108, -70],
+        'y': [0.39, 0, 0, 0.39, -72, -73],
+        'z': [0.36, 0, 0, 0.37, -71, -107]}
 
-        filename_and_transform = direction_to_json_and_transform.get(direction)
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    dirname = os.path.join(dirname, 'glass_brain_files')
+    direction_to_filename = {
+        direction: os.path.join(
+            dirname,
+            'brain_schematics_{}.json'.format(view_name))
+        for direction, view_name in direction_to_view_name.iteritems()}
 
-        if filename_and_transform is None:
-            message = ("No glass brain view associated with direction '{}'. "
-                       "Possible directions are {}").format(
-                           direction,
-                           direction_to_json_and_transform.keys())
-            raise ValueError(message)
+    direction_to_transforms = {
+        direction: transforms.Affine2D.from_values(*params)
+        for direction, params in direction_to_transform_params.iteritems()}
 
-        return filename_and_transform
+    direction_to_json_and_transform = {
+        direction: (direction_to_filename[direction],
+                    direction_to_transforms[direction])
+        for direction in direction_to_filename}
 
-    def plot(self, ax, transform=None, invert_color=False, **kwargs):
-        mpl_patches = self.reader.to_mpl(self.transform + ax.transData,
-                                         invert_color, **kwargs)
-        for mpl_patch in mpl_patches:
-            ax.add_patch(mpl_patch)
+    filename_and_transform = direction_to_json_and_transform.get(direction)
 
-    def get_object_bounds(self):
-        xmin, xmax, ymin, ymax = self.reader.get_object_bounds()
-        xmin, ymin = self.transform.transform((xmin, ymin))
-        xmax, ymax = self.transform.transform((xmax, ymax))
+    if filename_and_transform is None:
+        message = ("No glass brain view associated with direction '{}'. "
+                   "Possible directions are {}").format(
+                       direction,
+                       direction_to_json_and_transform.keys())
+        raise ValueError(message)
 
-        xmargin = (xmax - xmin) * 0.05
-        ymargin = (ymax - ymin) * 0.05
-        return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
+    return filename_and_transform
 
+
+def _get_object_bounds(json_content, transform):
+    xmin, xmax, ymin, ymax = json_content['metadata']['bounds']
+    x0, y0 = transform.transform((xmin, ymin))
+    x1, y1 = transform.transform((xmax, ymax))
+
+    xmin, xmax = min(x0, x1), max(x0, x1)
+    ymin, ymax = min(y0, y1), max(y0, y1)
+
+    xmargin = (xmax - xmin) * 0.025
+    ymargin = (ymax - ymin) * 0.025
+    return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
+
+
+def plot_brain_schematics(ax, direction, **kwargs):
+    """Creates matplotlib patches from a json custom format and plots them
+       on a matplotlib Axes.
+
+       Parameters
+       ----------
+           ax: a MPL axes instance
+                The axes in which the plots will be drawn
+            direction: {'x', 'y', 'z'}
+                The directions of the view
+            **kwargs:
+                Passed to the matplotlib patches constructor
+
+       Returns
+       -------
+       object_bounds: (xmin, xmax, ymin, ymax) tuple
+           Useful for the caller to be able to set axes limits
+
+    """
+    black_bg = ax.get_axis_bgcolor() == 'k'
+
+    json_filename, transform = _get_json_and_transform(direction)
+    with open(json_filename) as json_file:
+        json_content = json.loads(json_file.read())
+
+    mpl_patches = _get_mpl_patches(json_content,
+                                   transform=transform + ax.transData,
+                                   invert_color=black_bg,
+                                   **kwargs)
+
+    for mpl_patch in mpl_patches:
+        ax.add_patch(mpl_patch)
+
+    object_bounds = _get_object_bounds(json_content, transform)
+
+    return object_bounds

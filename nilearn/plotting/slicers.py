@@ -519,10 +519,10 @@ class BaseSlicer(object):
         """Add brain schematics to the display axes
         """
         for cut_ax in self.axes.itervalues():
-            bp = glass_brain.BrainSchematics.from_direction(cut_ax.direction)
-            invert_color = self._black_bg
-            bp.plot(cut_ax.ax, invert_color=invert_color, **kwargs)
-            cut_ax.add_object_bounds(bp.get_object_bounds())
+            object_bounds = glass_brain.plot_brain_schematics(cut_ax.ax,
+                                                              cut_ax.direction,
+                                                              **kwargs)
+            cut_ax.add_object_bounds(object_bounds)
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
