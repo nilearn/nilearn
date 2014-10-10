@@ -905,9 +905,9 @@ class OrthoProjector(OrthoSlicer):
     """
     axes_class = GlassBrainAxes
 
-    @staticmethod
-    def find_cut_coords(img=None, threshold=None, cut_coords=None):
-        return (None, None, None)
+    @classmethod
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+        return (None, ) * len(cls._cut_displayed)
 
     def draw_cross(self, cut_coords=None, **kwargs):
         # It does not make sense to draw crosses for the position of
