@@ -9,6 +9,7 @@ Only matplotlib is required.
 
 # Standard library imports
 import operator
+import functools
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -41,7 +42,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       colorbar=False, figure=None, axes=None, title=None,
                       threshold=None, annotate=True, draw_cross=True, black_bg=False,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
-                      get_display_fun=get_slicer,
+                      create_display_fun=get_slicer,
                       **kwargs):
     """ Internal function, please refer to the docstring of plot_img
     """
@@ -65,7 +66,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
-    slicer = get_display_fun(display_mode).init_with_figure(
+    slicer = create_display_fun(display_mode)(
         img,
         threshold=threshold,
         cut_coords=cut_coords,
@@ -649,6 +650,9 @@ def plot_glass_brain(stat_map_img,
         ordered.
 
     """
+    def create_display_fun(display_mode):
+        return functools.partial(get_projector(display_mode), alpha=alpha)
+
     display = _plot_img_with_bg(img=stat_map_img,
                                 output_file=output_file,
                                 display_mode=display_mode,
@@ -656,9 +660,7 @@ def plot_glass_brain(stat_map_img,
                                 annotate=annotate,
                                 black_bg=black_bg, threshold=threshold,
                                 cmap=cmap, colorbar=colorbar,
-                                get_display_fun=get_projector,
+                                create_display_fun=create_display_fun,
                                 **kwargs)
-
-    display.add_brain_schematics(alpha=alpha)
 
     return display

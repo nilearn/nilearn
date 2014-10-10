@@ -183,9 +183,19 @@ class CutAxes(BaseAxes):
                 **kwargs)
 
 
-class ProjectAxes(BaseAxes):
-    """ An MPL axis-like object that displays a 2D projection of 3D volumes
+class GlassBrainAxes(BaseAxes):
+    """An MPL axis-like object that displays a 2D projection of 3D
+    volumes with a schematic view of the brain.
+
     """
+    def __init__(self, ax, direction, coord, **kwargs):
+        super(GlassBrainAxes, self).__init__(ax, direction, coord)
+        if ax is not None:
+            object_bounds = glass_brain.plot_brain_schematics(ax,
+                                                              direction,
+                                                              **kwargs)
+            self.add_object_bounds(object_bounds)
+
     def transform_2d(self, data, affine):
         """ Sums the 3D volume along an axis
 
@@ -222,7 +232,7 @@ class BaseSlicer(object):
     _colorbar_labels_margin = 2.8
     axes_class = CutAxes
 
-    def __init__(self, cut_coords, axes=None, black_bg=False):
+    def __init__(self, cut_coords, axes=None, black_bg=False, **kwargs):
         """ Create 3 linked axes for plotting orthogonal cuts.
 
             Parameters
@@ -247,7 +257,7 @@ class BaseSlicer(object):
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._black_bg = black_bg
-        self._init_axes()
+        self._init_axes(**kwargs)
 
 
     @staticmethod
@@ -259,7 +269,8 @@ class BaseSlicer(object):
     @classmethod
     def init_with_figure(cls, img, threshold=None,
                          cut_coords=None, figure=None, axes=None,
-                         black_bg=False, leave_space=False, colorbar=False):
+                         black_bg=False, leave_space=False, colorbar=False,
+                         **kwargs):
         # deal with "fake" 4D images
         if img is not None and img is not False:
             img = _utils.check_niimg(img, ensure_3d=True)
@@ -299,7 +310,7 @@ class BaseSlicer(object):
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
         axes.axis('off')
-        return cls(cut_coords, axes, black_bg)
+        return cls(cut_coords, axes, black_bg, **kwargs)
 
 
     def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None,
@@ -515,15 +526,6 @@ class BaseSlicer(object):
             cut_ax.draw(edge_mask, data_bounds, data_bounds,
                         type='imshow', **kwargs)
 
-    def add_brain_schematics(self, **kwargs):
-        """Add brain schematics to the display axes
-        """
-        for cut_ax in self.axes.itervalues():
-            object_bounds = glass_brain.plot_brain_schematics(cut_ax.ax,
-                                                              cut_ax.direction,
-                                                              **kwargs)
-            cut_ax.add_object_bounds(object_bounds)
-
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
 
@@ -618,7 +620,7 @@ class OrthoSlicer(BaseSlicer):
                           for c in sorted(self._cut_displayed)]
         return cut_coords
 
-    def _init_axes(self):
+    def _init_axes(self, **kwargs):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError('The number cut_coords passed does not'
@@ -632,7 +634,7 @@ class OrthoSlicer(BaseSlicer):
                          axisbg=axisbg)
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
-            cut_ax = self.axes_class(ax, direction, coord)
+            cut_ax = self.axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = cut_ax
             ax.set_axes_locator(self._locator)
 
@@ -781,7 +783,7 @@ class BaseStackedSlicer(BaseSlicer):
         return cut_coords
 
 
-    def _init_axes(self):
+    def _init_axes(self, **kwargs):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = dict()
@@ -791,7 +793,8 @@ class BaseStackedSlicer(BaseSlicer):
             ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
                           fraction*(x1-x0), y1-y0])
             ax.axis('off')
-            cut_ax = self.axes_class(ax, self._direction, coord)
+            cut_ax = self.axes_class(ax, self._direction,
+                                     coord, **kwargs)
             self.axes[coord] = cut_ax
             ax.set_axes_locator(self._locator)
 
@@ -900,7 +903,7 @@ class OrthoProjector(OrthoSlicer):
     """A class to create linked axes for plotting orthogonal projections
        of 3D maps.
     """
-    axes_class = ProjectAxes
+    axes_class = GlassBrainAxes
 
     @staticmethod
     def find_cut_coords(img=None, threshold=None, cut_coords=None):
@@ -948,9 +951,9 @@ PROJECTORS = dict(ortho=OrthoProjector,
                   z=ZProjector)
 
 
-def get_display_class(display_mode, class_dict):
+def get_create_display_fun(display_mode, class_dict):
     try:
-        return class_dict[display_mode]
+        return class_dict[display_mode].init_with_figure
     except KeyError:
         message = ('{} is not a valid display_mode. '
                    'Valid options are {}').format(
@@ -960,9 +963,9 @@ def get_display_class(display_mode, class_dict):
 
 def get_slicer(display_mode):
     "Internal function to retrieve a slicer"
-    return get_display_class(display_mode, SLICERS)
+    return get_create_display_fun(display_mode, SLICERS)
 
 
 def get_projector(display_mode):
     "Internal function to retrieve a projector"
-    return get_display_class(display_mode, PROJECTORS)
+    return get_create_display_fun(display_mode, PROJECTORS)
