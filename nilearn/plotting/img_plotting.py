@@ -29,7 +29,7 @@ except ImportError:
 from .. import _utils
 from .._utils.extmath import fast_abs_percentile
 from ..datasets import load_mni152_template
-from .slicers import get_slicer, get_projector
+from .displays import get_slicer, get_projector
 from . import cm
 from .find_cuts import find_cut_slices
 

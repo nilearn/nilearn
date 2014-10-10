@@ -12,7 +12,7 @@ try:
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
-from ..slicers import OrthoSlicer, XSlicer
+from ..displays import OrthoSlicer, XSlicer
 from ...datasets import load_mni152_template
 
 ################################################################################
