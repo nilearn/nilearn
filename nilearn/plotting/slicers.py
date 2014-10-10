@@ -6,7 +6,6 @@ the data with different layout of cuts.
 """
 
 import operator
-import os
 
 import numpy as np
 
@@ -57,7 +56,7 @@ class BaseAxes(object):
         self._object_bounds = list()
 
     def tranform_2d(self, data, affine):
-        raise NotImplementedError("'transform_2d' needs to be implemented"
+        raise NotImplementedError("'transform_2d' needs to be implemented "
                                   "in derived classes'")
 
     def add_object_bounds(self, bounds):
@@ -71,8 +70,8 @@ class BaseAxes(object):
         if new_object_bounds != old_object_bounds:
             self.ax.axis(self.get_object_bounds())
 
-    def draw(self, cut, data_bounds, bounding_box,
-                 type='imshow', **kwargs):
+    def draw_2d(self, data_2d, data_bounds, bounding_box,
+                type='imshow', **kwargs):
         # kwargs massaging
         kwargs['origin'] = 'upper'
 
@@ -91,7 +90,7 @@ class BaseAxes(object):
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
-        im = getattr(ax, type)(cut.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs)
+        im = getattr(ax, type)(data_2d.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs)
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
 
@@ -121,7 +120,7 @@ class BaseAxes(object):
                 verticalalignment='top',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=1),
+                          ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
         ax.text(.9, .95, 'R',
@@ -179,7 +178,7 @@ class CutAxes(BaseAxes):
                 verticalalignment='bottom',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=1),
+                          ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
 
@@ -202,7 +201,7 @@ class GlassBrainAxes(BaseAxes):
             Parameters
             ==========
             data: 3D ndarray
-                The 3D volume to cut
+                The 3D volume to sum
             affine: 4x4 ndarray
                 The affine of the volume
         """
@@ -258,7 +257,6 @@ class BaseSlicer(object):
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._black_bg = black_bg
         self._init_axes(**kwargs)
-
 
     @staticmethod
     def find_cut_coords(img=None, threshold=None, cut_coords=None):
@@ -457,14 +455,14 @@ class BaseSlicer(object):
 
         # For each ax, cut the data and plot it
         ims = []
-        for cut_ax in self.axes.itervalues():
+        for display_ax in self.axes.itervalues():
             try:
-                cut = cut_ax.transform_2d(data, affine)
+                data_2d = display_ax.transform_2d(data, affine)
             except IndexError:
                 # We are cutting outside the indices of the data
                 continue
-            im = cut_ax.draw(cut, data_bounds, bounding_box,
-                             type=type, **kwargs)
+            im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
+                                    type=type, **kwargs)
             ims.append(im)
         return ims
 
@@ -516,15 +514,15 @@ class BaseSlicer(object):
         data_bounds = get_bounds(data.shape, img.get_affine())
 
         # For each ax, cut the data and plot it
-        for cut_ax in self.axes.itervalues():
+        for display_ax in self.axes.itervalues():
             try:
-                cut = cut_ax.transform_2d(data, affine)
-                edge_mask = _edge_map(cut)
+                data_2d = display_ax.transform_2d(data, affine)
+                edge_mask = _edge_map(data_2d)
             except IndexError:
                 # We are cutting outside the indices of the data
                 continue
-            cut_ax.draw(edge_mask, data_bounds, data_bounds,
-                        type='imshow', **kwargs)
+            display_ax.draw_2d(edge_mask, data_bounds, data_bounds,
+                               type='imshow', **kwargs)
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
@@ -552,13 +550,13 @@ class BaseSlicer(object):
 
         bg_color = ('k' if self._black_bg else 'w')
         if left_right:
-            for cut_ax in self.axes.values():
-                cut_ax.draw_left_right(size=size, bg_color=bg_color,
+            for display_ax in self.axes.values():
+                display_ax.draw_left_right(size=size, bg_color=bg_color,
                                        **kwargs)
 
         if positions:
-            for cut_ax in self.axes.values():
-                cut_ax.draw_position(size=size, bg_color=bg_color,
+            for display_ax in self.axes.values():
+                display_ax.draw_position(size=size, bg_color=bg_color,
                                        **kwargs)
 
     def close(self):
@@ -634,8 +632,8 @@ class OrthoSlicer(BaseSlicer):
                          axisbg=axisbg)
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
-            cut_ax = self.axes_class(ax, direction, coord, **kwargs)
-            self.axes[direction] = cut_ax
+            display_ax = self.axes_class(ax, direction, coord, **kwargs)
+            self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
 
         if self._black_bg:
@@ -661,15 +659,15 @@ class OrthoSlicer(BaseSlicer):
         # all three (x, y, z) cuts
         dummy_ax = self.axes_class(None, None, None)
         width_dict[dummy_ax.ax] = 0
-        cut_ax_dict = self.axes
+        display_ax_dict = self.axes
 
         if self._colorbar:
             adjusted_width = self._colorbar_width / len(self.axes)
             ticks_margin = adjusted_width * self._colorbar_labels_margin
             x1 = x1 - (adjusted_width + ticks_margin)
 
-        for cut_ax in cut_ax_dict.itervalues():
-            bounds = cut_ax.get_object_bounds()
+        for display_ax in display_ax_dict.itervalues():
+            bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
                 # succesful. As it happens asyncroniously (during a
@@ -677,13 +675,13 @@ class OrthoSlicer(BaseSlicer):
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
             xmin, xmax, ymin, ymax = bounds
-            width_dict[cut_ax.ax] = (xmax - xmin)
+            width_dict[display_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.iteritems():
             width_dict[ax] = width/total_width*(x1 -x0)
-        x_ax = cut_ax_dict.get('x', dummy_ax)
-        y_ax = cut_ax_dict.get('y', dummy_ax)
-        z_ax = cut_ax_dict.get('z', dummy_ax)
+        x_ax = display_ax_dict.get('x', dummy_ax)
+        y_ax = display_ax_dict.get('y', dummy_ax)
+        z_ax = display_ax_dict.get('z', dummy_ax)
         left_dict = dict()
         left_dict[y_ax.ax] = x0
         left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
@@ -782,7 +780,6 @@ class BaseStackedSlicer(BaseSlicer):
 
         return cut_coords
 
-
     def _init_axes(self, **kwargs):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
@@ -793,9 +790,9 @@ class BaseStackedSlicer(BaseSlicer):
             ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
                           fraction*(x1-x0), y1-y0])
             ax.axis('off')
-            cut_ax = self.axes_class(ax, self._direction,
-                                     coord, **kwargs)
-            self.axes[coord] = cut_ax
+            display_ax = self.axes_class(ax, self._direction,
+                                         coord, **kwargs)
+            self.axes[coord] = display_ax
             ax.set_axes_locator(self._locator)
 
         if self._black_bg:
@@ -818,15 +815,15 @@ class BaseStackedSlicer(BaseSlicer):
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
-        cut_ax_dict = self.axes
+        display_ax_dict = self.axes
 
         if self._colorbar:
             adjusted_width = self._colorbar_width/len(self.axes)
             ticks_margin = adjusted_width*self._colorbar_labels_margin
             x1 = x1 - (adjusted_width+ticks_margin)
 
-        for cut_ax in cut_ax_dict.itervalues():
-            bounds = cut_ax.get_object_bounds()
+        for display_ax in display_ax_dict.itervalues():
+            bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
                 # succesful. As it happens asyncroniously (during a
@@ -834,15 +831,15 @@ class BaseStackedSlicer(BaseSlicer):
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
             xmin, xmax, ymin, ymax = bounds
-            width_dict[cut_ax.ax] = (xmax - xmin)
+            width_dict[display_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.iteritems():
             width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
         left = float(x0)
-        for coord, cut_ax in sorted(cut_ax_dict.items()):
-            left_dict[cut_ax.ax] = left
-            this_width = width_dict[cut_ax.ax]
+        for coord, display_ax in sorted(display_ax_dict.items()):
+            left_dict[display_ax.ax] = left
+            this_width = width_dict[display_ax.ax]
             left += this_width
         return transforms.Bbox([[left_dict[axes], y0],
                                 [left_dict[axes] + width_dict[axes], y1]])
