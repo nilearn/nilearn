@@ -17,6 +17,7 @@ import time
 from functools import partial
 import numpy as np
 from scipy import stats
+import nibabel
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
@@ -25,6 +26,7 @@ from sklearn.feature_selection import (f_regression, f_classif,
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..input_data import NiftiMasker
+from ..image.image import _smooth_array
 from .._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
                             atleast2d_or_csr)
 from .objective_functions import _sigmoid
@@ -175,7 +177,7 @@ class EarlyStoppingCallback(object):
             return score
 
 
-def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
+def path_scores(solver, X, y, nifti_masker, alphas, l1_ratio, train,
                 test, solver_params, is_classif=False, init=None, key=None,
                 debias=False, ymean=0., screening_percentile=10.):
     """Function to compute scores of different alphas in regression and
@@ -189,7 +191,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     y : 1D array of length n_samples
         Response vector; one value per sample.
 
-    mask : 3D array of booleans.
+    nifti_masker : NiftiMasker instance
         Mask defining brain ROIs.
 
     alphas : list of floats
@@ -207,22 +209,34 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     """
 
+    # solver only used arrays
+    mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+
+    # misc
     verbose = solver_params.get('verbose', 0)
     alphas = sorted(alphas)[::-1]
 
     # univariate feature screening
-    mask = mask.copy()
     if screening_percentile < 100.:
+        # smooth the data before screening
+        sX = nifti_masker.transform(nibabel.Nifti1Image(
+                _smooth_array(
+                    nifti_masker.inverse_transform(X).get_data(),
+                    nifti_masker.mask_img_.get_affine(),
+                    fwhm='fast'), nifti_masker.mask_img_.get_affine()))
+
         selector = SelectPercentile(f_classif if is_classif else f_regression,
-                                    percentile=screening_percentile).fit(X, y)
+                                    percentile=screening_percentile).fit(sX, y)
         support = selector.get_support()
         mask[mask] = (support > 0)
         X = X[:, support]
 
+    # get train and test data
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
     test_scores = []
 
+    # do alpha path
     best_alpha = alphas[0]
     if len(test) > 0.:
         # setup callback mechanism for early stopping
@@ -242,7 +256,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 best_score = score
                 best_alpha = alpha
 
-    # Re-fit best model to high precision (i.e without early stopping, etc.).
+    # re-fit best model to high precision (i.e without early stopping, etc.)
     best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
                              mask=mask, **solver_params)
 
@@ -292,15 +306,10 @@ class SpaceNet(LinearModel, RegressorMixin):
         Constant that mixes L1 and TV (resp. SL) terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO.
 
-    mask: filename, NiImage, MultiNiftiMasker instance, optional default None)
+    mask: filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    smoothing_fwhm : float, optional (default None)
-        If not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the data (X) at fit
-        time.
 
     target_affine: 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. Please see the
@@ -374,9 +383,6 @@ class SpaceNet(LinearModel, RegressorMixin):
     `masker_`: instance of NiftiMasker
         The nifti masker used to mask the data.
 
-    `mask_`: 3D array of booleans
-        The mask used for masking the data.
-
     `mask_img_`: Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
@@ -393,18 +399,16 @@ class SpaceNet(LinearModel, RegressorMixin):
     SUPPORTED_PENALTIES = ["smooth-lasso", "tvl1"]
 
     def __init__(self, penalty="smooth-lasso", is_classif=False, alpha=None,
-                 alphas=None, l1_ratio=.5, mask=None, smoothing_fwhm=None,
-                 target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-                 memory=Memory(None), copy_data=True, standardize=False,
-                 normalize=False, alpha_min=1e-6, verbose=0,
+                 alphas=None, l1_ratio=.5, mask=None, target_affine=None,
+                 target_shape=None, low_pass=None, high_pass=None, t_r=None,
+                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
+                 standardize=False, normalize=False, alpha_min=1e-6, verbose=0,
                  n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
                  screening_percentile=10., debias=False):
         super(SpaceNet, self).__init__()
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
-        self.smoothing_fwhm = smoothing_fwhm
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.penalty = penalty
@@ -570,7 +574,6 @@ class SpaceNet(LinearModel, RegressorMixin):
         else:
             # compute mask
             self.masker_ = NiftiMasker(mask_img=self.mask,
-                                       smoothing_fwhm=self.smoothing_fwhm,
                                        target_affine=self.target_affine,
                                        target_shape=self.target_shape,
                                        low_pass=self.low_pass,
@@ -579,10 +582,8 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
-        self.mask_ = self.masker_.mask_img_.get_data().astype(np.bool)
-
-        y = np.array(y).copy().ravel()
         n_samples, _ = X.shape
+        y = np.array(y).copy().ravel()
 
         # set backend solver
         if self.penalty == "smooth-lasso":
@@ -637,15 +638,15 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # function handle for generating OVR labels
         _ovr_y = lambda c: y[:, c] if self.is_classif and (self.n_classes_ > 2
-                                                        ) else y
+                                                           ) else y
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, verbose=self.verbose,
                              max_iter=self.max_iter, rescale_alpha=True)
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
-                solver, X, _ovr_y(c), self.mask_, alphas, self.l1_ratio, train,
-                test, solver_params, is_classif=self.is_classif, key=c,
+                solver, X, _ovr_y(c), self.masker_, alphas, self.l1_ratio,
+                train, test, solver_params, is_classif=self.is_classif, key=c,
                 debias=self.debias, ymean=ymean,
                 screening_percentile=self.screening_percentile
                 ) for c in xrange(n_problems) for (train, test) in cv):
