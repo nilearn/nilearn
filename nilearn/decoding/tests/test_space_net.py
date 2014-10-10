@@ -9,6 +9,7 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
+from ...input_data import NiftiMasker
 from ..space_net import (EarlyStoppingCallback, _space_net_alpha_grid,
                          path_scores, SpaceNet)
 from ..space_net_solvers import (smooth_lasso_logistic,
@@ -142,10 +143,12 @@ def test_params_correctly_propagated_in_constructors():
 def test_logistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
-    mask = np.ones(X.shape[1]).astype(np.bool)
+    X_, mask = to_niimgs(X, [2, 2, 2])
+    masker = NiftiMasker(mask)
+    masker.fit_transform(X_)
     alphas = [1., .1, .01]
     test_scores, best_w, _ = logistic_path_scores(
-        smooth_lasso_logistic, X, y, mask, alphas, .5,
+        smooth_lasso_logistic, X, y, masker, alphas, .5,
         range(len(X)), range(len(X)), {})
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
@@ -154,10 +157,12 @@ def test_logistic_path_scores():
 def test_squared_loss_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
-    mask = np.ones(X.shape[1]).astype(np.bool)
+    X_, mask = to_niimgs(X, [2, 2, 2])
+    masker = NiftiMasker(mask)
+    masker.fit_transform(X_)
     alphas = [1., .1, .01]
     test_scores, best_w, _ = squared_loss_path_scores(
-        smooth_lasso_squared_loss, X, y, mask, alphas, .5,
+        smooth_lasso_squared_loss, X, y, masker, alphas, .5,
         range(len(X)), range(len(X)), {})
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1], len(best_w))
