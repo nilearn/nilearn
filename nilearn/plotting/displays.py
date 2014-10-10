@@ -90,7 +90,9 @@ class BaseAxes(object):
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
-        im = getattr(ax, type)(data_2d.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs)
+        im = getattr(ax, type)(data_2d.copy(),
+                               extent=(xmin, xmax, zmin, zmax),
+                               **kwargs)
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
 
