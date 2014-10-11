@@ -5,7 +5,7 @@ import scipy as sp
 from numpy.testing import assert_almost_equal
 from sklearn.utils import extmath
 from sklearn.utils import check_random_state
-from ..objective_functions import gradient, div, _unmask
+from ..objective_functions import gradient, div
 from ..space_net_solvers import (
     data_function,
     adjoint_data_function,
@@ -317,7 +317,7 @@ def test_mfista_solver_just_smooth():
     lipschitz_constant = squared_loss_derivative_lipschitz_constant(
         X, (np.eye(2) == 1).astype(np.bool), 1)
     estimate_solution, _, _ = mfista(
-        f1, f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8)
+        f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8)
 
     solution = np.array([-10, 5])
     assert_almost_equal(estimate_solution, solution, decimal=4)

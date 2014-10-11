@@ -306,7 +306,7 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
     total_energy = lambda w: f1(w) + f2(w)
 
     return mfista(
-        f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
+        f1_grad, f2_prox, total_energy, lipschitz_constant,
         model_size, dgap_factor=(.1 + l1_ratio) ** 2, callback=callback,
         tol=tol, max_iter=max_iter, verbose=verbose, init=init)
 
@@ -372,7 +372,7 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
     # finally, run the solver proper
     return mfista(
-        f1, f1_grad, f2_prox, total_energy, lipschitz_constant,
+        f1_grad, f2_prox, total_energy, lipschitz_constant,
         model_size, dgap_factor=(.1 + l1_ratio) ** 2, callback=callback,
         tol=tol, max_iter=max_iter, verbose=verbose, init=init)
 
@@ -559,7 +559,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
 
     # invoke m-FISTA solver
     w, obj, init = mfista(
-        f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
+        f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         dgap_factor=(.1 + l1_ratio) ** 2, tol=tol, init=init, verbose=verbose,
         max_iter=max_iter, callback=callback)
  
