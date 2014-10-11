@@ -67,17 +67,14 @@ def check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
             assert a <= b, err_msg + ("(a = %g >= %g)" % (a, b))
 
 
-def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
-           dgap_tol=None, init=None, max_iter=1000, tol=1e-4, pure_ista=False,
-           check_lipschitz=False, check_monotonous=False,
-           dgap_factor=None, callback=None, verbose=2):
+def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
+           dgap_tol=None, init=None, max_iter=1000, tol=1e-4,
+           check_lipschitz=False, dgap_factor=None, callback=None,
+           verbose=2):
     """
 
     Parameters
     ----------
-    f1 : callable(w) -> float
-         Gmooth part of energy (= the loss term).
-
     f1_grad : callable(w) -> np.array
         Gradient of smooth part of energy
 
@@ -153,13 +150,12 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     best_w = w.copy()
     best_energy = old_energy
     best_dgap_tol = dgap_tol
-    ista_step = pure_ista
+    ista_step = False
     best_z = z.copy()
     best_t = t
     best_dgap_tol = dgap_tol
     prox_info = dict(converged=True)
     stepsize = 1. / lipschitz_constant
-    name = "%s" % ("mISTA" if pure_ista else "mFISTA")
     objective = []
 
     # FISTA loop
@@ -169,8 +165,8 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
         # Invoke callback.
         if verbose:
-            print '%s: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
-                name, i + 1, max_iter, old_energy, energy_delta)
+            print 'mFISTA: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
+                i + 1, max_iter, old_energy, energy_delta)
         if callback and callback(locals()):
             break
         if np.abs(energy_delta) < tol:
@@ -183,9 +179,8 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
         # Backward (prox) step
         for _ in range(10):
-            w, prox_info = f2_prox(z - stepsize * gradient_buffer,
-                                   stepsize, dgap_factor * dgap_tol,
-                                   init=w)
+            w, prox_info = f2_prox(z - stepsize * gradient_buffer, stepsize,
+                                   dgap_factor * dgap_tol, init=w)
             w = w.ravel()
             energy = total_energy(w)
 
@@ -200,16 +195,6 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             else:
                 break
 
-        # ISTA is provably monotonous
-        if i > 0 and check_monotonous:
-            assert energy <= 1.1 * old_energy, (
-                "Oops! old_energy = %g < energy = %g. This is "
-                "unacceptable since ISTA and mFISTA are provably monotonous."
-                " The must be a bug in the code. For example, maybe "
-                "you are assuming a wrong lipschitz constant or you "
-                "have bugs in the way you compute the gradient of"
-                " the smooth part of the energy.") % (old_energy, energy)
-
         # energy house-keeping
         energy_delta = old_energy - energy
         old_energy = energy
@@ -223,7 +208,7 @@ def mfista(f1, f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             if verbose:
                 print 'Monotonous FISTA: Switching to ISTA'
         else:
-            if ista_step or pure_ista:
+            if ista_step:
                 z = w
             else:
                 t0 = t
