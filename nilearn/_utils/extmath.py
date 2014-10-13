@@ -63,7 +63,7 @@ def is_spd(M, decimal=15):
     answer: boolean
         True if matrix is symmetric positive definite, False otherwise.
     """
-    if not np.allclose(M, M.T, atol=0.1 ** decimal):
+    if not np.allclose(M, M.T, atol=0, rtol=10 ** -decimal):
         print("matrix not symmetric to %d decimals" % decimal)
         return False
     eigvalsh = np.linalg.eigvalsh(M)
