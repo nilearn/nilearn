@@ -12,8 +12,6 @@ Regression with spatial priors like TV-l1 and Smooth LASSO.
 # License: simplified BSD
 
 import numpy as np
-from sklearn.base import is_classifier
-from .._utils.fixes.sklearn_basic_backports import LabelBinarizer
 from .objective_functions import (spectral_norm_squared,
                                   gradient_id,
                                   logistic_loss_lipschitz_constant,
@@ -66,7 +64,7 @@ def squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
             - grad_weight * div(gradient(image_buffer))[mask])
 
 
-def data_function(X, w, mask, grad_weight):
+def smooth_lasso_data_function(X, w, mask, grad_weight):
     """
     Computes [X;grad_weight*grad]w. This function is made for the Lasso-like
     interpretation of the Smooth Lasso
@@ -88,10 +86,11 @@ def data_function(X, w, mask, grad_weight):
     return out
 
 
-def adjoint_data_function(X, w, adjoint_mask, grad_weight):
+def smooth_lasso_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     """
-    Computes the adjoint of the data_function, that is [X.T;grad_weight*div]w.
-    This function is made for the Lasso-like interpretation of the Smooth Lasso
+    Computes the adjoint of the smooth_lasso_data_function, that is
+    [X.T;grad_weight*div]w. This function is made for the Lasso-like
+    interpretation of the Smooth Lasso
 
     Parameters
     ----------
@@ -127,13 +126,13 @@ def squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
     # square root of the desired weight
     actual_grad_weight = np.sqrt(grad_weight)
     for _ in range(n_iterations):
-        a = adjoint_data_function(
-            X, data_function(X, a, mask, actual_grad_weight),
+        a = smooth_lasso_adjoint_data_function(
+            X, smooth_lasso_data_function(X, a, mask, actual_grad_weight),
             adjoint_mask, actual_grad_weight)
         a /= np.sqrt(np.dot(a, a))
 
-    lipschitz_constant = np.dot(adjoint_data_function(
-        X, data_function(X, a, mask, actual_grad_weight),
+    lipschitz_constant = np.dot(smooth_lasso_adjoint_data_function(
+        X, smooth_lasso_data_function(X, a, mask, actual_grad_weight),
         adjoint_mask, actual_grad_weight), a) / np.dot(a, a)
 
     return lipschitz_constant
@@ -190,61 +189,6 @@ def logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     data_section[:-1] = data_section[:-1]\
         - grad_weight * div(gradient(image_buffer))[mask]
     return data_section
-
-
-def max_alpha_logistic(X, y, l1_ratio):
-    """
-    Computes the theoretical upper bound for the overall
-    regularization, as derived in "An Interior-Point Method for Large-Scale
-    l1-Regularized Logistic Regression", by Koh, Kim, Boyd, in Journal of
-    Machine Learning Research, 8:1519-1555, July 2007.
-    url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
-
-    XXX Dead code!
-
-    """
-
-    m = float(y.size)
-    m_plus = float(y[y == 1].size)
-    m_minus = float(y[y == -1].size)
-    b = np.zeros(y.size)
-    b[y == 1] = m_minus / m
-    b[y == -1] = - m_plus / m
-    return np.max(np.abs(X.T.dot(b))) / l1_ratio
-
-
-def logistic_alpha_grid(X, y, l1_ratio, eps=1e-3, n_alphas=100):
-    """Computes a grid of alphas, bounded for the value obtained
-    with max_alpha_logistic
-    XXX Dead code! """
-
-    alpha_max = max_alpha_logistic(X, y, l1_ratio)
-    alphas = np.logspace(np.log10(alpha_max * eps), np.log10(alpha_max),
-                         num=n_alphas)[::-1]
-    return alphas
-
-
-def _debias(w, X, y, copy=True):
-    """Scales size of the model (size, not shape) to the data (X, y). If the
-    model is just zeros, this method does nothing
-    XXX Dead code! """
-
-    if copy:
-        w = w.copy()
-    Xw = np.dot(X, w)
-    if np.all(Xw != 0.0):
-        w *= np.dot(y, Xw) / np.dot(Xw, Xw)
-    return w
-
-
-def _pre_fit_labels(model, y):
-    """Sets the attributes about labels in a classifier. If model is a
-    regressor, this method does nothing
-
-    XXX Dead code! """
-    if is_classifier(model):
-        model._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        model.classes_ = model._enc.fit(y).classes_
 
 
 def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
@@ -492,7 +436,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     flat_mask = mask.ravel()
     volume_shape = mask.shape
 
-    # XXX We'll work on the full brain, and do the masking / unmasking
+    # We'll work on the full brain, and do the masking / unmasking
     # magic when needed
     w_size = X.shape[1] + int(loss == "logistic")
 
@@ -514,13 +458,6 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
             return w[flat_mask]
         else:
             return np.append(w[:-1][flat_mask], w[-1])
-
-    # fuction to compute f1 = smooth part of energy = the loss term
-    def f1(w):
-        if loss == "logistic":
-            return logistic_loss(X, y, w)
-        else:
-            return squared_loss(X, y, w)
 
     # function to compute derivative of f1
     def f1_grad(w):
