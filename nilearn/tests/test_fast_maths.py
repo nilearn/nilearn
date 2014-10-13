@@ -1,12 +1,12 @@
 """
-Test the _utils.fast_maths module
+Test the _utils.extmath module
 """
 
 import nose
 
 import numpy as np
 
-from .._utils.fast_maths import fast_abs_percentile
+from .._utils.extmath import fast_abs_percentile
 
 
 def test_fast_abs_percentile():
