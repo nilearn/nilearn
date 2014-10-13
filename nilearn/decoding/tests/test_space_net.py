@@ -9,7 +9,6 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from ...input_data import NiftiMasker
 from ..space_net import (EarlyStoppingCallback, _space_net_alpha_grid,
                          path_scores, SpaceNet)
 from ..space_net_solvers import (smooth_lasso_logistic,
@@ -144,11 +143,10 @@ def test_logistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     X_, mask = to_niimgs(X, [2, 2, 2])
-    masker = NiftiMasker(mask)
-    masker.fit_transform(X_)
+    mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w, _ = logistic_path_scores(
-        smooth_lasso_logistic, X, y, masker, alphas, .5,
+        smooth_lasso_logistic, X, y, mask, alphas, .5,
         range(len(X)), range(len(X)), {})
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
@@ -158,11 +156,10 @@ def test_squared_loss_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     X_, mask = to_niimgs(X, [2, 2, 2])
-    masker = NiftiMasker(mask)
-    masker.fit_transform(X_)
+    mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w, _ = squared_loss_path_scores(
-        smooth_lasso_squared_loss, X, y, masker, alphas, .5,
+        smooth_lasso_squared_loss, X, y, mask, alphas, .5,
         range(len(X)), range(len(X)), {})
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1], len(best_w))
@@ -173,7 +170,6 @@ def test_estimators_are_special_cv_objects():
     X, y = iris.data, iris.target
     alpha = 1.
     X, mask = to_niimgs(X, (2, 2, 2))
-
     for penalty, is_classif in itertools.product(['smooth-lasso', 'tvl1'],
                                              [True, False]):
         cv = SpaceNet(mask=mask, penalty=penalty, alpha=alpha)
@@ -192,10 +188,11 @@ def test_tv_regression_simple():
     X += rng.randn(n, p)
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
+    print X.shape, mask.get_data().sum()
     alphas = [.1, 1.]
 
     for l1_ratio in [1.]:
-        for debias in [True, False]:
+        for debias in [True]:
             SpaceNet(mask=mask, alphas=alphas, l1_ratio=l1_ratio,
                      penalty="tvl1", is_classif=False, max_iter=10,
                      debias=debias).fit(X, y)

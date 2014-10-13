@@ -7,17 +7,14 @@ from sklearn.utils import extmath
 from sklearn.utils import check_random_state
 from ..objective_functions import gradient, div
 from ..space_net_solvers import (
-    data_function,
-    adjoint_data_function,
+    smooth_lasso_data_function,
+    smooth_lasso_adjoint_data_function,
     squared_loss_and_spatial_grad,
     logistic_data_loss_and_spatial_grad,
     squared_loss_and_spatial_grad_derivative,
     logistic_data_loss_and_spatial_grad_derivative,
     squared_loss_derivative_lipschitz_constant,
     logistic_derivative_lipschitz_constant,
-    max_alpha_logistic,
-    _pre_fit_labels,
-    _debias,
     mfista)
 from ..space_net import SpaceNet
 
@@ -84,8 +81,8 @@ def test_adjointness(size=4):
 
 
 def test_identity_adjointness(size=4):
-    """Tests adjointess between data_function and
-    adjoint_data_function, with identity design matrix"""
+    """Tests adjointess between smooth_lasso_data_function and
+    smooth_lasso_adjoint_data_function, with identity design matrix"""
     rng = check_random_state(42)
 
     # A mask full of ones
@@ -100,9 +97,9 @@ def test_identity_adjointness(size=4):
     for _ in xrange(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
-        Axdoty = np.dot(data_function(X, x, mask, l1_ratio), y)
-        xdotAty = np.dot(adjoint_data_function(X, y, adjoint_mask, l1_ratio),
-                         x)
+        Axdoty = np.dot(smooth_lasso_data_function(X, x, mask, l1_ratio), y)
+        xdotAty = np.dot(smooth_lasso_adjoint_data_function(
+            X, y, adjoint_mask, l1_ratio), x)
         assert_almost_equal(Axdoty, xdotAty)
 
 
@@ -122,9 +119,9 @@ def test_operators_adjointness(size=4):
     for _ in xrange(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
-        Axdoty = np.dot(data_function(X, x, mask, l1_ratio), y)
-        xdotAty = np.dot(adjoint_data_function(X, y, adjoint_mask, l1_ratio),
-                         x)
+        Axdoty = np.dot(smooth_lasso_data_function(X, x, mask, l1_ratio), y)
+        xdotAty = np.dot(smooth_lasso_adjoint_data_function(
+            X, y, adjoint_mask, l1_ratio), x)
         np.testing.assert_almost_equal(Axdoty, xdotAty)
 
 
@@ -225,21 +222,6 @@ def test_fista_convergence():
             / (i + 1) ** 2
 
 
-def test_max_alpha_logistic():
-    """Tests that models with l1 regularization over the theoretical bound
-    are full of zeros, for logistic regression"""
-    # X, y, w, mask = create_smooth_simulation_data(task="classification")
-    X, y, w, mask, mask_, X_ = _make_data(task="classification")
-    l1_ratios = np.linspace(0.1, 1, 3)
-    clf = SpaceNet(mask=mask_, max_iter=10, is_classif=True)
-    for l1_ratio in l1_ratios:
-        clf.l1_ratio = l1_ratio
-        # We set alpha bigger than the theoretic bound
-        clf.alpha = max_alpha_logistic(X, y, l1_ratio) * 1.1
-        clf.fit(X_, y)
-        assert_almost_equal(clf.coef_, 0)
-
-
 def test_max_alpha_squared_loss():
     """Tests that models with l1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
@@ -273,38 +255,6 @@ def test_tikhonov_regularization_vs_smooth_lasso():
         np.dot(X, optimal_model) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, optimal_model)) ** 2
     assert_almost_equal(smooth_lasso_perf, optimal_model_perf, decimal=4)
-
-
-def test_debiasing_model():
-    """Tests that a debiased model has better performance that a no debiased
-    one
-    """
-    X, y, w, mask, mask_, X_ = _make_data()
-    X_train = X[:4]
-    y_train = y[:4]
-    X_test = X[4:]
-    y_test = y[4:]
-    X_train_, mask_ = to_niimgs(X_train, mask.shape)
-    X_test_, mask_ = to_niimgs(X_test, mask.shape)
-    smooth_lasso = SpaceNet(mask=mask_, alpha=0.01)
-    smooth_lasso.fit(X_train_, y_train)
-    biased_score = smooth_lasso.score(X_test_, y_test)
-    smooth_lasso.coef_ = _debias(smooth_lasso.coef_, X_test, y_test)
-    unbiased_score = smooth_lasso.score(X_test_, y_test)
-    assert unbiased_score >= biased_score
-
-
-@SkipTest
-def test_pre_fit():
-    # Mostly a smoke test
-    sm_reg = SpaceNet(mask=mask)
-    sm_clf = SpaceNet(mask=mask, is_classif=True)
-    assert not hasattr(sm_reg, "_enc")
-    assert not hasattr(sm_clf, "_enc")
-    _pre_fit_labels(sm_reg, y)
-    _pre_fit_labels(sm_clf, y.astype(np.int))
-    assert not hasattr(sm_reg, "_enc")
-    assert hasattr(sm_clf, "_enc")
 
 
 def test_mfista_solver_just_smooth():
