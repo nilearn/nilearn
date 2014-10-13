@@ -482,7 +482,11 @@ class BaseSlicer(object):
             x_adjusted_width - x_adjusted_right_margin,
             y_width - 2 * y_margin])
 
-        ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
+        # edge case where the data has a single value
+        # yields a cryptic matplotlib error message
+        # when trying to plot the color bar
+        nb_ticks = 5 if im.norm.vmin != im.norm.vmax else 1
+        ticks = np.linspace(im.norm.vmin, im.norm.vmax, nb_ticks)
         figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
         self._colorbar_ax.yaxis.tick_left()
         self._colorbar_ax.set_yticklabels(["% 2.2g" % t for t in ticks])
