@@ -81,40 +81,33 @@ plot_roi(nibabel.Nifti1Image(dil_bin_pvalues_and_vt.astype(np.int),
 
 # Identification of connected components
 labels, n_labels = ndimage.label(dil_bin_pvalues_and_vt)
-first_roi_img, second_roi_img = \
-    ((labels == (i + 1)).astype(np.int) for i in xrange(2))
-plot_roi(nibabel.Nifti1Image(first_roi_img, fmri_img.get_affine()),
+first_roi_data = (labels == 1).astype(np.int)
+second_roi_data = (labels == 2).astype(np.int)
+plot_roi(nibabel.Nifti1Image(first_roi_data, fmri_img.get_affine()),
+         mean_img, title='Connected components: first ROI')
+plot_roi(nibabel.Nifti1Image(second_roi_data, fmri_img.get_affine()),
+         mean_img, title='Connected components: second ROI')
+plot_roi(nibabel.Nifti1Image(first_roi_data, fmri_img.get_affine()),
          mean_img, title='Connected components: first ROI',
-         cut_coords=None)  # None will compute optimal slices automatically
-plot_roi(nibabel.Nifti1Image(second_roi_img, fmri_img.get_affine()),
-         mean_img, title='Connected components: second ROI',
-         cut_coords=None)  # None will compute optimal slices automatically
-plot_roi(nibabel.Nifti1Image(first_roi_img, fmri_img.get_affine()),
-         mean_img, title='Connected components: first ROI',
-         cut_coords=None,
          output_file='snapshot_first_ROI.png')  # no plot, save .PNG to hard disk 
-plot_roi(nibabel.Nifti1Image(second_roi_img, fmri_img.get_affine()),
+plot_roi(nibabel.Nifti1Image(second_roi_data, fmri_img.get_affine()),
          mean_img, title='Connected components: second ROI',
-         cut_coords=None,
          output_file='snapshot_second_ROI.png')  # no plot, save .PNG to hard disk 
 
 # use the new ROIs to extract data maps in first ROI (label=1)
 plt.figure()
 n_scans = 1000
 first_maps = nibabel.Nifti1Image(fmri_data[..., :n_scans], fmri_img.get_affine())
-first_maps.to_filename('debug.nii')
 masker = NiftiLabelsMasker(
             labels_img=nibabel.Nifti1Image(labels, fmri_img.get_affine()),
-            background_label=0,
-            resampling_target=None,  # use data space as std space
-            smoothing_fwhm=None,
+            resampling_target=None,
             standardize=False,
-            detrend=False,
-            verbose=0)
+            detrend=False)
 act_summaries = masker.fit_transform(first_maps)
-bins = np.arange(n_scans) + 1
-plt.plot(bins, act_summaries[:, 0]) # 0 -> use data from ROI 1
-ymin, ymax = np.min(act_summaries[:, 0]), np.max(act_summaries[:, 0])
+bins = np.arange(1, n_scans + 1)
+roi1_time_series = act_summaries[:, 0]
+plt.plot(bins, roi1_time_series)
+ymin, ymax = np.min(roi1_time_series), np.max(roi1_time_series)
 plt.axis([1, n_scans, ymin, ymax])
 plt.title('Data extracted from ROI 1')
 plt.xlabel('first %i images in dataset' % n_scans)
@@ -122,7 +115,6 @@ plt.ylabel('average values')
 
 plt.show()
 
-# Save the two extracted ROIs in a single 'atlas' nifti image
-nibabel.save(nibabel.Nifti1Image(labels, fmri_img.get_affine(),
-    header=fmri_img.get_header()), 'mask_atlas.nii')
-
+# save the ROI 'atlas' to a single output nifti
+nibabel.save(nibabel.Nifti1Image(labels, fmri_img.get_affine()),
+    'mask_atlas.nii')
