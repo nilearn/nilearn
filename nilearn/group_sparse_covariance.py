@@ -23,7 +23,7 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from ._utils import CacheMixin
 from ._utils import logger
-from ._utils.testing import is_spd
+from ._utils.extmath import is_spd
 
 
 def compute_alpha_max(emp_covs, n_samples):
