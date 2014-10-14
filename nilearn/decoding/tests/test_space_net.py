@@ -43,7 +43,7 @@ def test_same_lasso_classifier_cv():
     n_alphas = 5
     tvl1classifiercv = SpaceNet(
         mask=mask, n_alphas=n_alphas, memory=memory, cv=2,
-        l1_ratio=l1_ratio, tol=tol, penalty="tvl1",
+        l1_ratio=l1_ratio, tol=tol, penalty="tv-l1",
         classif=True).fit(X, y)
     slclassifiercv = SpaceNet(mask=mask, n_alphas=n_alphas, memory=memory,
                               is_classif=True, penalty="smooth-lasso",
@@ -54,7 +54,7 @@ def test_same_lasso_classifier_cv():
     tvl1regressorcv = SpaceNet(
         mask=mask, n_alphas=n_alphas, memory=memory, cv=2,
         l1_ratio=l1_ratio, tol=tol, is_classif=False,
-        penalty="tvl1").fit(X, y)
+        penalty="tv-l1").fit(X, y)
     slregressorcv = SpaceNet(
         mask=mask, n_alphas=n_alphas, memory=memory, is_classif=True,
         cv=2, l1_ratio=l1_ratio, tol=tol, penalty="smooth-lasso"
@@ -126,7 +126,7 @@ def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
 def test_params_correctly_propagated_in_constructors():
     for (penalty, is_classif, n_alphas, l1_ratio, n_jobs,
          cv, perc) in itertools.product(
-        ["smooth-lasso", "tvl1"], [True, False],
+        ["smooth-lasso", "tv-l1"], [True, False],
         [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
         cvobj = SpaceNet(
             mask="dummy", n_alphas=n_alphas, n_jobs=n_jobs, l1_ratio=l1_ratio,
@@ -170,8 +170,8 @@ def test_estimators_are_special_cv_objects():
     X, y = iris.data, iris.target
     alpha = 1.
     X, mask = to_niimgs(X, (2, 2, 2))
-    for penalty, is_classif in itertools.product(['smooth-lasso', 'tvl1'],
-                                             [True, False]):
+    for penalty, is_classif in itertools.product(['smooth-lasso', 'tv-l1'],
+                                                 [True, False]):
         cv = SpaceNet(mask=mask, penalty=penalty, alpha=alpha)
         cv.fit(X, y)
         np.testing.assert_array_equal([alpha], cv.alphas_)
@@ -194,7 +194,7 @@ def test_tv_regression_simple():
     for l1_ratio in [1.]:
         for debias in [True]:
             SpaceNet(mask=mask, alphas=alphas, l1_ratio=l1_ratio,
-                     penalty="tvl1", is_classif=False, max_iter=10,
+                     penalty="tv-l1", is_classif=False, max_iter=10,
                      debias=debias).fit(X, y)
 
 
@@ -213,7 +213,7 @@ def test_tv_regression_3D_image_doesnt_crash():
     X, mask = to_niimgs(X, dim)
 
     for l1_ratio in [0., .5, 1.]:
-        SpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio, penalty="tvl1",
+        SpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio, penalty="tv-l1",
                  is_classif=False, max_iter=10).fit(X, y)
 
 
@@ -228,7 +228,7 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
     tvl1 = SpaceNet(mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
-                    verbose=0, max_iter=1000, penalty="tvl1",
+                    verbose=0, max_iter=1000, penalty="tv-l1",
                     is_classif=True, screening_percentile=100.).fit(X_, y)
     sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
                                   tol=tol, C=C).fit(X, y)
@@ -284,7 +284,7 @@ def test_lasso_vs_smooth_lasso():
 
 def test_params_correctly_propagated_in_constructors_biz():
     for penalty, is_classif, alpha, l1_ratio in itertools.product(
-        ["smooth-lasso", "tvl1"], [True, False], [.4, .01], [.5, 1.]):
+        ["smooth-lasso", "tv-l1"], [True, False], [.4, .01], [.5, 1.]):
         cvobj = SpaceNet(
             mask="dummy", penalty=penalty, is_classif=is_classif, alpha=alpha,
             l1_ratio=l1_ratio)
