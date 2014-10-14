@@ -75,6 +75,11 @@ def test_get_dataset_dir():
     no_write=mkdtemp()
     os.chmod(no_write, 0400)
     assert_raises(OSError, datasets._get_dataset_dir,'test',no_write)
+    #Verify exception if
+    f = mktemp()
+    out = open(f, 'w')
+    out.write('abcfeg')
+    out.close()
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_get_dataset_dir():
