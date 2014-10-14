@@ -218,15 +218,17 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
 
     # If not, create a folder in the first writeable directory
     for path in paths:
-        if not os.path.exists(path):
-            os.makedirs(path)
-        if os.access(path, os.W_OK):
-            path = os.path.join(path, dataset_name)
-            os.mkdir(path)
-            print 'Dataset created in', path
-            return path
+	for path in paths:
+	    path = os.path.join(path, dataset_name)
+	    try:
+	        os.makedirs(path)
+		print 'Dataset created in', path
+		return path
+	    except OSError as exc:
+		if exc.errno != os.errno.EACCES:
+		    raise
 
-    raise IOError('Nilearn tried to store the dataset in the following '
+    raise OSError('Nilearn tried to store the dataset in the following '
             'directories, but has no write permission:\n' + '\n'.join(paths))
 
 
