@@ -1,7 +1,7 @@
 import itertools
 from functools import partial
 from nose import SkipTest
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
@@ -295,6 +295,10 @@ def test_params_correctly_propagated_in_constructors_biz():
 def test_crop_mask():
     rng = np.random.RandomState(42)
     mask = np.zeros((3, 4, 5), dtype=np.bool)
-    mask[rng.rand(*mask.shape) > .6] = 1  # mask covers 60% of brain
+    box = mask[:2, :3, :4]
+    box[rng.rand(*box.shape) < 3.] = 1  # mask covers 30% of brain
+    idx = np.where(mask)
+    assert_true(idx[1].max() < 3)
     tight_mask = _crop_mask(mask)
     assert_equal(mask.sum(), tight_mask.sum())
+    assert_true(np.prod(tight_mask.shape) <= np.prod(box.shape))

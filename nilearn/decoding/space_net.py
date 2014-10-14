@@ -181,11 +181,11 @@ def _crop_mask(mask):
     the same support (active voxels)."""
     idx = np.where(mask)
     i_min = max(idx[0].min() - 1, 0)
-    i_max = max(idx[0].max(), mask.shape[0] - 1)
+    i_max = idx[0].max()
     j_min = max(idx[1].min() - 1, 0)
-    j_max = max(idx[1].max(), mask.shape[1] - 1)
+    j_max = idx[1].max()
     k_min = max(idx[2].min() - 1, 0)
-    k_max = max(idx[2].max(), mask.shape[2] - 1)
+    k_max = idx[2].max()
     return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
 
 
