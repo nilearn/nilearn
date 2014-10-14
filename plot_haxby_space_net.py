@@ -42,7 +42,7 @@ y = target[condition_mask]
 ### Fit and predict #########################################################
 from nilearn.decoding import SpaceNet
 decoder = SpaceNet(memory="cache", mask=nifti_masker, is_classif=True,
-                   verbose=1, penalty="tvl1")
+                   verbose=1, penalty="tv-l1")
 decoder.fit(X, y)  # fit
 y_pred = decoder.predict(X)  # predict
 coef_niimg = decoder.coef_img_

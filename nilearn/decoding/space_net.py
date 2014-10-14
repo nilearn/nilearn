@@ -146,7 +146,7 @@ class EarlyStoppingCallback(object):
         if not (self.counter > 20 and (self.counter % 10) == 2):
             return
         if len(self.test_errors) > 4:
-            if np.mean(np.diff(self.test_errors[-5:])) >= 1e-4:
+            if np.mean(np.diff(self.test_errors[-5:])) >= -1e-4:
                 if self.verbose:
                     print('Early stopping. Test error: %.8f %s' % (
                             error, 40 * '-'))
@@ -534,8 +534,9 @@ class SpaceNet(LinearModel, RegressorMixin):
                  " [0, 100], got %g" % self.screening_percentile))
         if self.penalty.lower() not in self.SUPPORTED_PENALTIES:
             raise ValueError(
-                "'penalty' parameter must be one of %s, or %s; got %s" % (
-                    ",".join(self.SUPPORTED_PENALTIES[:-1]),
+                "'penalty' parameter must be one of %s%s or %s; got %s" % (
+                    ",".join(self.SUPPORTED_PENALTIES[:-1]), "," if len(
+                        self.SUPPORTED_PENALTIES) > 2 else "",
                     self.SUPPORTED_PENALTIES[-1], self.penalty))
 
     def fit(self, X, y):
