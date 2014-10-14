@@ -398,7 +398,7 @@ class SpaceNet(LinearModel, RegressorMixin):
 
     """
 
-    SUPPORTED_PENALTIES = ["smooth-lasso", "tvl1"]
+    SUPPORTED_PENALTIES = ["smooth-lasso", "tv-l1"]
 
     def __init__(self, penalty="smooth-lasso", is_classif=False, alpha=None,
                  alphas=None, l1_ratio=.5, mask=None, target_affine=None,
@@ -532,7 +532,7 @@ class SpaceNet(LinearModel, RegressorMixin):
             raise ValueError(
                 ("screening_percentile should be in the interval"
                  " [0, 100], got %g" % self.screening_percentile))
-        if self.penalty not in self.SUPPORTED_PENALTIES:
+        if self.penalty.lower() not in self.SUPPORTED_PENALTIES:
             raise ValueError(
                 "'penalty' parameter must be one of %s, or %s; got %s" % (
                     ",".join(self.SUPPORTED_PENALTIES[:-1]),
@@ -589,7 +589,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         y = np.array(y).copy().ravel()
 
         # set backend solver
-        if self.penalty == "smooth-lasso":
+        if self.penalty.lower() == "smooth-lasso":
             if self.is_classif:
                 solver = smooth_lasso_logistic
             else:
