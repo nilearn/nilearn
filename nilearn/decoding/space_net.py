@@ -681,7 +681,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.i_alpha_ = [np.argmin(np.mean(self.scores_[c], axis=-1))
                          for c in xrange(n_problems)]
         if n_problems == 1:
-            self.i_alpha_ = self.i_alpha_
+            self.i_alpha_ = self.i_alpha_[0]
         self.alpha_ = alphas[self.i_alpha_]
 
         # bagging: average best weights maps over folds
