@@ -41,8 +41,8 @@ y = target[condition_mask]
 
 ### Fit and predict #########################################################
 from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory="cache", mask=nifti_masker, is_classif=True, verbose=1,
-                   penalty="tvl1")
+decoder = SpaceNet(memory="cache", mask=nifti_masker, is_classif=True,
+                   verbose=1, penalty="tvl1")
 decoder.fit(X, y)  # fit
 y_pred = decoder.predict(X)  # predict
 coef_niimg = decoder.coef_img_
@@ -55,7 +55,7 @@ from nilearn.image import mean_img
 from nilearn.plotting import plot_stat_map
 
 background_img = mean_img(data_files.func[0])
-slicer = plot_stat_map(coef_niimg, background_img, title="S-LASSO weights")
-print ("Accurarcy: %g" % ((y_pred == y).mean() * 100.)) + "%"
+slicer = plot_stat_map(coef_niimg, background_img, title="TV-L1 weights")
+print ("Accuracy: %g" % ((y_pred == y).mean() * 100.)) + "%"
 print "_" * 80
 plt.show()

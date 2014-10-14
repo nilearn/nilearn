@@ -237,6 +237,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     test_scores = []
 
     # do alpha path
+    best_init = init
     best_alpha = alphas[0]
     if len(test) > 0.:
         # setup callback mechanism for early stopping
