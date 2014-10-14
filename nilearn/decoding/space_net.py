@@ -240,7 +240,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     best_alpha = alphas[0]
     if len(test) > 0.:
         # setup callback mechanism for early stopping
-        earlystopper = EarlyStoppingCallback(
+        early_stopper = EarlyStoppingCallback(
             X_test, y_test, is_classif=is_classif, debias=debias, ymean=ymean,
             verbose=verbose)
 
@@ -249,16 +249,17 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         for alpha in alphas:
             w, _, init = solver(
                 X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
-                callback=earlystopper, **solver_params)
-            score = earlystopper.test_score(w)
+                callback=early_stopper, **solver_params)
+            score = early_stopper.test_score(w)
             test_scores.append(score)
             if score <= best_score:
                 best_score = score
                 best_alpha = alpha
+                best_init = init.copy()
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
     best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
-                             mask=mask, **solver_params)
+                             mask=mask, init=best_init, **solver_params)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
