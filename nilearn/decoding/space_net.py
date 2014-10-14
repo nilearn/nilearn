@@ -220,10 +220,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     # univariate feature screening
     if screening_percentile < 100.:
         # smooth the data before screening
-        sX = np.ndarray(list(mask.shape) + [n_samples])
+        sX = np.empty(list(mask.shape) + [n_samples])
         for row in xrange(n_samples):
             sX[:, :, :, row] = _unmask(X[row], mask)
-        print "#" * 80
         sX = _fast_smooth_array(sX)
         sX = np.array([sX[:, :, :, row][mask] for row in xrange(n_samples)])
         selector = SelectPercentile(f_classif if is_classif else f_regression,
