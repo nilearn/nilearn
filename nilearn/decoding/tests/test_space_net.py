@@ -10,7 +10,7 @@ from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from ..space_net import (EarlyStoppingCallback, _space_net_alpha_grid,
-                         path_scores, SpaceNet)
+                         path_scores, SpaceNet, _crop_mask)
 from ..space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
@@ -290,3 +290,11 @@ def test_params_correctly_propagated_in_constructors_biz():
             l1_ratio=l1_ratio)
         assert_equal(cvobj.alpha, alpha)
         assert_equal(cvobj.l1_ratio, l1_ratio)
+
+
+def test_crop_mask():
+    rng = np.random.RandomState(42)
+    mask = np.zeros((3, 4, 5), dtype=np.bool)
+    mask[rng.rand(*mask.shape) > .6] = 1  # mask covers 60% of brain
+    tight_mask = _crop_mask(mask)
+    assert_equal(mask.sum(), tight_mask.sum())

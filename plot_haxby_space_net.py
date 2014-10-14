@@ -6,7 +6,8 @@ Here is a simple example of decoding, reproducing the Haxby 2001
 study on a face vs house discrimination task in a mask of the ventral
 stream.
 
-Author: DOHMATOB Elvis Dopgima
+Author: DOHMATOB Elvis Dopgima,
+        Gael VAROQUAUX
 
 """
 
@@ -31,7 +32,7 @@ _, target = np.unique(labels['labels'], return_inverse=True)
 
 # ventral mask
 import nibabel
-nifti_masker = NiftiMasker(mask_img=data_files.mask_vt[0], standardize=True)
+nifti_masker = NiftiMasker(mask_strategy="epi", standardize=True)
 
 # make X (design matrix) and y (dependent variate)
 niimgs  = nibabel.load(data_files.func[0])
