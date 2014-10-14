@@ -176,6 +176,19 @@ class EarlyStoppingCallback(object):
             return score
 
 
+def _crop_mask(mask):
+    """Crops input mask to produce tighter (i.e smaller) bounding box with
+    the same support (active voxels)."""
+    idx = np.where(mask)
+    i_min = max(idx[0].min() - 1, 0)
+    i_max = max(idx[0].max(), mask.shape[0] - 1)
+    j_min = max(idx[1].min() - 1, 0)
+    j_max = max(idx[1].max(), mask.shape[1] - 1)
+    k_min = max(idx[2].min() - 1, 0)
+    k_max = max(idx[2].max(), mask.shape[2] - 1)
+    return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
+
+
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 test, solver_params, is_classif=False, init=None, key=None,
                 debias=False, ymean=0., screening_percentile=10.):
@@ -231,6 +244,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         mask[mask] = (support > 0)
         X = X[:, support]
 
+    # crop the mask to have a tighter bounding box
+    tight_mask = _crop_mask(mask)
+
     # get train and test data
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
@@ -249,7 +265,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         best_score = np.inf
         for alpha in alphas:
             w, _, init = solver(
-                X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
+                X_train, y_train, alpha, l1_ratio, mask=tight_mask, init=init,
                 callback=early_stopper, **solver_params)
             score = early_stopper.test_score(w)
             test_scores.append(score)
@@ -260,7 +276,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
     best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
-                             mask=mask, init=best_init, **solver_params)
+                             mask=tight_mask, init=best_init, **solver_params)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
