@@ -26,7 +26,7 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
-from .._utils.fast_maths import fast_abs_percentile
+from .._utils.extmath import fast_abs_percentile
 from ..datasets import load_mni152_template
 from .slicers import get_slicer
 from . import cm
