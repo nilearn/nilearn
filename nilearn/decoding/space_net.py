@@ -237,7 +237,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         sX = np.empty(list(mask.shape) + [n_samples])
         for row in xrange(n_samples):
             sX[:, :, :, row] = _unmask(X[row], mask)
-        sX = _fast_smooth_array(sX)
+        sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
         sX = np.array([sX[:, :, :, row][mask] for row in xrange(n_samples)])
 
         # do feature screening proper
@@ -245,7 +245,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                                     percentile=screening_percentile).fit(sX, y)
         support = selector.get_support()
 
-        # dilate mask blobs
+        # dilate mask blobs, thus obtaining a superset of the mask on which a
+        # spatial prior makes sense
         new_mask = mask.copy()
         new_mask[mask] = (support > 0)
         new_mask = ndimage.binary_dilation(mask).astype(np.bool)
