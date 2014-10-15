@@ -16,7 +16,7 @@ import numbers
 import time
 from functools import partial
 import numpy as np
-from scipy import stats
+from scipy import stats, ndimage
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
@@ -191,7 +191,8 @@ def _crop_mask(mask):
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 test, solver_params, is_classif=False, init=None, key=None,
-                debias=False, ymean=0., screening_percentile=10.):
+                debias=False, ymean=0., screening_percentile=10.,
+                verbose=1.):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects.
 
@@ -227,7 +228,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     mask = mask.copy()
 
     # misc
-    verbose = solver_params.get('verbose', 0)
+    verbose = int(verbose if verbose is not None else 0)
     alphas = sorted(alphas)[::-1]
 
     # univariate feature screening
@@ -238,11 +239,20 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
             sX[:, :, :, row] = _unmask(X[row], mask)
         sX = _fast_smooth_array(sX)
         sX = np.array([sX[:, :, :, row][mask] for row in xrange(n_samples)])
+
+        # do feature screening proper
         selector = SelectPercentile(f_classif if is_classif else f_regression,
                                     percentile=screening_percentile).fit(sX, y)
         support = selector.get_support()
-        mask[mask] = (support > 0)
+
+        # dilate mask blobs
+        new_mask = mask.copy()
+        new_mask[mask] = (support > 0)
+        new_mask = ndimage.binary_dilation(mask).astype(np.bool)
+        new_mask[np.logical_not(mask)] = 0
+        support = new_mask[mask]
         X = X[:, support]
+        mask = new_mask
 
     # crop the mask to have a tighter bounding box
     tight_mask = _crop_mask(mask)
@@ -266,7 +276,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         for alpha in alphas:
             w, _, init = solver(
                 X_train, y_train, alpha, l1_ratio, mask=tight_mask, init=init,
-                callback=early_stopper, **solver_params)
+                callback=early_stopper, verbose=max(verbose - 1, 0.),
+                **solver_params)
             score = early_stopper.test_score(w)
             test_scores.append(score)
             if score <= best_score:
@@ -276,7 +287,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
     best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
-                             mask=tight_mask, init=best_init, **solver_params)
+                             mask=tight_mask, init=best_init,
+                             verbose=max(verbose - 1, 0), **solver_params)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
@@ -661,13 +673,13 @@ class SpaceNet(LinearModel, RegressorMixin):
                                                            ) else y
 
         # main loop: loop on classes and folds
-        solver_params = dict(tol=self.tol, verbose=self.verbose,
-                             max_iter=self.max_iter, rescale_alpha=True)
+        solver_params = dict(tol=self.tol, max_iter=self.max_iter,
+                             rescale_alpha=True)
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, _ovr_y(c), self.mask_, alphas, self.l1_ratio,
                 train, test, solver_params, is_classif=self.is_classif, key=c,
-                debias=self.debias, ymean=ymean,
+                debias=self.debias, ymean=ymean, verbose=self.verbose,
                 screening_percentile=self.screening_percentile
                 ) for c in xrange(n_problems) for (train, test) in cv):
             test_scores = np.reshape(test_scores, (-1, 1))
