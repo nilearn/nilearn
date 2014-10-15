@@ -190,7 +190,7 @@ class EarlyStoppingCallback(object):
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 test, solver_params, is_classif=False, init=None, key=None,
-                debias=False, ymean=0., screening_percentile=10.,
+                debias=False, ymean=0., screening_percentile=20.,
                 verbose=1.):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects.
@@ -362,7 +362,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         documentation for details
 
     screening_percentile : float in the interval [0, 100]; Optional (
-    default 10)
+    default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'.
 
@@ -434,7 +434,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  standardize=False, normalize=False, alpha_min=1e-6, verbose=0,
                  n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
-                 screening_percentile=10., debias=False):
+                 screening_percentile=20., debias=False):
         super(SpaceNet, self).__init__()
         self.low_pass = low_pass
         self.high_pass = high_pass
