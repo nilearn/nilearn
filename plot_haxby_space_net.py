@@ -12,40 +12,39 @@ Author: DOHMATOB Elvis Dopgima,
 """
 
 ### Load haxby dataset ########################################################
-
 from nilearn import datasets
 data_files = datasets.fetch_haxby()
 
 ### Load Target labels ########################################################
-
 import numpy as np
-# Load target information as string and give a numerical identifier to each
 labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
-cond1 = "face"
-cond2 = "house"
 
-from nilearn.input_data import NiftiMasker
 
-condition_mask = np.logical_or(labels['labels'] == cond1,
-                               labels['labels'] == cond2)
+### split data into train and test samples ####################################
+condition_mask = np.logical_or(labels['labels'] == "face",
+                               labels['labels'] == "house")
+condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 9)
+condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 9)
+
 _, target = np.unique(labels['labels'], return_inverse=True)
 
-# ventral mask
-import nibabel
-nifti_masker = NiftiMasker(mask_strategy="epi", standardize=True)
-
 # make X (design matrix) and y (dependent variate)
+import nibabel
 niimgs  = nibabel.load(data_files.func[0])
-X = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask],
+X_train = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask_train],
                         niimgs.get_affine())
-y = target[condition_mask]
+y_train = target[condition_mask_train]
+X_test = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask_test],
+                        niimgs.get_affine())
+y_test = target[condition_mask_test]
 
-### Fit and predict #########################################################
+
+### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory="cache", mask=nifti_masker, is_classif=True,
-                   verbose=1, penalty="tv-l1")
-decoder.fit(X, y)  # fit
-y_pred = decoder.predict(X)  # predict
+decoder = SpaceNet(memory="cache", is_classif=True, penalty="tv-l1",
+                   verbose=2)
+decoder.fit(X_train, y_train)  # fit
+y_pred = decoder.predict(X_test)  # predict
 coef_niimg = decoder.coef_img_
 coef_niimg.to_filename('haxby_tvl1_weights.nii')
 
@@ -54,9 +53,8 @@ coef_niimg.to_filename('haxby_tvl1_weights.nii')
 import matplotlib.pyplot as plt
 from nilearn.image import mean_img
 from nilearn.plotting import plot_stat_map
-
 background_img = mean_img(data_files.func[0])
 slicer = plot_stat_map(coef_niimg, background_img, title="TV-L1 weights")
-print ("Accuracy: %g" % ((y_pred == y).mean() * 100.)) + "%"
+print ("Accuracy: %g" % ((y_pred == y_test).mean() * 100.)) + "%"
 print "_" * 80
 plt.show()
