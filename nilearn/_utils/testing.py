@@ -422,32 +422,6 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
 
 
-def is_spd(M, decimal=15):
-    """Assert that input matrix is symmetric positive definite.
-
-    M must be symmetric down to specified decimal places.
-    The check is performed by checking that all eigenvalues are positive.
-
-    Parameters
-    ==========
-    M: numpy.ndarray
-        symmetric positive definite matrix.
-
-    Returns
-    =======
-    answer: boolean
-        True if matrix is symmetric positive definite, False otherwise.
-    """
-    if not np.allclose(M, M.T, atol=0.1 ** decimal):
-        print("matrix not symmetric to %d decimals" % decimal)
-        return False
-    eigvalsh = np.linalg.eigvalsh(M)
-    ispd = eigvalsh.min() > 0
-    if not ispd:
-        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
-    return ispd
-
-
 def generate_signals_from_precisions(precisions,
                                      min_n_samples=50, max_n_samples=100,
                                      random_state=0):

@@ -12,7 +12,7 @@ import nibabel
 
 # Local imports
 from .._utils.ndimage import largest_connected_component
-from .._utils.fast_maths import fast_abs_percentile
+from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array

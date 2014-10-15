@@ -1,5 +1,5 @@
 """
-Fast simple math routines
+Extended math utilities
 """
 # Author: Gael Varoquaux
 # License: BSD
@@ -45,3 +45,29 @@ def fast_abs_percentile(data, percentile=80):
         return partition(data, index)[index + 1]
     data.sort()
     return data[index + 1]
+
+
+def is_spd(M, decimal=15):
+    """Assert that input matrix is symmetric positive definite.
+
+    M must be symmetric down to specified decimal places.
+    The check is performed by checking that all eigenvalues are positive.
+
+    Parameters
+    ==========
+    M: numpy.ndarray
+        symmetric positive definite matrix.
+
+    Returns
+    =======
+    answer: boolean
+        True if matrix is symmetric positive definite, False otherwise.
+    """
+    if not np.allclose(M, M.T, atol=0, rtol=10 ** -decimal):
+        print("matrix not symmetric to %d decimals" % decimal)
+        return False
+    eigvalsh = np.linalg.eigvalsh(M)
+    ispd = eigvalsh.min() > 0
+    if not ispd:
+        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
+    return ispd

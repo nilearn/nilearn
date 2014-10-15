@@ -5,7 +5,7 @@ Edge detection routines: this file provides a Canny filter
 import numpy as np
 from scipy import ndimage, signal
 
-from .._utils.fast_maths import fast_abs_percentile
+from .._utils.extmath import fast_abs_percentile
 
 # Author: Gael Varoquaux
 # License: BSD
