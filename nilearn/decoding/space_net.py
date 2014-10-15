@@ -25,7 +25,6 @@ from sklearn.feature_selection import (f_regression, f_classif,
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..input_data import NiftiMasker
-from ..image.image import _fast_smooth_array
 from .._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
                             atleast2d_or_csr)
 from .objective_functions import _sigmoid, _unmask
