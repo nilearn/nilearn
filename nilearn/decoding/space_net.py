@@ -32,6 +32,19 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
 
 
+def _crop_mask(mask):
+    """Crops input mask to produce tighter (i.e smaller) bounding box with
+    the same support (active voxels)."""
+    idx = np.where(mask)
+    i_min = max(idx[0].min() - 1, 0)
+    i_max = idx[0].max()
+    j_min = max(idx[1].min() - 1, 0)
+    j_max = idx[1].max()
+    k_min = max(idx[2].min() - 1, 0)
+    k_max = idx[2].max()
+    return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
+
+
 def _space_net_alpha_grid(
         X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
         standardize=False, normalize=False, fit_intercept=False,
@@ -173,19 +186,6 @@ class EarlyStoppingCallback(object):
             y_pred = np.dot(self.X_test, w) + self.ymean  # the intercept!
             score = .5 * np.mean((self.y_test - y_pred) ** 2)
             return score
-
-
-def _crop_mask(mask):
-    """Crops input mask to produce tighter (i.e smaller) bounding box with
-    the same support (active voxels)."""
-    idx = np.where(mask)
-    i_min = max(idx[0].min() - 1, 0)
-    i_max = idx[0].max()
-    j_min = max(idx[1].min() - 1, 0)
-    j_max = idx[1].max()
-    k_min = max(idx[2].min() - 1, 0)
-    k_max = idx[2].max()
-    return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
