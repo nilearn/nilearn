@@ -5,7 +5,7 @@
 Considerations on the choice of an estimator
 ============================================
 
-This page gives a few simple consideration on the choice of an estimator.
+This page gives a few simple considerations on the choice of an estimator.
 It is slightly oriented towards a *decoding* application, that is the
 prediction of external variables such as behavior or clinical traits from
 brain images. For a didactic introduction to decoding with nilearn, see
@@ -20,9 +20,9 @@ Regression
 
 A regression problem is a learning task in which the variable to predict
 --that we often call ``y``-- is a continuous value, such as an age.
-Encoding models [1] typically call for regressions.
+Encoding models [1]_ typically call for regressions.
 
-.. _[1]:
+.. [1]
 
    Naselaris et al, Encoding and decoding in fMRI, NeuroImage Encoding
    and decoding in fMRI.2011 http://www.ncbi.nlm.nih.gov/pubmed/20691790
@@ -56,9 +56,9 @@ There are two noteworthy strategies:
     and during prediction, the final decision is taken by a vote across
     the different estimators.
 
-The "One vs One" strategy is more computationaly costly than the "One vs
-All" (it scales as the square of the number of classes, whereas OvA is
-linear with the number of classes).
+The "One vs One" strategy is more computationally costly than the "One
+vs All". The former scales as the square of the number of classes,
+whereas the former is linear with the number of classes.
 
 .. seealso::
 
@@ -145,12 +145,12 @@ Here we apply a few linear models to fMRI data:
    * The SVC is fairly insensitive to the choice of the regularization
      parameter
    * cross-validation (CV) takes time
-   * The ridge and ridge CV are fast, but will not work well on 
-     ill-separated classes, and, most importantly give ugly weights maps
+   * The ridge and ridge CV are fast, but will not work well on
+     ill-separated classes, and, most importantly give ugly weight maps
      (see below)
    * Parameter selection is difficult with sparse models
    * **There is no free lunch**: no estimator will work uniformely better
-     on every situation.
+     in every situation.
 
 
 .. figure:: ../auto_examples/images/plot_haxby_different_estimators_1.png
@@ -159,17 +159,17 @@ Here we apply a few linear models to fMRI data:
    :scale: 80
 
 
-Note that what is done to the data before applying the estimator is often
-more important than the choice of estimator. Typically: standardizing the
-data is important, smoothing can often be useful, and removing
+Note that what is done to the data before applying the estimator is
+often more important than the choice of estimator. Typically such
+important steps include standardizing the data, smoothing and removing
 confounding effects.
 
 ____
 
 The corresponding weight maps (below) differ widely from one estimator to
-the other, althought the prediction scores are fairly similar. In other
+the other, although the prediction scores are fairly similar. In other
 terms, a well-performing estimator in terms of prediction error gives us
-little garanties on the brain maps.
+little guarantee on the brain maps.
 
 .. figure:: ../auto_examples/images/plot_haxby_different_estimators_7.png
    :target: ../auto_examples/plot_haxby_different_estimators.html
