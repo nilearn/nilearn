@@ -38,6 +38,8 @@ plotting.plot_roi(haxby.mask_vt[0], bg_img=haxby.anat[0], title="plot_roi")
 mean_haxby_img = image.mean_img(haxby.func[0])
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
+# Plotting glass brain
+plotting.plot_glass_brain(localizer.cmaps[3], title='glass brain plots')
 
 ###############################################################################
 # demo the different display_mode

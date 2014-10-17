@@ -77,35 +77,35 @@ different heuristics to find cutting coordinates.
 Different display modes
 ========================
 
-.. |plot_ortho| image:: ../auto_examples/images/plot_demo_plotting_5.png
+.. |plot_ortho| image:: ../auto_examples/images/plot_demo_plotting_6.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_z_many| image:: ../auto_examples/images/plot_demo_plotting_6.png
+.. |plot_z_many| image:: ../auto_examples/images/plot_demo_plotting_7.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_x| image:: ../auto_examples/images/plot_demo_plotting_7.png
+.. |plot_x| image:: ../auto_examples/images/plot_demo_plotting_8.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_x_small| image:: ../auto_examples/images/plot_demo_plotting_8.png
+.. |plot_x_small| image:: ../auto_examples/images/plot_demo_plotting_9.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/images/plot_demo_plotting_9.png
+.. |plot_z_small| image:: ../auto_examples/images/plot_demo_plotting_10.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/images/plot_demo_plotting_10.png
+.. |plot_xz| image:: ../auto_examples/images/plot_demo_plotting_11.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/images/plot_demo_plotting_11.png
+.. |plot_yx| image:: ../auto_examples/images/plot_demo_plotting_12.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_yz| image:: ../auto_examples/images/plot_demo_plotting_12.png
+.. |plot_yz| image:: ../auto_examples/images/plot_demo_plotting_13.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
@@ -164,11 +164,11 @@ plot, and has methods to add overlays, contours or edge maps::
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/images/plot_demo_plotting_13.png
+.. |plot_edges| image:: ../auto_examples/images/plot_demo_plotting_14.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/images/plot_demo_plotting_14.png
+.. |plot_contours| image:: ../auto_examples/images/plot_demo_plotting_15.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
