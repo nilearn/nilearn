@@ -229,7 +229,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
                 errors.append('\n -{} ({})'.format(path, exc.strerror) )
 
     raise OSError('Nilearn tried to store the dataset in the following '
-            'directories, but:' + ''.join(errors) )
+            'directories, but:' + ''.join(errors))
 
 
 def _uncompress_file(file_, delete_archive=True):
