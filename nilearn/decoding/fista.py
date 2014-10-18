@@ -104,14 +104,11 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         compute f2_prox converged or not.
 
     callback : callable(dict) -> bool
-        Function called at the end of every energy descendent iteration of the
-        solver. If it returns True, the loop breaks.
+        Function called at the end on every iteration. If it returns True, then
+        the loop breaks.
 
     max_iter : int
         Maximum number of iterations for the solver.
-
-    pure_ista : bool, optional (default False)
-        if set, then solver defaults to a pure ISTA algorithm
 
     Returns
     -------
