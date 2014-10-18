@@ -94,7 +94,7 @@ def _space_net_alpha_grid(
         m = float(y.size)
         m_plus = float(y[y == 1].size)
         m_minus = float(y[y == -1].size)
-        b = np.zeros(y.size)
+        b = np.zeros_like(y)
         b[y == 1] = m_minus / m
         b[y == -1] = - m_plus / m
         alpha_max = np.max(np.abs(X.T.dot(b)))
@@ -366,7 +366,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'.
 
-    standardize : bool, optional (default False):
+    standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
@@ -432,7 +432,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                  alphas=None, l1_ratio=.5, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 standardize=False, normalize=False, alpha_min=1e-6, verbose=0,
+                 standardize=True, alpha_min=1e-6, verbose=0,
                  n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
                  screening_percentile=20., debias=False):
         super(SpaceNet, self).__init__()
@@ -457,7 +457,6 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.copy_data = copy_data
         self.verbose = verbose
         self.standardize = standardize
-        self.normalize = normalize
         self.n_jobs = n_jobs
         self.cv = cv
         self.screening_percentile = screening_percentile
@@ -609,6 +608,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        target_shape=self.target_shape,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
+                                       standardize=self.standardize,
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
@@ -629,11 +629,20 @@ class SpaceNet(LinearModel, RegressorMixin):
             else:
                 solver = partial(tvl1_solver, loss="mse")
 
-        # always a good idea to centralize / normalize data in regression
+        # misc (different for classifier and regressor)
+        if self.is_classif:
+            y = self._binarize_y(y)
+        if self.is_classif and self.n_classes_ > 2:
+            n_problems = self.n_classes_
+        else:
+            n_problems = 1
+            y = y.ravel()
+
+        # if regression, standardize y too
         ymean = 0.
-        if self.standardize:
+        if self.standardize and not self.is_classif:
             X, y, Xmean, ymean, Xstd = center_data(
-                X, y, copy=True, normalize=self.normalize,
+                X, y, copy=True, normalize=True,
                 fit_intercept=self.fit_intercept)
 
         # make / sanitize alpha grid
@@ -643,7 +652,7 @@ class SpaceNet(LinearModel, RegressorMixin):
             alphas = _space_net_alpha_grid(
                 X, y, l1_ratio=self.l1_ratio, eps=self.eps,
                 n_alphas=self.n_alphas, standardize=self.standardize,
-                normalize=self.normalize, alpha_min=self.alpha_min,
+                normalize=True, alpha_min=self.alpha_min,
                 fit_intercept=self.fit_intercept, logistic=self.is_classif)
         else:
             alphas = np.array(self.alphas)
@@ -657,14 +666,6 @@ class SpaceNet(LinearModel, RegressorMixin):
             cv = [(range(n_samples), [])]  # single fold
         self.n_folds_ = len(cv)
 
-        # misc (different for classifier and regressor)
-        if self.is_classif:
-            y = self._binarize_y(y)
-        if self.is_classif and self.n_classes_ > 2:
-            n_problems = self.n_classes_
-        else:
-            n_problems = 1
-            y = y.ravel()
         self.scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
 

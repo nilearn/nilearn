@@ -12,8 +12,8 @@ Author: DOHMATOB Elvis Dopgima,
 """
 
 ### Load haxby dataset ########################################################
-from nilearn import datasets
-data_files = datasets.fetch_haxby()
+from nilearn.datasets import fetch_haxby
+data_files = fetch_haxby()
 
 ### Load Target labels ########################################################
 import numpy as np
