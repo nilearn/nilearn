@@ -28,7 +28,7 @@ condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 9)
 
 _, target = np.unique(labels['labels'], return_inverse=True)
 
-# make X (design matrix) and y (dependent variate)
+# make X (design matrix) and y (response variable)
 import nibabel
 niimgs  = nibabel.load(data_files.func[0])
 X_train = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask_train],
@@ -55,6 +55,10 @@ from nilearn.image import mean_img
 from nilearn.plotting import plot_stat_map
 background_img = mean_img(data_files.func[0])
 slicer = plot_stat_map(coef_niimg, background_img, title="TV-L1 weights")
-print ("Accuracy: %g" % ((y_pred == y_test).mean() * 100.)) + "%"
+print "_" * 80
+print "Number of train samples: %i" % condition_mask_train.sum()
+print "Number of test samples: %i" % condition_mask_test.sum()
+print ("Classification accuracy: %g" % (
+        (y_pred == y_test).mean() * 100.)) + "%"
 print "_" * 80
 plt.show()
