@@ -230,25 +230,29 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     verbose = int(verbose if verbose is not None else 0)
     alphas = sorted(alphas)[::-1]
 
-    # univariate feature screening
-    if screening_percentile < 100.:
+    # Univariate feature screening. Note that if we have only as few as 1000
+    # features in the mask's support, then we should to use all of them to
+    # learn the model i.e disable this screening)
+    do_screening = screening_percentile < 100. and mask.sum() > 1000.
+    if do_screening:
         # smooth the data before screening
         sX = np.empty(list(mask.shape) + [n_samples])
         for row in xrange(n_samples):
             sX[:, :, :, row] = _unmask(X[row], mask)
         sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
-        sX = np.array([sX[:, :, :, row][mask] for row in xrange(n_samples)])
+        sX = sX[mask].T
 
         # do feature screening proper
         selector = SelectPercentile(f_classif if is_classif else f_regression,
                                     percentile=screening_percentile).fit(sX, y)
         support = selector.get_support()
 
-        # dilate mask blobs, thus obtaining a superset of the mask on which a
-        # spatial prior makes sense
+        # erode and then dilate mask, thus obtaining superset of the mask on
+        # on which a spatial prior makes sense
         new_mask = mask.copy()
         new_mask[mask] = (support > 0)
-        new_mask = ndimage.binary_dilation(mask).astype(np.bool)
+        new_mask = ndimage.binary_dilation(ndimage.binary_erosion(new_mask),
+                                           iterations=2).astype(np.bool)
         new_mask[np.logical_not(mask)] = 0
         support = new_mask[mask]
         X = X[:, support]
@@ -294,7 +298,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         test_scores.append(np.nan)
 
     # unmask univariate screening
-    if screening_percentile < 100. and support.sum() < len(support):
+    if do_screening:
         w_ = np.zeros(len(support))
         if is_classif:
             w_ = np.append(w_, best_w[-1])
