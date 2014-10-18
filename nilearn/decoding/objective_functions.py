@@ -74,7 +74,7 @@ def check_lipschitz_continuous(f, ndim, L, n_trials=10, err_msg=None):
 def spectral_norm_squared(X):
     """Computes square of the operator 2-norm (spectral norm) of X
 
-    This corresponds to the lipschitz constant of the gradient of the
+    This corresponds to the Lipschitz constant of the gradient of the
     squared-loss function:
 
         w -> .5 * ||y - Xw||^2
@@ -103,7 +103,7 @@ def logistic_loss_lipschitz_constant(X):
 
     """
     # N.B: we handle intercept!
-    X = np.hstack((X, np.ones(X.shape[0])[:, np.newaxis]))
+    X = np.ones(X.shape[0], 1)
     return spectral_norm_squared(X)
 
 
