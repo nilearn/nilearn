@@ -1,5 +1,4 @@
 from nose.tools import nottest
-from nose import SkipTest
 import numpy as np
 import scipy as sp
 from numpy.testing import assert_almost_equal
@@ -246,7 +245,7 @@ def test_tikhonov_regularization_vs_smooth_lasso():
         np.dot(X.T, X) + y.size * np.dot(G.T, G)), np.dot(X.T, y))
     smooth_lasso = SpaceNet(
         mask=mask_, alpha=1., l1_ratio=0., max_iter=400, fit_intercept=False,
-        normalize=False, screening_percentile=100.)
+        screening_percentile=100., standardize=False)
     smooth_lasso.fit(X_, y.copy())
     smooth_lasso_perf = 0.5 / y.size * extmath.norm(
         np.dot(X, smooth_lasso.coef_) - y) ** 2\

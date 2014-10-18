@@ -24,15 +24,14 @@ from ..space_net import SpaceNet
 from nose.tools import assert_equal
 
 
-def _make_data(rng=None, masked=False):
+def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     if rng is None:
         rng = check_random_state(42)
-    dim = (3, 4, 5)
     mask = np.ones(dim).astype(np.bool)
     mask[rng.rand() < .7] = 0
     w = np.zeros(dim)
-    w[2:, 3:, :2] = 1
-    n = 10
+    w[dim[0] // 2:, dim[1] // 2:, :dim[2] // 2] = 1
+    n = 5
     X = np.ones([n] + list(dim))
     X += rng.randn(*X.shape)
     y = np.dot([x[mask] for x in X], w[mask])
@@ -98,7 +97,7 @@ def test_lipschitz_constant_lass_logreg():
     assert_equal(a, b)
 
 
-def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=20, decimal=2):
+def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     ###############################################################
     # smoothlasso_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
@@ -118,21 +117,23 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=20, decimal=2):
 
     mask = nibabel.Nifti1Image(mask.astype(np.float), np.eye(4))
     X = nibabel.Nifti1Image(X.astype(np.float), np.eye(4))
-    sl = SpaceNet(
-        alpha=alpha, l1_ratio=1., mask=mask, penalty="smooth-lasso",
-        max_iter=max_iter).fit(X, y)
-    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., mask=mask, penalty="tv-l1",
-                    max_iter=max_iter).fit(X, y)
+    for standardize in [True, False]:
+        sl = SpaceNet(
+            alpha=alpha, l1_ratio=1., mask=mask, penalty="smooth-lasso",
+            max_iter=max_iter, standardize=standardize).fit(X, y)
+        tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., mask=mask, penalty="tv-l1",
+                        max_iter=max_iter, standardize=standardize).fit(X, y)
 
-    # Should be exactly the same (except for numerical errors).
-    # However because of the TV-l1 prox approx, results might be 'slightly'
-    # different.
-    np.testing.assert_array_almost_equal(a, b, decimal=decimal)
-    np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
+        # Should be exactly the same (except for numerical errors).
+        # However because of the TV-l1 prox approx, results might be 'slightly'
+        # different.
+        np.testing.assert_array_almost_equal(a, b, decimal=decimal)
+        np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_,
+                                             decimal=decimal)
 
 
-def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=10,
-                                                        decimal=3):
+def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
+                                                        decimal=2):
     ###############################################################
     # smoothlasso_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
@@ -144,19 +145,19 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=10,
     alpha = 1. / X.shape[0]
     X_, mask_ = to_niimgs(X, (2, 2, 2))
     mask = mask_.get_data().astype(np.bool).ravel()
-    max_iter = 10
 
     # results should be exactly the same for pure lasso
     a = smooth_lasso_logistic(X, y, alpha, 1., mask=mask,
                               max_iter=max_iter)[0]
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
-    sl = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, is_classif=True,
-                  max_iter=max_iter, mask=mask_, penalty="smooth-lasso",
-                  ).fit(X_, y)
-    tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., verbose=0, is_classif=True,
-                  max_iter=max_iter, mask=mask_, penalty="tv-l1",
-                  ).fit(X_, y)
+    for standardize in [True, False]:
+        sl = SpaceNet(alpha=alpha, l1_ratio=1., is_classif=True,
+                      max_iter=max_iter, mask=mask_, penalty="smooth-lasso",
+                      standardize=standardize).fit(X_, y)
+        tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., is_classif=True,
+                        max_iter=max_iter, mask=mask_, penalty="tv-l1",
+                        standardize=standardize).fit(X_, y)
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(a, b, decimal=decimal)
@@ -189,18 +190,20 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
     # when l1_ratio = 1.
     ###############################################################
 
-    X, y, _, mask = _make_data(masked=True)
-    X, mask = to_niimgs(X, (4, 5, 6))
+    dim = (3, 3, 3)
+    X, y, _, mask = _make_data(masked=True, dim=dim)
+    X, mask = to_niimgs(X, dim)
     alpha = .1
     l1_ratio = 1.
     max_iter = 20
 
-    sl = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="smooth-lasso",
-                  max_iter=max_iter, mask=mask, is_classif=False,
-                  verbose=0).fit(X, y)
-    tvl1 = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="tv-l1",
-                  max_iter=max_iter, mask=mask, is_classif=False,
-                  verbose=0).fit(X, y)
+    for standardize in [True, False]:
+        sl = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="smooth-lasso",
+                      max_iter=max_iter, mask=mask, is_classif=False,
+                      standardize=standardize, verbose=0).fit(X, y)
+        tvl1 = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="tv-l1",
+                        max_iter=max_iter, mask=mask, is_classif=False,
+                        standardize=standardize, verbose=0).fit(X, y)
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
@@ -212,12 +215,13 @@ def test_coef_shape():
     X, mask = to_niimgs(X, (2, 2, 2))
     for penalty in ["smooth-lasso", "tv-l1"]:
         cv = SpaceNet(
-            mask=mask, max_iter=3, penalty=penalty, is_classif=False).fit(X, y)
+            mask=mask, max_iter=3, penalty=penalty, is_classif=False,
+            alpha=1.).fit(X, y)
         assert_equal(cv.coef_.ndim, 1)
 
     for penalty in ["smooth-lasso", "tv-l1"]:
-        cv = SpaceNet(mask=mask,
-                      max_iter=3, penalty=penalty, is_classif=True).fit(X, y)
+        cv = SpaceNet(mask=mask, max_iter=3, penalty=penalty,
+                      is_classif=True, alpha=1.).fit(X, y)
         assert_equal(cv.coef_.ndim, 2)
 
 

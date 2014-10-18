@@ -144,7 +144,6 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         check_lipschitz_continuous(f1_grad, w_size, lipschitz_constant)
 
     # aux variables
-    gradient_buffer = np.zeros(w.shape, dtype=w.dtype)
     old_energy = total_energy(w)
     energy_delta = np.inf
     best_w = w.copy()

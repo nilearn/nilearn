@@ -229,6 +229,7 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
     X_, mask = to_niimgs(X, (2, 2, 2))
     tvl1 = SpaceNet(mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
                     verbose=0, max_iter=1000, penalty="tv-l1",
+                    standardize=False,
                     is_classif=True, screening_percentile=100.).fit(X_, y)
     sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
                                   tol=tol, C=C).fit(X, y)
@@ -270,8 +271,7 @@ def test_lasso_vs_smooth_lasso():
     # Scikit-Learn lasso
     lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
     smooth_lasso = SpaceNet(mask=mask, alpha=1, l1_ratio=1, is_classif=False,
-                            penalty="smooth-lasso",
-                            max_iter=100, normalize=False)
+                            penalty="smooth-lasso", max_iter=100)
     lasso.fit(X_, y)
     smooth_lasso.fit(X, y)
     lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
