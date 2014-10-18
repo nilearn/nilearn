@@ -257,7 +257,7 @@ def logistic(X, y, w):
         Design matrix.
 
     y : 1D array of length n_samples
-        Target / response vector.
+        Target / response vector. Each entry must be +1 or -1.
 
     w : 1D array of length n_voxels
         Unmasked, ravelized input map.
@@ -290,7 +290,7 @@ def logistic_loss_grad(X, y, w):
     return grad
 
 # Wrappers.
-# XXX div (see below) could be computed more efficienty!
+# XXX div (see below) could probably be computed more efficienty!
 gradient = lambda w: gradient_id(w, l1_ratio=0.)[:-1]  # pure nabla
 div = lambda v: div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.)
 squared_loss_grad = partial(squared_loss, compute_energy=False,
