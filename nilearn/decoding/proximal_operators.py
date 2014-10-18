@@ -1,6 +1,6 @@
-"""Implementations of multiple proximal operators for TV-1, S-LASSO, etc.
+"""Implementations of multiple proximal operators for TV-L1, S-LASSO, etc.
 
-For TV-l1, the core idea here is to modify the analysis operator in the Beck &
+For TV-L1, the core idea here is to modify the analysis operator in the Beck &
 Teboulle approach (actually Chambolle) to keep the identity and thus to
 end up with an l1.
 
