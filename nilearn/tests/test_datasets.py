@@ -69,17 +69,17 @@ def test_get_dataset_dir():
        nilearn_data as a working dir"""
     datasets._get_dataset_dir('test')
     #Verify the directory gets created
-    assert(os.path.exists('nilearn_data'))
-    shutil.rmtree('nilearn_data')
+    assert os.path.exists('nilearn_data')
     #Verify exception is raised on read-only directories
-    no_write=mkdtemp()
+    no_write = mkdtemp()
     os.chmod(no_write, 0400)
-    assert_raises(OSError, datasets._get_dataset_dir,'test',no_write)
-    #Verify exception if
-    f = mktemp()
-    out = open(f, 'w')
+    assert_raises(OSError, datasets._get_dataset_dir, 'test', no_write)
+    #Verify exception for not paths as files
+    test_file = mktemp()
+    out = open(test_file, 'w')
     out.write('abcfeg')
     out.close()
+    assert_raises(OSError, datasets._get_dataset_dir, 'test', test_file)
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_get_dataset_dir():
