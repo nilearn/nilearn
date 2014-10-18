@@ -673,16 +673,14 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
 
-        # function handle for generating OVR labels
-        _ovr_y = lambda c: y[:, c] if self.is_classif and (self.n_classes_ > 2
-                                                           ) else y
-
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter,
                              rescale_alpha=True)
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
-                solver, X, _ovr_y(c), self.mask_, alphas, self.l1_ratio,
+                solver, X, y[:, c] if self.is_classif and (
+                    self.n_classes_ > 2) else y,
+                self.mask_, alphas, self.l1_ratio,
                 train, test, solver_params, is_classif=self.is_classif, key=c,
                 debias=self.debias, ymean=ymean, verbose=self.verbose,
                 screening_percentile=self.screening_percentile
