@@ -249,17 +249,17 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
         # erode and then dilate mask, thus obtaining superset of the mask on
         # on which a spatial prior makes sense
-        new_mask = mask.copy()
-        new_mask[mask] = (support > 0)
-        new_mask = ndimage.binary_dilation(ndimage.binary_erosion(new_mask),
+        nice_mask = mask.copy()
+        nice_mask[mask] = (support > 0)
+        nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(nice_mask),
                                            iterations=2).astype(np.bool)
-        new_mask[np.logical_not(mask)] = 0
-        support = new_mask[mask]
+        nice_mask[np.logical_not(mask)] = 0
+        support = nice_mask[mask]
         X = X[:, support]
-        mask = new_mask
+        mask = nice_mask
 
     # crop the mask to have a tighter bounding box
-    tight_mask = _crop_mask(mask)
+    mask = _crop_mask(mask)
 
     # get train and test data
     X_train, y_train = X[train], y[train]
@@ -279,7 +279,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         best_score = np.inf
         for alpha in alphas:
             w, _, init = solver(
-                X_train, y_train, alpha, l1_ratio, mask=tight_mask, init=init,
+                X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                 callback=early_stopper, verbose=max(verbose - 1, 0.),
                 **solver_params)
             score = early_stopper.test_score(w)
@@ -291,7 +291,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
     best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
-                             mask=tight_mask, init=best_init,
+                             mask=mask, init=best_init,
                              verbose=max(verbose - 1, 0), **solver_params)
 
     if len(test) == 0.:
