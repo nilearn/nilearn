@@ -103,7 +103,7 @@ def logistic_loss_lipschitz_constant(X):
 
     """
     # N.B: we handle intercept!
-    X = np.ones(X.shape[0], 1)
+    X = np.hstack((X, np.ones((X.shape[0], 1))))
     return spectral_norm_squared(X)
 
 
@@ -273,7 +273,7 @@ def _unmask(w, mask):
 
     Parameters
     ----------
-    w : 1d array,
+    w : 1d ndarray,
       The image to be unmasked.
 
     mask : np.ndarray or None,
@@ -281,12 +281,12 @@ def _unmask(w, mask):
 
     Returns
     -------
-    out : ndarry of same shape as `mask`.
+    out : ndarray of same shape as `mask`.
         The unmasked version of `w`
     """
 
     out = np.zeros(mask.shape, dtype=w.dtype)
-    out[mask] = np.ravel(w)
+    out[mask] = w
 
     return out
 
