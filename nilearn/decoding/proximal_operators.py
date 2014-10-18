@@ -5,7 +5,9 @@ Teboulle approach (actually Chambolle) to keep the identity and thus to
 end up with an l1.
 
 """
-# Author: DOHMATOB Elvis Dopgima, Alexandre GRAMFORT, ...
+# Author: DOHMATOB Elvis Dopgima,
+#         Alexandre GRAMFORT,
+#         Gael VAROQUAUX
 # License: simplified BSD
 
 from math import sqrt
