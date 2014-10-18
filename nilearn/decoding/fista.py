@@ -152,11 +152,12 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     prox_info = dict(converged=True)
     stepsize = 1. / lipschitz_constant
     objective = []
+    w_old = w.copy()
 
     # FISTA loop
     for i in xrange(int(max_iter)):
         objective.append(old_energy)
-        w_old = w.copy()
+        w_old[:] = w
 
         # Invoke callback.
         if verbose:
@@ -197,8 +198,8 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         # z update
         if energy_delta < 0.:
             # M-FISTA strategy: rewind and switch temporarily to an ISTA step
-            z = w_old.copy()
-            w = w_old.copy()
+            z[:] = w_old
+            w[:] = w_old
             ista_step = True
             if verbose:
                 print 'Monotonous FISTA: Switching to ISTA'
@@ -228,8 +229,8 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         # dgap_tol house-keeping
         if energy < best_energy:
             best_energy = energy
-            best_w = w.copy()
-            best_z = z.copy()
+            best_w[:] = w
+            best_z[:] = z
             best_t = t
             best_dgap_tol = dgap_tol
             best_dgap_tol = dgap_tol
