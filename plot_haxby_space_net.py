@@ -41,7 +41,7 @@ y_test = target[condition_mask_test]
 
 ### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory="cache", is_classif=True, penalty="tv-l1",
+decoder = SpaceNet(memory="cache", is_classif=True, penalty="smooth-lasso",
                    verbose=2)
 decoder.fit(X_train, y_train)  # fit
 y_pred = decoder.predict(X_test)  # predict
