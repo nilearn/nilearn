@@ -91,11 +91,10 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
-        accept a w such that w.size = w_size
+        accept a w such that w.size = w_size.
 
     tol : float
-        Tolerance on the variation of the objective function before breaking.
-        The meaning of tol can be manipulated with the callback function
+        Tolerance on the primal energy functional.
 
     dgap_tol : float
         If None, the nonsmooth_prox argument returns a float, with the value,
