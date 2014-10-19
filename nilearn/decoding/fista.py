@@ -93,7 +93,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         accept a w such that w.size = w_size.
 
     tol : float
-        Tolerance on the (primal) objective function.
+        Tolerance on the (primal) cost function.
 
     dgap_tol : float
         If None, the nonsmooth_prox argument returns a float, with the value,
@@ -117,8 +117,8 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     solver_info : float
         Solver information, for warm starting.
 
-    objective : array of floats
-        Objective function (fval) computed on every iteration.
+    cost : array of floats
+        Cost function (fval) computed on every iteration.
 
     """
 
@@ -150,12 +150,12 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     best_dgap_tol = dgap_tol
     prox_info = dict(converged=True)
     stepsize = 1. / lipschitz_constant
-    objective = []
+    history = []
     w_old = w.copy()
 
     # FISTA loop
     for i in xrange(max_iter):
-        objective.append(old_energy)
+        history.append(old_energy)
         w_old[:] = w
 
         # invoke callback
@@ -236,4 +236,4 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     init = dict(w=best_w.copy(), z=best_z, t=best_t, dgap_tol=best_dgap_tol,
                 stepsize=stepsize)
-    return best_w, objective, init
+    return best_w, history, init
