@@ -222,7 +222,7 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
     # Test for one of the extreme cases of Smooth Lasso: That is, with
     # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's coefficients'
     # performance with the coefficients obtained from Scikit-Learn's
-    # LogisticRegression, with l1 penalty, in a 2 classes classification task
+    # LogisticRegression, with L1 penalty, in a 2 classes classification task
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
@@ -247,7 +247,7 @@ def test_log_reg_vs_smooth_lasso_multiclass(C=1., tol=1e-6):
     # Test for one of the extreme cases of Smooth Lasso: That is, with
     # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's coefficients'
     # performance with the coefficients obtained from Scikit-Learn's
-    # LogisticRegression, with l1 penalty, in a 4 classes classification task
+    # LogisticRegression, with L1 penalty, in a 4 classes classification task
     iris = load_iris()
     mask = np.ones(X.shape[1]).astype(np.bool)
     sl = SpaceNet(mask=mask, alpha=1. / C / iris.data.shape[0],

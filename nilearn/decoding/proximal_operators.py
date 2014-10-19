@@ -16,7 +16,7 @@ from .objective_functions import tv_l1_from_gradient, div_id, gradient_id
 
 
 def prox_l1(y, alpha, copy=True):
-    """proximity operator for l1 norm"""
+    """proximity operator for L1 norm"""
     shrink = np.zeros(y.shape)
     if copy:
         y = y.copy()
@@ -29,7 +29,7 @@ def prox_l1(y, alpha, copy=True):
 def _projector_on_tvl1_dual(grad, l1_ratio):
     """
     modifies IN PLACE the gradient + id to project it
-    on the l21 unit ball in the gradient direction and the l1 ball in the
+    on the l21 unit ball in the gradient direction and the L1 ball in the
     identity direction
     """
 
@@ -41,7 +41,7 @@ def _projector_on_tvl1_dual(grad, l1_ratio):
         for grad_comp in grad[:end]:
             grad_comp /= norm
 
-    # The l1 ball for the identity direction
+    # The L1 ball for the identity direction
     if l1_ratio > 0.:
         norm = np.abs(grad[-1])
         norm.clip(1., out=norm)
@@ -57,7 +57,8 @@ def dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
     by Michel et al. (2011) for a derivation of the dual gap
     """
     tv_new = tv_l1_from_gradient(gradient_id(new, l1_ratio=l1_ratio))
-    d_gap = (gap ** 2).sum() + 2 * weight * tv_new - input_img_norm + (
+    gap = gap.ravel()
+    d_gap = np.dot(gap, gap) + 2 * weight * tv_new - input_img_norm + (
         new * new).sum()
     return 0.5 * d_gap
 
@@ -70,11 +71,11 @@ def _objective_function_prox_tvl1(input_img, output_img, gradient, l1_ratio,
 
 
 def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
-               max_iter=200, check_gap_frequency=4, val_min=None,
-               val_max=None, verbose=False, fista=True, init=None,
-               return_info=False):
+              max_iter=200, check_gap_frequency=4, val_min=None,
+              val_max=None, verbose=False, fista=True, init=None,
+              return_info=False):
     """
-    Compute the TV + l1 proximal (ie total-variation +l1 denoising) on
+    Compute the TV + L1 proximal (ie total-variation +l1 denoising) on
     2-d and 3-d images
 
     Find the argmin `res` of
@@ -83,16 +84,16 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     Parameters
     ----------
     input_img : ndarray of floats (2-d or 3-d)
-        input data to be denoised. `im` can be of any numeric type,
+        Input data to be denoised. `im` can be of any numeric type,
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
 
     weight : float, optional
-        denoising weight. The greater ``weight``, the more denoising (at
+        Denoising weight. The greater ``weight``, the more denoising (at
         the expense of fidelity to ``input``)
 
     dgap_tol : float, optional
-        precision required. The distance to the exact solution is computed
+        Precision required. The distance to the exact solution is computed
         by the dual gap of the optimization problem and rescaled by the
         squared l2 norm of the image (for contrast invariance).
 
@@ -102,19 +103,19 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
         the dual gap
 
     max_iter : int, optional
-        maximal number of iterations used for the optimization.
+        Maximal number of iterations used for the optimization.
 
     val_min : None or float, optional
-        an optional lower bound constraint on the reconstructed image
+        An optional lower bound constraint on the reconstructed image
 
     val_max : None or float, optional
-        an optional upper bound constraint on the reconstructed image
+        An optional upper bound constraint on the reconstructed image
 
     verbose : bool, optional
-        if True, print the dual gap of the optimization
+        If True, print the dual gap of the optimization
 
     fista : bool, optional
-        if True, uses a FISTA loop to perform the optimization.
+        If True, uses a FISTA loop to perform the optimization.
         if False, uses an ISTA loop
 
     callback : callable
@@ -265,7 +266,7 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
 def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
                               max_iter=5000, init=None, verbose=False):
     """
-    Computation of TV-l1 prox, taking into account the intercept.
+    Computation of TV-L1 prox, taking into account the intercept.
 
     Parameters
     ----------
@@ -280,7 +281,7 @@ def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
         Initialization vector for the prox.
 
     dgap_tol : float
-        Dual-gap tolerance for TV-l1 prox operator approximation loop.
+        Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
 

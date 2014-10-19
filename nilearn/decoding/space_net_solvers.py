@@ -1,5 +1,5 @@
 """
-Regression with spatial priors like TV-l1 and Smooth LASSO.
+Regression with spatial priors like TV-L1 and Smooth LASSO.
 
 """
 # Author: DOHMATOB Elvis Dopgima,
@@ -322,11 +322,11 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
 
 def _tvl1_objective_from_gradient(gradient):
-    """Our total-variation like norm: TV + l1
+    """Computes TV-l1 objective function from gradient.
 
     Parameters
     ----------
-    gradient: array, of shape [3] + list(img_shape)
+    gradient: ndarray, shape (4, nx, ny, nz)
        precomputed "gradient + id" array
 
     """
@@ -338,7 +338,7 @@ def _tvl1_objective_from_gradient(gradient):
 
 
 def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
-    """The TV + l1 squared loss regression objective functions.
+    """The TV-L1 squared loss regression objective functions.
 
     """
 
@@ -362,7 +362,7 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
 def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
                 rescale_alpha=True, lipschitz_constant=None, init=None,
                 prox_max_iter=5000, tol=1e-4, callback=None, verbose=1):
-    """Minimizes empirical risk for TV-l1 penalized models.
+    """Minimizes empirical risk for TV-L1 penalized models.
 
     Can handle least-squares (mean square error --a.k.a mse) or logistic
     regression. The same solver works for both of these losses.
