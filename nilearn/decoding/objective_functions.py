@@ -27,12 +27,12 @@ def spectral_norm_squared(X):
 
     Parameters
     ----------
-    X : np.ndarray,
-      Input map.
+    X : ndarray, shape (n_samples, n_features)
+      Design matrix.
 
     Returns
     -------
-    lipschitz_constant : float,
+    lipschitz_constant : float
       The square of the spectral norm of X.
 
     """
@@ -64,13 +64,13 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
 
     Parameters
     ----------
-    X : 2D array of shape (n_samples, n_features)
+    X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : 1D array of length n_samples
+    y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    w : 1D array of length n_features
+    w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
     compute_energy : bool, optional (default True)
@@ -84,11 +84,13 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     energy : float
         Energy (returned if `compute_energy` is set).
 
-    gradient : 1D array
+    gradient : ndarray, shape (n_features,)
         Gradient of energy (returned if `compute_grad` is set).
 
     """
-    assert compute_energy or compute_grad
+    if not (compute_energy or compute_grad):
+        raise RuntimeError(
+            "At least one of compute_energy or compute_grad must be True.")
 
     residual = np.dot(X, w) - y
 
@@ -111,7 +113,7 @@ def tv_l1_from_gradient(spatial_grad):
 
     Parameters
     ----------
-    spatial_grad : array
+    spatial_grad : ndarray, shape (4, nx, ny, nx)
        precomputed "gradient + id" array
 
     Returns
@@ -131,7 +133,7 @@ def div_id(grad, l1_ratio=.5):
 
     Parameters
     ----------
-    grad : ndarray of shape (n_axes + 1, *img_shape).
+    grad : ndarray shape ndarray, shape (4, nx, ny, nx)
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 
@@ -142,7 +144,7 @@ def div_id(grad, l1_ratio=.5):
 
     Returns
     -------
-    res : ndarray of shape grad.shape[1:]
+    res : ndarray, shape (nx, ny, nx)
         The computed divergence + id operator.
 
     """
@@ -174,7 +176,7 @@ def gradient_id(img, l1_ratio=.5):
 
     Parameters
     ----------
-    img : ndarray
+    img : ndarray, shape (nx, ny, nz)
         N-dimensional image
 
     l1_ratio : float, optional (default .5)
@@ -185,10 +187,9 @@ def gradient_id(img, l1_ratio=.5):
 
     Returns
     -------
-    gradient : ndarray of shape (img.ndim, *img.shape).
+    gradient : ndarray, shape (4, nx, ny, nx).
         Spatial gradient of the image: the i-th component along the first
-        axis is the gradient along the i-th axis of the original
-        array img.
+        axis is the gradient along the i-th axis of the original array img.
 
     """
 
@@ -219,11 +220,12 @@ def _unmask(w, mask):
 
     Parameters
     ----------
-    w : 1d ndarray,
+    w : ndarray, shape (n_features,)
       The image to be unmasked.
 
-    mask : np.ndarray or None,
-      The mask used in the unmasking operation.
+    mask : ndarray, shape (nx, ny, nz)
+      The mask used in the unmasking operation. It's required that
+      mask.sum() == n_features.
 
     Returns
     -------
@@ -253,13 +255,13 @@ def logistic(X, y, w):
 
     Parameters
     ----------
-    X : 2D array of shape (n_samples, n_features)
+    X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : 1D array of length n_samples
+    y : ndarray, shape (n_samples,)
         Target / response vector. Each entry must be +1 or -1.
 
-    w : 1D array of length n_voxels
+    w : ndarray, shape (n_features,)
         Unmasked, ravelized input map.
 
     Returns
