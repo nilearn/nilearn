@@ -312,12 +312,12 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 class SpaceNet(LinearModel, RegressorMixin):
     """
     Cross-validated regression and classification learners with sparsity and
-    spatial penalties (like TVl1, Smooth-Lasso, etc.).
+    spatial penalties (like TV-L1, Smooth-Lasso, etc.).
 
     Parameters
     ----------
     penalty: string, optional (default 'smooth-lasso')
-        Penalty to used in the model. Can be 'smooth-lasso' or 'tvl1'
+        Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'
 
     alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.

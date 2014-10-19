@@ -156,7 +156,7 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     grad_buffer = np.zeros(mask.shape)
     for _ in xrange(n_iterations):
         grad_buffer[mask] = a
-        a = - div(gradient(grad_buffer))[mask] / np.dot(a, a))
+        a = - div(gradient(grad_buffer))[mask] / sqrt(np.dot(a, a))
 
     grad_buffer[mask] = a
     grad_constant = (- np.dot(div(gradient(grad_buffer))[mask], a)
