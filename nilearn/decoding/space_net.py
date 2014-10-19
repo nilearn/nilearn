@@ -720,7 +720,6 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         # report time elapsed
-        duration = time.time() - tic
         if self.verbose:
             duration = time.time() - tic
             print "Time Elapsed: %g seconds, %i minutes."  % (duration,
