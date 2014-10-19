@@ -110,7 +110,7 @@ def logistic_loss_lipschitz_constant(X):
 def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """Compute the MSE error, and optionally, its gradient too.
 
-    The energy is
+    The cost function is
 
         MSE = .5 * ||y - Xw||^2
 
