@@ -1,6 +1,6 @@
 """
 sklearn-compatible implementation of spatially structured learners (
-TV-l1, S-LASSO, etc.)
+TV-L1, S-LASSO, etc.)
 
 """
 # Author: DOHMATOB Elvis Dopgima,
@@ -48,7 +48,7 @@ def _space_net_alpha_grid(
         X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
         standardize=False, normalize=False, fit_intercept=False,
         logistic=False):
-    """Compute the grid of alpha values for TV-l1 and S-Lasso.
+    """Compute the grid of alpha values for TV-L1 and S-Lasso.
 
     Parameters
     ----------

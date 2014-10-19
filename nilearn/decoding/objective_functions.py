@@ -109,7 +109,7 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
 
 
 def tv_l1_from_gradient(spatial_grad):
-    """Energy contribution due to penalized gradient, in TV-l1 model.
+    """Energy contribution due to penalized gradient, in TV-L1 model.
 
     Parameters
     ----------
@@ -138,7 +138,7 @@ def div_id(grad, l1_ratio=.5):
         n_axes = len(img_shape).
 
     l1_ratio : float, optional (default .5)
-        Relative weight of l1; float between 0 and 1 inclusive.
+        Relative weight of L1; float between 0 and 1 inclusive.
         TV+L1 penalty will be (alpha not shown here):
         (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
 

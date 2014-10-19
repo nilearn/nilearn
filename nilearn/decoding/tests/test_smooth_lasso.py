@@ -222,7 +222,7 @@ def test_fista_convergence():
 
 
 def test_max_alpha_squared_loss():
-    """Tests that models with l1 regularization over the theoretical bound
+    """Tests that models with L1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
     l1_ratios = np.linspace(0.1, 1, 3)
     reg = SpaceNet(mask=mask_, max_iter=10, penalty="smooth-lasso",
