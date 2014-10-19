@@ -524,12 +524,12 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
+        X : ndarray, shape(n_samples, n_features)
             Samples.
 
         Returns
         -------
-        C : array, shape = [n_samples]
+        C : ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
 
