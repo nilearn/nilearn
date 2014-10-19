@@ -154,7 +154,7 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     Teboulle paper.
     """
     weight = float(weight)
-    input_img_norm = (input_img.ravel() * input_img.ravel()).sum()
+    input_img_norm = np.dot(input_img.ravel(), input_img.ravel())
     if not input_img.dtype.kind == 'f':
         input_img = input_img.astype(np.float)
     shape = [len(input_img.shape) + 1] + list(input_img.shape)
