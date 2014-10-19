@@ -24,7 +24,7 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(size=15, random_state=42,
     rng = np.random.RandomState(random_state)
 
     l1_ratio = 1.  # pure LASSO
-    for ndim in xrange(1, 4):
+    for ndim in xrange(3, 4):
         shape = [size] * ndim
         z = rng.randn(*shape)
         for weight in np.logspace(-10, 10, num=10):

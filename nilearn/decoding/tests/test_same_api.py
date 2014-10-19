@@ -125,7 +125,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
                         max_iter=max_iter, standardize=standardize).fit(X, y)
 
         # Should be exactly the same (except for numerical errors).
-        # However because of the TV-l1 prox approx, results might be 'slightly'
+        # However because of the TV-L1 prox approx, results might be 'slightly'
         # different.
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
         np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_,
