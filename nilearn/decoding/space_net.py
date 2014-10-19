@@ -8,8 +8,7 @@ TV-l1, S-LASSO, etc.)
 #         Gael Varoquaux,
 #         Alexandre Gramfort,
 #         Michael Eickenberg,
-#         Bertrand Thirion,
-#         and others.
+#         Bertrand Thirion
 # License: simplified BSD
 
 import numbers
@@ -20,8 +19,8 @@ from scipy import stats, ndimage
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
-from sklearn.feature_selection import (f_regression, f_classif,
-                                       SelectPercentile)
+from sklearn.feature_selection import (SelectPercentile, f_regression,
+                                       f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..input_data import NiftiMasker
@@ -722,6 +721,6 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # report time elapsed
         if self.verbose:
-            print "Time Elapsed: %g seconds."  % (time.time() - tic)
+            print "Time elapsed: %g seconds."  % (time.time() - tic)
 
         return self
