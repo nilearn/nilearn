@@ -6,7 +6,7 @@ from ..objective_functions import (squared_loss, logistic,
                                    squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
                                    spectral_norm_squared)
-from ..fista import check_lipschitz_continuous
+from ..fista import _check_lipschitz_continuous
 
 
 def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):
@@ -18,7 +18,7 @@ def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):
         n_features = X.shape[1]
 
         L = logistic_loss_lipschitz_constant(X)
-        check_lipschitz_continuous(lambda w: logistic(
+        _check_lipschitz_continuous(lambda w: logistic(
             X, y, w), n_features + 1, L)
 
 
@@ -31,7 +31,7 @@ def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
         n_features = X.shape[1]
 
         L = spectral_norm_squared(X)
-        check_lipschitz_continuous(lambda w: squared_loss_grad(
+        _check_lipschitz_continuous(lambda w: squared_loss_grad(
             X, y, w), n_features, L)
 
 
