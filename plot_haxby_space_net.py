@@ -60,6 +60,6 @@ slicer.add_contours(decoder.mask_img_)
 print "#" * 80
 print "Number of train samples : %i" % condition_mask_train.sum()
 print "Number of test samples  : %i" % condition_mask_test.sum()
-print ("Classification accuracy: %g" % (
+print ("Classification accuracy : %g" % (
         (y_pred == y_test).mean() * 100.)) + "%"
 plt.show()
