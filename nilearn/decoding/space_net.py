@@ -529,7 +529,7 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         Returns
         -------
-        C : ndarray, shape (n_samples,)
+        y_pred : ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
 
@@ -720,7 +720,10 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         # report time elapsed
+        duration = time.time() - tic
         if self.verbose:
-            print "Time elapsed: %g seconds."  % (time.time() - tic)
+            duration = time.time() - tic
+            print "Time Elapsed: %g seconds, %i minutes."  % (duration,
+                                                              duration / 60.)
 
         return self
