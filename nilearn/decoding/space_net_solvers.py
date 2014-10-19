@@ -11,6 +11,7 @@ Regression with spatial priors like TV-L1 and Smooth LASSO.
 #         and others.
 # License: simplified BSD
 
+from math import sqrt
 import numpy as np
 from .objective_functions import (spectral_norm_squared,
                                   gradient_id,
@@ -119,17 +120,17 @@ def squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
 
     """
     a = np.random.randn(X.shape[1])
-    a /= np.sqrt(np.dot(a, a))
+    a /= sqrt(np.dot(a, a))
     adjoint_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
     # Since we are putting the coefficient into the matrix, which
     # is squared in the data loss function, it must be the
     # square root of the desired weight
-    actual_grad_weight = np.sqrt(grad_weight)
+    actual_grad_weight = sqrt(grad_weight)
     for _ in range(n_iterations):
         a = smooth_lasso_adjoint_data_function(
             X, smooth_lasso_data_function(X, a, mask, actual_grad_weight),
             adjoint_mask, actual_grad_weight)
-        a /= np.sqrt(np.dot(a, a))
+        a /= sqrt(np.dot(a, a))
 
     lipschitz_constant = np.dot(smooth_lasso_adjoint_data_function(
         X, smooth_lasso_data_function(X, a, mask, actual_grad_weight),
@@ -151,11 +152,11 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     data_constant = logistic_loss_lipschitz_constant(X)
 
     a = np.random.randn(X.shape[1])
-    a /= np.sqrt(np.dot(a, a))
+    a /= sqrt(np.dot(a, a))
     grad_buffer = np.zeros(mask.shape)
     for _ in xrange(n_iterations):
         grad_buffer[mask] = a
-        a = - div(gradient(grad_buffer))[mask] / np.sqrt(np.dot(a, a))
+        a = - div(gradient(grad_buffer))[mask] / np.dot(a, a))
 
     grad_buffer[mask] = a
     grad_constant = (- np.dot(div(gradient(grad_buffer))[mask], a)
