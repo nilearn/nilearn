@@ -147,10 +147,15 @@ def div_id(grad, l1_ratio=.5):
     res : ndarray, shape (nx, ny, nx)
         The computed divergence + id operator.
 
+    Raises
+    ------
+    RuntimeError
+
     """
 
-    assert 0. <= l1_ratio <= 1., (
-        "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
+    if not (0. <= l1_ratio <= 1.):
+        raise RuntimeError(
+            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
 
     res = np.zeros(grad.shape[1:])
 
@@ -191,10 +196,15 @@ def gradient_id(img, l1_ratio=.5):
         Spatial gradient of the image: the i-th component along the first
         axis is the gradient along the i-th axis of the original array img.
 
+    Raises
+    ------
+    RuntimeError
+
     """
 
-    assert 0. <= l1_ratio <= 1., (
-        "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
+    if not (0. <= l1_ratio <= 1.):
+        raise RuntimeError(
+            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
 
     shape = [img.ndim + 1] + list(img.shape)
     gradient = np.zeros(shape, dtype=np.float)

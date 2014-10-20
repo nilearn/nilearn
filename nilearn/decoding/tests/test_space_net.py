@@ -3,7 +3,6 @@ from functools import partial
 from nose import SkipTest
 from nose.tools import assert_equal, assert_true
 import numpy as np
-from sklearn.externals.joblib import Memory
 from sklearn.datasets import load_iris
 from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
@@ -11,7 +10,7 @@ from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from nilearn.decoding.space_net import (
     EarlyStoppingCallback, _space_net_alpha_grid,
-    path_scores, SpaceNet, _crop_mask)
+    path_scores, SpaceNet, _crop_mask, _univariate_feature_screening)
 from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
@@ -26,41 +25,6 @@ from .simulate_smooth_lasso_data import create_smooth_simulation_data
 X_, y, w, mask = create_smooth_simulation_data(
     snr=1., n_samples=10, size=size, n_points=5, random_state=42)
 X, mask = to_niimgs(X_, [size] * 3)
-
-
-@SkipTest
-def test_same_lasso_classifier_cv():
-    # XXX test fails with early stopping in CV
-    l1_ratio = 1.
-    memory = Memory("cache")
-    iris = load_iris()
-    X = iris.data
-    y = iris.target
-    y = 2 * (y == 2) - 1
-    tol = 1e-3
-    X, mask = to_niimgs(X, (2, 2, 2))
-
-    # classification
-    n_alphas = 5
-    tvl1classifiercv = SpaceNet(
-        mask=mask, n_alphas=n_alphas, memory=memory, cv=2,
-        l1_ratio=l1_ratio, tol=tol, penalty="tv-l1",
-        classif=True).fit(X, y)
-    slclassifiercv = SpaceNet(mask=mask, n_alphas=n_alphas, memory=memory,
-                              is_classif=True, penalty="smooth-lasso",
-                              cv=2, l1_ratio=l1_ratio, tol=tol).fit(X, y)
-    assert_equal(tvl1classifiercv.alpha_, slclassifiercv.alpha_)
-
-    # regression
-    tvl1regressorcv = SpaceNet(
-        mask=mask, n_alphas=n_alphas, memory=memory, cv=2,
-        l1_ratio=l1_ratio, tol=tol, is_classif=False,
-        penalty="tv-l1").fit(X, y)
-    slregressorcv = SpaceNet(
-        mask=mask, n_alphas=n_alphas, memory=memory, is_classif=True,
-        cv=2, l1_ratio=l1_ratio, tol=tol, penalty="smooth-lasso"
-        ).fit(X, y)
-    assert_equal(tvl1regressorcv.alpha_, slregressorcv.alpha_)
 
 
 def test_space_net_alpha_grid(n_samples=4, n_features=3):
@@ -303,3 +267,23 @@ def test_crop_mask():
     tight_mask = _crop_mask(mask)
     assert_equal(mask.sum(), tight_mask.sum())
     assert_true(np.prod(tight_mask.shape) <= np.prod(box.shape))
+
+
+def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
+    rng = np.random.RandomState(42)
+    mask = rng.rand(*dim) > 150. / np.prod(dim)
+    assert_true(mask.sum() >= 100.)
+    mask[dim[0] // 2, dim[1] // 3:, -dim[2] // 2:] = 1  # put spatial structure
+    n_features = mask.sum()
+    X = rng.randn(n_samples, n_features)
+    w = rng.randn(n_features)
+    w[rng.rand(n_features) > .8] = 0.
+    y = X.dot(w)
+    for is_classif in [True, False]:
+        X_, mask_, support_ = _univariate_feature_screening(
+            X, y, mask, is_classif, 20.)
+        n_features_ = support_.sum()
+        assert_equal(X_.shape[1], n_features_)
+        assert_equal(mask_.sum(), n_features_)
+        assert_true(n_features_ <= n_features)
+        assert_true(n_features_ > 0)
