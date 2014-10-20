@@ -72,6 +72,11 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
            verbose=2):
     """
 
+    Generic fista solver
+
+    Minimizes the a sum `f + g` of two convex functions f (smooth)
+    and g (proximable nonsmooth).
+
     Parameters
     ----------
     f1_grad : callable(w) -> np.array
