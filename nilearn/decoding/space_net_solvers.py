@@ -210,7 +210,7 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     return data_constant + grad_weight * grad_constant
 
 
-def intercepted_prox_l1(x, tau):
+def prox_l1_with_intercept(x, tau):
     """The same as prox_l1, but just for the n-1 components"""
     x[:-1] = prox_l1(x[:-1], tau)
     return x
@@ -354,7 +354,7 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
     # prox of nonsmooth path of energy (account for the intercept)
     f2 = lambda w: np.sum(np.abs(w[:-1])) * l1_weight
-    f2_prox = lambda w, l, *args, **kwargs: (intercepted_prox_l1(
+    f2_prox = lambda w, l, *args, **kwargs: (prox_l1_with_intercept(
         w, l * l1_weight), dict(converged=True))
 
     # total energy (smooth + nonsmooth)
@@ -410,7 +410,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
                 prox_max_iter=5000, tol=1e-4, callback=None, verbose=1):
     """Minimizes empirical risk for TV-L1 penalized models.
 
-    Can handle least-squares (mean square error --a.k.a mse) or logistic
+    Can handle least squares (mean square error --a.k.a mse) or logistic
     regression. The same solver works for both of these losses.
 
     This function invokes the mfista backend (from fista.py) to solver the
