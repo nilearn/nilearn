@@ -52,7 +52,7 @@ def _space_net_alpha_grid(
 
     Parameters
     ----------
-    X : 2d array, shape (n_samples, n_features)
+    X : ndarray, shape (n_samples, n_features)
         Training data (design matrix).
 
     y : ndarray, shape (n_samples,)
