@@ -5,14 +5,13 @@ for computing image gradient, loss functins, etc.).
 """
 
 import random
-from nose.tools import nottest, assert_equal
+from nose.tools import nottest, assert_equal, assert_true
 import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import (
-    squared_loss, squared_loss_grad,
-    logistic_loss_lipschitz_constant,
+    squared_loss, squared_loss_grad, logistic_loss_lipschitz_constant,
     spectral_norm_squared, _unmask)
 from nilearn.decoding.space_net_solvers import (squared_loss_and_spatial_grad,
                                  logistic_derivative_lipschitz_constant,
@@ -49,7 +48,7 @@ def to_niimgs(X, dim, rng=None):
         rng = random.Random(42)
     p = np.prod(dim)
     assert_equal(len(dim), 3)
-    assert X.shape[-1] <= p
+    assert_true(X.shape[-1] <= p)
     mask = np.zeros(p).astype(np.bool)
     mask[rng.sample(np.arange(p), X.shape[-1])] = 1
     mask = mask.reshape(dim)

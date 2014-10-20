@@ -51,7 +51,7 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
 
     Raises
     ------
-    AssertionError
+    RuntimeError
 
     """
 
@@ -63,7 +63,8 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
                 x, y) if err_msg is None else err_msg
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
             b = lipschitz_constant * linalg.norm(x - y, 2)
-            assert a <= b, err_msg + ("(a = %g >= %g)" % (a, b))
+            if a > b:
+                raise RuntimeError(err_msg + ("(a = %g >= %g)" % (a, b)))
 
 
 def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,

@@ -44,6 +44,71 @@ def _crop_mask(mask):
     return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
 
 
+def _univariate_feature_screening(
+        X, y, mask, is_classif, screening_percentile):
+    """
+    Selects the most import features, via a univariate test.
+
+    Parameters
+    ----------
+    X : ndarray, shape (n_samples, n_features)
+        Design matrix.
+
+    y : ndarray, shape (n_samples,)
+        Response Vector.
+
+    mask: ndarray or booleans, shape (nx, ny, nz)
+        Mask definining brain Rois.
+
+    is_classif: bool
+        Flag telling whether the learning task is classification or regression.
+
+    screening_percentile : float in the closed interval [0., 100.]
+        Only the `screening_percentile * 100" percent most import voxels will
+        be retained.
+
+    Returns
+    -------
+    X_: ndarray, shape (n_samples, n_features_)
+        Reduced design matrix with only columns corresponding to the voxels
+        retained after screening.
+
+    mask_ : ndarray of booleans, shape (nx, ny, nz)
+        Mask with support reduced to only contain voxels retained after
+        screening.
+
+    support : ndarray of ints, shape (n_features_,)
+        Support of the screened mask, as a subset of the support of the
+        original mask.
+
+    """
+
+    n_samples, _ = X.shape
+
+    # smooth the data before screening
+    sX = np.empty(list(mask.shape) + [n_samples])
+    for row in xrange(n_samples):
+        sX[:, :, :, row] = _unmask(X[row], mask)
+    sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
+    sX = sX[mask].T
+
+    # do feature screening proper
+    selector = SelectPercentile(f_classif if is_classif else f_regression,
+                                percentile=screening_percentile).fit(sX, y)
+    support = selector.get_support()
+
+    # erode and then dilate mask, thus obtaining superset of the mask on
+    # on which a spatial prior makes sense
+    nice_mask = mask.copy()
+    nice_mask[mask] = (support > 0)
+    nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(nice_mask),
+                                       iterations=2).astype(np.bool)
+    nice_mask[np.logical_not(mask)] = 0
+    support = nice_mask[mask]
+    X = X[:, support]
+    return X, nice_mask, support
+
+
 def _space_net_alpha_grid(
         X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
         standardize=False, normalize=False, fit_intercept=False,
@@ -112,7 +177,10 @@ def _space_net_alpha_grid(
     if not alpha_min:
         alpha_min = alpha_max * eps
     else:
-        assert 0 <= alpha_min < alpha_max
+        if not (0 <= alpha_min < alpha_max):
+            raise RuntimeError(
+                ("Expecting 0 <= alpha_min < alpha_max. Got alpha_min=%g "
+                 "and alpha_max=%g" % (alpha_min, alpha_max)))
     return np.logspace(np.log10(alpha_min), np.log10(alpha_max),
                       num=n_alphas)[::-1]
 
@@ -220,8 +288,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     """
 
-    n_samples, _ = X.shape
-
     # make local copy of mask
     mask = mask.copy()
 
@@ -229,33 +295,13 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     verbose = int(verbose if verbose is not None else 0)
     alphas = sorted(alphas)[::-1]
 
-    # Univariate feature screening. Note that if we have only as few as 1000
+    # Univariate feature screening. Note that if we have only as few as 50
     # features in the mask's support, then we should to use all of them to
     # learn the model i.e disable this screening)
-    do_screening = screening_percentile < 100. and mask.sum() > 1000.
+    do_screening = screening_percentile < 100. and mask.sum() > 100.
     if do_screening:
-        # smooth the data before screening
-        sX = np.empty(list(mask.shape) + [n_samples])
-        for row in xrange(n_samples):
-            sX[:, :, :, row] = _unmask(X[row], mask)
-        sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
-        sX = sX[mask].T
-
-        # do feature screening proper
-        selector = SelectPercentile(f_classif if is_classif else f_regression,
-                                    percentile=screening_percentile).fit(sX, y)
-        support = selector.get_support()
-
-        # erode and then dilate mask, thus obtaining superset of the mask on
-        # on which a spatial prior makes sense
-        nice_mask = mask.copy()
-        nice_mask[mask] = (support > 0)
-        nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(nice_mask),
-                                           iterations=2).astype(np.bool)
-        nice_mask[np.logical_not(mask)] = 0
-        support = nice_mask[mask]
-        X = X[:, support]
-        mask = nice_mask
+        X, mask, support = _univariate_feature_screening(
+            X, y, mask, is_classif, screening_percentile)
 
     # crop the mask to have a tighter bounding box
     mask = _crop_mask(mask)
