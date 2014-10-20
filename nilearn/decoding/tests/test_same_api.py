@@ -140,7 +140,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
 
     iris = load_iris()
     X, y = iris.data, iris.target
-    y = (y > 0)
+    y = y > 0.
     alpha = 1. / X.shape[0]
     X_, mask_ = to_niimgs(X, (2, 2, 2))
     mask = mask_.get_data().astype(np.bool).ravel()
