@@ -57,9 +57,9 @@ background_img = mean_img(data_files.func[0])
 slicer = plot_stat_map(coef_niimg, background_img, title="TV-L1 weights",
                        cut_coords=(-16, -38, 35))
 slicer.add_contours(decoder.mask_img_)
+accuracy = (y_pred == y_test).mean() * 100.
 print "#" * 80
 print "Number of train samples : %i" % condition_mask_train.sum()
 print "Number of test samples  : %i" % condition_mask_test.sum()
-print ("Classification accuracy : %g" % (
-        (y_pred == y_test).mean() * 100.)) + "%"
+print "Classification accuracy : %g%%" % accuracy
 plt.show()
