@@ -183,8 +183,7 @@ class EarlyStoppingCallback(object):
                     scaling = np.dot(y_pred, self.y_test) / scaling
                     w *= scaling
             y_pred = np.dot(self.X_test, w) + self.ymean  # the intercept!
-            score = .5 * np.mean((self.y_test - y_pred) ** 2)
-            return score
+            return .5 * np.mean((self.y_test - y_pred) ** 2)
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,

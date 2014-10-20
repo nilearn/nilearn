@@ -5,7 +5,7 @@ from ..space_net_solvers import (tvl1_objective, _tvl1_objective_from_gradient,
                                  tvl1_solver)
 
 
-def test_tv_l1_from_gradient(size=5, n_samples=10, random_state=42):
+def test_tvl1_from_gradient(size=5, n_samples=10, random_state=42):
     rng = np.random.RandomState(random_state)
     shape = [size] * 3
     n_voxels = np.prod(shape)
