@@ -83,7 +83,7 @@ def test_grad_div_adjoint_arbitrary_ndim_():
 
 
 @raises(ValueError)
-def test_baseestimator_invalide_l1_ratio():
+def test_baseestimator_invalid_l1_ratio():
     SpaceNet(l1_ratio=2.)
 
 
