@@ -1,12 +1,12 @@
 from nose.tools import assert_equal, assert_true
 import numpy as np
-from ..fista import mfista
-from ..proximal_operators import prox_l1
-from ..objective_functions import (squared_loss, logistic,
+from nilearn.decoding.fista import mfista
+from nilearn.decoding.proximal_operators import prox_l1
+from nilearn.decoding.objective_functions import (squared_loss, logistic,
                                    squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
                                    spectral_norm_squared)
-from ..fista import _check_lipschitz_continuous
+from nilearn.decoding.fista import _check_lipschitz_continuous
 
 
 def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):

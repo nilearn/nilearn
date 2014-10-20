@@ -9,9 +9,10 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from ..space_net import (EarlyStoppingCallback, _space_net_alpha_grid,
-                         path_scores, SpaceNet, _crop_mask)
-from ..space_net_solvers import (smooth_lasso_logistic,
+from nilearn.decoding.space_net import (
+    EarlyStoppingCallback, _space_net_alpha_grid,
+    path_scores, SpaceNet, _crop_mask)
+from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
 rng = check_random_state(42)

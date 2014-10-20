@@ -1,7 +1,7 @@
 import itertools
 from nose.tools import assert_true
 import numpy as np
-from ..proximal_operators import prox_l1, prox_tvl1
+from nilearn.decoding.proximal_operators import prox_l1, prox_tvl1
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):
@@ -19,7 +19,7 @@ def test_prox_l1_nonexpansiveness(n_features=10):
 
 
 def test_prox_tvl1_approximates_prox_l1_for_lasso(size=15, random_state=42,
-                                                   decimal=4, dgap_tol=1e-7):
+                                                  decimal=4, dgap_tol=1e-7):
 
     rng = np.random.RandomState(random_state)
 

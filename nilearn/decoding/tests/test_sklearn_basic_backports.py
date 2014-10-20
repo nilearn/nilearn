@@ -1,5 +1,5 @@
 import numpy as np
-from ..._utils.fixes import LabelBinarizer
+from nilearn._utils.fixes import LabelBinarizer
 
 
 def test_labelbinarizer_backport():

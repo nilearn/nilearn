@@ -1,5 +1,4 @@
-import numpy as np
-from ..space_net import SpaceNet
+from nilearn.decoding.space_net import SpaceNet
 from nose.tools import assert_true
 import traceback
 
