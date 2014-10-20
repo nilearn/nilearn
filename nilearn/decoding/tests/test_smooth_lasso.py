@@ -258,7 +258,7 @@ def test_tikhonov_regularization_vs_smooth_lasso():
     assert_almost_equal(smooth_lasso_perf, optimal_model_perf, decimal=4)
 
 
-def test_mfista_solver_just_smooth():
+def test_mfista_solver_smooth_lasso_no_l1_term():
     w = np.zeros(2)
     X = np.array([[1, 0], [0, 4]])
     y = np.array([-10, 20])
