@@ -101,8 +101,7 @@ def _univariate_feature_screening(
     # on which a spatial prior makes sense
     nice_mask = mask.copy()
     nice_mask[mask] = (support > 0)
-    nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(nice_mask),
-                                       iterations=2).astype(np.bool)
+    nice_mask = ndimage.binary_fill_holes(nice_mask).astype(np.bool)
     nice_mask[np.logical_not(mask)] = 0
     support = nice_mask[mask]
     X = X[:, support]
