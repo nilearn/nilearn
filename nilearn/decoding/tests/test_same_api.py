@@ -10,17 +10,18 @@ import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
-from ..objective_functions import (squared_loss, squared_loss_grad,
-                                   logistic_loss_lipschitz_constant,
-                                   spectral_norm_squared, _unmask)
-from ..space_net_solvers import (squared_loss_and_spatial_grad,
+from nilearn.decoding.objective_functions import (
+    squared_loss, squared_loss_grad,
+    logistic_loss_lipschitz_constant,
+    spectral_norm_squared, _unmask)
+from nilearn.decoding.space_net_solvers import (squared_loss_and_spatial_grad,
                                  logistic_derivative_lipschitz_constant,
                                  squared_loss_derivative_lipschitz_constant,
                                  smooth_lasso_squared_loss,
                                  smooth_lasso_logistic,
                                  squared_loss_and_spatial_grad_derivative,
                                  tvl1_solver)
-from ..space_net import SpaceNet
+from nilearn.decoding.space_net import SpaceNet
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):

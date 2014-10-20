@@ -1,8 +1,8 @@
 from nose.tools import assert_equal, assert_raises
 import numpy as np
-from ..objective_functions import gradient_id, squared_loss
-from ..space_net_solvers import (tvl1_objective, _tvl1_objective_from_gradient,
-                                 tvl1_solver)
+from nilearn.decoding.objective_functions import gradient_id, squared_loss
+from nilearn.decoding.space_net_solvers import (
+    tvl1_objective, _tvl1_objective_from_gradient, tvl1_solver)
 
 
 def test_tvl1_from_gradient(size=5, n_samples=10, random_state=42):
