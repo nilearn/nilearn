@@ -154,7 +154,9 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     Teboulle paper.
     """
     weight = float(weight)
-    input_img_norm = np.dot(input_img.ravel(), input_img.ravel())
+    input_img_flat = input_img.view()
+    input_img_flat.shape = input_img.size
+    input_img_norm = np.dot(input_img_flat, input_img_flat)
     if not input_img.dtype.kind == 'f':
         input_img = input_img.astype(np.float)
     shape = [len(input_img.shape) + 1] + list(input_img.shape)
@@ -198,7 +200,7 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
             grad_aux, l1_ratio
             )
 
-        # Carefull, in the next few lines, grad_tmp and grad_aux are a
+        # Careful, in the next few lines, grad_tmp and grad_aux are a
         # view on the same array, as _projector_on_tvl1_dual returns a view
         # on the input array
         t_new = 0.5 * (1. + sqrt(1. + 4. * t * t))
