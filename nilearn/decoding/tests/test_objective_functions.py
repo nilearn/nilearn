@@ -5,9 +5,10 @@ Test module for functions related cost functions (including penalties).
 
 import numpy as np
 from scipy.optimize import check_grad
-from ..objective_functions import (gradient_id, logistic, div_id,
-                                   logistic_loss_grad, _unmask)
-from ..space_net import SpaceNet
+from nilearn.decoding.objective_functions import (
+    gradient_id, logistic, div_id,
+    logistic_loss_grad, _unmask)
+from nilearn.decoding.space_net import SpaceNet
 from nose.tools import raises
 
 

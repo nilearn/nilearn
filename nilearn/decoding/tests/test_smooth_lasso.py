@@ -4,8 +4,8 @@ import scipy as sp
 from numpy.testing import assert_almost_equal
 from sklearn.utils import extmath
 from sklearn.utils import check_random_state
-from ..objective_functions import gradient, div
-from ..space_net_solvers import (
+from nilearn.decoding.objective_functions import gradient, div
+from nilearn.decoding.space_net_solvers import (
     smooth_lasso_data_function,
     smooth_lasso_adjoint_data_function,
     squared_loss_and_spatial_grad,
@@ -15,7 +15,7 @@ from ..space_net_solvers import (
     squared_loss_derivative_lipschitz_constant,
     logistic_derivative_lipschitz_constant,
     mfista)
-from ..space_net import SpaceNet
+from nilearn.decoding.space_net import SpaceNet
 
 # Data used in almost all tests
 import nibabel
