@@ -160,9 +160,9 @@ Here we apply a few linear models to fMRI data:
 
 
 Note that what is done to the data before applying the estimator is
-often more important than the choice of estimator. Typically such
-important steps include standardizing the data, smoothing and removing
-confounding effects.
+often more important than the choice of estimator. Typically,
+standardizing the data is important, smoothing can often be useful,
+and confounding effects, such as session effect, must be removed.
 
 ____
 
