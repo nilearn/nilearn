@@ -357,8 +357,12 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
 class SpaceNet(LinearModel, RegressorMixin):
     """
-    Cross-validated regression and classification learners with sparsity and
-    spatial penalties (like TV-L1, Smooth-Lasso, etc.).
+    Regression and classification learners with sparsity and spatial priors.
+
+    `SpaceNet` implements Smooth-LASSO (aka Graph-Net) and TV-L1 priors (aka
+    penalties). Thus, the penalty is a sum an L1 term and a spatial term. The
+    aim of such a hybrid prior is to obtain weights maps which are structured
+    and sparse.
 
     Parameters
     ----------
@@ -382,8 +386,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         `eps` parameter.
 
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and TV (resp. SL) terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO.
+        Constant that mixes L1 and TV (resp. S-LASSO) terms in penalization.
+        l1_ratio == 1 corresponds to pure LASSO. The larget the value of this
+        parameter, the sparser the estimated weights map.
 
     mask: filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
