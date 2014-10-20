@@ -5,7 +5,7 @@ for computing image gradient, loss functins, etc.).
 """
 
 import random
-from nose.tools import nottest
+from nose.tools import nottest, assert_equal
 import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
@@ -21,7 +21,6 @@ from ..space_net_solvers import (squared_loss_and_spatial_grad,
                                  squared_loss_and_spatial_grad_derivative,
                                  tvl1_solver)
 from ..space_net import SpaceNet
-from nose.tools import assert_equal
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
@@ -163,25 +162,6 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     np.testing.assert_array_almost_equal(a, b, decimal=decimal)
     np.testing.assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0],
                                          decimal=decimal)
-
-
-def test_logreg_with_mask_issue_10():
-    rng = check_random_state(42)
-    shape = (3, 4, 5)
-    n_samples = 10
-    mask = np.zeros(shape)
-    mask[:2, 3:, 3:4] = 1
-    X = rng.randn(n_samples, mask.sum())
-    X, mask = to_niimgs(X, shape)
-    y = np.sign(rng.randn(n_samples))
-    alpha = 1.
-    l1_ratio = .5
-
-    for penalty in ["smooth-lasso", "tv-l1"]:
-        for is_classif in [True, False]:
-            # ensure that our fix didn't break anythx else
-            SpaceNet(penalty=penalty, is_classif=is_classif, alpha=alpha,
-                     l1_ratio=l1_ratio, mask=mask).fit(X, y)
 
 
 def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):

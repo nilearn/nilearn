@@ -31,11 +31,22 @@ def squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
 
     Parameters
     ----------
-    X : design matrix
-    y : sampled data
-    w : model candidate
-    mask : mask for w
-    g2_weight : weight of the gradient operator
+    X : ndarray, shape (n_samples, n_features)
+        Design matrix.
+
+    y : ndarray, shape (n_samples,)
+        Target / response vector.
+
+    w : ndarray shape (n_features,)
+        Unmasked, ravelized weights map.
+
+    grad_weight: float
+        l1_ratio * alpha
+
+    Returns
+    -------
+    float
+
     """
     data_section = np.dot(X, w) - y
     grad_buffer = np.zeros(mask.shape)
@@ -52,11 +63,21 @@ def squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
 
     Parameters
     ----------
-    X : design matrix
-    y : sampled data
-    w : model candidate
-    mask : mask for w
-    grad_weight : weight of the gradient operator
+    X : ndarray, shape (n_samples, n_features)
+        Design matrix.
+
+    y : ndarray, shape (n_samples,)
+        Target / response vector.
+
+    w : ndarray shape (n_features,)
+        Unmasked, ravelized weights map.
+
+    grad_weight: float
+        l1_ratio * alpha
+
+    Returns
+    -------
+    ndarray, shape (n_features,)
     """
     data_section = np.dot(X, w) - y
     image_buffer = np.zeros(mask.shape)
@@ -72,10 +93,22 @@ def smooth_lasso_data_function(X, w, mask, grad_weight):
 
     Parameters
     ----------
-    X : design matrix
-    w : data vector
-    mask : mask matrix. It has the "shape" of w
-    grad_weight : weight of the gradient operator
+    X : ndarray, shape (n_samples, n_features)
+        Design matrix.
+
+    y : ndarray, shape (n_samples,)
+        Target / response vector.
+
+    w : ndarray shape (n_features,)
+        Unmasked, ravelized weights map.
+
+    grad_weight: float
+        l1_ratio * alpha
+
+    Returns
+    -------
+    float
+
     """
     data_buffer = np.zeros(mask.shape)
     data_buffer[mask] = w
@@ -95,11 +128,22 @@ def smooth_lasso_adjoint_data_function(X, w, adjoint_mask, grad_weight):
 
     Parameters
     ----------
-    X : design matrix
-    w : vector to evaluate to. It Has a n+{2|3}p shape
-    adjoint_mask : mask of the data, with gradient shape, for example
-        adjoint_mask.shape = (2, 512, 512)
-    grad_weight : weight of the gradient operator
+    X : ndarray, shape (n_samples, n_features)
+        Design matrix.
+
+    y : ndarray, shape (n_samples,)
+        Target / response vector.
+
+    w : ndarray shape (n_features,)
+        Unmasked, ravelized weights map.
+
+    grad_weight: float
+        l1_ratio * alpha
+
+    Returns
+    -------
+    float
+
     """
     n_samples, _ = X.shape
     out = X.T.dot(w[:n_samples])
@@ -116,12 +160,12 @@ def squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
     of the smooth lasso regression problem (squared_loss + grad_weight*grad)
     via power method
 
-    XXX Do we really want to be using power method here?
-
     """
-    a = np.random.randn(X.shape[1])
+    rng = np.random.RandomState(42)
+    a = rng.randn(X.shape[1])
     a /= sqrt(np.dot(a, a))
     adjoint_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
+
     # Since we are putting the coefficient into the matrix, which
     # is squared in the data loss function, it must be the
     # square root of the desired weight
@@ -151,7 +195,8 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     # data_constant = sp.linalg.norm(X, 2) ** 2
     data_constant = logistic_loss_lipschitz_constant(X)
 
-    a = np.random.randn(X.shape[1])
+    rng = np.random.RandomState(42)
+    a = rng.randn(X.shape[1])
     a /= sqrt(np.dot(a, a))
     grad_buffer = np.zeros(mask.shape)
     for _ in xrange(n_iterations):
@@ -204,9 +249,8 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
 
     Returns
     -------
-    w : np.array of size w_size
-       The solution vector (Where `w_size` is the size of the support of the
-       mask.)
+    w : ndarray, shape (n_features,)
+        Solution vector.
 
     solver_info : float
         Solver information, for warm start.
@@ -267,15 +311,16 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
     Returns
     -------
-    w : np.array of size w_size
+    w : ndarray of shape (n_features,)
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
-    solver_info : float
-        Solver information, for warm start.
+    solver_info : dict
+        Solver information for warm starting. See fista.py.mfista(...)
+        function for detailed documentation.
 
     objective : array of floats
-        Objective function (fval) computed on every iteration.
+        Cost function (fval) computed on every iteration.
 
     """
 
@@ -373,10 +418,10 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
 
     Parameters
     ----------
-    X : 2D array of shape (n_samples, n_features)
+    X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : 1D array of length n_samples
+    y : ndarray, shape (n_samples,)
         Target / response vector.
 
     alpha : float
@@ -387,7 +432,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
         l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
         Defaults to 0.5.
 
-    mask : multidimensional array of booleans, optional (default None)
+    mask : ndarray, shape (nx, ny, nz)
         The support of this mask defines the ROIs being considered in
         the problem.
 
@@ -416,7 +461,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
 
     Returns
     -------
-    w : np.array of size w_size
+    w : ndarray, shape (n_features,)
        The solution vector (Where `w_size` is the size of the support of the
        mask.)
 
