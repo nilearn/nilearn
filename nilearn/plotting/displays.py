@@ -55,7 +55,7 @@ class BaseAxes(object):
         self.coord = coord
         self._object_bounds = list()
 
-    def tranform_2d(self, data, affine):
+    def transform_2d(self, data, affine):
         raise NotImplementedError("'transform_2d' needs to be implemented "
                                   "in derived classes'")
 
