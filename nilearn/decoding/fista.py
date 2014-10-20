@@ -182,7 +182,6 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         for _ in range(10):
             w, prox_info = f2_prox(z - stepsize * gradient_buffer, stepsize,
                                    dgap_factor * dgap_tol, init=w)
-            w = w.ravel()
             energy = total_energy(w)
 
             if ista_step and prox_info['converged'] and old_energy <= energy:
