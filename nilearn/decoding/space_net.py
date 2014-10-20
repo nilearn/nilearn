@@ -60,9 +60,10 @@ def _space_net_alpha_grid(
 
     l1_ratio : float
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
-        For ``l1_ratio = 0`` the penalty is an L2 penalty. ``For
-        l1_ratio = 1`` it is an L1 penalty.  For ``0 < l1_ratio <
-        1``, the penalty is a combination of L1 and L2.
+        For ``l1_ratio = 0`` the penalty is purely a spatial prior (
+        (S-LASSO, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
+        For ``0 < l1_ratio < 1``, the penalty is a combination of L1
+        and a spatial prior
 
     eps : float, optional
         Length of the path. ``eps=1e-3`` means that
@@ -399,7 +400,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         will then be used as a cv generator.
 
     debias: bool, optional (default False)
-        If set, then the estimated weigghts maps will be debiased.
+        If set, then the estimated weights maps will be debiased.
 
     Attributes
     ----------
