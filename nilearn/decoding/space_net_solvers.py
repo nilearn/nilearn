@@ -26,7 +26,7 @@ from .fista import mfista
 
 def squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     """
-    Computes the differentiable loss function (squared_loss + g2_weight
+    Computes the differentiable loss function (squared_loss + grad_weight
     * gradient) for Smooth-Lasso regularization
 
     Parameters
@@ -410,7 +410,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
                 prox_max_iter=5000, tol=1e-4, callback=None, verbose=1):
     """Minimizes empirical risk for TV-L1 penalized models.
 
-    Can handle least squares (mean square error --a.k.a mse) or logistic
+    Can handle least squares (mean squared error --a.k.a mse) or logistic
     regression. The same solver works for both of these losses.
 
     This function invokes the mfista backend (from fista.py) to solver the
@@ -516,7 +516,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     total_energy = lambda w: tvl1_objective(
         X, y, w, alpha, l1_ratio, mask, loss=loss)
 
-    # lispschitz constant of f1_grad
+    # Lispschitz constant of f1_grad
     if lipschitz_constant is None:
         if loss == "mse":
             lipschitz_constant = 1.05 * spectral_norm_squared(X)

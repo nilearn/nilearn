@@ -59,7 +59,7 @@ def center_data(X, y, fit_intercept, normalize=False, copy=True,
     return X, y, X_mean, y_mean, X_std
 
 
-# Catter for the fact that in 0.10 the LabelBinarizer did not have a
+# Cater for the fact that in 0.10 the LabelBinarizer did not have a
 # neg_label
 class _LabelBinarizer(SklLabelBinarizer):
 
