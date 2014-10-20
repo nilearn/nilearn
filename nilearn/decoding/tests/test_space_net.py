@@ -272,7 +272,7 @@ def test_crop_mask():
 
 def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
     rng = np.random.RandomState(42)
-    mask = rng.rand(*dim) > 150. / np.prod(dim)
+    mask = rng.rand(*dim) > 100. / np.prod(dim)
     assert_true(mask.sum() >= 100.)
     mask[dim[0] // 2, dim[1] // 3:, -dim[2] // 2:] = 1  # put spatial structure
     n_features = mask.sum()
