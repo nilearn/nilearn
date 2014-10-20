@@ -6,7 +6,7 @@
 The nilearn building blocks
 ============================
 
-In this section of the nilearn documentation, we discribe the building
+In this section of the nilearn documentation, we describe the building
 blocks that can be assembled to create a machine-learning data analysis
 pipeline. This section is slightly more advanced and abstract than the
 previous section, on specific :ref:`data_analysis`. It provides knowledge

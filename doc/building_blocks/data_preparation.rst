@@ -74,19 +74,6 @@ automatically, and it has done a good job. But, on some datasets, the
 default algorithm performs poorly. This is why it is very important to
 **always look at how your data look like**.
 
-Mask Visualization
-...................
-
-Before exploring the subject, we define a helper function to display
-masks. This function will display a background (we can use the mean of
-the input images) and a mask as a red layer over this background.
-
-
-.. literalinclude:: ../../plot_mask_computation.py
-    :start-after: # Simple visualization helper
-    :end-before: ###############################################################################
-
-
 Computing the mask
 ...................
 
@@ -101,7 +88,7 @@ scratch. The Haxby dataset will be used since it provides a mask that we
 can use as a reference.
 
 .. figure:: ../auto_examples/images/plot_mask_computation_2.png
-    :target: auto_examples/plot_mask_computation.html
+    :target: ../auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
 
@@ -115,7 +102,7 @@ a look at it.
 ____
 
 .. figure:: ../auto_examples/images/plot_mask_computation_3.png
-    :target: auto_examples/plot_mask_computation.html
+    :target: ../auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
 
@@ -182,18 +169,18 @@ Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
 resampled to display overlays.
 
-Automatic compution of offset and bounding box can be performed by
+Automatic computation of offset and bounding box can be performed by
 specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
 computes automatically the translation part of the affine.
 
 .. image:: ../auto_examples/images/plot_affine_transformation_2.png
-    :target: auto_examples/plot_affine_transformation.html
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 .. image:: ../auto_examples/images/plot_affine_transformation_4.png
-    :target: auto_examples/plot_affine_transformation.html
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 .. image:: ../auto_examples/images/plot_affine_transformation_3.png
-    :target: auto_examples/plot_affine_transformation.html
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 
 
@@ -250,8 +237,7 @@ All previous filters operate on images, before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :ref:`plot_haxby_simple.py
-   <auto_examples/plot_haxby_simple>`. Try to enable detrending
+   the parameters in :ref:`example_plot_haxby_simple.py`. Try to enable detrending
    and run the script: does it have a big impact on the result?
 
 
@@ -272,7 +258,7 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Look at the SVC's discriminating weights
-    :end-before: # We use a masked array so that the voxels at '-1' are displayed
+    :end-before: ### Create the figure
 
 
 .. _region:
@@ -314,10 +300,9 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
    The full example in this section can be found here:
    :doc:`plot_adhd_covariance.py <../auto_examples/plot_adhd_covariance>`
 
-Usage of :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` is very close,
-and very close to the usage of :class:`NiftiMasker`. Only options specific to
-:class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` are described
-in this section.
+Usage of :class:`NiftiMapsMasker` is very close to the usage of
+:class:`NiftiMasker`. Only options specific to
+:class:`NiftiMapsMasker` are described in this section.
 
 Nilearn provides several downloaders to get a brain parcellation. Load
 the `MSDL one

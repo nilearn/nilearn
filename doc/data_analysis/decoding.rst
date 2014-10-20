@@ -73,7 +73,7 @@ Loading the data into Python
 
 Launch ipython::
 
-  $ ipython -pylab
+  $ ipython --matplotlib
 
 First, load the data using nilearn's data downloading function,
 :func:`nilearn.datasets.fetch_haxby_simple`:
@@ -368,7 +368,7 @@ We can visualize the weights of the decoder:
 
 .. seealso::
 
-   * :ref:`visualizing`
+   * :ref:`plotting`
 
 
 Decoding without a mask: Anova-SVM
@@ -418,7 +418,7 @@ To visualize the results, we need to:
 
 .. seealso::
 
-   * :ref:`visualizing`
+   * :ref:`plotting`
 
 
 .. topic:: **Final script**
