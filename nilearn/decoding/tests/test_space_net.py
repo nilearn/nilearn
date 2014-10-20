@@ -137,7 +137,8 @@ def test_estimators_are_special_cv_objects():
     X, mask = to_niimgs(X, (2, 2, 2))
     for penalty, is_classif in itertools.product(['smooth-lasso', 'tv-l1'],
                                                  [True, False]):
-        cv = SpaceNet(mask=mask, penalty=penalty, alpha=alpha)
+        cv = SpaceNet(mask=mask, penalty=penalty, alpha=alpha,
+                      is_classif=is_classif)
         cv.fit(X, y)
         np.testing.assert_array_equal([alpha], cv.alphas_)
 

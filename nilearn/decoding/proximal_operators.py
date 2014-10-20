@@ -63,8 +63,8 @@ def dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
     return 0.5 * d_gap
 
 
-def _objective_function_prox_tvl1(input_img, output_img, gradient, l1_ratio,
-                                  weight):
+def _objective_function_prox_tvl1(
+        input_img, output_img, gradient, l1_ratio, weight):
     diff = (input_img - output_img).ravel()
     return (.5 * (diff * diff).sum()
             + weight * tv_l1_from_gradient(gradient))
