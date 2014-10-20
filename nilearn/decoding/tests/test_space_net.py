@@ -287,4 +287,3 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
         assert_equal(X_.shape[1], n_features_)
         assert_equal(mask_.sum(), n_features_)
         assert_true(n_features_ <= n_features)
-        assert_true(n_features_ > 0)
