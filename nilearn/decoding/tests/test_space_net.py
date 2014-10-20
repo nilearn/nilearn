@@ -100,7 +100,7 @@ def test_space_net_alpha_grid_same_as_sk():
         raise SkipTest
 
 
-def test_earlystoppingcallbackobject(n_samples=10, n_features=30):
+def test_early_stopping_callback_object(n_samples=10, n_features=30):
     # This test evolves w so that every line of th EarlyStoppingCallback
     # code is executed a some point. This a kind of code fuzzing.
     X_test = rng.randn(n_samples, n_features)
