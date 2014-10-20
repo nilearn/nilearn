@@ -242,7 +242,7 @@ Functions for data preparation steps
 
 .. currentmodule:: nilearn.input_data
 
-The :class:`NiftiMasker` automatically does some important data preparion
+The :class:`NiftiMasker` automatically does some important data preparation
 steps. These steps are also available as simple functions if you want to
 set up your own data preparation procedure:
 
@@ -299,7 +299,7 @@ use file names as input parameters.
 Selecting features
 ------------------
 
-Functional MRI data are high dimensional comparend to the number of samples
+Functional MRI data are high dimensional compared to the number of samples
 (usually 50000 voxels for 1000 samples). In this setting, machine learning
 algorithm can perform poorly. However, a simple statistical test can help
 reducing the number of voxels.

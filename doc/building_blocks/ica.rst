@@ -11,7 +11,7 @@ ICA on resting-state data
    example that shows the simplest way to apply an unsupervised method
    for spatial analysis of fMRI.
    
-   For a performant extraction of resting-state networks, multi-subject
+   For a high-performance extraction of resting-state networks, multi-subject
    models and proper data preparation is necessary. Please refer to
    :ref:`extracting_rsn`.
 
