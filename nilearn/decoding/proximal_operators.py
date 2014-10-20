@@ -64,7 +64,7 @@ def dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
 
 
 def _objective_function_prox_tvl1(
-        input_img, output_img, gradient, l1_ratio, weight):
+        input_img, output_img, gradient, weight):
     diff = (input_img - output_img).ravel()
     return (.5 * (diff * diff).sum()
             + weight * tv_l1_from_gradient(gradient))
@@ -247,7 +247,7 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                         i, diff, _objective_function_prox_tvl1(
                                    input_img, -negated_output, gradient_id(
                                        negated_output, l1_ratio=l1_ratio),
-                                   l1_ratio, weight))
+                            weight))
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output
