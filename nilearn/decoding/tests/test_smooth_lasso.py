@@ -1,4 +1,4 @@
-from nose.tools import nottest
+from nose.tools import nottest, assert_true
 import numpy as np
 import scipy as sp
 from numpy.testing import assert_almost_equal
@@ -174,7 +174,8 @@ def test_squared_loss_derivative_lipschitz_constant():
             - squared_loss_and_spatial_grad_derivative(X, y, x_2, mask,
                                                        grad_weight))
         point_difference = extmath.norm(x_1 - x_2)
-        assert gradient_difference <= lipschitz_constant * point_difference
+        assert_true(
+            gradient_difference <= lipschitz_constant * point_difference)
 
 
 def test_logistic_derivative_lipschitz_constant():
@@ -192,7 +193,8 @@ def test_logistic_derivative_lipschitz_constant():
             - logistic_data_loss_and_spatial_grad_derivative(
                 X, y, x_2, mask, grad_weight))
         point_difference = extmath.norm(x_1 - x_2)
-        assert gradient_difference <= lipschitz_constant * point_difference
+        assert_true(
+            gradient_difference <= lipschitz_constant * point_difference)
 
 
 @nottest
@@ -217,8 +219,8 @@ def test_fista_convergence():
     # implementation, this is awful, but simple) the initial point
     # is a zero vector
     for i in xrange(len(objs)):
-        assert objs[i] - optimum <= 2 * l_c * np.dot(model, model)\
-            / (i + 1) ** 2
+        assert_true(objs[i] - optimum <= 2 * l_c * np.dot(model, model)\
+                    / (i + 1) ** 2)
 
 
 def test_max_alpha_squared_loss():
@@ -231,7 +233,7 @@ def test_max_alpha_squared_loss():
         reg.l1_ratio = l1_ratio
         reg.alpha = np.max(np.dot(X.T, y)) / (l1_ratio * y.size) * 1.1
         reg.fit(X_, y)
-        assert_almost_equal(reg.coef_, 0)
+        assert_almost_equal(reg.coef_, 0.)
 
 
 def test_tikhonov_regularization_vs_smooth_lasso():
