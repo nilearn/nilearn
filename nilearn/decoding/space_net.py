@@ -753,8 +753,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
 
-        # correct screening_percentile to correspond to volume of user-supplied
-        # mask
+        # correct screening_percentile according to the volume of the data mask
         mask_volume = _get_mask_volume(self.mask_img_)
         if mask_volume > MNI152_BRAIN_VOLUME:
             warnings.Warn(
@@ -892,8 +891,8 @@ class SpaceNetClassifier(SpaceNet):
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime to correspond to the volume of the user-supplied mask
-        (which is typically smaller).
+        at runtime by premultiplying it with the ratio of the volume of the
+        mask of the data and volume of a standard brain.
 
     standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
