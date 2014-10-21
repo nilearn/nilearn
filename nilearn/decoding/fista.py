@@ -131,7 +131,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     A motivation for the choice of FISTA as a novel solver for the TV-L1
     penalized problems was emerged in the paper: Elvis Dohmatob,
     Alexandre Gramfort, Bertrand Thirion, Gael Varoquaux,
-    "Benchmarking solvers for TV-l1 least-squares and logistic regression
+    "Benchmarking solvers for TV-L1 least-squares and logistic regression
     in brain imaging". Pattern Recoginition in Neuroimaging (PRNI),
     Jun 2014, Tubingen, Germany. IEEE
 
