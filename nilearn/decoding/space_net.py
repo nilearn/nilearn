@@ -193,7 +193,7 @@ class EarlyStoppingCallback(object):
     """
 
     def __init__(self, X_test, y_test, is_classif, debias=False, ymean=0.,
-                 verbose=False):
+                 verbose=0):
         self.X_test = X_test
         self.y_test = y_test
         self.is_classif = is_classif
@@ -366,7 +366,7 @@ class SpaceNet(LinearModel, RegressorMixin):
     Parameters
     ----------
     penalty: string, optional (default 'smooth-lasso')
-        Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'
+        Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
     alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
@@ -385,8 +385,8 @@ class SpaceNet(LinearModel, RegressorMixin):
         `eps` parameter.
 
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and TV (resp. S-LASSO) terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larget the value of this
+        Constant that mixes L1 and spatial prior terms in penalization.
+        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map.
 
     mask: filename, niimg, NiftiMasker instance, optional default None)
