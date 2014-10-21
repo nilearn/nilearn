@@ -361,7 +361,7 @@ class SpaceNet(LinearModel, RegressorMixin):
     `SpaceNet` implements Smooth-LASSO (aka Graph-Net) and TV-L1 priors (aka
     penalties). Thus, the penalty is a sum an L1 term and a spatial term. The
     aim of such a hybrid prior is to obtain weights maps which are structured
-    and sparse.
+    (due to the spatial prior) and sparse (enforced by L1 norm)
 
     Parameters
     ----------
