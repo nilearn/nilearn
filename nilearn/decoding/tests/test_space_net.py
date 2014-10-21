@@ -141,10 +141,10 @@ def test_alpha_attrs():
     X, y = iris.data, iris.target
     alpha = 1.
     X, mask = to_niimgs(X, (2, 2, 2))
-    for penalty, is_classif in itertools.product(['smooth-lasso', 'tv-l1'],
-                                                 [True, False]):
+    for penalty, is_classif, verbose in itertools.product(
+        ['smooth-lasso', 'tv-l1'], [True, False], [True, False]):
         cv = SpaceNet(mask=mask, penalty=penalty, alpha=alpha,
-                      is_classif=is_classif)
+                      is_classif=is_classif, verbose=verbose)
         cv.fit(X, y)
         np.testing.assert_array_equal([alpha], cv.alphas_)
 
