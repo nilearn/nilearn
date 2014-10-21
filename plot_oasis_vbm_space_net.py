@@ -16,8 +16,9 @@ age = dataset_files.ext_vars['age'].astype(float)
 
 
 ### Fit and predict ###########################################################
-from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory="cache", screening_percentile=20., verbose=1)
+from nilearn.decoding import SpaceNetRegressor
+decoder = SpaceNetRegressor(memory="cache", screening_percentile=20.,
+                            verbose=2)
 decoder.fit(dataset_files.gray_matter_maps, age)  # fit
 coef_img = decoder.coef_img_
 age_pred = decoder.predict(dataset_files.gray_matter_maps).ravel()  # predict

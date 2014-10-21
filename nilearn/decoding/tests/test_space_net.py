@@ -14,7 +14,7 @@ from sklearn.linear_model import LogisticRegression
 from nilearn.decoding.space_net import (
     EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, SpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier)
+    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
 from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
@@ -309,6 +309,16 @@ def test_space_net_classifier_subclass():
     for penalty, alpha, l1_ratio, verbose in itertools.product(
             ["smooth-lasso", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
         cvobj = SpaceNetClassifier(
+            mask="dummy", penalty=penalty, alpha=alpha, l1_ratio=l1_ratio,
+            verbose=verbose)
+        assert_equal(cvobj.alpha, alpha)
+        assert_equal(cvobj.l1_ratio, l1_ratio)
+
+
+def test_space_net_regressor_subclass():
+    for penalty, alpha, l1_ratio, verbose in itertools.product(
+            ["smooth-lasso", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
+        cvobj = SpaceNetRegressor(
             mask="dummy", penalty=penalty, alpha=alpha, l1_ratio=l1_ratio,
             verbose=verbose)
         assert_equal(cvobj.alpha, alpha)
