@@ -14,7 +14,7 @@ from sklearn.linear_model import LogisticRegression
 from nilearn.decoding.space_net import (
     EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, SpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume)
+    _get_mask_volume, SpaceNetClassifier)
 from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
@@ -136,7 +136,7 @@ def test_squared_loss_path_scores():
     assert_equal(X.shape[1], len(best_w))
 
 
-def test_estimators_are_special_cv_objects():
+def test_alpha_attrs():
     iris = load_iris()
     X, y = iris.data, iris.target
     alpha = 1.
@@ -296,9 +296,20 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
 
 
 def test_get_mask_volume():
+    # Test that hard-coded standard mask volume can be corrected computed
     if os.path.isfile(mni152_brain_mask):
         assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
                     mni152_brain_mask)))
     else:
         warnings.warn("Couldn't find %s (for testing)" % (
                 mni152_brain_mask))
+
+
+def test_space_net_classifier_subclass():
+    for penalty, alpha, l1_ratio, verbose in itertools.product(
+            ["smooth-lasso", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
+        cvobj = SpaceNetClassifier(
+            mask="dummy", penalty=penalty, alpha=alpha, l1_ratio=l1_ratio,
+            verbose=verbose)
+        assert_equal(cvobj.alpha, alpha)
+        assert_equal(cvobj.l1_ratio, l1_ratio)
