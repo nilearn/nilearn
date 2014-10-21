@@ -7,7 +7,7 @@ study on a face vs house discrimination task in a mask of the ventral
 stream.
 
 Author: DOHMATOB Elvis Dopgima,
-        Gael VAROQUAUX
+        VAROQUAUX Gael
 
 """
 

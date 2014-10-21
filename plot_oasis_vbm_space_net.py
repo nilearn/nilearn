@@ -3,8 +3,8 @@ Voxel-Based Morphometry on Oasis dataset with Space-Net prior
 =============================================================
 
 """
-# Authors: Elvis DOHMATOB,
-#          Virgile FRITSCH
+# Authors: DOHMATOB Elvis
+#          FRITSCH Virgile
 
 from nilearn import datasets
 
