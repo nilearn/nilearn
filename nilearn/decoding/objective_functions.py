@@ -4,12 +4,10 @@ tv.py, smooth_lasso.py, etc.
 
 """
 # Author: DOHMATOB Elvis Dopgima,
-#         Gaspar Pizarro,
-#         Fabian Pedragosa,
-#         Gael Varoquaux,
-#         Alexandre Gramfort,
-#         Bertrand Thirion,
-#         and others.
+#         PIZARRO Gaspar,
+#         VAROQUAUX Gael,
+#         GRAMFORT Alexandre,
+#         PEDREGOSA Fabian
 # License: simplified BSD
 
 from functools import partial
