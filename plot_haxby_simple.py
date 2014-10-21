@@ -3,7 +3,7 @@ Simple example of decoding: the Haxby data
 ==============================================
 
 Here is a simple example of decoding, reproducing the Haxby 2001
-study on a face vs house discrimination task in a mask of the ventral
+study on a face vs cat discrimination task in a mask of the ventral
 stream.
 """
 
@@ -22,7 +22,7 @@ labels = np.recfromcsv(data.session_target[0], delimiter=" ")
 # target = labels['labels']
 _, target = np.unique(labels['labels'], return_inverse=True)
 
-### Keep only data corresponding to faces or cat ##############################
+### Keep only data corresponding to faces or cats #############################
 condition_mask = np.logical_or(labels['labels'] == 'face',
                                labels['labels'] == 'cat')
 target = target[condition_mask]
@@ -38,7 +38,7 @@ nifti_masker = NiftiMasker(mask_img=data.mask_vt[0], standardize=True)
 # for machine learning with scikit-learn
 fmri_masked = nifti_masker.fit_transform(data.func[0])
 
-# Restrict the classification to the face vs house discrimination
+# Restrict the classification to the face vs cat discrimination
 fmri_masked = fmri_masked[condition_mask]
 
 ### Prediction ################################################################

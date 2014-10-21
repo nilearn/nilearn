@@ -99,13 +99,13 @@ estimator from the scikit-learn:
 
 .. literalinclude:: ../../plot_connect_comparison.py
    :start-after: # Fit one graph lasso per subject
-   :end-before:     pl.subplot(n_displayed, 4, 4 * n + 3)
+   :end-before:     plt.subplot(n_displayed, 4, 4 * n + 3)
 
 After calling `fit`, the estimated precision matrix can be plotted
 using:
 
 .. literalinclude:: ../../plot_connect_comparison.py
-   :start-after:     pl.subplot(n_displayed, 4, 4 * n + 3)
+   :start-after:     plt.subplot(n_displayed, 4, 4 * n + 3)
    :end-before:     if n == 0:
 
 where `plot_matrix` is a convenience function to avoid repeating the

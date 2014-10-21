@@ -23,19 +23,6 @@ import nibabel
 from nilearn import datasets
 
 
-
-###############################################################################
-# Simple visualization helper
-
-def display_mask(background, mask, title):
-    plt.axis('off')
-    plt.imshow(np.rot90(background), interpolation='nearest', cmap=plt.cm.gray)
-    ma = np.ma.masked_equal(mask, False)
-    plt.imshow(np.rot90(ma), interpolation='nearest',
-              cmap=plt.cm.autumn, alpha=0.5)
-    plt.title(title)
-
-
 ###############################################################################
 # From already masked data
 from nilearn.input_data import NiftiMasker

@@ -34,16 +34,6 @@ on data loading <loading_data>`):
 
 .. literalinclude:: ../../plot_canica_resting_state.py
     :start-after: ### Load ADHD rest dataset ####################################################
-    :end-before: ### Compute a mean epi ########################################################
-
-
-Computing a mean EPI image
----------------------------
-
-To visualize the results, a mean EPI image is useful:
-
-.. literalinclude:: ../../plot_canica_resting_state.py
-    :start-after: ### Compute a mean epi ########################################################
     :end-before: ### Apply CanICA ##############################################################
 
 
@@ -53,7 +43,7 @@ Applying CanICA
 :class:`CanICA` is a ready-to-use object that can be applied to
 multi-subject Nifti data, for instance presented as filenames, and will
 perform a multi-subject ICA decomposition following the CanICA model.
-As with every object in nilearn, we give it's parameters at construction,
+As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data.
 
 .. literalinclude:: ../../plot_canica_resting_state.py
@@ -66,8 +56,7 @@ object.
 Visualizing the results
 ========================
 
-We can visualize the components as in the previous examples. As before,
-we use masked arrays (`np.ma`) to create transparency in the overlays.
+We can visualize the components as in the previous examples.
 
 .. literalinclude:: ../../plot_canica_resting_state.py
     :start-after: ### Visualize the results #####################################################

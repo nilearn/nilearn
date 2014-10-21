@@ -11,7 +11,7 @@ ICA on resting-state data
    example that shows the simplest way to apply an unsupervised method
    for spatial analysis of fMRI.
    
-   For a performant extraction of resting-state networks, multi-subject
+   For a high-performance extraction of resting-state networks, multi-subject
    models and proper data preparation is necessary. Please refer to
    :ref:`extracting_rsn`.
 
@@ -56,8 +56,7 @@ Visualizing the results
 ========================
 
 Visualization follows similarly as in other examples (for details, see
-:ref:`visualizing`). We use masked arrays (`np.ma`) to create
-transparency in the overlays.
+:ref:`plotting`).
 
 .. literalinclude:: ../../plot_ica_resting_state.py
     :start-after: ### Visualize the results #####################################################
