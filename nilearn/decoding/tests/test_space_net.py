@@ -1,19 +1,25 @@
+import os
+import warnings
 import itertools
 from functools import partial
 from nose import SkipTest
 from nose.tools import assert_equal, assert_true
 import numpy as np
+import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from nilearn.decoding.space_net import (
-    EarlyStoppingCallback, _space_net_alpha_grid,
-    path_scores, SpaceNet, _crop_mask, _univariate_feature_screening)
+    EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
+    path_scores, SpaceNet, _crop_mask, _univariate_feature_screening,
+    _get_mask_volume)
 from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
 
+mni152_brain_mask = (
+    "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
 rng = check_random_state(42)
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
@@ -287,3 +293,12 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
         assert_equal(X_.shape[1], n_features_)
         assert_equal(mask_.sum(), n_features_)
         assert_true(n_features_ <= n_features)
+
+
+def test_get_mask_volume():
+    if os.path.isfile(mni152_brain_mask):
+        assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
+                    mni152_brain_mask)))
+    else:
+        warnings.warn("Couldn't find %s (for testing)" % (
+                mni152_brain_mask))
