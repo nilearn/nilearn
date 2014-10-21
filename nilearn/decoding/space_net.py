@@ -830,7 +830,7 @@ class SpaceNetClassifier(SpaceNet):
     """
     Classification learners with sparsity and spatial priors.
 
-    `SpaceNetClassifer` implements Smooth-LASSO (aka Graph-Net) and TV-L1
+    `SpaceNetClassifier` implements Smooth-LASSO (aka Graph-Net) and TV-L1
     priors (aka penalties) for classification problems. Thus, the penalty
     is a sum an L1 term and a spatial term. The aim of such a hybrid prior
     is to obtain weights maps which are structured (due to the spatial
@@ -977,7 +977,7 @@ class SpaceNetRegressor(SpaceNet):
     """
     Regression learners with sparsity and spatial priors.
 
-    `SpaceNetClassifer` implements Smooth-LASSO (aka Graph-Net) and TV-L1
+    `SpaceNetClassifier` implements Smooth-LASSO (aka Graph-Net) and TV-L1
     priors (aka penalties) for regression problems. Thus, the penalty
     is a sum an L1 term and a spatial term. The aim of such a hybrid prior
     is to obtain weights maps which are structured (due to the spatial
