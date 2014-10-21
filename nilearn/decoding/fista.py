@@ -5,10 +5,10 @@ which the prox of the nonsmooth term cannot be computed closed-form
 
 """
 # Author: DOHMATOB Elvis Dopgima,
-#         Gael Varoquaux,
-#         Gaspar Pizarro,
-#         Alexandre Gramfort,
-#         Bertrand Thirion
+#         PIZARRO Gaspar,
+#         VAROQUAUX Gael,
+#         GRAMFORT Alexandre,
+#         THIRION Bertrand
 # License: simplified BSD
 
 from math import sqrt
