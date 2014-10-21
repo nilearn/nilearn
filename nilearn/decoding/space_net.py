@@ -755,8 +755,10 @@ class SpaceNet(LinearModel, RegressorMixin):
         mask_volume = _get_mask_volume(self.mask_img_)
         if mask_volume > MNI152_BRAIN_VOLUME:
             warnings.Warn(
-                ("Volume mask (= %gmm^3)is bigger than volume of standard"
-                 " MNI152 brain (= %g mm^3)"))
+                ("Volume mask (= %gmm^3 = %gcm^3)is bigger than volume of"
+                 "standard MNI152 brain (= %g mm^3 = %gcm^3)") % (
+                    mask_volume, mask_volume / 1000., MNI152_BRAIN_VOLUME,
+                    MNI152_BRAIN_VOLUME / 1000.))
         self.screening_percentile_ = self.screening_percentile * (
             mask_volume / MNI152_BRAIN_VOLUME)
         if self.verbose:
