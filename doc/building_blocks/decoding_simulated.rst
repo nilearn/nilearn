@@ -47,7 +47,7 @@ a linear model with a random design matrix **X**:
 * **e** is random normal noise.
 
 We provide a black-box function to create the data in the 
-:ref:`example script <example_tutorial_plot_simulated_data.py>`:
+:ref:`example script <example_plot_simulated_data.py>`:
 
 .. literalinclude:: ../../plot_simulated_data.py
     :start-after: # Create data
@@ -64,7 +64,7 @@ as well as the feature maps that they recover. Namely, we will use
   <http://scikit-learn.org/stable/modules/svm.html>`_) 
 
 * An `elastic-net
-  <http://scikit-learn.org/stable/modules/linear_model.html>`_
+  <http://scikit-learn.org/stable/modules/linear_model.html#elastic-net>`_
 
 * A *Bayesian* ridge estimator, i.e. a ridge estimator that sets its
   parameter according to a metaprior

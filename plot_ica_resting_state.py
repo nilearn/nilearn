@@ -45,20 +45,16 @@ components_masked[components_masked < .8] = 0
 # Now invert the masking operation, going back to a full 3D
 # representation
 component_img = masker.inverse_transform(components_masked)
-components = component_img.get_data()
-
-# Using a masked array is important to have transparency in the figures
-components = np.ma.masked_equal(components, 0, copy=False)
 
 ### Visualize the results #####################################################
 # Show some interesting components
 
-# Use the mean as a background
 import nibabel
 import pylab as plt
 from nilearn import image
 from nilearn.plotting import plot_stat_map
 
+# Use the mean as a background
 mean_img = image.mean_img(dataset.func[0])
 
 plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:,:,:,5], 

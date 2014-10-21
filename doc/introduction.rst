@@ -107,7 +107,7 @@ Python tool stack is rich. Installing the different packages needed one
 after is time-comsuming and error prone. error prone.
 
 :Windows and MacOSX:
-  We suggest that you install Anaconda_. [1]
+  We suggest that you install Anaconda_. [1]_
 
 :Linux:
   While Anaconda_ is available for Linux, most recent linux
@@ -120,7 +120,7 @@ after is time-comsuming and error prone. error prone.
     - ipython
     - nibabel (sometimes called `python-nibabel`)
 
-.. _EPD: http://www.enthought.com/products/epd.php
+.. _Enthought Canopy: https://store.enthought.com/
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda/
 
@@ -128,9 +128,11 @@ after is time-comsuming and error prone. error prone.
 
 .. [1]
 
-  EPD_,  `PythonXY <http://code.google.com/p/pythonxy/>`_ are other
-  options, do make sure to install the full, non-free, EPD and not
-  EPD-free.
+  `Enthought Canopy`_, `PythonXY
+  <http://code.google.com/p/pythonxy/>`_ are other options. Enthought
+  Canopy Express, i.e. the free version, should cover all the needed
+  packages as far as the standard python scientific stack is
+  concerned.
 
 Nibabel: reading neuroimaging files
 ....................................
@@ -170,7 +172,7 @@ git.
 
     $ git clone https://github.com/nilearn/nilearn.git
 
-As time goes, you can update you copy of nilearn by doing "git pull" in
+As time goes, you can update your copy of nilearn by doing "git pull" in
 this directory.
 
 If you really don't want to use git, you download the latest development
@@ -184,7 +186,7 @@ Setting up
 In the ``nilearn`` directory created by the previous steps, run (as a
 shell command, once again)::
 
-    $ python setup.py install --user    
+    $ python setup.py install --user
 
 To test if you have done everything right, open IPython and try the
 following, in the Python prompt::
@@ -202,24 +204,31 @@ using Python for science, see the `scipy lecture notes
 <http://scipy-lectures.github.io/>`_.
 
 
-We will be using `IPython <http://ipython.org>`_, in pylab mode, which
-provides an interactive scientific environment. Start it with::
+We will be using `IPython <http://ipython.org>`_, which provides an
+interactive scientific environment. Start it with::
 
-    $ ipython --pylab
+    $ ipython --matplotlib
 
-(depending on your ipython version, you may need to use the ``-pylab``
-flag instead).
+which will open an interactive prompt::
 
-It's interactive::
+    IPython ?.?.? -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
 
-    Welcome to pylab, a matplotlib-based Python environment
-    For more information, type 'help(pylab)'.
-
-    In [1]: 1 + 2*3
+    In [1]: 1 + 2 * 3
     Out[1]: 7
 
-.. topic:: **`>>>` Prompt**
-   
+.. note::
+
+   The ``--matplotlib`` flag, which configures matplotlib for
+   interactive use inside IPython, is available for IPython versions
+   from 1.0 onwards. If you are using versions older than this,
+   e.g. 0.13, you can use the ``--pylab`` flag instead.
+
+.. topic:: `>>>` **Prompt**
+
    Below we'll be using `>>>` to indicate input lines. If you wish to copy
    these input lines directly into *IPython*, click on the `>>>` located
    at the top right of the code block
@@ -376,7 +385,7 @@ Finding help
 
     * The documentation of scikit-learn explains each method with tips on
       practical use and examples: 
-      `http://scikit-learn.org/ <http://scikit-learn.org/>`_
+      `http://scikit-learn.org/ <http://scikit-learn.org/>`_.
       While not specific to neuroimaging, it is often a recommended read.
       Be careful to consult the documentation relative to the version of
       scikit-learn that you are using.
