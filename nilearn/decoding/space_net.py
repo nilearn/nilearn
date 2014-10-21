@@ -392,6 +392,9 @@ class SpaceNet(LinearModel, RegressorMixin):
     penalty: string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
+    is_classif: bool, optional (default False)
+        Flag telling whether the learning task is classification or regression.
+
     alphas: list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
@@ -821,3 +824,150 @@ class SpaceNet(LinearModel, RegressorMixin):
                                                               duration / 60.)
 
         return self
+
+
+class SpaceNetClassifier(SpaceNet):
+    """
+    Classification learners with sparsity and spatial priors.
+
+    `SpaceNetClassifer` implements Smooth-LASSO (aka Graph-Net) and TV-L1
+    priors (aka penalties) for classification problems. Thus, the penalty
+    is a sum an L1 term and a spatial term. The aim of such a hybrid prior
+    is to obtain weights maps which are structured (due to the spatial
+    prior) and sparse (enforced by L1 norm)
+
+    Parameters
+    ----------
+    penalty: string, optional (default 'smooth-lasso')
+        Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
+
+    alphas: list of floats, optional (default None)
+        Choices for the constant that scales the overall regularization term.
+        This parameter is mutually exclusive with the `n_alphas` parameter.
+
+    n_alphas : int, optional (default 10).
+        Generate this number of alphas per regularization path.
+        This parameter is mutually exclusive with the `alphas` parameter.
+
+    eps : float, optional
+        Length of the path. ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``
+
+    alpha_min : float, optional (default 1e-6)
+        Minimum value of alpha to consider. This is mutually exclusive with the
+        `eps` parameter.
+
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+        Constant that mixes L1 and spatial prior terms in penalization.
+        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        parameter, the sparser the estimated weights map.
+
+    mask: filename, niimg, NiftiMasker instance, optional default None)
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is it will be computed
+        automatically by a MultiNiftiMasker with default parameters.
+
+    target_affine: 3x3 or 4x4 matrix, optional (default None)
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of integers, optional (default None)
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    low_pass: False or float, optional, (default None)
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: False or float, optional (default None)
+        This parameter is passed to signal. Clean. Please see the related
+        documentation for details
+
+    t_r: float, optional (default None)
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 20)
+        Percentile value for ANOVA univariate feature selection. A value of
+        100 means 'keep all features'. This percentile is is expressed
+        w.r.t the volume of a standard (MNI152) brain, and so is corrected
+        at runtime to correspond to the volume of the user-supplied mask
+        (which is typically smaller).
+
+    standardize : bool, optional (default True):
+        If set, then we'll center the data (X, y) have mean zero along axis 0.
+        This is here because nearly all linear models will want their data
+        to be centered.
+
+    normalize : boolean, optional (default False)
+        If True, then the data (X, y) will be normalized (to have unit std)
+        before regression.
+
+    fit_intercept : bool
+        Fit or not an intercept.
+
+    max_iter : int
+        Defines the iterations for the solver. Defaults to 1000
+
+    tol : float
+        Defines the tolerance for convergence. Defaults to 1e-4.
+
+    verbose : int, optional (default 0)
+        Verbosity level.
+
+    n_jobs : int, optional (default 1)
+        Number of jobs to use for One-vs-All classification.
+
+    cv : int, a cv generator instance, or None (default 10)
+        The input specifying which cross-validation generator to use.
+        It can be an integer, in which case it is the number of folds in a
+        KFold, None, in which case 3 fold is used, or another object, that
+        will then be used as a cv generator.
+
+    debias: bool, optional (default False)
+        If set, then the estimated weights maps will be debiased.
+
+    Attributes
+    ----------
+    `alpha_` : float
+         Best alpha found by cross-validation
+
+    `coef_` : array, shape = [n_classes-1, n_features]
+        Coefficient of the features in the decision function.
+
+        `coef_` is readonly property derived from `raw_coef_` that
+        follows the internal memory layout of liblinear.
+
+    `masker_`: instance of NiftiMasker
+        The nifti masker used to mask the data.
+
+    `mask_img_`: Nifti like image
+        The mask of the data. If no mask was given at masker creation, contains
+        the automatically computed mask.
+
+    `intercept_` : array, shape = [n_classes-1]
+         Intercept (a.k.a. bias) added to the decision function.
+         It is available only when parameter intercept is set to True.
+
+    `scores_` : 2d array of shape (n_alphas, n_folds)
+        Scores (misclassification) for each alpha, and on each fold
+
+    """
+
+    def __init__(self, penalty="smooth-lasso", alpha=None, alphas=None,
+                 l1_ratio=.5, mask=None, target_affine=None,
+                 target_shape=None, low_pass=None, high_pass=None, t_r=None,
+                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
+                 standardize=True, alpha_min=1e-6, verbose=0,
+                 n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
+                 screening_percentile=20., debias=False):
+        super(SpaceNetClassifier, self).__init__(
+            penalty=penalty, is_classif=True, alpha=alpha, alpha_min=alpha_min,
+            target_shape=target_shape, low_pass=low_pass, high_pass=high_pass,
+            alphas=alphas, n_alphas=n_alphas, l1_ratio=l1_ratio, mask=mask,
+            t_r=t_r, max_iter=max_iter, tol=tol, memory=memory,
+            copy_data=copy_data, n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
+            fit_intercept=fit_intercept, standardize=standardize,
+            screening_percentile=screening_percentile,
+            target_affine=target_affine, verbose=verbose)
