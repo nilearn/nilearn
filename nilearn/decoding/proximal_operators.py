@@ -274,7 +274,7 @@ def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
     ----------
     weight : float
        Weight in prox. This would be something like `alpha_ * stepsize`,
-       where `alpha_` is the effective (i.e re-scaled) alpha.
+       where `alpha_` is the effective (i.e. re-scaled) alpha.
 
     w : np.array of `w_size` floats
         The point at which the prox is being computed
