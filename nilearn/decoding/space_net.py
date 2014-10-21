@@ -11,6 +11,7 @@ TV-L1, S-LASSO, etc.)
 #         Bertrand Thirion
 # License: simplified BSD
 
+import warnings
 import numbers
 import time
 from functools import partial
@@ -29,6 +30,29 @@ from .._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
 from .objective_functions import _sigmoid, _unmask
 from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
+
+
+# Volume of a standard (MNI152) brain mask in mm^3
+MNI152_BRAIN_VOLUME = 1827243.
+
+
+def _get_mask_volume(mask):
+    """Computes the volume of a brain mask in mm^3.
+
+    Parameters
+    ----------
+    mask : nibabel image object
+        input image whose voxel dimensions are to be computed
+
+    Returns
+    -------
+    vol : float
+        The computed volume.
+
+    """
+
+    vox_dims = mask.get_header().get_zooms()[:3]
+    return 1. * np.prod(vox_dims) * mask.get_data().astype(np.bool).sum()
 
 
 def _crop_mask(mask):
@@ -417,7 +441,10 @@ class SpaceNet(LinearModel, RegressorMixin):
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'.
+        100 means 'keep all features'. This percentile is is expressed
+        w.r.t the volume of a standard (MNI152) brain, and so is corrected
+        at runtime to correspond to the volume of the user-supplied mask
+        (which is typically smaller).
 
     standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
@@ -713,6 +740,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         # always sort alphas from largest to smallest
         alphas = np.sort(alphas)[::-1]
 
+        # generate fold indices
         if len(alphas) > 1:
             cv = list(check_cv(self.cv, X=X, y=y, classifier=self.is_classif))
         else:
@@ -721,6 +749,21 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         self.scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
+
+        # correct screening_percentile to correspond to volume of user-supplied
+        # mask
+        mask_volume = _get_mask_volume(self.mask_img_)
+        if mask_volume > MNI152_BRAIN_VOLUME:
+            warnings.Warn(
+                ("Volume mask (= %gmm^3)is bigger than volume of standard"
+                 " MNI152 brain (= %g mm^3)"))
+        self.screening_percentile_ = self.screening_percentile * (
+            mask_volume / MNI152_BRAIN_VOLUME)
+        if self.verbose:
+            print "Original screening-percentile: %g" % (
+                self.screening_percentile)
+            print "Volume-corrected screening-percentile: %g" % (
+                self.screening_percentile_)
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter,
@@ -732,7 +775,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                 self.mask_, alphas, self.l1_ratio,
                 train, test, solver_params, is_classif=self.is_classif, key=c,
                 debias=self.debias, ymean=ymean, verbose=self.verbose,
-                screening_percentile=self.screening_percentile
+                screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in cv):
             test_scores = np.reshape(test_scores, (-1, 1))
             if not len(self.scores_[c]):
