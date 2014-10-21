@@ -296,6 +296,7 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
 
 
 def test_get_mask_volume():
+    # Test that hard-coded standard mask volume can be corrected computed
     if os.path.isfile(mni152_brain_mask):
         assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
                     mni152_brain_mask)))
