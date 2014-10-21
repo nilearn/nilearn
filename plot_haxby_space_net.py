@@ -39,10 +39,9 @@ X_test = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask_test],
 y_test = target[condition_mask_test]
 
 
-### Fit and predict ##########################################################
-from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory="cache", is_classif=True, penalty="TV-L1",
-                   verbose=2)
+### Fit model on train data and predict on test data #########################
+from nilearn.decoding import SpaceNetClassifier
+decoder = SpaceNetClassifier(memory="cache", penalty="TV-L1", verbose=2)
 decoder.fit(X_train, y_train)  # fit
 y_pred = decoder.predict(X_test)  # predict
 coef_niimg = decoder.coef_img_
@@ -58,6 +57,7 @@ slicer = plot_stat_map(coef_niimg, background_img, title="TV-L1 weights",
                        cut_coords=(-16, -38, 35))
 slicer.add_contours(decoder.mask_img_)
 accuracy = (y_pred == y_test).mean() * 100.
+print decoder
 print "#" * 80
 print "Number of train samples : %i" % condition_mask_train.sum()
 print "Number of test samples  : %i" % condition_mask_test.sum()
