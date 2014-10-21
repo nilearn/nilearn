@@ -1,9 +1,5 @@
 """Implementations of multiple proximal operators for TV-L1, S-LASSO, etc.
 
-For TV-L1, the core idea here is to modify the analysis operator in the Beck &
-Teboulle approach (actually Chambolle) to keep the identity and thus to
-end up with an l1.
-
 """
 # Author: DOHMATOB Elvis Dopgima,
 #         Alexandre GRAMFORT,
@@ -71,11 +67,10 @@ def _objective_function_prox_tvl1(
 
 
 def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
-              max_iter=200, check_gap_frequency=4, val_min=None,
-              val_max=None, verbose=False, fista=True, init=None,
-              return_info=False):
+              max_iter=200, check_gap_frequency=4, val_min=None, val_max=None,
+              verbose=False, fista=True, init=None, return_info=False):
     """
-    Compute the TV + L1 proximal (ie total-variation +l1 denoising) on
+    Compute the TV-L1 proximal (ie total-variation +l1 denoising) on
     2-d and 3-d images
 
     Find the argmin `res` of
@@ -150,8 +145,8 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     constrained total variation image denoising and deblurring problems"
     (2009).
 
-    For details on implementing the bound constraints, read the Beck and
-    Teboulle paper.
+    For details on implementing the bound constraints, read the aforementioned
+    Beck and Teboulle paper.
     """
     weight = float(weight)
     input_img_flat = input_img.view()

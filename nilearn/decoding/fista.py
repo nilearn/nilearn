@@ -126,6 +126,15 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     cost : array of floats
         Cost function (fval) computed on every iteration.
 
+    Notes
+    -----
+    A motivation for the choice of FISTA as a novel solver for the TV-L1
+    penalized problems was emerged in the paper: Elvis Dohmatob,
+    Alexandre Gramfort, Bertrand Thirion, Gael Varoquaux,
+    "Benchmarking solvers for TV-l1 least-squares and logistic regression
+    in brain imaging". Pattern Recoginition in Neuroimaging (PRNI),
+    Jun 2014, Tubingen, Germany. IEEE
+
     """
 
     # initialization
