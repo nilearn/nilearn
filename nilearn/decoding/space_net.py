@@ -310,6 +310,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     mask = mask.copy()
 
     # misc
+    _, n_features = X.shape
     verbose = int(verbose if verbose is not None else 0)
     alphas = sorted(alphas)[::-1]
 
@@ -369,6 +370,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         else:
             w_[support] = best_w
         best_w = w_
+
+    if len(best_w) == n_features:
+        best_w = np.append(best_w, 0.)
 
     return test_scores, best_w, key
 
@@ -509,22 +513,20 @@ class SpaceNet(LinearModel, RegressorMixin):
     """
 
     SUPPORTED_PENALTIES = ["smooth-lasso", "tv-l1"]
+    SUPPORTED_LOSSES = ["mse", "logistic"]
 
-    def __init__(self, penalty="smooth-lasso", is_classif=False, alpha=None,
-                 alphas=None, l1_ratio=.5, mask=None, target_affine=None,
-                 target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 standardize=True, alpha_min=1e-6, verbose=0,
-                 n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
-                 screening_percentile=20., debias=False):
+    def __init__(self, penalty="smooth-lasso", is_classif=False, loss=None,
+                 alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 target_affine=None, target_shape=None, low_pass=None,
+                 high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
+                 memory=Memory(None), copy_data=True, standardize=True,
+                 alpha_min=1e-6, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 cv=10, fit_intercept=True, screening_percentile=20.,
+                 debias=False):
         super(SpaceNet, self).__init__()
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.target_affine = target_affine
-        self.target_shape = target_shape
         self.penalty = penalty
         self.is_classif = is_classif
+        self.loss = loss
         self.alpha = alpha
         self.n_alphas = n_alphas
         self.eps = eps
@@ -543,6 +545,11 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.cv = cv
         self.screening_percentile = screening_percentile
         self.debias = debias
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
+        self.target_affine = target_affine
+        self.target_shape = target_shape
 
         # sanity check on params
         self.check_params()
@@ -569,6 +576,25 @@ class SpaceNet(LinearModel, RegressorMixin):
                     ",".join(self.SUPPORTED_PENALTIES[:-1]), "," if len(
                         self.SUPPORTED_PENALTIES) > 2 else "",
                     self.SUPPORTED_PENALTIES[-1], self.penalty))
+        if not (
+            self.loss is None or self.loss.lower() in self.SUPPORTED_LOSSES):
+            raise ValueError(
+                "'loss' parameter must be one of %s%s or %s; got %s" % (
+                    ",".join(self.SUPPORTED_LOSSES[:-1]), "," if len(
+                        self.SUPPORTED_LOSSES) > 2 else "",
+                    self.SUPPORTED_LOSSES[-1], self.loss))
+        if not self.loss is None and not self.is_classif and (
+            self.loss.lower() == "logistic"):
+            raise ValueError(
+                ("'logistic' loss is only available for classification "
+                 "problems."))
+
+    def _set_coef_and_intercept(self, w):
+        self.w_ = np.array(w)
+        if self.w_.ndim == 1:
+            self.w_ = self.w_[np.newaxis, :]
+        self.coef_ = self.w_[:, :-1]
+        self.intercept_ = self.w_[:, -1]
 
     def fit(self, X, y):
         """Fit the learner
@@ -622,19 +648,26 @@ class SpaceNet(LinearModel, RegressorMixin):
         n_samples, _ = X.shape
         y = np.array(y).copy().ravel()
 
+        # misc
+        if not self.loss is None:
+            self.loss_ = self.loss.lower()
+        elif self.is_classif:
+            self.loss_ = "logistic"
+        else:
+            self.loss_ = "mse"
+
         # set backend solver
         if self.penalty.lower() == "smooth-lasso":
-            if self.is_classif:
-                solver = smooth_lasso_logistic
-            else:
+            if not self.is_classif or self.loss == "mse":
                 solver = smooth_lasso_squared_loss
-        else:
-            if self.is_classif:
-                solver = partial(tvl1_solver, loss="logistic")
             else:
+                solver = smooth_lasso_logistic
+        else:
+            if not self.is_classif or self.loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")
+            else:
+                solver = partial(tvl1_solver, loss="logistic")
 
-        # misc (different for classifier and regressor)
         if self.is_classif:
             y = self._binarize_y(y)
         if self.is_classif and self.n_classes_ > 2:
@@ -645,7 +678,7 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # if regression, standardize y too
         ymean = 0.
-        if self.standardize and not self.is_classif:
+        if self.standardize and self.is_classif:
             X, y, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=True,
                 fit_intercept=self.fit_intercept)
@@ -674,7 +707,7 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # scores & mean weights map over all folds
         self.scores_ = [[] for _ in xrange(n_problems)]
-        w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
+        w = np.zeros((n_problems, X.shape[1] + 1))
 
         # correct screening_percentile according to the volume of the data mask
         if X.shape[1] > 100.:
@@ -707,7 +740,8 @@ class SpaceNet(LinearModel, RegressorMixin):
                 solver, X, y[:, c] if self.is_classif and (
                     self.n_classes_ > 2) else y,
                 self.mask_, alphas, self.l1_ratio,
-                train, test, solver_params, is_classif=self.is_classif, key=c,
+                train, test, solver_params,
+                is_classif=self.loss == "logistic", key=c,
                 debias=self.debias, ymean=ymean, verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in cv):
@@ -730,19 +764,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         w /= self.n_folds_
 
         # set coefs and intercepts
-        if self.is_classif:
-            self._set_coef_and_intercept(w)
-        else:
-            self.coef_ = w
-            if self.standardize:
-                self._set_intercept(Xmean, ymean, Xstd)
-            else:
-                self.intercept_ = 0.
-
-        # special treatment for non classif (i.e regression) model
-        if not self.is_classif:
-            self.coef_ = self.coef_[0]
-            self.scores_ = self.scores_[0]
+        self._set_coef_and_intercept(w)
 
         # unmask weights map as a niimg
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
@@ -834,6 +856,10 @@ class SpaceNetClassifier(SpaceNet):
     alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
+
+    loss: string, optional (default "logistic"):
+        Loss to use in the classification problems. Must be one of "mse" and
+        "logistic".
 
     n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
@@ -948,13 +974,14 @@ class SpaceNetClassifier(SpaceNet):
         relative to the volume of standard brain.
     """
 
-    def __init__(self, penalty="smooth-lasso", alpha=None, alphas=None,
-                 l1_ratio=.5, mask=None, target_affine=None,
-                 target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 standardize=True, alpha_min=1e-6, verbose=0,
-                 n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
-                 screening_percentile=20., debias=False):
+    def __init__(self, penalty="smooth-lasso", loss="logistic",
+                 alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 target_affine=None, target_shape=None, low_pass=None,
+                 high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
+                 memory=Memory(None), copy_data=True, standardize=True,
+                 alpha_min=1e-6, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 cv=10, fit_intercept=True, screening_percentile=20.,
+                 debias=False):
         super(SpaceNetClassifier, self).__init__(
             penalty=penalty, is_classif=True, alpha=alpha, alpha_min=alpha_min,
             target_shape=target_shape, low_pass=low_pass, high_pass=high_pass,
@@ -962,7 +989,7 @@ class SpaceNetClassifier(SpaceNet):
             t_r=t_r, max_iter=max_iter, tol=tol, memory=memory,
             copy_data=copy_data, n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
             fit_intercept=fit_intercept, standardize=standardize,
-            screening_percentile=screening_percentile,
+            screening_percentile=screening_percentile, loss=loss,
             target_affine=target_affine, verbose=verbose)
 
     def _binarize_y(self, y):
@@ -975,13 +1002,6 @@ class SpaceNetClassifier(SpaceNet):
         self.classes_ = self._enc.classes_
         self.n_classes_ = len(self.classes_)
         return y
-
-    def _set_coef_and_intercept(self, w):
-        self.w_ = np.array(w)
-        if self.w_.ndim == 1:
-            self.w_ = self.w_[np.newaxis, :]
-        self.coef_ = self.w_[:, :-1]
-        self.intercept_ = self.w_[:, -1]
 
 
 class SpaceNetRegressor(SpaceNet):

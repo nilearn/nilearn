@@ -195,14 +195,10 @@ def test_coef_shape():
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, (2, 2, 2))
     for penalty in ["smooth-lasso", "tv-l1"]:
-        cv = SpaceNetRegressor(
-            mask=mask, max_iter=3, penalty=penalty, alpha=1.).fit(X, y)
-        assert_equal(cv.coef_.ndim, 1)
-
-    for penalty in ["smooth-lasso", "tv-l1"]:
-        cv = SpaceNetClassifier(mask=mask, max_iter=3, penalty=penalty,
-                                alpha=1.).fit(X, y)
-        assert_equal(cv.coef_.ndim, 2)
+        for cls in [SpaceNetRegressor, SpaceNetClassifier]:
+            model = cls(
+                mask=mask, max_iter=3, penalty=penalty, alpha=1.).fit(X, y)
+            assert_equal(model.coef_.ndim, 2)
 
 
 @nottest

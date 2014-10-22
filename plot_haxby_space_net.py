@@ -41,7 +41,8 @@ y_test = target[condition_mask_test]
 
 ### Fit model on train data and predict on test data #########################
 from nilearn.decoding import SpaceNetClassifier
-decoder = SpaceNetClassifier(memory="cache", penalty="TV-L1", verbose=2)
+decoder = SpaceNetClassifier(memory="cache", penalty="smooth-lasso", loss="mse",
+                             verbose=2, n_jobs=1)
 decoder.fit(X_train, y_train)  # fit
 y_pred = decoder.predict(X_test)  # predict
 coef_niimg = decoder.coef_img_
