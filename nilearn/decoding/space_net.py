@@ -679,7 +679,7 @@ class SpaceNet(LinearModel, RegressorMixin):
             y = y.ravel()
 
         # if regression, standardize y too
-        if self.standardize:
+        if self.standardize and not self.is_classif:
             X, y, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=True,
                 fit_intercept=self.fit_intercept)
