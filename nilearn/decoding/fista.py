@@ -17,7 +17,8 @@ from scipy import linalg
 from sklearn.utils import check_random_state
 
 
-def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10):
+def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
+                                random_state=42):
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the
@@ -44,12 +45,15 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10):
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
+    random_state : int, optional (default 42)
+        Random state for initializing local rng.
+
     Raises
     ------
     RuntimeError
     """
 
-    rng = check_random_state(42)
+    rng = check_random_state(random_state)
     for x in rng.randn(n_trials, ndim):
         for y in rng.randn(n_trials, ndim):
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
@@ -62,9 +66,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
            dgap_tol=None, init=None, max_iter=1000, tol=1e-4,
            check_lipschitz=False, dgap_factor=None, callback=None,
            verbose=2):
-    """
-
-    Generic FISTA solver
+    """Generic FISTA solver
 
     Minimizes the a sum `f + g` of two convex functions f (smooth)
     and g (proximable nonsmooth).
