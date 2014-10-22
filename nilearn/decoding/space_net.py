@@ -722,7 +722,7 @@ class SpaceNet(LinearModel, RegressorMixin):
             print "Standard brain volume = %gmm^3 = %gcm^3" % (
                 MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 100.)
             if mask_volume > MNI152_BRAIN_VOLUME:
-                warnings.Warn(
+                warnings.warn(
                     "Brain mask is bigger than volume of standard brain!")
             self.screening_percentile_ = self.screening_percentile * (
                 mask_volume / MNI152_BRAIN_VOLUME)
