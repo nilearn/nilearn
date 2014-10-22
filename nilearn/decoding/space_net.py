@@ -317,7 +317,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     # Univariate feature screening. Note that if we have only as few as 50
     # features in the mask's support, then we should to use all of them to
     # learn the model i.e disable this screening)
-    do_screening = screening_percentile < 100. and mask.sum() > 100.
+    do_screening = screening_percentile < 100.
     if do_screening:
         X, mask, support = _univariate_feature_screening(
             X, y, mask, is_classif, screening_percentile)
@@ -677,21 +677,27 @@ class SpaceNet(LinearModel, RegressorMixin):
         w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
 
         # correct screening_percentile according to the volume of the data mask
-        mask_volume = _get_mask_volume(self.mask_img_)
-        print "Mask volume = %gmm^3 = %gcm^3" % (
-            mask_volume, mask_volume / 100.)
-        print "Standard brain volume = %gmm^3 = %gcm^3" % (
-            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 100.)
-        if mask_volume > MNI152_BRAIN_VOLUME:
-            warnings.Warn(
-                "Brain mask is bigger than volume of standard brain!")
-        self.screening_percentile_ = self.screening_percentile * (
-            mask_volume / MNI152_BRAIN_VOLUME)
-        if self.verbose:
-            print "Original screening-percentile: %g" % (
-                self.screening_percentile)
-            print "Volume-corrected screening-percentile: %g" % (
-                self.screening_percentile_)
+        if X.shape[1] > 100.:
+            mask_volume = _get_mask_volume(self.mask_img_)
+            print "Mask volume = %gmm^3 = %gcm^3" % (
+                mask_volume, mask_volume / 100.)
+            print "Standard brain volume = %gmm^3 = %gcm^3" % (
+                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 100.)
+            if mask_volume > MNI152_BRAIN_VOLUME:
+                warnings.Warn(
+                    "Brain mask is bigger than volume of standard brain!")
+            self.screening_percentile_ = self.screening_percentile * (
+                mask_volume / MNI152_BRAIN_VOLUME)
+            if self.verbose:
+                print "Original screening-percentile: %g" % (
+                    self.screening_percentile)
+                print "Volume-corrected screening-percentile: %g" % (
+                    self.screening_percentile_)
+        else:
+            if self.verbose:
+                print ("Very few features (%i); disabling feature "
+                       "screening." % X.shape[1])
+            self.screening_percentile_ = 100.
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter,
