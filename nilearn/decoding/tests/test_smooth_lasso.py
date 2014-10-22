@@ -249,9 +249,10 @@ def test_tikhonov_regularization_vs_smooth_lasso():
         mask=mask_, alpha=1., l1_ratio=0., max_iter=400, fit_intercept=False,
         screening_percentile=100., standardize=False)
     smooth_lasso.fit(X_, y.copy())
+    coef_ = smooth_lasso.coef_[0]
     smooth_lasso_perf = 0.5 / y.size * extmath.norm(
-        np.dot(X, smooth_lasso.coef_) - y) ** 2\
-        + 0.5 * extmath.norm(np.dot(G, smooth_lasso.coef_)) ** 2
+        np.dot(X, coef_) - y) ** 2\
+        + 0.5 * extmath.norm(np.dot(G, coef_)) ** 2
     optimal_model_perf = 0.5 / y.size * extmath.norm(
         np.dot(X, optimal_model) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, optimal_model)) ** 2
