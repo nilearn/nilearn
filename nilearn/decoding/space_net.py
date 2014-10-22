@@ -42,7 +42,7 @@ def _get_mask_volume(mask):
     Parameters
     ----------
     mask : nibabel image object
-        input image whose voxel dimensions are to be computed
+        Input image whose voxel dimensions are to be computed.
 
     Returns
     -------
@@ -189,7 +189,6 @@ def _space_net_alpha_grid(
             alpha_max = np.abs(np.dot(X.T, y)).max()
     else:
         alpha_max = np.abs(np.dot(X.T, y)).max()
-
     alpha_max /= (X.shape[0] * l1_ratio)
 
     if n_alphas == 1:

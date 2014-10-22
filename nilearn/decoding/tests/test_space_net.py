@@ -37,18 +37,19 @@ def test_space_net_alpha_grid(n_samples=4, n_features=3):
     X = rng.randn(n_samples, n_features)
     y = np.arange(n_samples)
 
-    for l1_ratio in [.5, 1.]:
+    for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
         alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
-        assert_equal(_space_net_alpha_grid(X, y, n_alphas=1,
-                                           l1_ratio=l1_ratio), alpha_max)
+        assert_equal(_space_net_alpha_grid(
+                X, y, n_alphas=1, l1_ratio=l1_ratio,
+                logistic=is_classif), alpha_max)
 
     for standardize in [False, True]:
-        for l1_ratio in [.5, 1.]:
+        for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
             alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
             for n_alphas in xrange(1, 10):
                 alphas = _space_net_alpha_grid(
                     X, y, n_alphas=n_alphas, l1_ratio=l1_ratio,
-                    standardize=standardize)
+                    standardize=standardize, logistic=is_classif)
                 if not standardize:
                     assert_equal(alphas.max(), alpha_max)
                 assert_equal(n_alphas, len(alphas))

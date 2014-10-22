@@ -1,4 +1,4 @@
-"""Implementations of multiple proximal operators for TV-L1, S-LASSO, etc.
+"""Implementation of multiple proximal operators for TV-L1, S-LASSO, etc.
 
 """
 # Author: DOHMATOB Elvis Dopgima,
