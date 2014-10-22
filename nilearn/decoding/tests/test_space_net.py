@@ -134,7 +134,7 @@ def test_squared_loss_path_scores():
         smooth_lasso_squared_loss, X, y, mask, alphas, .5,
         range(len(X)), range(len(X)), {})
     assert_equal(len(test_scores), len(alphas))
-    assert_equal(X.shape[1], len(best_w))
+    assert_equal(X.shape[1] + 1, len(best_w))
 
 
 def test_alpha_attrs():
@@ -202,9 +202,10 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
-    tvl1 = SpaceNetClassifier(mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
-                    verbose=0, max_iter=1000, penalty="tv-l1",
-                    standardize=False, screening_percentile=100.).fit(X_, y)
+    tvl1 = SpaceNetClassifier(
+        mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
+        verbose=0, max_iter=1000, penalty="tv-l1", standardize=False,
+        screening_percentile=100.).fit(X_, y)
     sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
                                   tol=tol, C=C).fit(X, y)
 
@@ -250,9 +251,7 @@ def test_lasso_vs_smooth_lasso():
     smooth_lasso.fit(X, y)
     lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
         X_, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
-    smooth_lasso_perf = 0.5 / y.size * extmath.norm(
-        np.dot(X_, smooth_lasso.coef_) - y) ** 2\
-        + np.sum(np.abs(smooth_lasso.coef_))
+    smooth_lasso_perf = 0.5 * ((smooth_lasso.predict(X) - y) ** 2).mean()
     np.testing.assert_almost_equal(smooth_lasso_perf, lasso_perf, decimal=3)
 
 
