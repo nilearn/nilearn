@@ -276,8 +276,8 @@ class EarlyStoppingCallback(object):
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 test, solver_params, is_classif=False, init=None, key=None,
-                debias=False, ymean=0., screening_percentile=20.,
-                verbose=1.):
+                debias=False, Xmean=None, Xstd=1., ymean=0.,
+                screening_percentile=20., verbose=1.):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects
 
@@ -372,7 +372,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
         best_w = w_
 
     if len(best_w) == n_features:
-        best_w = np.append(best_w, 0.)
+        if Xmean is None:
+            Xmean = np.zeros(n_features)
+        best_w = np.append(best_w, ymean - np.dot(Xmean, best_w))
 
     return test_scores, best_w, key
 
@@ -576,15 +578,15 @@ class SpaceNet(LinearModel, RegressorMixin):
                     ",".join(self.SUPPORTED_PENALTIES[:-1]), "," if len(
                         self.SUPPORTED_PENALTIES) > 2 else "",
                     self.SUPPORTED_PENALTIES[-1], self.penalty))
-        if not (
-            self.loss is None or self.loss.lower() in self.SUPPORTED_LOSSES):
+        if not (self.loss is None or
+                self.loss.lower() in self.SUPPORTED_LOSSES):
             raise ValueError(
                 "'loss' parameter must be one of %s%s or %s; got %s" % (
                     ",".join(self.SUPPORTED_LOSSES[:-1]), "," if len(
                         self.SUPPORTED_LOSSES) > 2 else "",
                     self.SUPPORTED_LOSSES[-1], self.loss))
         if not self.loss is None and not self.is_classif and (
-            self.loss.lower() == "logistic"):
+                self.loss.lower() == "logistic"):
             raise ValueError(
                 ("'logistic' loss is only available for classification "
                  "problems."))
@@ -677,11 +679,14 @@ class SpaceNet(LinearModel, RegressorMixin):
             y = y.ravel()
 
         # if regression, standardize y too
-        ymean = 0.
-        if self.standardize and self.is_classif:
+        if self.standardize:
             X, y, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=True,
                 fit_intercept=self.fit_intercept)
+        else:
+            Xmean = np.mean(X, axis=0)
+            ymean = np.mean(y)
+            Xstd = np.std(X, axis=0)
 
         # make / sanitize alpha grid
         if self.alpha is not None:
@@ -742,7 +747,8 @@ class SpaceNet(LinearModel, RegressorMixin):
                 self.mask_, alphas, self.l1_ratio,
                 train, test, solver_params,
                 is_classif=self.loss == "logistic", key=c,
-                debias=self.debias, ymean=ymean, verbose=self.verbose,
+                debias=self.debias, Xmean=Xmean, ymean=ymean, Xstd=Xstd,
+                verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in cv):
             test_scores = np.reshape(test_scores, (-1, 1))
