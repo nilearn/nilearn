@@ -143,8 +143,10 @@ def test_alpha_attrs():
     X, mask = to_niimgs(X, (2, 2, 2))
     for penalty, is_classif, verbose in itertools.product(
         ['smooth-lasso', 'tv-l1'], [True, False], [True, False]):
-        cv = SpaceNet(mask=mask, penalty=penalty, alpha=alpha,
-                      is_classif=is_classif, verbose=verbose)
+        cv_class = eval('SpaceNet%s' % (
+                ['Regressor', 'Classifier'][is_classif]))
+        cv = cv_class(
+            mask=mask, penalty=penalty, alpha=alpha, verbose=verbose)
         cv.fit(X, y)
         np.testing.assert_array_equal([alpha], cv.alphas_)
 
@@ -199,10 +201,9 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
-    tvl1 = SpaceNet(mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
+    tvl1 = SpaceNetClassifier(mask=mask, alpha=1. / C / X.shape[0], l1_ratio=1., tol=tol,
                     verbose=0, max_iter=1000, penalty="tv-l1",
-                    standardize=False,
-                    is_classif=True, screening_percentile=100.).fit(X_, y)
+                    standardize=False, screening_percentile=100.).fit(X_, y)
     sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
                                   tol=tol, C=C).fit(X, y)
 

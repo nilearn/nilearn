@@ -37,7 +37,7 @@ MNI152_BRAIN_VOLUME = 1827243.
 
 
 def _get_mask_volume(mask):
-    """Computes the volume of a brain mask in mm^3.
+    """Computes the volume of a brain mask in mm^3
 
     Parameters
     ----------
@@ -48,7 +48,6 @@ def _get_mask_volume(mask):
     -------
     vol : float
         The computed volume.
-
     """
 
     vox_dims = mask.get_header().get_zooms()[:3]
@@ -57,7 +56,7 @@ def _get_mask_volume(mask):
 
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box with
-    the same support (active voxels)."""
+    the same support (active voxels)"""
     idx = np.where(mask)
     i_min = max(idx[0].min() - 1, 0)
     i_max = idx[0].max()
@@ -71,7 +70,7 @@ def _crop_mask(mask):
 def _univariate_feature_screening(
         X, y, mask, is_classif, screening_percentile):
     """
-    Selects the most import features, via a univariate test.
+    Selects the most import features, via a univariate test
 
     Parameters
     ----------
@@ -104,7 +103,6 @@ def _univariate_feature_screening(
     support : ndarray of ints, shape (n_features_,)
         Support of the screened mask, as a subset of the support of the
         original mask.
-
     """
 
     n_samples, _ = X.shape
@@ -165,7 +163,6 @@ def _space_net_alpha_grid(
 
     normalize : boolean, optional, default False
         If ``True``, the regressors X will be normalized before regression.
-
     """
 
     if standardize:
@@ -209,7 +206,7 @@ def _space_net_alpha_grid(
 
 
 class EarlyStoppingCallback(object):
-    """ Out-of-bag early stopping.
+    """Out-of-bag early stopping
 
         A callable that returns True when the test error starts
         rising. We use a Spearman correlation (btween X_test.w and y_test)
@@ -283,7 +280,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 debias=False, ymean=0., screening_percentile=20.,
                 verbose=1.):
     """Function to compute scores of different alphas in regression and
-    classification used by CV objects.
+    classification used by CV objects
 
     Parameters
     ----------
@@ -308,7 +305,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
     solver_params: dict
        Dictionary of param-value pairs to be passed to solver.
-
     """
 
     # make local copy of mask
@@ -380,7 +376,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
 
 class SpaceNet(LinearModel, RegressorMixin):
     """
-    Regression and classification learners with sparsity and spatial priors.
+    Regression and classification learners with sparsity and spatial priors
 
     `SpaceNet` implements Smooth-LASSO (aka Graph-Net) and TV-L1 priors (aka
     penalties). Thus, the penalty is a sum an L1 term and a spatial term. The
@@ -497,8 +493,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         The nifti masker used to mask the data.
 
     `mask_img_`: Nifti like image
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data. If no mask was supplied by the user, the
+        this attribute is the mask image computed automatically from the
+        data `X`.
 
     `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
@@ -507,6 +504,9 @@ class SpaceNet(LinearModel, RegressorMixin):
     `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
+    `screening_percentile_`: float
+        Screening percentile corrected according to volume of mask,
+        relative to the volume of standard brain.
     """
 
     SUPPORTED_PENALTIES = ["smooth-lasso", "tv-l1"]
@@ -548,86 +548,8 @@ class SpaceNet(LinearModel, RegressorMixin):
         # sanity check on params
         self.check_params()
 
-    def _binarize_y(self, y):
-        """Helper function invoked just before fitting a classifier."""
-        y = np.array(y)
-
-        # encode target classes as -1 and 1
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
-
-    def _set_coef_and_intercept(self, w):
-        self.w_ = np.array(w)
-        if self.w_.ndim == 1:
-            self.w_ = self.w_[np.newaxis, :]
-        self.coef_ = self.w_[:, :-1]
-        self.intercept_ = self.w_[:, -1]
-
-    def decision_function(self, X):
-        """Predict confidence scores for samples
-
-        The confidence score for a sample is the signed distance of that
-        sample to the hyperplane.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
-            Confidence scores per (sample, class) combination. In the binary
-            case, confidence score for self.classes_[1] where >0 means this
-            class would be predicted.
-        """
-
-        # handle regression (least-squared loss)
-        if not self.is_classif:
-            return LinearModel.decision_function(self, X)
-
-        X = atleast2d_or_csr(X)
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], n_features))
-
-        scores = safe_sparse_dot(X, self.coef_.T,
-                                 dense_output=True) + self.intercept_
-        return scores.ravel() if scores.shape[1] == 1 else scores
-
-    def predict(self, X):
-        """Predict class labels for samples in X.
-
-        Parameters
-        ----------
-        X : ndarray, shape(n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        y_pred : ndarray, shape (n_samples,)
-            Predicted class label per sample.
-        """
-
-        X = self.masker_.transform(X)
-
-        # handle regression (least-squared loss)
-        if not self.is_classif:
-            return LinearModel.predict(self, X)
-
-        scores = self.decision_function(X)
-        if len(scores.shape) == 1:
-            indices = (scores > 0).astype(np.int)
-        else:
-            indices = scores.argmax(axis=1)
-        return self.classes_[indices]
-
     def check_params(self):
-        """Makes sure parameters are sane."""
+        """Makes sure parameters are sane"""
         for param in ["alpha", "l1_ratio"]:
             value = getattr(self, param)
             if not (value is None or isinstance(value, numbers.Number)):
@@ -650,7 +572,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                     self.SUPPORTED_PENALTIES[-1], self.penalty))
 
     def fit(self, X, y):
-        """Fit the learner.
+        """Fit the learner
 
         Parameters
         ----------
@@ -750,6 +672,7 @@ class SpaceNet(LinearModel, RegressorMixin):
             cv = [(range(n_samples), [])]  # single fold
         self.n_folds_ = len(cv)
 
+        # scores & mean weights map over all folds
         self.scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + int(self.is_classif > 0)))
 
@@ -789,6 +712,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                 self.scores_[c] = np.hstack((self.scores_[c], test_scores))
             w[c] += best_w
 
+        # keep best alpha, for historical reasons
         self.alphas_ = alphas
         self.i_alpha_ = [np.argmin(np.mean(self.scores_[c], axis=-1))
                          for c in xrange(n_problems)]
@@ -824,6 +748,66 @@ class SpaceNet(LinearModel, RegressorMixin):
                                                               duration / 60.)
 
         return self
+
+    def decision_function(self, X):
+        """Predict confidence scores for samples
+
+        The confidence score for a sample is the signed distance of that
+        sample to the hyperplane.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
+            Confidence scores per (sample, class) combination. In the binary
+            case, confidence score for self.classes_[1] where >0 means this
+            class would be predicted.
+        """
+
+        # handle regression (least-squared loss)
+        if not self.is_classif:
+            return LinearModel.decision_function(self, X)
+
+        X = atleast2d_or_csr(X)
+        n_features = self.coef_.shape[1]
+        if X.shape[1] != n_features:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], n_features))
+
+        scores = safe_sparse_dot(X, self.coef_.T,
+                                 dense_output=True) + self.intercept_
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : ndarray, shape(n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        y_pred : ndarray, shape (n_samples,)
+            Predicted class label per sample.
+        """
+
+        X = self.masker_.transform(X)
+
+        # handle regression (least-squared loss)
+        if not self.is_classif:
+            return LinearModel.predict(self, X)
+
+        scores = self.decision_function(X)
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(np.int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
 
 
 class SpaceNetClassifier(SpaceNet):
@@ -953,6 +937,9 @@ class SpaceNetClassifier(SpaceNet):
     `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
+    `screening_percentile_`: float
+        Screening percentile corrected according to volume of mask,
+        relative to the volume of standard brain.
     """
 
     def __init__(self, penalty="smooth-lasso", alpha=None, alphas=None,
@@ -971,6 +958,24 @@ class SpaceNetClassifier(SpaceNet):
             fit_intercept=fit_intercept, standardize=standardize,
             screening_percentile=screening_percentile,
             target_affine=target_affine, verbose=verbose)
+
+    def _binarize_y(self, y):
+        """Helper function invoked just before fitting a classifier"""
+        y = np.array(y)
+
+        # encode target classes as -1 and 1
+        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
+        y = self._enc.fit_transform(y)
+        self.classes_ = self._enc.classes_
+        self.n_classes_ = len(self.classes_)
+        return y
+
+    def _set_coef_and_intercept(self, w):
+        self.w_ = np.array(w)
+        if self.w_.ndim == 1:
+            self.w_ = self.w_[np.newaxis, :]
+        self.coef_ = self.w_[:, :-1]
+        self.intercept_ = self.w_[:, -1]
 
 
 class SpaceNetRegressor(SpaceNet):
@@ -1100,6 +1105,9 @@ class SpaceNetRegressor(SpaceNet):
     `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
+    `screening_percentile_`: float
+        Screening percentile corrected according to volume of mask,
+        relative to the volume of standard brain.
     """
 
     def __init__(self, penalty="smooth-lasso", alpha=None, alphas=None,
