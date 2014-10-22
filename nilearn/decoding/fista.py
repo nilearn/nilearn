@@ -17,8 +17,7 @@ from scipy import linalg
 from sklearn.utils import check_random_state
 
 
-def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
-                                err_msg=None):
+def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10):
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the
@@ -45,25 +44,18 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
-    err_msg : {str, or None},
-      String used to tune the output message when the test fails.
-      If `None`, we'll generate our own.
-
     Raises
     ------
     RuntimeError
     """
 
     rng = check_random_state(42)
-
     for x in rng.randn(n_trials, ndim):
         for y in rng.randn(n_trials, ndim):
-            err_msg = "LC counter example: (%s, %s)" % (
-                x, y) if err_msg is None else err_msg
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
             b = lipschitz_constant * linalg.norm(x - y, 2)
             if a > b:
-                raise RuntimeError(err_msg + ("(a = %g >= %g)" % (a, b)))
+                raise RuntimeError("Counter example: (%s, %s)" % (x, y))
 
 
 def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
