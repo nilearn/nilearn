@@ -121,7 +121,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     Notes
     -----
-    A motivation for the choice of FISTA as a novel solver for the TV-L1
+    A motivation for the choice of FISTA as a solver for the TV-L1
     penalized problems emerged in the paper: Elvis Dohmatob,
     Alexandre Gramfort, Bertrand Thirion, Gael Varoquaux,
     "Benchmarking solvers for TV-L1 least-squares and logistic regression
