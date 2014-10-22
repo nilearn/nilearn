@@ -411,28 +411,28 @@ class SpaceNet(LinearModel, RegressorMixin):
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map.
 
-    mask: filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
 
-    target_affine: 3x3 or 4x4 matrix, optional (default None)
+    target_affine : 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional (default None)
+    target_shape : 3-tuple of integers, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: False or float, optional, (default None)
+    low_pass : False or float, optional, (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional (default None)
+    high_pass : False or float, optional (default None)
         This parameter is passed to signal. Clean. Please see the related
         documentation for details
 
-    t_r: float, optional (default None)
+    t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -474,7 +474,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias: bool, optional (default False)
+    debias : bool, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -488,10 +488,10 @@ class SpaceNet(LinearModel, RegressorMixin):
         `coef_` is readonly property derived from `raw_coef_` that
         follows the internal memory layout of liblinear.
 
-    `masker_`: instance of NiftiMasker
+    `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
 
-    `mask_img_`: Nifti like image
+    `mask_img_` : Nifti like image
         The mask of the data. If no mask was supplied by the user, the
         this attribute is the mask image computed automatically from the
         data `X`.
@@ -503,7 +503,7 @@ class SpaceNet(LinearModel, RegressorMixin):
     `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
-    `screening_percentile_`: float
+    `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
@@ -575,18 +575,19 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         Parameters
         ----------
-        X: list of filenames or NiImages of length n_samples, or 2D array of
+        X : list of filenames or NiImages of length n_samples, or 2D array of
            shape (n_samples, n_features)
             Brain images on which the which a structured weights map is to be
             learned. This is the independent variable (e.g gray-matter maps
             from VBM analysis, etc.)
 
-        y: array or list of length n_samples
+        y : array or list of length n_samples
             The dependent variable (age, sex, QI, etc.)
 
         Notes
         -----
-        Model selection is via cross-validation with bagging.
+        self : `SpaceNet` object
+            Model selection is via cross-validation with bagging.
 
         """
 
@@ -851,28 +852,28 @@ class SpaceNetClassifier(SpaceNet):
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map.
 
-    mask: filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
 
-    target_affine: 3x3 or 4x4 matrix, optional (default None)
+    target_affine : 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional (default None)
+    target_shape : 3-tuple of integers, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: False or float, optional, (default None)
+    low_pass : False or float, optional, (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional (default None)
+    high_pass : False or float, optional (default None)
         This parameter is passed to signal. Clean. Please see the related
         documentation for details
 
-    t_r: float, optional (default None)
+    t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -914,7 +915,7 @@ class SpaceNetClassifier(SpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias: bool, optional (default False)
+    debias : bool, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -928,10 +929,10 @@ class SpaceNetClassifier(SpaceNet):
         `coef_` is readonly property derived from `raw_coef_` that
         follows the internal memory layout of liblinear.
 
-    `masker_`: instance of NiftiMasker
+    `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
 
-    `mask_img_`: Nifti like image
+    `mask_img_` : Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -942,7 +943,7 @@ class SpaceNetClassifier(SpaceNet):
     `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
-    `screening_percentile_`: float
+    `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
@@ -995,10 +996,10 @@ class SpaceNetRegressor(SpaceNet):
 
     Parameters
     ----------
-    penalty: string, optional (default 'smooth-lasso')
+    penalty : string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
@@ -1019,28 +1020,28 @@ class SpaceNetRegressor(SpaceNet):
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map.
 
-    mask: filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
 
-    target_affine: 3x3 or 4x4 matrix, optional (default None)
+    target_affine : 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional (default None)
+    target_shape : 3-tuple of integers, optional (default None)
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: False or float, optional, (default None)
+    low_pass : False or float, optional, (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional (default None)
+    high_pass : False or float, optional (default None)
         This parameter is passed to signal. Clean. Please see the related
         documentation for details
 
-    t_r: float, optional (default None)
+    t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -1096,10 +1097,10 @@ class SpaceNetRegressor(SpaceNet):
         `coef_` is readonly property derived from `raw_coef_` that
         follows the internal memory layout of liblinear.
 
-    `masker_`: instance of NiftiMasker
+    `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
 
-    `mask_img_`: Nifti like image
+    `mask_img_` : Nifti like image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -1110,7 +1111,7 @@ class SpaceNetRegressor(SpaceNet):
     `scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
-    `screening_percentile_`: float
+    `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
