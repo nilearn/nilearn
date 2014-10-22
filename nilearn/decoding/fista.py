@@ -37,7 +37,7 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
       continuity (i.e. it corresponds to the size of the vector that `f`
       takes as an argument).
 
-    lischitz_constant : float,
+    lispchitz_constant : float,
       Constant associated to the Lipschitz continuity.
 
     n_trials : int,
