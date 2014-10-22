@@ -384,10 +384,10 @@ class SpaceNet(LinearModel, RegressorMixin):
 
     Parameters
     ----------
-    penalty: string, optional (default 'smooth-lasso')
+    penalty : string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
-    is_classif: bool, optional (default False)
+    is_classif : bool, optional (default False)
         Flag telling whether the learning task is classification or regression.
 
     alphas: list of floats, optional (default None)
@@ -828,10 +828,10 @@ class SpaceNetClassifier(SpaceNet):
 
     Parameters
     ----------
-    penalty: string, optional (default 'smooth-lasso')
+    penalty : string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
-    alphas: list of floats, optional (default None)
+    alphas : list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
 
