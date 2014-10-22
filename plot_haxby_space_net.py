@@ -21,12 +21,10 @@ labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
 
 
 ### split data into train and test samples ####################################
-condition_mask = np.logical_or(labels['labels'] == "face",
-                               labels['labels'] == "house")
+target = labels['labels']
+condition_mask = np.logical_or(target == "face", target == "house")
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 9)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 9)
-
-_, target = np.unique(labels['labels'], return_inverse=True)
 
 # make X (design matrix) and y (response variable)
 import nibabel
@@ -41,8 +39,7 @@ y_test = target[condition_mask_test]
 
 ### Fit model on train data and predict on test data #########################
 from nilearn.decoding import SpaceNetClassifier
-decoder = SpaceNetClassifier(memory="cache", penalty="smooth-lasso",
-                             verbose=2, n_jobs=1)
+decoder = SpaceNetClassifier(memory="cache", penalty="TV-L1", verbose=2)
 decoder.fit(X_train, y_train)  # fit
 y_pred = decoder.predict(X_test)  # predict
 coef_niimg = decoder.coef_img_
