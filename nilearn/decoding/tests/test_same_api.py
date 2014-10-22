@@ -20,7 +20,8 @@ from nilearn.decoding.space_net_solvers import (squared_loss_and_spatial_grad,
                                  smooth_lasso_logistic,
                                  squared_loss_and_spatial_grad_derivative,
                                  tvl1_solver)
-from nilearn.decoding.space_net import SpaceNet
+from nilearn.decoding.space_net import (SpaceNet, SpaceNetClassifier,
+                                        SpaceNetRegressor)
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
@@ -151,10 +152,10 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
     for standardize in [True, False]:
-        sl = SpaceNet(alpha=alpha, l1_ratio=1., is_classif=True,
+        sl = SpaceNetClassifier(alpha=alpha, l1_ratio=1.,
                       max_iter=max_iter, mask=mask_, penalty="smooth-lasso",
                       standardize=standardize).fit(X_, y)
-        tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., is_classif=True,
+        tvl1 = SpaceNetClassifier(alpha=alpha, l1_ratio=1.,
                         max_iter=max_iter, mask=mask_, penalty="tv-l1",
                         standardize=standardize).fit(X_, y)
 
@@ -194,14 +195,13 @@ def test_coef_shape():
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, (2, 2, 2))
     for penalty in ["smooth-lasso", "tv-l1"]:
-        cv = SpaceNet(
-            mask=mask, max_iter=3, penalty=penalty, is_classif=False,
-            alpha=1.).fit(X, y)
+        cv = SpaceNetRegressor(
+            mask=mask, max_iter=3, penalty=penalty, alpha=1.).fit(X, y)
         assert_equal(cv.coef_.ndim, 1)
 
     for penalty in ["smooth-lasso", "tv-l1"]:
-        cv = SpaceNet(mask=mask, max_iter=3, penalty=penalty,
-                      is_classif=True, alpha=1.).fit(X, y)
+        cv = SpaceNetClassifier(mask=mask, max_iter=3, penalty=penalty,
+                                alpha=1.).fit(X, y)
         assert_equal(cv.coef_.ndim, 2)
 
 
