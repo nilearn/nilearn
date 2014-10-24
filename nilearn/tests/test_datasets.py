@@ -56,12 +56,16 @@ def test_md5_sum_file():
     assert_equal(datasets._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
     os.remove(f)
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_get_dataset_dir():
     """Verifies that under no arguments the function can create
        nilearn_data as a working dir"""
-    datasets._get_dataset_dir('test')
-    #Verify the directory gets created
-    assert os.path.exists('nilearn_data')
+    os.chdir(tmpdir)
+    test_dir = datasets._get_dataset_dir('test000')
+    assert test_dir.endswith('test000')
+    assert os.path.exists(test_dir)
+    shutil.rmtree(test_dir)
+    os.chdir(currdir)
     #Verify exception is raised on read-only directories
     no_write = mkdtemp()
     os.chmod(no_write, 0400)
