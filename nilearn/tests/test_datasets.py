@@ -16,7 +16,8 @@ from tempfile import mkdtemp, mkstemp
 import nibabel
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises,\
+    assert_raises_regexp
 
 
 from nilearn import datasets
@@ -66,8 +67,6 @@ def test_md5_sum_file():
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_get_dataset_dir():
-    """Verifies that under no arguments the function can create
-       nilearn_data as a working dir"""
     os.chdir(tmpdir)
     test_dir = datasets._get_dataset_dir('test000')
     assert test_dir.endswith('test000')
@@ -77,13 +76,15 @@ def test_get_dataset_dir():
     #Verify exception is raised on read-only directories
     no_write = mkdtemp()
     os.chmod(no_write, 0400)
-    assert_raises(OSError, datasets._get_dataset_dir, 'test', no_write)
+    assert_raises_regexp(OSError, 'Permission denied',
+                         datasets._get_dataset_dir, 'test', no_write)
     #Verify exception for not paths as files
     test_file = mktemp()
     out = open(test_file, 'w')
     out.write('abcfeg')
     out.close()
-    assert_raises(OSError, datasets._get_dataset_dir, 'test', test_file)
+    assert_raises_regexp(OSError, 'Not a directory',
+                         datasets._get_dataset_dir, 'test', test_file)
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_get_dataset_dir():
