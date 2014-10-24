@@ -1,14 +1,14 @@
 import numpy as np
 from joblib import Memory
+
+import os
+import sys
+sys.path.append(
+    os.path.join(os.environ["HOME"], "CODE/FORKED/parietal-python"))
 from examples.proximal.load_data import load_gain_poldrack
 
 mem = Memory(cachedir='cache', verbose=3)
-
-n_jobs = 1
-
 X, y, subjects, mask, affine = mem.cache(load_gain_poldrack)(smooth=0)
-
-# make X (design matrix) and y (response variable)
 img_data = np.zeros(list(mask.shape) + [len(X)])
 img_data[mask, :] = X.T
 
@@ -18,9 +18,8 @@ X_train = nibabel.Nifti1Image(img_data, affine)
 y_train = y
 
 ### Fit and predict ##########################################################
-import os
 from nilearn.decoding import SpaceNetRegressor
-decoder = SpaceNetRegressor(memory="cache", mask=mask_img, verbose=2,
+decoder = SpaceNetRegressor(memory=mem,, mask=mask_img, verbose=2,
                             n_jobs=int(os.environ.get("N_JOBS", 1)))
 decoder.fit(X_train, y_train)  # fit
 coef_niimg = decoder.coef_img_
