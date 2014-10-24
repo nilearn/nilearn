@@ -19,7 +19,7 @@ y_train = y
 
 ### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNetRegressor
-decoder = SpaceNetRegressor(memory=mem,, mask=mask_img, verbose=2,
+decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
                             n_jobs=int(os.environ.get("N_JOBS", 1)))
 decoder.fit(X_train, y_train)  # fit
 coef_niimg = decoder.coef_img_
