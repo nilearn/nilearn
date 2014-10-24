@@ -111,7 +111,7 @@ def _univariate_feature_screening(
     sX = np.empty(list(mask.shape) + [n_samples])
     for row in xrange(n_samples):
         sX[:, :, :, row] = _unmask(X[row], mask)
-    sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
+    # sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
     sX = sX[mask].T
 
     # do feature screening proper
@@ -641,7 +641,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        target_shape=self.target_shape,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
-                                       standardize=self.standardize,
+                                       standardize=False,
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
@@ -679,14 +679,16 @@ class SpaceNet(LinearModel, RegressorMixin):
             y = y.ravel()
 
         # if regression, standardize y too
-        if self.standardize and not self.is_classif:
-            X, y, Xmean, ymean, Xstd = center_data(
+        if self.standardize:
+            X, y_, Xmean, ymean, Xstd = center_data(
                 X, y, copy=True, normalize=True,
                 fit_intercept=self.fit_intercept)
+            if not self.is_classif:
+                y = y
         else:
-            Xmean = np.mean(X, axis=0)
-            ymean = np.mean(y)
-            Xstd = np.std(X, axis=0)
+            Xmean = 0.
+            ymean = 0.
+            Xstd = 1.
 
         # make / sanitize alpha grid
         if self.alpha is not None:
