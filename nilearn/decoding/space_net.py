@@ -485,7 +485,7 @@ class SpaceNet(LinearModel, RegressorMixin):
     n_jobs : int, optional (default 1)
         Number of jobs in solving the sub-problems.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -534,7 +534,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
                  alpha_min=1e-6, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
-                 cv=10, fit_intercept=True, screening_percentile=20.,
+                 cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         super(SpaceNet, self).__init__()
         self.penalty = penalty
