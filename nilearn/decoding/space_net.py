@@ -69,7 +69,7 @@ def _crop_mask(mask):
 
 
 def _univariate_feature_screening(
-    X, y, mask, is_classif, screening_percentile, smooth=0.):
+    X, y, mask, is_classif, screening_percentile, smooth=2.):
     """
     Selects the most import features, via a univariate test
 
@@ -652,7 +652,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        target_shape=self.target_shape,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
-                                       standardize=False,
+                                       standardize=self.standardize,
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)

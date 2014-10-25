@@ -39,12 +39,13 @@ y_test = target[condition_mask_test]
 
 ### Loop over Smooth-LASSO and TV-L1 penalties ###############################
 from nilearn.decoding import SpaceNetClassifier
+penalties = ['Smooth-LASSO', 'TV-L1']
 decoders = {}
 accuracies = {}
-for penalty in ['Smooth-LASSO', 'TV-L1']:
+for penalty in penalties:
    ### Fit model on train data and predict on test data ######################
     decoder = SpaceNetClassifier(memory="cache", penalty=penalty,
-                                 verbose=2)
+                                 verbose=2, max_iter=100)
     decoder.fit(X_train, y_train)  # fit
     y_pred = decoder.predict(X_test)  # predict
     accuracies[penalty] = (y_pred == y_test).mean() * 100.
