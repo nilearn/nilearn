@@ -106,16 +106,13 @@ def _univariate_feature_screening(
         original mask.
     """
 
-    return X, mask, mask[mask]
-
     n_samples, _ = X.shape
-
-    # return X, mask, mask[mask]
 
     # smooth the data before screening
     sX = np.empty(list(mask.shape) + [n_samples])
     for row in xrange(n_samples):
-        sX[:, :, :, row] = _unmask(X[row], mask)
+        sX[:, :, :, row] = _unmask(X[row].copy(),  # avoid modifying X
+                                   mask)
     # sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
     sX = sX[mask].T
 
@@ -128,49 +125,6 @@ def _univariate_feature_screening(
     # on which a spatial prior makes sense
     nice_mask = mask.copy()
     nice_mask[mask] = (support > 0)
-
-    import pylab as pl
-    m = ndimage.binary_dilation(
-        nice_mask).astype(np.bool)
-
-    from nilearn.plotting import plot_stat_map
-    from nilearn.image import mean_img
-    import nibabel
-    # print mask.sum()
-
-    # m = ndimage.binary_erosion(
-    #     nice_mask).astype(np.bool)
-
-    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
-    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
-    #               cut_coords=range(10, 30, 2), title="erosion")
-    # pl.show()
-
-    # m = ndimage.binary_dilation(
-    #     nice_mask).astype(np.bool)
-
-    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
-    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
-    #               cut_coords=range(10, 30, 2), title="dilation")
-    # pl.show()
-
-    # m = ndimage.binary_erosion(ndimage.binary_dilation(
-    #     nice_mask)).astype(np.bool)
-
-    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
-    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
-    #               cut_coords=range(10, 30, 2), title="erosion o dilation")
-    # pl.show()
-
-
-    # m = ndimage.binary_dilation(ndimage.binary_erosion(
-    #     nice_mask)).astype(np.bool)
-
-    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
-    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
-    #               cut_coords=range(10, 30, 2), title="dilation o erosion")
-    # pl.show()
-
     nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(
                 nice_mask)).astype(np.bool)
     nice_mask[np.logical_not(mask)] = 0
@@ -367,7 +321,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     # Univariate feature screening. Note that if we have only as few as 50
     # features in the mask's support, then we should to use all of them to
     # learn the model i.e disable this screening)
-    do_screening = screening_percentile < 100.
+    do_screening = (n_features > 100) and screening_percentile < 100.
     if do_screening:
         X, mask, support = _univariate_feature_screening(
             X, y, mask, is_classif, screening_percentile)
@@ -694,10 +648,6 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        standardize=False,
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
-
-        global X_
-        X_ = X
-
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.mask_img_.get_data().astype(np.bool)
@@ -771,27 +721,21 @@ class SpaceNet(LinearModel, RegressorMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
 
         # correct screening_percentile according to the volume of the data mask
-        if X.shape[1] > 100.:
-            mask_volume = _get_mask_volume(self.mask_img_)
-            print "Mask volume = %gmm^3 = %gcm^3" % (
-                mask_volume, mask_volume / 100.)
-            print "Standard brain volume = %gmm^3 = %gcm^3" % (
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 100.)
-            if mask_volume > MNI152_BRAIN_VOLUME:
-                warnings.warn(
-                    "Brain mask is bigger than volume of standard brain!")
-            self.screening_percentile_ = self.screening_percentile * (
-                mask_volume / MNI152_BRAIN_VOLUME)
-            if self.verbose:
-                print "Original screening-percentile: %g" % (
-                    self.screening_percentile)
-                print "Volume-corrected screening-percentile: %g" % (
-                    self.screening_percentile_)
-        else:
-            if self.verbose:
-                print ("Very few features (%i); disabling feature "
-                       "screening." % X.shape[1])
-            self.screening_percentile_ = 100.
+        mask_volume = _get_mask_volume(self.mask_img_)
+        print "Mask volume = %gmm^3 = %gcm^3" % (
+            mask_volume, mask_volume / 100.)
+        print "Standard brain volume = %gmm^3 = %gcm^3" % (
+            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 100.)
+        if mask_volume > MNI152_BRAIN_VOLUME:
+            warnings.warn(
+                "Brain mask is bigger than volume of standard brain!")
+        self.screening_percentile_ = self.screening_percentile * (
+            mask_volume / MNI152_BRAIN_VOLUME)
+        if self.verbose:
+            print "Original screening-percentile: %g" % (
+                self.screening_percentile)
+            print "Volume-corrected screening-percentile: %g" % (
+                self.screening_percentile_)
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter,
