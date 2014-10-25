@@ -12,6 +12,7 @@ X, y, _, mask, affine = mem.cache(load_gain_poldrack)(smooth=0)
 img_data = np.zeros(list(mask.shape) + [len(X)])
 img_data[mask, :] = X.T
 
+# prepare input data for learner
 import nibabel
 mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
 X_train = nibabel.Nifti1Image(img_data, affine)
@@ -22,12 +23,10 @@ from nilearn.decoding import SpaceNetRegressor
 penalty = "TV-L1"
 l1_ratio = .3
 alpha = None
-max_iter = 1000
-tol = 1e-4
 decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
                             n_jobs=int(os.environ.get("N_JOBS", 1)),
                             cv=8, l1_ratio=l1_ratio, penalty=penalty,
-                            alpha=alpha, max_iter=max_iter, tol=tol)
+                            alpha=alpha)
 decoder.fit(X_train, y_train)  # fit
 coef_niimg = decoder.coef_img_
 coef_niimg.to_filename('poldrack_%s(l1_ratio=%g, alpha=%s)_weights.nii' % (
