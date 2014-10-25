@@ -69,7 +69,7 @@ def _crop_mask(mask):
 
 
 def _univariate_feature_screening(
-        X, y, mask, is_classif, screening_percentile):
+    X, y, mask, is_classif, screening_percentile, smooth=0.):
     """
     Selects the most import features, via a univariate test
 
@@ -91,6 +91,10 @@ def _univariate_feature_screening(
         Only the `screening_percentile * 100" percent most import voxels will
         be retained.
 
+    smooth : float, optional (default 0.)
+        FWHM for isotropically smoothing the data X before F-testing. A value
+        of zero means "don't smooth".
+
     Returns
     -------
     X_: ndarray, shape (n_samples, n_features_)
@@ -109,12 +113,15 @@ def _univariate_feature_screening(
     n_samples, _ = X.shape
 
     # smooth the data before screening
-    sX = np.empty(list(mask.shape) + [n_samples])
-    for row in xrange(n_samples):
-        sX[:, :, :, row] = _unmask(X[row].copy(),  # avoid modifying X
-                                   mask)
-    # sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
-    sX = sX[mask].T
+    if smooth > 0.:
+        sX = np.empty(list(mask.shape) + [n_samples])
+        for row in xrange(n_samples):
+            sX[:, :, :, row] = _unmask(X[row].copy(),  # avoid modifying X
+                                       mask)
+        sX = ndimage.gaussian_filter(sX, (smooth, smooth, smooth, 0.))
+        sX = sX[mask].T
+    else:
+        sX = X
 
     # do feature screening proper
     selector = SelectPercentile(f_classif if is_classif else f_regression,
