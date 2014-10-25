@@ -106,6 +106,8 @@ def _univariate_feature_screening(
         original mask.
     """
 
+    return X, mask, mask[mask]
+
     n_samples, _ = X.shape
 
     # return X, mask, mask[mask]
@@ -114,7 +116,7 @@ def _univariate_feature_screening(
     sX = np.empty(list(mask.shape) + [n_samples])
     for row in xrange(n_samples):
         sX[:, :, :, row] = _unmask(X[row], mask)
-    sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
+    # sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
     sX = sX[mask].T
 
     # do feature screening proper
@@ -127,13 +129,13 @@ def _univariate_feature_screening(
     nice_mask = mask.copy()
     nice_mask[mask] = (support > 0)
 
-    # import pylab as pl
-    # m = ndimage.binary_dilation(
-    #     nice_mask).astype(np.bool)
+    import pylab as pl
+    m = ndimage.binary_dilation(
+        nice_mask).astype(np.bool)
 
-    # from nilearn.plotting import plot_stat_map
-    # from nilearn.image import mean_img
-    # import nibabel
+    from nilearn.plotting import plot_stat_map
+    from nilearn.image import mean_img
+    import nibabel
     # print mask.sum()
 
     # m = ndimage.binary_erosion(
@@ -170,7 +172,7 @@ def _univariate_feature_screening(
     # pl.show()
 
     nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(
-            nice_mask)).astype(np.bool)
+                nice_mask)).astype(np.bool)
     nice_mask[np.logical_not(mask)] = 0
     support = nice_mask[mask]
     X = X[:, support]
