@@ -517,7 +517,7 @@ class SpaceNet(LinearModel, RegressorMixin):
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_` : 2d array of shape (n_alphas, n_folds)
+    `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -724,7 +724,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.n_folds_ = len(cv)
 
         # scores & mean weights map over all folds
-        self.scores_ = [[] for _ in xrange(n_problems)]
+        self.cv_scores_ = [[] for _ in xrange(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
 
         # correct screening_percentile according to the volume of the data mask
@@ -759,15 +759,15 @@ class SpaceNet(LinearModel, RegressorMixin):
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in cv):
             test_scores = np.reshape(test_scores, (-1, 1))
-            if not len(self.scores_[c]):
-                self.scores_[c] = test_scores
+            if not len(self.cv_scores_[c]):
+                self.cv_scores_[c] = test_scores
             else:
-                self.scores_[c] = np.hstack((self.scores_[c], test_scores))
+                self.cv_scores_[c] = np.hstack((self.cv_scores_[c], test_scores))
             w[c] += best_w
 
         # keep best alpha, for historical reasons
         self.alphas_ = alphas
-        self.i_alpha_ = [np.argmin(np.mean(self.scores_[c], axis=-1))
+        self.i_alpha_ = [np.argmin(np.mean(self.cv_scores_[c], axis=-1))
                          for c in xrange(n_problems)]
         if n_problems == 1:
             self.i_alpha_ = self.i_alpha_[0]
@@ -979,7 +979,7 @@ class SpaceNetClassifier(SpaceNet):
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_` : 2d array of shape (n_alphas, n_folds)
+    `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -1141,7 +1141,7 @@ class SpaceNetRegressor(SpaceNet):
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `scores_` : 2d array of shape (n_alphas, n_folds)
+    `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
