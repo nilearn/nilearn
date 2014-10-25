@@ -19,12 +19,15 @@ y_train = y
 
 ### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNetRegressor
+penalty = "smooth-lasso"
+l1_ratio = .75
 decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
                             n_jobs=int(os.environ.get("N_JOBS", 1)),
-                            cv=3, l1_ratio=.3, penalty="TV-L1")
+                            cv=8, l1_ratio=l1_ratio, penalty=penalty)
 decoder.fit(X_train, y_train)  # fit
 coef_niimg = decoder.coef_img_
-coef_niimg.to_filename('poldrack_weights.nii')
+coef_niimg.to_filename('poldrack_%s(l1_ratio=%g)_weights.nii' % (
+        penalty, l1_ratio))
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
