@@ -20,8 +20,8 @@ y_train = y
 ### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNetRegressor
 penalty = "TV-L1"
-l1_ratio = .9
-alpha = None  # 1. / X_train.shape[-1]
+l1_ratio = .3
+alpha = .1 / X_train.shape[-1]
 max_iter = 1000
 tol = 1e-4
 decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
