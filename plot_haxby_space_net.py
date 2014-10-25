@@ -37,27 +37,35 @@ X_test = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask_test],
 y_test = target[condition_mask_test]
 
 
-### Fit model on train data and predict on test data #########################
+### Loop over Smooth-LASSO and TV-L1 penalties ###############################
 from nilearn.decoding import SpaceNetClassifier
-decoder = SpaceNetClassifier(memory="cache", penalty="TV-L1", verbose=2)
-decoder.fit(X_train, y_train)  # fit
-y_pred = decoder.predict(X_test)  # predict
-coef_niimg = decoder.coef_img_
-coef_niimg.to_filename('haxby_tvl1_weights.nii')
-
+decoders = {}
+accuracies = {}
+for penalty in ['Smooth-LASSO', 'TV-L1']:
+   ### Fit model on train data and predict on test data ######################
+    decoder = SpaceNetClassifier(memory="cache", penalty=penalty,
+                                 verbose=2)
+    decoder.fit(X_train, y_train)  # fit
+    y_pred = decoder.predict(X_test)  # predict
+    accuracies[penalty] = (y_pred == y_test).mean() * 100.
+    decoders[penalty] = decoder
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
 from nilearn.image import mean_img
 from nilearn.plotting import plot_stat_map
 background_img = mean_img(data_files.func[0])
-slicer = plot_stat_map(coef_niimg, background_img, title="TV-L1 weights",
-                       cut_coords=(-16, -38, 35))
-slicer.add_contours(decoder.mask_img_)
-accuracy = (y_pred == y_test).mean() * 100.
-print decoder
-print "#" * 80
-print "Number of train samples : %i" % condition_mask_train.sum()
-print "Number of test samples  : %i" % condition_mask_test.sum()
-print "Classification accuracy : %g%%" % accuracy
+print "Results"
+print "=" * 80
+for penalty, decoder in decoders.iteritems():
+    coef_img = decoder.coef_img_
+    slicer = plot_stat_map(coef_img, background_img, title=penalty,
+                           cut_coords=(20, -34, -16))
+    coef_img.to_filename('haxby_%s_weights.nii' % penalty)
+    print decoder
+    print "#" * 80
+    print "Number of train samples : %i" % condition_mask_train.sum()
+    print "Number of test samples  : %i" % condition_mask_test.sum()
+    print "Classification accuracy : %g%%" % accuracies[penalty]
+    print "_" * 80
 plt.show()
