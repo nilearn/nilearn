@@ -8,7 +8,7 @@ sys.path.append(
 from examples.proximal.load_data import load_gain_poldrack
 
 mem = Memory(cachedir='cache', verbose=3)
-X, y, subjects, mask, affine = mem.cache(load_gain_poldrack)(smooth=0)
+X, y, _, mask, affine = mem.cache(load_gain_poldrack)(smooth=0)
 img_data = np.zeros(list(mask.shape) + [len(X)])
 img_data[mask, :] = X.T
 
@@ -20,7 +20,8 @@ y_train = y
 ### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNetRegressor
 decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
-                            n_jobs=int(os.environ.get("N_JOBS", 1)))
+                            n_jobs=int(os.environ.get("N_JOBS", 1)),
+                            cv=3, l1_ratio=.3, penalty="TV-L1")
 decoder.fit(X_train, y_train)  # fit
 coef_niimg = decoder.coef_img_
 coef_niimg.to_filename('poldrack_weights.nii')
@@ -33,6 +34,6 @@ plt.close('all')
 background_img = mean_img(X_train)
 background_img.to_filename('poldrack_mean.nii')
 slicer = plot_stat_map(coef_niimg, background_img, title="Weights",
-                       cut_coords=range(10, 30, 2), display_mode="y")
+                       cut_coords=[20, -2], display_mode="yz")
 slicer.add_contours(decoder.mask_img_)
 plt.show()

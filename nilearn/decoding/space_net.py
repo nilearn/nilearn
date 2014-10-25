@@ -34,6 +34,7 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
+X_ = None
 
 
 def _get_mask_volume(mask):
@@ -107,11 +108,13 @@ def _univariate_feature_screening(
 
     n_samples, _ = X.shape
 
+    # return X, mask, mask[mask]
+
     # smooth the data before screening
     sX = np.empty(list(mask.shape) + [n_samples])
     for row in xrange(n_samples):
         sX[:, :, :, row] = _unmask(X[row], mask)
-    # sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
+    sX = ndimage.gaussian_filter(sX, (2., 2., 2., 0.))
     sX = sX[mask].T
 
     # do feature screening proper
@@ -123,10 +126,55 @@ def _univariate_feature_screening(
     # on which a spatial prior makes sense
     nice_mask = mask.copy()
     nice_mask[mask] = (support > 0)
-    nice_mask = ndimage.binary_fill_holes(nice_mask).astype(np.bool)
+
+    # import pylab as pl
+    # m = ndimage.binary_dilation(
+    #     nice_mask).astype(np.bool)
+
+    # from nilearn.plotting import plot_stat_map
+    # from nilearn.image import mean_img
+    # import nibabel
+    # print mask.sum()
+
+    # m = ndimage.binary_erosion(
+    #     nice_mask).astype(np.bool)
+
+    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
+    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
+    #               cut_coords=range(10, 30, 2), title="erosion")
+    # pl.show()
+
+    # m = ndimage.binary_dilation(
+    #     nice_mask).astype(np.bool)
+
+    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
+    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
+    #               cut_coords=range(10, 30, 2), title="dilation")
+    # pl.show()
+
+    # m = ndimage.binary_erosion(ndimage.binary_dilation(
+    #     nice_mask)).astype(np.bool)
+
+    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
+    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
+    #               cut_coords=range(10, 30, 2), title="erosion o dilation")
+    # pl.show()
+
+
+    # m = ndimage.binary_dilation(ndimage.binary_erosion(
+    #     nice_mask)).astype(np.bool)
+
+    # m = nibabel.Nifti1Image(m.astype(np.float), X_.get_affine())
+    # plot_stat_map(m, mean_img(X_), display_mode="y", black_bg=True,
+    #               cut_coords=range(10, 30, 2), title="dilation o erosion")
+    # pl.show()
+
+    nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(
+            nice_mask)).astype(np.bool)
     nice_mask[np.logical_not(mask)] = 0
     support = nice_mask[mask]
     X = X[:, support]
+
     return X, nice_mask, support
 
 
@@ -644,6 +692,10 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        standardize=False,
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
+
+        global X_
+        X_ = X
+
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.mask_img_.get_data().astype(np.bool)
@@ -684,11 +736,11 @@ class SpaceNet(LinearModel, RegressorMixin):
                 X, y, copy=True, normalize=True,
                 fit_intercept=self.fit_intercept)
             if not self.is_classif:
-                y = y
+                y = y_
         else:
-            Xmean = 0.
+            Xmean = np.zeros(X.shape[1])
             ymean = 0.
-            Xstd = 1.
+            Xstd = np.ones(X.shape[1])
 
         # make / sanitize alpha grid
         if self.alpha is not None:
