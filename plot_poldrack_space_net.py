@@ -1,12 +1,12 @@
 import numpy as np
 from joblib import Memory
 
+### Load data ################################################################
 import os
 import sys
 sys.path.append(
     os.path.join(os.environ["HOME"], "CODE/FORKED/parietal-python"))
 from examples.proximal.load_data import load_gain_poldrack
-
 mem = Memory(cachedir='cache', verbose=3)
 X, y, _, mask, affine = mem.cache(load_gain_poldrack)(smooth=0)
 img_data = np.zeros(list(mask.shape) + [len(X)])
@@ -21,7 +21,7 @@ y_train = y
 from nilearn.decoding import SpaceNetRegressor
 penalty = "TV-L1"
 l1_ratio = .3
-alpha = .1 / X_train.shape[-1]
+alpha = None
 max_iter = 1000
 tol = 1e-4
 decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
@@ -40,7 +40,6 @@ from nilearn.plotting import plot_stat_map
 plt.close('all')
 background_img = mean_img(X_train)
 background_img.to_filename('poldrack_mean.nii')
-slicer = plot_stat_map(coef_niimg, background_img, title="Weights",
-                       cut_coords=[20, -2], display_mode="yz")
-slicer.add_contours(decoder.mask_img_)
+slicer = plot_stat_map(coef_niimg, background_img, cut_coords=[20, -2],
+                       display_mode="yz", title="%s weights" % penalty)
 plt.show()
