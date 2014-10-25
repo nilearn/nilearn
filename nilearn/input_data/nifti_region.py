@@ -196,6 +196,10 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def fit_transform(self, niimgs, confounds=None):
         return self.fit().transform(niimgs, confounds=confounds)
 
+    def _check_fitted(self):
+        if not hasattr(self, "self.labels_img_"):
+            raise AttributeError("Model has not been trained yet.")
+
     def transform(self, niimgs, confounds=None):
         """Extract signals from images.
 
@@ -217,6 +221,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             shape: (number of scans, number of regions)
 
         """
+        self._check_fitted()
+
         logger.log("loading images: %s" %
                    _utils._repr_niimgs(niimgs)[:200], verbose=self.verbose)
         niimgs = _utils.check_niimgs(niimgs)
@@ -267,6 +273,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Signal for each voxel
             shape: (number of scans, number of voxels)
         """
+        self._check_fitted()
+        
         logger.log("computing image from signals", verbose=self.verbose)
         return region.signals_to_img_labels(
             signals, self.labels_img_, self.mask_img_,
