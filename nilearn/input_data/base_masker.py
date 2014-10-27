@@ -153,8 +153,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
-        from .nifti_masker import NiftiMasker
-        params = get_params(NiftiMasker, self)
+        params = get_params(self.__class__, self)
         # Remove the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
         for name in ('mask_img', 'mask_args'):
@@ -196,8 +195,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
-        from .nifti_masker import NiftiMasker
-        params = get_params(NiftiMasker, self)
+        params = get_params(self.__class__, self)
 
         reference_affine = None
         if self.target_affine is None:
