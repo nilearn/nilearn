@@ -67,12 +67,32 @@ def test_md5_sum_file():
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_get_dataset_dir():
+
     os.chdir(tmpdir)
-    test_dir = datasets._get_dataset_dir('test000')
-    assert test_dir.endswith('test000')
-    assert os.path.exists(test_dir)
-    shutil.rmtree(test_dir)
+    #testing folder creation under different environments, enforcing a custom
+    #clean install
+    os.environ.pop('NILEARN_DATA', None)
+    os.environ.pop('NILEARN_SHARED_DATA', None)
+
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abspath(os.path.join('nilearn_data', 'test')))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    os.environ['NILEARN_DATA'] = 'test_nilearn_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.join('test_nilearn_data', 'test'))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    os.environ['NILEARN_SHARED_DATA'] = 'nilearn_shared_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.join('nilearn_shared_data', 'test'))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
     os.chdir(currdir)
+
     #Verify exception is raised on read-only directories
     no_write = mkdtemp()
     os.chmod(no_write, 0400)
