@@ -43,8 +43,11 @@ def test_nifti_labels_masker():
     labels11_img = testing.generate_labeled_regions(shape1, affine=affine1,
                                                     n_regions=n_regions)
 
-    # No exception raised here
+    # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
+    assert_raises(ValueError, masker11.transform, fmri11_img)
+
+    # No exception raised here    
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
