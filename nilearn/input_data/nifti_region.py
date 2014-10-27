@@ -197,8 +197,10 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         return self.fit().transform(niimgs, confounds=confounds)
 
     def _check_fitted(self):
-        if not hasattr(self, "self.labels_img_"):
-            raise AttributeError("Model has not been trained yet.")
+        if not hasattr(self, "labels_img_"):
+            raise ValueError('It seems that %s has not been fit. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
 
     def transform(self, niimgs, confounds=None):
         """Extract signals from images.
