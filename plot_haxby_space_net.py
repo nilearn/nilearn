@@ -60,7 +60,7 @@ print "Results"
 print "=" * 80
 for penalty, decoder in decoders.iteritems():
     coef_img = decoder.coef_img_
-    slicer = plot_stat_map(coef_img, background_img, title=penalty,
+    plot_stat_map(coef_img, background_img, title=penalty,
                            cut_coords=(20, -34, -16))
     coef_img.to_filename('haxby_%s_weights.nii' % penalty)
     print decoder
