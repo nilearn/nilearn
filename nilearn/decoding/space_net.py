@@ -68,7 +68,7 @@ def _crop_mask(mask):
 
 
 def _univariate_feature_screening(
-    X, y, mask, is_classif, screening_percentile, smooth=0.):
+    X, y, mask, is_classif, screening_percentile, smooth=2.):
     """
     Selects the most import features, via a univariate test
 
@@ -90,7 +90,7 @@ def _univariate_feature_screening(
         Only the `screening_percentile * 100" percent most import voxels will
         be retained.
 
-    smooth : float, optional (default 0.)
+    smooth : float, optional (default 2.)
         FWHM for isotropically smoothing the data X before F-testing. A value
         of zero means "don't smooth".
 
@@ -603,7 +603,10 @@ class SpaceNet(LinearModel, RegressorMixin):
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
-        self.intercept_ = self.w_[:, -1]
+        if self.is_classif:
+            self.intercept_ = self.w_[:, -1]
+        else:
+            self._set_intercept(self.Xmean, self.ymean, self.Xstd)
 
     def _standardize_X(self, X, copy=False):
         """Standardize data so that it each sample point has 0 mean and 0
@@ -749,6 +752,10 @@ class SpaceNet(LinearModel, RegressorMixin):
         else:
             Xmean = np.zeros(X.shape[1])
             Xstd = np.ones(X.shape[1])
+        if not self.is_classif:
+            self.Xmean = Xmean
+            self.Xstd = Xstd
+            self.ymean = ymean[0]
 
         # make / sanitize alpha grid
         if self.alpha is not None:
