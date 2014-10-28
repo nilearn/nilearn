@@ -711,7 +711,8 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.mask_img_.get_data().astype(np.bool)
         n_samples, _ = X.shape
-        y = np.array(y).copy().ravel()
+
+        y = np.array(y).copy()
 
         # misc
         if not self.loss is None:
@@ -756,6 +757,8 @@ class SpaceNet(LinearModel, RegressorMixin):
             self.Xmean = Xmean
             self.Xstd = Xstd
             self.ymean = ymean[0]
+        if n_problems == 1:
+            y = y[:, 0]
 
         # make / sanitize alpha grid
         if self.alpha is not None:
@@ -805,8 +808,8 @@ class SpaceNet(LinearModel, RegressorMixin):
                              rescale_alpha=True)
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
-                solver, X, y[:, c], self.mask_, alphas, self.l1_ratio,
-                train, test, solver_params,
+                solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
+                alphas, self.l1_ratio, train, test, solver_params,
                 is_classif=self.loss == "logistic", key=c,
                 debias=self.debias, Xmean=Xmean, ymean=ymean[c], Xstd=Xstd,
                 verbose=self.verbose,
