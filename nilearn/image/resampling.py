@@ -341,8 +341,9 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     elif interpolation == 'nearest':
         interpolation_order = 0
     else:
-        raise ValueError("interpolation must be either 'continuous' "
-                         "or 'nearest'")
+        message = ("interpolation must be either 'continuous' "
+                   "or 'nearest' but it was set to '{}'").format(interpolation)
+        raise ValueError(message)
 
     if isinstance(niimg, basestring):
         # Avoid a useless copy
@@ -458,40 +459,43 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     return Nifti1Image(resampled_data, target_affine)
 
 
-def reorder_img(niimg, resample=False):
-    """ Returns an image with the affine diagonal (by permuting axes). 
+def reorder_img(niimg, resample=None):
+    """Returns an image with the affine diagonal (by permuting axes).
     The orientation of the new image will be RAS (Right, Anterior, Superior).
-    If it is impossible to get xyz ordering by permuting the axis, a
-    'CompositionError' is raised.
+    If it is impossible to get xyz ordering by permuting the axes, a
+    'ValueError' is raised.
 
         Parameters
         -----------
         niimg: nilearn nifti image
             Path to a nifti file or nifti-like object
-        
-        resample: boolean, optional
-            If resample is False (default), no resampling is performed, the
-            axis are only permuted. 
+
+        resample: None or string in {'continuous', 'nearest'}, optional
+            If resample is None (default), no resampling is performed, the
+            axes are only permuted.
+            Otherwise resampling is performed and 'resample' will
+            be passed as the 'interpolation' argument into
+            resample_img.
+
     """
-    
     niimg = _utils.check_niimg(niimg)
-    
+
     affine = niimg.get_affine()
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
         # The affine is not nearly diagonal
-        if not resample:
-            raise ValueError(
-            'Cannot reorder the axis: the image affine contains rotations'
-                )
+        if resample is None:
+            raise ValueError('Cannot reorder the axes: '
+                             'the image affine contains rotations')
         else:
             # Identify the voxel size using a QR decomposition of the
             # affine
             R, Q = np.linalg.qr(affine[:3, :3])
             target_affine = np.diag(np.abs(np.diag(Q))[
                                                 np.abs(R).argmax(axis=1)])
-            return resample_img(niimg, target_affine=target_affine)
+            return resample_img(niimg, target_affine=target_affine,
+                                interpolation=resample)
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
     data = niimg.get_data()
