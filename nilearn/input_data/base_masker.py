@@ -150,7 +150,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def transform_single_niimgs(self, niimgs, confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
-            raise ValueError('It seems that %s has not been fit. '
+            raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
         from .nifti_masker import NiftiMasker
@@ -193,7 +193,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         '''
 
         if not hasattr(self, 'mask_img_'):
-            raise ValueError('It seems that %s has not been fit. '
+            raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
         from .nifti_masker import NiftiMasker
