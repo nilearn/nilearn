@@ -25,8 +25,7 @@ l1_ratio = .3
 alpha = None
 decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
                             n_jobs=int(os.environ.get("N_JOBS", 1)),
-                            cv=8, l1_ratio=l1_ratio, penalty=penalty,
-                            alpha=alpha)
+                            l1_ratio=l1_ratio, penalty=penalty, alpha=alpha)
 decoder.fit(X_train, y_train)  # fit
 coef_niimg = decoder.coef_img_
 coef_niimg.to_filename('poldrack_%s(l1_ratio=%g, alpha=%s)_weights.nii' % (

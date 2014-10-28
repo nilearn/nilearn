@@ -50,7 +50,6 @@ def _get_mask_volume(mask):
     vol : float
         The computed volume.
     """
-
     vox_dims = mask.get_header().get_zooms()[:3]
     return 1. * np.prod(vox_dims) * mask.get_data().astype(np.bool).sum()
 
@@ -69,7 +68,7 @@ def _crop_mask(mask):
 
 
 def _univariate_feature_screening(
-    X, y, mask, is_classif, screening_percentile, smooth=2.):
+    X, y, mask, is_classif, screening_percentile, smooth=0.):
     """
     Selects the most import features, via a univariate test
 
@@ -109,7 +108,6 @@ def _univariate_feature_screening(
         Support of the screened mask, as a subset of the support of the
         original mask.
     """
-
     n_samples, _ = X.shape
 
     # smooth the data before screening
@@ -175,7 +173,6 @@ def _space_net_alpha_grid(
     normalize : boolean, optional, default False
         If ``True``, the regressors X will be normalized before regression.
     """
-
     if standardize:
         X, y, _, _, _ = center_data(X, y, fit_intercept=fit_intercept,
                                     normalize=normalize, copy=True)
@@ -222,7 +219,6 @@ class EarlyStoppingCallback(object):
         rising. We use a Spearman correlation (btween X_test.w and y_test)
         for scoring.
     """
-
     def __init__(self, X_test, y_test, is_classif, debias=False, ymean=0.,
                  verbose=0):
         self.X_test = X_test
@@ -316,7 +312,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     solver_params: dict
        Dictionary of param-value pairs to be passed to solver.
     """
-
     # make local copy of mask
     mask = mask.copy()
 
@@ -524,7 +519,6 @@ class SpaceNet(LinearModel, RegressorMixin):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-
     SUPPORTED_PENALTIES = ["smooth-lasso", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
 
@@ -603,11 +597,69 @@ class SpaceNet(LinearModel, RegressorMixin):
                  "problems."))
 
     def _set_coef_and_intercept(self, w):
+        """Sets the loadings vector (coef) and the intercept of the fitted
+        model."""
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
         self.intercept_ = self.w_[:, -1]
+
+    def _standardize_X(self, X, copy=False):
+        """Standardize data so that it each sample point has 0 mean and 0
+        variance.
+
+        Parameters
+        ----------
+        X : ndarray, shape (n_samples, n_features)
+            Sample points to be standardized.
+
+        copy : bool, optional (default False)
+            If False, then X will be modified inplace.
+
+        Returns
+        -------
+        X_ : ndarray, shape (n_samples, n_features)
+            Standardized data.
+
+        Xmean : ndarray, shape (n_samples,)
+            Mean along axis 0 of input data `X`.
+
+        Xstd : ndarray, shape (n_samples,)
+            Standard deviation (std) along axis 0 of input data `X`.
+        """
+        if copy:
+            X = X.copy()
+        Xmean = X.mean(axis=0)
+        Xstd = X.std(axis=0)
+        X -= Xmean
+        X /= Xstd
+        return X, Xmean, Xstd
+
+    def _standardize_y(slef, y, copy=False):
+        """Standardize response vector y so that it has 0 mean and unit
+        variance.
+
+        Parameters
+        ----------
+        y : ndarray, shape (n_samples,)
+            Response vector to be standardize, one value per sample point.
+
+        copy : bool, optional (default False)
+            If False, then `y` will be modified inplace.
+
+        Returns
+        -------
+        y_ : ndarray, shape (n_samples,)
+            Standardized version of `y`.
+
+        ymean : ndarray, shape (n_samples,)
+            Mean along input `y`.
+        """
+
+        ymean = y.mean()
+        y -= ymean
+        return y, ymean
 
     def fit(self, X, y):
         """Fit the learner
@@ -627,9 +679,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         -----
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
-
         """
-
         # sanity check on params
         self.check_params()
 
@@ -652,7 +702,6 @@ class SpaceNet(LinearModel, RegressorMixin):
                                        target_shape=self.target_shape,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
-                                       standardize=self.standardize,
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
@@ -683,22 +732,22 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         if self.is_classif:
             y = self._binarize_y(y)
+        else:
+            y = y[:, np.newaxis]
         if self.is_classif and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
-            y = y.ravel()
 
-        # if regression, standardize y too
+        # scaling: standardize data (X, y)
+        ymean = np.zeros(y.shape[0])
         if self.standardize:
-            X, y_, Xmean, ymean, Xstd = center_data(
-                X, y, copy=True, normalize=True,
-                fit_intercept=self.fit_intercept)
+            X, Xmean, Xstd = self._standardize_X(X)
             if not self.is_classif:
-                y = y_
+                for c in xrange(y.shape[1]):
+                    y[:, c], ymean[c] = self._standardize_y(y[:, c])
         else:
             Xmean = np.zeros(X.shape[1])
-            ymean = 0.
             Xstd = np.ones(X.shape[1])
 
         # make / sanitize alpha grid
@@ -749,12 +798,10 @@ class SpaceNet(LinearModel, RegressorMixin):
                              rescale_alpha=True)
         for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
-                solver, X, y[:, c] if self.is_classif and (
-                    self.n_classes_ > 2) else y,
-                self.mask_, alphas, self.l1_ratio,
+                solver, X, y[:, c], self.mask_, alphas, self.l1_ratio,
                 train, test, solver_params,
                 is_classif=self.loss == "logistic", key=c,
-                debias=self.debias, Xmean=Xmean, ymean=ymean, Xstd=Xstd,
+                debias=self.debias, Xmean=Xmean, ymean=ymean[c], Xstd=Xstd,
                 verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in cv):
@@ -762,7 +809,8 @@ class SpaceNet(LinearModel, RegressorMixin):
             if not len(self.cv_scores_[c]):
                 self.cv_scores_[c] = test_scores
             else:
-                self.cv_scores_[c] = np.hstack((self.cv_scores_[c], test_scores))
+                self.cv_scores_[c] = np.hstack((self.cv_scores_[c],
+                                                test_scores))
             w[c] += best_w
 
         # keep best alpha, for historical reasons
@@ -808,7 +856,6 @@ class SpaceNet(LinearModel, RegressorMixin):
             case, confidence score for self.classes_[1] where >0 means this
             class would be predicted.
         """
-
         # handle regression (least-squared loss)
         if not self.is_classif:
             return LinearModel.decision_function(self, X)
@@ -836,13 +883,18 @@ class SpaceNet(LinearModel, RegressorMixin):
         y_pred : ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
-
+        # cast X into usual 2D array
         X = self.masker_.transform(X)
+
+        # standardize X ?
+        if self.standardize:
+            X, _, _ = self._standardize_X(X, copy=True)
 
         # handle regression (least-squared loss)
         if not self.is_classif:
             return LinearModel.predict(self, X)
 
+        # prediction proper
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
             indices = (scores > 0).astype(np.int)
@@ -986,7 +1038,6 @@ class SpaceNetClassifier(SpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-
     def __init__(self, penalty="smooth-lasso", loss="logistic",
                  alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
@@ -1148,7 +1199,6 @@ class SpaceNetRegressor(SpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-
     def __init__(self, penalty="smooth-lasso", alpha=None, alphas=None,
                  l1_ratio=.5, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
