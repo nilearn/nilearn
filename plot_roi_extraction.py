@@ -39,7 +39,6 @@ from nilearn import image
 fmri_img = image.smooth_img(haxby_files.func[0], fwhm=6)
 
 # Plot the mean image
-#plt.figure()
 fig_id = plt.subplot(2, 1, 1)
 mean_img = image.mean_img(fmri_img)
 plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=(coronal, sagittal,
@@ -48,16 +47,16 @@ plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=(coronal, sagittal,
 # Run a T-test for face and houses
 from scipy import stats
 fmri_data = fmri_img.get_data()
-_, pvalues = stats.ttest_ind(fmri_data[..., haxby_labels == 'face'],
-                             fmri_data[..., haxby_labels == 'house'],
-                             axis=-1)
+_, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == 'face'],
+                              fmri_data[..., haxby_labels == 'house'],
+                              axis=-1)
 
 # Use a log scale for p-values
-pvalues = - np.log10(pvalues)
-pvalues[np.isnan(pvalues)] = 0.
-pvalues[pvalues > 10] = 10
+log_p_values = -np.log10(p_values)
+log_p_values[np.isnan(log_p_values)] = 0.
+log_p_values[log_p_values > 10] = 10
 fig_id = plt.subplot(2, 1, 2)
-plot_stat_map(nibabel.Nifti1Image(pvalues, fmri_img.get_affine()), mean_img,
+plot_stat_map(nibabel.Nifti1Image(log_p_values, fmri_img.get_affine()), mean_img,
     title="p-values", cut_coords=(coronal, sagittal, axial), axes=fig_id)
 plt.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
 
@@ -65,19 +64,19 @@ plt.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
 plt.figure()
 fig_id = plt.subplot(3, 1, 1)
 # Thresholding
-pvalues[pvalues < 5] = 0
-plot_stat_map(nibabel.Nifti1Image(pvalues, fmri_img.get_affine()), mean_img,
+log_p_values[log_p_values < 5] = 0
+plot_stat_map(nibabel.Nifti1Image(log_p_values, fmri_img.get_affine()), mean_img,
               title='Thresholded p-values', annotate=False, colorbar=False,
               cut_coords=(coronal, sagittal, axial), axes=fig_id)
 
 # Binarization and intersection with VT mask
 # (intersection corresponds to an "AND conjunction")
-bin_pvalues = (pvalues != 0)
+bin_p_values = (log_p_values != 0)
 vt = nibabel.load(haxby_files.mask_vt[0]).get_data().astype(bool)
-bin_pvalues_and_vt = np.logical_and(bin_pvalues, vt)
+bin_p_values_and_vt = np.logical_and(bin_p_values, vt)
 
 fig_id = plt.subplot(3, 1, 2)
-plot_roi(nibabel.Nifti1Image(bin_pvalues_and_vt.astype(np.int), 
+plot_roi(nibabel.Nifti1Image(bin_p_values_and_vt.astype(np.int), 
          fmri_img.get_affine()), 
          mean_img, title='Intersection with ventral temporal mask',
          cut_coords=(coronal, sagittal, axial), axes=fig_id)
@@ -85,8 +84,8 @@ plot_roi(nibabel.Nifti1Image(bin_pvalues_and_vt.astype(np.int),
 # Dilation
 fig_id = plt.subplot(3, 1, 3)
 from scipy import ndimage
-dil_bin_pvalues_and_vt = ndimage.binary_dilation(bin_pvalues_and_vt)
-plot_roi(nibabel.Nifti1Image(dil_bin_pvalues_and_vt.astype(np.int),
+dil_bin_p_values_and_vt = ndimage.binary_dilation(bin_p_values_and_vt)
+plot_roi(nibabel.Nifti1Image(dil_bin_p_values_and_vt.astype(np.int),
     fmri_img.get_affine()),
     mean_img, title='Dilated mask', cut_coords=(coronal, sagittal, axial),
     axes=fig_id, annotate=False)
@@ -94,7 +93,7 @@ plt.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
 
 # Identification of connected components
 plt.figure()
-labels, n_labels = ndimage.label(dil_bin_pvalues_and_vt)
+labels, n_labels = ndimage.label(dil_bin_p_values_and_vt)
 first_roi_data = (labels == 1).astype(np.int)
 second_roi_data = (labels == 2).astype(np.int)
 fig_id = plt.subplot(2, 1, 1)
@@ -134,7 +133,8 @@ plt.figure(figsize=(15, 7))
 for i in np.arange(2):
     plt.subplot(1, 2, i + 1)
     plt.boxplot(X1 if i == 0 else X2)
-    plt.xticks(np.arange(len(condition_names)) + 1, condition_names)
+    plt.xticks(np.arange(len(condition_names)) + 1, condition_names,
+        rotation=25)
     plt.title('Boxplots of data in ROI%i per condition' % (i + 1))
 
 plt.show()
