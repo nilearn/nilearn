@@ -3,8 +3,8 @@ Test the resampling code.
 """
 import copy
 
-from nose.tools import assert_equal, assert_raises, assert_false, \
-    assert_true, assert_almost_equal
+from nose.tools import assert_equal, assert_raises, assert_raises_regexp, \
+    assert_false, assert_true, assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 try:
@@ -153,8 +153,12 @@ def test_resampling_error_checks():
                   target_affine=affine)
 
     # Invalid interpolation
-    assert_raises(ValueError, resample_img, img, target_shape=target_shape,
-                  target_affine=affine, interpolation="invalid")
+    interpolation = 'an_invalid_interpolation'
+    pattern = "interpolation must be either.+{}".format(interpolation)
+    assert_raises_regexp(ValueError, pattern,
+                         resample_img, img, target_shape=target_shape,
+                         target_affine=affine,
+                         interpolation="an_invalid_interpolation")
 
     # Noop
     target_shape = shape[:3]
@@ -414,7 +418,7 @@ def test_reorder_img():
     data = rng.rand(*shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
-    ref_im = Nifti1Image(data, affine)
+    ref_img = Nifti1Image(data, affine)
     # Test with purely positive matrices and compare to a rotation
     for theta, phi in np.random.randint(4, size=(5, 2)):
         rot = rotation(theta*np.pi/2, phi*np.pi/2)
@@ -423,20 +427,40 @@ def test_reorder_img():
         rot[rot < -0.9] = 1
         b = 0.5 * np.array(shape[:3])
         new_affine = from_matrix_vector(rot, b)
-        rot_im = resample_img(ref_im, target_affine=new_affine)
-        np.testing.assert_array_equal(rot_im.get_affine(), new_affine)
-        np.testing.assert_array_equal(rot_im.get_data().shape, shape)
-        reordered_im = reorder_img(rot_im)
-        np.testing.assert_array_equal(reordered_im.get_affine()[:3, :3],
+        rot_img = resample_img(ref_img, target_affine=new_affine)
+        np.testing.assert_array_equal(rot_img.get_affine(), new_affine)
+        np.testing.assert_array_equal(rot_img.get_data().shape, shape)
+        reordered_img = reorder_img(rot_img)
+        np.testing.assert_array_equal(reordered_img.get_affine()[:3, :3],
                                       np.eye(3))
-        np.testing.assert_almost_equal(reordered_im.get_data(),
+        np.testing.assert_almost_equal(reordered_img.get_data(),
                                        data)
 
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
-    ref_im = Nifti1Image(data, affine)
-    assert_raises(ValueError, reorder_img, ref_im)
+    ref_img = Nifti1Image(data, affine)
+    assert_raises_regexp(ValueError, 'Cannot reorder the axes',
+                         reorder_img, ref_img)
+
+    # Test that no exception is raised when resample='continuous'
+    reorder_img(ref_img, resample='continuous')
+
+    # Test that resample args gets passed to resample_img
+    interpolation = 'nearest'
+    reordered_img = reorder_img(ref_img, resample=interpolation)
+    resampled_img = resample_img(ref_img,
+                                 target_affine=reordered_img.get_affine(),
+                                 interpolation=interpolation)
+    np.testing.assert_array_equal(reordered_img.get_data(),
+                                  resampled_img.get_data())
+
+    # Make sure invalid resample argument is included in the error message
+    interpolation = 'an_invalid_interpolation'
+    pattern = "interpolation must be either.+{}".format(interpolation)
+    assert_raises_regexp(ValueError, pattern,
+                         reorder_img, ref_img,
+                         resample=interpolation)
 
     # Test flipping an axis
     data = rng.rand(*shape)
