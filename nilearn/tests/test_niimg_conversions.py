@@ -15,12 +15,13 @@ import nose
 from nose.tools import assert_raises, assert_equal, assert_true
 
 import numpy as np
+from numpy.testing import assert_array_equal
 
 import nibabel
 from nibabel import Nifti1Image
 
-from nilearn import _utils
-from nilearn._utils import testing
+from nilearn import _utils, datasets
+from nilearn._utils import NiftiGenerator, testing
 
 
 class PhonyNiimage:
@@ -157,3 +158,32 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
+
+def test_NiftiGenerator():
+    # just retrieve 3 flavors of random nifti sets with same shape and affine
+    haxby_files = datasets.fetch_haxby(n_subjects=1)
+    paths_list = [haxby_files.mask_face[0], haxby_files.mask_house[0],
+        haxby_files.mask_vt[0]]
+    img3d_list = [nibabel.load(path) for path in paths_list]
+    data4d = np.concatenate(
+        [img3d_list[i].get_data()[..., np.newaxis] for i in range(3)], axis=3)
+    img4d = nibabel.Nifti1Image(data4d, img3d_list[0].get_affine())
+
+    # iterate through them in 3 ways, comparing between them at each iteration
+    for (img1, data1, affine1), (img2, data2, affine2), \
+        (img3, data3, affine3) in zip(NiftiGenerator(paths_list),
+            NiftiGenerator(img3d_list), NiftiGenerator(img4d)):
+        # test numpy arrays
+        assert_array_equal(data1, data2)
+        assert_array_equal(data1, data3)
+        assert_array_equal(affine1, affine2)
+        assert_array_equal(affine1, affine3)
+
+        # idem, but retrieve pointers from Nift1Image object
+        assert_true(isinstance(img1, nibabel.Nifti1Image))
+        assert_true(isinstance(img2, nibabel.Nifti1Image))
+        assert_true(isinstance(img3, nibabel.Nifti1Image))
+        assert_array_equal(img1.get_data(), img2.get_data())
+        assert_array_equal(img1.get_data(), img3.get_data())
+        assert_array_equal(img1.get_affine(), img2.get_affine())
+        assert_array_equal(img1.get_affine(), img3.get_affine())

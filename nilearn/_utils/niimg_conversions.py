@@ -4,6 +4,7 @@ Conversion utilities.
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
+import os
 import collections
 import copy
 import gc
@@ -331,3 +332,108 @@ def check_niimgs(niimgs, accept_3d=False):
     else:
         niimg = concat_niimgs(niimgs)
     return niimg
+
+class NiftiGenerator(object):
+    """
+    Neuroimaging files processed by Nilearn frequently come in one of three
+    flavors: i) lists of file paths, ii) lists of nibabel.Nifti1Image's in
+    3D and iii) one nibabel.Nifti1Image in 4D. NiftiGenerator allows to
+    iterate nifti-wise through these yielding a 3D Nifti1Image instance
+    at each step.
+
+    Example
+    -------
+    for niimg, data, affine in NiftiGenerator([list_of_nifti_paths]):
+        ....
+
+    Returns
+    -------
+    img: nibabel.Nifti1Image
+        nifti object containing the same information as data and affine.
+
+    data: numpy array
+        3d numpy array.
+
+    affine: numpy array
+        4x4 matrix.
+
+    Notes
+    -----
+    NiftiGenerator can be useful when the entirety of niftis would be
+    expensive in memory usage but require some custom data manipulation.
+    Using NiftiGenerator this can be done on the fly instead of as a
+    single shot.
+    """
+    _img_gen_mode_list = 1
+    _img_gen_mode_img3d = 2
+    _img_gen_mode_img4d = 3
+
+    def __init__(self, new_list):
+        # initializations
+        self.cur_index = -1
+        type_error_msg = 'Input types include a list of paths, a list of 3D' \
+                         ' Nifti1Image instances or one 4D Nifti1Image' \
+                         ' instance. Unexpected argument: %r'
+
+        # check input type
+        if isinstance(new_list, list) and hasattr(new_list, "__len__"):
+            if len(new_list) == 0:
+                raise TypeError(
+                    'An empty object - %r - was passed instead of a '
+                    'list of paths or images' % new_list)
+
+            # input: list ?
+            if (isinstance(new_list[0], basestring) and
+                os.path.exists(new_list[0])):
+                # input: list of paths
+                self._modus = self._img_gen_mode_list
+                self.list_ = new_list
+                self.n_items = len(new_list)
+            elif is_a_niimg(new_list[0]):
+                # input: list of Nifti1Image
+                self._modus = self._img_gen_mode_img3d
+                self.list_ = new_list
+                self.n_items = len(new_list)
+            else:
+                raise TypeError(type_error_msg % new_list)
+        elif (isinstance(new_list, nibabel.Nifti1Image) and
+            len(_get_shape(new_list)) == 4):
+            # input: 4d nifti
+            self._modus = self._img_gen_mode_img4d
+            self.list_ = new_list
+            self.n_items = _get_shape(new_list)[3]
+            self._affine = new_list.get_affine()
+        else:
+            raise TypeError(type_error_msg % new_list)
+
+    # return iterable
+    def __iter__(self):
+        return self
+
+    # Python 3.x compatibility
+    def __next__(self):
+        return self.next()
+
+    def next(self):
+        # check if end of list already reached
+        self.cur_index += 1
+        if self.cur_index == self.n_items:
+            raise StopIteration  # quits for loops
+
+        # return a 3D Nifti1Image object, regardless of type of list
+        if self._modus == self._img_gen_mode_list:
+            cur_item = self.list_[self.cur_index]
+            if not os.path.exists(cur_item):
+                raise IOError('File not found: %s' % cur_item)
+            cur_item = nibabel.load(cur_item)
+            return (cur_item, cur_item.get_data(), cur_item.get_affine())
+        elif self._modus == self._img_gen_mode_img4d:
+            cur_data_3d = self.list_.get_data()[..., self.cur_index]
+            return (nibabel.Nifti1Image(cur_data_3d, self._affine), cur_data_3d,
+                self._affine)
+        else:
+            # self._modus == self._img_gen_mode_img3d:
+            cur_item = self.list_[self.cur_index]
+            if not is_a_niimg(cur_item):
+                raise TypeError('NiftiGenerator: encountered non-nifti item!')
+            return (cur_item, cur_item.get_data(), cur_item.get_affine())
