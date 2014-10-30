@@ -17,10 +17,12 @@ from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from tempfile import mktemp
+
 import nibabel
 from nibabel import Nifti1Image
 
-from nilearn import _utils, datasets
+from nilearn import _utils
 from nilearn._utils import NiftiGenerator, testing
 
 
@@ -160,16 +162,26 @@ def test_concat_niimgs():
         _remove_if_exists(tmpimg2)
 
 def test_NiftiGenerator():
+    # create 3 random nifti images in dedicated temporary folder of the OS
+    tmp_files = []
+    n_test_niimgs = 3
+    for ifile in range(n_test_niimgs):
+        cur_tmp_file_path = mktemp()
+        cur_tmp_file_path += '.nii'
+        nibabel.Nifti1Image(
+            np.random.randn(40, 50, 60),
+            np.eye(4)).to_filename(cur_tmp_file_path)
+        tmp_files.append(cur_tmp_file_path)
+
     # just retrieve 3 flavors of random nifti sets with same shape and affine
-    haxby_files = datasets.fetch_haxby(n_subjects=1)
-    paths_list = [haxby_files.mask_face[0], haxby_files.mask_house[0],
-        haxby_files.mask_vt[0]]
+    paths_list = tmp_files
     img3d_list = [nibabel.load(path) for path in paths_list]
     data4d = np.concatenate(
-        [img3d_list[i].get_data()[..., np.newaxis] for i in range(3)], axis=3)
+        [img3d_list[i].get_data()[..., np.newaxis] 
+        for i in range(n_test_niimgs)], axis=3)
     img4d = nibabel.Nifti1Image(data4d, img3d_list[0].get_affine())
 
-    # iterate through them in 3 ways, comparing between them at each iteration
+    # iterate through them in 3 ways comparing between them at each iteration
     for (img1, data1, affine1), (img2, data2, affine2), \
         (img3, data3, affine3) in zip(NiftiGenerator(paths_list),
             NiftiGenerator(img3d_list), NiftiGenerator(img4d)):
@@ -187,3 +199,7 @@ def test_NiftiGenerator():
         assert_array_equal(img1.get_data(), img3.get_data())
         assert_array_equal(img1.get_affine(), img2.get_affine())
         assert_array_equal(img1.get_affine(), img3.get_affine())
+
+    # clean-up
+    for i in range(n_test_niimgs):
+        os.remove(tmp_files[i])
