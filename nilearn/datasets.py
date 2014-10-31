@@ -226,7 +226,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
                 print 'Dataset created in', path
                 return path
             except Exception as exc:
-                errors.append('\n -{} ({})'.format(path, exc.strerror) )
+                short_error_message = getattr(exc, 'strerror', str(exc))
+                errors.append('\n -{} ({})'.format(path, short_error_message))
 
     raise OSError('Nilearn tried to store the dataset in the following '
             'directories, but:' + ''.join(errors))
