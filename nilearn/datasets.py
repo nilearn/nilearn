@@ -211,23 +211,26 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
     # Check if the dataset exists somewhere
     for path in paths:
         path = os.path.join(path, dataset_name)
-        if os.path.exists(path):
+        if os.path.exists(path) and os.path.isdir(path):
             if verbose > 1:
                 print 'Dataset found in', path
             return path
 
     # If not, create a folder in the first writeable directory
+    errors = []
     for path in paths:
+        path = os.path.join(path, dataset_name)
         if not os.path.exists(path):
-            os.makedirs(path)
-        if os.access(path, os.W_OK):
-            path = os.path.join(path, dataset_name)
-            os.mkdir(path)
-            print 'Dataset created in', path
-            return path
+            try:
+                os.makedirs(path)
+                print 'Dataset created in', path
+                return path
+            except Exception as exc:
+                short_error_message = getattr(exc, 'strerror', str(exc))
+                errors.append('\n -{} ({})'.format(path, short_error_message))
 
-    raise IOError('Nilearn tried to store the dataset in the following '
-            'directories, but has no write permission:\n' + '\n'.join(paths))
+    raise OSError('Nilearn tried to store the dataset in the following '
+            'directories, but:' + ''.join(errors))
 
 
 def _uncompress_file(file_, delete_archive=True):

@@ -10,7 +10,8 @@ from tempfile import mkdtemp, mktemp
 import numpy as np
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises,\
+    assert_raises_regexp
 
 from .. import datasets
 from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
@@ -56,6 +57,46 @@ def test_md5_sum_file():
     assert_equal(datasets._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
     os.remove(f)
 
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_get_dataset_dir():
+
+    os.chdir(tmpdir)
+    #testing folder creation under different environments, enforcing a custom
+    #clean install
+    os.environ.pop('NILEARN_DATA', None)
+    os.environ.pop('NILEARN_SHARED_DATA', None)
+
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abspath(os.path.join('nilearn_data', 'test')))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    os.environ['NILEARN_DATA'] = 'test_nilearn_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.join('test_nilearn_data', 'test'))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    os.environ['NILEARN_SHARED_DATA'] = 'nilearn_shared_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.join('nilearn_shared_data', 'test'))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    os.chdir(currdir)
+
+    #Verify exception is raised on read-only directories
+    no_write = mkdtemp()
+    os.chmod(no_write, 0400)
+    assert_raises_regexp(OSError, 'Permission denied',
+                         datasets._get_dataset_dir, 'test', no_write)
+    #Verify exception for not paths as files
+    test_file = mktemp()
+    out = open(test_file, 'w')
+    out.write('abcfeg')
+    out.close()
+    assert_raises_regexp(OSError, 'Not a directory',
+                         datasets._get_dataset_dir, 'test', test_file)
 
 def test_read_md5_sum_file():
     # Create dummy temporary file
