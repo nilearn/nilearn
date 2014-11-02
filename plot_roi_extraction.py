@@ -54,7 +54,7 @@ _, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == 'face'],
 # Use a log scale for p-values
 log_p_values = -np.log10(p_values)
 log_p_values[np.isnan(log_p_values)] = 0.
-log_p_values[log_p_values > 10] = 10
+log_p_values[log_p_values > 10.] = 10.
 fig_id = plt.subplot(2, 1, 2)
 plot_stat_map(nibabel.Nifti1Image(log_p_values, fmri_img.get_affine()), mean_img,
     title="p-values", cut_coords=(coronal, sagittal, axial), axes=fig_id)
