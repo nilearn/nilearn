@@ -126,8 +126,8 @@ def _univariate_feature_screening(
                                 percentile=screening_percentile).fit(sX, y)
     support = selector.get_support()
 
-    # erode and then dilate mask, thus obtaining superset of the mask on
-    # on which a spatial prior makes sense
+    # erode and then dilate mask, thus obtaining a "cleaner" version of
+    # the mask on which a spatial prior makes sense
     nice_mask = mask.copy()
     nice_mask[mask] = (support > 0)
     nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(
@@ -320,8 +320,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
     verbose = int(verbose if verbose is not None else 0)
     alphas = sorted(alphas)[::-1]
 
-    # Univariate feature screening. Note that if we have only as few as 50
-    # features in the mask's support, then we should to use all of them to
+    # Univariate feature screening. Note that if we have only as few as 100
+    # features in the mask's support, then we should use all of them to
     # learn the model i.e disable this screening)
     do_screening = (n_features > 100) and screening_percentile < 100.
     if do_screening:
@@ -457,9 +457,9 @@ class SpaceNet(LinearModel, RegressorMixin):
         (which is typically smaller).
 
     standardize : bool, optional (default True):
-        If set, then we'll center the data (X, y) have mean zero along axis 0.
-        This is here because nearly all linear models will want their data
-        to be centered.
+        If set, then the data (X, y) are centered to have mean zero along
+        axis 0. This is here because nearly all linear models will want
+        their data to be centered.
 
     normalize : boolean, optional (default False)
         If True, then the data (X, y) will be normalized (to have unit std)
@@ -471,8 +471,8 @@ class SpaceNet(LinearModel, RegressorMixin):
     max_iter : int
         Defines the iterations for the solver. Defaults to 1000
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
+    tol : float, optional (default 1e-4)
+        Defines the tolerance for convergence for the backend fista solver.
 
     verbose : int, optional (default 0)
         Verbosity level.
@@ -494,7 +494,7 @@ class SpaceNet(LinearModel, RegressorMixin):
     `alpha_` : float
          Best alpha found by cross-validation
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `coef_` : ndarray, shape (n_classes-1, n_features)
         Coefficient of the features in the decision function.
 
         `coef_` is readonly property derived from `raw_coef_` that
@@ -504,15 +504,15 @@ class SpaceNet(LinearModel, RegressorMixin):
         The nifti masker used to mask the data.
 
     `mask_img_` : Nifti like image
-        The mask of the data. If no mask was supplied by the user, the
+        The mask of the data. If no mask was supplied by the user,
         this attribute is the mask image computed automatically from the
         data `X`.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `intercept_` : narray, shape (nclasses -1,)
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `cv_scores_` : 2d array of shape (n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -783,15 +783,15 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.n_folds_ = len(cv)
 
         # scores & mean weights map over all folds
-        self.cv_scores_ = [[] for _ in xrange(n_problems)]
+        self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
 
         # correct screening_percentile according to the volume of the data mask
         mask_volume = _get_mask_volume(self.mask_img_)
         print "Mask volume = %gmm^3 = %gcm^3" % (
-            mask_volume, mask_volume / 100.)
+            mask_volume, mask_volume / 1000.)
         print "Standard brain volume = %gmm^3 = %gcm^3" % (
-            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 100.)
+            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1000.)
         if mask_volume > MNI152_BRAIN_VOLUME:
             warnings.warn(
                 "Brain mask is bigger than volume of standard brain!")
