@@ -74,7 +74,7 @@ def test_same_energy_calculus_pure_lasso():
     np.testing.assert_array_equal(g1, g2)
 
 
-def test_lipschitz_constant_lass_mse():
+def test_lipschitz_constant_loss_mse():
     rng = check_random_state(42)
     X, y, w, mask = _make_data(rng=rng, masked=True)
     l1_ratio = 1.
@@ -86,7 +86,7 @@ def test_lipschitz_constant_lass_mse():
     np.testing.assert_almost_equal(a, b)
 
 
-def test_lipschitz_constant_lass_logreg():
+def test_lipschitz_constant_loss_logreg():
     rng = check_random_state(42)
     X, y, w, mask = _make_data(rng=rng, masked=True)
     l1_ratio = 1.
