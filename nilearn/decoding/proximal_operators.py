@@ -11,7 +11,7 @@ import numpy as np
 from .objective_functions import tv_l1_from_gradient, div_id, gradient_id
 
 
-def prox_l1(y, alpha, copy=True):
+def _prox_l1(y, alpha, copy=True):
     """proximity operator for L1 norm"""
     shrink = np.zeros(y.shape)
     if copy:
@@ -20,6 +20,12 @@ def prox_l1(y, alpha, copy=True):
     shrink[y_nz] = np.maximum(1 - alpha / np.abs(y[y_nz]), 0)
     y *= shrink
     return y
+
+
+def _prox_l1_with_intercept(x, tau):
+    """The same as prox_l1, but just for the n-1 components"""
+    x[:-1] = _prox_l1(x[:-1], tau)
+    return x
 
 
 def _projector_on_tvl1_dual(grad, l1_ratio):
@@ -46,9 +52,9 @@ def _projector_on_tvl1_dual(grad, l1_ratio):
     return grad
 
 
-def dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
+def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
     """
-    dual gap of total variation denoising
+    Dual gap of total variation denoising
     see "Total variation regularization for fMRI-based prediction of behavior",
     by Michel et al. (2011) for a derivation of the dual gap
     """
@@ -66,12 +72,11 @@ def _objective_function_prox_tvl1(
             + weight * tv_l1_from_gradient(gradient))
 
 
-def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
+def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
               max_iter=200, check_gap_frequency=4, val_min=None, val_max=None,
-              verbose=False, fista=True, init=None, return_info=False):
+              verbose=False, fista=True, init=None):
     """
-    Compute the TV-L1 proximal (ie total-variation +l1 denoising) on
-    2-d and 3-d images
+    Compute the TV-L1 proximal (ie total-variation +l1 denoising) on 3d images.
 
     Find the argmin `res` of
         1/2 * ||im - res||^2 + weight * TVl1(res),
@@ -95,38 +100,35 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     x_tol : float or None, optional
         The maximal relative difference between input and output. If
         specified, this specifies a stopping criterion on x, rather than
-        the dual gap
+        the dual gap.
 
     max_iter : int, optional
         Maximal number of iterations used for the optimization.
 
     val_min : None or float, optional
-        An optional lower bound constraint on the reconstructed image
+        An optional lower bound constraint on the reconstructed image.
 
     val_max : None or float, optional
-        An optional upper bound constraint on the reconstructed image
+        An optional upper bound constraint on the reconstructed image.
 
     verbose : bool, optional
         If True, print the dual gap of the optimization
 
     fista : bool, optional
         If True, uses a FISTA loop to perform the optimization.
-        if False, uses an ISTA loop
+        if False, uses an ISTA loop.
 
     callback : callable
         Callable that takes the local variables at each
-        steps. Useful for tracking
+        steps. Useful for tracking.
 
     init : array of shape shape as im
-        Starting point for the optimization
-
-    return_info : boolean
-        If True, a dictionnary of inner variables is returned in addition
+        Starting point for the optimization.
 
     Returns
     -------
     out : ndarray
-        denoised array
+        TV-l1-denoised image.
 
     Notes
     -----
@@ -221,8 +223,8 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                     # We need to recompute the dual variable
                     gap = negated_output + input_img
                 old_dgap = dgap
-                dgap = dual_gap_prox_tvl1(input_img_norm, -negated_output,
-                                          gap, weight, l1_ratio=l1_ratio)
+                dgap = _dual_gap_prox_tvl1(input_img_norm, -negated_output,
+                                           gap, weight, l1_ratio=l1_ratio)
                 if verbose:
                     print '\tProxTVl1: Iteration % 2i, dual gap: % 6.3e' % (
                         i, dgap)
@@ -255,9 +257,7 @@ def prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     output = input_img - weight * div_id(grad_im, l1_ratio=l1_ratio)
     if (val_min is not None or val_max is not None):
         output = output.clip(val_min, val_max, out=output)
-    if return_info:
-        return output, dict(converged=(i < max_iter))
-    return output
+    return output, dict(converged=(i < max_iter))
 
 
 def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
@@ -271,10 +271,10 @@ def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
        Weight in prox. This would be something like `alpha_ * stepsize`,
        where `alpha_` is the effective (i.e. re-scaled) alpha.
 
-    w : np.array of `w_size` floats
+    w : ndarray, shape (w_size,)
         The point at which the prox is being computed
 
-    init : np.array of `w_size` - 1 floats, optional (default None)
+    init : ndarray, shape (w_size - 1,), optional (default None)
         Initialization vector for the prox.
 
     dgap_tol : float
@@ -283,9 +283,9 @@ def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
     """
 
     init = init.reshape(shape) if not init is None else init
-    out, prox_info = prox_tvl1(
+    out, prox_info = _prox_tvl1(
         w[:-1].reshape(shape), weight=weight,
-        l1_ratio=l1_ratio, dgap_tol=dgap_tol, return_info=True,
-        init=init, max_iter=max_iter, verbose=verbose)
+        l1_ratio=l1_ratio, dgap_tol=dgap_tol, init=init, max_iter=max_iter,
+        verbose=verbose)
 
     return np.append(out, w[-1]), prox_info
