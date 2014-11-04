@@ -108,7 +108,7 @@ def logistic_loss_lipschitz_constant(X):
 def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """Compute the MSE error, and optionally, its gradient too.
 
-    The cost function is
+    The cost / energy function is
 
         MSE = .5 * ||y - Xw||^2
 
@@ -185,7 +185,7 @@ def div_id(grad, l1_ratio=.5):
 
     Parameters
     ----------
-    grad : ndarray shape ndarray, shape (4, nx, ny, nx)
+    grad : ndarray, shape (4, nx, ny, nx)
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 

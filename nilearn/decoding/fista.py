@@ -110,8 +110,8 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     Returns
     -------
-    w : np.array of size w_size
-       The Solution.
+    w : ndarray, shape (w_size,)
+       A minimizer for `f + g`.
 
     solver_info : float
         Solver information, for warm starting.
@@ -154,7 +154,6 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     ista_step = False
     best_z = z.copy()
     best_t = t
-    best_dgap_tol = dgap_tol
     prox_info = dict(converged=True)
     stepsize = 1. / lipschitz_constant
     history = []
@@ -237,7 +236,6 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             best_w[:] = w
             best_z[:] = z
             best_t = t
-            best_dgap_tol = dgap_tol
             best_dgap_tol = dgap_tol
 
     init = dict(w=best_w.copy(), z=best_z, t=best_t, dgap_tol=best_dgap_tol,
