@@ -155,7 +155,7 @@ def _space_net_alpha_grid(
 
     l1_ratio : float
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
-        For ``l1_ratio = 0`` the penalty is purely a spatial prior (
+        For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (S-LASSO, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior
