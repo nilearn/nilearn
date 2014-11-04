@@ -1,7 +1,7 @@
 from nose.tools import assert_equal, assert_true
 import numpy as np
 from nilearn.decoding.fista import mfista
-from nilearn.decoding.proximal_operators import prox_l1
+from nilearn.decoding.proximal_operators import _prox_l1
 from nilearn.decoding.objective_functions import (squared_loss, logistic,
                                    squared_loss_grad,
                                    logistic_loss_lipschitz_constant,
@@ -54,7 +54,7 @@ def test_input_args_and_kwargs():
     f1 = lambda w: squared_loss(X, y, w, compute_grad=False)
     f1_grad = lambda w: squared_loss(X, y, w, compute_grad=True,
                                compute_energy=False)
-    f2_prox = lambda w, l, *args, **kwargs: (prox_l1(w, l * l1_weight),
+    f2_prox = lambda w, l, *args, **kwargs: (_prox_l1(w, l * l1_weight),
                                              dict(converged=True))
     total_energy = lambda w: f1(w) + l1_weight * np.sum(np.abs(w))
     for cb_retval in [0, 1]:

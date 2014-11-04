@@ -20,7 +20,8 @@ from .objective_functions import (spectral_norm_squared,
                                   logistic_loss_grad,
                                   logistic as logistic_loss)
 from .objective_functions import gradient, div
-from .proximal_operators import prox_l1, prox_tvl1, _prox_tvl1_with_intercept
+from .proximal_operators import (_prox_l1, _prox_l1_with_intercept,
+                                 _prox_tvl1, _prox_tvl1_with_intercept)
 from .fista import mfista
 
 
@@ -210,12 +211,6 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     return data_constant + grad_weight * grad_constant
 
 
-def prox_l1_with_intercept(x, tau):
-    """The same as prox_l1, but just for the n-1 components"""
-    x[:-1] = prox_l1(x[:-1], tau)
-    return x
-
-
 def logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     """Compute the smooth part of the smooth lasso objective, with
     logistic loss"""
@@ -288,7 +283,7 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
 
     # prox of nonsmooth path of energy (account for the intercept)
     f2 = lambda w: np.sum(np.abs(w)) * l1_weight
-    f2_prox = lambda w, l, *args, **kwargs: (prox_l1(w, l * l1_weight),
+    f2_prox = lambda w, l, *args, **kwargs: (_prox_l1(w, l * l1_weight),
                                              dict(converged=True))
 
     # total energy (smooth + nonsmooth)
@@ -354,7 +349,7 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
     # prox of nonsmooth path of energy (account for the intercept)
     f2 = lambda w: np.sum(np.abs(w[:-1])) * l1_weight
-    f2_prox = lambda w, l, *args, **kwargs: (prox_l1_with_intercept(
+    f2_prox = lambda w, l, *args, **kwargs: (_prox_l1_with_intercept(
         w, l * l1_weight), dict(converged=True))
 
     # total energy (smooth + nonsmooth)
@@ -526,9 +521,9 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     # proximal operator of nonsmooth proximable part of energy (f2)
     if loss == "mse":
         def f2_prox(w, stepsize, dgap_tol, init=None):
-            out, info = prox_tvl1(
+            out, info = _prox_tvl1(
                 unmaskvec(w), weight=alpha * stepsize, l1_ratio=l1_ratio,
-                dgap_tol=dgap_tol, return_info=True, init=unmaskvec(init),
+                dgap_tol=dgap_tol, init=unmaskvec(init),
                 max_iter=prox_max_iter, verbose=verbose)
             return maskvec(out.ravel()), info
     else:
