@@ -198,22 +198,23 @@ class GlassBrainAxes(BaseAxes):
             self.add_object_bounds(object_bounds)
 
     def transform_2d(self, data, affine):
-        """ Sums the 3D volume along an axis
+        """ Returns the maximum of the 3D volume along an axis.
 
             Parameters
             ==========
             data: 3D ndarray
-                The 3D volume to sum
+                The 3D volume
             affine: 4x4 ndarray
                 The affine of the volume
+
         """
-        sum_axis = 'xyz'.index(self.direction)
-        summed_data = data.sum(axis=sum_axis)
-        return np.rot90(summed_data)
+        max_axis = 'xyz'.index(self.direction)
+        maximum_intensity_data = data.max(axis=max_axis)
+        return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
-        # It does not make sense to draw self.coord
-        # since the data is summed along one axis
+        # It does not make sense to draw crosses for the position of
+        # the cuts since we are taking the max along one axis
         pass
 
 
@@ -914,7 +915,7 @@ class OrthoProjector(OrthoSlicer):
 
     def draw_cross(self, cut_coords=None, **kwargs):
         # It does not make sense to draw crosses for the position of
-        # the cuts since we are summing along one axis
+        # the cuts since we are taking the max along one axis
         pass
 
 
