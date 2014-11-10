@@ -15,14 +15,20 @@ X_train = nibabel.Nifti1Image(img_data, affine)
 y_train = y
 
 ### Fit and predict ##########################################################
+import os
 from nilearn.decoding import SpaceNetRegressor
-penalties = ['Smooth-LASSO', 'TV-L1']
-decoders = {}
-for penalty in penalties:
-    decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
-                                penalty=penalty)
-    decoder.fit(X_train, y_train)  # fit
-    decoders[penalty] = decoder
+penalty = "TV-L1"
+l1_ratio = .3
+alpha = None
+decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
+                            n_jobs=int(os.environ.get("N_JOBS", 1)),
+                            l1_ratio=l1_ratio, penalty=penalty, alpha=alpha,
+                            screening_percentile=100., tol=1e-8,
+                            max_iter=1000)
+decoder.fit(X_train, y_train)  # fit
+coef_niimg = decoder.coef_img_
+coef_niimg.to_filename('poldrack_%s(l1_ratio=%g, alpha=%s)_weights.nii' % (
+        penalty, l1_ratio, alpha))
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
