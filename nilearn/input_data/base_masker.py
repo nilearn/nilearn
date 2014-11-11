@@ -8,9 +8,11 @@ import warnings
 
 import numpy as np
 import itertools
+from tempfile import mkdtemp
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory, Parallel, delayed
+from joblib.memory import MemorizedFunc
 
 from .. import masking
 from .. import image
@@ -148,7 +150,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
 
-    def transform_single_niimgs(self, niimgs, confounds=None, copy=True):
+    def transform_single_niimgs(self, niimgs, confounds=None, copy=True,
+                                shelve_result=False):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
@@ -158,17 +161,28 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # just invalid the cache for no good reason
         for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
-        data, _ = self._cache(filter_and_mask, memory_level=1,
-                           ignore=['verbose', 'memory', 'copy'])(
-                              niimgs, self.mask_img_,
-                              params,
-                              ref_memory_level=self.memory_level,
-                              memory=self.memory,
-                              verbose=self.verbose,
-                              confounds=confounds,
-                              copy=copy
-                            )
-        return data
+        if shelve_result:
+            mfunc = MemorizedFunc(filter_and_mask, mkdtemp())
+            return mfunc.call_and_shelve(
+                                niimgs, self.mask_img_,
+                                params,
+                                ref_memory_level=self.memory_level,
+                                memory=self.memory,
+                                verbose=self.verbose,
+                                confounds=confounds,
+                                copy=copy)
+        else:
+            data, _ = self._cache(filter_and_mask, memory_level=1,
+                               ignore=['verbose', 'memory', 'copy'])(
+                                  niimgs, self.mask_img_,
+                                  params,
+                                  ref_memory_level=self.memory_level,
+                                  memory=self.memory,
+                                  verbose=self.verbose,
+                                  confounds=confounds,
+                                  copy=copy
+                                )
+            return data
 
     def transform_niimgs(self, niimgs_list, confounds=None, copy=True, n_jobs=1):
         ''' Prepare multi subject data in parallel
