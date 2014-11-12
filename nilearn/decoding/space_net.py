@@ -410,11 +410,11 @@ class SpaceNet(LinearModel, RegressorMixin):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
-        Length of the path. ``eps=1e-3`` means that
+    eps : float, optional (default 1e-3)
+        Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min : float, optional (default 1e-6)
+    alpha_min : float, optional (default None)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
@@ -527,7 +527,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
-                 alpha_min=1e-6, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 alpha_min=None, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         super(SpaceNet, self).__init__()
@@ -940,11 +940,11 @@ class SpaceNetClassifier(SpaceNet):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
-        Length of the path. ``eps=1e-3`` means that
+    eps : float, optional (default 1e-3)
+        Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min : float, optional (default 1e-6)
+    alpha_min : float, optional (default None)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
@@ -1053,7 +1053,7 @@ class SpaceNetClassifier(SpaceNet):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
-                 alpha_min=1e-6, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 alpha_min=None, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  cv=10, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         super(SpaceNetClassifier, self).__init__(
@@ -1101,11 +1101,11 @@ class SpaceNetRegressor(SpaceNet):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional
-        Length of the path. ``eps=1e-3`` means that
+    eps : float, optional (default 1e-3)
+        Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min : float, optional (default 1e-6)
+    alpha_min : float, optional (default None)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
 
@@ -1213,7 +1213,7 @@ class SpaceNetRegressor(SpaceNet):
                  l1_ratio=.5, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 standardize=True, alpha_min=1e-6, verbose=0,
+                 standardize=True, alpha_min=None, verbose=0,
                  n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
                  screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
