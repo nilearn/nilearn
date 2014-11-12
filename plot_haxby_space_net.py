@@ -44,7 +44,8 @@ decoders = {}
 accuracies = {}
 for penalty in penalties:
    ### Fit model on train data and predict on test data ######################
-    decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=2)
+    decoder = SpaceNetClassifier(memory="cache", penalty=penalty,
+                                 verbose=2, n_jobs=22)
     decoder.fit(X_train, y_train)  # fit
     y_pred = decoder.predict(X_test)  # predict
     accuracies[penalty] = (y_pred == y_test).mean() * 100.
