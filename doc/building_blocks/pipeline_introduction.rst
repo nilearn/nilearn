@@ -55,7 +55,7 @@ and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
 These conditions are presented as string into a CSV file. The numpy function
-`loadtxt` is very useful to load this kind of data.
+`recfromcsv` is very useful to load this kind of data.
 
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################

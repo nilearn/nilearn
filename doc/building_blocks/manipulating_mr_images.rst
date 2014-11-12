@@ -323,7 +323,7 @@ more discriminative is the voxel.
     :start-after: # Run a T-test for face and houses
     :end-before: ### Build a mask ##############################################################
 
-.. figure:: ../auto_examples/images/plot_roi_extraction_2.png
+.. figure:: ../auto_examples/images/plot_roi_extraction_1.png
     :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -342,7 +342,7 @@ is easy thanks to numpy indexing a la Matlab.
     :start-after: # Thresholding
     :end-before: # Binarization and intersection with VT mask
 
-.. figure:: ../auto_examples/images/plot_roi_extraction_3.png
+.. figure:: ../auto_examples/images/plot_roi_extraction_2.png
     :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -361,7 +361,7 @@ that are selected in both masks.
     :start-after: # Binarization and intersection with VT mask
     :end-before: # Dilation
 
-.. figure:: ../auto_examples/images/plot_roi_extraction_4.png
+.. figure:: ../auto_examples/images/plot_roi_extraction_2.png
     :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -377,7 +377,7 @@ not to forget voxels located on the edge of a ROI.
     :start-after: # Dilation
     :end-before: # Identification of connected components
 
-.. figure:: ../auto_examples/images/plot_roi_extraction_5.png
+.. figure:: ../auto_examples/images/plot_roi_extraction_2.png
     :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -391,9 +391,9 @@ one of them.
 
 .. literalinclude:: ../../plot_roi_extraction.py
     :start-after: # Identification of connected components
-    :end-before: # Save the result
+    :end-before: # use the new ROIs to extract data maps in both ROIs
 
-.. figure:: ../auto_examples/images/plot_roi_extraction_6.png
+.. figure:: ../auto_examples/images/plot_roi_extraction_3.png
     :target: ../auto_examples/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -405,6 +405,6 @@ The final result is saved using nibabel for further consultation with a software
 like FSLview for example.
 
 .. literalinclude:: ../../plot_roi_extraction.py
-    :start-after: # Save the result
+    :start-after: # save the ROI 'atlas' to a single output nifti
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
