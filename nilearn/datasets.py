@@ -186,7 +186,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
     1. the keyword argument data_dir
     2. the global environment variable NILEARN_SHARED_DATA
     3. the user environment variable NILEARN_DATA
-    4. "nilearn_data" directory into the current working directory
+    4. nilearn_data in the user home folder
     """
     # We build an array of successive paths by priority
     paths = []
@@ -203,7 +203,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
         if local_data is not None:
             paths.extend(local_data.split(':'))
 
-        paths.append(os.path.join(os.getcwd(), 'nilearn_data'))
+        paths.append(os.path.expanduser('~/nilearn_data'))
 
     if verbose > 2:
         print 'Dataset search paths:', paths

@@ -61,7 +61,7 @@ following directories (in order of priority):
     if it is specified
   * the global environment variable `NILEARN_SHARED_DATA` if it exists
   * the user environment variable `NILEARN_DATA` if it exists
-  * the `nilearn_data` folder in the current directory
+  * the `nilearn_data` folder in the user home folder
 
 Two different environment variables are provided to distinguish a global dataset
 repository that may be read-only from a user-level one.
