@@ -276,18 +276,24 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
         # it's always a good idea to use somethx a bit bigger
         lipschitz_constant *= 1.05
 
-    # smooth part of energy, and gradient of
-    f1 = lambda w: squared_loss_and_spatial_grad(X, y, w, mask, grad_weight)
-    f1_grad = lambda w: squared_loss_and_spatial_grad_derivative(
-        X, y, w, mask, grad_weight)
+    # mooth part of energy, and gradient of
+    def f1(w):
+        return squared_loss_and_spatial_grad(X, y, w, mask, grad_weight)
+
+    def f1_grad(w):
+        return squared_loss_and_spatial_grad_derivative(X, y, w, mask,
+                                                        grad_weight)
 
     # prox of nonsmooth path of energy (account for the intercept)
-    f2 = lambda w: np.sum(np.abs(w)) * l1_weight
-    f2_prox = lambda w, l, *args, **kwargs: (_prox_l1(w, l * l1_weight),
-                                             dict(converged=True))
+    def f2(w):
+        return np.sum(np.abs(w)) * l1_weight
+
+    def f2_prox(w, l, *args, **kwargs):
+        return _prox_l1(w, l * l1_weight), dict(converged=True)
 
     # total energy (smooth + nonsmooth)
-    total_energy = lambda w: f1(w) + f2(w)
+    def total_energy(w):
+        return f1(w) + f2(w)
 
     return mfista(
         f1_grad, f2_prox, total_energy, lipschitz_constant,
@@ -342,18 +348,24 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
         lipschitz_constant *= 1.1
 
     # smooth part of energy, and gradient of
-    f1 = lambda w: logistic_data_loss_and_spatial_grad(
-        X, y, w, mask, grad_weight)
-    f1_grad = lambda w: logistic_data_loss_and_spatial_grad_derivative(
-        X, y, w, mask, grad_weight)
+    def f1(w):
+        return logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight)
+
+    def f1_grad(w):
+        return logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask,
+                                                              grad_weight)
 
     # prox of nonsmooth path of energy (account for the intercept)
-    f2 = lambda w: np.sum(np.abs(w[:-1])) * l1_weight
-    f2_prox = lambda w, l, *args, **kwargs: (_prox_l1_with_intercept(
-        w, l * l1_weight), dict(converged=True))
+    def f2(w):
+        return np.sum(np.abs(w[:-1])) * l1_weight
+
+    def f2_prox(w, l, *args, **kwargs):
+        return _prox_l1_with_intercept(
+            w, l * l1_weight), dict(converged=True)
 
     # total energy (smooth + nonsmooth)
-    total_energy = lambda w: f1(w) + f2(w)
+    def total_energy(w):
+        return f1(w) + f2(w)
 
     # finally, run the solver proper
     return mfista(
@@ -508,8 +520,8 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
             return squared_loss_grad(X, y, w)
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
-    total_energy = lambda w: tvl1_objective(
-        X, y, w, alpha, l1_ratio, mask, loss=loss)
+    def total_energy(w):
+        return tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss=loss)
 
     # Lispschitz constant of f1_grad
     if lipschitz_constant is None:
