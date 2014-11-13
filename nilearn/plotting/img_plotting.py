@@ -595,12 +595,13 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                **kwargs)
     return slicer
 
+
 def plot_glass_brain(stat_map_img,
                      output_file=None, display_mode='ortho',
                      figure=None, axes=None, title=None, threshold=1e-6,
                      annotate=True,
                      black_bg='auto',
-                     cmap=cm.cold_hot,
+                     cmap=cm.red_transparent_full_alpha_range,
                      alpha=1.,
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
