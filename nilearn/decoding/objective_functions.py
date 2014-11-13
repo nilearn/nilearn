@@ -299,9 +299,19 @@ def logistic_loss_grad(X, y, w):
     grad[-1] = np.sum(z0)
     return grad
 
-# Wrappers.
-# XXX div (see below) could be computed more efficiently!
-gradient = lambda w: gradient_id(w, l1_ratio=0.)[:-1]  # pure nabla
-div = lambda v: div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.)
+
+# gradient of squared loss function
 squared_loss_grad = partial(squared_loss, compute_energy=False,
                             compute_grad=True)
+
+
+def gradient(w):
+    """Pure spatial gradient"""
+    return gradient_id(w, l1_ratio=0.)[:-1]  # pure nabla
+
+
+def div(v):
+    """ Pure spatial divergence
+
+    XXX div (see below) could be computed more efficiently!"""
+    return div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.)
