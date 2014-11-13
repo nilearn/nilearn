@@ -6,6 +6,7 @@ the data with different layout of cuts.
 """
 
 import operator
+import itertools
 
 import numpy as np
 
@@ -430,43 +431,40 @@ class BaseSlicer(object):
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                                         xmin, xmax, ymin, ymax, zmin, zmax
+
         if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                     get_mask_bounds(nibabel.Nifti1Image(not_mask.astype(np.int),
                                     affine))
-            if kwargs.get('vmin') is None or kwargs.get('vmax') is None:
-                # Avoid dealing with masked arrays: they are slow
-                if not np.any(not_mask):
-                    # Everything is masked
-                    vmin = vmax = 0
-                else:
-                    masked_map = np.asarray(data)[not_mask]
-                    vmin = masked_map.min()
-                    vmax = masked_map.max()
-                if kwargs.get('vmin') is None:
-                    kwargs['vmin'] = vmin
-                if kwargs.get('vmax') is None:
-                    kwargs['vmax'] = vmax
-        else:
-            if not 'vmin' in kwargs:
-                kwargs['vmin'] = data.min()
-            if not 'vmax' in kwargs:
-                kwargs['vmax'] = data.max()
 
-        bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
-
-        # For each ax, cut the data and plot it
-        ims = []
+        data_2d_list = []
         for display_ax in self.axes.itervalues():
             try:
                 data_2d = display_ax.transform_2d(data, affine)
             except IndexError:
                 # We are cutting outside the indices of the data
-                continue
-            im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
-                                    type=type, **kwargs)
-            ims.append(im)
+                data_2d = None
+
+            data_2d_list.append(data_2d)
+
+        if kwargs.get('vmin') is None or kwargs.get('vmax') is None:
+            if 'vmin' not in kwargs:
+                kwargs['vmin'] = max(d.min() for d in data_2d_list
+                                     if d is not None)
+            if 'vmax' not in kwargs:
+                kwargs['vmax'] = max(d.max() for d in data_2d_list
+                                     if d is not None)
+
+        bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
+
+        ims = []
+        to_iterate_over = itertools.izip(self.axes.itervalues(), data_2d_list)
+        for display_ax, data_2d in to_iterate_over:
+            if data_2d is not None:
+                im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
+                                        type=type, **kwargs)
+                ims.append(im)
         return ims
 
     def _colorbar_show(self, im):
