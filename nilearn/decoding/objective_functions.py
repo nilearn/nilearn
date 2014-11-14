@@ -135,10 +135,8 @@ def div_id(grad, l1_ratio=.5):
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 
-    l1_ratio : float, optional (default .5)
-        Relative weight of L1; float between 0 and 1 inclusive.
-        TV+L1 penalty will be (alpha not shown here):
-        (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+        Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
     -------
@@ -182,11 +180,8 @@ def gradient_id(img, l1_ratio=.5):
     img : ndarray, shape (nx, ny, nz)
         N-dimensional image
 
-    l1_ratio : float, optional (default .5)
-        relative weight of l1; float between 0 and 1 inclusive.
-        TV+L1 penalty will be (alpha not shown here):
-
-        (1 - l1_ratio) * ||w||_TV + l1_ratio * ||w||_1
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+        Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
     -------
