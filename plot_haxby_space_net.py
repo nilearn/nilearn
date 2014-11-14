@@ -23,7 +23,6 @@ labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
 ### split data into train and test samples ####################################
 target = labels['labels']
 condition_mask = np.logical_or(target == "face", target == "house")
-# condition_mask = np.ones(len(target), dtype=np.bool)
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 9)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 9)
 
