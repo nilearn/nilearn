@@ -44,8 +44,7 @@ decoders = {}
 accuracies = {}
 for penalty in penalties:
    ### Fit model on train data and predict on test data ######################
-    decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=2,
-                                 n_jobs=22)
+    decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=2)
     decoder.fit(X_train, y_train)  # fit
     y_pred = decoder.predict(X_test)  # predict
     accuracies[penalty] = (y_pred == y_test).mean() * 100.
@@ -61,7 +60,7 @@ print "=" * 80
 for penalty, decoder in decoders.iteritems():
     coef_img = decoder.coef_img_
     plot_stat_map(coef_img, background_img, title=penalty,
-                           cut_coords=(20, -34, -16))
+                  cut_coords=(20, -34, -16))
     coef_img.to_filename('haxby_%s_weights.nii' % penalty)
     print decoder
     print "#" * 80
