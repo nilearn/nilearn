@@ -124,16 +124,16 @@ def _univariate_feature_screening(
     support = selector.get_support()
 
     # erode and then dilate mask, thus obtaining a "cleaner" version of
-    # the mask on which a spatial prior makes sense
-    nice_mask = mask.copy()
-    nice_mask[mask] = (support > 0)
-    nice_mask = ndimage.binary_dilation(ndimage.binary_erosion(
-                nice_mask)).astype(np.bool)
-    nice_mask[np.logical_not(mask)] = 0
-    support = nice_mask[mask]
+    # the mask on which a spatial prior actually makes sense
+    mask_ = mask.copy()
+    mask_[mask] = (support > 0)
+    mask_ = ndimage.binary_dilation(ndimage.binary_erosion(
+                mask_)).astype(np.bool)
+    mask_[np.logical_not(mask)] = 0
+    support = mask_[mask]
     X = X[:, support]
 
-    return X, nice_mask, support
+    return X, mask_, support
 
 
 def _space_net_alpha_grid(
