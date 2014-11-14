@@ -257,7 +257,7 @@ def test_lasso_vs_smooth_lasso():
 
 def test_params_correctly_propagated_in_constructors_biz():
     for penalty, is_classif, alpha, l1_ratio in itertools.product(
-        ["smooth-lasso", "tv-l1"], [True, False], [.4, .01], [.5, 1.]):
+            ["smooth-lasso", "tv-l1"], [True, False], [.4, .01], [.5, 1.]):
         cvobj = SpaceNet(
             mask="dummy", penalty=penalty, is_classif=is_classif, alpha=alpha,
             l1_ratio=l1_ratio)

@@ -68,7 +68,7 @@ def _crop_mask(mask):
 
 
 def _univariate_feature_screening(
-    X, y, mask, is_classif, screening_percentile, smooth=2.):
+        X, y, mask, is_classif, screening_percentile, smooth=2.):
     """
     Selects the most import features, via a univariate test
 
@@ -108,16 +108,13 @@ def _univariate_feature_screening(
         Support of the screened mask, as a subset of the support of the
         original mask.
     """
-    n_samples, _ = X.shape
-
-    # smooth the data before screening
+    # smooth the data (with isotropic Gaussian kernel) before screening
     if smooth > 0.:
-        sX = np.empty(list(mask.shape) + [n_samples])
-        for row in xrange(n_samples):
-            sX[:, :, :, row] = _unmask(X[row].copy(),  # avoid modifying X
-                                       mask)
-        sX = ndimage.gaussian_filter(sX, (smooth, smooth, smooth, 0.))
-        sX = sX[mask].T
+        sX = np.empty(X.shape)
+        for sample in xrange(sX.shape[0]):
+            sX[sample] = ndimage.gaussian_filter(
+                _unmask(X[sample].copy(),  # avoid modifying X
+                        mask), (smooth, smooth, smooth))[mask]
     else:
         sX = X
 
