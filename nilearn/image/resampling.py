@@ -232,15 +232,20 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
         #data[not_finite] = 0
         from ..masking import _extrapolate_out_mask
         data = _extrapolate_out_mask(data, np.logical_not(not_finite),
-                                        iterations=2)[0]
+                                     iterations=2)[0]
 
     # The resampling itself
-
     ndimage.affine_transform(data, A,
                              offset=np.dot(A_inv, b),
                              output_shape=target_shape,
                              output=out,
                              order=interpolation_order)
+
+    # Bug in ndimage.affine_transform when out does not have native endianness
+    # see https://github.com/nilearn/nilearn/issues/275
+    if not out.dtype.isnative:
+        out.byteswap(True)
+
     if has_not_finite:
         # We need to resample the mask of not_finite values
         not_finite = ndimage.affine_transform(not_finite, A,

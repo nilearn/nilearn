@@ -2,6 +2,7 @@
 Test the resampling code.
 """
 import copy
+import math
 
 from nose.tools import assert_equal, assert_raises, assert_raises_regexp, \
     assert_false, assert_true, assert_almost_equal
@@ -485,6 +486,31 @@ def test_reorder_img():
                                       np.diag(np.diag(
                                             img2.get_affine()[:3, :3])))
         assert_true(np.all(np.diag(img2.get_affine()) >= 0))
+
+
+def test_reorder_img_non_native_endianness():
+    def _get_resampled_img(dtype):
+        data = np.ones((10, 10, 10), dtype=dtype)
+        data[3:7, 3:7, 3:7] = 2
+
+        affine = np.eye(4)
+
+        theta = math.pi / 6
+        c = math.cos(theta)
+        s = math.sin(theta)
+
+        affine = np.array([[1, 0, 0, 0],
+                           [0, c, -s, 0],
+                           [0, s, c, 0],
+                           [0, 0, 0, 1]])
+
+        img = Nifti1Image(data, affine)
+        return resample_img(img, target_affine=np.eye(4))
+
+    img_1 = _get_resampled_img('<f8')
+    img_2 = _get_resampled_img('>f8')
+
+    np.testing.assert_equal(img_1.get_data(), img_2.get_data())
 
 
 def test_coord_transform_trivial():
