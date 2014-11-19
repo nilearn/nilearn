@@ -196,10 +196,9 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         affine = affine[:3, :3]
 
         # Convert from a FWHM to a sigma:
-        # Do not use /=, fwhm may be a numpy scalar
-        fwhm = fwhm / np.sqrt(8 * np.log(2))
+        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
-        sigma = fwhm / vox_size
+        sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
         for n, s in enumerate(sigma):
             ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
 
