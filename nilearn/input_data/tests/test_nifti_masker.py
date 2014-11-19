@@ -110,6 +110,22 @@ def test_mask_3d():
         assert_raises(TypeError, masker.fit)
 
 
+def test_sessions():
+    # Test the sessions vector
+    data = np.ones((40, 40, 40, 4))
+    # Create a border, so that the masking work well
+    data[0] = 0
+    data[-1] = 0
+    data[:, -1] = 0
+    data[:, 0] = 0
+    data[..., -1] = 0
+    data[..., 0] = 0
+    data[20, 20, 20] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+    masker = NiftiMasker(sessions=np.ones(3, dtype=np.int))
+    assert_raises(ValueError, masker.fit_transform, data_img)
+
+
 def test_joblib_cache():
     if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
         # Old nibabel do not pickle

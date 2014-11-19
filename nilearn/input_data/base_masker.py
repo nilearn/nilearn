@@ -97,6 +97,10 @@ def filter_and_mask(niimgs, mask_img_,
                         standardize=parameters['standardize'])
     else:
         sessions = parameters['sessions']
+        if not len(sessions) == len(data):
+            raise ValueError(('The length of the session vector (%i) '
+                              'does not match the length of the data (%i)')
+                              % (len(sessions), len(data)))
         for s in np.unique(sessions):
             if confounds is not None:
                 confounds = confounds[sessions == s]
