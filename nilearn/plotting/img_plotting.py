@@ -561,12 +561,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         stat_map_max = np.nanmax(stat_map_data)
         stat_map_min = np.nanmin(stat_map_data)
         vmax = max(-stat_map_min, stat_map_max)
-    if 'vmin' in kwargs:
-        raise ValueError('plot_stat_map does not accept a "vmin" '
-                         'argument, as it uses a symmetrical range '
-                         'defined via the vmax argument. To threshold '
-                         'the map, use the "threshold" argument')
-    vmin = -vmax
+    
+    vmin = kwargs.pop('vmin', -vmax)
 
     slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords,
