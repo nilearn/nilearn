@@ -87,6 +87,9 @@ def test_nifti_labels_masker():
         NiftiLabelsMasker(labels11_img).inverse_transform, signals11)
     
     # Call inverse transform (smoke test)
+    assert_raises_regexp(ValueError,
+        'has not been fitted. ',
+        NiftiLabelsMasker(labels11_img).inverse_transform, signals11)
     fmri11_img_r = masker11.inverse_transform(signals11)
     assert_equal(fmri11_img_r.shape, fmri11_img.shape)
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
