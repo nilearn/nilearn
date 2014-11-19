@@ -191,17 +191,26 @@ class NiftiMasker(BaseMasker, CacheMixin):
             print "[%s.fit] Finished fit" % self.__class__.__name__
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, niimgs, confounds=None, shelve_result=False):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
         ----------
         niimgs: nifti like images
-            Data to be preprocessed
+            Data to be preprocessed.
 
         confounds: CSV file path or 2D matrix
             This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
+            related documentation for details.
+
+        shelve_result: boolean
+            returns a reference to the cached results (MemorizedResult).
+            This can be useful when dealing with a lot of data at the
+            same time.
+
+        Notes
+        -----
+        For shelving see https://pythonhosted.org/joblib/memory.html.
         """
-        return self.transform_single_niimgs(
-            niimgs, confounds)
+        return self.transform_single_niimgs(niimgs, confounds,
+            shelve_result=shelve_result)
