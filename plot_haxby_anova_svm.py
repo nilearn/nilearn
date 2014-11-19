@@ -24,7 +24,6 @@ mask = dataset_files.mask
 # Keep only data corresponding to faces or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 y = y[condition_mask]
-session = session[condition_mask]
 conditions = conditions[condition_mask]
 
 # We have 2 conditions
@@ -39,6 +38,7 @@ nifti_masker = NiftiMasker(mask_img=mask, sessions=session, smoothing_fwhm=4,
 X = nifti_masker.fit_transform(dataset_files.func)
 # Apply our condition_mask
 X = X[condition_mask]
+session = session[condition_mask]
 
 ### Prediction function #######################################################
 
