@@ -58,9 +58,9 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
         # Deal with automatic settings of plot parameters
         if threshold == 'auto':
-            # Threshold epsilon above a percentile value, to be sure that some
-            # voxels are indeed threshold
-            threshold = fast_abs_percentile(data) + 1e-5
+            # Threshold epsilon below a percentile value, to be sure that some
+            # voxels pass the threshold
+            threshold = fast_abs_percentile(data) - 1e-5
 
         if display_mode in ('x', 'y', 'z'):
             # Here we use a heuristic for cut indices that is well suited to
