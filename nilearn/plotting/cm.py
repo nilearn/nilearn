@@ -104,7 +104,7 @@ def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
     red, green, blue = _colors.colorConverter.to_rgb(color)
     if name == '' and hasattr(color, 'startswith'):
         name = color
-    cmapspec = [(red, green, blue, 0.), 
+    cmapspec = [(red, green, blue, 1.),
                 (red, green, blue, 1.),
                ]
     cmap = _colors.LinearSegmentedColormap.from_list(
