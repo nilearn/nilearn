@@ -427,7 +427,9 @@ class SpaceNet(LinearModel, RegressorMixin):
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
-        parameter, the sparser the estimated weights map.
+        parameter, the sparser the estimated weights map. It's advice not to
+        use values too close to 0 (corresponding to a pure spatial prior) or
+        values too close to 1 (corresponding to a pure l1 prior).
 
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
@@ -579,6 +581,10 @@ class SpaceNet(LinearModel, RegressorMixin):
             raise ValueError(
                 "l1_ratio must be in the interval [0, 1]; got %g" % (
                     self.l1_ratio))
+        elif self.l1_ratio == 0. or self.l1_ratio == 1.:
+            warnings.warn(
+                "Specified l1_ratio = %g. It's adived to only specify values "
+                "of l1_ratio strictly between 0 and 1." % self.l1_ratio)
         if not (0. <= self.screening_percentile <= 100.):
             raise ValueError(
                 ("screening_percentile should be in the interval"
