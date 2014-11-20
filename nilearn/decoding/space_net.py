@@ -34,7 +34,6 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
-X_ = None
 
 
 def _get_mask_volume(mask):
