@@ -224,64 +224,70 @@ class EarlyStoppingCallback(object):
         self.debias = debias
         self.ymean = ymean
         self.verbose = verbose
-        self.test_errors = []
+        self.test_scores = []
         self.counter = 0.
 
     def __call__(self, variables):
         """The callback proper """
+        # misc
         if not isinstance(variables, dict):
             variables = dict(w=variables)
-
-        if self.is_classif:
-            variables['w'] = variables['w'][:-1]  # strip off intercept
         self.counter += 1
-
         if self.counter == 0:
-            # Reset the test_errors list
-            self.test_errors = list()
+            # reset the test_scores list
+            self.test_scores = list()
         w = variables['w']
-        w = np.ravel(w)
-
-        # Correlation (Spearman) to output
-        y_pred = np.dot(self.X_test, w)
-        error = .5 * (1. - stats.spearmanr(y_pred, self.y_test)[0])
-        self.test_errors.append(error)
+        score = self.test_score(w)
+        self.test_scores.append(score)
         if not (self.counter > 20 and (self.counter % 10) == 2):
             return
-        if len(self.test_errors) > 4:
-            if np.mean(np.diff(self.test_errors[-5:])) >= -1e-4:
+
+        # check whether score increased on average over last 5 iterations
+        if len(self.test_scores) > 4:
+            if np.mean(np.diff(self.test_scores[-5:][::-1])) >= -1e-4:
                 if self.verbose:
-                    print('Early stopping. Test error: %.8f %s' % (
-                            error, 40 * '-'))
-
-                # Error is steadily increasing
+                    print('Early stopping. Test score: %.8f %s' % (
+                            score, 40 * '-'))
                 return True
-        if self.verbose > 1:
-            print('Test error: %.8f' % error)
 
+        if self.verbose > 1:
+            print('Test score: %.8f' % score)
         return False
 
+    def _debias(self, w):
+        """"Debias w by rescaling the coefficients by a fixed factor.
+
+        Precisely, the scaling factor is: <y_pred, y_test> / ||y_test||^2.
+        """
+        y_pred = np.dot(self.X_test, w)
+        scaling = np.dot(y_pred, y_pred)
+        if scaling > 0.:
+            scaling = np.dot(y_pred, self.y_test) / scaling
+            w *= scaling
+        return w
+
     def test_score(self, w):
-        """Compute test score for model, given weights map `w`."""
+        """Compute test score for model, given weights map `w`.
+
+        We use a spearman correlation between linear prediction and
+        groun truth (y_test).
+        """
         if self.is_classif:
-            return 1. - roc_auc_score(
-                (self.y_test > 0.), _sigmoid(
-                    np.dot(self.X_test, w[:-1]) + w[-1]))
+            intercept = w[-1]
+            w = w[:-1]
         else:
             if self.debias:
-                y_pred = np.dot(self.X_test, w)
-                scaling = np.dot(y_pred, y_pred)
-                if scaling > 0.:
-                    scaling = np.dot(y_pred, self.y_test) / scaling
-                    w *= scaling
-            y_pred = np.dot(self.X_test, w) + self.ymean  # the intercept!
-            return .5 * np.mean((self.y_test - y_pred) ** 2)
+                w = self._debias(w)
+            intercept = self.ymean
+        return stats.spearmanr(
+            np.dot(self.X_test, w) + intercept,  # linear prediction
+            self.y_test)[0]
 
 
-def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
-                test, solver_params, is_classif=False, init=None, key=None,
-                debias=False, Xmean=None, Xstd=1., ymean=0.,
-                screening_percentile=20., verbose=1.):
+def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
+                solver_params, is_classif=False, init=None, key=None,
+                debias=False, Xmean=None, ymean=0., screening_percentile=20.,
+                verbose=1.):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects
 
@@ -343,7 +349,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
             verbose=verbose)
 
         # score the alphas by model fit
-        best_score = np.inf
+        best_score = -np.inf
         for alpha in alphas:
             w, _, init = solver(
                 X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
@@ -351,7 +357,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train,
                 **solver_params)
             score = early_stopper.test_score(w)
             test_scores.append(score)
-            if score <= best_score:
+            if score >= best_score:
                 best_score = score
                 best_alpha = alpha
                 best_init = init.copy()
@@ -808,7 +814,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                 solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
                 alphas, self.l1_ratio, train, test, solver_params,
                 is_classif=self.loss == "logistic", key=c,
-                debias=self.debias, Xmean=Xmean, ymean=ymean[c], Xstd=Xstd,
+                debias=self.debias, Xmean=Xmean, ymean=ymean[c],
                 verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in cv):

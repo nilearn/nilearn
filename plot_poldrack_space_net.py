@@ -19,13 +19,11 @@ X_test = nibabel.Nifti1Image(img_data[:, :, :, n_samples_train:], affine)
 y_test = y[n_samples_train:]
 
 ### Fit and predict ##########################################################
-import os
 from nilearn.decoding import SpaceNetRegressor
 penalties = ["smooth-lasso", "TV-L1"]
 decoders = {}
 for penalty in penalties:
     decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
-                                n_jobs=int(os.environ.get("N_JOBS", 1)),
                                 penalty=penalty)
     decoder.fit(X_train, y_train)  # fit
     decoders[penalty] = decoder
