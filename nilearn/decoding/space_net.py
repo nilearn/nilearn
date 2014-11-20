@@ -188,11 +188,15 @@ def _space_net_alpha_grid(
         b[y == -1] = - m_plus / m
         alpha_max = np.max(np.abs(X.T.dot(b)))
 
-        # It may happen that b is in the kernel of X.T!
+        # tt may happen that b is in the kernel of X.T!
         if alpha_max == 0.:
             alpha_max = np.abs(np.dot(X.T, y)).max()
     else:
         alpha_max = np.abs(np.dot(X.T, y)).max()
+
+    # prevent alpha_max from exploding when l1_ratio = 0
+    if l1_ratio == 0.:
+        l1_ratio = 1e-3
     alpha_max /= (X.shape[0] * l1_ratio)
 
     if n_alphas == 1:
