@@ -88,7 +88,7 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
             w[k - 1] = 1 - w[k - 1]
 
         escb(dict(w=w, counter=counter))
-        assert_equal(len(escb.test_errors), counter + 1)
+        assert_equal(len(escb.test_scores), counter + 1)
 
         # restart
         if counter > 20:
