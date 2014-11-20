@@ -3,7 +3,7 @@ import warnings
 import itertools
 from functools import partial
 from nose import SkipTest
-from nose.tools import assert_equal, assert_true
+from nose.tools import assert_equal, assert_true, assert_false
 import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
@@ -20,7 +20,6 @@ from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
-rng = check_random_state(42)
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
 
@@ -34,6 +33,7 @@ X, mask = to_niimgs(X_, [size] * 3)
 
 
 def test_space_net_alpha_grid(n_samples=4, n_features=3):
+    rng = check_random_state(42)
     X = rng.randn(n_samples, n_features)
     y = np.arange(n_samples)
 
@@ -75,6 +75,7 @@ def test_space_net_alpha_grid_same_as_sk():
 def test_early_stopping_callback_object(n_samples=10, n_features=30):
     # This test evolves w so that every line of th EarlyStoppingCallback
     # code is executed a some point. This a kind of code fuzzing.
+    rng = check_random_state(42)
     X_test = rng.randn(n_samples, n_features)
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
@@ -143,9 +144,9 @@ def test_alpha_attrs():
     alpha = 1.
     X, mask = to_niimgs(X, (2, 2, 2))
     for penalty, is_classif, verbose in itertools.product(
-        ['smooth-lasso', 'tv-l1'], [True, False], [True, False]):
+            ['smooth-lasso', 'tv-l1'], [True, False], [True, False]):
         cv_class = eval('SpaceNet%s' % (
-                ['Regressor', 'Classifier'][is_classif]))
+            ['Regressor', 'Classifier'][is_classif]))
         cv = cv_class(
             mask=mask, penalty=penalty, alpha=alpha, verbose=verbose)
         cv.fit(X, y)
@@ -324,3 +325,12 @@ def test_space_net_regressor_subclass():
             verbose=verbose)
         assert_equal(cvobj.alpha, alpha)
         assert_equal(cvobj.l1_ratio, l1_ratio)
+
+
+def test_space_net_alpha_grid_pure_spatial():
+    rng = check_random_state(42)
+    X = rng.randn(10, 100)
+    y = np.arange(X.shape[0])
+    for is_classif in [True, False]:
+        assert_false(np.any(np.isnan(_space_net_alpha_grid(
+            X, y, l1_ratio=0., logistic=is_classif))))
