@@ -152,10 +152,9 @@ for classifier_name, classifier in sorted(classifiers.items()):
     weight_img = masker.inverse_transform(weights)
     weight_map = weight_img.get_data()
     threshold = np.max(np.abs(weight_map)) * 1e-3
-    fig = plt.figure(figsize=(3, 5))
     plot_stat_map(weight_img, bg_img=mean_epi_img,
                   display_mode='z', cut_coords=[-17],
-                  colorbar=False, threshold=threshold,
-                  figure=fig, title='%s: face vs house' % classifier_name)
+                  threshold=threshold,
+                  title='%s: face vs house' % classifier_name)
 
 plt.show()
