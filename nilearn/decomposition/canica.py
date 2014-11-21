@@ -4,14 +4,15 @@ CanICA
 
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
-import distutils
+from distutils.version import LooseVersion
 
+from operator import itemgetter
 import numpy as np
 from scipy.stats import scoreatpercentile
 
 import sklearn
 from sklearn.decomposition import fastica
-from sklearn.externals.joblib import Memory
+from sklearn.externals.joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA
@@ -147,25 +148,23 @@ class CanICA(MultiPCA, CacheMixin):
         MultiPCA.fit(self, niimgs, y=y, confounds=confounds)
         random_state = check_random_state(self.random_state)
 
-        sparsity = np.infty
-        for rs in range(self.n_init):
-            if (distutils.version.LooseVersion(sklearn.__version__).version
-                    > [0, 12]):
-                # random_state in fastica was added in 0.13
-                ica_maps_ = self._cache(fastica, memory_level=6)(
-                    self.components_.T,
-                    whiten=True, fun='cube',
-                    random_state=random_state)[2]
-            else:
-                ica_maps_ = self._cache(fastica, memory_level=6)(
-                    self.components_.T, whiten=True,
-                    fun='cube')[2]
-            ica_maps_ = ica_maps_.T
+        seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
+        if (LooseVersion(sklearn.__version__).version > [0, 12]):
+            # random_state in fastica was added in 0.13
+            results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                delayed(fastica)(self.components_.T,
+                    whiten=True, fun='cube', random_state=seed)
+                for seed in seeds)
+        else:
+            results = Parallel(n_jobs=1, verbose=self.verbose)(
+                delayed(fastica)(self.components_.T, whiten=True, fun='cube')
+                for seed in seeds)
 
-            sparsity_ = np.sum(np.abs(ica_maps_), axis=1).max()
-            if sparsity_ < sparsity:
-                sparsity = sparsity_
-                ica_maps = ica_maps_
+        ica_maps_gen_ = (result[2].T for result in results)
+        ica_maps_and_sparsities = ((ica_map,
+                                    np.sum(np.abs(ica_map), axis=1).max())
+                                   for ica_map in ica_maps_gen_)
+        ica_maps, sparsity = min(ica_maps_and_sparsities, key=itemgetter(-1))
 
         # Thresholding
         ratio = None
@@ -180,8 +179,8 @@ class CanICA(MultiPCA, CacheMixin):
         if ratio is not None:
             abs_ica_maps = np.abs(ica_maps)
             threshold = scoreatpercentile(
-                    abs_ica_maps,
-                    100. - (100. / len(ica_maps)) * ratio)
+                abs_ica_maps,
+                100. - (100. / len(ica_maps)) * ratio)
             ica_maps[abs_ica_maps < threshold] = 0.
         self.components_ = ica_maps
 
