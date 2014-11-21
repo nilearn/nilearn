@@ -273,7 +273,7 @@ class EarlyStoppingCallback(object):
         """Compute test score for model, given weights map `w`.
 
         We use a spearman correlation between linear prediction and
-        groun truth (y_test).
+        ground truth (y_test).
         """
         if self.is_classif:
             intercept = w[-1]
