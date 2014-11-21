@@ -520,6 +520,10 @@ class SpaceNet(LinearModel, RegressorMixin):
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
+    `self.cv_` : list of pairs of lists
+         Each pair are are the list of indices for the train and test
+         samples for the corresponding fold.
+
     `cv_scores_` : ndarray, shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
@@ -789,10 +793,11 @@ class SpaceNet(LinearModel, RegressorMixin):
 
         # generate fold indices
         if len(alphas) > 1:
-            cv = list(check_cv(self.cv, X=X, y=y, classifier=self.is_classif))
+            self.cv_ = list(check_cv(self.cv, X=X, y=y,
+                                     classifier=self.is_classif))
         else:
-            cv = [(range(n_samples), [])]  # single fold
-        self.n_folds_ = len(cv)
+            self.cv_ = [(range(n_samples), [])]  # single fold
+        n_folds = len(self.cv_)
 
         # scores & mean weights map over all folds
         self.cv_scores_ = [[] for _ in range(n_problems)]
@@ -826,7 +831,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                 debias=self.debias, Xmean=Xmean, ymean=ymean[c],
                 verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
-                ) for c in xrange(n_problems) for (train, test) in cv):
+                ) for c in xrange(n_problems) for (train, test) in self.cv_):
             test_scores = np.reshape(test_scores, (-1, 1))
             if not len(self.cv_scores_[c]):
                 self.cv_scores_[c] = test_scores
@@ -844,7 +849,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         self.alpha_ = alphas[self.i_alpha_]
 
         # bagging: average best weights maps over folds
-        w /= self.n_folds_
+        w /= n_folds
 
         # set coefs and intercepts
         self._set_coef_and_intercept(w)
@@ -1052,6 +1057,10 @@ class SpaceNetClassifier(SpaceNet):
     `intercept_` : array, shape = [n_classes-1]
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
+
+    `self.cv_` : list of pairs of lists
+         Each pair are are the list of indices for the train and test
+         samples for the corresponding fold.
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
