@@ -1,15 +1,11 @@
 """
-Simple example of decoding on the Haxby data, using Space-Net prior
-===================================================================
-
-Here is a simple example of decoding, reproducing the Haxby 2001
-study on a face vs house discrimination task in a mask of the ventral
-stream.
-
-Author: DOHMATOB Elvis Dopgima,
-        VAROQUAUX Gael
-
+Here is a simple example of decoding with a SpaceNet prior (i.e S-LASSO and
+TV-l1), reproducing the Haxby 2001 study on a face vs house discrimination
+task.
 """
+# author: DOHMATOB Elvis Dopgima,
+#         VAROQUAUX Gael
+
 
 ### Load haxby dataset ########################################################
 from nilearn.datasets import fetch_haxby
