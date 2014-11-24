@@ -34,9 +34,9 @@ new axes. If the affine offset is given, but no shape provided, the
 resulting image will be the closest bounding box around the union of the
 data points and the affine offset.
 
-Note that specifying a shape specifying a 3x3 transformation matrix causes
-an error message, because `resample_img` will not know where to start the
-bounding box (there is no intelligent way of inferring this given the
+Note that specifying a shape without specifying a 3x3 transformation matrix
+causes an error message, because `resample_img` will not know where to start
+the bounding box (there is no intelligent way of inferring this given the
 bounding box shape).
 """
 
