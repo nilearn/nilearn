@@ -13,7 +13,7 @@ import numpy as np
 from nibabel import Nifti1Image
 
 from ..resampling import resample_img, BoundingBoxError, reorder_img, \
-    from_matrix_vector, coord_transform
+    from_matrix_vector, coord_transform, compare_affines
 from ..._utils import testing
 
 ###############################################################################
@@ -522,3 +522,50 @@ def test_resample_img_segmentation_fault():
     resample_img(img_in,
                  target_affine=aff_out,
                  interpolation='nearest')
+
+
+def test_compare_affines():
+
+    rng = np.random.RandomState(42)
+    aff1 = np.eye(4)
+    aff2 = aff1[[1, 0, 2, 3]]
+    aff3 = np.diag([4, 3, 4, 1]).astype("float")
+
+    ortho = np.linalg.svd(rng.randn(3, 3))[0]
+
+    aff4 = aff3.copy()
+    aff4[:3, :3] = ortho.dot(aff3[:3, :3].dot(ortho.T))
+
+    angle = np.pi / 4
+    ortho2 = np.eye(3)
+    ortho2[:2, :2] = np.array([[np.cos(angle), -np.sin(angle)],
+                               [np.sin(angle), np.cos(angle)]])
+    aff5 = aff3.copy()
+    aff5[:3, :3] = ortho2.dot(aff3[:3, :3].dot(ortho2.T))
+    def product_reduce(matrices):
+        if len(matrices) > 1:
+            return np.dot(matrices[0], product_reduce(matrices[1:]))
+        else:
+            return matrices[0]
+
+    r12 = compare_affines(aff1, aff2, full_matrices=True)
+    assert_array_equal(aff1.dot(product_reduce(r12)), aff2)
+    _, _, _, _, _, _, P = r12
+    assert_array_equal(P, aff2)  # because aff2 is only a permutation
+
+    r13 = compare_affines(aff1, aff3, full_matrices=True)
+    assert_array_equal(aff3.dot(product_reduce(r13)), aff1)
+    _, _, _, V, _, _, _ = r13
+    assert_array_equal(V.dot(aff3), np.eye(4))
+
+    r14 = compare_affines(aff1, aff4, full_matrices=True)
+    assert_array_almost_equal(aff4.dot(product_reduce(r14)), aff1)
+
+    r15 = compare_affines(aff1, aff5, full_matrices=True)
+    assert_array_almost_equal(aff5.dot(product_reduce(r15)), aff1)
+
+    r23 = compare_affines(aff2, aff3, full_matrices=True)
+    assert_array_equal(aff3.dot(product_reduce(r23)), aff2)
+
+    stop
+

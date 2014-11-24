@@ -508,7 +508,7 @@ def compare_affines(source_affine, target_affine, full_matrices=False):
 
     # 1) Reorder axes
     # foolproof way of finding axis reordering
-    strongest_axes = np.max(np.abs(Q), axis=1)
+    strongest_axes = np.argmax(np.abs(Q), axis=1)
     if len(np.unique(strongest_axes)) != 3:
         # this means that axis choice was ambiguous
         Q_copy = Q.copy()
@@ -542,7 +542,7 @@ def compare_affines(source_affine, target_affine, full_matrices=False):
     # 4) Find integer part of translation and residual
     translation_int = transformation_matrix[:3, 3] // voxel_sizes
     translation_frac = (transformation_matrix[:3, 3]
-                       % voxel_sizes) / np.float(voxel_sizes)
+                       % voxel_sizes) / voxel_sizes.astype("float")
 
     if full_matrices == False:
         return (permutation,
