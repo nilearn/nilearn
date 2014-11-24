@@ -129,7 +129,7 @@ plt.tight_layout()
 
 # use the average EPI as a background
 from nilearn import image
-mean_epi = image.mean_img(data_files.func[0]).get_data()
+mean_epi_img = image.mean_img(data_files.func[0])
 
 # Restrict the decoding to face vs house
 condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')
@@ -137,6 +137,8 @@ masked_timecourses = masked_timecourses[condition_mask[resting_state == False]]
 stimuli = stimuli[condition_mask]
 # Transform the stimuli to binary values
 stimuli = (stimuli == 'face').astype(np.int)
+
+from nilearn.plotting import plot_stat_map
 
 for classifier_name, classifier in sorted(classifiers.items()):
     classifier.fit(masked_timecourses, stimuli)
@@ -149,19 +151,10 @@ for classifier_name, classifier in sorted(classifiers.items()):
         continue
     weight_img = masker.inverse_transform(weights)
     weight_map = weight_img.get_data()
-
-    plt.figure(figsize=(3, 5))
-    plt.imshow(np.rot90(mean_epi[..., 27]), interpolation='nearest',
-            cmap=plt.cm.gray)
-    vmax = max(-weight_map.min(), weight_map.max())
-    plt.imshow(np.rot90(
-               np.ma.masked_inside(weight_map[..., 27], -.001*vmax, .001*vmax)),
-               interpolation='nearest', vmax=vmax, vmin=-vmax)
-    plt.axis('off')
-    plt.title('%s: face vs house' % classifier_name)
-    plt.tight_layout()
+    threshold = np.max(np.abs(weight_map)) * 1e-3
+    plot_stat_map(weight_img, bg_img=mean_epi_img,
+                  display_mode='z', cut_coords=[-17],
+                  threshold=threshold,
+                  title='%s: face vs house' % classifier_name)
 
 plt.show()
-
-
-
