@@ -146,9 +146,9 @@ def plot_img(niimg, cut_coords=None, output_file=None, display_mode='ortho',
         threshold : a number, None, or 'auto'
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
-            values below the threshold are plotted as transparent. If
-            auto is given, the threshold is determined magically by
-            analysis of the image.
+            values below the threshold (in absolute value) are plotted
+            as transparent. If auto is given, the threshold is determined
+            magically by analysis of the image.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -332,6 +332,12 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             savefig.
         cmap: matplotlib colormap, optional
             The colormap for the anat
+        threshold : a number, None, or 'auto'
+            If None is given, the image is not thresholded.
+            If a number is given, it is used to threshold the image:
+            values below the threshold (in absolute value) are plotted
+            as transparent. If auto is given, the threshold is determined
+            magically by analysis of the image.
 
         Notes
         -----
@@ -401,6 +407,12 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             savefig.
         cmap: matplotlib colormap, optional
             The colormap for the anat
+        threshold : a number, None, or 'auto'
+            If None is given, the image is not thresholded.
+            If a number is given, it is used to threshold the image:
+            values below the threshold (in absolute value) are plotted
+            as transparent. If auto is given, the threshold is determined
+            magically by analysis of the image.
 
         Notes
         -----
@@ -466,6 +478,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             you whish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
+        threshold : a number, None, or 'auto'
+            If None is given, the image is not thresholded.
+            If a number is given, it is used to threshold the image:
+            values below the threshold (in absolute value) are plotted
+            as transparent. If auto is given, the threshold is determined
+            magically by analysis of the image.
 
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
@@ -525,6 +543,12 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             figure is used.
         title : string, optional
             The title dispayed on the figure.
+        threshold : a number, None, or 'auto'
+            If None is given, the image is not thresholded.
+            If a number is given, it is used to threshold the image:
+            values below the threshold (in absolute value) are plotted
+            as transparent. If auto is given, the threshold is determined
+            magically by analysis of the image.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
