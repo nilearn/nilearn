@@ -9,8 +9,9 @@ from nilearn import datasets
 
 localizer = datasets.fetch_localizer_contrasts(["left vs right button press"],
                                                n_subjects=4,
-                                               get_anats=True)
-img = nibabel.load(localizer.cmaps[3])
+                                               get_anats=True,
+                                               get_tmaps=True)
+img = nibabel.load(localizer.tmaps[3])
 data = img.get_data()
 data[np.isnan(data)] = 0
 
@@ -25,9 +26,9 @@ display = img_plotting.plot_glass_brain(img, title='default threshold',
 display = img_plotting.plot_glass_brain(img, black_bg=False,
                                         title='default threshold', alpha=0.7)
 
-display = img_plotting.plot_glass_brain(img, threshold=10,
-                                        title='threshold=10', alpha=0.7)
-display = img_plotting.plot_glass_brain(img, threshold=10, black_bg=False,
-                                        title='threshold=10', alpha=0.7)
+display = img_plotting.plot_glass_brain(img, threshold=3,
+                                        title='threshold=3', alpha=0.7)
+display = img_plotting.plot_glass_brain(img, threshold=3, black_bg=False,
+                                        title='threshold=3', alpha=0.7)
 
 plt.show()
