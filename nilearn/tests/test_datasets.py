@@ -436,6 +436,67 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.cmaps), 20 * 2)  # two contrasts are fetched
     assert_equal(dataset.ext_vars.size, 20)
 
+    # get_anats=True
+    dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
+                                                 data_dir=tmpdir,
+                                                 url=local_url,
+                                                 get_anats=True)
+    assert_true(dataset.masks is None)
+    assert_true(dataset.tmaps is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
+    assert_true(isinstance(dataset.anats[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_equal(dataset.ext_vars.size, 94)
+    assert_equal(len(dataset.anats), 94)
+    assert_equal(len(dataset.cmaps), 94)
+
+    # get_masks=True
+    dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
+                                                 data_dir=tmpdir,
+                                                 url=local_url,
+                                                 get_masks=True)
+    assert_true(dataset.anats is None)
+    assert_true(dataset.tmaps is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.masks[0], basestring))
+    assert_equal(dataset.ext_vars.size, 94)
+    assert_equal(len(dataset.cmaps), 94)
+    assert_equal(len(dataset.masks), 94)
+
+    # get_tmaps=True
+    dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
+                                                 data_dir=tmpdir,
+                                                 url=local_url,
+                                                 get_tmaps=True)
+    assert_true(dataset.anats is None)
+    assert_true(dataset.masks is None)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.tmaps[0], basestring))
+    assert_equal(dataset.ext_vars.size, 94)
+    assert_equal(len(dataset.cmaps), 94)
+    assert_equal(len(dataset.tmaps), 94)
+
+    # all get_*=True
+    dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
+                                                 data_dir=tmpdir,
+                                                 url=local_url,
+                                                 get_anats=True,
+                                                 get_masks=True,
+                                                 get_tmaps=True)
+
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
+    assert_true(isinstance(dataset.anats[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.masks[0], basestring))
+    assert_true(isinstance(dataset.tmaps[0], basestring))
+    assert_equal(dataset.ext_vars.size, 94)
+    assert_equal(len(dataset.anats), 94)
+    assert_equal(len(dataset.cmaps), 94)
+    assert_equal(len(dataset.masks), 94)
+    assert_equal(len(dataset.tmaps), 94)
+
 
 @with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
