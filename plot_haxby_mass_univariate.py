@@ -29,6 +29,7 @@ References
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 import numpy as np
+from scipy import linalg
 import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
@@ -54,7 +55,7 @@ fmri_masked = fmri_masked[condition_mask]
 
 # We consider the mean image per session and per condition.
 # Otherwise, the observations cannot be exchanged at random because
-# a time dependance exists between observations within a same session.
+# a time dependence exists between observations within a same session.
 n_sessions = np.unique(sessions).size
 grouped_fmri_masked = np.empty((2 * n_sessions,  # two conditions per session
                                 fmri_masked.shape[1]))
@@ -83,7 +84,7 @@ neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     n_jobs=1)  # can be changed to use more CPUs
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    signed_neg_log_pvals).get_data()
+    signed_neg_log_pvals)
 
 ### scikit-learn F-scores for comparison ######################################
 # F-test does not allow to observe the effect sign (pure two-sided test)
@@ -96,52 +97,65 @@ pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1
 neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals_bonferroni).get_data()
+    neg_log_pvals_bonferroni)
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import ImageGrid
+from nilearn.plotting import plot_stat_map
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
-mean_fmri = image.mean_img(dataset_files.func).get_data()
+mean_fmri_img = image.mean_img(dataset_files.func)
 
 # Various plotting parameters
-picked_slice = 27  # plotted slice
-vmin = -np.log10(0.1)  # 10% corrected
-vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_bonferroni))
-grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
-                 axes_pad=0.05, add_all=True, label_mode="1",
-                 share_all=True, cbar_location="right", cbar_mode="single",
-                 cbar_size="7%", cbar_pad="1%")
+z_slice = -17  # plotted slice
+from nilearn.image.resampling import coord_transform
+affine = signed_neg_log_pvals_unmasked.get_affine()
+_, _, k_slice = coord_transform(0, 0, z_slice,
+                                linalg.inv(affine))
+k_slice = round(k_slice)
+
+threshold = -np.log10(0.1)  # 10% corrected
+
+vmax = min(signed_neg_log_pvals.max(),
+           neg_log_pvals_bonferroni.max())
 
 # Plot thresholded p-values map corresponding to F-scores
-ax = grid[0]
-p_ma = np.ma.masked_less(neg_log_pvals_bonferroni_unmasked, vmin)
-ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.gray)
-ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.RdBu_r, vmin=-vmax, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values'
-             '\n(Parametric two-sided F-test'
-             '\n+ Bonferroni correction)'
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
-ax.axis('off')
+fig = plt.figure(figsize=(4, 5.5), facecolor='k')
+
+display = plot_stat_map(neg_log_pvals_bonferroni_unmasked, mean_fmri_img,
+                        threshold=threshold, cmap=plt.cm.RdBu_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax)
+
+neg_log_pvals_bonferroni_data = neg_log_pvals_bonferroni_unmasked.get_data()
+neg_log_pvals_bonferroni_slice_data = \
+    neg_log_pvals_bonferroni_data[..., k_slice]
+n_detections = (neg_log_pvals_bonferroni_slice_data > threshold).sum()
+title = ('Negative $\log_{10}$ p-values'
+         '\n(Parametric two-sided F-test'
+         '\n+ Bonferroni correction)'
+         '\n%d detections') % n_detections
+
+display.title(title, y=1.1)
 
 # Plot permutation p-values map
-ax = grid[1]
-p_ma = np.ma.masked_inside(signed_neg_log_pvals_unmasked, -vmin, vmin)[..., 0]
-ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.gray)
-im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-               cmap=plt.cm.RdBu_r, vmin=-vmax, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values'
-             '\n(Non-parametric two-sided test'
-             '\n+ max-type correction)'
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
-ax.axis('off')
+fig = plt.figure(figsize=(4, 5.5), facecolor='k')
 
-# plot colorbar
-colorbar = grid[1].cax.colorbar(im)
-plt.subplots_adjust(0., 0.03, 1., 0.83)
+display = plot_stat_map(signed_neg_log_pvals_unmasked, mean_fmri_img,
+                        threshold=threshold, cmap=plt.cm.RdBu_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax)
+
+signed_neg_log_pvals_data = signed_neg_log_pvals_unmasked.get_data()
+signed_neg_log_pvals_data_slice_data = \
+    signed_neg_log_pvals_data[..., k_slice, 0]
+n_detections = (np.abs(signed_neg_log_pvals_data_slice_data) > threshold).sum()
+title = ('Negative $\log_{10}$ p-values'
+         '\n(Non-parametric two-sided test'
+         '\n+ max-type correction)'
+         '\n%d detections') % n_detections
+
+display.title(title, y=1.1)
+
 plt.show()
