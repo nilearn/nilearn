@@ -199,7 +199,8 @@ class GlassBrainAxes(BaseAxes):
             self.add_object_bounds(object_bounds)
 
     def transform_2d(self, data, affine):
-        """ Returns the maximum of the 3D volume along an axis.
+        """ Returns the maximum of the absolute value of the 3D volume
+            along an axis.
 
             Parameters
             ==========
@@ -210,7 +211,7 @@ class GlassBrainAxes(BaseAxes):
 
         """
         max_axis = 'xyz'.index(self.direction)
-        maximum_intensity_data = data.max(axis=max_axis)
+        maximum_intensity_data = np.abs(data).max(axis=max_axis)
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
