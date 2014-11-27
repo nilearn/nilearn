@@ -600,8 +600,8 @@ def plot_glass_brain(stat_map_img,
                      output_file=None, display_mode='ortho',
                      figure=None, axes=None, title=None, threshold=1e-6,
                      annotate=True,
-                     black_bg='auto',
-                     cmap=cm.red_transparent_full_alpha_range,
+                     black_bg=False,
+                     cmap=None,
                      alpha=1.,
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
@@ -648,6 +648,9 @@ def plot_glass_brain(stat_map_img,
         ordered.
 
     """
+    if cmap is None:
+        cmap = pl.cm.hot if black_bg else pl.cm.hot_r
+
     def create_display_fun(display_mode):
         return functools.partial(get_projector(display_mode), alpha=alpha)
 
