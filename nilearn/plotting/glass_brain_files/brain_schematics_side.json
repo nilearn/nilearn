@@ -2,7 +2,7 @@
   "paths": [
     {
       "edgecolor": "#a6a6a6", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path3188", 
       "items": [
         {
@@ -602,7 +602,7 @@
     }, 
     {
       "edgecolor": "#a6a6a6", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path3192", 
       "items": [
         {
@@ -1677,7 +1677,7 @@
     }, 
     {
       "edgecolor": "#a6a6a6", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path3194", 
       "items": [
         {
@@ -1789,7 +1789,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path3196", 
       "items": [
         {
@@ -1838,7 +1838,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 3.0, 
+      "linewidth": 2.0, 
       "id": "path3198", 
       "items": [
         {
@@ -1908,7 +1908,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 3.0, 
+      "linewidth": 2.0, 
       "id": "path3144-6", 
       "items": [
         {
@@ -2631,7 +2631,7 @@
     }, 
     {
       "edgecolor": "#a6a6a6", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path4040", 
       "items": [
         {
@@ -2722,7 +2722,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3968", 
       "items": [
         {
@@ -2813,7 +2813,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3970", 
       "items": [
         {
@@ -2904,7 +2904,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3972", 
       "items": [
         {
@@ -2953,7 +2953,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3974", 
       "items": [
         {
@@ -2981,7 +2981,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3976", 
       "items": [
         {
@@ -3009,7 +3009,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3978", 
       "items": [
         {
@@ -3079,7 +3079,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4038", 
       "items": [
         {

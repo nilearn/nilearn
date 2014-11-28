@@ -2,7 +2,7 @@
   "paths": [
     {
       "edgecolor": "#b3b3b3", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path3943", 
       "items": [
         {
@@ -4901,7 +4901,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 3.0, 
+      "linewidth": 2.0, 
       "id": "path3105", 
       "items": [
         {
@@ -5593,7 +5593,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3967", 
       "items": [
         {
@@ -5642,7 +5642,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path3967-3", 
       "items": [
         {
@@ -5691,7 +5691,7 @@
     }, 
     {
       "edgecolor": "#a6a6a6", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path4131", 
       "items": [
         {
@@ -5824,7 +5824,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 3.0, 
+      "linewidth": 2.0, 
       "id": "path3987", 
       "items": [
         {
@@ -5915,7 +5915,7 @@
     }, 
     {
       "edgecolor": "#a5a5a5", 
-      "linewidth": 2.5, 
+      "linewidth": 1.7, 
       "id": "path4131-4", 
       "items": [
         {
@@ -6048,7 +6048,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 3.0, 
+      "linewidth": 2.0, 
       "id": "path3987-1", 
       "items": [
         {
@@ -6139,7 +6139,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4007", 
       "items": [
         {
@@ -6251,7 +6251,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4027", 
       "items": [
         {
@@ -6384,7 +6384,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4029", 
       "items": [
         {
@@ -6496,7 +6496,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4031", 
       "items": [
         {
@@ -6587,7 +6587,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4029-3", 
       "items": [
         {
@@ -6678,7 +6678,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4031-7", 
       "items": [
         {
@@ -6769,7 +6769,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4061", 
       "items": [
         {
@@ -6860,7 +6860,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4061-3", 
       "items": [
         {
@@ -6930,7 +6930,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4103", 
       "items": [
         {
@@ -7063,7 +7063,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4105", 
       "items": [
         {
@@ -7112,7 +7112,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4107", 
       "items": [
         {
@@ -7140,7 +7140,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4107-7", 
       "items": [
         {
@@ -7168,7 +7168,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4127", 
       "items": [
         {
@@ -7280,7 +7280,7 @@
     }, 
     {
       "edgecolor": "#000000", 
-      "linewidth": 1.2, 
+      "linewidth": 0.8, 
       "id": "path4129", 
       "items": [
         {
