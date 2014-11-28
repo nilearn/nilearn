@@ -17,7 +17,8 @@ haxby = datasets.fetch_haxby(n_subjects=1)
 
 localizer = datasets.fetch_localizer_contrasts(["left vs right button press"],
                                                n_subjects=4,
-                                               get_anats=True)
+                                               get_anats=True,
+                                               get_tmaps=True)
 
 
 ###############################################################################
@@ -39,7 +40,8 @@ mean_haxby_img = image.mean_img(haxby.func[0])
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
 # Plotting glass brain
-plotting.plot_glass_brain(localizer.cmaps[3], title='glass brain plots')
+plotting.plot_glass_brain(localizer.tmaps[3], title='glass brain plots',
+                          black_bg=True, threshold=3)
 
 ###############################################################################
 # demo the different display_mode
