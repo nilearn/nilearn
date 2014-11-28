@@ -598,7 +598,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
 def plot_glass_brain(stat_map_img,
                      output_file=None, display_mode='ortho',
-                     figure=None, axes=None, title=None, threshold=1e-6,
+                     figure=None, axes=None, title=None, threshold='auto',
                      annotate=True,
                      black_bg=False,
                      cmap=None,
