@@ -804,8 +804,10 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                     matplotlib._pylab_helpers.Gcf.get_all_fig_managers()):
                     # Set the fig_num figure as the current figure as we can't
                     # save a figure that's not the current figure.
-                    plt.figure(fig_num)
-                    plt.savefig(image_path % fig_num)
+                    fig = plt.figure(fig_num)
+                    fig.savefig(image_path % fig_num,
+                                facecolor=fig.get_facecolor(),
+                                edgecolor=fig.get_edgecolor())
                     figure_list.append(image_fname % fig_num)
             except:
                 print 80 * '_'
