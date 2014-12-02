@@ -13,7 +13,7 @@ from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from nilearn.decoding.space_net import (
     EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
-    path_scores, SpaceNet, _crop_mask, _univariate_feature_screening,
+    path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
     _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
 from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
                                  smooth_lasso_squared_loss)
@@ -101,7 +101,7 @@ def test_params_correctly_propagated_in_constructors():
          cv, perc) in itertools.product(
         ["smooth-lasso", "tv-l1"], [True, False],
         [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
-        cvobj = SpaceNet(
+        cvobj = BaseSpaceNet(
             mask="dummy", n_alphas=n_alphas, n_jobs=n_jobs, l1_ratio=l1_ratio,
             cv=cv, screening_percentile=perc, penalty=penalty,
             is_classif=is_classif)
@@ -169,7 +169,7 @@ def test_tv_regression_simple():
 
     for l1_ratio in [1.]:
         for debias in [True]:
-            SpaceNet(mask=mask, alphas=alphas, l1_ratio=l1_ratio,
+            BaseSpaceNet(mask=mask, alphas=alphas, l1_ratio=l1_ratio,
                      penalty="tv-l1", is_classif=False, max_iter=10,
                      debias=debias).fit(X, y)
 
@@ -189,8 +189,8 @@ def test_tv_regression_3D_image_doesnt_crash():
     X, mask = to_niimgs(X, dim)
 
     for l1_ratio in [0., .5, 1.]:
-        SpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio, penalty="tv-l1",
-                 is_classif=False, max_iter=10).fit(X, y)
+        BaseSpaceNet(mask=mask, alpha=alpha, l1_ratio=l1_ratio,
+                     penalty="tv-l1", is_classif=False, max_iter=10).fit(X, y)
 
 
 def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
@@ -226,8 +226,8 @@ def test_log_reg_vs_smooth_lasso_multiclass(C=1., tol=1e-6):
     # LogisticRegression, with L1 penalty, in a 4 classes classification task
     iris = load_iris()
     mask = np.ones(X.shape[1]).astype(np.bool)
-    sl = SpaceNet(mask=mask, alpha=1. / C / iris.data.shape[0],
-                  l1_ratio=1., tol=tol, is_classif=True).fit(
+    sl = BaseSpaceNet(mask=mask, alpha=1. / C / iris.data.shape[0],
+                      l1_ratio=1., tol=tol, is_classif=True).fit(
         iris.data, iris.target)
     sklogreg = LogisticRegression(
         mask=mask, penalty="l1", C=C, fit_intercept=True,
@@ -246,8 +246,9 @@ def test_lasso_vs_smooth_lasso():
     # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's performance with
     # Scikit-Learn lasso
     lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
-    smooth_lasso = SpaceNet(mask=mask, alpha=1, l1_ratio=1, is_classif=False,
-                            penalty="smooth-lasso", max_iter=100)
+    smooth_lasso = BaseSpaceNet(mask=mask, alpha=1, l1_ratio=1,
+                                is_classif=False, penalty="smooth-lasso",
+                                max_iter=100)
     lasso.fit(X_, y)
     smooth_lasso.fit(X, y)
     lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
@@ -259,7 +260,7 @@ def test_lasso_vs_smooth_lasso():
 def test_params_correctly_propagated_in_constructors_biz():
     for penalty, is_classif, alpha, l1_ratio in itertools.product(
             ["smooth-lasso", "tv-l1"], [True, False], [.4, .01], [.5, 1.]):
-        cvobj = SpaceNet(
+        cvobj = BaseSpaceNet(
             mask="dummy", penalty=penalty, is_classif=is_classif, alpha=alpha,
             l1_ratio=l1_ratio)
         assert_equal(cvobj.alpha, alpha)

@@ -390,7 +390,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     return test_scores, best_w, key
 
 
-class SpaceNet(LinearModel, RegressorMixin):
+class BaseSpaceNet(LinearModel, RegressorMixin):
     """
     Regression and classification learners with sparsity and spatial priors
 
@@ -541,7 +541,7 @@ class SpaceNet(LinearModel, RegressorMixin):
                  alpha_min=None, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
-        super(SpaceNet, self).__init__()
+        super(BaseSpaceNet, self).__init__()
         self.penalty = penalty
         self.is_classif = is_classif
         self.loss = loss
@@ -929,7 +929,7 @@ class SpaceNet(LinearModel, RegressorMixin):
         return self.classes_[indices]
 
 
-class SpaceNetClassifier(SpaceNet):
+class SpaceNetClassifier(BaseSpaceNet):
     """
     Classification learners with sparsity and spatial priors.
 
@@ -1098,7 +1098,7 @@ class SpaceNetClassifier(SpaceNet):
         return y
 
 
-class SpaceNetRegressor(SpaceNet):
+class SpaceNetRegressor(BaseSpaceNet):
     """
     Regression learners with sparsity and spatial priors.
 
