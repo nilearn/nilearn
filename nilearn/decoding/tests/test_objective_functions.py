@@ -8,7 +8,7 @@ from scipy.optimize import check_grad
 from nilearn.decoding.objective_functions import (
     gradient_id, logistic, div_id,
     logistic_loss_grad, _unmask)
-from nilearn.decoding.space_net import SpaceNet
+from nilearn.decoding.space_net import BaseSpaceNet
 from nose.tools import raises
 
 
@@ -84,7 +84,7 @@ def test_grad_div_adjoint_arbitrary_ndim_():
 
 @raises(ValueError)
 def test_baseestimator_invalid_l1_ratio():
-    SpaceNet(l1_ratio=2.)
+    BaseSpaceNet(l1_ratio=2.)
 
 
 def test_unmask(size=5):

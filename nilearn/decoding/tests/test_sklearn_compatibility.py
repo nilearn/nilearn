@@ -1,4 +1,4 @@
-from nilearn.decoding.space_net import SpaceNet
+from nilearn.decoding.space_net import BaseSpaceNet
 from nose.tools import assert_true
 import traceback
 
@@ -13,7 +13,7 @@ def test_get_params():
             for param in ["max_iter", "alpha", "l1_ratio", "verbose",
                           "tol", "mask", "memory", "copy_data",
                           "fit_intercept", "alphas"]:
-                m = SpaceNet(mask='dummy',
+                m = BaseSpaceNet(mask='dummy',
                              penalty=penalty, is_classif=is_classif, **kwargs)
                 try:
                     params = m.get_params()
