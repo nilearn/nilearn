@@ -14,9 +14,12 @@ TV-L1, S-LASSO, etc.)
 import warnings
 import numbers
 import time
+import sys
 from functools import partial
+
 import numpy as np
 from scipy import stats, ndimage
+
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
@@ -233,8 +236,11 @@ class EarlyStoppingCallback(object):
         if len(self.test_scores) > 4:
             if np.mean(np.diff(self.test_scores[-5:][::-1])) >= -1e-4:
                 if self.verbose:
-                    print('Early stopping. Test score: %.8f %s' % (
-                            score, 40 * '-'))
+                    if self.verbose > 1:
+                        print('Early stopping. Test score: %.8f %s' % (
+                               score, 40 * '-'))
+                    else:
+                        sys.stderr.write('.')
                 return True
 
         if self.verbose > 1:
@@ -285,7 +291,7 @@ class EarlyStoppingCallback(object):
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
                 n_alphas, eps, solver_params, is_classif=False, init=None,
                 key=None, debias=False, Xmean=None, ymean=0.,
-                screening_percentile=20., verbose=1.):
+                screening_percentile=20., verbose=1):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects
 
@@ -563,8 +569,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                  alpha=None, alphas=None, l1_ratio=.5, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-                 memory=Memory(None), copy_data=True, standardize=True,
-                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 memory=Memory(None, verbose=0), copy_data=True,
+                 standardize=True, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         self.penalty = penalty
@@ -727,7 +733,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
         # sanitize object's memory
         if self.memory is None or isinstance(self.memory, basestring):
-            self.memory_ = Memory(self.memory)
+            self.memory_ = Memory(self.memory,
+                                  verbose=max(0, self.verbose - 1))
         else:
             self.memory_ = self.memory
 
@@ -820,18 +827,19 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
         # correct screening_percentile according to the volume of the data mask
         mask_volume = _get_mask_volume(self.mask_img_)
-        print "Mask volume = %gmm^3 = %gcm^3" % (
-            mask_volume, mask_volume / 1000.)
-        print "Standard brain volume = %gmm^3 = %gcm^3" % (
-            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1000.)
         if mask_volume > MNI152_BRAIN_VOLUME:
             warnings.warn(
                 "Brain mask is bigger than volume of standard brain!")
         self.screening_percentile_ = self.screening_percentile * (
             mask_volume / MNI152_BRAIN_VOLUME)
-        if self.verbose:
+        if self.verbose > 10:
+            print "Mask volume = %gmm^3 = %gcm^3" % (
+                mask_volume, mask_volume / 1000.)
+            print "Standard brain volume = %gmm^3 = %gcm^3" % (
+                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1000.)
             print "Original screening-percentile: %g" % (
                 self.screening_percentile)
+        if self.verbose > 1:
             print "Volume-corrected screening-percentile: %g" % (
                 self.screening_percentile_)
 
@@ -839,7 +847,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         solver_params = dict(tol=self.tol, max_iter=self.max_iter,
                              rescale_alpha=True)
         best_alphas = list()
-        for test_scores, best_w, best_alpha, c in Parallel(n_jobs=self.n_jobs)(
+        # The verbosity of "parallel" is actually what controls the
+        # vision of the overall progress, so we want it bigger
+        for test_scores, best_w, best_alpha, c in Parallel(
+                n_jobs=self.n_jobs, verbose=2*self.verbose)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
                 alphas, self.l1_ratio, train, test,
