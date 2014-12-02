@@ -25,9 +25,8 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from ..input_data import NiftiMasker
-from .._utils.fixes import (center_data, LabelBinarizer, roc_auc_score,
-                            atleast2d_or_csr)
-from .objective_functions import _sigmoid, _unmask
+from .._utils.fixes import center_data, LabelBinarizer, atleast2d_or_csr
+from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)
 
