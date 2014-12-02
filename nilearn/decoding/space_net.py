@@ -134,7 +134,7 @@ def _univariate_feature_screening(
     return X, mask_, support
 
 
-def _space_net_alpha_grid(X, y, eps=1e-4, n_alphas=10, l1_ratio=1.,
+def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
         logistic=False):
     """Compute the grid of alpha values for TV-L1 and S-Lasso.
 
@@ -154,8 +154,8 @@ def _space_net_alpha_grid(X, y, eps=1e-4, n_alphas=10, l1_ratio=1.,
         and a spatial prior
 
     eps : float, optional
-        Length of the path. ``eps=1e-4`` means that
-        ``alpha_min / alpha_max = 1e-4``
+        Length of the path. ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``
 
     n_alphas : int, optional
         Number of alphas along the regularization path.
@@ -224,7 +224,7 @@ class EarlyStoppingCallback(object):
             # reset the test_scores list
             self.test_scores = list()
         w = variables['w']
-        score = self.test_score(w)
+        score = self.test_score(w)[0]
         self.test_scores.append(score)
         if not (self.counter > 20 and (self.counter % 10) == 2):
             return
@@ -256,17 +256,30 @@ class EarlyStoppingCallback(object):
     def test_score(self, w):
         """Compute test score for model, given weights map `w`.
 
-        We use a spearman correlation between linear prediction and
+        We use correlations between linear prediction and
         ground truth (y_test).
+
+        We return 2 scores for model selection: one is the spearman
+        correlation, which captures ordering between input and
+        output, but tends to have 'flat' regions. The other
+        is the pearson correlation, that we can use to disambiguate
+        between regions of equivalent spearman correlations
+
+        For classification, we return spearman first, and pearson
+        second, and the converse is regression settings
         """
         if self.is_classif:
             w = w[:-1]
         if w.ptp() == 0:
             # constant map, there is nothing
-            return -1000
-        return stats.spearmanr(
-            np.dot(self.X_test, w),  # linear prediction
-            self.y_test)[0]
+            return (-np.inf, -np.inf)
+        y_pred = np.dot(self.X_test, w)
+        spearman_score = stats.spearmanr(y_pred, self.y_test)[0]
+        pearson_score = np.corrcoef(y_pred, self.y_test)[1, 0]
+        if self.is_classif:
+            return spearman_score, pearson_score
+        else:
+            return pearson_score, spearman_score
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
@@ -351,6 +364,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     if len(test) > 0.:
         # score the alphas by model fit
         best_score = -np.inf
+        best_secundary_score = -np.inf
         for alpha in alphas:
             # setup callback mechanism for early stopping
             early_stopper = EarlyStoppingCallback(
@@ -361,9 +375,15 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
                 X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                 callback=early_stopper, verbose=max(verbose - 1, 0.),
                 **solver_params)
-            score = early_stopper.test_score(w)
+            # We use 2 scores for model selection: the second one is to
+            # disambiguate between regions of equivalent spearman correlations
+            score, secundary_score = early_stopper.test_score(w)
             test_scores.append(score)
-            if np.isfinite(score) and score > best_score:
+            if (np.isfinite(score) and
+                    (score > best_score
+                     or (score == best_score and
+                         secundary_score > best_secundary_score))):
+                best_secundary_score = secundary_score
                 best_score = score
                 best_alpha = alpha
                 best_init = init.copy()
@@ -544,7 +564,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
-                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-4,
+                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         self.penalty = penalty
@@ -1069,7 +1089,7 @@ class SpaceNetClassifier(BaseSpaceNet):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
-                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-4,
+                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         super(SpaceNetClassifier, self).__init__(
@@ -1117,9 +1137,9 @@ class SpaceNetRegressor(BaseSpaceNet):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-4)
-        Length of the path. For example, ``eps=1e-4`` means that
-        ``alpha_min / alpha_max = 1e-4``
+    eps : float, optional (default 1e-3)
+        Length of the path. For example, ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``
 
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
@@ -1226,7 +1246,7 @@ class SpaceNetRegressor(BaseSpaceNet):
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
                  standardize=True, verbose=0,
-                 n_jobs=1, n_alphas=10, eps=1e-4, cv=8, fit_intercept=True,
+                 n_jobs=1, n_alphas=10, eps=1e-3, cv=8, fit_intercept=True,
                  screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
             penalty=penalty, is_classif=False, alpha=alpha,
