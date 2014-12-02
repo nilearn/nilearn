@@ -505,9 +505,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
             return np.append(_unmask(w[:-1], mask), w[-1])
 
     def maskvec(w):
-        if None in [w, mask]:
-            return w
-        elif loss == "mse":
+        if loss == "mse":
             return w[flat_mask]
         else:
             return np.append(w[:-1][flat_mask], w[-1])
