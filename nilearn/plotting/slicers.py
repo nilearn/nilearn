@@ -407,15 +407,18 @@ class BaseSlicer(object):
         return ims
 
     def _colorbar_show(self, im):
-        adjusted_width = self._colorbar_width / len(self.axes)
-        adjusted_right_margin = 0.01 / len(self.axes)
+        x_adjusted_width = self._colorbar_width / len(self.axes)
+        x_adjusted_right_margin = 0.01 / len(self.axes)
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
+        y_width = y1 - y0
+        y_margin = 0.05 * y_width
+
         self._colorbar_ax = figure.add_axes([
-            x1 - (adjusted_width + adjusted_right_margin),
-            y0 + 0.05,
-            adjusted_width - adjusted_right_margin,
-            y1 - 0.10])
+            x1 - (x_adjusted_width + x_adjusted_right_margin),
+            y0 + y_margin,
+            x_adjusted_width - x_adjusted_right_margin,
+            y_width - 2 * y_margin])
 
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, 5)
         figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
