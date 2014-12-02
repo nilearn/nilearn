@@ -134,9 +134,7 @@ def _univariate_feature_screening(
     return X, mask_, support
 
 
-def _space_net_alpha_grid(
-        X, y, eps=1e-3, n_alphas=10, l1_ratio=1., alpha_min=0.,
-        standardize=False, normalize=False, fit_intercept=False,
+def _space_net_alpha_grid(X, y, eps=1e-4, n_alphas=10, l1_ratio=1.,
         logistic=False):
     """Compute the grid of alpha values for TV-L1 and S-Lasso.
 
@@ -156,21 +154,13 @@ def _space_net_alpha_grid(
         and a spatial prior
 
     eps : float, optional
-        Length of the path. ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        Length of the path. ``eps=1e-4`` means that
+        ``alpha_min / alpha_max = 1e-4``
 
     n_alphas : int, optional
         Number of alphas along the regularization path.
 
-    fit_intercept : bool
-        Fit or not an intercept.
-
-    normalize : boolean, optional, default False
-        If ``True``, the regressors X will be normalized before regression.
     """
-    if standardize:
-        X, y, _, _, _ = center_data(X, y, fit_intercept=fit_intercept,
-                                    normalize=normalize, copy=True)
 
     if logistic:
         # Computes the theoretical upper bound for the overall
@@ -200,13 +190,8 @@ def _space_net_alpha_grid(
 
     if n_alphas == 1:
         return np.array([alpha_max])
-    if not alpha_min:
-        alpha_min = alpha_max * eps
-    else:
-        if not (0 <= alpha_min < alpha_max):
-            raise RuntimeError(
-                ("Expecting 0 <= alpha_min < alpha_max. Got alpha_min=%g "
-                 "and alpha_max=%g" % (alpha_min, alpha_max)))
+
+    alpha_min = alpha_max * eps
     return np.logspace(np.log10(alpha_min), np.log10(alpha_max),
                       num=n_alphas)[::-1]
 
@@ -275,21 +260,19 @@ class EarlyStoppingCallback(object):
         ground truth (y_test).
         """
         if self.is_classif:
-            intercept = w[-1]
             w = w[:-1]
-        else:
-            if self.debias:
-                w = self._debias(w)
-            intercept = self.ymean
+        if w.ptp() == 0:
+            # constant map, there is nothing
+            return -1000
         return stats.spearmanr(
-            np.dot(self.X_test, w) + intercept,  # linear prediction
+            np.dot(self.X_test, w),  # linear prediction
             self.y_test)[0]
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
-                solver_params, is_classif=False, init=None, key=None,
-                debias=False, Xmean=None, ymean=0., screening_percentile=20.,
-                verbose=1.):
+                n_alphas, eps, solver_params, is_classif=False, init=None,
+                key=None, debias=False, Xmean=None, ymean=0.,
+                screening_percentile=20., verbose=1.):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects
 
@@ -300,6 +283,14 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
 
     y : 1D array of length n_samples
         Response vector; one value per sample.
+
+    n_alphas : int, optional (default 10).
+        Generate this number of alphas per regularization path.
+        This parameter is mutually exclusive with the `alphas` parameter.
+
+    eps : float, optional (default 1e-3)
+        Length of the path. For example, ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``
 
     nifti_masker : NiftiMasker instance
         Mask defining brain ROIs.
@@ -323,7 +314,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     # misc
     _, n_features = X.shape
     verbose = int(verbose if verbose is not None else 0)
-    alphas = sorted(alphas)[::-1]
 
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
@@ -341,25 +331,39 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     X_test, y_test = X[test], y[test]
     test_scores = []
 
+    # XXX: No longer deal with standardize and normalize: do it in the
+    # masker
+    fit_intercept = True
+
+    X_train, y_train, X_mean, y_mean, _ = center_data(X_train, y_train,
+                                fit_intercept=fit_intercept,
+                                normalize=False, copy=False)
+
+    if alphas is None:
+        alphas = _space_net_alpha_grid(
+            X_train, y_train, l1_ratio=l1_ratio, eps=eps,
+            n_alphas=n_alphas, logistic=is_classif)
+    alphas = sorted(alphas)[::-1]
+
     # do alpha path
     best_init = init
     best_alpha = alphas[0]
     if len(test) > 0.:
-        # setup callback mechanism for early stopping
-        early_stopper = EarlyStoppingCallback(
-            X_test, y_test, is_classif=is_classif, debias=debias, ymean=ymean,
-            verbose=verbose)
-
         # score the alphas by model fit
         best_score = -np.inf
         for alpha in alphas:
+            # setup callback mechanism for early stopping
+            early_stopper = EarlyStoppingCallback(
+                X_test, y_test, is_classif=is_classif, debias=debias,
+                ymean=ymean, verbose=verbose)
+
             w, _, init = solver(
                 X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                 callback=early_stopper, verbose=max(verbose - 1, 0.),
                 **solver_params)
             score = early_stopper.test_score(w)
             test_scores.append(score)
-            if score >= best_score:
+            if np.isfinite(score) and score > best_score:
                 best_score = score
                 best_alpha = alpha
                 best_init = init.copy()
@@ -368,6 +372,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
                              mask=mask, init=best_init,
                              verbose=max(verbose - 1, 0), **solver_params)
+    if debias:
+        best_w = early_stopper._debias(best_w)
 
     if len(test) == 0.:
         test_scores.append(np.nan)
@@ -387,7 +393,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
             Xmean = np.zeros(n_features)
         best_w = np.append(best_w, ymean - np.dot(Xmean, best_w))
 
-    return test_scores, best_w, key
+    return test_scores, best_w, best_alpha, key
 
 
 class BaseSpaceNet(LinearModel, RegressorMixin):
@@ -538,10 +544,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
-                 alpha_min=None, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-4,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
-        super(BaseSpaceNet, self).__init__()
         self.penalty = penalty
         self.is_classif = is_classif
         self.loss = loss
@@ -549,7 +554,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         self.n_alphas = n_alphas
         self.eps = eps
         self.alphas = alphas
-        self.alpha_min = alpha_min
         self.l1_ratio = l1_ratio
         self.mask = mask
         self.fit_intercept = fit_intercept
@@ -775,23 +779,15 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         if n_problems == 1:
             y = y[:, 0]
 
-        # make / sanitize alpha grid
+        # sanitize alpha grid
+        alphas = self.alphas
         if self.alpha is not None:
             alphas = [self.alpha]
-        elif self.alphas is None:
-            alphas = _space_net_alpha_grid(
-                X, y, l1_ratio=self.l1_ratio, eps=self.eps,
-                n_alphas=self.n_alphas, standardize=self.standardize,
-                normalize=True, alpha_min=self.alpha_min,
-                fit_intercept=self.fit_intercept, logistic=self.is_classif)
-        else:
+        elif alphas is not None:
             alphas = np.array(self.alphas)
 
-        # always sort alphas from largest to smallest
-        alphas = np.sort(alphas)[::-1]
-
         # generate fold indices
-        if len(alphas) > 1:
+        if alphas is None or len(alphas) > 1:
             self.cv_ = list(check_cv(self.cv, X=X, y=y,
                                      classifier=self.is_classif))
         else:
@@ -822,10 +818,12 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter,
                              rescale_alpha=True)
-        for test_scores, best_w, c in Parallel(n_jobs=self.n_jobs)(
+        best_alphas = list()
+        for test_scores, best_w, best_alpha, c in Parallel(n_jobs=self.n_jobs)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
-                alphas, self.l1_ratio, train, test, solver_params,
+                alphas, self.l1_ratio, train, test,
+                self.n_alphas, self.eps, solver_params,
                 is_classif=self.loss == "logistic", key=c,
                 debias=self.debias, Xmean=Xmean, ymean=ymean[c],
                 verbose=self.verbose,
@@ -838,14 +836,16 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 self.cv_scores_[c] = np.hstack((self.cv_scores_[c],
                                                 test_scores))
             w[c] += best_w
+            best_alphas.append(best_alpha)
 
+        self.alphas_ = best_alphas
+        # XXX: the code below smell, we should probably remove it
         # keep best alpha, for historical reasons
-        self.alphas_ = alphas
         self.i_alpha_ = [np.argmin(np.mean(self.cv_scores_[c], axis=-1))
                          for c in xrange(n_problems)]
         if n_problems == 1:
             self.i_alpha_ = self.i_alpha_[0]
-        self.alpha_ = alphas[self.i_alpha_]
+        self.alpha_ = np.mean(best_alphas)
 
         # bagging: average best weights maps over folds
         w /= n_folds
@@ -960,10 +960,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    alpha_min : float, optional (default None)
-        Minimum value of alpha to consider. This is mutually exclusive with the
-        `eps` parameter.
-
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
@@ -1073,11 +1069,11 @@ class SpaceNetClassifier(BaseSpaceNet):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
-                 alpha_min=None, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
-                 cv=10, fit_intercept=True, screening_percentile=20.,
+                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-4,
+                 cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         super(SpaceNetClassifier, self).__init__(
-            penalty=penalty, is_classif=True, alpha=alpha, alpha_min=alpha_min,
+            penalty=penalty, is_classif=True, alpha=alpha,
             target_shape=target_shape, low_pass=low_pass, high_pass=high_pass,
             alphas=alphas, n_alphas=n_alphas, l1_ratio=l1_ratio, mask=mask,
             t_r=t_r, max_iter=max_iter, tol=tol, memory=memory,
@@ -1121,13 +1117,9 @@ class SpaceNetRegressor(BaseSpaceNet):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
-        Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
-
-    alpha_min : float, optional (default None)
-        Minimum value of alpha to consider. This is mutually exclusive with the
-        `eps` parameter.
+    eps : float, optional (default 1e-4)
+        Length of the path. For example, ``eps=1e-4`` means that
+        ``alpha_min / alpha_max = 1e-4``
 
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
@@ -1233,12 +1225,12 @@ class SpaceNetRegressor(BaseSpaceNet):
                  l1_ratio=.5, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 standardize=True, alpha_min=None, verbose=0,
-                 n_jobs=1, n_alphas=10, eps=1e-3, cv=10, fit_intercept=True,
+                 standardize=True, verbose=0,
+                 n_jobs=1, n_alphas=10, eps=1e-4, cv=8, fit_intercept=True,
                  screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
             penalty=penalty, is_classif=False, alpha=alpha,
-            alpha_min=alpha_min, target_shape=target_shape, low_pass=low_pass,
+            target_shape=target_shape, low_pass=low_pass,
             high_pass=high_pass, alphas=alphas, n_alphas=n_alphas,
             l1_ratio=l1_ratio, mask=mask, t_r=t_r, max_iter=max_iter, tol=tol,
             memory=memory, copy_data=copy_data, n_jobs=n_jobs, eps=eps, cv=cv,
