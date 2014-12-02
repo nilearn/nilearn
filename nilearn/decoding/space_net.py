@@ -303,23 +303,29 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     y : 1D array of length n_samples
         Response vector; one value per sample.
 
-    n_alphas : int, optional (default 10).
-        Generate this number of alphas per regularization path.
-        This parameter is mutually exclusive with the `alphas` parameter.
+    mask : 3D arrays of boolean
+        Mask defining brain regions that we work on.
+
+    alphas : list of floats
+        List of regularization parameters being considered.
+
+    train : array or list of integers
+        List of indices for the train samples
+
+    test : array or list of integers
+        List of indices for the test samples
+
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+        Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
+        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    nifti_masker : NiftiMasker instance
-        Mask defining brain ROIs.
-
-    alphas : list of floats
-        List of regularization parameters being considered.
-
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+    n_alphas : int, optional (default 10).
+        Generate this number of alphas per regularization path.
+        This parameter is mutually exclusive with the `alphas` parameter.
 
     solver : function handle
        See for example tv.TVl1Classifier documentation.
