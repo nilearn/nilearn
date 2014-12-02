@@ -166,7 +166,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
                                          decimal=decimal)
 
 
-def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
+def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=1):
     ###############################################################
     # smoothlasso_solver and tvl1_solver should give same results
     # when l1_ratio = 1.

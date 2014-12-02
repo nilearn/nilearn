@@ -43,16 +43,14 @@ def test_space_net_alpha_grid(n_samples=4, n_features=3):
                 X, y, n_alphas=1, l1_ratio=l1_ratio,
                 logistic=is_classif), alpha_max)
 
-    for standardize in [False, True]:
-        for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
-            alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
-            for n_alphas in xrange(1, 10):
-                alphas = _space_net_alpha_grid(
-                    X, y, n_alphas=n_alphas, l1_ratio=l1_ratio,
-                    standardize=standardize, logistic=is_classif)
-                if not standardize:
-                    assert_equal(alphas.max(), alpha_max)
-                assert_equal(n_alphas, len(alphas))
+    for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
+        alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
+        for n_alphas in xrange(1, 10):
+            alphas = _space_net_alpha_grid(
+                X, y, n_alphas=n_alphas, l1_ratio=l1_ratio,
+                logistic=is_classif)
+            assert_equal(alphas.max(), alpha_max)
+            assert_equal(n_alphas, len(alphas))
 
 
 def test_space_net_alpha_grid_same_as_sk():
@@ -61,13 +59,9 @@ def test_space_net_alpha_grid_same_as_sk():
         iris = load_iris()
         X = iris.data
         y = iris.target
-        for normalize in [True]:
-            for fit_intercept in [True, False]:
-                np.testing.assert_array_equal(_space_net_alpha_grid(
-                        X, y, n_alphas=5, normalize=normalize,
-                        fit_intercept=fit_intercept, standardize=True),
-                        _alpha_grid(X, y, n_alphas=5, normalize=normalize,
-                                    fit_intercept=fit_intercept))
+        np.testing.assert_array_equal(_space_net_alpha_grid(
+            X, y, n_alphas=5), _alpha_grid(X, y, n_alphas=5,
+                                           fit_intercept=False))
     except ImportError:
         raise SkipTest
 
@@ -118,9 +112,9 @@ def test_logistic_path_scores():
     X_, mask = to_niimgs(X, [2, 2, 2])
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
-    test_scores, best_w, _ = logistic_path_scores(
+    test_scores, best_w = logistic_path_scores(
         smooth_lasso_logistic, X, y, mask, alphas, .5,
-        range(len(X)), range(len(X)), {})
+        range(len(X)), range(len(X)), {})[:2]
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
 
@@ -131,9 +125,9 @@ def test_squared_loss_path_scores():
     X_, mask = to_niimgs(X, [2, 2, 2])
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
-    test_scores, best_w, _ = squared_loss_path_scores(
+    test_scores, best_w = squared_loss_path_scores(
         smooth_lasso_squared_loss, X, y, mask, alphas, .5,
-        range(len(X)), range(len(X)), {})
+        range(len(X)), range(len(X)), {})[:2]
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
 
@@ -148,9 +142,12 @@ def test_alpha_attrs():
         cv_class = eval('SpaceNet%s' % (
             ['Regressor', 'Classifier'][is_classif]))
         cv = cv_class(
-            mask=mask, penalty=penalty, alpha=alpha, verbose=verbose)
-        cv.fit(X, y)
-        np.testing.assert_array_equal([alpha], cv.alphas_)
+            mask=mask, penalty=penalty, alpha=alpha, verbose=verbose,
+        ).fit(X, y)
+        if is_classif:
+            np.testing.assert_array_equal([alpha] * 3, cv.alphas_)
+        else:
+            np.testing.assert_array_equal([alpha], cv.alphas_)
 
 
 def test_tv_regression_simple():
@@ -193,7 +190,7 @@ def test_tv_regression_3D_image_doesnt_crash():
                      penalty="tv-l1", is_classif=False, max_iter=10).fit(X, y)
 
 
-def test_log_reg_vs_smooth_lasso_two_classes_iris(C=1., tol=1e-10,
+def test_log_reg_vs_smooth_lasso_two_classes_iris(C=.01, tol=1e-10,
                                                   zero_thr=1e-4):
     # Test for one of the extreme cases of Smooth Lasso: That is, with
     # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's coefficients'

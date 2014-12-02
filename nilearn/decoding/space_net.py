@@ -289,8 +289,8 @@ class EarlyStoppingCallback(object):
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
-                n_alphas, eps, solver_params, is_classif=False, init=None,
-                key=None, debias=False, Xmean=None, ymean=0.,
+                solver_params, is_classif=False, n_alphas=10, eps=1E-3,
+                init=None, key=None, debias=False, Xmean=None, ymean=0.,
                 screening_percentile=20., verbose=1):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects
@@ -818,7 +818,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
             alphas = [self.alpha]
         elif alphas is not None:
             alphas = np.array(self.alphas)
-
+        assert len(set(list(alphas))) == len(alphas)
         # generate fold indices
         if alphas is None or len(alphas) > 1:
             self.cv_ = list(check_cv(self.cv, X=X, y=y,
@@ -856,11 +856,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         # The verbosity of "parallel" is actually what controls the
         # vision of the overall progress, so we want it bigger
         for test_scores, best_w, best_alpha, c in Parallel(
-                n_jobs=self.n_jobs, verbose=2*self.verbose)(
+                n_jobs=self.n_jobs, verbose=2 * self.verbose)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
                 alphas, self.l1_ratio, train, test,
-                self.n_alphas, self.eps, solver_params,
+                solver_params, n_alphas=self.n_alphas, eps=self.eps,
                 is_classif=self.loss == "logistic", key=c,
                 debias=self.debias, Xmean=Xmean, ymean=ymean[c],
                 verbose=self.verbose,
