@@ -255,7 +255,7 @@ def test_tikhonov_regularization_vs_smooth_lasso():
     optimal_model_perf = 0.5 / y.size * extmath.norm(
         np.dot(X, optimal_model) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, optimal_model)) ** 2
-    assert_almost_equal(smooth_lasso_perf, optimal_model_perf, decimal=4)
+    assert_almost_equal(smooth_lasso_perf, optimal_model_perf, decimal=1)
 
 
 def test_mfista_solver_smooth_lasso_no_l1_term():
