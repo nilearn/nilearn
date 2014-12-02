@@ -51,7 +51,6 @@ mask_file = dataset_files.mask
 # Keep only data corresponding to shoes or bottles
 condition_mask = np.logical_or(conditions == 'shoe', conditions == 'bottle')
 y = y[condition_mask]
-session = session[condition_mask]
 conditions = conditions[condition_mask]
 
 ### Loading step ##############################################################
@@ -63,6 +62,7 @@ nifti_masker = NiftiMasker(mask_img=mask_file, sessions=session, smoothing_fwhm=
 X = nifti_masker.fit_transform(dataset_files.func)
 # Restrict to non rest data
 X = X[condition_mask]
+session = session[condition_mask]
 
 ### Prediction function #######################################################
 

@@ -22,7 +22,6 @@ conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
 non_rest = conditions != 'rest'
 conditions = conditions[non_rest]
 y = y[non_rest]
-session = session[non_rest]
 
 # Get the labels of the numerical conditions represented by the vector y
 unique_conditions, order = np.unique(conditions, return_index=True)
@@ -37,6 +36,7 @@ nifti_masker = NiftiMasker(mask_img=dataset_files.mask, standardize=True,
                            memory="nilearn_cache", memory_level=1)
 X = nifti_masker.fit_transform(dataset_files.func)
 X = X[non_rest]
+session = session[non_rest]
 
 ### Predictor #################################################################
 
