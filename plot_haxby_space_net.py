@@ -39,8 +39,8 @@ penalties = ['Smooth-LASSO', 'TV-L1']
 decoders = {}
 accuracies = {}
 for penalty in penalties:
-   ### Fit model on train data and predict on test data ######################
-    decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=2)
+    ### Fit model on train data and predict on test data ######################
+    decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=1)
     decoder.fit(X_train, y_train)  # fit
     y_pred = decoder.predict(X_test)  # predict
     accuracies[penalty] = (y_pred == y_test).mean() * 100.
@@ -53,13 +53,12 @@ from nilearn.plotting import plot_stat_map
 background_img = mean_img(data_files.func[0])
 print "Results"
 print "=" * 80
-for penalty, decoder in decoders.iteritems():
+for penalty, decoder in sorted(decoders.items()):
     coef_img = decoder.coef_img_
     plot_stat_map(coef_img, background_img, title=penalty,
                   cut_coords=(20, -34, -16))
     coef_img.to_filename('haxby_%s_weights.nii' % penalty)
-    print decoder
-    print "#" * 80
+    print "- %s %s" % (penalty, '-' * 80)
     print "Number of train samples : %i" % condition_mask_train.sum()
     print "Number of test samples  : %i" % condition_mask_test.sum()
     print "Classification accuracy : %g%%" % accuracies[penalty]

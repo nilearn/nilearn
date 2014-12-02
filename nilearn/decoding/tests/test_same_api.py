@@ -20,7 +20,7 @@ from nilearn.decoding.space_net_solvers import (squared_loss_and_spatial_grad,
                                  smooth_lasso_logistic,
                                  squared_loss_and_spatial_grad_derivative,
                                  tvl1_solver)
-from nilearn.decoding.space_net import (SpaceNet, SpaceNetClassifier,
+from nilearn.decoding.space_net import (BaseSpaceNet, SpaceNetClassifier,
                                         SpaceNetRegressor)
 
 
@@ -118,11 +118,12 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     mask = nibabel.Nifti1Image(mask.astype(np.float), np.eye(4))
     X = nibabel.Nifti1Image(X.astype(np.float), np.eye(4))
     for standardize in [True, False]:
-        sl = SpaceNet(
+        sl = BaseSpaceNet(
             alpha=alpha, l1_ratio=1., mask=mask, penalty="smooth-lasso",
             max_iter=max_iter, standardize=standardize).fit(X, y)
-        tvl1 = SpaceNet(alpha=alpha, l1_ratio=1., mask=mask, penalty="tv-l1",
-                        max_iter=max_iter, standardize=standardize).fit(X, y)
+        tvl1 = BaseSpaceNet(
+                alpha=alpha, l1_ratio=1., mask=mask, penalty="tv-l1",
+                max_iter=max_iter, standardize=standardize).fit(X, y)
 
         # Should be exactly the same (except for numerical errors).
         # However because of the TV-L1 prox approx, results might be 'slightly'
@@ -179,10 +180,11 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=2):
     max_iter = 20
 
     for standardize in [True, False]:
-        sl = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="smooth-lasso",
-                      max_iter=max_iter, mask=mask, is_classif=False,
-                      standardize=standardize, verbose=0).fit(X, y)
-        tvl1 = SpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="tv-l1",
+        sl = BaseSpaceNet(alpha=alpha, l1_ratio=l1_ratio,
+                          penalty="smooth-lasso", max_iter=max_iter,
+                          mask=mask, is_classif=False,
+                          standardize=standardize, verbose=0).fit(X, y)
+        tvl1 = BaseSpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="tv-l1",
                         max_iter=max_iter, mask=mask, is_classif=False,
                         standardize=standardize, verbose=0).fit(X, y)
 
