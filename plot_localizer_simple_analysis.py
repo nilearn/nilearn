@@ -15,6 +15,7 @@ variates.  The user can refer to the
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
+from scipy import linalg
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
@@ -42,26 +43,30 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova)
 
 ### Visualization #############################################################
+from nilearn.plotting import plot_stat_map
 
 # Various plotting parameters
-picked_slice = 32  # plotted slice
-vmin = - np.log10(0.1)  # 10% corrected
-vmax = np.amax(neg_log_pvals_anova)
-
-# Here, we should use a structural image as a background, when available.
+z_slice = 45  # plotted slice
+from nilearn.image.resampling import coord_transform
+affine = neg_log_pvals_anova_unmasked.get_affine()
+_, _, k_slice = coord_transform(0, 0, z_slice,
+                                linalg.inv(affine))
+k_slice = round(k_slice)
+threshold = - np.log10(0.1)  # 10% corrected
 
 # Plot Anova p-values
-plt.figure(figsize=(5.5, 5.5))
-masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(), vmin)
-plt.imshow(np.rot90(nifti_masker.mask_img_.get_data()[:, :, picked_slice]),
-           interpolation='nearest', cmap=plt.cm.gray)
-im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
-                interpolation='nearest', cmap=plt.cm.autumn,
-                vmin=vmin, vmax=vmax)
-plt.axis('off')
-plt.colorbar(im)
-plt.title(r'Negative $\log_{10}$ p-values'
-          + '\n(Parametric + Bonferroni correction)'
-          + '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum())
+fig = plt.figure(figsize=(5, 6), facecolor='w')
+display = plot_stat_map(neg_log_pvals_anova_unmasked,
+                        cmap=plt.cm.autumn, threshold=threshold,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig)
+
+masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(), threshold)
+
+title = ('Negative $\log_{10}$ p-values'
+         '\n(Parametric + Bonferroni correction)'
+         '\n%d detections' % (~masked_pvals.mask[..., k_slice]).sum())
+
+display.title(title, y=1.1, alpha=0.8)
 
 plt.show()

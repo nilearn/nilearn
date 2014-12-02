@@ -308,10 +308,11 @@ class BaseSlicer(object):
             img: niimg-like
                 The nifti-image-like. If it is a masked array, only
                 the non-masked part will be plotted.
-            threshold : a number, None, or 'auto'
+            threshold : a number, None
                 If None is given, the maps are not thresholded.
                 If a number is given, it is used to threshold the maps:
-                values below the threshold are plotted as transparent.
+                values below the threshold (in absolute value) are
+                plotted as transparent.
             colorbar: boolean, optional
                 If True, display a colorbar on the right of the plots.
             kwargs:

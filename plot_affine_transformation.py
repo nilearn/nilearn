@@ -25,9 +25,19 @@ in 3 ways and displayed in in millimeter space.
    given and no shape given
 3) 4x4 affine matrix given and no shape given
 
-While 1) needs no further explanation (it returns an image exactly as specified, with a new view on the data in millimeter space), 2) and 3) are missing some specification, which is subsequently inferred by `resample_img`: If the affine offset is missing (3x3 transformation, case 2), then the new image will be the closest bounding box possible around the data along the new axes. If the affine offset is given, but no shape provided, the resulting image will be the closest bounding box around the union of the data points and the affine offset.
+While 1) needs no further explanation (it returns an image exactly as
+specified, with a new view on the data in millimeter space), 2) and 3) are
+missing some specification, which is subsequently inferred by `resample_img`:
+If the affine offset is missing (3x3 transformation, case 2), then the new
+image will be the closest bounding box possible around the data along the
+new axes. If the affine offset is given, but no shape provided, the
+resulting image will be the closest bounding box around the union of the
+data points and the affine offset.
 
-Note that specifying a shape specifying a 3x3 transformation matrix causes an error message, because `resample_img` will not know where to start the bounding box (there is no intelligent way of inferring this given the bounding box shape).
+Note that specifying a shape without specifying a 3x3 transformation matrix
+causes an error message, because `resample_img` will not know where to start
+the bounding box (there is no intelligent way of inferring this given the
+bounding box shape).
 """
 
 
@@ -39,9 +49,11 @@ from nilearn.image import resample_img
 # Make an image
 grid = np.mgrid[0:192, 0:128]
 circle = np.sum(
-    (grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2, axis=0) < 256
-diamond = np.sum(np.abs(
-        grid - np.array([128, 80])[:, np.newaxis, np.newaxis]), axis=0) < 16
+    (grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2,
+    axis=0) < 256
+diamond = np.sum(
+    np.abs(grid - np.array([128, 80])[:, np.newaxis, np.newaxis]),
+    axis=0) < 16
 rectangle = np.max(np.abs(
     grid - np.array([64, 96])[:, np.newaxis, np.newaxis]), axis=0) < 16
 
@@ -75,11 +87,13 @@ target_affine_mm_space_offset_changed = np.eye(4)
 target_affine_mm_space_offset_changed[:3, 3] = \
     niimg_3d_affine.get_affine()[:3, 3]
 
-niimg_3d_affine_in_mm_space = resample_img(niimg_3d_affine,
+niimg_3d_affine_in_mm_space = resample_img(
+    niimg_3d_affine,
     target_affine=target_affine_mm_space_offset_changed,
     target_shape=(np.array(niimg_3d_affine.shape) * 2).astype(int))
 
-niimg_4d_affine_in_mm_space = resample_img(niimg_4d_affine,
+niimg_4d_affine_in_mm_space = resample_img(
+    niimg_4d_affine,
     target_affine=np.eye(4),
     target_shape=(np.array(niimg_4d_affine.shape) * 2).astype(int))
 plt.figure()
@@ -91,11 +105,15 @@ plt.imshow(niimg_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
 plt.title("The original data in mm space")
 
 plt.figure()
-plt.imshow(niimg_3d_affine_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
-plt.title("Transformed using a 3x3 affine -\n leads to re-estimation of bounding box")
+plt.imshow(niimg_3d_affine_in_mm_space.get_data()[:, :, 0],
+           vmin=0, vmax=vmax)
+plt.title("Transformed using a 3x3 affine -\n leads to "
+          "re-estimation of bounding box")
 
 plt.figure()
-plt.imshow(niimg_4d_affine_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
-plt.title("Transformed using a 4x4 affine -\n Uses affine anchor and estimates bounding box size")
+plt.imshow(niimg_4d_affine_in_mm_space.get_data()[:, :, 0],
+           vmin=0, vmax=vmax)
+plt.title("Transformed using a 4x4 affine -\n Uses affine anchor "
+          "and estimates bounding box size")
 
 plt.show()

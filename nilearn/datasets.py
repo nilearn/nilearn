@@ -1085,10 +1085,10 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
     kwargs = {}
     if fetch_stimuli:
-        readme = _fetch_files('haxby2001',
-                [(os.path.join('stimuli', 'README'),
-                  url + 'stimuli-2010.01.14.tar.gz', {'uncompress': True})],
-                data_dir=data_dir, resume=resume)[0]
+        files = [(os.path.join('stimuli', 'README'),
+                  url + 'stimuli-2010.01.14.tar.gz',
+                  {'uncompress': True})]
+        readme = _fetch_files(data_dir, files, resume=resume)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
@@ -1893,7 +1893,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     opts = {'uncompress': True}
     data_types = ["c map"]
     if get_tmaps:
-        data_types.append(["t map"])
+        data_types.append("t map")
     rql_types = str.join(", ", ["\"%s\"" % x for x in data_types])
     root_url = "http://brainomics.cea.fr/localizer/"
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
@@ -1983,8 +1983,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         masks = files[-n_subjects:]
         files = files[:-n_subjects]
     if get_tmaps:
-        tmaps = files(slice(1, len(files) + 1, 2))
-        files = files(slice(0, len(files), 2))
+        tmaps = files[1::2]
+        files = files[::2]
     return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
                  ext_vars=csv_data)
 
