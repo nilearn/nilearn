@@ -607,7 +607,7 @@ def plot_glass_brain(stat_map_img,
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
         Frontal, Axial, and Lateral). The brain glass schematics
-        will be added on top of the image.
+        are added on top of the image.
 
         Parameters
         ----------

@@ -56,8 +56,8 @@ class BaseAxes(object):
         self.coord = coord
         self._object_bounds = list()
 
-    def transform_2d(self, data, affine):
-        raise NotImplementedError("'transform_2d' needs to be implemented "
+    def transform_to_2d(self, data, affine):
+        raise NotImplementedError("'transform_to_2d' needs to be implemented "
                                   "in derived classes'")
 
     def add_object_bounds(self, bounds):
@@ -145,7 +145,7 @@ class BaseAxes(object):
 class CutAxes(BaseAxes):
     """ An MPL axis-like object that displays a cut of 3D volumes
     """
-    def transform_2d(self, data, affine):
+    def transform_to_2d(self, data, affine):
         """ Cut the 3D volume into a 2D slice
 
             Parameters
@@ -198,7 +198,7 @@ class GlassBrainAxes(BaseAxes):
                                                               **kwargs)
             self.add_object_bounds(object_bounds)
 
-    def transform_2d(self, data, affine):
+    def transform_to_2d(self, data, affine):
         """ Returns the maximum of the absolute value of the 3D volume
             along an axis.
 
@@ -234,7 +234,7 @@ class BaseSlicer(object):
     # pseudo absolute value
     _colorbar_width = 0.06
     _colorbar_labels_margin = 2.8
-    axes_class = CutAxes
+    _axes_class = CutAxes
 
     def __init__(self, cut_coords, axes=None, black_bg=False, **kwargs):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -442,7 +442,7 @@ class BaseSlicer(object):
         data_2d_list = []
         for display_ax in self.axes.itervalues():
             try:
-                data_2d = display_ax.transform_2d(data, affine)
+                data_2d = display_ax.transform_to_2d(data, affine)
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
@@ -459,7 +459,7 @@ class BaseSlicer(object):
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
 
         ims = []
-        to_iterate_over = itertools.izip(self.axes.itervalues(), data_2d_list)
+        to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
             if data_2d is not None:
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
@@ -521,7 +521,7 @@ class BaseSlicer(object):
         # For each ax, cut the data and plot it
         for display_ax in self.axes.itervalues():
             try:
-                data_2d = display_ax.transform_2d(data, affine)
+                data_2d = display_ax.transform_to_2d(data, affine)
                 edge_mask = _edge_map(data_2d)
             except IndexError:
                 # We are cutting outside the indices of the data
@@ -609,7 +609,7 @@ class OrthoSlicer(BaseSlicer):
         best in the viewing area.
     """
     _cut_displayed = 'yxz'
-    axes_class = CutAxes
+    _axes_class = CutAxes
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
@@ -637,7 +637,7 @@ class OrthoSlicer(BaseSlicer):
                          axisbg=axisbg)
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
-            display_ax = self.axes_class(ax, direction, coord, **kwargs)
+            display_ax = self._axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
 
@@ -662,7 +662,7 @@ class OrthoSlicer(BaseSlicer):
         width_dict = dict()
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
-        dummy_ax = self.axes_class(None, None, None)
+        dummy_ax = self._axes_class(None, None, None)
         width_dict[dummy_ax.ax] = 0
         display_ax_dict = self.axes
 
@@ -795,7 +795,7 @@ class BaseStackedSlicer(BaseSlicer):
             ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
                           fraction*(x1-x0), y1-y0])
             ax.axis('off')
-            display_ax = self.axes_class(ax, self._direction,
+            display_ax = self._axes_class(ax, self._direction,
                                          coord, **kwargs)
             self.axes[coord] = display_ax
             ax.set_axes_locator(self._locator)
@@ -905,7 +905,7 @@ class OrthoProjector(OrthoSlicer):
     """A class to create linked axes for plotting orthogonal projections
        of 3D maps.
     """
-    axes_class = GlassBrainAxes
+    _axes_class = GlassBrainAxes
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
