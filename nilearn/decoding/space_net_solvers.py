@@ -234,8 +234,7 @@ def logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
 
 def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
                               max_iter=1000, tol=1e-4, callback=None,
-                              lipschitz_constant=None, rescale_alpha=True,
-                              verbose=0):
+                              lipschitz_constant=None, verbose=0):
     """Computes a solution for the Smooth Lasso regression problem, as in the
     SmoothLassoRegressor estimator, with no data preprocessing.
 
@@ -259,13 +258,6 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
 
     # misc
     model_size = n_features
-
-    # Instead of dividing the data term for the number of samples, we
-    # rescale the overall regularization term (L1 + G2)
-    # for the number of samples
-    if rescale_alpha:
-        alpha *= n_samples
-
     l1_weight = alpha * l1_ratio
     grad_weight = alpha * (1. - l1_ratio)
 
@@ -303,7 +295,7 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
 
 def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
                           max_iter=1000, tol=1e-4, callback=None, verbose=0,
-                          lipschitz_constant=None, rescale_alpha=True):
+                          lipschitz_constant=None):
     """Computes a solution for the Smooth Lasso classification problem, with
     response vector in {-1, 1}^n_samples.
 
@@ -329,14 +321,6 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
     # misc
     model_size = n_features + 1
-
-    # rescale alpha
-    if rescale_alpha:
-        alpha *= n_samples
-
-    # Instead of dividing the data term for the number of samples, we
-    # rescale the overall regularization term (L1 + G2)
-    # for the number of samples
     l1_weight = alpha * l1_ratio
     grad_weight = alpha * (1 - l1_ratio)
 
@@ -413,7 +397,7 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
 
 
 def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
-                rescale_alpha=True, lipschitz_constant=None, init=None,
+                lipschitz_constant=None, init=None,
                 prox_max_iter=5000, tol=1e-4, callback=None, verbose=1):
     """Minimizes empirical risk for TV-L1 penalized models.
 
@@ -492,11 +476,6 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     # We'll work on the full brain, and do the masking / unmasking
     # magic when needed
     w_size = X.shape[1] + int(loss == "logistic")
-
-    # rescale alpha parameter (= amount of regularization) to handle
-    # 1 / n_samples factor in model
-    if rescale_alpha:
-        alpha *= X.shape[0]
 
     def unmaskvec(w):
         if loss == "mse":
