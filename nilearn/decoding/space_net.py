@@ -818,7 +818,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
             alphas = [self.alpha]
         elif alphas is not None:
             alphas = np.array(self.alphas)
-        assert len(set(list(alphas))) == len(alphas)
+
         # generate fold indices
         if alphas is None or len(alphas) > 1:
             self.cv_ = list(check_cv(self.cv, X=X, y=y,
