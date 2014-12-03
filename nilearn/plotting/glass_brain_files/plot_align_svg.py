@@ -1,3 +1,8 @@
+"""The goal of this script is to align the glass brain SVGs on top of the
+anatomy. This is only useful for internal purposes especially when the
+SVG is modified.
+"""
+
 import functools
 
 import matplotlib.pyplot as plt

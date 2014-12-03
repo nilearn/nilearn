@@ -1,3 +1,7 @@
+"""
+Brain schematics plotting for glass brain functionality
+"""
+
 import json
 import os
 
