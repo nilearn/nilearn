@@ -450,7 +450,7 @@ class BaseSlicer(object):
             data_2d_list.append(data_2d)
 
         if 'vmin' not in kwargs:
-            kwargs['vmin'] = max(d.min() for d in data_2d_list
+            kwargs['vmin'] = min(d.min() for d in data_2d_list
                                  if d is not None)
         if 'vmax' not in kwargs:
             kwargs['vmax'] = max(d.max() for d in data_2d_list
