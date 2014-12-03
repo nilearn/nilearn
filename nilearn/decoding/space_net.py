@@ -206,13 +206,11 @@ class EarlyStoppingCallback(object):
         rising. We use a Spearman correlation (btween X_test.w and y_test)
         for scoring.
     """
-    def __init__(self, X_test, y_test, is_classif, debias=False, ymean=0.,
-                 verbose=0):
+    def __init__(self, X_test, y_test, is_classif, debias=False, verbose=0):
         self.X_test = X_test
         self.y_test = y_test
         self.is_classif = is_classif
         self.debias = debias
-        self.ymean = ymean
         self.verbose = verbose
         self.test_scores = []
         self.counter = 0.
@@ -290,7 +288,7 @@ class EarlyStoppingCallback(object):
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
                 solver_params, is_classif=False, n_alphas=10, eps=1E-3,
-                init=None, key=None, debias=False, Xmean=None, ymean=0.,
+                init=None, key=None, debias=False, Xmean=None,
                 screening_percentile=20., verbose=1):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects
@@ -376,12 +374,12 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     if len(test) > 0.:
         # score the alphas by model fit
         best_score = -np.inf
-        best_secundary_score = -np.inf
+        best_secondary_score = -np.inf
         for alpha in alphas:
             # setup callback mechanism for early stopping
             early_stopper = EarlyStoppingCallback(
                 X_test, y_test, is_classif=is_classif, debias=debias,
-                ymean=ymean, verbose=verbose)
+                verbose=verbose)
 
             w, _, init = solver(
                 X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
@@ -389,13 +387,13 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
                 **solver_params)
             # We use 2 scores for model selection: the second one is to
             # disambiguate between regions of equivalent spearman correlations
-            score, secundary_score = early_stopper.test_score(w)
+            score, secondary_score = early_stopper.test_score(w)
             test_scores.append(score)
             if (np.isfinite(score) and
                     (score > best_score
                      or (score == best_score and
-                         secundary_score > best_secundary_score))):
-                best_secundary_score = secundary_score
+                         secondary_score > best_secondary_score))):
+                best_secondary_score = secondary_score
                 best_score = score
                 best_alpha = alpha
                 best_init = init.copy()
@@ -423,7 +421,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     if len(best_w) == n_features:
         if Xmean is None:
             Xmean = np.zeros(n_features)
-        best_w = np.append(best_w, ymean - np.dot(Xmean, best_w))
+        best_w = np.append(best_w, 0.)
 
     return test_scores, best_w, best_alpha, key
 
@@ -657,38 +655,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         if self.is_classif:
             self.intercept_ = self.w_[:, -1]
         else:
-            self._set_intercept(self.Xmean, self.ymean, self.Xstd)
-
-    def _standardize_X(self, X, copy=False):
-        """Standardize data so that it each sample point has 0 mean and 0
-        variance.
-
-        Parameters
-        ----------
-        X : ndarray, shape (n_samples, n_features)
-            Sample points to be standardized.
-
-        copy : bool, optional (default False)
-            If False, then X will be modified inplace.
-
-        Returns
-        -------
-        X_ : ndarray, shape (n_samples, n_features)
-            Standardized data.
-
-        Xmean : ndarray, shape (n_samples,)
-            Mean along axis 0 of input data `X`.
-
-        Xstd : ndarray, shape (n_samples,)
-            Standard deviation (std) along axis 0 of input data `X`.
-        """
-        if copy:
-            X = X.copy()
-        Xmean = X.mean(axis=0)
-        Xstd = X.std(axis=0)
-        X -= Xmean
-        X /= Xstd
-        return X, Xmean, Xstd
+            self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
     def _standardize_y(slef, y, copy=False):
         """Standardize response vector y so that it has 0 mean and unit
@@ -755,11 +722,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
             self.masker_ = NiftiMasker(mask_img=self.mask,
                                        target_affine=self.target_affine,
                                        target_shape=self.target_shape,
+                                       standardize=self.standardize,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
+        self.Xmean_ = X.mean(axis=0)
+        self.Xstd_ = X.std(axis=0)
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.mask_img_.get_data().astype(np.bool)
         n_samples, _ = X.shape
@@ -795,20 +765,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         else:
             n_problems = 1
 
-        # scaling: standardize data (X, y)
-        ymean = np.zeros(y.shape[0])
+        # standardize y
+        self.ymean_ = np.zeros(y.shape[0])
         if self.standardize:
-            X, Xmean, Xstd = self._standardize_X(X)
-            if not self.is_classif:
-                for c in xrange(y.shape[1]):
-                    y[:, c], ymean[c] = self._standardize_y(y[:, c])
-        else:
-            Xmean = np.zeros(X.shape[1])
-            Xstd = np.ones(X.shape[1])
+            for c in xrange(y.shape[1]):
+                y[:, c], self.ymean_[c] = self._standardize_y(y[:, c])
         if not self.is_classif:
-            self.Xmean = Xmean
-            self.Xstd = Xstd
-            self.ymean = ymean[0]
+            self.ymean_ = self.ymean_[0]
         if n_problems == 1:
             y = y[:, 0]
 
@@ -850,9 +813,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 self.screening_percentile_)
 
         # main loop: loop on classes and folds
-        solver_params = dict(tol=self.tol, max_iter=self.max_iter,
-                             rescale_alpha=True)
+        solver_params = dict(tol=self.tol, max_iter=self.max_iter)
         best_alphas = list()
+
         # The verbosity of "parallel" is actually what controls the
         # vision of the overall progress, so we want it bigger
         for test_scores, best_w, best_alpha, c in Parallel(
@@ -862,8 +825,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 alphas, self.l1_ratio, train, test,
                 solver_params, n_alphas=self.n_alphas, eps=self.eps,
                 is_classif=self.loss == "logistic", key=c,
-                debias=self.debias, Xmean=Xmean, ymean=ymean[c],
-                verbose=self.verbose,
+                debias=self.debias, verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in self.cv_):
             test_scores = np.reshape(test_scores, (-1, 1))
@@ -948,10 +910,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         """
         # cast X into usual 2D array
         X = self.masker_.transform(X)
-
-        # standardize X ?
-        if self.standardize:
-            X, _, _ = self._standardize_X(X, copy=True)
 
         # handle regression (least-squared loss)
         if not self.is_classif:

@@ -230,7 +230,7 @@ def test_max_alpha_squared_loss():
                        is_classif=False)
     for l1_ratio in l1_ratios:
         reg.l1_ratio = l1_ratio
-        reg.alpha = np.max(np.dot(X.T, y)) / (l1_ratio * y.size) * 1.1
+        reg.alpha = np.max(np.dot(X.T, y)) / l1_ratio
         reg.fit(X_, y)
         assert_almost_equal(reg.coef_, 0.)
 
@@ -245,7 +245,8 @@ def test_tikhonov_regularization_vs_smooth_lasso():
     optimal_model = np.dot(sp.linalg.pinv(
         np.dot(X.T, X) + y.size * np.dot(G.T, G)), np.dot(X.T, y))
     smooth_lasso = BaseSpaceNet(
-        mask=mask_, alpha=1., l1_ratio=0., max_iter=400, fit_intercept=False,
+        mask=mask_, alpha=1. * X.shape[0], l1_ratio=0., max_iter=400,
+        fit_intercept=False,
         screening_percentile=100., standardize=False)
     smooth_lasso.fit(X_, y.copy())
     coef_ = smooth_lasso.coef_[0]
