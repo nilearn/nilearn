@@ -66,7 +66,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
-    slicer = create_display_fun(display_mode)(
+    display = create_display_fun(display_mode)(
         img,
         threshold=threshold,
         cut_coords=cut_coords,
@@ -75,28 +75,28 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         colorbar=colorbar)
 
     if bg_img is not None:
-        slicer.add_overlay(bg_img,
+        display.add_overlay(bg_img,
                            vmin=bg_vmin, vmax=bg_vmax,
                            cmap=pl.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
         if threshold:
             data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-        slicer.add_overlay(nibabel.Nifti1Image(data, affine),
+        display.add_overlay(nibabel.Nifti1Image(data, affine),
                            interpolation=interpolation, colorbar=colorbar,
                            **kwargs)
 
     if annotate:
-        slicer.annotate()
+        display.annotate()
     if draw_cross:
-        slicer.draw_cross()
+        display.draw_cross()
     if title is not None and not title == '':
-        slicer.title(title)
+        display.title(title)
     if output_file is not None:
-        slicer.savefig(output_file)
-        slicer.close()
-        slicer = None
-    return slicer
+        display.savefig(output_file)
+        display.close()
+        display = None
+    return display
 
 
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
@@ -154,13 +154,14 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
     """
-    slicer = _plot_img_with_bg(img, cut_coords=cut_coords,
+    display = _plot_img_with_bg(img, cut_coords=cut_coords,
                     output_file=output_file, display_mode=display_mode,
                     figure=figure, axes=axes, title=title,
                     threshold=threshold, annotate=annotate,
                     draw_cross=draw_cross,
                     black_bg=black_bg, **kwargs)
-    return slicer
+
+    return display
 
 
 ################################################################################
@@ -340,13 +341,13 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     # vmin and/or vmax could have been provided in the kwargs
     vmin = kwargs.pop('vmin', vmin)
     vmax = kwargs.pop('vmax', vmax)
-    slicer = plot_img(anat_img, cut_coords=cut_coords,
+    display = plot_img(anat_img, cut_coords=cut_coords,
                       output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
-    return slicer
+    return display
 
 
 def plot_epi(epi_img=None, cut_coords=None, output_file=None,
@@ -410,13 +411,13 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    slicer = plot_img(epi_img, cut_coords=cut_coords,
+    display = plot_img(epi_img, cut_coords=cut_coords,
                       output_file=output_file, display_mode=display_mode,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
                       cmap=cmap, **kwargs)
-    return slicer
+    return display
 
 
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
@@ -480,7 +481,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
-    slicer = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
+    display = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
                                cut_coords=cut_coords,
                                output_file=output_file,
                                display_mode=display_mode,
@@ -489,7 +490,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                black_bg=black_bg, threshold=0.5,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
                                alpha=alpha, cmap=cmap, **kwargs)
-    return slicer
+    return display
 
 
 def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
@@ -583,7 +584,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                          'the map, use the "threshold" argument')
     vmin = -vmax
 
-    slicer = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
+    display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords,
                                output_file=output_file,
                                display_mode=display_mode,
@@ -593,7 +594,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
                                vmin=vmin, vmax=vmax, colorbar=colorbar,
                                **kwargs)
-    return slicer
+    return display
 
 
 def plot_glass_brain(stat_map_img,
