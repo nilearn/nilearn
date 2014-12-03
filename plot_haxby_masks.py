@@ -4,42 +4,34 @@ Plot Haxby masks
 
 Small script to plot the masks of the Haxby dataset.
 """
-import numpy as np
+from scipy import linalg
 import matplotlib.pyplot as plt
-
-import nibabel
 
 from nilearn import datasets
 data = datasets.fetch_haxby()
 
 # Build the mean image because we have no anatomic data
 from nilearn import image
-mean_img = image.mean_img(data.func[0]).get_data()
+mean_img = image.mean_img(data.func[0])
 
-z = 25
+z_slice = -24
+from nilearn.image.resampling import coord_transform
+affine = mean_img.get_affine()
+_, _, k_slice = coord_transform(0, 0, z_slice,
+                                linalg.inv(affine))
+k_slice = round(k_slice)
 
-fig = plt.figure(figsize=(4, 5.4))
-fig.subplots_adjust(bottom=0., top=1., left=0., right=1.)
-plt.axis('off')
+fig = plt.figure(figsize=(4, 5.4), facecolor='k')
 
-plt.imshow(mean_img[:, 4:58, z].T, cmap=plt.cm.gray,
-            interpolation='nearest', origin='lower')
-
-mask_vt = nibabel.load(data.mask_vt[0]).get_data()
-plt.contour(mask_vt[:, 4:58, z].astype(np.bool).T, contours=1,
-        antialiased=False, linewidths=4., levels=[0],
-        interpolation='nearest', colors=['red'], origin='lower')
-
-mask_house = nibabel.load(data.mask_house[0]).get_data()
-plt.contour(mask_house[:, 4:58, z].astype(np.bool).T, contours=1,
-        antialiased=False, linewidths=4., levels=[0],
-        interpolation='nearest', colors=['blue'], origin='lower')
-
-mask_face = nibabel.load(data.mask_face[0]).get_data()
-plt.contour(mask_face[:, 4:58, z].astype(np.bool).T, contours=1,
-        antialiased=False, linewidths=4., levels=[0],
-        interpolation='nearest', colors=['limegreen'], origin='lower')
-
+from nilearn.plotting import plot_anat
+display = plot_anat(mean_img, display_mode='z', cut_coords=[z_slice],
+                    figure=fig)
+display.add_contours(data.mask_vt[0], contours=1, antialiased=False,
+                     linewidths=4., levels=[0], colors=['red'])
+display.add_contours(data.mask_house[0], contours=1, antialiased=False,
+                     linewidths=4., levels=[0], colors=['blue'])
+display.add_contours(data.mask_face[0], contours=1, antialiased=False,
+                     linewidths=4., levels=[0], colors=['limegreen'])
 
 # We generate a legend using the trick described on
 # http://matplotlib.sourceforge.net/users/legend_guide.httpml#using-proxy-artist
