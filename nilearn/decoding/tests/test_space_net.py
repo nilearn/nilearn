@@ -243,7 +243,7 @@ def test_lasso_vs_smooth_lasso():
     # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's performance with
     # Scikit-Learn lasso
     lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
-    smooth_lasso = BaseSpaceNet(mask=mask, alpha=1, l1_ratio=1,
+    smooth_lasso = BaseSpaceNet(mask=mask, alpha=1. * X_.shape[0], l1_ratio=1,
                                 is_classif=False, penalty="smooth-lasso",
                                 max_iter=100)
     lasso.fit(X_, y)
