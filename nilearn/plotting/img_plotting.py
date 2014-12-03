@@ -31,7 +31,6 @@ from .._utils.extmath import fast_abs_percentile
 from ..datasets import load_mni152_template
 from .displays import get_slicer, get_projector
 from . import cm
-from .find_cuts import find_cut_slices
 
 ################################################################################
 # Core, usage-agnostic functions
@@ -40,11 +39,24 @@ from .find_cuts import find_cut_slices
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       output_file=None, display_mode='ortho',
                       colorbar=False, figure=None, axes=None, title=None,
-                      threshold=None, annotate=True, draw_cross=True, black_bg=False,
+                      threshold=None, annotate=True,
+                      draw_cross=True, black_bg=False,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
-                      create_display_fun=get_slicer,
+                      display_factory=get_slicer,
                       **kwargs):
-    """ Internal function, please refer to the docstring of plot_img
+    """ Internal function, please refer to the docstring of plot_img for parameters
+        not listed below.
+
+        Parameters
+        ----------
+        bg_vmin: float
+            vmin for bg_img
+        bg_vmax: float
+            vmax for bg_img
+        interpolation: string
+            passed to the add_overlay calls
+        display_factory: function
+            takes a display_mode argument and return a display class
     """
     if img is not False and img is not None:
         img = _utils.check_niimg(img, ensure_3d=True)
@@ -66,7 +78,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
         img = nibabel.Nifti1Image(as_ndarray(data), affine)
 
-    display = create_display_fun(display_mode)(
+    display = display_factory(display_mode)(
         img,
         threshold=threshold,
         cut_coords=cut_coords,
@@ -652,7 +664,7 @@ def plot_glass_brain(stat_map_img,
     if cmap is None:
         cmap = pl.cm.hot if black_bg else pl.cm.hot_r
 
-    def create_display_fun(display_mode):
+    def display_factory(display_mode):
         return functools.partial(get_projector(display_mode), alpha=alpha)
 
     display = _plot_img_with_bg(img=stat_map_img,
@@ -662,7 +674,7 @@ def plot_glass_brain(stat_map_img,
                                 annotate=annotate,
                                 black_bg=black_bg, threshold=threshold,
                                 cmap=cmap, colorbar=False,
-                                create_display_fun=create_display_fun,
+                                display_factory=display_factory,
                                 **kwargs)
 
     return display
