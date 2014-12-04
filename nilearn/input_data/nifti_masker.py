@@ -136,6 +136,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """

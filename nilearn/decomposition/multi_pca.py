@@ -315,7 +315,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        imgs: iterable of Niimg-like object
+        imgs: iterable of Niimg-like objects
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data to be projected
 
