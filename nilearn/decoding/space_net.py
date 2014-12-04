@@ -189,14 +189,14 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     # prevent alpha_max from exploding when l1_ratio = 0
     if l1_ratio == 0.:
         l1_ratio = 1e-3
-    alpha_max /= (X.shape[0] * l1_ratio)
+    alpha_max /= (l1_ratio * X.shape[0])
 
     if n_alphas == 1:
         return np.array([alpha_max])
 
     alpha_min = alpha_max * eps
     return np.logspace(np.log10(alpha_min), np.log10(alpha_max),
-                      num=n_alphas)[::-1]
+                       num=n_alphas)[::-1]
 
 
 class EarlyStoppingCallback(object):
@@ -225,7 +225,10 @@ class EarlyStoppingCallback(object):
             # reset the test_scores list
             self.test_scores = list()
         w = variables['w']
-        score = self.test_score(w)[0]
+
+        # use spearman score as stopping criterion
+        score = self.test_score(w, spearman_only=True)
+
         self.test_scores.append(score)
         if not (self.counter > 20 and (self.counter % 10) == 2):
             return
@@ -257,7 +260,7 @@ class EarlyStoppingCallback(object):
             w *= scaling
         return w
 
-    def test_score(self, w):
+    def test_score(self, w, spearman_only=False):
         """Compute test score for model, given weights map `w`.
 
         We use correlations between linear prediction and
@@ -269,8 +272,6 @@ class EarlyStoppingCallback(object):
         is the pearson correlation, that we can use to disambiguate
         between regions of equivalent spearman correlations
 
-        For classification, we return spearman first, and pearson
-        second, and the converse is regression settings
         """
         if self.is_classif:
             w = w[:-1]
@@ -279,11 +280,10 @@ class EarlyStoppingCallback(object):
             return (-np.inf, -np.inf)
         y_pred = np.dot(self.X_test, w)
         spearman_score = stats.spearmanr(y_pred, self.y_test)[0]
+        if spearman_only:
+            return spearman_score
         pearson_score = np.corrcoef(y_pred, self.y_test)[1, 0]
-        if self.is_classif:
-            return spearman_score, pearson_score
-        else:
-            return pearson_score, spearman_score
+        return spearman_score, pearson_score
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
