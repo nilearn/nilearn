@@ -72,11 +72,11 @@ print cv_scores
 coef_ = svc.coef_
 
 # Reverse masking thanks to the Nifti Masker
-coef_niimg = nifti_masker.inverse_transform(coef_)
+coef_img = nifti_masker.inverse_transform(coef_)
 
 # Use nibabel to save the coefficients as a Nifti image
 import nibabel
-nibabel.save(coef_niimg, 'haxby_svc_weights.nii')
+nibabel.save(coef_img, 'haxby_svc_weights.nii')
 
 ### Visualization #############################################################
 import pylab as plt
@@ -84,7 +84,7 @@ from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi, plot_stat_map
 
 mean_epi = mean_img(data.func[0])
-plot_stat_map(coef_niimg, mean_epi, title="SVM weights", display_mode="yx")
+plot_stat_map(coef_img, mean_epi, title="SVM weights", display_mode="yx")
 
 plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask", display_mode="yx")
 

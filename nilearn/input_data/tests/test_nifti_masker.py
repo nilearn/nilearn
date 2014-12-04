@@ -35,9 +35,9 @@ def test_auto_mask():
     # Smoke test the fit
     masker.fit(img)
     # Smoke test the transform
-    # With a 4D niimg
+    # With a 4D img
     masker.transform([img, ])
-    # With a 3D niimg
+    # With a 3D img
     masker.transform(img)
 
 
@@ -144,7 +144,7 @@ def test_joblib_cache():
         assert_true(mask_hash == hash(masker.mask_img_))
 
     # Test a tricky issue with memmapped joblib.memory that makes
-    # niimgs return by inverse_transform impossible to save
+    # imgs return by inverse_transform impossible to save
     cachedir = mkdtemp()
     try:
         masker.memory = Memory(cachedir=cachedir, mmap_mode='r',

@@ -20,7 +20,7 @@ from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
 
 
-def filter_and_mask(niimgs, mask_img_,
+def filter_and_mask(imgs, mask_img_,
                     parameters,
                     ref_memory_level=0,
                     memory=Memory(cachedir=None),
@@ -30,13 +30,13 @@ def filter_and_mask(niimgs, mask_img_,
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
 
-    if isinstance(niimgs, basestring):
+    if isinstance(imgs, basestring):
         copy = False
 
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
 
-    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
+    imgs = _utils.check_niimgs(imgs, accept_3d=True)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
@@ -46,16 +46,16 @@ def filter_and_mask(niimgs, mask_img_,
     # as small as possible in order to speed up the process
 
     resampling_is_necessary = (
-            (not np.allclose(niimgs.get_affine(), mask_img_.get_affine()))
-        or np.any(np.array(niimgs.shape[:3]) != np.array(mask_img_.shape)))
+            (not np.allclose(imgs.get_affine(), mask_img_.get_affine()))
+        or np.any(np.array(imgs.shape[:3]) != np.array(mask_img_.shape)))
 
     if resampling_is_necessary:
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
 
-        niimgs = cache(image.resample_img, memory, ref_memory_level,
+        imgs = cache(image.resample_img, memory, ref_memory_level,
                     memory_level=2, ignore=['copy'])(
-                        niimgs,
+                        imgs,
                         target_affine=mask_img_.get_affine(),
                         target_shape=mask_img_.shape,
                         copy=copy)
@@ -64,12 +64,12 @@ def filter_and_mask(niimgs, mask_img_,
     if verbose > 0:
         print("[%s] Loading data from %s" % (
             class_name,
-            _utils._repr_niimgs(niimgs)[:200]))
+            _utils._repr_niimgs(imgs)[:200]))
 
     # Get series from data with optional smoothing
     if verbose > 1:
         print("[%s] Masking and smoothing" % class_name)
-    data = masking.apply_mask(niimgs, mask_img_,
+    data = masking.apply_mask(imgs, mask_img_,
                               smoothing_fwhm=parameters['smoothing_fwhm'])
 
     # Temporal
@@ -121,10 +121,10 @@ def filter_and_mask(niimgs, mask_img_,
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
 
-    return data, niimgs.get_affine()
+    return data, imgs.get_affine()
 
 
-def _safe_filter_and_mask(niimgs, mask_img_,
+def _safe_filter_and_mask(imgs, mask_img_,
                          parameters,
                          ref_memory_level=0,
                          memory=Memory(cachedir=None),
@@ -132,19 +132,19 @@ def _safe_filter_and_mask(niimgs, mask_img_,
                          confounds=None,
                          reference_affine=None,
                          copy=True):
-    niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
+    imgs = _utils.check_niimgs(imgs, accept_3d=True)
 
     # If there is a reference affine, we may have to force resampling
     target_affine = parameters['target_affine']
     if (target_affine is None and reference_affine is not None
-                and reference_affine.shape == niimgs.get_affine().shape
-                and not np.allclose(niimgs.get_affine(), reference_affine)):
+                and reference_affine.shape == imgs.get_affine().shape
+                and not np.allclose(imgs.get_affine(), reference_affine)):
         warnings.warn('Affine is different across subjects.'
                       ' Realignement on first subject affine forced')
         parameters = parameters.copy()
         parameters['target_affine'] = reference_affine
 
-    return filter_and_mask(niimgs, mask_img_, parameters, ref_memory_level,
+    return filter_and_mask(imgs, mask_img_, parameters, ref_memory_level,
             memory, verbose, confounds, copy)
 
 
@@ -152,7 +152,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
 
-    def transform_single_niimgs(self, niimgs, confounds=None, copy=True):
+    def transform_single_imgs(self, imgs, confounds=None, copy=True):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
@@ -164,7 +164,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             params.pop(name, None)
         data, _ = self._cache(filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])(
-                              niimgs, self.mask_img_,
+                              imgs, self.mask_img_,
                               params,
                               ref_memory_level=self.memory_level,
                               memory=self.memory,
@@ -174,17 +174,18 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                             )
         return data
 
-    def transform_niimgs(self, niimgs_list, confounds=None, copy=True, n_jobs=1):
+    def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):
         ''' Prepare multi subject data in parallel
 
         Parameters
         ----------
 
-        niimgs_list: list of niimgs
-            List of niimgs file to prepare. One item per subject.
+        imgs_list: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            List of imgs file to prepare. One item per subject.
 
         confounds: list of confounds, optional
-            List of confounds. Must be of same length than niimgs_list.
+            List of confounds. Must be of same length than imgs_list.
 
         copy: boolean, optional
             If True, guarantees that output array has no memory in common with
@@ -205,15 +206,15 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.target_affine is None:
             # Load the first image and use it as a reference for all other
             # subjects
-            reference_affine = _utils.check_niimgs(niimgs_list[0],
+            reference_affine = _utils.check_niimgs(imgs_list[0],
                                                    accept_3d=True).get_affine()
 
         func = self._cache(_safe_filter_and_mask, memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
         if confounds is None:
-            confounds = itertools.repeat(None, len(niimgs_list))
+            confounds = itertools.repeat(None, len(imgs_list))
         data = Parallel(n_jobs=n_jobs)(delayed(func)(
-                              niimgs, self.mask_img_,
+                              imgs, self.mask_img_,
                               params,
                               ref_memory_level=self.memory_level,
                               memory=self.memory,
@@ -221,7 +222,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                               confounds=confounds,
                               reference_affine=reference_affine,
                               copy=copy)
-                          for niimgs, confounds in zip(niimgs_list, confounds))
+                          for imgs, confounds in zip(imgs_list, confounds))
         return zip(*data)[0]
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):

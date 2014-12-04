@@ -305,7 +305,8 @@ class BaseSlicer(object):
 
             Parameters
             -----------
-            img: niimg-like
+            img: Niimg-like object
+                See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
                 The nifti-image-like. If it is a masked array, only
                 the non-masked part will be plotted.
             threshold : a number, None
@@ -345,7 +346,8 @@ class BaseSlicer(object):
 
             Parameters
             -----------
-            img: niimg-like
+            img: Niimg-like object
+                See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
                 The Nifti-Image like object to plot
             kwargs:
                 Extra keyword arguments are passed to contour, see the

@@ -17,26 +17,29 @@ from . import masking
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
-def img_to_signals_labels(niimgs, labels_img, mask_img=None,
+def img_to_signals_labels(imgs, labels_img, mask_img=None,
                           background_label=0, order="F"):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
 
-    labels, niimgs and mask shapes and affines must fit. This function
+    labels, imgs and mask shapes and affines must fit. This function
     performs no resampling.
 
     Parameters
     ==========
-    niimgs: niimg
+    imgs: 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         input images.
 
-    labels_img: niimg
+    labels_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
-    mask_img: niimg
-        mask to apply to labels before extracting signals. Every point
+    mask_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Mask to apply to labels before extracting signals. Every point
         outside the mask is considered as background (i.e. no region).
 
     background_label: number
@@ -67,22 +70,22 @@ def img_to_signals_labels(niimgs, labels_img, mask_img=None,
 
     # TODO: Make a special case for list of strings (load one image at a
     # time).
-    niimgs = _utils.check_niimgs(niimgs)
-    target_affine = niimgs.get_affine()
-    target_shape = _utils._get_shape(niimgs)[:3]
+    imgs = _utils.check_niimgs(imgs)
+    target_affine = imgs.get_affine()
+    target_shape = _utils._get_shape(imgs)[:3]
 
     # Check shapes and affines.
     if _utils._get_shape(labels_img) != target_shape:
-        raise ValueError("labels_img and niimgs shapes must be identical.")
+        raise ValueError("labels_img and imgs shapes must be identical.")
     if abs(labels_img.get_affine() - target_affine).max() > 1e-9:
-        raise ValueError("labels_img and niimgs affines must be identical")
+        raise ValueError("labels_img and imgs affines must be identical")
 
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         if _utils._get_shape(mask_img) != target_shape:
-            raise ValueError("mask_img and niimgs shapes must be identical.")
+            raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.get_affine() - target_affine).max() > 1e-9:
-            raise ValueError("mask_img and niimgs affines must be identical")
+            raise ValueError("mask_img and imgs affines must be identical")
 
     # Perform computation
     labels_data = labels_img.get_data()
@@ -95,7 +98,7 @@ def img_to_signals_labels(niimgs, labels_img, mask_img=None,
         labels_data = labels_data.copy()
         labels_data[np.logical_not(mask_data)] = background_label
 
-    data = niimgs.get_data()
+    data = imgs.get_data()
     signals = np.ndarray((data.shape[-1], len(labels)), order=order)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(ndimage.measurements.mean(img,
@@ -123,10 +126,11 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     signals: numpy.ndarray
         2D array with shape: (scan number, number of regions in labels_img)
 
-    labels_img: niimg
+    labels_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Region definitions using labels.
 
-    mask_img: niimg, optional
+    mask_img: Niimg-like object, optional
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
 
@@ -192,21 +196,24 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     return nibabel.Nifti1Image(data, target_affine)
 
 
-def img_to_signals_maps(niimgs, maps_img, mask_img=None):
+def img_to_signals_maps(imgs, maps_img, mask_img=None):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
 
     Parameters
     ==========
-    niimgs: niimg
-        input images.
+    imgs: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Input images.
 
-    maps_img: niimg
+    maps_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         regions definition as maps (array of weights).
-        shape: niimgs.shape + (region number, )
+        shape: imgs.shape + (region number, )
 
-    mask_img: niimg
+    mask_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         mask to apply to regions before extracting signals. Every point
         outside the mask is considered as background (i.e. outside of any
         region).
@@ -231,24 +238,24 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
     """
 
     maps_img = _utils.check_niimg(maps_img)
-    niimgs = _utils.check_niimgs(niimgs)
-    affine = niimgs.get_affine()
-    shape = _utils._get_shape(niimgs)[:3]
+    imgs = _utils.check_niimgs(imgs)
+    affine = imgs.get_affine()
+    shape = _utils._get_shape(imgs)[:3]
 
     # Check shapes and affines.
     if _utils._get_shape(maps_img)[:3] != shape:
-        raise ValueError("maps_img and niimgs shapes must be identical.")
+        raise ValueError("maps_img and imgs shapes must be identical.")
     if abs(maps_img.get_affine() - affine).max() > 1e-9:
-        raise ValueError("maps_img and niimgs affines must be identical")
+        raise ValueError("maps_img and imgs affines must be identical")
 
     maps_data = maps_img.get_data()
 
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         if _utils._get_shape(mask_img) != shape:
-            raise ValueError("mask_img and niimgs shapes must be identical.")
+            raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.get_affine() - affine).max() > 1e-9:
-            raise ValueError("mask_img and niimgs affines must be identical")
+            raise ValueError("mask_img and imgs affines must be identical")
         maps_data, maps_mask, labels = \
                    _trim_maps(maps_data, mask_img.get_data(), keep_empty=True)
         maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
@@ -256,7 +263,7 @@ def img_to_signals_maps(niimgs, maps_img, mask_img=None):
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
         labels = np.arange(maps_data.shape[-1], dtype=np.int)
 
-    data = niimgs.get_data()
+    data = imgs.get_data()
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
                                   data[maps_mask, :])[0].T
 
@@ -275,10 +282,12 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         be as many signals as maps.
         In pseudo-code: region_signals.shape[1] == maps_img.shape[-1]
 
-    maps_img: niimg
+    maps_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Region definitions using maps.
 
-    mask_img: niimg, optional
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Boolean array giving voxels to process. integer arrays also accepted,
         zero meaning False.
 

@@ -42,7 +42,7 @@ miyawaki_mean_img = image.mean_img(miyawaki.func[0])
 masker = NiftiMasker()
 masker.fit(miyawaki_img)
 
-plot_roi(masker.mask_img_, miyawaki_mean_img, 
+plot_roi(masker.mask_img_, miyawaki_mean_img,
          title="Mask from already masked data")
 
 
@@ -55,7 +55,7 @@ nyu_img = nibabel.load(nyu.func[0])
 # Restrict nyu to 100 frames to speed up computation
 nyu_func = nyu_img.get_data()[..., :100]
 
-# nyu_func is a 4D-array, we want to make a Niimg out of it:
+# nyu_func is a 4D-array, we want to make an img out of it:
 nyu_img = nibabel.Nifti1Image(nyu_func, nyu_img.get_affine())
 
 # To display the background
