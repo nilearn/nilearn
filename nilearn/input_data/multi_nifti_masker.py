@@ -133,12 +133,13 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def fit(self, niimgs=None, y=None):
+    def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data
 
         Parameters
         ----------
-        niimgs: list of filenames or NiImages
+        imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -147,23 +148,23 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         if self.verbose > 0:
             print "[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
-                _utils._repr_niimgs(niimgs)[:200])
+                _utils._repr_niimgs(imgs)[:200])
         # Compute the mask if not given by the user
         if self.mask_img is None:
             if self.verbose > 0:
                 print "[%s.fit] Computing mask" % self.__class__.__name__
             data = []
-            if not isinstance(niimgs, collections.Iterable) \
-                    or isinstance(niimgs, basestring):
+            if not isinstance(imgs, collections.Iterable) \
+                    or isinstance(imgs, basestring):
                 raise ValueError("[%s.fit] For multiple processing, you should"
                                  " provide a list of data "
                                  "(e.g. Nifti1Image objects or filenames)."
                                  "%r is an invalid input"
-                                 % (self.__class__.__name__, niimgs))
-            for niimg in niimgs:
+                                 % (self.__class__.__name__, imgs))
+            for img in imgs:
                 # Note that data is not loaded into memory at this stage
-                # if niimg is a string
-                data.append(_utils.check_niimgs(niimg, accept_3d=True))
+                # if img is a string
+                data.append(_utils.check_niimgs(img, accept_3d=True))
 
             mask_args = (self.mask_args if self.mask_args is not None
                          else {})
@@ -179,7 +180,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                         compute_mask,
                         memory_level=1,
                         ignore=['n_jobs', 'verbose', 'memory'])(
-                            niimgs,
+                            imgs,
                             target_affine=self.target_affine,
                             target_shape=self.target_shape,
                             n_jobs=self.n_jobs,
@@ -187,9 +188,9 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                             verbose=(self.verbose - 1),
                         **mask_args)
         else:
-            if niimgs is not None:
+            if imgs is not None:
                 warnings.warn('[%s.fit] Generation of a mask has been'
-                             ' requested (niimgs != None) while a mask has'
+                             ' requested (imgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
                              ' will be used.' % self.__class__.__name__)
             self.mask_img_ = _utils.check_niimg(self.mask_img)
@@ -212,12 +213,13 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         self.mask_img_.get_data()
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
         ----------
-        niimgs: nifti-like images
+        imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data to be preprocessed
 
         confounds: CSV file path or 2D matrix
@@ -229,7 +231,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         data: {list of numpy arrays}
             preprocessed images
         """
-        if not hasattr(niimgs, '__iter__')\
-                    or isinstance(niimgs, basestring):
-                return self.transform_single_niimgs(niimgs)
-        return self.transform_niimgs(niimgs, confounds, n_jobs=self.n_jobs)
+        if not hasattr(imgs, '__iter__')\
+                    or isinstance(imgs, basestring):
+                return self.transform_single_imgs(imgs)
+        return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

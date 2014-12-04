@@ -141,45 +141,45 @@ def test__crop_img_to():
     data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1
     affine = np.diag((4, 3, 2, 1))
-    niimg = nibabel.Nifti1Image(data, affine=affine)
+    img = nibabel.Nifti1Image(data, affine=affine)
 
     slices = [slice(2, 4), slice(1, 5), slice(3, 6)]
-    cropped_niimg = image._crop_img_to(niimg, slices, copy=False)
+    cropped_img = image._crop_img_to(img, slices, copy=False)
 
     new_origin = np.array((4, 3, 2)) * np.array((2, 1, 3))
 
     # check that correct part was extracted:
-    assert_true((cropped_niimg.get_data() == 1).all())
-    assert_true(cropped_niimg.shape == (2, 4, 3))
+    assert_true((cropped_img.get_data() == 1).all())
+    assert_true(cropped_img.shape == (2, 4, 3))
 
     # check that affine was adjusted correctly
-    assert_true((cropped_niimg.get_affine()[:3, 3] == new_origin).all())
+    assert_true((cropped_img.get_affine()[:3, 3] == new_origin).all())
 
     # check that data was really not copied
     data[2:4, 1:5, 3:6] = 2
-    assert_true((cropped_niimg.get_data() == 2).all())
+    assert_true((cropped_img.get_data() == 2).all())
 
     # check that copying works
-    copied_cropped_niimg = image._crop_img_to(niimg, slices)
+    copied_cropped_img = image._crop_img_to(img, slices)
     data[2:4, 1:5, 3:6] = 1
-    assert_true((copied_cropped_niimg.get_data() == 2).all())
+    assert_true((copied_cropped_img.get_data() == 2).all())
 
 
 def test_crop_img():
     data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1
     affine = np.diag((4, 3, 2, 1))
-    niimg = nibabel.Nifti1Image(data, affine=affine)
+    img = nibabel.Nifti1Image(data, affine=affine)
 
-    cropped_niimg = image.crop_img(niimg)
+    cropped_img = image.crop_img(img)
 
     # correction for padding with "-1"
     new_origin = np.array((4, 3, 2)) * np.array((2 - 1, 1 - 1, 3 - 1))
 
     # check that correct part was extracted:
     # This also corrects for padding
-    assert_true((cropped_niimg.get_data()[1:-1, 1:-1, 1:-1] == 1).all())
-    assert_true(cropped_niimg.shape == (2 + 2, 4 + 2, 3 + 2))
+    assert_true((cropped_img.get_data()[1:-1, 1:-1, 1:-1] == 1).all())
+    assert_true(cropped_img.shape == (2 + 2, 4 + 2, 3 + 2))
 
 
 def test_crop_threshold_tolerance():
@@ -193,10 +193,10 @@ def test_crop_threshold_tolerance():
     # add an infinitesimal outside this block
     data[3, 3, 3] = 1e-12
     affine = np.eye(4)
-    niimg = nibabel.Nifti1Image(data, affine=affine)
+    img = nibabel.Nifti1Image(data, affine=affine)
 
-    cropped_niimg = image.crop_img(niimg)
-    assert_true(cropped_niimg.shape == active_shape)
+    cropped_img = image.crop_img(img)
+    assert_true(cropped_img.shape == active_shape)
 
 
 def test_mean_img():
@@ -205,30 +205,30 @@ def test_mean_img():
     data2 = rng.rand(5, 6, 7)
     data3 = rng.rand(5, 6, 7, 3)
     affine = np.diag((4, 3, 2, 1))
-    niimg1 = nibabel.Nifti1Image(data1, affine=affine)
-    niimg2 = nibabel.Nifti1Image(data2, affine=affine)
-    niimg3 = nibabel.Nifti1Image(data3, affine=affine)
-    for niimgs in ([niimg1, ],
-                   [niimg1, niimg2],
-                   [niimg2, niimg1, niimg2],
-                   [niimg3, niimg1, niimg2],  # Mixture of 4D and 3D images
+    img1 = nibabel.Nifti1Image(data1, affine=affine)
+    img2 = nibabel.Nifti1Image(data2, affine=affine)
+    img3 = nibabel.Nifti1Image(data3, affine=affine)
+    for imgs in ([img1, ],
+                   [img1, img2],
+                   [img2, img1, img2],
+                   [img3, img1, img2],  # Mixture of 4D and 3D images
                   ):
 
         arrays = list()
         # Ground-truth:
-        for niimg in niimgs:
-            niimg = niimg.get_data()
-            if niimg.ndim == 4:
-                niimg = np.mean(niimg, axis=-1)
-            arrays.append(niimg)
+        for img in imgs:
+            img = img.get_data()
+            if img.ndim == 4:
+                img = np.mean(img, axis=-1)
+            arrays.append(img)
         truth = np.mean(arrays, axis=0)
 
-        mean_img = image.mean_img(niimgs)
+        mean_img = image.mean_img(imgs)
         assert_array_equal(mean_img.get_affine(), affine)
         assert_array_equal(mean_img.get_data(), truth)
 
         # Test with files
-        with testing.write_tmp_imgs(*niimgs) as imgs:
+        with testing.write_tmp_imgs(*imgs) as imgs:
             mean_img = image.mean_img(imgs)
             assert_array_equal(mean_img.get_affine(), affine)
             assert_array_equal(mean_img.get_data(), truth)
@@ -239,11 +239,11 @@ def test_mean_img_resample():
     rng = np.random.RandomState(42)
     data = rng.rand(5, 6, 7, 40)
     affine = np.diag((4, 3, 2, 1))
-    niimg = nibabel.Nifti1Image(data, affine=affine)
+    img = nibabel.Nifti1Image(data, affine=affine)
     mean_img = nibabel.Nifti1Image(data.mean(axis=-1), affine=affine)
 
     target_affine = affine[:, [1, 0, 2, 3]]  # permutation of axes
-    mean_img_with_resampling = image.mean_img(niimg,
+    mean_img_with_resampling = image.mean_img(img,
                                               target_affine=target_affine)
     resampled_mean_image = resampling.resample_img(mean_img,
                                               target_affine=target_affine)

@@ -131,12 +131,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(self, niimgs=None, y=None):
+    def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data
 
         Parameters
         ----------
-        niimgs: list of filenames or NiImages
+        imgs: list of Niimg-like objects
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -146,7 +146,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         if self.verbose > 0:
             print "[%s.fit] Loading data from %s" % (
                             self.__class__.__name__,
-                            _utils._repr_niimgs(niimgs)[:200])
+                            _utils._repr_niimgs(imgs)[:200])
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
@@ -161,11 +161,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
                     "Acceptable values are 'background' and 'epi'.")
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
-            niimgs = _utils.check_niimgs(niimgs, accept_3d=True)
+            imgs = _utils.check_niimgs(imgs, accept_3d=True)
             self.mask_img_ = self._cache(compute_mask,
                               memory_level=1,
                               ignore=['verbose'])(
-                niimgs,
+                imgs,
                 verbose=(self.verbose - 1),
                 **mask_args)
         else:
@@ -191,17 +191,18 @@ class NiftiMasker(BaseMasker, CacheMixin):
             print "[%s.fit] Finished fit" % self.__class__.__name__
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
         ----------
-        niimgs: nifti like images
+        imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data to be preprocessed
 
         confounds: CSV file path or 2D matrix
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
-        return self.transform_single_niimgs(
-            niimgs, confounds)
+        return self.transform_single_imgs(
+            imgs, confounds)

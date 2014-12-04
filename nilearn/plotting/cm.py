@@ -91,7 +91,7 @@ def _concat_cmap(cmap1, cmap2):
     return cdict
 
 
-def alpha_cmap(color, name=''):
+def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
     """ Return a colormap with the given color, and alpha going from
         zero to 1.
 
@@ -104,13 +104,13 @@ def alpha_cmap(color, name=''):
     red, green, blue = _colors.colorConverter.to_rgb(color)
     if name == '' and hasattr(color, 'startswith'):
         name = color
-    cmapspec = [(red, green, blue, 0.), 
+    cmapspec = [(red, green, blue, 1.),
                 (red, green, blue, 1.),
                ]
     cmap = _colors.LinearSegmentedColormap.from_list(
                                 '%s_transparent' % name, cmapspec, _cm.LUTSIZE)
     cmap._init()
-    cmap._lut[:, -1] = _np.linspace(.5, 1.0, cmap._lut.shape[0])
+    cmap._lut[:, -1] = _np.linspace(alpha_min, alpha_max, cmap._lut.shape[0])
     cmap._lut[-1, -1] = 0
     return cmap
 
@@ -170,6 +170,9 @@ for color, name in (((1, 0, 0), 'red'),
                     ((0, 0, 1), 'green'),
                     ):
     _cmap_d['%s_transparent' % name] = alpha_cmap(color, name=name)
+    _cmap_d['%s_transparent_full_alpha_range' % name] = alpha_cmap(
+        color, alpha_min=0,
+        alpha_max=1, name=name)
 
 
 locals().update(_cmap_d)

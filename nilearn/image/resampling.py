@@ -160,7 +160,8 @@ def get_mask_bounds(img):
 
         Parameters
         ----------
-        img: nifti-image like or path to file
+        img: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The image to inspect. Zero values are considered as
             background.
 
@@ -256,13 +257,14 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
     return out
 
 
-def resample_img(niimg, target_affine=None, target_shape=None,
+def resample_img(img, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
     """Resample a Nifti image
 
     Parameters
     ----------
-    niimg: nilearn nifti image
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Path to a nifti file or nifti-like object
 
     target_affine: numpy.ndarray, optional
@@ -350,35 +352,35 @@ def resample_img(niimg, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{}'").format(interpolation)
         raise ValueError(message)
 
-    if isinstance(niimg, basestring):
+    if isinstance(img, basestring):
         # Avoid a useless copy
-        input_niimg_is_string = True
+        input_img_is_string = True
     else:
-        input_niimg_is_string = False
+        input_img_is_string = False
 
     # noop cases
-    niimg = _utils.check_niimg(niimg)
+    img = _utils.check_niimg(img)
 
     if target_affine is None and target_shape is None:
-        if copy and not input_niimg_is_string:
-            niimg = _utils.copy_niimg(niimg)
-        return niimg
+        if copy and not input_img_is_string:
+            img = _utils.copy_img(img)
+        return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
-    shape = _utils._get_shape(niimg)
-    affine = niimg.get_affine()
+    shape = _utils._get_shape(img)
+    affine = img.get_affine()
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
-        if copy and not input_niimg_is_string:
-            niimg = _utils.copy_niimg(niimg)
-        return niimg
+        if copy and not input_img_is_string:
+            img = _utils.copy_img(img)
+        return img
 
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance: output is always a separate
     # array.
-    data = niimg.get_data()
+    data = img.get_data()
 
     # Get a bounding box for the transformed data
     # Embed target_affine in 4x4 shape if necessary
@@ -453,18 +455,18 @@ def resample_img(niimg, target_affine=None, target_shape=None,
             _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
                       interpolation_order,
                       out=resampled_data[all_img + ind],
-                      copy=not input_niimg_is_string)
+                      copy=not input_img_is_string)
     else:
         resampled_data = np.empty(target_shape, data.dtype)
         _resample_one_img(data, A, A_inv, b, target_shape,
                           interpolation_order,
                           out=resampled_data,
-                          copy=not input_niimg_is_string)
+                          copy=not input_img_is_string)
 
     return Nifti1Image(resampled_data, target_affine)
 
 
-def reorder_img(niimg, resample=None):
+def reorder_img(img, resample=None):
     """Returns an image with the affine diagonal (by permuting axes).
     The orientation of the new image will be RAS (Right, Anterior, Superior).
     If it is impossible to get xyz ordering by permuting the axes, a
@@ -472,7 +474,8 @@ def reorder_img(niimg, resample=None):
 
         Parameters
         -----------
-        niimg: nilearn nifti image
+        img: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Path to a nifti file or nifti-like object
 
         resample: None or string in {'continuous', 'nearest'}, optional
@@ -483,9 +486,9 @@ def reorder_img(niimg, resample=None):
             resample_img.
 
     """
-    niimg = _utils.check_niimg(niimg)
+    img = _utils.check_niimg(img)
 
-    affine = niimg.get_affine()
+    affine = img.get_affine()
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
@@ -499,11 +502,11 @@ def reorder_img(niimg, resample=None):
             R, Q = np.linalg.qr(affine[:3, :3])
             target_affine = np.diag(np.abs(np.diag(Q))[
                                                 np.abs(R).argmax(axis=1)])
-            return resample_img(niimg, target_affine=target_affine,
+            return resample_img(img, target_affine=target_affine,
                                 interpolation=resample)
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
-    data = niimg.get_data()
+    data = img.get_data()
     while not np.all(np.sort(axis_numbers) == axis_numbers):
         first_inversion = np.argmax(np.diff(axis_numbers)<0)
         axis1 = first_inversion + 1
@@ -542,5 +545,6 @@ def reorder_img(niimg, resample=None):
     niimg = Nifti1Image(data, affine)
 
     return niimg
+
 
 

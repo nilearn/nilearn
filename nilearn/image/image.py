@@ -19,17 +19,19 @@ from .._utils.niimg_conversions import _safe_get_data
 from .. import masking
 from nilearn.image import reorder_img
 
-def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
+def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
     """ Return confounds signals extracted from input signals with highest
         variance.
 
         Parameters
         ==========
-        niimgs: niimg
+        imgs: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             4D image.
 
-        mask_img: niimg
+        mask_img: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             If provided, confounds are extracted from voxels inside the mask.
             If not provided, all voxels are used.
 
@@ -68,13 +70,13 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
     """
 
     if mask_img is not None:
-        sigs = masking.apply_mask(niimgs, mask_img)
+        sigs = masking.apply_mask(imgs, mask_img)
     else:
         # Load the data only if it doesn't need to be masked
-        niimgs = check_niimgs(niimgs)
-        sigs = as_ndarray(niimgs.get_data())
+        imgs = check_niimgs(imgs)
+        sigs = as_ndarray(imgs.get_data())
         # Not using apply_mask here saves memory in most cases.
-        del niimgs  # help reduce memory consumption
+        del imgs  # help reduce memory consumption
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
     return signal.high_variance_confounds(sigs, n_confounds=n_confounds,
@@ -205,7 +207,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     return arr
 
 
-def smooth_img(niimgs, fwhm):
+def smooth_img(imgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of arr.
@@ -213,7 +215,8 @@ def smooth_img(niimgs, fwhm):
 
     Parameters
     ==========
-    niimgs: niimgs or iterable of niimgs
+    imgs: Niimg-like object or iterable of Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         One or several niimage(s), either 3D or 4D.
 
     fwhm: scalar, numpy.ndarray, 'fast' or None
@@ -229,21 +232,21 @@ def smooth_img(niimgs, fwhm):
     Returns
     =======
     filtered_img: nibabel.Nifti1Image or list of.
-        Input image, filtered. If niimgs is an iterable, then filtered_img is a
+        Input image, filtered. If imgs is an iterable, then filtered_img is a
         list.
     """
 
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
-    if hasattr(niimgs, "__iter__") \
-       and not isinstance(niimgs, basestring):
+    if hasattr(imgs, "__iter__") \
+       and not isinstance(imgs, basestring):
         single_img = False
     else:
         single_img = True
-        niimgs = [niimgs]
+        imgs = [imgs]
 
     ret = []
-    for img in niimgs:
+    for img in imgs:
         img = check_niimg(img)
         affine = img.get_affine()
         filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
@@ -256,16 +259,17 @@ def smooth_img(niimgs, fwhm):
         return ret
 
 
-def _crop_img_to(niimg, slices, copy=True):
-    """Crops niimg to a smaller size
+def _crop_img_to(img, slices, copy=True):
+    """Crops image to a smaller size
 
-    Crop niimg to size indicated by slices and adjust affine
+    Crop img to size indicated by slices and adjust affine
     accordingly
 
     Parameters
     ==========
-    niimg: niimg
-        niimg to be cropped. If slices has less entries than niimg
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Img to be cropped. If slices has less entries than img
         has dimensions, the slices will be applied to the first len(slices)
         dimensions
 
@@ -280,14 +284,15 @@ def _crop_img_to(niimg, slices, copy=True):
 
     Returns
     =======
-    cropped_img: niimg
+    cropped_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Cropped version of the input image
     """
 
-    niimg = check_niimg(niimg)
+    img = check_niimg(img)
 
-    data = niimg.get_data()
-    affine = niimg.get_affine()
+    data = img.get_data()
+    affine = img.get_affine()
 
     cropped_data = data[slices]
     if copy:
@@ -302,23 +307,24 @@ def _crop_img_to(niimg, slices, copy=True):
     new_affine[:3, :3] = linear_part
     new_affine[:3, 3] = new_origin
 
-    new_niimg = nibabel.Nifti1Image(cropped_data, new_affine)
+    new_img = nibabel.Nifti1Image(cropped_data, new_affine)
 
-    return new_niimg
+    return new_img
 
 
-def crop_img(niimg, rtol=1e-8, copy=True):
-    """Crops niimg as much as possible
+def crop_img(img, rtol=1e-8, copy=True):
+    """Crops img as much as possible
 
-    Will crop niimg, removing as many zero entries as possible
+    Will crop img, removing as many zero entries as possible
     without touching non-zero entries. Will leave one voxel of
     zero padding around the obtained non-zero area in order to
     avoid sampling issues later on.
 
     Parameters
     ==========
-    niimg: niimg
-        niimg to be cropped.
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        img to be cropped.
 
     rtol: float
         relative tolerance (with respect to maximal absolute
@@ -330,12 +336,12 @@ def crop_img(niimg, rtol=1e-8, copy=True):
 
     Returns
     =======
-    cropped_img: niimg
+    cropped_img: image
         Cropped version of the input image
     """
 
-    niimg = check_niimg(niimg)
-    data = niimg.get_data()
+    img = check_niimg(img)
+    data = img.get_data()
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(data < -rtol * infinity_norm,
                                      data > rtol * infinity_norm)
@@ -352,7 +358,7 @@ def crop_img(niimg, rtol=1e-8, copy=True):
 
     slices = [slice(s, e) for s, e in zip(start, end)]
 
-    return _crop_img_to(niimg, slices, copy=copy)
+    return _crop_img_to(img, slices, copy=copy)
 
 
 def _compute_mean(imgs, target_affine=None,
@@ -383,7 +389,7 @@ def _compute_mean(imgs, target_affine=None,
     return mean_img, affine
 
 
-def mean_img(niimgs, target_affine=None, target_shape=None,
+def mean_img(imgs, target_affine=None, target_shape=None,
              verbose=False, n_jobs=1):
     """ Compute the mean of the images (in the time dimension of 4th dimension)
 
@@ -393,7 +399,8 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     Parameters
     ==========
 
-    niimgs: niimgs or iterable of niimgs
+    imgs: Niimg-like object or iterable of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         One or several niimage(s), either 3D or 4D (note that these
         can be file names).
 
@@ -420,23 +427,23 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
         mean image
 
     """
-    if (isinstance(niimgs, basestring) or
-        not isinstance(niimgs, collections.Iterable)):
-        niimgs = [niimgs, ]
+    if (isinstance(imgs, basestring) or
+        not isinstance(imgs, collections.Iterable)):
+        imgs = [imgs, ]
         total_n_imgs = 1
     else:
         try:
-            total_n_imgs = len(niimgs)
+            total_n_imgs = len(imgs)
         except:
             total_n_imgs = None
 
-    niimgs_iter = iter(niimgs)
+    imgs_iter = iter(imgs)
 
     if target_affine is None or target_shape is None:
         # Compute the first mean to retrieve the reference
         # target_affine and target_shape
         n_imgs = 1
-        running_mean, target_affine = _compute_mean(next(niimgs_iter),
+        running_mean, target_affine = _compute_mean(next(imgs_iter),
                     target_affine=target_affine,
                     target_shape=target_shape)
         target_shape = running_mean.shape[:3]
@@ -448,7 +455,7 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
         for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
                 delayed(_compute_mean)(n, target_affine=target_affine,
                                        target_shape=target_shape)
-                for n in niimgs_iter):
+                for n in imgs_iter):
             n_imgs += 1
             # _compute_mean returns (mean_img, affine)
             this_mean = this_mean[0]
@@ -461,17 +468,16 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     return nibabel.Nifti1Image(running_mean, target_affine)
 
 
-def swap_img_hemispheres(niimg):
+def swap_img_hemispheres(img):
     """Performs swapping of hemispheres in the indicated nifti.
 
        Use case: synchronizing ROIs across hemispheres
 
     Parameters
     ----------
-    niimg: string or object
-        If niimg is a string, it's considered as a path to Nifti image and
-        calls nibabel.load on it. If it is an object, it's considered to be
-        a nibabel.Nifti1Image object.
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        One or several niimgs.
 
     Returns
     -------
@@ -489,13 +495,13 @@ def swap_img_hemispheres(niimg):
     """
 
     # Check input is really a path to a nifti file or a nifti object
-    niimg = check_niimg(niimg)
+    img = check_niimg(img)
 
     # get nifti in x-y-z order
-    niimg = reorder_img(niimg)
+    img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = nibabel.Nifti1Image(niimg.get_data()[::-1], niimg.get_affine(),
-        header=niimg.get_header())
+    out_img = nibabel.Nifti1Image(img.get_data()[::-1], img.get_affine(),
+        header=img.get_header())
 
     return out_img

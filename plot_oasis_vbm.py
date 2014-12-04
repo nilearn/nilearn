@@ -40,8 +40,8 @@ ____
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
 import numpy as np
+from scipy import linalg
 import matplotlib.pyplot as plt
-import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
@@ -95,25 +95,26 @@ coef = svr.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
 # reverse masking
-weight_niimg = nifti_masker.inverse_transform(coef)
-
-# We use a masked array so that the voxels at '-1' are transparent
-weights = np.ma.masked_array(weight_niimg.get_data(),
-                             weight_niimg.get_data() == 0)
+weight_img = nifti_masker.inverse_transform(coef)
 
 ### Create the figure
-background_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
-picked_slice = 36
-plt.figure(figsize=(5.5, 5.5))
-data_for_plot = weights[:, :, picked_slice, 0]
-vmax = max(np.min(data_for_plot), np.max(data_for_plot)) * 0.5
-plt.imshow(np.rot90(background_img[:, :, picked_slice]), cmap=plt.cm.gray,
-          interpolation='nearest')
-im = plt.imshow(np.rot90(data_for_plot), cmap=plt.cm.Spectral_r,
-                interpolation='nearest', vmin=-vmax, vmax=vmax)
-plt.axis('off')
-plt.colorbar(im)
-plt.title('SVM weights')
+from nilearn.plotting import plot_stat_map
+background_img = dataset_files.gray_matter_maps[0]
+z_slice = 0
+from nilearn.image.resampling import coord_transform
+affine = weight_img.get_affine()
+_, _, k_slice = coord_transform(0, 0, z_slice,
+                                linalg.inv(affine))
+k_slice = round(k_slice)
+
+fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
+weight_slice_data = weight_img.get_data()[..., k_slice, 0]
+vmax = max(-np.min(weight_slice_data), np.max(weight_slice_data)) * 0.5
+display = plot_stat_map(weight_img, bg_img=background_img,
+                        cmap=plt.cm.Spectral_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax)
+display.title('SVM weights', y=1.2)
 
 ### Measure accuracy with cross validation
 from sklearn.cross_validation import cross_val_score
@@ -136,24 +137,24 @@ neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     n_jobs=1)  # can be changed to use more CPUs
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    signed_neg_log_pvals).get_data()
+    signed_neg_log_pvals)
 
 ### Show results
-# background anat
-plt.figure(figsize=(5.5, 5.5))
-vmin = -np.log10(0.1)  # 10% corrected
-vmax = np.amax(neg_log_pvals)
-masked_pvals = np.ma.masked_inside(signed_neg_log_pvals_unmasked,
-                                   -vmin, vmin)[..., 0]
-print '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum()
-plt.imshow(np.rot90(background_img[:, :, picked_slice]),
-           interpolation='nearest', cmap=plt.cm.gray, vmin=0., vmax=1.)
-im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
-                interpolation='nearest', cmap=plt.cm.RdBu_r,
-                vmin=-vmax, vmax=vmax)
-plt.axis('off')
-plt.colorbar(im)
-plt.title(r'Negative $\log_{10}$ p-values'
-          + '\n(Non-parametric + max-type correction)\n')
+threshold = -np.log10(0.1)  # 10% corrected
+
+fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
+
+display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=background_img,
+                        threshold=threshold, cmap=plt.cm.RdBu_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig)
+title = ('Negative $\log_{10}$ p-values'
+         '\n(Non-parametric + max-type correction)')
+display.title(title, y=1.2)
+
+signed_neg_log_pvals_slice_data = \
+    signed_neg_log_pvals_unmasked.get_data()[..., k_slice, 0]
+n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
+print '\n%d detections' % n_detections
 
 plt.show()

@@ -20,21 +20,22 @@ from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
 from .._utils import as_ndarray
 
-def session_pca(niimgs, mask_img, parameters,
+def session_pca(imgs, mask_img, parameters,
                 n_components=20,
                 confounds=None,
                 ref_memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
                 copy=True):
-    """Filter, mask and compute PCA on niimgs
+    """Filter, mask and compute PCA on Niimg-like objects
 
     This is an helper function whose first call `base_masker.filter_and_mask`
     and then apply a PCA to reduce the number of time series.
 
     Parameters
     ----------
-    niimgs: list of Niimg
+    imgs: list of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         List of subject data
 
     mask_img: Niimage
@@ -69,7 +70,7 @@ def session_pca(niimgs, mask_img, parameters,
         filter_and_mask, memory=memory, ref_memory_level=ref_memory_level,
         memory_level=2,
         ignore=['verbose', 'memory', 'ref_memory_level', 'copy'])(
-            niimgs, mask_img, parameters,
+            imgs, mask_img, parameters,
             ref_memory_level=ref_memory_level,
             memory=memory,
             verbose=verbose,
@@ -99,7 +100,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    mask: filename, Niimg, instance of NiftiMasker or MultiNiftiMasker, optional
+    mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
@@ -188,27 +189,28 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.target_shape = target_shape
         self.standardize = standardize
 
-    def fit(self, niimgs=None, y=None, confounds=None):
+    def fit(self, imgs=None, y=None, confounds=None):
         """Compute the mask and the components
 
         Parameters
         ----------
-        niimgs: list of filenames or NiImages
+        imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
         """
         # Hack to support single-subject data:
-        if isinstance(niimgs, (basestring, nibabel.Nifti1Image)):
-            niimgs = [niimgs]
+        if isinstance(imgs, (basestring, nibabel.Nifti1Image)):
+            imgs = [imgs]
             # This is a very incomplete hack, as it won't work right for
             # single-subject list of 3D filenames
-        if len(niimgs) == 0:
+        if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
-            raise ValueError('Need one or more niimg as an entry, an '
-                             'empty list was given.')
+            raise ValueError('Need one or more Niimg-like object as an entry, '
+                             'an empty list was given.')
         if confounds is None:
-            confounds = itertools.repeat(None, len(niimgs))
+            confounds = itertools.repeat(None, len(imgs))
 
         # First, learn the mask
         if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
@@ -251,7 +253,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
                 setattr(self.masker_, param_name, our_param)
-        self.masker_.fit(niimgs)
+        self.masker_.fit(imgs)
         self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(MultiNiftiMasker, self)
@@ -267,7 +269,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
         subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(session_pca)(
-                niimg,
+                img,
                 self.masker_.mask_img_,
                 parameters,
                 n_components=self.n_components,
@@ -276,15 +278,15 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 confounds=confound,
                 verbose=self.verbose
             )
-            for niimg, confound in zip(niimgs, confounds))
+            for img, confound in zip(imgs, confounds))
         subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
-        if len(niimgs) > 1:
+        if len(imgs) > 1:
             if not self.do_cca:
                 for subject_pca, subject_svd_val in \
                         zip(subject_pcas, subject_svd_vals):
                     subject_pca *= subject_svd_val[:, np.newaxis]
-            data = np.empty((len(niimgs) * self.n_components,
+            data = np.empty((len(imgs) * self.n_components,
                             subject_pcas[0].shape[1]),
                             dtype=subject_pcas[0].dtype)
             for index, subject_pca in enumerate(subject_pcas):
@@ -308,12 +310,13 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.variance_ = variance
         return self
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, imgs, confounds=None):
         """ Project the data into a reduced representation
 
         Parameters
         ----------
-        niimgs: nifti like images
+        imgs: iterable of Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data to be projected
 
         confounds: CSV file path or 2D matrix
@@ -327,9 +330,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
-            confounds = itertools.repeat(None, len(niimgs))
-        return [nifti_maps_masker.transform(niimg, confounds=confound)
-                for niimg, confound in zip(niimgs, confounds)]
+            confounds = itertools.repeat(None, len(imgs))
+        return [nifti_maps_masker.transform(img, confounds=confound)
+                for img, confound in zip(imgs, confounds)]
 
     def inverse_transform(self, component_signals):
         """ Transform regions signals into voxel signals

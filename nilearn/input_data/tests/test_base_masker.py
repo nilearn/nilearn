@@ -19,7 +19,7 @@ def test_cropping_code_paths():
 
     affine = np.eye(4)
 
-    niimg = nibabel.Nifti1Image(data, affine=affine)
+    img = nibabel.Nifti1Image(data, affine=affine)
 
     mask = (data[..., 0] > 0).astype(int)
     mask_img = nibabel.Nifti1Image(mask, affine=affine)
@@ -41,9 +41,9 @@ def test_cropping_code_paths():
                                  }
 
     # Now do the two maskings
-    out_data_uncropped, affine_uncropped = filter_and_mask(niimg,
+    out_data_uncropped, affine_uncropped = filter_and_mask(img,
                                 mask_img, parameters)
-    out_data_cropped, affine_cropped = filter_and_mask(niimg,
+    out_data_cropped, affine_cropped = filter_and_mask(img,
                                 cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)

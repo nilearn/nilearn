@@ -20,7 +20,7 @@ import nibabel
 
 from ...image.resampling import coord_transform
 from ..img_plotting import MNI152TEMPLATE, plot_anat, plot_img, plot_roi,\
-    plot_stat_map, plot_epi
+    plot_stat_map, plot_epi, plot_glass_brain
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                         [   0.,    2.,    0., -126.],
@@ -72,7 +72,8 @@ def test_plot_functions():
     ortho_slicer.savefig(tempfile.TemporaryFile())
     z_slicer.add_edges(img, color='c')
 
-    for func in plot_anat, plot_img, plot_stat_map, plot_epi:
+    for func in [plot_anat, plot_img, plot_stat_map,
+                 plot_epi, plot_glass_brain]:
         ortho_slicer = func(img, cut_coords=(80, -120, -60))
         # Saving forces a draw, and thus smoke-tests the axes locators
         ortho_slicer.savefig(tempfile.TemporaryFile())

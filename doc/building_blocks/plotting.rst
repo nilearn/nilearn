@@ -32,34 +32,44 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
+.. |plot_glass_brain| image:: ../auto_examples/images/plot_demo_plotting_5.png
+     :target: ../auto_examples/plot_demo_plotting.html
+     :scale: 50
+
 .. A temporary hack to avoid a sphinx bug
 .. |hack| raw:: html
 
    <br>
 
-================= =========================================================
-================= =========================================================
-|plot_anat|        :func:`plot_anat`
-                   |hack|
-                   Plotting an anatomical image
 
-|plot_epi|        :func:`plot_epi`
-                  |hack|
-                  Plotting an EPI, or T2* image
+=================== =========================================================
+=================== =========================================================
+|plot_anat|          :func:`plot_anat`
+                     |hack|
+                     Plotting an anatomical image
 
-|plot_stat_map|   :func:`plot_stat_map`
-                  |hack|
-                  Plotting a statistical map, like a T-map, a Z-map, or
-                  an ICA, with an optional background
+|plot_epi|           :func:`plot_epi`
+                     |hack|
+                     Plotting an EPI, or T2* image
 
-|plot_roi|        :func:`plot_roi`
-                  |hack|
-                  Plotting ROIs, or a mask, with an optional background
+|plot_stat_map|      :func:`plot_stat_map`
+                     |hack|
+                     Plotting a statistical map, like a T-map, a Z-map, or
+                     an ICA, with an optional background
 
-**plot_img**      :func:`plot_img`
-                  |hack|
-                  General-purpose function, with no specific presets
-================= =========================================================
+|plot_roi|           :func:`plot_roi`
+                     |hack|
+                     Plotting ROIs, or a mask, with an optional background
+
+|plot_glass_brain|   :func:`plot_glass_brain`
+                     |hack|
+                     Glass brain visualisation
+
+**plot_img**         :func:`plot_img`
+                     |hack|
+                     General-purpose function, with no specific presets
+=================== =========================================================
+
 
 .. warning:: **Opening too many figures without closing**
 
@@ -77,35 +87,35 @@ different heuristics to find cutting coordinates.
 Different display modes
 ========================
 
-.. |plot_ortho| image:: ../auto_examples/images/plot_demo_plotting_5.png
+.. |plot_ortho| image:: ../auto_examples/images/plot_demo_plotting_6.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_z_many| image:: ../auto_examples/images/plot_demo_plotting_6.png
+.. |plot_z_many| image:: ../auto_examples/images/plot_demo_plotting_7.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_x| image:: ../auto_examples/images/plot_demo_plotting_7.png
+.. |plot_x| image:: ../auto_examples/images/plot_demo_plotting_8.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_x_small| image:: ../auto_examples/images/plot_demo_plotting_8.png
+.. |plot_x_small| image:: ../auto_examples/images/plot_demo_plotting_9.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/images/plot_demo_plotting_9.png
+.. |plot_z_small| image:: ../auto_examples/images/plot_demo_plotting_10.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/images/plot_demo_plotting_10.png
+.. |plot_xz| image:: ../auto_examples/images/plot_demo_plotting_11.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/images/plot_demo_plotting_11.png
+.. |plot_yx| image:: ../auto_examples/images/plot_demo_plotting_12.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_yz| image:: ../auto_examples/images/plot_demo_plotting_12.png
+.. |plot_yz| image:: ../auto_examples/images/plot_demo_plotting_13.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
@@ -158,23 +168,23 @@ Adding overlays, edges and contours
 ====================================
 
 To add overlays, contours, or edges, use the return value of the plotting
-functions. Indeed, these return a slicer object, such as the
-:class:`nilearn.plotting.slicers.OrthoSlicer`. This object represents the
+functions. Indeed, these return a display object, such as the
+:class:`nilearn.plotting.displays.OrthoSlicer`. This object represents the
 plot, and has methods to add overlays, contours or edge maps::
 
-        slicer = plotting.plot_epi(...)
+        display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/images/plot_demo_plotting_13.png
+.. |plot_edges| image:: ../auto_examples/images/plot_demo_plotting_14.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/images/plot_demo_plotting_14.png
+.. |plot_contours| image:: ../auto_examples/images/plot_demo_plotting_15.png
      :target: ../auto_examples/plot_demo_plotting.html
      :scale: 50
 
 ================= =========================================================
 ================= =========================================================
-|plot_edges|       `slicer.add_edges(img)`
+|plot_edges|       `display.add_edges(img)`
                    |hack|
                    Add a plot of the edges of `img`, where edges are
                    extracted using a Canny edge-detection routine. This
@@ -182,14 +192,14 @@ plot, and has methods to add overlays, contours or edge maps::
                    `img` should have some visible sharp edges. Typically
                    an EPI img does not, but a T1 does.
 
-|plot_contours|    `slicer.add_contours(img, levels=[.5], colors='r')`
+|plot_contours|    `display.add_contours(img, levels=[.5], colors='r')`
                    |hack|
                    Add a plot of the contours of `img`, where contours
                    are computed for constant values, specified in
                    'levels'. This is typically useful to outline a mask,
                    or ROI on top of another map.
 
-**add_overlay**   `slicer.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
+**add_overlay**   `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
                    |hack|
                    Add a new overlay on the existing figure
 
@@ -209,7 +219,7 @@ function returns None.
 
 |
 
-The slicer object returned by the plotting function has a savefig method
+The display object returned by the plotting function has a savefig method
 that can be used to save the plot to an image file::
 
     >>> from nilearn import plotting

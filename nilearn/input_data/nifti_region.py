@@ -46,13 +46,15 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ==========
-    labels_img: niimg
+    labels_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Region definitions, as one image of labels.
 
     background_label: number, optional
         Label used in labels_img to represent background.
 
-    mask_img: niimg, optional
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
 
     smoothing_fwhm: float, optional
@@ -193,8 +195,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def fit_transform(self, niimgs, confounds=None):
-        return self.fit().transform(niimgs, confounds=confounds)
+    def fit_transform(self, imgs, confounds=None):
+        return self.fit().transform(imgs, confounds=confounds)
 
     def _check_fitted(self):
         if not hasattr(self, "labels_img_"):
@@ -202,12 +204,13 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, imgs, confounds=None):
         """Extract signals from images.
 
         Parameters
         ==========
-        niimgs: niimg
+        imgs: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -226,25 +229,25 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._check_fitted()
 
         logger.log("loading images: %s" %
-                   _utils._repr_niimgs(niimgs)[:200], verbose=self.verbose)
-        niimgs = _utils.check_niimgs(niimgs)
+                   _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
+        imgs = _utils.check_niimgs(imgs)
 
         if self.resampling_target == "labels":
             logger.log("resampling images", verbose=self.verbose)
-            niimgs = self._cache(image.resample_img, memory_level=1)(
-                niimgs, interpolation="continuous",
+            imgs = self._cache(image.resample_img, memory_level=1)(
+                imgs, interpolation="continuous",
                 target_shape=_utils._get_shape(self.labels_img_),
                 target_affine=self.labels_img_.get_affine())
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
-            niimgs = self._cache(image.smooth_img, memory_level=1)(
-                niimgs, fwhm=self.smoothing_fwhm)
+            imgs = self._cache(image.smooth_img, memory_level=1)(
+                imgs, fwhm=self.smoothing_fwhm)
 
         logger.log("extracting region signals", verbose=self.verbose)
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_labels, memory_level=1)(
-                niimgs, self.labels_img_,
+                imgs, self.labels_img_,
                 background_label=self.background_label)
 
         logger.log("cleaning extracted signals", verbose=self.verbose)
@@ -288,10 +291,12 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ==========
-    maps_img: niimg
+    maps_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Region definitions, as one image of labels.
 
-    mask_img: niimg, optional
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
 
     smoothing_fwhm: float, optional
@@ -454,15 +459,16 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def fit_transform(self, niimgs, confounds=None):
-        return self.fit().transform(niimgs, confounds=confounds)
+    def fit_transform(self, imgs, confounds=None):
+        return self.fit().transform(imgs, confounds=confounds)
 
-    def transform(self, niimgs, confounds=None):
+    def transform(self, imgs, confounds=None):
         """Extract signals from images.
 
         Parameters
         ==========
-        niimgs: niimg
+        imgs: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -480,32 +486,32 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._check_fitted()
 
         logger.log("loading images from %s" %
-                   _utils._repr_niimgs(niimgs)[:200], verbose=self.verbose)
-        niimgs = _utils.check_niimgs(niimgs)
+                   _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
+        imgs = _utils.check_niimgs(imgs)
 
         if self.resampling_target == "mask":
             logger.log("resampling images to fit mask", verbose=self.verbose)
-            niimgs = self._cache(image.resample_img, memory_level=1)(
-                niimgs, interpolation="continuous",
+            imgs = self._cache(image.resample_img, memory_level=1)(
+                imgs, interpolation="continuous",
                 target_shape=_utils._get_shape(self.mask_img_),
                 target_affine=self.mask_img_.get_affine())
 
         if self.resampling_target == "maps":
             logger.log("resampling images to fit maps", verbose=self.verbose)
-            niimgs = self._cache(image.resample_img, memory_level=1)(
-                niimgs, interpolation="continuous",
+            imgs = self._cache(image.resample_img, memory_level=1)(
+                imgs, interpolation="continuous",
                 target_shape=_utils._get_shape(self.maps_img_)[:3],
                 target_affine=self.maps_img_.get_affine())
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
-            niimgs = self._cache(image.smooth_img, memory_level=1)(
-                niimgs, fwhm=self.smoothing_fwhm)
+            imgs = self._cache(image.smooth_img, memory_level=1)(
+                imgs, fwhm=self.smoothing_fwhm)
 
         logger.log("extracting region signals", verbose=self.verbose)
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_maps, memory_level=1)(
-                niimgs,
+                imgs,
                 self.maps_img_,
                 mask_img=self.mask_img_)
 
