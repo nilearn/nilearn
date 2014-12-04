@@ -12,7 +12,7 @@ try:
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
-from ..slicers import OrthoSlicer, XSlicer
+from ..displays import OrthoSlicer, XSlicer, OrthoProjector
 from ...datasets import load_mni152_template
 
 ################################################################################
@@ -44,3 +44,14 @@ def test_stacked_slicer():
     slicer.close()
 
 
+def test_demo_ortho_projector():
+    # This is only a smoke test
+    mp.use('svg', warn=False)
+    import pylab as pl
+    pl.switch_backend('svg')
+    pl.clf()
+    img = load_mni152_template()
+    oprojector = OrthoProjector.init_with_figure(img=img)
+    oprojector.add_overlay(img, cmap=pl.cm.gray)
+    oprojector.savefig(tempfile.TemporaryFile())
+    oprojector.close()
