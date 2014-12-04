@@ -624,7 +624,8 @@ def plot_glass_brain(stat_map_img,
         Parameters
         ----------
         stat_map_img : a nifti-image like object or a filename
-            The statistical map image
+            The statistical map image. It needs to be in MNI space
+            in order to align with the brain schematics.
         output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
