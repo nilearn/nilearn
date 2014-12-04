@@ -195,10 +195,12 @@ class SearchLight(BaseEstimator):
 
     Parameters
     -----------
-    mask_img : niimg
+    mask_img : Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         boolean image giving location of voxels containing usable signals.
 
-    process_mask_img : niimg, optional
+    process_mask_img : Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         boolean image giving voxels on which searchlight should be
         computed.
 
@@ -258,17 +260,18 @@ class SearchLight(BaseEstimator):
         self.cv = cv
         self.verbose = verbose
 
-    def fit(self, niimgs, y):
+    def fit(self, imgs, y):
         """Fit the searchlight
 
         Parameters
         ----------
-        niimg : niimg
+        img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             4D image.
 
         y : 1D array-like
             Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
+            3D images in img.
 
         Attributes
         ----------
@@ -306,7 +309,7 @@ class SearchLight(BaseEstimator):
 
         # scores is an 1D array of CV scores with length equals to the number
         # of voxels in processing mask (columns in process_mask)
-        X = masking._apply_mask_fmri(niimgs,
+        X = masking._apply_mask_fmri(imgs,
                 nibabel.Nifti1Image(as_ndarray(mask, dtype=np.int8),
                                     mask_affine))
 

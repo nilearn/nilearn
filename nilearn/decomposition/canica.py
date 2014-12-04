@@ -132,12 +132,13 @@ class CanICA(MultiPCA, CacheMixin):
         self.n_init = n_init
         self.standardize = standardize
 
-    def fit(self, niimgs, y=None, confounds=None):
+    def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the ICA maps across subjects
 
         Parameters
         ----------
-        niimgs: list of filenames or NiImages
+        imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data on which PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 
@@ -145,7 +146,7 @@ class CanICA(MultiPCA, CacheMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
-        MultiPCA.fit(self, niimgs, y=y, confounds=confounds)
+        MultiPCA.fit(self, imgs, y=y, confounds=confounds)
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)

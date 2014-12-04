@@ -109,14 +109,15 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     return slicer
 
 
-def plot_img(niimg, cut_coords=None, output_file=None, display_mode='ortho',
+def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             figure=None, axes=None, title=None, threshold=None,
             annotate=True, draw_cross=True, black_bg=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
         ----------
-        niimg: a nifti-image like object or a filename
+        img: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Path to a nifti file or nifti-like object
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
@@ -163,7 +164,7 @@ def plot_img(niimg, cut_coords=None, output_file=None, display_mode='ortho',
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
     """
-    slicer = _plot_img_with_bg(niimg, cut_coords=cut_coords,
+    slicer = _plot_img_with_bg(img, cut_coords=cut_coords,
                     output_file=output_file, display_mode=display_mode,
                     figure=figure, axes=axes, title=title,
                     threshold=threshold, annotate=annotate,

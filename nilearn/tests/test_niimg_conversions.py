@@ -88,19 +88,19 @@ def test_check_niimgs():
                 or 'affine' in cm.exception.message)
 
     affine = np.eye(4)
-    niimg = Nifti1Image(np.ones((10, 10, 10)), affine)
+    img = Nifti1Image(np.ones((10, 10, 10)), affine)
 
-    _utils.check_niimgs([niimg, niimg])
+    _utils.check_niimgs([img, img])
     with assert_raises(TypeError) as cm:
-        # This should raise an error: a 3D niimg is given and we want a 4D
-        _utils.check_niimgs(niimg)
+        # This should raise an error: a 3D img is given and we want a 4D
+        _utils.check_niimgs(img)
     assert_true('image' in cm.exception.message)
     # This shouldn't raise an error
-    _utils.check_niimgs(niimg, accept_3d=True)
+    _utils.check_niimgs(img, accept_3d=True)
 
     # Test a Niimage that does not hold a shape attribute
-    phony_niimg = PhonyNiimage()
-    _utils.check_niimgs(phony_niimg)
+    phony_img = PhonyNiimage()
+    _utils.check_niimgs(phony_img)
 
 
 def test_repr_niimgs():
@@ -110,16 +110,16 @@ def test_repr_niimgs():
     # Create phony Niimg with filename
     affine = np.eye(4)
     shape = (10, 10, 10)
-    niimg1 = Nifti1Image(np.ones(shape), affine)
+    img1 = Nifti1Image(np.ones(shape), affine)
     assert_equal(
-            _utils._repr_niimgs(niimg1),
-            ("%s(\nshape=%s,\naffine=%s\n)" % (niimg1.__class__.__name__,
+            _utils._repr_niimgs(img1),
+            ("%s(\nshape=%s,\naffine=%s\n)" % (img1.__class__.__name__,
                             repr(shape), repr(affine))))
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
-    nibabel.save(niimg1, tmpimg1)
+    nibabel.save(img1, tmpimg1)
     assert_equal(
-            _utils._repr_niimgs(niimg1),
-            ("%s('%s')" % (niimg1.__class__.__name__, niimg1.get_filename())))
+            _utils._repr_niimgs(img1),
+            ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
 
 
 def _remove_if_exists(file):
@@ -130,28 +130,28 @@ def _remove_if_exists(file):
 def test_concat_niimgs():
     shape = (10, 11, 12)
     affine = np.eye(4)
-    niimg1 = Nifti1Image(np.ones(shape), affine)
-    niimg2 = Nifti1Image(np.ones(shape), 2 * affine)
-    niimg3 = Nifti1Image(np.zeros(shape), affine)
-    niimg4d = Nifti1Image(np.ones(shape + (2, )), affine)
+    img1 = Nifti1Image(np.ones(shape), affine)
+    img2 = Nifti1Image(np.ones(shape), 2 * affine)
+    img3 = Nifti1Image(np.zeros(shape), affine)
+    img4d = Nifti1Image(np.ones(shape + (2, )), affine)
 
-    concatenated = _utils.concat_niimgs((niimg1, niimg3, niimg1))
+    concatenated = _utils.concat_niimgs((img1, img3, img1))
     concatenate_true = np.ones(shape + (3,))
     concatenate_true[..., 1] = 0
     np.testing.assert_almost_equal(concatenated.get_data(), concatenate_true)
 
-    assert_raises(ValueError, _utils.concat_niimgs, [niimg1, niimg2])
+    assert_raises(ValueError, _utils.concat_niimgs, [img1, img2])
 
     # Smoke-test the accept_4d
-    assert_raises(ValueError, _utils.concat_niimgs, [niimg1, niimg4d])
-    concatenated = _utils.concat_niimgs([niimg1, niimg4d], accept_4d=True)
+    assert_raises(ValueError, _utils.concat_niimgs, [img1, img4d])
+    concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
     assert_equal(concatenated.shape[3], 3)
 
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     _, tmpimg2 = tempfile.mkstemp(suffix='.nii')
     try:
-        nibabel.save(niimg1, tmpimg1)
-        nibabel.save(niimg2, tmpimg2)
+        nibabel.save(img1, tmpimg1)
+        nibabel.save(img2, tmpimg2)
         nose.tools.assert_raises(ValueError, _utils.concat_niimgs,
                                  [tmpimg1, tmpimg2])
     finally:

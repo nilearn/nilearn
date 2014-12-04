@@ -13,7 +13,7 @@ import numpy as np
 import nibabel
 
 
-def is_a_niimg(obj):
+def is_img(obj):
     """ Check for get_data and get_affine method in an object
 
     Parameters
@@ -23,7 +23,7 @@ def is_a_niimg(obj):
 
     Returns
     -------
-    is_niimg: boolean
+    is_img: boolean
         True if get_data and get_affine methods are present and callable,
         False otherwise.
     """
@@ -37,13 +37,13 @@ def is_a_niimg(obj):
         return False
 
 
-def _get_shape(niimg):
+def _get_shape(img):
     # Use the fact that Nifti1Image has a shape attribute that is
     # faster than loading the data from disk
-    if hasattr(niimg, 'shape'):
-        shape = niimg.shape
+    if hasattr(img, 'shape'):
+        shape = img.shape
     else:
-        shape = niimg.get_data().shape
+        shape = img.get_data().shape
     return shape
 
 
@@ -70,37 +70,37 @@ def _repr_niimgs(niimgs):
     return repr(niimgs)
 
 
-def _safe_get_data(nifti_image):
-    """ Get the data in the niimg without having a side effect on the
+def _safe_get_data(img):
+    """ Get the data in the image without having a side effect on the
         Nifti1Image object
     """
-    if hasattr(nifti_image, '_data_cache') and nifti_image._data_cache is None:
+    if hasattr(img, '_data_cache') and img._data_cache is None:
         # Copy locally the nifti_image to avoid the side effect of data
         # loading
-        nifti_image = copy.deepcopy(nifti_image)
+        img = copy.deepcopy(img)
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
-    return nifti_image.get_data()
+    return img.get_data()
 
 
-def copy_niimg(niimg):
-    """Copy a niimg to a nibabel.Nifti1Image.
+def copy_img(img):
+    """Copy an image to a nibabel.Nifti1Image.
 
     Parameters
     ==========
-    niimg: niimg
+    img: image
         Nifti image to copy.
 
     Returns
     =======
-    niimg_copy: nibabel.Nifti1Image
+    img_copy: nibabel.Nifti1Image
         copy of input (data and affine)
     """
-    if not is_a_niimg(niimg):
-        raise ValueError("input value is not a niimg")
-    return nibabel.Nifti1Image(niimg.get_data().copy(),
-                               niimg.get_affine().copy())
+    if not is_img(img):
+        raise ValueError("input value is not an image")
+    return nibabel.Nifti1Image(img.get_data().copy(),
+                               img.get_affine().copy())
 
 
 def short_repr(niimg):
@@ -116,7 +116,8 @@ def check_niimg(niimg, ensure_3d=False):
 
     Parameters
     ----------
-    niimg: string or object
+    niimg: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
@@ -152,7 +153,7 @@ def check_niimg(niimg, ensure_3d=False):
     if isinstance(niimg, basestring):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
-    elif not is_a_niimg(niimg):
+    elif not is_img(niimg):
         raise TypeError("Data given cannot be converted to a nifti"
                         " image: this object -'%s'- does not expose"
                         " get_data or get_affine methods"
@@ -188,8 +189,9 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
 
     Parameters
     ----------
-    niimgs: iterable of niimgs
-        niimgs to concatenate.
+    niimgs: iterable of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Niimgs to concatenate.
 
     dtype: numpy dtype, optional
         the dtype of the returned image
@@ -200,12 +202,12 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
     Returns
     -------
     concatenated: nibabel.Nifti1Image
-        A single niimg.
+        A single image.
     """
 
-    first_niimg = check_niimg(iter(niimgs).next())
-    affine = first_niimg.get_affine()
-    first_data = first_niimg.get_data()
+    first_img = check_niimg(iter(niimgs).next())
+    affine = first_img.get_affine()
+    first_data = first_img.get_data()
     first_data_shape = first_data.shape
     sizes = []
     for index, niimg in enumerate(niimgs):
@@ -228,13 +230,13 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
     data = np.ndarray(first_data_shape[:3] + (sum(sizes), ),
                       order="F", dtype=dtype)
     data[..., :sizes[0]] = _to_4d(first_data)
-    del first_data, first_niimg
+    del first_data, first_img
 
     for index, (iter_niimg, size) in enumerate(zip(niimgs, sizes)):
         if index == 0:
             continue
-        niimg = check_niimg(iter_niimg)
-        if not np.array_equal(niimg.get_affine(), affine):
+        img = check_niimg(iter_niimg)
+        if not np.array_equal(img.get_affine(), affine):
             if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
             else:
@@ -245,8 +247,8 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
                              "\nReference affine:\n%s\n"
                              "Wrong affine:\n%s"
                              % (i_error,
-                             repr(affine), repr(niimg.get_affine())))
-        this_data = niimg.get_data()
+                             repr(affine), repr(img.get_affine())))
+        this_data = img.get_data()
         if this_data.shape[:3] != first_data_shape[:3]:
             if (isinstance(iter_niimg, basestring)):
                 i_error = "image " + iter_niimg
@@ -259,11 +261,12 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
 
 
 def check_niimgs(niimgs, accept_3d=False):
-    """ Check that an object is a list of niimg and load it if necessary
+    """ Check that an object is a list of niimgs and load it if necessary
 
     Parameters
     ----------
-    niimgs: (iterable of)* strings or objects
+    niimgs: 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and

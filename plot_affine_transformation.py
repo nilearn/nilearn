@@ -74,44 +74,44 @@ rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
                             [np.sin(angle), np.cos(angle)]])
 source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
-niimg = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
-niimg_in_mm_space = resample_img(niimg, target_affine=np.eye(4),
+img = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
+img_in_mm_space = resample_img(img, target_affine=np.eye(4),
                                  target_shape=(512, 512, 1))
 
 target_affine_3x3 = np.eye(3) * 2
 target_affine_4x4 = np.eye(4) * 2
 target_affine_4x4[3, 3] = 1.
-niimg_3d_affine = resample_img(niimg, target_affine=target_affine_3x3)
-niimg_4d_affine = resample_img(niimg, target_affine=target_affine_4x4)
+img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
+img_4d_affine = resample_img(img, target_affine=target_affine_4x4)
 target_affine_mm_space_offset_changed = np.eye(4)
 target_affine_mm_space_offset_changed[:3, 3] = \
-    niimg_3d_affine.get_affine()[:3, 3]
+    img_3d_affine.get_affine()[:3, 3]
 
-niimg_3d_affine_in_mm_space = resample_img(
-    niimg_3d_affine,
+img_3d_affine_in_mm_space = resample_img(
+    img_3d_affine,
     target_affine=target_affine_mm_space_offset_changed,
-    target_shape=(np.array(niimg_3d_affine.shape) * 2).astype(int))
+    target_shape=(np.array(img_3d_affine.shape) * 2).astype(int))
 
-niimg_4d_affine_in_mm_space = resample_img(
-    niimg_4d_affine,
+img_4d_affine_in_mm_space = resample_img(
+    img_4d_affine,
     target_affine=np.eye(4),
-    target_shape=(np.array(niimg_4d_affine.shape) * 2).astype(int))
+    target_shape=(np.array(img_4d_affine.shape) * 2).astype(int))
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
 plt.title("The original data in voxel space")
 
 plt.figure()
-plt.imshow(niimg_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
+plt.imshow(img_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
 plt.title("The original data in mm space")
 
 plt.figure()
-plt.imshow(niimg_3d_affine_in_mm_space.get_data()[:, :, 0],
+plt.imshow(img_3d_affine_in_mm_space.get_data()[:, :, 0],
            vmin=0, vmax=vmax)
 plt.title("Transformed using a 3x3 affine -\n leads to "
           "re-estimation of bounding box")
 
 plt.figure()
-plt.imshow(niimg_4d_affine_in_mm_space.get_data()[:, :, 0],
+plt.imshow(img_4d_affine_in_mm_space.get_data()[:, :, 0],
            vmin=0, vmax=vmax)
 plt.title("Transformed using a 4x4 affine -\n Uses affine anchor "
           "and estimates bounding box size")

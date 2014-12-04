@@ -108,7 +108,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     Parameters
     ----------
-    masks_imgs: list of 3D nifti-like images
+    mask_imgs: list of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         3D individual masks with same shape and affine.
 
     threshold: float, optional
@@ -193,7 +194,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
 
     Parameters
     ----------
-    epi_img: nifti-like image
+    epi_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         EPI image, used to compute the mask. 3D and 4D images are accepted.
         If a 3D image is given, we suggest to use the mean image
 
@@ -250,8 +252,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     """
     if verbose > 0:
         print "EPI mask computation"
-    # We suppose that it is a niimg
-    # XXX make a is_a_niimgs function ?
+    # We suppose that it is an img
+    # XXX make a is_a_imgs function ?
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -298,7 +300,8 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
 
     Parameters
     ----------
-    epi_imgs: list of Niimgs
+    epi_imgs: list of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
         If 3D images is given, we suggest to use the mean image of each
@@ -373,7 +376,8 @@ def compute_background_mask(data_imgs, border_size=2,
 
     Parameters
     ----------
-    data_imgs: nifti-like image
+    data_imgs: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Images used to compute the mask. 3D and 4D images are accepted.
         If a 3D image is given, we suggest to use the mean image
 
@@ -414,8 +418,8 @@ def compute_background_mask(data_imgs, border_size=2,
     """
     if verbose > 0:
         print "Background mask computation"
-    # We suppose that it is a niimg
-    # XXX make a is_a_niimgs function ?
+    # We suppose that it is an img
+    # XXX make a is_a_imgs function ?
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -454,7 +458,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
 
     Parameters
     ----------
-    data_imgs: list of Niimgs
+    data_imgs: list of Niimg-like objects
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
         If 3D images is given, we suggest to use the mean image of each
@@ -515,7 +519,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
 # Time series extraction
 #
 
-def apply_mask(niimgs, mask_img, dtype='f',
+def apply_mask(imgs, mask_img, dtype='f',
                smoothing_fwhm=None, ensure_finite=True):
     """Extract signals from images using specified mask.
 
@@ -524,10 +528,11 @@ def apply_mask(niimgs, mask_img, dtype='f',
 
     Parameters
     -----------
-    niimgs: list of 4D nifti images
+    imgs: list of 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Images to be masked. list of lists of 3D images are also accepted.
 
-    mask_img: niimg
+    mask_img: Niimg-like object
         3D mask array: True where a voxel should be used.
 
     dtype: numpy dtype or 'f'
@@ -556,12 +561,12 @@ def apply_mask(niimgs, mask_img, dtype='f',
     mask, mask_affine = _load_mask_img(mask_img)
     mask_img = Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
                            mask_affine)
-    return _apply_mask_fmri(niimgs, mask_img, dtype=dtype,
+    return _apply_mask_fmri(imgs, mask_img, dtype=dtype,
                             smoothing_fwhm=smoothing_fwhm,
                             ensure_finite=ensure_finite)
 
 
-def _apply_mask_fmri(niimgs, mask_img, dtype='f',
+def _apply_mask_fmri(imgs, mask_img, dtype='f',
                      smoothing_fwhm=None, ensure_finite=True):
     """Same as apply_mask().
 
@@ -578,22 +583,22 @@ def _apply_mask_fmri(niimgs, mask_img, dtype='f',
     if smoothing_fwhm is not None:
         ensure_finite = True
 
-    niimgs_img = _utils.check_niimgs(niimgs)
-    affine = niimgs_img.get_affine()[:3, :3]
+    imgs_img = _utils.check_niimgs(imgs)
+    affine = imgs_img.get_affine()[:3, :3]
 
-    if not np.allclose(mask_affine, niimgs_img.get_affine()):
+    if not np.allclose(mask_affine, imgs_img.get_affine()):
         raise ValueError('Mask affine: \n%s\n is different from img affine:'
                          '\n%s' % (str(mask_affine),
-                                   str(niimgs_img.get_affine())))
+                                   str(imgs_img.get_affine())))
 
-    if not mask_data.shape == niimgs_img.shape[:3]:
+    if not mask_data.shape == imgs_img.shape[:3]:
         raise ValueError('Mask shape: %s is different from img shape:%s'
-                         % (str(mask_data.shape), str(niimgs_img.shape[:3])))
+                         % (str(mask_data.shape), str(imgs_img.shape[:3])))
 
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
-    series = _safe_get_data(niimgs_img)
+    series = _safe_get_data(imgs_img)
 
     if dtype == 'f':
         if series.dtype.kind == 'f':
@@ -602,7 +607,7 @@ def _apply_mask_fmri(niimgs, mask_img, dtype='f',
             dtype = np.float32
     series = _utils.as_ndarray(series, dtype=dtype, order="C",
                                copy=True)
-    del niimgs_img  # frees a lot of memory
+    del imgs_img  # frees a lot of memory
 
     # Delayed import to avoid circular imports
     from .image.image import _smooth_array
