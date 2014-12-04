@@ -57,8 +57,8 @@ dataset = nilearn.datasets.fetch_adhd()
 import nilearn.image
 import nilearn.input_data
 
-import joblib
-mem = joblib.Memory(".")
+from sklearn.externals.joblib import Memory
+mem = Memory(".")
 
 # Number of subjects to consider for group-sparse covariance
 n_subjects = 10
