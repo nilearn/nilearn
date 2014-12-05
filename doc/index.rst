@@ -15,19 +15,22 @@
 
 .. Here we are building the carrousel
 
-.. |banner1| image:: auto_examples/images/plot_haxby_simple_1.png
+.. |banner1| image:: auto_examples/images/plot_demo_plotting_6.png
+   :target: auto_examples/plot_demo_plotting.html
+
+.. |banner2| image:: auto_examples/images/plot_haxby_simple_1.png
    :target: auto_examples/plot_haxby_simple.html
 
-.. |banner2| image:: auto_examples/images/plot_oasis_vbm_2.png
+.. |banner3| image:: auto_examples/images/plot_oasis_vbm_2.png
    :target: auto_examples/plot_oasis_vbm.html
 
-.. |banner3| image:: auto_examples/images/plot_rest_clustering_1.png
+.. |banner4| image:: auto_examples/images/plot_rest_clustering_1.png
    :target: auto_examples/plot_rest_clustering.html
 
-.. |banner4| image:: auto_examples/images/plot_canica_resting_state_11.png
+.. |banner5| image:: auto_examples/images/plot_canica_resting_state_11.png
    :target: auto_examples/plot_canica_resting_state.html
 
-.. |banner5| image:: auto_examples/images/plot_haxby_searchlight_1.png
+.. |banner6| image:: auto_examples/images/plot_haxby_searchlight_1.png
    :target: auto_examples/plot_haxby_searchlight.html
 
 .. raw:: html
@@ -56,6 +59,7 @@
 
 * |banner5|
 
+* |banner6|
 
 .. raw:: html
 
