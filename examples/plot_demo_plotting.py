@@ -40,8 +40,11 @@ mean_haxby_img = image.mean_img(haxby.func[0])
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
 # Plotting glass brain
-plotting.plot_glass_brain(localizer.tmaps[3], title='glass brain plots',
-                          black_bg=True, threshold=3)
+plotting.plot_glass_brain(localizer.tmaps[3], title='plot_glass_brain',
+                          threshold=3)
+
+plotting.plot_glass_brain(localizer.tmaps[3], title='plot_glass_brain',
+                          black_bg=True, display_mode='xz', threshold=3)
 
 ###############################################################################
 # demo the different display_mode
