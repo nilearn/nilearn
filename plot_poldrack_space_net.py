@@ -23,8 +23,8 @@ from nilearn.decoding import SpaceNetRegressor
 penalties = ["smooth-lasso", "TV-L1"]
 decoders = {}
 for penalty in penalties:
-    decoder = SpaceNetRegressor(memory=mem, mask=mask_img, verbose=2,
-                                penalty=penalty)
+    decoder = SpaceNetRegressor(memory=mem, mask=mask_img, penalty=penalty,
+                                verbose=2)
     decoder.fit(X_train, y_train)  # fit
     decoders[penalty] = decoder
 
