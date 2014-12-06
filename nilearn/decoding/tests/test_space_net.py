@@ -38,19 +38,19 @@ def test_space_net_alpha_grid(n_samples=4, n_features=3):
     y = np.arange(n_samples)
 
     for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
-        alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
-        assert_equal(_space_net_alpha_grid(
+        alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
+        np.testing.assert_almost_equal(_space_net_alpha_grid(
                 X, y, n_alphas=1, l1_ratio=l1_ratio,
                 logistic=is_classif), alpha_max)
 
     for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
-        alpha_max = np.max(np.abs(np.dot(X.T, y))) / n_samples / l1_ratio
+        alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
         for n_alphas in xrange(1, 10):
             alphas = _space_net_alpha_grid(
                 X, y, n_alphas=n_alphas, l1_ratio=l1_ratio,
                 logistic=is_classif)
-            assert_equal(alphas.max(), alpha_max)
-            assert_equal(n_alphas, len(alphas))
+            np.testing.assert_almost_equal(alphas.max(), alpha_max)
+            np.testing.assert_almost_equal(n_alphas, len(alphas))
 
 
 def test_space_net_alpha_grid_same_as_sk():
@@ -59,9 +59,9 @@ def test_space_net_alpha_grid_same_as_sk():
         iris = load_iris()
         X = iris.data
         y = iris.target
-        np.testing.assert_array_equal(_space_net_alpha_grid(
-            X, y, n_alphas=5), _alpha_grid(X, y, n_alphas=5,
-                                           fit_intercept=False))
+        np.testing.assert_almost_equal(_space_net_alpha_grid(
+            X, y, n_alphas=5), X.shape[0] * _alpha_grid(X, y, n_alphas=5,
+                                                        fit_intercept=False))
     except ImportError:
         raise SkipTest
 
