@@ -214,6 +214,7 @@ class EarlyStoppingCallback(object):
         self.verbose = verbose
         self.test_scores = []
         self.counter = 0.
+        self.tol = -1e-4 if self.is_classif else -1e-2
 
     def __call__(self, variables):
         """The callback proper """
@@ -227,7 +228,7 @@ class EarlyStoppingCallback(object):
         w = variables['w']
 
         # use spearman score as stopping criterion
-        score = self.test_score(w, spearman_only=True)
+        score = self.test_score(w)[0]
 
         self.test_scores.append(score)
         if not (self.counter > 20 and (self.counter % 10) == 2):
@@ -235,7 +236,7 @@ class EarlyStoppingCallback(object):
 
         # check whether score increased on average over last 5 iterations
         if len(self.test_scores) > 4:
-            if np.mean(np.diff(self.test_scores[-5:][::-1])) >= -1e-4:
+            if np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol:
                 if self.verbose:
                     if self.verbose > 1:
                         print('Early stopping. Test score: %.8f %s' % (
@@ -260,7 +261,7 @@ class EarlyStoppingCallback(object):
             w *= scaling
         return w
 
-    def test_score(self, w, spearman_only=False):
+    def test_score(self, w):
         """Compute test score for model, given weights map `w`.
 
         We use correlations between linear prediction and
@@ -280,10 +281,11 @@ class EarlyStoppingCallback(object):
             return (-np.inf, -np.inf)
         y_pred = np.dot(self.X_test, w)
         spearman_score = stats.spearmanr(y_pred, self.y_test)[0]
-        if spearman_only:
-            return spearman_score
         pearson_score = np.corrcoef(y_pred, self.y_test)[1, 0]
-        return spearman_score, pearson_score
+        if self.is_classif:
+            return spearman_score, pearson_score
+        else:
+            return pearson_score, spearman_score
 
 
 def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
