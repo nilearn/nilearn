@@ -113,7 +113,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smoothing_fwhm=None, standardize=True, detrend=True,
+                 smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  resampling_target="labels",
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
@@ -356,7 +356,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
-                 smoothing_fwhm=None, standardize=True, detrend=True,
+                 smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  resampling_target="maps",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
