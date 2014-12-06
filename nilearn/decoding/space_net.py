@@ -288,7 +288,7 @@ class EarlyStoppingCallback(object):
             return pearson_score, spearman_score
 
 
-def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
+def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 solver_params, is_classif=False, n_alphas=10, eps=1E-3,
                 init=None, key=None, debias=False, Xmean=None,
                 screening_percentile=20., verbose=1):
@@ -315,7 +315,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     test : array or list of integers
         List of indices for the test samples
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optinal (default .75)
         Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -333,6 +333,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     solver_params: dict
        Dictionary of param-value pairs to be passed to solver.
     """
+
+    if l1_ratios is None:
+        raise ValueError("l1_ratios must be specified!")
+
     # make local copy of mask
     mask = mask.copy()
 
@@ -362,44 +366,58 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
         X_train, y_train, fit_intercept=True, normalize=False,
         copy=False)
 
-    if alphas is None:
-        alphas = _space_net_alpha_grid(
-            X_train, y_train, l1_ratio=l1_ratio, eps=eps,
-            n_alphas=n_alphas, logistic=is_classif)
-    alphas = sorted(alphas)[::-1]
+    # setup callback mechanism for early stopping
+    early_stopper = EarlyStoppingCallback(
+        X_test, y_test, is_classif=is_classif, debias=debias,
+        verbose=verbose)
 
-    # do alpha path
+    # do l1_ratio path
+    if isinstance(l1_ratios, numbers.Number):
+        l1_ratios = [l1_ratios]
+    best_l1_ratio = l1_ratios[0]
     best_init = init
-    best_alpha = alphas[0]
     if len(test) > 0.:
-        # score the alphas by model fit
-        best_score = -np.inf
-        best_secondary_score = -np.inf
-        for alpha in alphas:
-            # setup callback mechanism for early stopping
-            early_stopper = EarlyStoppingCallback(
-                X_test, y_test, is_classif=is_classif, debias=debias,
-                verbose=verbose)
+        for l1_ratio in l1_ratios:
+            # make alpha grid
+            if alphas is None:
+                alphas_ = _space_net_alpha_grid(
+                    X_train, y_train, l1_ratio=l1_ratio, eps=eps,
+                    n_alphas=n_alphas, logistic=is_classif)
+            else:
+                alphas_ = alphas
+            alphas = sorted(alphas_)[::-1]
 
-            w, _, init = solver(
-                X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
-                callback=early_stopper, verbose=max(verbose - 1, 0.),
-                **solver_params)
-            # We use 2 scores for model selection: the second one is to
-            # disambiguate between regions of equivalent spearman correlations
-            score, secondary_score = early_stopper.test_score(w)
-            test_scores.append(score)
-            if (np.isfinite(score) and
-                    (score > best_score
-                     or (score == best_score and
-                         secondary_score > best_secondary_score))):
-                best_secondary_score = secondary_score
-                best_score = score
-                best_alpha = alpha
-                best_init = init.copy()
+            # do alpha path
+            best_alpha = alphas_[0]
+            best_score = -np.inf
+            best_secondary_score = -np.inf
+            for alpha in alphas_:
+                w, _, init = solver(
+                    X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
+                    callback=early_stopper, verbose=max(verbose - 1, 0.),
+                    **solver_params)
+
+                # We use 2 scores for model selection: the second one is to
+                # disambiguate between regions of equivalent spearman
+                # correlations
+                score, secondary_score = early_stopper.test_score(w)
+                test_scores.append(score)
+                if (np.isfinite(score) and
+                        (score > best_score
+                         or (score == best_score and
+                             secondary_score > best_secondary_score))):
+                    best_secondary_score = secondary_score
+                    best_score = score
+                    best_l1_ratio = l1_ratio
+                    best_alpha = alpha
+                    best_init = init.copy()
+    else:
+        if alphas is None:
+            raise RuntimeError
+        best_alpha = alphas[0]
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
-    best_w, _, init = solver(X_train, y_train, best_alpha, l1_ratio,
+    best_w, _, init = solver(X_train, y_train, best_alpha, best_l1_ratio,
                              mask=mask, init=best_init,
                              verbose=max(verbose - 1, 0), **solver_params)
     if debias:
@@ -424,7 +442,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
         best_w = np.append(best_w, 0.)
 
     best_w *= y_train_std
-    return test_scores, best_w, best_alpha, y_train_mean, key
+    return test_scores, best_w, best_alpha, best_l1_ratio, y_train_mean, key
 
 
 class BaseSpaceNet(LinearModel, RegressorMixin):
@@ -444,9 +462,18 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
     is_classif : bool, optional (default False)
         Flag telling whether the learning task is classification or regression.
 
-    alphas: list of floats, optional (default None)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optinal (default .75)
+        Constant that mixes L1 and spatial prior terms in penalization.
+        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        parameter, the sparser the estimated weights map. If list is provided,
+        then the best value will be selected by cross-validation.
+
+    alphas : float or list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
+        If None or list of floats is provided, then the best value will be
+        selected by cross-validation.
 
     n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
@@ -459,13 +486,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
     alpha_min : float, optional (default None)
         Minimum value of alpha to consider. This is mutually exclusive with the
         `eps` parameter.
-
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
-        parameter, the sparser the estimated weights map. It's advice not to
-        use values too close to 0 (corresponding to a pure spatial prior) or
-        values too close to 1 (corresponding to a pure l1 prior).
 
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
@@ -571,21 +591,20 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
     SUPPORTED_LOSSES = ["mse", "logistic"]
 
     def __init__(self, penalty="smooth-lasso", is_classif=False, loss=None,
-                 alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 l1_ratios=.75, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None, verbose=0), copy_data=True,
-                 standardize=True, verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 standardize=True, verbose=0, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         self.penalty = penalty
         self.is_classif = is_classif
         self.loss = loss
-        self.alpha = alpha
         self.n_alphas = n_alphas
         self.eps = eps
+        self.l1_ratios = l1_ratios
         self.alphas = alphas
-        self.l1_ratio = l1_ratio
         self.mask = mask
         self.fit_intercept = fit_intercept
         self.memory = memory
@@ -609,20 +628,20 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
     def check_params(self):
         """Makes sure parameters are sane"""
-        for param in ["alpha", "l1_ratio"]:
-            value = getattr(self, param)
-            if not (value is None or isinstance(value, numbers.Number)):
-                raise ValueError(
-                    "'%s' parameter must be None or a float; got %s" % (
-                        param, value))
-        if not 0 <= self.l1_ratio <= 1.:
-            raise ValueError(
-                "l1_ratio must be in the interval [0, 1]; got %g" % (
-                    self.l1_ratio))
-        elif self.l1_ratio == 0. or self.l1_ratio == 1.:
-            warnings.warn(
-                "Specified l1_ratio = %g. It's adived to only specify values "
-                "of l1_ratio strictly between 0 and 1." % self.l1_ratio)
+        if not self.l1_ratios is None:
+            l1_ratios = self.l1_ratios
+            if isinstance(l1_ratios, numbers.Number):
+                l1_ratios = [l1_ratios]
+            for l1_ratio in l1_ratios:
+                if not 0 <= l1_ratio <= 1.:
+                    raise ValueError(
+                        "l1_ratio must be in the interval [0, 1]; got %g" % (
+                            l1_ratio))
+                elif l1_ratio == 0. or l1_ratio == 1.:
+                    warnings.warn(
+                        ("Specified l1_ratio = %g. It's adived to only "
+                         "specify values of l1_ratio strictly between 0 "
+                         "and 1." % l1_ratio))
         if not (0. <= self.screening_percentile <= 100.):
             raise ValueError(
                 ("screening_percentile should be in the interval"
@@ -713,6 +732,12 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         y = np.array(y).copy()
 
         # misc
+        l1_ratios = self.l1_ratios
+        if isinstance(l1_ratios, numbers.Number):
+            l1_ratios = [l1_ratios]
+        alphas = self.alphas
+        if isinstance(alphas, numbers.Number):
+            alphas = [alphas]
         if not self.loss is None:
             self.loss_ = self.loss.lower()
         elif self.is_classif:
@@ -746,19 +771,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         if n_problems == 1:
             y = y[:, 0]
 
-        # sanitize alpha grid
-        alphas = self.alphas
-        if self.alpha is not None:
-            alphas = [self.alpha]
-        elif alphas is not None:
-            alphas = np.array(self.alphas)
-
         # generate fold indices
-        if alphas is None or len(alphas) > 1:
+        if (None in [alphas, l1_ratios] and
+            self.n_alphas > 1) or min(len(l1_ratios), len(alphas)) > 1:
             self.cv_ = list(check_cv(self.cv, X=X, y=y,
                                      classifier=self.is_classif))
         else:
-            self.cv_ = [(range(n_samples), [])]  # single fold
+            # no cross-validation needed, user supplied all params
+            self.cv_ = [(range(n_samples), [])]
         n_folds = len(self.cv_)
 
         # scores & mean weights map over all folds
@@ -785,20 +805,18 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
-        best_alphas = list()
-
-        # The verbosity of "parallel" is actually what controls the
-        # vision of the overall progress, so we want it bigger
-        for test_scores, best_w, best_alpha, y_train_mean, c in Parallel(
-                n_jobs=self.n_jobs, verbose=2 * self.verbose)(
+        self.best_model_params_ = []
+        for (test_scores, best_w, best_alpha, best_l1_ratio, y_train_mean,
+             c) in Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
-                alphas, self.l1_ratio, train, test,
+                alphas, l1_ratios, train, test,
                 solver_params, n_alphas=self.n_alphas, eps=self.eps,
                 is_classif=self.loss == "logistic", key=c,
                 debias=self.debias, verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in self.cv_):
+            self.best_model_params_.append((best_alpha, best_l1_ratio))
             test_scores = np.reshape(test_scores, (-1, 1))
             self.ymean_[c] += y_train_mean
             if not len(self.cv_scores_[c]):
@@ -807,13 +825,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 self.cv_scores_[c] = np.hstack((self.cv_scores_[c],
                                                 test_scores))
             w[c] += best_w
-            best_alphas.append(best_alpha)
 
         self.ymean_ /= n_folds
         if not self.is_classif:
             self.ymean_ = self.ymean_[0]
-
-        self.alphas_ = best_alphas
 
         # bagging: average best weights maps over folds
         w /= n_folds
@@ -901,33 +916,37 @@ class SpaceNetClassifier(BaseSpaceNet):
     priors (aka penalties) for classification problems. Thus, the penalty
     is a sum an L1 term and a spatial term. The aim of such a hybrid prior
     is to obtain weights maps which are structured (due to the spatial
-    prior) and sparse (enforced by L1 norm)
+    prior) and sparse (enforced by L1 norm).
 
     Parameters
     ----------
     penalty : string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
-    alphas : list of floats, optional (default None)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optinal (default .75)
+        Constant that mixes L1 and spatial prior terms in penalization.
+        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        parameter, the sparser the estimated weights map. If list is provided,
+        then the best value will be selected by cross-validation.
+
+    alphas : float or list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
-
-    loss: string, optional (default "logistic"):
-        Loss to use in the classification problems. Must be one of "mse" and
-        "logistic".
+        If None or list of floats is provided, then the best value will be
+        selected by cross-validation.
 
     n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
+    loss: string, optional (default "logistic"):
+        Loss to use in the classification problems. Must be one of "mse" and
+        "logistic".
+
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
-
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
-        parameter, the sparser the estimated weights map.
 
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
@@ -944,15 +963,15 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     low_pass : False or float, optional, (default None)
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     high_pass : False or float, optional (default None)
         This parameter is passed to signal. Clean. Please see the related
-        documentation for details
+        documentation for details.
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
@@ -975,7 +994,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Fit or not an intercept.
 
     max_iter : int
-        Defines the iterations for the solver. Defaults to 1000
+        Defines the iterations for the solver. Defaults to 1000.
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
@@ -998,7 +1017,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     Attributes
     ----------
     `alpha_` : float
-         Best alpha found by cross-validation
+         Best alpha found by cross-validation.
 
     `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
@@ -1029,19 +1048,19 @@ class SpaceNetClassifier(BaseSpaceNet):
         relative to the volume of standard brain.
     """
     def __init__(self, penalty="smooth-lasso", loss="logistic",
-                 alpha=None, alphas=None, l1_ratio=.5, mask=None,
+                 l1_ratios=.75, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
-                 verbose=0, n_jobs=1, n_alphas=10, eps=1e-3,
+                 verbose=0, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         super(SpaceNetClassifier, self).__init__(
-            penalty=penalty, is_classif=True, alpha=alpha,
-            target_shape=target_shape, low_pass=low_pass, high_pass=high_pass,
-            alphas=alphas, n_alphas=n_alphas, l1_ratio=l1_ratio, mask=mask,
-            t_r=t_r, max_iter=max_iter, tol=tol, memory=memory,
-            copy_data=copy_data, n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
+            penalty=penalty, is_classif=True, l1_ratios=l1_ratios,
+            alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
+            low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
+            max_iter=max_iter, tol=tol, memory=memory, copy_data=copy_data,
+            n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
             fit_intercept=fit_intercept, standardize=standardize,
             screening_percentile=screening_percentile, loss=loss,
             target_affine=target_affine, verbose=verbose)
@@ -1066,16 +1085,25 @@ class SpaceNetRegressor(BaseSpaceNet):
     priors (aka penalties) for regression problems. Thus, the penalty
     is a sum an L1 term and a spatial term. The aim of such a hybrid prior
     is to obtain weights maps which are structured (due to the spatial
-    prior) and sparse (enforced by L1 norm)
+    prior) and sparse (enforced by L1 norm).
 
     Parameters
     ----------
     penalty : string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
-    alphas : list of floats, optional (default None)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optinal (default .75)
+        Constant that mixes L1 and spatial prior terms in penalization.
+        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        parameter, the sparser the estimated weights map. If list is provided,
+        then the best value will be selected by cross-validation.
+
+    alphas : float or list of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
+        If None or list of floats is provided, then the best value will be
+        selected by cross-validation.
 
     n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
@@ -1084,11 +1112,6 @@ class SpaceNetRegressor(BaseSpaceNet):
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
-
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
-        parameter, the sparser the estimated weights map.
 
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
@@ -1185,19 +1208,18 @@ class SpaceNetRegressor(BaseSpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-    def __init__(self, penalty="smooth-lasso", alpha=None, alphas=None,
-                 l1_ratio=.5, mask=None, target_affine=None,
+    def __init__(self, penalty="smooth-lasso", l1_ratios=.75, alphas=None,
+                 n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
-                 standardize=True, verbose=0,
-                 n_jobs=1, n_alphas=10, eps=1e-3, cv=8, fit_intercept=True,
-                 screening_percentile=20., debias=False):
+                 standardize=True, verbose=0, n_jobs=1, eps=1e-3, cv=8,
+                 fit_intercept=True, screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
-            penalty=penalty, is_classif=False, alpha=alpha,
-            target_shape=target_shape, low_pass=low_pass,
-            high_pass=high_pass, alphas=alphas, n_alphas=n_alphas,
-            l1_ratio=l1_ratio, mask=mask, t_r=t_r, max_iter=max_iter, tol=tol,
-            memory=memory, copy_data=copy_data, n_jobs=n_jobs, eps=eps, cv=cv,
-            debias=debias, fit_intercept=fit_intercept,
-            standardize=standardize, screening_percentile=screening_percentile,
+            penalty=penalty, is_classif=False, l1_ratios=l1_ratios,
+            alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
+            low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
+            max_iter=max_iter, tol=tol, memory=memory, copy_data=copy_data,
+            n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
+            fit_intercept=fit_intercept, standardize=standardize,
+            screening_percentile=screening_percentile,
             target_affine=target_affine, verbose=verbose)

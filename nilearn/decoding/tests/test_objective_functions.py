@@ -84,7 +84,7 @@ def test_grad_div_adjoint_arbitrary_ndim_():
 
 @raises(ValueError)
 def test_baseestimator_invalid_l1_ratio():
-    BaseSpaceNet(l1_ratio=2.)
+    BaseSpaceNet(l1_ratios=2.)
 
 
 def test_unmask(size=5):

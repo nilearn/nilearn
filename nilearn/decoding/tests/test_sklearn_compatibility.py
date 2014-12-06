@@ -10,7 +10,7 @@ def test_get_params():
     for penalty in ["smooth-lasso", "tv-l1"]:
         for is_classif in [True, False]:
             kwargs = {}
-            for param in ["max_iter", "alpha", "l1_ratio", "verbose",
+            for param in ["max_iter", "alphas", "l1_ratios", "verbose",
                           "tol", "mask", "memory", "copy_data",
                           "fit_intercept", "alphas"]:
                 m = BaseSpaceNet(mask='dummy',
