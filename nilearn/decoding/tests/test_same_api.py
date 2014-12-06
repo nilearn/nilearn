@@ -119,10 +119,10 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     X = nibabel.Nifti1Image(X.astype(np.float), np.eye(4))
     for standardize in [True, False]:
         sl = BaseSpaceNet(
-            alpha=alpha, l1_ratio=1., mask=mask, penalty="smooth-lasso",
+            alphas=alpha, l1_ratios=1., mask=mask, penalty="smooth-lasso",
             max_iter=max_iter, standardize=standardize).fit(X, y)
         tvl1 = BaseSpaceNet(
-                alpha=alpha, l1_ratio=1., mask=mask, penalty="tv-l1",
+                alphas=alpha, l1_ratios=1., mask=mask, penalty="tv-l1",
                 max_iter=max_iter, standardize=standardize).fit(X, y)
 
         # Should be exactly the same (except for numerical errors).
@@ -153,10 +153,10 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
     for standardize in [True, False]:
-        sl = SpaceNetClassifier(alpha=alpha, l1_ratio=1.,
+        sl = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
                       max_iter=max_iter, mask=mask_, penalty="smooth-lasso",
                       standardize=standardize).fit(X_, y)
-        tvl1 = SpaceNetClassifier(alpha=alpha, l1_ratio=1.,
+        tvl1 = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
                         max_iter=max_iter, mask=mask_, penalty="tv-l1",
                         standardize=standardize).fit(X_, y)
 
@@ -180,11 +180,11 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=1):
     max_iter = 20
 
     for standardize in [True, False]:
-        sl = BaseSpaceNet(alpha=alpha, l1_ratio=l1_ratio,
+        sl = BaseSpaceNet(alphas=alpha, l1_ratios=l1_ratio,
                           penalty="smooth-lasso", max_iter=max_iter,
                           mask=mask, is_classif=False,
                           standardize=standardize, verbose=0).fit(X, y)
-        tvl1 = BaseSpaceNet(alpha=alpha, l1_ratio=l1_ratio, penalty="tv-l1",
+        tvl1 = BaseSpaceNet(alphas=alpha, l1_ratios=l1_ratio, penalty="tv-l1",
                         max_iter=max_iter, mask=mask, is_classif=False,
                         standardize=standardize, verbose=0).fit(X, y)
 
@@ -199,7 +199,7 @@ def test_coef_shape():
     for penalty in ["smooth-lasso", "tv-l1"]:
         for cls in [SpaceNetRegressor, SpaceNetClassifier]:
             model = cls(
-                mask=mask, max_iter=3, penalty=penalty, alpha=1.).fit(X, y)
+                mask=mask, max_iter=3, penalty=penalty, alphas=1.).fit(X, y)
             assert_equal(model.coef_.ndim, 2)
 
 
