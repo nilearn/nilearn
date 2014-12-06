@@ -189,7 +189,7 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     # prevent alpha_max from exploding when l1_ratio = 0
     if l1_ratio == 0.:
         l1_ratio = 1e-3
-    alpha_max /= (l1_ratio * X.shape[0])
+    alpha_max /= l1_ratio
 
     if n_alphas == 1:
         return np.array([alpha_max])
@@ -354,13 +354,11 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
     X_test, y_test = X[test], y[test]
     test_scores = []
 
-    # XXX: No longer deal with standardize and normalize: do it in the
-    # masker
-    fit_intercept = True
-
-    X_train, y_train, X_mean, y_mean, _ = center_data(X_train, y_train,
-                                fit_intercept=fit_intercept,
-                                normalize=False, copy=False)
+    # it is essential to center the data in regression
+    y_train_std = np.std(y)
+    X_train, y_train, _, y_train_mean, _ = center_data(
+        X_train, y_train, fit_intercept=True, normalize=False,
+        copy=False)
 
     if alphas is None:
         alphas = _space_net_alpha_grid(
@@ -423,7 +421,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratio, train, test,
             Xmean = np.zeros(n_features)
         best_w = np.append(best_w, 0.)
 
-    return test_scores, best_w, best_alpha, key
+    best_w *= y_train_std
+    return test_scores, best_w, best_alpha, y_train_mean, key
 
 
 class BaseSpaceNet(LinearModel, RegressorMixin):
@@ -657,31 +656,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         else:
             self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
-    def _standardize_y(slef, y, copy=False):
-        """Standardize response vector y so that it has 0 mean and unit
-        variance.
-
-        Parameters
-        ----------
-        y : ndarray, shape (n_samples,)
-            Response vector to be standardize, one value per sample point.
-
-        copy : bool, optional (default False)
-            If False, then `y` will be modified inplace.
-
-        Returns
-        -------
-        y_ : ndarray, shape (n_samples,)
-            Standardized version of `y`.
-
-        ymean : ndarray, shape (n_samples,)
-            Mean along input `y`.
-        """
-
-        ymean = y.mean()
-        y -= ymean
-        return y, ymean
-
     def fit(self, X, y):
         """Fit the learner
 
@@ -767,11 +741,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
-        if self.standardize:
-            for c in xrange(y.shape[1]):
-                y[:, c], self.ymean_[c] = self._standardize_y(y[:, c])
-        if not self.is_classif:
-            self.ymean_ = self.ymean_[0]
         if n_problems == 1:
             y = y[:, 0]
 
@@ -818,7 +787,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
         # The verbosity of "parallel" is actually what controls the
         # vision of the overall progress, so we want it bigger
-        for test_scores, best_w, best_alpha, c in Parallel(
+        for test_scores, best_w, best_alpha, y_train_mean, c in Parallel(
                 n_jobs=self.n_jobs, verbose=2 * self.verbose)(
             delayed(self.memory_.cache(path_scores))(
                 solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
@@ -829,6 +798,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in self.cv_):
             test_scores = np.reshape(test_scores, (-1, 1))
+            self.ymean_[c] += y_train_mean
             if not len(self.cv_scores_[c]):
                 self.cv_scores_[c] = test_scores
             else:
@@ -837,14 +807,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
             w[c] += best_w
             best_alphas.append(best_alpha)
 
+        self.ymean_ /= n_folds
+        if not self.is_classif:
+            self.ymean_ = self.ymean_[0]
+
         self.alphas_ = best_alphas
-        # XXX: the code below smell, we should probably remove it
-        # keep best alpha, for historical reasons
-        self.i_alpha_ = [np.argmin(np.mean(self.cv_scores_[c], axis=-1))
-                         for c in xrange(n_problems)]
-        if n_problems == 1:
-            self.i_alpha_ = self.i_alpha_[0]
-        self.alpha_ = np.mean(best_alphas)
 
         # bagging: average best weights maps over folds
         w /= n_folds
