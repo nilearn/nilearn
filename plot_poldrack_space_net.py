@@ -24,7 +24,7 @@ penalties = ["smooth-lasso", "TV-L1"]
 decoders = {}
 for penalty in penalties:
     decoder = SpaceNetRegressor(memory=mem, mask=mask_img, penalty=penalty,
-                                verbose=2)
+                                verbose=2, n_jobs=3)
     decoder.fit(X_train, y_train)  # fit
     decoders[penalty] = decoder
 
