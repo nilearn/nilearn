@@ -212,9 +212,12 @@ class EarlyStoppingCallback(object):
         self.is_classif = is_classif
         self.debias = debias
         self.verbose = verbose
+        self.tol = -1e-4 if self.is_classif else -1e-2
+        self.start()
+
+    def start(self):
         self.test_scores = []
         self.counter = 0.
-        self.tol = -1e-4 if self.is_classif else -1e-2
 
     def __call__(self, variables):
         """The callback proper """
@@ -374,7 +377,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     # do l1_ratio path
     if isinstance(l1_ratios, numbers.Number):
         l1_ratios = [l1_ratios]
+    best_score = -np.inf
+    best_secondary_score = -np.inf
     best_l1_ratio = l1_ratios[0]
+    best_alpha = None
     best_init = init
     if len(test) > 0.:
         for l1_ratio in l1_ratios:
@@ -388,10 +394,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             alphas = sorted(alphas_)[::-1]
 
             # do alpha path
-            best_alpha = alphas_[0]
-            best_score = -np.inf
-            best_secondary_score = -np.inf
+            if best_alpha is None:
+                best_alpha = alphas[0]
             for alpha in alphas_:
+                early_stopper.start()
                 w, _, init = solver(
                     X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                     callback=early_stopper, verbose=max(verbose - 1, 0.),
