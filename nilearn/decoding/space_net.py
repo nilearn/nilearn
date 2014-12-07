@@ -359,8 +359,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     mask = _crop_mask(mask)
 
     # get train and test data
-    X_train, y_train = X[train], y[train]
-    X_test, y_test = X[test], y[test]
+    X_train, y_train = X[train].copy(), y[train].copy()
+    X_test, y_test = X[test].copy(), y[test].copy()
     test_scores = []
 
     # it is essential to center the data in regression
@@ -391,11 +391,11 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                     n_alphas=n_alphas, logistic=is_classif)
             else:
                 alphas_ = alphas
-            alphas = sorted(alphas_)[::-1]
+            alphas_ = sorted(alphas_)[::-1]
 
             # do alpha path
             if best_alpha is None:
-                best_alpha = alphas[0]
+                best_alpha = alphas_[0]
             for alpha in alphas_:
                 early_stopper.start()
                 w, _, init = solver(
