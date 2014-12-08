@@ -1,21 +1,18 @@
-import numpy as np
 from joblib import Memory
 
 ### Load data ################################################################
-from load_poldrack import load_gain_poldrack
+from nilearn.datasets import fetch_mixed_gambles
 mem = Memory(cachedir='cache', verbose=3)
-X, y, _, mask, affine = mem.cache(load_gain_poldrack)(smooth=0)
-img_data = np.zeros(list(mask.shape) + [len(X)])
-img_data[mask, :] = X.T
+data = mem.cache(fetch_mixed_gambles)("data/Jimura_Poldrack_2012_zmaps",
+                                      n_subjects=16, make_Xy=True)
+X, y, mask_img = data.X, data.y, data.mask_img
 
 # prepare input data for learner
-import nibabel
-n_samples = img_data.shape[-1]
+n_samples = len(X)
 n_samples_train = n_samples * 8 / 10
-mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
-X_train = nibabel.Nifti1Image(img_data[:, :, :, :n_samples_train], affine)
+X_train = X[:n_samples_train]
 y_train = y[:n_samples_train]
-X_test = nibabel.Nifti1Image(img_data[:, :, :, n_samples_train:], affine)
+X_test = X[n_samples_train:]
 y_test = y[n_samples_train:]
 
 ### Fit and predict ##########################################################
@@ -24,7 +21,7 @@ penalties = ["smooth-lasso", "TV-L1"]
 decoders = {}
 for penalty in penalties:
     decoder = SpaceNetRegressor(memory=mem, mask=mask_img, penalty=penalty,
-                                verbose=2, n_jobs=3)
+                                verbose=2, n_jobs=20)
     decoder.fit(X_train, y_train)  # fit
     decoders[penalty] = decoder
 
