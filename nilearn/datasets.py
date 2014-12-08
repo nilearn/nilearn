@@ -2848,7 +2848,7 @@ def fetch_mixed_gambles(data_dir=None, n_subjects=1, resume=True,
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'betmaps': string list
+        'z_maps': string list
             Paths to realigned gain betamaps (one nifti per subject).
     """
     if verbose:
@@ -2869,7 +2869,7 @@ def fetch_mixed_gambles(data_dir=None, n_subjects=1, resume=True,
         warnings.warn("This is just a code snippet. No data could be"
                       " grabbed locally (wildcard = %s)!" % url_wildcard)
     betas_fnames = _fetch_files(data_dir, betas_fnames)
-    data = Bunch(betmaps=betas_fnames)
+    data = Bunch(z_maps=betas_fnames)
 
     # make data for learning problems, etc.
     if make_Xy:
