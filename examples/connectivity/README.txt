@@ -1,2 +1,2 @@
-Connectivity
-------------
+Functional connectivity
+-----------------------
