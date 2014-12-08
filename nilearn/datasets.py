@@ -2406,6 +2406,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                   '/'.join([url, derivative,
                             file_id + '_' + derivative + ext]),
                   {}) for file_id in file_ids]
-        results[derivative] = _fetch_files(data_dir, files)
+        files = _fetch_files(data_dir, files)
+        # Load derivatives if needed
+        if ext == '.1D':
+            files = [np.loadtxt(f) for f in files]
+        results[derivative] = files
 
     return Bunch(**results)
