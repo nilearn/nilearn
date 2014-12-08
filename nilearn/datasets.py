@@ -505,9 +505,12 @@ def movetree(src, dst):
 def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
     """Load requested dataset, downloading it if needed or requested.
 
-    If needed, _fetch_files download data in a sandbox and check that all files
-    are present before moving it to their final destination. This avoids
-    corruption of an existing dataset.
+    This function retrieves files from the hard drive or download them from
+    the given urls. Note to developpers: All the files will be first
+    downloaded in a sandbox and, if everything goes well, they will be moved
+    into the folder of the dataset. This prevents corrupting previously
+    downloaded data. In case of a big dataset, do not hesitate to make several
+    calls if needed.
 
     Parameters
     ----------
