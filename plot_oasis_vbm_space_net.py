@@ -17,7 +17,7 @@ age = dataset_files.ext_vars['age'].astype(float)
 
 ### Fit and predict ###########################################################
 from nilearn.decoding import SpaceNetRegressor
-for penalty in ['TV-L1', 'Smooth-LASSO']:
+for penalty in ['TV-L1', 'Smooth-LASSO'][1:]:
     decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2,
                                 n_jobs=20)
     decoder.fit(dataset_files.gray_matter_maps, age)  # fit

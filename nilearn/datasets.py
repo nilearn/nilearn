@@ -6,6 +6,7 @@ Utilities to download NeuroImaging datasets
 # License: simplified BSD
 
 import os
+import glob
 import urllib
 import urllib2
 import tarfile
@@ -2409,3 +2410,85 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         results[derivative] = _fetch_files(data_dir, files)
 
     return Bunch(**results)
+
+
+def _load_subject_poldrack(betas_fname, smooth=0):
+    img = nibabel.load(betas_fname)
+    X = img.get_data()
+    affine = img.get_affine()
+    finite_mask = np.all(np.isfinite(X), axis=-1)
+    mask = np.logical_and(np.all(X != 0, axis=-1),
+                          finite_mask)
+    if smooth:
+        for i in range(X.shape[-1]):
+            X[..., i] = ndimage.gaussian_filter(X[..., i], smooth)
+        X[np.logical_not(finite_mask)] = np.nan
+    y = np.array([np.arange(1, 9)] * 6).ravel()
+    assert len(y) == 48
+    assert len(y) == X.shape[-1]
+    return X, y, mask, affine
+
+
+def _load_gain_poldrack(betas_fnames, smooth=0):
+    X = []
+    y = []
+    mask = []
+    for betas_fname in betas_fnames:
+        X_, y_, this_mask, affine = _load_subject_poldrack(
+            betas_fname, smooth=smooth)
+        X_ -= X_.mean(axis=-1)[..., np.newaxis]
+        std = X_.std(axis=-1)
+        std[std == 0] = 1
+        X_ /= std[..., np.newaxis]
+        X.append(X_)
+        y.extend(y_)
+        mask.append(this_mask)
+    X = np.concatenate(X, axis=-1)
+    mask = np.sum(mask, axis=0) > .5 * len(betas_fnames)
+    mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
+    return X[mask, :].T, np.array(y), mask, affine
+
+
+def fetch_mixed_gambles(data_dir=None, n_subjects=1, resume=True,
+                        make_Xy=False, smooth=0., verbose=0):
+    """Fetches Poldrack's (Jimura) Mixed Gambles dataset.
+
+    This is just a stub!
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'betmaps': string list
+            Paths to realigned gain betamaps (one nifti per subject).
+    """
+    if verbose:
+        print resume
+    if n_subjects > 16:
+        warnings.warn('Warning: there are only 16 subjects!')
+        n_subjects = 16
+    url_wildcard = os.path.join(data_dir, "gain_realigned/sub*_zmaps.nii.gz")
+    betas_fnames = []
+    for f in sorted(glob.glob(url_wildcard)):
+        if os.path.isfile(f):
+            parts = os.path.split(f)
+            betas_fnames.append((os.path.join(os.path.basename(parts[0]),
+                                              parts[1]), '', {}))
+        if len(betas_fnames) == n_subjects:
+            break
+    if not betas_fnames:
+        warnings.warn("This is just a code snippet. No data could be"
+                      " grabbed locally (wildcard = %s)!" % url_wildcard)
+    betas_fnames = _fetch_files(data_dir, betas_fnames)
+    data = Bunch(betmaps=betas_fnames)
+
+    # make data for learning problems, etc.
+    if make_Xy:
+        X, y, mask, affine = _load_gain_poldrack(betas_fnames, smooth=smooth)
+        X_ = np.zeros(list(mask.shape) + [len(X)])
+        X_[mask, :] = X.T
+        mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
+        X = nibabel.four_to_three(nibabel.Nifti1Image(X_, affine))
+        data.update(X=X, y=y, mask_img=mask_img)
+
+    return data
