@@ -6,7 +6,6 @@ Utilities to download NeuroImaging datasets
 # License: simplified BSD
 
 import os
-import glob
 import urllib
 import urllib2
 import tarfile
@@ -602,7 +601,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
                 os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
-                abort = "Target file cannot be found"
+                abort = "Target file cannot be found (%s)" % file_
             else:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
@@ -2412,44 +2411,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     return Bunch(**results)
 
 
-def _load_subject_poldrack(betas_fname, smooth=0):
-    img = nibabel.load(betas_fname)
-    X = img.get_data()
-    affine = img.get_affine()
-    finite_mask = np.all(np.isfinite(X), axis=-1)
-    mask = np.logical_and(np.all(X != 0, axis=-1),
-                          finite_mask)
-    if smooth:
-        for i in range(X.shape[-1]):
-            X[..., i] = ndimage.gaussian_filter(X[..., i], smooth)
-        X[np.logical_not(finite_mask)] = np.nan
-    y = np.array([np.arange(1, 9)] * 6).ravel()
-    assert len(y) == 48
-    assert len(y) == X.shape[-1]
-    return X, y, mask, affine
-
-
-def _load_gain_poldrack(betas_fnames, smooth=0):
-    X = []
-    y = []
-    mask = []
-    for betas_fname in betas_fnames:
-        X_, y_, this_mask, affine = _load_subject_poldrack(
-            betas_fname, smooth=smooth)
-        X_ -= X_.mean(axis=-1)[..., np.newaxis]
-        std = X_.std(axis=-1)
-        std[std == 0] = 1
-        X_ /= std[..., np.newaxis]
-        X.append(X_)
-        y.extend(y_)
-        mask.append(this_mask)
-    X = np.concatenate(X, axis=-1)
-    mask = np.sum(mask, axis=0) > .5 * len(betas_fnames)
-    mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
-    return X[mask, :].T, np.array(y), mask, affine
-
-
-def fetch_mixed_gambles(data_dir=None, n_subjects=1, resume=True,
+def fetch_mixed_gambles(data_dir=None, n_subjects=1, url=None, resume=True,
                         make_Xy=False, smooth=0., verbose=0):
     """Fetches Poldrack's (Jimura) Mixed Gambles dataset.
 
@@ -2462,33 +2424,75 @@ def fetch_mixed_gambles(data_dir=None, n_subjects=1, resume=True,
         'z_maps': string list
             Paths to realigned gain betamaps (one nifti per subject).
     """
-    if verbose:
-        print resume
     if n_subjects > 16:
         warnings.warn('Warning: there are only 16 subjects!')
         n_subjects = 16
-    url_wildcard = os.path.join(data_dir, "gain_realigned/sub*_zmaps.nii.gz")
-    betas_fnames = []
-    for f in sorted(glob.glob(url_wildcard)):
-        if os.path.isfile(f):
-            parts = os.path.split(f)
-            betas_fnames.append((os.path.join(os.path.basename(parts[0]),
-                                              parts[1]), '', {}))
-        if len(betas_fnames) == n_subjects:
-            break
-    if not betas_fnames:
-        warnings.warn("This is just a code snippet. No data could be"
-                      " grabbed locally (wildcard = %s)!" % url_wildcard)
-    betas_fnames = _fetch_files(data_dir, betas_fnames)
-    data = Bunch(z_maps=betas_fnames)
+
+    # fetch files
+    if url is None:
+        url = ("https://www.nitrc.org/frs/download.php/7229/"
+               "jimura_poldrack_2012_zmaps.zip")
+    opts = {'uncompress': True}
+    files = [("zmaps/sub%03i_zmaps.nii.gz" % (j + 1), url, opts)
+             for j in xrange(n_subjects)]
+    data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
+                                data_dir=data_dir)
+    zmap_fnames = _fetch_files(data_dir, files, resume=resume,
+                               verbose=verbose)
+    data = Bunch(z_maps=zmap_fnames)
 
     # make data for learning problems, etc.
     if make_Xy:
-        X, y, mask, affine = _load_gain_poldrack(betas_fnames, smooth=smooth)
-        X_ = np.zeros(list(mask.shape) + [len(X)])
-        X_[mask, :] = X.T
+        if verbose:
+            print "Chewing data into matrices X, y..."
+        X = []
+        y = []
+        mask = []
+        for zmap_fname in zmap_fnames:
+            # load subject data
+            img = nibabel.load(zmap_fname)
+            this_X = img.get_data()
+            affine = img.get_affine()
+            finite_mask = np.all(np.isfinite(this_X), axis=-1)
+            this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
+                                  finite_mask)
+
+            # smooth data ?
+            if smooth:
+                for i in range(this_X.shape[-1]):
+                    this_X[..., i] = ndimage.gaussian_filter(this_X[..., i],
+                                                             smooth)
+                this_X[np.logical_not(finite_mask)] = np.nan
+            this_y = np.array([np.arange(1, 9)] * 6).ravel()
+
+            # gain levels
+            if len(this_y) != this_X.shape[-1]:
+                raise RuntimeError("%s: Expecting %i volumes, got %i!" % (
+                    zmap_fname, len(this_y), this_X.shape[-1]))
+
+            # standardize subject data
+            this_X -= this_X.mean(axis=-1)[..., np.newaxis]
+            std = this_X.std(axis=-1)
+            std[std == 0] = 1
+            this_X /= std[..., np.newaxis]
+
+            # commit subject data
+            X.append(this_X)
+            y.extend(this_y)
+            mask.append(this_mask)
+
+        # final sip
+        y = np.array(y)
+        X = np.concatenate(X, axis=-1)
+        mask = np.sum(mask, axis=0) > .5 * len(zmap_fnames)
+        mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
+        X = X[mask, :].T
+        tmp = np.zeros(list(mask.shape) + [len(X)])
+        tmp[mask, :] = X.T
         mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
-        X = nibabel.four_to_three(nibabel.Nifti1Image(X_, affine))
+        X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
+        if len(X) != y.size:
+            raise RuntimeError
         data.update(X=X, y=y, mask_img=mask_img)
 
     return data

@@ -1,10 +1,14 @@
-from joblib import Memory
+"""
+SpaceNet learner on Poldrack's (Jimura) mixed gambles dataset.
+
+"""
+# author: DOHMATOB Elvis Dopgima,
+#         GRAMFORT Alexandre
+
 
 ### Load data ################################################################
 from nilearn.datasets import fetch_mixed_gambles
-mem = Memory(cachedir='cache', verbose=3)
-data = mem.cache(fetch_mixed_gambles)("data/Jimura_Poldrack_2012_zmaps",
-                                      n_subjects=16, make_Xy=True)
+data = fetch_mixed_gambles(n_subjects=16, make_Xy=True)
 X, y, mask_img = data.X, data.y, data.mask_img
 
 # prepare input data for learner
@@ -15,15 +19,17 @@ y_train = y[:n_samples_train]
 X_test = X[n_samples_train:]
 y_test = y[n_samples_train:]
 
+
 ### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNetRegressor
 penalties = ["smooth-lasso", "TV-L1"]
 decoders = {}
 for penalty in penalties:
-    decoder = SpaceNetRegressor(memory=mem, mask=mask_img, penalty=penalty,
-                                verbose=2, n_jobs=20)
+    decoder = SpaceNetRegressor(mask=mask_img, penalty=penalty, verbose=2,
+                                n_jobs=20)
     decoder.fit(X_train, y_train)  # fit
     decoders[penalty] = decoder
+
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
