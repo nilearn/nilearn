@@ -255,7 +255,7 @@ def _uncompress_file(file_, delete_archive=True):
     try:
         filename, ext = os.path.splitext(file_)
         processed = False
-        if ext == '.zip':
+        if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
             z.extractall(data_dir)
             z.close()
@@ -273,13 +273,14 @@ def _uncompress_file(file_, delete_archive=True):
             file_ = filename
             filename, ext = os.path.splitext(file_)
             processed = True
-        if ext in ['.tar', '.tgz', '.bz2']:
+        if tarfile.is_tarfile(file_):
             tar = tarfile.open(file_, "r")
             tar.extractall(path=data_dir)
             tar.close()
             processed = True
         if not processed:
-            raise IOError("Uncompress: unknown file extension: %s" % ext)
+            raise IOError(
+                    "[Uncompress] unknown archive file format: %s" % file_)
         if delete_archive:
             os.remove(file_)
         print '   ...done.'
