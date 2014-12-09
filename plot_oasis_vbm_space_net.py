@@ -6,13 +6,24 @@ Voxel-Based Morphometry on Oasis dataset with Space-Net prior
 # Authors: DOHMATOB Elvis
 #          FRITSCH Virgile
 
-from nilearn import datasets
-
 n_subjects = 100  # more subjects requires more memory
+n_subjects_train = 100
 
 ### Load Oasis dataset ########################################################
+import numpy as np
+from nilearn import datasets
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars['age'].astype(float)
+age = np.array(age)
+perm = np.argsort(age)[::-1]
+age = age[perm]
+X = np.array(dataset_files.gray_matter_maps)[perm]
+X_train = X[:n_subjects_train]
+y_train = age[:n_subjects_train]
+X_test = X[n_subjects_train:]
+y_test = age[n_subjects_train:]
+X_test = X_train.copy()
+y_test = y_train.copy()
 
 
 ### Fit and predict ###########################################################
