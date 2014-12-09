@@ -505,9 +505,12 @@ def movetree(src, dst):
 def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
     """Load requested dataset, downloading it if needed or requested.
 
-    If needed, _fetch_files download data in a sandbox and check that all files
-    are present before moving it to their final destination. This avoids
-    corruption of an existing dataset.
+    This function retrieves files from the hard drive or download them from
+    the given urls. Note to developpers: All the files will be first
+    downloaded in a sandbox and, if everything goes well, they will be moved
+    into the folder of the dataset. This prevents corrupting previously
+    downloaded data. In case of a big dataset, do not hesitate to make several
+    calls if needed.
 
     Parameters
     ----------
@@ -2406,7 +2409,11 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                   '/'.join([url, derivative,
                             file_id + '_' + derivative + ext]),
                   {}) for file_id in file_ids]
-        results[derivative] = _fetch_files(data_dir, files)
+        files = _fetch_files(data_dir, files)
+        # Load derivatives if needed
+        if ext == '.1D':
+            files = [np.loadtxt(f) for f in files]
+        results[derivative] = files
 
     return Bunch(**results)
 
