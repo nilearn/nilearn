@@ -364,7 +364,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     test_scores = []
 
     # it is essential to center the data in regression
-    y_train_std = np.std(y)
+    # y_train_std = np.std(y)
     X_train, y_train, _, y_train_mean, _ = center_data(
         X_train, y_train, fit_intercept=True, normalize=False,
         copy=False)
@@ -447,7 +447,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             Xmean = np.zeros(n_features)
         best_w = np.append(best_w, 0.)
 
-    best_w *= y_train_std
+    # best_w /= y_train_std
     return test_scores, best_w, best_alpha, best_l1_ratio, y_train_mean, key
 
 
