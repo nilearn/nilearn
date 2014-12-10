@@ -297,8 +297,8 @@ def test_clean_confounds():
 
     signals, _, confounds = generate_signals(n_features=41,
                                                   n_confounds=3, length=20)
-    filename1 = os.path.join(current_dir, "test_files", "spm_confounds.txt")
-    filename2 = os.path.join(current_dir, "test_files",
+    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
+    filename2 = os.path.join(current_dir, "data",
                              "confounds_with_header.csv")
 
     nisignal.clean(signals, detrend=False, standardize=False,
