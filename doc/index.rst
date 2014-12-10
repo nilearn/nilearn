@@ -81,7 +81,8 @@
 
 .. warning::
 
-   NiLearn is still an unreleased package in early development stages.
+   NiLearn has been released as an alpha and is still in early
+   development stages.
 
 
 NiLearn is part of the `NiPy ecosystem <http://nipy.org>`_.

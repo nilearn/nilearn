@@ -90,7 +90,7 @@ Installation
 
 .. warning::
 
-   nilearn is an un-released package. It lacks functionality and
+   nilearn has been released as an alpha. It lacks functionality and
    documentation, may have bugs, and will change in the future.
    Nonetheless, we strive to ensure its quality and hope that it may be
    useful in its current state, for technically-savvy users.
@@ -155,12 +155,29 @@ instance called `python-nibabel`.
 Installing nilearn
 -------------------
 
+The simplest way to install nilearn is to run the following command in
+a shell (i.e. not in a Python prompt)::
+
+    $ pip install -U --pre --user nilearn
+
+.. _testing_installation:
+
+Testing your installation
+.........................
+
+To test if you have done everything right, open IPython and try the
+following, in the Python prompt::
+
+    In [1]: import nilearn
+
+If you do not get any errors, you have installed nilearn correctly.
+
 Downloading the development version
 ....................................
 
-Nilearn is unreleased. We advise that you track it's development using
-git.
-  
+As an alternative to using pip, and only in the case if you
+want the latest nilearn version you can do so by using git.
+
 * **Under Windows or Max OSX**, you can easily to that by going to
   https://github.com/nilearn/nilearn and clicking the 'Clone in Desktop'
   button on the lower right of the page. This will install a software
@@ -180,20 +197,16 @@ snapshot from the following link and unziping it:
 https://github.com/nilearn/nilearn/archive/master.zip
 
 
-Setting up
-..........
+Setting up the development version
+..................................
 
 In the ``nilearn`` directory created by the previous steps, run (as a
 shell command, once again)::
 
     $ python setup.py install --user
 
-To test if you have done everything right, open IPython and try the
-following, in the Python prompt::
-
-    In [1]: import nilearn
-
-If you do not get any errors, you have installed nilearn correctly.
+To make sure that the installation went smoothly, you can follow the
+same steps as in :ref:`testing_installation`.
 
 Python for NeuroImaging: a quick-start
 ==========================================
