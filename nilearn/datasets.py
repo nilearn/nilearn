@@ -254,13 +254,16 @@ def _uncompress_file(file_, delete_archive=True):
     # We first try to see if it is a zip file
     try:
         filename, ext = os.path.splitext(file_)
+        fd = open(file_, "rb")
+        header = fd.read(4)
+        fd.close()
         processed = False
         if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
             z.extractall(data_dir)
             z.close()
             processed = True
-        elif ext == '.gz':
+        elif ext == '.gz' or header.startswith('\x1f\x8b'):
             import gzip
             gz = gzip.open(file_)
             out = open(filename, 'wb')

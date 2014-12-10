@@ -10,6 +10,7 @@ from tempfile import mkdtemp, mkstemp
 import numpy as np
 import zipfile
 import tarfile
+import gzip
 
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises,\
@@ -626,8 +627,16 @@ def test_uncompress():
 
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.tar')
-    with tarfile.open(ztemp, "w") as tar:
+    with tarfile.open(ztemp, 'w') as tar:
         tar.add(temp)
+    datasets._uncompress_file(ztemp)
+    assert(os.path.exists(os.path.join(dtemp, temp)))
+    shutil.rmtree(dtemp)
+
+    dtemp = mkdtemp()
+    ztemp = os.path.join(dtemp, 'test.gz')
+    f = gzip.open(ztemp, 'wb')
+    f.close()
     datasets._uncompress_file(ztemp)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
