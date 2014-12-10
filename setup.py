@@ -6,6 +6,8 @@ import sys
 import os
 from setuptools import setup, find_packages
 
+import nilearn
+
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
 LONG_DESCRIPTION = open('README.rst').read()
@@ -14,7 +16,7 @@ MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.com'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'http://nilearn.github.com'
-VERSION = '0.1a'
+VERSION = nilearn.__version__
 
 if __name__ == "__main__":
     old_path = os.getcwd()

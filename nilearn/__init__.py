@@ -9,7 +9,7 @@ visualization tools.
 See http://nilearn.github.com for complete documentation.
 """
 
-__version__ = "0.1a"
+__version__ = "0.1a1"
 
 
 def _import_module_with_version_check(module_name, minimum_version):
