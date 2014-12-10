@@ -1,3 +1,4 @@
+
 """
 Example generation for the scikit learn
 
@@ -641,7 +642,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
         last_dir = ''
     else:
         last_dir += '_'
-    short_fname = fname
+    short_fname = last_dir + fname
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
