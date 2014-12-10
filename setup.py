@@ -4,7 +4,7 @@ descr = """A set of python modules for neuroimaging..."""
 
 import sys
 import os
-import shutil
+from setuptools import setup, find_packages
 
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
@@ -15,8 +15,6 @@ URL = 'http://nilearn.github.com'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'http://nilearn.github.com'
 VERSION = '0.1a'
-
-from setuptools import setup
 
 if __name__ == "__main__":
     old_path = os.getcwd()
@@ -49,21 +47,14 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 2',
               'Programming Language :: Python :: 2.6',
               'Programming Language :: Python :: 2.7',
-             ],
-          packages=['nilearn',
-                    'nilearn/input_data',
-                    'nilearn/decomposition',
-                    'nilearn/decoding',
-                    'nilearn/mass_univariate',
-                    'nilearn/image',
-                    'nilearn/plotting',
-                    'nilearn/image',
-                    'nilearn/_utils',
-                    'nilearn/_utils/fixes',
-                    'nilearn/plotting',
-                    'nilearn/data',
-                    'nilearn/plotting/glass_brain_files',
           ],
+          packages=(find_packages() +
+                    # The following are actually not packages
+                    # and contain only data
+                    ['nilearn/data',
+                     'nilearn/plotting/glass_brain_files',
+                     'nilearn/tests/data']),
           package_data={'nilearn/data': ['*.nii.gz'],
-                        'nilearn/plotting/glass_brain_files': ['*.json']},
+                        'nilearn/plotting/glass_brain_files': ['*.json'],
+                        'nilearn/tests/data': ['*']},
     )
