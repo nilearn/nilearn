@@ -35,8 +35,8 @@ a linear model with a random design matrix **X**:
   brain regions. Here, in the simulations, they form a 3D image with 5, four
   of which in opposite corners and one in the middle. 
 
-.. figure:: ../auto_examples/images/plot_simulated_data_1.png
-    :target: auto_examples/plot_simulated_data.html
+.. figure:: ../auto_examples/decoding/images/plot_simulated_data_1.png
+    :target: auto_examples/decoding/plot_simulated_data.html
     :align: center
     :scale: 90
 
@@ -47,9 +47,9 @@ a linear model with a random design matrix **X**:
 * **e** is random normal noise.
 
 We provide a black-box function to create the data in the 
-:ref:`example script <example_plot_simulated_data.py>`:
+:ref:`example script <example_decoding_plot_simulated_data.py>`:
 
-.. literalinclude:: ../../plot_simulated_data.py
+.. literalinclude:: ../../examples/decoding/plot_simulated_data.py
     :start-after: # Create data
     :end-before: # Compute the results and estimated coef maps for different estimators
 
@@ -74,7 +74,7 @@ as well as the feature maps that they recover. Namely, we will use
 We can create a list with all the estimators readily created with the
 parameters of our choice:
 
-.. literalinclude:: ../../plot_simulated_data.py
+.. literalinclude:: ../../examples/decoding/plot_simulated_data.py
     :start-after: # Compute the results and estimated coef maps for different estimators
     :end-before: # Run the estimators
 
@@ -89,24 +89,24 @@ models, a `coef_` attribute that stores the coefficients **w** estimated.
 
 .. note:: All parameters estimated from the data end with an underscore
 
-.. literalinclude:: ../../plot_simulated_data.py
+.. literalinclude:: ../../examples/decoding/plot_simulated_data.py
     :start-after: # Run the estimators
     :end-before:     print title
 
-.. |estimator1| image:: ../auto_examples/images/plot_simulated_data_2.png
-    :target: ../auto_examples/plot_simulated_data.html
+.. |estimator1| image:: ../auto_examples/decoding/images/plot_simulated_data_2.png
+    :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator2| image:: ../auto_examples/images/plot_simulated_data_3.png
-    :target: ../auto_examples/plot_simulated_data.html
+.. |estimator2| image:: ../auto_examples/decoding/images/plot_simulated_data_3.png
+    :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator3| image:: ../auto_examples/images/plot_simulated_data_4.png
-    :target: ../auto_examples/plot_simulated_data.html
+.. |estimator3| image:: ../auto_examples/decoding/images/plot_simulated_data_4.png
+    :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator4| image:: ../auto_examples/images/plot_simulated_data_5.png
-    :target: ../auto_examples/plot_simulated_data.html
+.. |estimator4| image:: ../auto_examples/decoding/images/plot_simulated_data_5.png
+    :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 
 |estimator1| |estimator2| |estimator3| |estimator4|

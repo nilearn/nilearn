@@ -57,7 +57,7 @@ to the subjects from the brain activation.
 These conditions are presented as string into a CSV file. The numpy function
 `recfromcsv` is very useful to load this kind of data.
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################
     :end-before: ### Keep only data corresponding to faces or cats ###########################
 
@@ -65,7 +65,7 @@ These conditions are presented as string into a CSV file. The numpy function
 For example, we will now remove the *rest* condition from our dataset.
 This can be done as follows:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Keep only data corresponding to faces or cats ###########################
     :end-before: ### Prepare the data: apply the mask ##########################################
 
@@ -124,7 +124,7 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Prepare the data: apply the mask ##########################################
     :end-before: ### Prediction ################################################################
 
@@ -152,7 +152,7 @@ scikit-learn, using its `fit`, `predict` or `transform` methods.
 Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Prediction ################################################################
     :end-before: ### Cross-validation ##########################################################
 
@@ -170,7 +170,7 @@ masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualization #############################################################
 
@@ -188,7 +188,7 @@ discriminating weight.
     :align: right
     :scale: 50%
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Visualization #############################################################
     :end-before: ### Visualize the mask ########################################################
 
