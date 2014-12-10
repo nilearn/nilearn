@@ -14,7 +14,7 @@ MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.com'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'http://nilearn.github.com'
-VERSION = '0.1-git'
+VERSION = '0.1a'
 
 from setuptools import setup
 
