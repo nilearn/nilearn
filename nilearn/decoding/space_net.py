@@ -377,6 +377,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     # do l1_ratio path
     if isinstance(l1_ratios, numbers.Number):
         l1_ratios = [l1_ratios]
+    # From large to small l1_ratios
+    l1_ratios = sorted(l1_ratios)[::-1]
     best_score = -np.inf
     best_secondary_score = -np.inf
     best_l1_ratio = l1_ratios[0]
