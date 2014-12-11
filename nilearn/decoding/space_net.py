@@ -293,7 +293,7 @@ class EarlyStoppingCallback(object):
 
 def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 solver_params, is_classif=False, n_alphas=10, eps=1E-3,
-                init=None, key=None, debias=False, Xmean=None,
+                key=None, debias=False, Xmean=None,
                 screening_percentile=20., verbose=1):
     """Function to compute scores of different alphas in regression and
     classification used by CV objects
@@ -361,7 +361,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     # get train and test data
     X_train, y_train = X[train].copy(), y[train].copy()
     X_test, y_test = X[test].copy(), y[test].copy()
-    test_scores = []
 
     # it is essential to center the data in regression
     # y_train_std = np.std(y)
@@ -383,9 +382,11 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     best_secondary_score = -np.inf
     best_l1_ratio = l1_ratios[0]
     best_alpha = None
-    best_init = init
+    best_init = None
+    all_test_scores = list()
     if len(test) > 0.:
         for l1_ratio in l1_ratios:
+            this_test_scores = list()
             # make alpha grid
             if alphas is None:
                 alphas_ = _space_net_alpha_grid(
@@ -398,6 +399,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             # do alpha path
             if best_alpha is None:
                 best_alpha = alphas_[0]
+            init = None
             for alpha in alphas_:
                 early_stopper.start()
                 w, _, init = solver(
@@ -409,7 +411,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 # disambiguate between regions of equivalent spearman
                 # correlations
                 score, secondary_score = early_stopper.test_score(w)
-                test_scores.append(score)
+                this_test_scores.append(score)
                 if (np.isfinite(score) and
                         (score > best_score
                          or (score == best_score and
@@ -419,6 +421,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                     best_l1_ratio = l1_ratio
                     best_alpha = alpha
                     best_init = init.copy()
+            all_test_scores.append(this_test_scores)
     else:
         if alphas is None:
             raise RuntimeError
@@ -432,7 +435,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_w = early_stopper._debias(best_w)
 
     if len(test) == 0.:
-        test_scores.append(np.nan)
+        all_test_scores.append(np.nan)
 
     # unmask univariate screening
     if do_screening:
@@ -450,7 +453,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_w = np.append(best_w, 0.)
 
     # best_w /= y_train_std
-    return test_scores, best_w, best_alpha, best_l1_ratio, y_train_mean, key
+    all_test_scores = np.array(all_test_scores)
+    return all_test_scores, best_w, best_alpha, best_l1_ratio, y_train_mean, key
 
 
 class BaseSpaceNet(LinearModel, RegressorMixin):
@@ -588,7 +592,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
          Each pair are are the list of indices for the train and test
          samples for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -825,13 +829,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 screening_percentile=self.screening_percentile_
                 ) for c in xrange(n_problems) for (train, test) in self.cv_):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
-            test_scores = np.reshape(test_scores, (-1, 1))
             self.ymean_[c] += y_train_mean
-            if not len(self.cv_scores_[c]):
-                self.cv_scores_[c] = test_scores
-            else:
-                self.cv_scores_[c] = np.hstack((self.cv_scores_[c],
-                                                test_scores))
+            if len(np.atleast_1d(l1_ratios)) == 1:
+                test_scores = test_scores[0]
+            self.cv_scores_[c].append(test_scores)
             w[c] += best_w
 
         self.ymean_ /= n_folds
