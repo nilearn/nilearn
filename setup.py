@@ -4,9 +4,11 @@ descr = """A set of python modules for neuroimaging..."""
 
 import sys
 import os
+import imp
+
 from setuptools import setup, find_packages
 
-import nilearn
+version_module = imp.load_source('version_module', 'nilearn/version.py')
 
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
@@ -16,7 +18,7 @@ MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.com'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'http://nilearn.github.com'
-VERSION = nilearn.__version__
+VERSION = version_module.__version__
 
 if __name__ == "__main__":
     old_path = os.getcwd()
@@ -59,4 +61,5 @@ if __name__ == "__main__":
           package_data={'nilearn/data': ['*.nii.gz'],
                         'nilearn/plotting/glass_brain_files': ['*.json'],
                         'nilearn/tests/data': ['*']},
+          install_requires=['nibabel>=1.1.0'],
     )
