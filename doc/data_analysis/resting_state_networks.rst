@@ -32,7 +32,7 @@ functions to fetch data from Internet and get the filenames (:ref:`more
 on data loading <loading_data>`):
 
 
-.. literalinclude:: ../../plot_canica_resting_state.py
+.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
     :start-after: ### Load ADHD rest dataset ####################################################
     :end-before: ### Apply CanICA ##############################################################
 
@@ -46,7 +46,7 @@ perform a multi-subject ICA decomposition following the CanICA model.
 As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data.
 
-.. literalinclude:: ../../plot_canica_resting_state.py
+.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
     :start-after: ### Apply CanICA ##############################################################
     :end-before: ### Visualize the results #####################################################
 
@@ -58,15 +58,15 @@ Visualizing the results
 
 We can visualize the components as in the previous examples.
 
-.. literalinclude:: ../../plot_canica_resting_state.py
+.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
     :start-after: ### Visualize the results #####################################################
 
-.. |left_img| image:: ../auto_examples/images/plot_canica_resting_state_2.png
-   :target: ../auto_examples/plot_canica_resting_state.html
+.. |left_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_2.png
+   :target: ../auto_examples/connectivity/plot_canica_resting_state.html
    :width: 48%
 
-.. |right_img| image:: ../auto_examples/images/plot_canica_resting_state_3.png
-   :target: ../auto_examples/plot_canica_resting_state.html
+.. |right_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_3.png
+   :target: ../auto_examples/connectivity/plot_canica_resting_state.html
    :width: 48%
 
 |left_img| |right_img|
@@ -74,7 +74,7 @@ We can visualize the components as in the previous examples.
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`example_plot_canica_resting_state.py`
+   :ref:`example_connectivity_plot_canica_resting_state.py`
 
 .. note::
 

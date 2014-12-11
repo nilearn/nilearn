@@ -39,12 +39,12 @@ This can be achieved using the inverse of the covariance matrix, ie the
 covariances between two regions conditioned on all the others. It thus
 gives only direct connections between regions.
 
-.. |covariance| image:: ../auto_examples/images/plot_adhd_covariance_5.png
-   :target: ../auto_examples/plot_adhd_covariance.html
+.. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_5.png
+   :target: ../auto_examples/connectivity/plot_adhd_covariance.html
    :scale: 39
 
-.. |precision| image:: ../auto_examples/images/plot_adhd_covariance_6.png
-   :target: ../auto_examples/plot_adhd_covariance.html
+.. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_6.png
+   :target: ../auto_examples/connectivity/plot_adhd_covariance.html
    :scale: 39
 
 .. centered:: |covariance| |precision|
@@ -75,7 +75,7 @@ We simulate several sets of signals, one set representing one subject,
 with different precision matrices, but sharing a common sparsity pattern:
 10 brain regions, for 20 subjects:
 
-.. literalinclude:: ../../plot_connect_comparison.py
+.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
    :start-after: # Generate synthetic data
    :end-before: fig = plt.figure(figsize=(10, 7))
 
@@ -97,14 +97,14 @@ level.
 A single-subject estimation can be performed using the Graph Lasso
 estimator from the scikit-learn:
 
-.. literalinclude:: ../../plot_connect_comparison.py
+.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
    :start-after: # Fit one graph lasso per subject
    :end-before:     plt.subplot(n_displayed, 4, 4 * n + 3)
 
 After calling `fit`, the estimated precision matrix can be plotted
 using:
 
-.. literalinclude:: ../../plot_connect_comparison.py
+.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
    :start-after:     plt.subplot(n_displayed, 4, 4 * n + 3)
    :end-before:     if n == 0:
 
@@ -113,15 +113,15 @@ same code. It draws the matrix as an image, taking care of using a
 symmetric range, so that zero values are just in the middle of the
 colormap (white in that case):
 
-.. literalinclude:: ../../plot_connect_comparison.py
-   :start-after: import matplotlib.pyplot as plt
+.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
+   :start-after: import matplotlib.pyplot as pltp
    :end-before: # Generate synthetic data
 
 
 It is also possible to fit a graph lasso on data from every subject at
 once:
 
-.. literalinclude:: ../../plot_connect_comparison.py
+.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
    :start-after: # Fit one graph lasso for all subjects at once
    :end-before: pl.subplot(n_displayed, 4, 4)
 
@@ -131,15 +131,15 @@ from NiLearn this time:
 ..
    gsc
 
-.. literalinclude:: ../../plot_connect_comparison.py
+.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
    :start-after: # Run group-sparse covariance on all subjects
    :end-before: for n in range(n_displayed):
 
 
 The results are shown on the following figure:
 
-.. image:: ../auto_examples/images/plot_connect_comparison_1.png
-    :target: ../auto_examples/plot_connect_comparison.html
+.. image:: ../auto_examples/connectivity/images/plot_connect_comparison_1.png
+    :target: ../auto_examples/connectivity/plot_connect_comparison.html
     :scale: 60
 
 The group-sparse estimation outputs matrices with
@@ -153,13 +153,13 @@ information.
 .. note::
 
    The complete source code for this example can be found here:
-   :doc:`plot_connect_comparison.py <../auto_examples/plot_connect_comparison>`
+   :doc:`plot_connect_comparison.py <../auto_examples/connectivity/plot_connect_comparison>`
 
 A real-data example
 ====================
 
 For a detailed example on real data:
-:doc:`plot_adhd_covariance.py <../auto_examples/plot_adhd_covariance>`
+:doc:`plot_adhd_covariance.py <../auto_examples/connectivity/plot_adhd_covariance>`
 
 ____
 

@@ -71,18 +71,18 @@ whereas the former is linear with the number of classes.
 :func:`sklearn.metrics.confusion_matrix` is a useful tool to 
 understand the classifier's errors in a multiclass problem.
 
-.. figure:: ../auto_examples/images/plot_haxby_multiclass_1.png
-   :target: ../auto_examples/plot_haxby_multiclass.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_1.png
+   :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 60
 
-.. figure:: ../auto_examples/images/plot_haxby_multiclass_2.png
-   :target: ../auto_examples/plot_haxby_multiclass.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_2.png
+   :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
 
-.. figure:: ../auto_examples/images/plot_haxby_multiclass_3.png
-   :target: ../auto_examples/plot_haxby_multiclass.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_3.png
+   :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
 
@@ -99,8 +99,8 @@ will have bumps and peaks due to this noise. These will not generalize to
 new data and chances are that the corresponding choice of parameter will
 not perform as well on new data.
 
-.. figure:: ../auto_examples/images/plot_haxby_grid_search_1.png
-   :target: ../auto_examples/plot_haxby_grid_search.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_grid_search_1.png
+   :target: ../auto_examples/decoding/plot_haxby_grid_search.html
    :align: center
    :scale: 60
 
@@ -115,7 +115,7 @@ CPUs.
    * `The scikit-learn documentation on parameter selection
      <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
-   * The example :ref:`example_plot_haxby_grid_search.py`
+   * The example :ref:`example_decoding_plot_haxby_grid_search.py`
 
 Different linear models
 ========================
@@ -153,8 +153,8 @@ Here we apply a few linear models to fMRI data:
      in every situation.
 
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_1.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_1.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: center
    :scale: 80
 
@@ -171,48 +171,48 @@ the other, although the prediction scores are fairly similar. In other
 terms, a well-performing estimator in terms of prediction error gives us
 little guarantee on the brain maps.
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_7.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_7.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_8.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_8.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_5.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_5.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_6.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_6.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_4.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_4.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_2.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_2.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_3.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_3.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_9.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_9.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/images/plot_haxby_different_estimators_10.png
-   :target: ../auto_examples/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_10.png
+   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 

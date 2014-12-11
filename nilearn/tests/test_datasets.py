@@ -6,8 +6,11 @@ Test the datasets module
 
 import os
 import shutil
-from tempfile import mkdtemp, mktemp
+from tempfile import mkdtemp, mkstemp
 import numpy as np
+import zipfile
+import tarfile
+import gzip
 
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises,\
@@ -50,10 +53,9 @@ def teardown_tmpdata():
 
 def test_md5_sum_file():
     # Create dummy temporary file
-    f = mktemp()
-    out = open(f, 'w')
-    out.write('abcfeg')
-    out.close()
+    out, f = mkstemp()
+    os.write(out, 'abcfeg')
+    os.close(out)
     assert_equal(datasets._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
     os.remove(f)
 
@@ -142,11 +144,10 @@ def test_get_dataset_dir():
 
 def test_read_md5_sum_file():
     # Create dummy temporary file
-    f = mktemp()
-    out = open(f, 'w')
-    out.write('20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
+    out, f = mkstemp()
+    os.write(out, '20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
               '70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
-    out.close()
+    os.close(out)
     h = datasets._read_md5_sum_file(f)
     assert_true('/tmp/test' in h)
     assert_false('/etc/test' in h)
@@ -649,3 +650,35 @@ def test_filter_columns():
     f = datasets._filter_columns(values, {'INT': 1, 'STR': 'b'},
             combination='or')
     assert_equal(np.sum(f), 333)
+
+
+def test_uncompress():
+    # Create dummy file
+    fd, temp = mkstemp()
+    os.close(fd)
+    # Create a zipfile
+    dtemp = mkdtemp()
+    ztemp = os.path.join(dtemp, 'test.zip')
+    with zipfile.ZipFile(ztemp, 'w') as testzip:
+        testzip.write(temp)
+    datasets._uncompress_file(ztemp)
+    assert(os.path.exists(os.path.join(dtemp, temp)))
+    shutil.rmtree(dtemp)
+
+    dtemp = mkdtemp()
+    ztemp = os.path.join(dtemp, 'test.tar')
+    with tarfile.open(ztemp, 'w') as tar:
+        tar.add(temp)
+    datasets._uncompress_file(ztemp)
+    assert(os.path.exists(os.path.join(dtemp, temp)))
+    shutil.rmtree(dtemp)
+
+    dtemp = mkdtemp()
+    ztemp = os.path.join(dtemp, 'test.gz')
+    f = gzip.open(ztemp, 'wb')
+    f.close()
+    datasets._uncompress_file(ztemp)
+    assert(os.path.exists(os.path.join(dtemp, temp)))
+    shutil.rmtree(dtemp)
+
+    os.remove(temp)

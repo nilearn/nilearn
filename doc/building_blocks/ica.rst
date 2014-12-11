@@ -34,21 +34,21 @@ As seen in :ref:`loading_data`, we fetch data from Internet and get
 the filenames with a function provided by nilearn:
 
 
-.. literalinclude:: ../../plot_ica_resting_state.py
+.. literalinclude:: ../../examples/connectivity/plot_ica_resting_state.py
     :start-after: ### Load nyu_rest dataset #####################################################
     :end-before: ### Preprocess ################################################################
 
 Concatenating, smoothing, and masking
 --------------------------------------
 
-.. literalinclude:: ../../plot_ica_resting_state.py
+.. literalinclude:: ../../examples/connectivity/plot_ica_resting_state.py
     :start-after: ### Preprocess ################################################################
     :end-before: ### Apply ICA #################################################################
 
 Applying ICA
 ==============
 
-.. literalinclude:: ../../plot_ica_resting_state.py
+.. literalinclude:: ../../examples/connectivity/plot_ica_resting_state.py
     :start-after: ### Apply ICA #################################################################
     :end-before: ### Visualize the results #####################################################
 
@@ -58,14 +58,14 @@ Visualizing the results
 Visualization follows similarly as in other examples (for details, see
 :ref:`plotting`).
 
-.. literalinclude:: ../../plot_ica_resting_state.py
+.. literalinclude:: ../../examples/connectivity/plot_ica_resting_state.py
     :start-after: ### Visualize the results #####################################################
 
-.. |left_img| image:: ../auto_examples/images/plot_ica_resting_state_1.png
+.. |left_img| image:: ../auto_examples/connectivity/images/plot_ica_resting_state_1.png
    :target: ../auto_examples/plot_ica_resting_state.html
    :width: 48%
 
-.. |right_img| image:: ../auto_examples/images/plot_ica_resting_state_2.png
+.. |right_img| image:: ../auto_examples/connectivity/images/plot_ica_resting_state_2.png
    :target: ../auto_examples/plot_ica_resting_state.html
    :width: 48%
 

@@ -32,15 +32,10 @@ If you want to run the tests, you need recent python-coverage and python-nose.
 Install
 =======
 
-This package uses distutils, which is the default way of installing
-python modules. To install in your home directory, use::
+The simplest is to use pip. Not that nilearn has been released as an
+alpha so you need to use the ``--pre`` command-line parameter::
 
-  python setup.py install --user
-
-To install for all users on Unix/Linux::
-
-  python setup.py build
-  sudo python setup.py install
+    pip install -U --pre --user nilearn
 
 
 Development
