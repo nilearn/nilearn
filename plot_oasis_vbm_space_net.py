@@ -20,17 +20,16 @@ age = age[perm]
 X = np.array(dataset_files.gray_matter_maps)[perm]
 X_train = X[:n_subjects_train]
 y_train = age[:n_subjects_train]
-X_test = X[n_subjects_train:]
-y_test = age[n_subjects_train:]
+# X_test = X[n_subjects_train:]
+# y_test = age[n_subjects_train:]
 X_test = X_train.copy()
 y_test = y_train.copy()
 
 
 ### Fit and predict ###########################################################
 from nilearn.decoding import SpaceNetRegressor
-for penalty in ['TV-L1', 'Smooth-LASSO'][1:]:
-    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2,
-                                alphas=8.6E-8 * len(X), n_jobs=20)
+for penalty in ['tvl-l1', 'smooth-lasso']:
+    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2)
     decoder.fit(X_train, y_train)  # fit
     coef_img = decoder.coef_img_
     y_pred = decoder.predict(X_test).ravel()  # predict
