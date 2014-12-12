@@ -360,25 +360,25 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    # y_train_std = np.std(y)
     X_train, y_train, _, y_train_mean, _ = center_data(
         X_train, y_train, fit_intercept=True, normalize=False,
         copy=False)
 
-    # do l1_ratio path
+    # misc
     if isinstance(l1_ratios, numbers.Number):
         l1_ratios = [l1_ratios]
-    # From large to small l1_ratios
-    l1_ratios = sorted(l1_ratios)[::-1]
+    l1_ratios = sorted(l1_ratios)[::-1]  # from large to small l1_ratios
     best_score = -np.inf
     best_secondary_score = -np.inf
     best_l1_ratio = l1_ratios[0]
     best_alpha = None
     best_init = None
-    all_test_scores = list()
+    all_test_scores = []
     if len(test) > 0.:
+        # do l1_ratio path
         for l1_ratio in l1_ratios:
-            this_test_scores = list()
+            this_test_scores = []
+
             # make alpha grid
             if alphas is None:
                 alphas_ = _space_net_alpha_grid(
@@ -386,7 +386,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                     n_alphas=n_alphas, logistic=is_classif)
             else:
                 alphas_ = alphas
-            alphas_ = sorted(alphas_)[::-1]
+            alphas_ = sorted(alphas_)[::-1]  # from large to small l1_ratios
 
             # do alpha path
             if best_alpha is None:
@@ -449,7 +449,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             Xmean = np.zeros(n_features)
         best_w = np.append(best_w, 0.)
 
-    # best_w /= y_train_std
     all_test_scores = np.array(all_test_scores)
     return (all_test_scores, best_w, best_alpha, best_l1_ratio,
             y_train_mean, key)
