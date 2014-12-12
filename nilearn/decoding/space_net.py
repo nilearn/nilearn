@@ -657,21 +657,20 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
             raise ValueError(
                 ("screening_percentile should be in the interval"
                  " [0, 100], got %g" % self.screening_percentile))
-        if self.penalty.lower() not in self.SUPPORTED_PENALTIES:
+        if self.penalty not in self.SUPPORTED_PENALTIES:
             raise ValueError(
                 "'penalty' parameter must be one of %s%s or %s; got %s" % (
                     ",".join(self.SUPPORTED_PENALTIES[:-1]), "," if len(
                         self.SUPPORTED_PENALTIES) > 2 else "",
                     self.SUPPORTED_PENALTIES[-1], self.penalty))
-        if not (self.loss is None or
-                self.loss.lower() in self.SUPPORTED_LOSSES):
+        if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
             raise ValueError(
                 "'loss' parameter must be one of %s%s or %s; got %s" % (
                     ",".join(self.SUPPORTED_LOSSES[:-1]), "," if len(
                         self.SUPPORTED_LOSSES) > 2 else "",
                     self.SUPPORTED_LOSSES[-1], self.loss))
         if not self.loss is None and not self.is_classif and (
-                self.loss.lower() == "logistic"):
+            self.loss == "logistic"):
             raise ValueError(
                 ("'logistic' loss is only available for classification "
                  "problems."))
@@ -750,20 +749,20 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         if isinstance(alphas, numbers.Number):
             alphas = [alphas]
         if not self.loss is None:
-            self.loss_ = self.loss.lower()
+            loss = self.loss
         elif self.is_classif:
-            self.loss_ = "logistic"
+            loss = "logistic"
         else:
-            self.loss_ = "mse"
+            loss = "mse"
 
         # set backend solver
         if self.penalty.lower() == "smooth-lasso":
-            if not self.is_classif or self.loss == "mse":
+            if not self.is_classif or loss == "mse":
                 solver = smooth_lasso_squared_loss
             else:
                 solver = smooth_lasso_logistic
         else:
-            if not self.is_classif or self.loss == "mse":
+            if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")
             else:
                 solver = partial(tvl1_solver, loss="logistic")

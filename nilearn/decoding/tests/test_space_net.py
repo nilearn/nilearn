@@ -3,7 +3,8 @@ import warnings
 import itertools
 from functools import partial
 from nose import SkipTest
-from nose.tools import assert_equal, assert_true, assert_false
+from nose.tools import (assert_equal, assert_true, assert_false,
+                        assert_raises)
 import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
@@ -334,3 +335,13 @@ def test_space_net_alpha_grid_pure_spatial():
     for is_classif in [True, False]:
         assert_false(np.any(np.isnan(_space_net_alpha_grid(
             X, y, l1_ratio=0., logistic=is_classif))))
+
+
+def test_string_params_case():
+    # penalty
+    assert_raises(ValueError, BaseSpaceNet, penalty='TV-L1')
+    assert_raises(ValueError, BaseSpaceNet, penalty='smooth-Lasso')
+
+    # loss
+    assert_raises(ValueError, SpaceNetClassifier, loss="MSE")
+    assert_raises(ValueError, SpaceNetClassifier, loss="Logistic")
