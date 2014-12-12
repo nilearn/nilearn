@@ -318,7 +318,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     test : array or list of integers
         List of indices for the test samples
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .75)
+    l1_ratio : float in the interval [0, 1]; optinal (default .5)
         Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -475,7 +475,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         Flag telling whether the learning task is classification or regression.
 
     l1_ratios : float or list of floats in the interval [0, 1];
-    optinal (default .75)
+    optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -603,7 +603,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
     SUPPORTED_LOSSES = ["mse", "logistic"]
 
     def __init__(self, penalty="smooth-lasso", is_classif=False, loss=None,
-                 l1_ratios=.75, alphas=None, n_alphas=10, mask=None,
+                 l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None, verbose=0), copy_data=True,
@@ -933,7 +933,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
     l1_ratios : float or list of floats in the interval [0, 1];
-    optinal (default .75)
+    optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -1057,7 +1057,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         relative to the volume of standard brain.
     """
     def __init__(self, penalty="smooth-lasso", loss="logistic",
-                 l1_ratios=.75, alphas=None, n_alphas=10, mask=None,
+                 l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), copy_data=True, standardize=True,
@@ -1102,7 +1102,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
     l1_ratios : float or list of floats in the interval [0, 1];
-    optinal (default .75)
+    optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -1217,7 +1217,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-    def __init__(self, penalty="smooth-lasso", l1_ratios=.75, alphas=None,
+    def __init__(self, penalty="smooth-lasso", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
