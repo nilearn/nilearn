@@ -213,9 +213,6 @@ class EarlyStoppingCallback(object):
         self.debias = debias
         self.verbose = verbose
         self.tol = -1e-4 if self.is_classif else -1e-2
-        self.start()
-
-    def start(self):
         self.test_scores = []
         self.counter = 0.
 
@@ -243,7 +240,7 @@ class EarlyStoppingCallback(object):
                 if self.verbose:
                     if self.verbose > 1:
                         print('Early stopping. Test score: %.8f %s' % (
-                               score, 40 * '-'))
+                              score, 40 * '-'))
                     else:
                         sys.stderr.write('.')
                 return True
@@ -368,11 +365,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         X_train, y_train, fit_intercept=True, normalize=False,
         copy=False)
 
-    # setup callback mechanism for early stopping
-    early_stopper = EarlyStoppingCallback(
-        X_test, y_test, is_classif=is_classif, debias=debias,
-        verbose=verbose)
-
     # do l1_ratio path
     if isinstance(l1_ratios, numbers.Number):
         l1_ratios = [l1_ratios]
@@ -401,7 +393,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 best_alpha = alphas_[0]
             init = None
             for alpha in alphas_:
-                early_stopper.start()
+                # setup callback mechanism for early stopping
+                early_stopper = EarlyStoppingCallback(
+                    X_test, y_test, is_classif=is_classif, debias=debias,
+                    verbose=verbose)
                 w, _, init = solver(
                     X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                     callback=early_stopper, verbose=max(verbose - 1, 0.),
@@ -432,7 +427,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                              mask=mask, init=best_init,
                              verbose=max(verbose - 1, 0), **solver_params)
     if debias:
-        best_w = early_stopper._debias(best_w)
+        best_w = EarlyStoppingCallback(
+            X_test, y_test, is_classif=is_classif, debias=debias,
+            verbose=verbose)._debias(best_w)
 
     if len(test) == 0.:
         all_test_scores.append(np.nan)
@@ -454,7 +451,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
 
     # best_w /= y_train_std
     all_test_scores = np.array(all_test_scores)
-    return all_test_scores, best_w, best_alpha, best_l1_ratio, y_train_mean, key
+    return (all_test_scores, best_w, best_alpha, best_l1_ratio,
+            y_train_mean, key)
 
 
 class BaseSpaceNet(LinearModel, RegressorMixin):
@@ -592,7 +590,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
          Each pair are are the list of indices for the train and test
          samples for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or
+    (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -784,8 +783,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
             y = y[:, 0]
 
         # generate fold indices
-        if (None in [alphas, l1_ratios] and
-            self.n_alphas > 1) or min(len(l1_ratios), len(alphas)) > 1:
+        if (None in [alphas, l1_ratios] and self.n_alphas > 1) or min(
+                len(l1_ratios), len(alphas)) > 1:
             self.cv_ = list(check_cv(self.cv, X=X, y=y,
                                      classifier=self.is_classif))
         else:
