@@ -4,11 +4,23 @@ descr = """A set of python modules for neuroimaging..."""
 
 import sys
 import os
-import imp
 
 from setuptools import setup, find_packages
 
-version_module = imp.load_source('version_module', 'nilearn/version.py')
+
+def get_version():
+    """Returns the version found in nilearn/version.py
+
+    Importing nilearn is not an option because there may dependencies
+    like nibabel which are not installed and setup.py is supposed to
+    install them.
+    """
+    locals_dict = {}
+    globals_dict = {}
+    with open(os.path.join('nilearn', 'version.py')) as fp:
+        exec(fp.read(), globals_dict, locals_dict)
+
+    return locals_dict['__version__']
 
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
@@ -18,7 +30,7 @@ MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.com'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'http://nilearn.github.com'
-VERSION = version_module.__version__
+VERSION = get_version()
 
 if __name__ == "__main__":
     old_path = os.getcwd()
