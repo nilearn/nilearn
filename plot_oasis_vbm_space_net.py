@@ -20,8 +20,8 @@ age = age[perm]
 X = np.array(dataset_files.gray_matter_maps)[perm]
 X_train = X[:n_subjects_train]
 y_train = age[:n_subjects_train]
-X_test = X[n_subjects_train:]
-y_test = age[n_subjects_train:]
+# X_test = X[n_subjects_train:]
+# y_test = age[n_subjects_train:]
 X_test = X_train.copy()
 y_test = y_train.copy()
 
