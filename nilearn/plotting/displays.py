@@ -489,6 +489,9 @@ class BaseSlicer(object):
             x_adjusted_width - x_adjusted_right_margin,
             y_width - 2 * y_margin])
 
+        # edge case where the data has a single value
+        # yields a cryptic matplotlib error message
+        # when trying to plot the color bar
         our_cmap = im.cmap
         nb_ticks = 5 if im.norm.vmin != im.norm.vmax else 1
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, nb_ticks)
