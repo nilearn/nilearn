@@ -2422,11 +2422,39 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     return Bunch(**results)
 
 
-def fetch_mixed_gambles(data_dir=None, n_subjects=1, url=None, resume=True,
-                        make_Xy=False, smooth=0., verbose=0):
-    """Fetches Poldrack's (Jimura) Mixed Gambles dataset.
+def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
+                        verbose=0, make_Xy=False, smooth=0.):
+    """Fetch Jimura "mixed gambles" dataset
 
-    This is just a stub!
+
+    Parameters
+    ----------
+    n_subjects: int, optional (default 1)
+        The number of subjects to load. If None is given, all the
+        subjects are used.
+
+    data_dir: string, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None.
+
+    url: string, optional (default None)
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    resume: bool, optional (default True)
+        If true, try resuming download if possible.
+
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
+
+    maks_Xy: bool, optional (default False)
+        If true, then the data will transformed into and (X, y) pair, suitable
+        for machine learning routines.
+        X is a list of n_subjects * 48 Nifti1Image objects, and
+        y is an array of shape (n_subjects * 48,).
+
+    smooth: float, or list of 3 floats, optional (default 0.)
+        Size of smoothing kernel to apply to the loaded z_maps.
 
     Returns
     -------
@@ -2434,6 +2462,18 @@ def fetch_mixed_gambles(data_dir=None, n_subjects=1, url=None, resume=True,
         Dictionary-like object, the interest attributes are :
         'z_maps': string list
             Paths to realigned gain betamaps (one nifti per subject).
+        'X': list of Nifi1Image objects, or None
+            If make_Xy is true, this is a list of n_subjects * 48
+            Nifti1Image objects, else it is None.
+        'y': array of shape (n_subjects * 48,) or None
+            If make_Xy is true, then this is an array of shape
+            (n_subjects * 48,), else it is None.
+
+    References
+    ----------
+    [1] K. Jimura and R. Poldrack, "Analyses of regional-average activation
+        and multivoxel pattern information tell complementary stories",
+        Neuropsychologia, vol. 50, page 544, 2012
     """
     if n_subjects > 16:
         warnings.warn('Warning: there are only 16 subjects!')
@@ -2466,7 +2506,7 @@ def fetch_mixed_gambles(data_dir=None, n_subjects=1, url=None, resume=True,
             affine = img.get_affine()
             finite_mask = np.all(np.isfinite(this_X), axis=-1)
             this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
-                                  finite_mask)
+                                       finite_mask)
 
             # smooth data ?
             if smooth:
