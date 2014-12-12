@@ -92,11 +92,9 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                            cmap=pl.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
-        if threshold:
-            data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-        display.add_overlay(nibabel.Nifti1Image(data, affine),
-                           interpolation=interpolation, colorbar=colorbar,
-                           **kwargs)
+        display.add_overlay(nibabel.Nifti1Image(data, affine), 
+                            threshold=threshold, interpolation=interpolation,
+                            colorbar=colorbar, **kwargs)
 
     if annotate:
         display.annotate()

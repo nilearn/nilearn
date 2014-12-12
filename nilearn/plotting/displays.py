@@ -17,6 +17,7 @@ from .. import _utils
 try:
     import pylab as pl
     from matplotlib import transforms
+    from matplotlib.colorbar import ColorbarBase
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
@@ -402,7 +403,7 @@ class BaseSlicer(object):
         ims = self._map_show(img, type='imshow', **kwargs)
 
         if colorbar:
-            self._colorbar_show(ims[0])
+            self._colorbar_show(ims[0], threshold)
 
     def add_contours(self, img, **kwargs):
         """ Contour a 3D map in all the views.
@@ -467,7 +468,14 @@ class BaseSlicer(object):
                 ims.append(im)
         return ims
 
-    def _colorbar_show(self, im):
+    def _colorbar_show(self, im, threshold):
+        # sanity-check threshold
+        if threshold is None:
+            threshold = 0
+        if threshold > im.norm.vmax:
+            threshold = im.norm.vmax
+
+        # create new  axis for the colorbar
         x_adjusted_width = self._colorbar_width / len(self.axes)
         x_adjusted_right_margin = 0.01 / len(self.axes)
         figure = self.frame_axes.figure
@@ -481,21 +489,29 @@ class BaseSlicer(object):
             x_adjusted_width - x_adjusted_right_margin,
             y_width - 2 * y_margin])
 
-        # edge case where the data has a single value
-        # yields a cryptic matplotlib error message
-        # when trying to plot the color bar
+        our_cmap = im.cmap
         nb_ticks = 5 if im.norm.vmin != im.norm.vmax else 1
         ticks = np.linspace(im.norm.vmin, im.norm.vmax, nb_ticks)
-        figure.colorbar(im, cax=self._colorbar_ax, ticks=ticks)
+        bounds = np.linspace(im.norm.vmin, im.norm.vmax, our_cmap.N)
+
+        # some colormap hacking
+        cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+        istart = int(im.norm(-threshold) * (our_cmap.N - 1))
+        istop = int(im.norm(threshold) * (our_cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
+        our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+
+        ColorbarBase(self._colorbar_ax, ticks=ticks, norm=im.norm,
+                     orientation='vertical', cmap=our_cmap, boundaries=bounds,
+                     spacing='proportional')
+
         self._colorbar_ax.yaxis.tick_left()
         self._colorbar_ax.set_yticklabels(["% 2.2g" % t for t in ticks])
 
-        if self._black_bg:
-            color = 'w'
-        else:
-            color = 'k'
+        tick_color = 'w' if self._black_bg else 'k'
         for tick in self._colorbar_ax.yaxis.get_ticklabels():
-            tick.set_color(color)
+            tick.set_color(tick_color)
         self._colorbar_ax.yaxis.set_tick_params(width=0)
 
     def add_edges(self, img, color='r'):
