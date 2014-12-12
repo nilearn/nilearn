@@ -14,11 +14,10 @@ X, y, mask_img = data.X, data.y, data.mask_img
 
 ### Fit and predict ##########################################################
 from nilearn.decoding import SpaceNetRegressor
-penalties = ["smooth-lasso", "TV-L1"][1:]
+penalties = ["smooth-lasso", "tv-l1"]
 decoders = {}
 for penalty in penalties:
-    decoder = SpaceNetRegressor(mask=mask_img, penalty=penalty, verbose=2,
-                                l1_ratios=.9, n_jobs=3)
+    decoder = SpaceNetRegressor(mask=mask_img, penalty=penalty, verbose=2)
     decoder.fit(X, y)  # fit
     decoders[penalty] = decoder
 
