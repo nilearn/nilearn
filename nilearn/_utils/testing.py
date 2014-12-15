@@ -24,11 +24,11 @@ from .. import masking
 from . import logger
 
 try:
-    from sklearn.utils.testing import assert_raises_regexp
+    from nose.tools import assert_raises_regexp
 except ImportError:
-    # sklearn.utils.testing.assert_raises_regexp new in scikit-learn 0.15
-    def assert_raises_regexp(expected_exception, expected_regexp,
-                             callable_obj=None, *args, **kwargs):
+    # for Py 2.6
+    def assert_raises_regex(expected_exception, expected_regexp,
+                            callable_obj=None, *args, **kwargs):
         """Helper function to check for message patterns in exceptions"""
 
         not_raised = False
@@ -37,11 +37,10 @@ except ImportError:
             not_raised = True
         except Exception as e:
             error_message = str(e)
-            if not re.compile(expected_regexp).match(error_message):
-                raise AssertionError(
-                    "Error message should match pattern '%s'. "
-                    "'%s' does not." %
-                    (expected_regexp, error_message))
+            if not re.compile(expected_regexp).search(error_message):
+                raise AssertionError("Error message should match pattern "
+                                     "%r. %r does not." %
+                                     (expected_regexp, error_message))
         if not_raised:
             raise AssertionError("Should have raised %r" %
                                  expected_exception(expected_regexp))
