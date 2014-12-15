@@ -4,27 +4,9 @@ Test the resampling code.
 import copy
 import math
 
-from nose.tools import assert_equal, assert_raises, assert_raises_regexp, \
+from nose.tools import assert_equal, assert_raises, \
     assert_false, assert_true, assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-
-try:
-    from sklearn.utils.testing import assert_warns
-except ImportError:
-    # New in scikit-learn 0.14
-
-    # We implement a poor-man's version
-    import warnings
-    def assert_warns(warning_class, func, *args, **kw):
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("ignore", warning_class)
-            output = func(*args, **kw)
-        return output
-
-
-# The following import is not compliant with backward compatibility
-# requirements to sklearn
-# from sklearn.utils.testing import assert_raise_message
 
 import numpy as np
 
@@ -156,10 +138,10 @@ def test_resampling_error_checks():
     # Invalid interpolation
     interpolation = 'an_invalid_interpolation'
     pattern = "interpolation must be either.+{}".format(interpolation)
-    assert_raises_regexp(ValueError, pattern,
-                         resample_img, img, target_shape=target_shape,
-                         target_affine=affine,
-                         interpolation="an_invalid_interpolation")
+    testing.assert_raises_regexp(ValueError, pattern,
+                                 resample_img, img, target_shape=target_shape,
+                                 target_affine=affine,
+                                 interpolation="an_invalid_interpolation")
 
     # Noop
     target_shape = shape[:3]
@@ -241,16 +223,12 @@ def test_raises_upon_3x3_affine_and_no_shape():
                       affine=np.eye(4))
     exception = ValueError
     message = ("Given target shape without anchor "
-                   "vector: Affine should be (4, 4) and "
-                   "not (3, 3)")
-    function = lambda *args: resample_img(
-            img, target_affine=np.eye(3) * 2,
-            target_shape=(10, 10, 10))
-    # Avoid sklearn backwards compatibility issues
-    # assert_raise_message(exception, message, function)
-
-    with assert_raises(exception):
-        function()
+               "vector: Affine shape should be \(4, 4\) and "
+               "not \(3, 3\)")
+    testing.assert_raises_regexp(
+        exception, message,
+        resample_img, img, target_affine=np.eye(3) * 2,
+        target_shape=(10, 10, 10))
 
 
 def test_raises_bbox_error_if_data_outside_box():
@@ -293,14 +271,10 @@ def test_raises_bbox_error_if_data_outside_box():
         message = ("The field of view given "
                    "by the target affine does "
                    "not contain any of the data")
-        function = lambda *args: resample_img(img,
-                                              target_affine=new_affine)
 
-        # Avoid sklearn backward compatbility issues
-        # assert_raise_message(exception, message, function)
-
-        with assert_raises(exception):
-            function()
+        testing.assert_raises_regexp(
+            exception, message,
+            resample_img, img, target_affine=new_affine)
 
 
 def test_resampling_result_axis_permutation():
@@ -375,8 +349,9 @@ def test_resampling_nan():
 
         # check 3x3 transformation matrix
         target_affine = np.eye(3)[axis_permutation]
-        resampled_img = assert_warns(RuntimeWarning, resample_img, source_img,
-                                    target_affine=target_affine)
+        resampled_img = testing.assert_warns(
+            RuntimeWarning, resample_img, source_img,
+            target_affine=target_affine)
 
         resampled_data = resampled_img.get_data()
         if full_data.ndim == 4:
@@ -403,8 +378,9 @@ def test_resampling_nan():
     data = 10 * np.ones((10, 10, 10))
     data[4:6, 4:6, 4:6] = np.nan
     source_img = Nifti1Image(data, 2 * np.eye(4))
-    resampled_img = assert_warns(RuntimeWarning, resample_img, source_img,
-                                 target_affine=np.eye(4))
+    resampled_img = testing.assert_warns(
+        RuntimeWarning, resample_img, source_img,
+        target_affine=np.eye(4))
 
     resampled_data = resampled_img.get_data()
     np.testing.assert_allclose(10,
@@ -441,8 +417,8 @@ def test_reorder_img():
     # exception
     affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, affine)
-    assert_raises_regexp(ValueError, 'Cannot reorder the axes',
-                         reorder_img, ref_img)
+    testing.assert_raises_regexp(ValueError, 'Cannot reorder the axes',
+                                 reorder_img, ref_img)
 
     # Test that no exception is raised when resample='continuous'
     reorder_img(ref_img, resample='continuous')
@@ -459,9 +435,9 @@ def test_reorder_img():
     # Make sure invalid resample argument is included in the error message
     interpolation = 'an_invalid_interpolation'
     pattern = "interpolation must be either.+{}".format(interpolation)
-    assert_raises_regexp(ValueError, pattern,
-                         reorder_img, ref_img,
-                         resample=interpolation)
+    testing.assert_raises_regexp(ValueError, pattern,
+                                 reorder_img, ref_img,
+                                 resample=interpolation)
 
     # Test flipping an axis
     data = rng.rand(*shape)

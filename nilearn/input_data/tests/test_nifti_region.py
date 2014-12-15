@@ -5,7 +5,7 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_raises, assert_equal, assert_true, assert_raises_regexp
+from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 
 import nibabel
@@ -45,7 +45,8 @@ def test_nifti_labels_masker():
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    assert_raises_regexp(ValueError,
+    testing.assert_raises_regexp(
+        ValueError,
         'has not been fitted. ', masker11.transform, fmri11_img)
 
     # No exception raised here    
@@ -82,10 +83,10 @@ def test_nifti_labels_masker():
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    assert_raises_regexp(ValueError,
-        'has not been fitted. ',
+    testing.assert_raises_regexp(
+        ValueError, 'has not been fitted. ',
         NiftiLabelsMasker(labels11_img).inverse_transform, signals11)
-    
+
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
     assert_equal(fmri11_img_r.shape, fmri11_img.shape)
@@ -222,8 +223,9 @@ def test_nifti_maps_masker():
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img,
                                resampling_target=None)
 
-    assert_raises_regexp(ValueError,
-        'has not been fitted. ', masker11.transform, fmri11_img)
+    testing.assert_raises_regexp(
+        ValueError, 'has not been fitted. ',
+        masker11.transform, fmri11_img)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
@@ -256,7 +258,8 @@ def test_nifti_maps_masker():
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    assert_raises_regexp(ValueError, 'has not been fitted. ',
+    testing.assert_raises_regexp(
+        ValueError, 'has not been fitted. ',
         NiftiMapsMasker(labels11_img).inverse_transform, signals11)
 
     # Call inverse transform (smoke test)
