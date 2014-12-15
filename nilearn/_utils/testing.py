@@ -8,6 +8,7 @@ import urllib2
 import contextlib
 import warnings
 import inspect
+import re
 
 import numpy as np
 import scipy.signal
@@ -22,6 +23,38 @@ from .. import datasets
 from .. import masking
 from . import logger
 
+try:
+    from sklearn.utils.testing import assert_raises_regexp
+except ImportError:
+    # sklearn.utils.testing.assert_raises_regexp new in scikit-learn 0.15
+    def assert_raises_regexp(expected_exception, expected_regexp,
+                             callable_obj=None, *args, **kwargs):
+        """Helper function to check for message patterns in exceptions"""
+
+        not_raised = False
+        try:
+            callable_obj(*args, **kwargs)
+            not_raised = True
+        except Exception as e:
+            error_message = str(e)
+            if not re.compile(expected_regexp).match(error_message):
+                raise AssertionError(
+                    "Error message should match pattern '%s'. "
+                    "'%s' does not." %
+                    (expected_regexp, error_message))
+        if not_raised:
+            raise AssertionError("Should have raised %r" %
+                                 expected_exception(expected_regexp))
+
+try:
+    from sklearn.utils.testing import assert_warns
+except ImportError:
+    # sklearn.utils.testing.assert_warns new in scikit-learn 0.14
+    def assert_warns(warning_class, func, *args, **kw):
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("ignore", warning_class)
+            output = func(*args, **kw)
+        return output
 
 original_fetch_files = datasets._fetch_files
 
