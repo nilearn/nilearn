@@ -104,7 +104,7 @@ Python scientific stack
 We recommend that you **install a complete scientific Python
 distribution**, and not download the bare Python. Indeed, the scientific
 Python tool stack is rich. Installing the different packages needed one
-after is time-comsuming and error prone. error prone.
+after another is time-consuming and error prone.
 
 :Windows and MacOSX:
   We suggest that you install Anaconda_. [1]_
@@ -134,31 +134,18 @@ after is time-comsuming and error prone. error prone.
   packages as far as the standard python scientific stack is
   concerned.
 
-Nibabel: reading neuroimaging files
-....................................
+Installing nilearn
+-------------------
 
-`Nibabel <http://nipy.sourceforge.net/nibabel/>`_ is an easy to use
-reader of NeuroImaging data files. It is not included in scientific
-Python distributions, but is required for all parts of this tutorial.
-You can install it with the following command::
+The simplest way to install nilearn is to run the following command in
+a command prompt::
 
-  $ pip install -U --user nibabel
-
-If you are under linux, your package manager might have nibabel, for
-instance called `python-nibabel`.
+    $ pip install -U --pre --user nilearn
 
 .. warning::
 
    Note that this is a "shell" command, that you need to type in a
    command prompt, and not a Python command.
-
-Installing nilearn
--------------------
-
-The simplest way to install nilearn is to run the following command in
-a shell (i.e. not in a Python prompt)::
-
-    $ pip install -U --pre --user nilearn
 
 .. _testing_installation:
 

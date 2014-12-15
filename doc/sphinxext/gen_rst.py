@@ -450,6 +450,12 @@ def generate_example_rst(app):
 Examples
 ========
 
+.. warning::
+
+   If you want to run the examples you need to make sure you have installed
+   nilearn by following the instructions :ref:`there <installation>`.
+
+
 """)
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
