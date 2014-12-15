@@ -62,7 +62,7 @@ is possible, there is no need to save your data in a file to pass it to a
 in memory:
 
 
-.. literalinclude:: ../../examples/manipulating_images_and_visualization/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: Load NYU resting-state dataset
     :end-before: # To display the background
 
@@ -87,7 +87,7 @@ As an example, we will now try to build a mask based on a dataset from
 scratch. The Haxby dataset will be used since it provides a mask that we
 can use as a reference.
 
-.. figure:: ../auto_examples/manipulating_images_and_visualization/images/plot_mask_computation_2.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_2.png
     :target: ../auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
@@ -95,13 +95,13 @@ can use as a reference.
 The first step is to generate a mask with default parameters and take
 a look at it.
 
-.. literalinclude:: ../../examples/manipulating_images_and_visualization/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: # Simple mask extraction from EPI images
     :end-before: # Generate mask with strong opening
 
 ____
 
-.. figure:: ../auto_examples/manipulating_images_and_visualization/images/plot_mask_computation_3.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_3.png
     :target: ../auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
@@ -110,7 +110,7 @@ We can make the outline of the mask more by increasing the number of
 opening steps (*opening=10*) using the `mask_args` argument of the
 :class:`NiftiMasker`.
 
-.. literalinclude:: ../../examples/manipulating_images_and_visualization/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: # Generate mask with strong opening
     :end-before: # Generate mask with a high lower cutoff
 
@@ -124,13 +124,13 @@ which the masking algorithm is going to try to find it's threshold (where
 the lower cutoff, and thus force the masking algorithm to select only
 voxels that are very light on the EPI image.
 
-.. figure:: ../auto_examples/manipulating_images_and_visualization/images/plot_mask_computation_4.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_4.png
     :target: ../auto_examples/plot_mask_computation.html
     :align: right
     :scale: 50%
 
 
-.. literalinclude:: ../../examples/manipulating_images_and_visualization/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: # Generate mask with a high lower cutoff
     :end-before: ################################################################################
 
@@ -138,7 +138,7 @@ voxels that are very light on the EPI image.
 .. note::
 
     The full example described in this section can be found here:
-    :doc:`plot_mask_computation.py <../auto_examples/manipulating_images_and_visualization/plot_mask_computation>`.
+    :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
     This one can be relevant too:
     :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
@@ -173,13 +173,13 @@ Automatic computation of offset and bounding box can be performed by
 specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
 computes automatically the translation part of the affine.
 
-.. image:: ../auto_examples/manipulating_images_and_visualization/images/plot_affine_transformation_2.png
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_2.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_images_and_visualization/images/plot_affine_transformation_4.png
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_4.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_images_and_visualization/images/plot_affine_transformation_3.png
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_3.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 
