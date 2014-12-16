@@ -73,7 +73,7 @@ Loading the data into Python
 
 Launch ipython::
 
-  $ ipython --matplotlib
+  ipython --matplotlib
 
 First, load the data using nilearn's data downloading function,
 :func:`nilearn.datasets.fetch_haxby_simple`:
