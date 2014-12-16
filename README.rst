@@ -3,7 +3,12 @@
 nilearn
 =======
 
-This projects contains a tutorial on how to process functional Magnetic Resonance Imaging (fMRI) data with the scikit-learn.
+NiLearn is a Python module for fast and easy statistical learning on
+NeuroImaging data.
+
+It leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate
+statistics with applications such as predictive modelling,
+classification, decoding, or connectivity analysis.
 
 This work is made available by the INRIA Parietal Project Team and the
 scikit-learn folks, among which P. Gervais, A. Abraham, V. Michel, A.
