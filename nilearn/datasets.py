@@ -1932,7 +1932,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                                     safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
-                "brainomics_data", subject_id, "boolean_mask.nii.gz")
+                "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
