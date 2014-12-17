@@ -36,17 +36,12 @@ a separator.
 ### Load Haxby dataset ########################################################
 from nilearn import datasets
 import numpy as np
-dataset_files = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby_simple()
 
-y, session = np.loadtxt(dataset_files.session_target).astype("int").T
-conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
-mask_file = dataset_files.mask
-# fmri_data.shape is (40, 64, 64, 1452)
-# and mask.shape is (40, 64, 64)
+y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 ### Preprocess data ###########################################################
-
-### Restrict to faces and houses ##############################################
 
 # Keep only data corresponding to shoes or bottles
 condition_mask = np.logical_or(conditions == 'shoe', conditions == 'bottle')
@@ -55,11 +50,14 @@ conditions = conditions[condition_mask]
 
 ### Loading step ##############################################################
 from nilearn.input_data import NiftiMasker
+
+mask_filename = haxby_dataset.mask
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=mask_file, sessions=session, smoothing_fwhm=4,
-                           standardize=True, memory="nilearn_cache",
-                           memory_level=1)
-X = nifti_masker.fit_transform(dataset_files.func)
+nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
+                           smoothing_fwhm=4, standardize=True,
+                           memory="nilearn_cache", memory_level=1)
+func_filename = haxby_dataset.func
+X = nifti_masker.fit_transform(func_filename)
 # Restrict to non rest data
 X = X[condition_mask]
 session = session[condition_mask]
@@ -101,7 +99,7 @@ scores_validation = []
 for k in k_range:
     feature_selection.k = k
     cv_scores.append(np.mean(
-            cross_val_score(anova_svc, X[session < 10], y[session < 10])))
+        cross_val_score(anova_svc, X[session < 10], y[session < 10])))
     print "CV score", cv_scores[-1]
 
     anova_svc.fit(X[session < 10], y[session < 10])

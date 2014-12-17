@@ -5,14 +5,13 @@ Independent component analysis of resting-state fMRI
 An example applying ICA to resting-state data.
 """
 
-import numpy as np
-
 ### Load nyu_rest dataset #####################################################
 from nilearn import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
-dataset = datasets.fetch_nyu_rest(n_subjects=1)
 # XXX: must get the code to run for more than 1 subject
+nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
+func_filename = nyu_dataset.func[0]
 
 ### Preprocess ################################################################
 from nilearn.input_data import NiftiMasker
@@ -22,10 +21,10 @@ from nilearn.input_data import NiftiMasker
 # EPI images
 masker = NiftiMasker(smoothing_fwhm=8, memory='nilearn_cache', memory_level=1,
                      mask_strategy='epi', standardize=False)
-data_masked = masker.fit_transform(dataset.func[0])
+data_masked = masker.fit_transform(func_filename)
 
 # Concatenate all the subjects
-#fmri_data = np.concatenate(data_masked, axis=1)
+# fmri_data = np.concatenate(data_masked, axis=1)
 fmri_data = data_masked
 
 
@@ -55,12 +54,12 @@ from nilearn import image
 from nilearn.plotting import plot_stat_map
 
 # Use the mean as a background
-mean_img = image.mean_img(dataset.func[0])
+mean_img = image.mean_img(func_filename)
 
-plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:,:,:,5], 
+plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:, :, :, 5],
                                   component_img.get_affine()), mean_img)
 
-plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:,:,:,12], 
+plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:, :, :, 12],
                                   component_img.get_affine()), mean_img)
 
 plt.show()

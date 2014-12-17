@@ -8,11 +8,12 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
-data = datasets.fetch_haxby()
+haxby_dataset = datasets.fetch_haxby()
 
 # Build the mean image because we have no anatomic data
 from nilearn import image
-mean_img = image.mean_img(data.func[0])
+func_filename = haxby_dataset.func[0]
+mean_img = image.mean_img(func_filename)
 
 z_slice = -24
 from nilearn.image.resampling import coord_transform
@@ -26,11 +27,14 @@ fig = plt.figure(figsize=(4, 5.4), facecolor='k')
 from nilearn.plotting import plot_anat
 display = plot_anat(mean_img, display_mode='z', cut_coords=[z_slice],
                     figure=fig)
-display.add_contours(data.mask_vt[0], contours=1, antialiased=False,
+mask_vt_filename = haxby_dataset.mask_vt[0]
+mask_house_filename = haxby_dataset.mask_house[0]
+mask_face_filename = haxby_dataset.mask_face[0]
+display.add_contours(mask_vt_filename, contours=1, antialiased=False,
                      linewidths=4., levels=[0], colors=['red'])
-display.add_contours(data.mask_house[0], contours=1, antialiased=False,
+display.add_contours(mask_house_filename, contours=1, antialiased=False,
                      linewidths=4., levels=[0], colors=['blue'])
-display.add_contours(data.mask_face[0], contours=1, antialiased=False,
+display.add_contours(mask_face_filename, contours=1, antialiased=False,
                      linewidths=4., levels=[0], colors=['limegreen'])
 
 # We generate a legend using the trick described on

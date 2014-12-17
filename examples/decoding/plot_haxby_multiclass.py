@@ -12,11 +12,12 @@ from matplotlib import pyplot as plt
 ### Load Haxby dataset ########################################################
 from nilearn import datasets
 import numpy as np
-dataset_files = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby_simple()
+func_filename = haxby_dataset.func
+mask_filename = haxby_dataset.mask
 
-# fmri_data and mask are copied to break any reference to the original object
-y, session = np.loadtxt(dataset_files.session_target).astype("int").T
-conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 # Remove the rest condition, it is not very interesting
 non_rest = conditions != 'rest'
@@ -31,10 +32,10 @@ unique_conditions = unique_conditions[np.argsort(order)]
 ### Loading step ##############################################################
 from nilearn.input_data import NiftiMasker
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=dataset_files.mask, standardize=True,
+nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True,
                            sessions=session, smoothing_fwhm=4,
                            memory="nilearn_cache", memory_level=1)
-X = nifti_masker.fit_transform(dataset_files.func)
+X = nifti_masker.fit_transform(func_filename)
 X = X[non_rest]
 session = session[non_rest]
 

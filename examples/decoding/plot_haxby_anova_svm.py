@@ -10,18 +10,14 @@ houses conditions.
 ### Load Haxby dataset ########################################################
 from nilearn import datasets
 import numpy as np
-dataset_files = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby_simple()
 
-y, session = np.loadtxt(dataset_files.session_target).astype("int").T
-conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
-mask = dataset_files.mask
-# fmri_data.shape is (40, 64, 64, 1452)
-# and mask.shape is (40, 64, 64)
+y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 ### Preprocess data ###########################################################
 
 ### Restrict to faces and houses ##############################################
-# Keep only data corresponding to faces or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 y = y[condition_mask]
 conditions = conditions[condition_mask]
@@ -31,11 +27,14 @@ n_conditions = np.size(np.unique(y))
 
 ### Loading step ##############################################################
 from nilearn.input_data import NiftiMasker
+
+mask_filename = haxby_dataset.mask
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=mask, sessions=session, smoothing_fwhm=4,
-                           standardize=True, memory="nilearn_cache",
-                           memory_level=1)
-X = nifti_masker.fit_transform(dataset_files.func)
+nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
+                           smoothing_fwhm=4, standardize=True,
+                           memory="nilearn_cache", memory_level=1)
+func_filename = haxby_dataset.func
+X = nifti_masker.fit_transform(func_filename)
 # Apply our condition_mask
 X = X[condition_mask]
 session = session[condition_mask]
@@ -83,13 +82,12 @@ import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 
 # Plot the mean image because we have no anatomic data
-mean_img = image.mean_img(dataset_files.func)
+mean_img = image.mean_img(func_filename)
 
 plot_stat_map(weight_img, mean_img, title='SVM weights')
 
 ### Saving the results as a Nifti file may also be important
-import nibabel
-nibabel.save(weight_img, 'haxby_face_vs_house.nii')
+weight_img.to_filename('haxby_face_vs_house.nii')
 
 ### Cross validation ##########################################################
 
