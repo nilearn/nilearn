@@ -35,7 +35,7 @@ y_test = target[condition_mask_test]
 
 ### Loop over Smooth-LASSO and TV-L1 penalties ###############################
 from nilearn.decoding import SpaceNetClassifier
-penalties = ['smooth-lasso', 'tv-l1'][1:]
+penalties = ['smooth-lasso', 'tv-l1']
 decoders = {}
 accuracies = {}
 for penalty in penalties:
