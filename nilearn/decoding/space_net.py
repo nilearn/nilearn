@@ -420,7 +420,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     else:
         if alphas is None:
             raise RuntimeError
-        best_alpha = alphas[0]
+        alphas_ = alphas
+        best_alpha = alphas_[0]
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
     best_w, _, init = solver(X_train, y_train, best_alpha, best_l1_ratio,
@@ -450,7 +451,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_w = np.append(best_w, 0.)
 
     all_test_scores = np.array(all_test_scores)
-    return (all_test_scores, best_w, best_alpha, best_l1_ratio,
+    return (all_test_scores, best_w, best_alpha, best_l1_ratio, alphas_,
             y_train_mean, key)
 
 
@@ -793,6 +794,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         # scores & mean weights map over all folds
         self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
+        self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
         # correct screening_percentile according to the volume of the data mask
         mask_volume = _get_mask_volume(self.mask_img_)
@@ -815,25 +817,34 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
         self.best_model_params_ = []
-        for (test_scores, best_w, best_alpha, best_l1_ratio, y_train_mean,
-             c) in Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)(
+        self.alpha_grids_ = []
+        for (test_scores, best_w, best_alpha, best_l1_ratio, alphas,
+             y_train_mean, (cls, fold)) in Parallel(
+            n_jobs=self.n_jobs, verbose=2 * self.verbose)(
             delayed(self.memory_.cache(path_scores))(
-                solver, X, y[:, c] if n_problems > 1 else y, self.mask_,
-                alphas, l1_ratios, train, test,
+                solver, X, y[:, cls] if n_problems > 1 else y, self.mask_,
+                alphas, l1_ratios, self.cv_[fold][0], self.cv_[fold][1],
                 solver_params, n_alphas=self.n_alphas, eps=self.eps,
-                is_classif=self.loss == "logistic", key=c,
+                is_classif=self.loss == "logistic", key=(cls, fold),
                 debias=self.debias, verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
-                ) for c in xrange(n_problems) for (train, test) in self.cv_):
+                ) for cls in xrange(n_problems) for fold in xrange(n_folds)):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
-            self.ymean_[c] += y_train_mean
+            self.alpha_grids_.append(alphas)
+            self.ymean_[cls] += y_train_mean
+            self.all_coef_[cls, fold] = best_w[:-1]
             if len(np.atleast_1d(l1_ratios)) == 1:
                 test_scores = test_scores[0]
-            self.cv_scores_[c].append(test_scores)
-            w[c] += best_w
+            self.cv_scores_[cls].append(test_scores)
+            w[cls] += best_w
 
+        # misc
+        self.cv_scores_ = np.array(self.cv_scores_)
+        self.alpha_grids_ = np.array(self.alpha_grids_)
         self.ymean_ /= n_folds
         if not self.is_classif:
+            self.all_coef_ = np.array(self.all_coef_)
+            w = w[0]
             self.ymean_ = self.ymean_[0]
 
         # bagging: average best weights maps over folds
