@@ -252,8 +252,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     """
     if verbose > 0:
         print "EPI mask computation"
-    # We suppose that it is an img
-    # XXX make a is_a_imgs function ?
+
+    epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -418,8 +418,8 @@ def compute_background_mask(data_imgs, border_size=2,
     """
     if verbose > 0:
         print "Background mask computation"
-    # We suppose that it is an img
-    # XXX make a is_a_imgs function ?
+
+    data_imgs = _utils.check_niimgs(data_imgs, accept_3d=True)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
