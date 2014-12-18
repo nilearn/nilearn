@@ -36,6 +36,10 @@ import numpy as np
 
 from sklearn.externals import joblib
 
+# what's a demo script ?
+demo_regexp = re.compile(os.environ.get("DEMO_REGEXP", "plot_.*?\.py"))
+
+
 ###############################################################################
 # A tee object to redict streams to multiple outputs
 
@@ -671,7 +675,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
     time_elapsed = 0
     time_m = 0
     time_s = 0
-    if plot_gallery and fname.startswith('plot_haxby_space_net.py'):
+    if plot_gallery and demo_regexp.search(fname):
         # generate the plot as png image if file name
         # starts with plot and if it is more recent than an
         # existing image.

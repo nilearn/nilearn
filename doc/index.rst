@@ -33,6 +33,9 @@
 .. |banner6| image:: auto_examples/decoding/images/plot_haxby_searchlight_1.png
    :target: auto_examples/decoding/plot_haxby_searchlight.html
 
+.. |banner7| image:: auto_examples/decoding/images/plot_poldrack_space_net_1.png
+   :target: auto_examples/decoding/plot_poldrack_space_net.html
+
 .. raw:: html
 
    <div id="index-grid" class="section group">
