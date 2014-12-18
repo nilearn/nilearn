@@ -9,6 +9,7 @@ Voxel-Based Morphometry on Oasis dataset with Space-Net prior
 n_subjects = 100  # more subjects requires more memory
 n_subjects_train = 100
 
+
 ### Load Oasis dataset ########################################################
 import numpy as np
 from nilearn import datasets
