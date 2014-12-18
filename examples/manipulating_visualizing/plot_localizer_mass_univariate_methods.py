@@ -26,13 +26,14 @@ from nilearn.mass_univariate import permuted_ols
 
 ### Load Localizer contrast ###################################################
 n_samples = 94
-dataset_files = datasets.fetch_localizer_contrasts(
+localizer_dataset = datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'], n_subjects=n_samples)
-tested_var = dataset_files.ext_vars['pseudo']
+tested_var = localizer_dataset.ext_vars['pseudo']
 # Quality check / Remove subjects with bad tested variate
 mask_quality_check = np.where(tested_var != 'None')[0]
 n_samples = mask_quality_check.size
-contrast_maps = [dataset_files.cmaps[i] for i in mask_quality_check]
+contrast_map_filenames = [localizer_dataset.cmaps[i]
+                          for i in mask_quality_check]
 tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
 print("Actual number of subjects after quality check: %d" % n_samples)
 
@@ -40,7 +41,7 @@ print("Actual number of subjects after quality check: %d" % n_samples)
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
     memory='nilearn_cache', memory_level=1)  # cache options
-fmri_masked = nifti_masker.fit_transform(contrast_maps)
+fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
 ### Anova (parametric F-scores) ###############################################
 from nilearn._utils.fixes import f_regression

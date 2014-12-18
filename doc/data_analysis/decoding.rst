@@ -53,8 +53,8 @@ corresponding category.
 
    Cat stimuli
 
-.. figure:: ../auto_examples/manipulating_images_and_visualization/images/plot_haxby_masks_1.png
-   :target: ../auto_examples/manipulating_images_and_visualization/plot_haxby_masks.html
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_masks_1.png
+   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
    :scale: 30
    :align: left
 
@@ -73,7 +73,7 @@ Loading the data into Python
 
 Launch ipython::
 
-  $ ipython --matplotlib
+  ipython --matplotlib
 
 First, load the data using nilearn's data downloading function,
 :func:`nilearn.datasets.fetch_haxby_simple`:
@@ -331,8 +331,8 @@ permutation testing on the labels, with
     scores.
 
 
-.. figure:: ../auto_examples/manipulating_images_and_visualization/images/plot_haxby_masks_1.png
-   :target: ../auto_examples/manipulating_images_and_visualization/plot_haxby_masks.html
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_masks_1.png
+   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
    :scale: 55
    :align: left
 

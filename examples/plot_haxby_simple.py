@@ -10,13 +10,13 @@ stream.
 ### Load haxby dataset ########################################################
 
 from nilearn import datasets
-data = datasets.fetch_haxby()
+haxby_dataset = datasets.fetch_haxby()
 
 ### Load Target labels ########################################################
 
 import numpy as np
 # Load target information as string and give a numerical identifier to each
-labels = np.recfromcsv(data.session_target[0], delimiter=" ")
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 
 # scikit-learn >= 0.14 supports text labels. You can replace this line by:
 # target = labels['labels']
@@ -31,12 +31,14 @@ target = target[condition_mask]
 ### Prepare the data: apply the mask ##########################################
 
 from nilearn.input_data import NiftiMasker
+mask_filename = haxby_dataset.mask_vt[0]
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=data.mask_vt[0], standardize=True)
+nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 
+func_filename = haxby_dataset.func[0]
 # We give the nifti_masker a filename and retrieve a 2D array ready
 # for machine learning with scikit-learn
-fmri_masked = nifti_masker.fit_transform(data.func[0])
+fmri_masked = nifti_masker.fit_transform(func_filename)
 
 # Restrict the classification to the face vs cat discrimination
 fmri_masked = fmri_masked[condition_mask]
@@ -74,16 +76,15 @@ coef_ = svc.coef_
 # Reverse masking thanks to the Nifti Masker
 coef_img = nifti_masker.inverse_transform(coef_)
 
-# Use nibabel to save the coefficients as a Nifti image
-import nibabel
-nibabel.save(coef_img, 'haxby_svc_weights.nii')
+# Save the coefficients as a Nifti image
+coef_img.to_filename('haxby_svc_weights.nii')
 
 ### Visualization #############################################################
 import pylab as plt
 from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi, plot_stat_map
 
-mean_epi = mean_img(data.func[0])
+mean_epi = mean_img(func_filename)
 plot_stat_map(coef_img, mean_epi, title="SVM weights", display_mode="yx")
 
 plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask", display_mode="yx")

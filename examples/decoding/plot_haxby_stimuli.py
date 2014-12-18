@@ -10,10 +10,10 @@ Cortex" (Science 2001)
 from scipy.misc import imread
 import matplotlib.pyplot as plt
 
-from nilearn.datasets import fetch_haxby
+from nilearn import datasets
 
-stimulus_information = fetch_haxby(n_subjects=0,
-                                   fetch_stimuli=True).stimuli
+haxby_dataset = datasets.fetch_haxby(n_subjects=0, fetch_stimuli=True)
+stimulus_information = haxby_dataset.stimuli
 
 for stim_type in sorted(stimulus_information.keys()):
     if stim_type == "controls":
@@ -34,4 +34,3 @@ for stim_type in sorted(stimulus_information.keys()):
     plt.suptitle(stim_type)
 
 plt.show()
-

@@ -1806,12 +1806,6 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
          individual functional cognitive networks."
         BMC neuroscience 8.1 (2007): 91.
 
-    Caveats
-    -------
-    When n_subjects < 94 is specified, all subjects are actually downloaded.
-    However, the caching system only checks for the presence of the n_subjects
-    first subjects on disk.
-
     """
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
@@ -1898,55 +1892,59 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     #   is generated on the remote server)
     # - Local (cached) version of the files can be checked for each contrast
     opts = {'uncompress': True}
+    subject_ids = ["S%02d" % s for s in range(1, n_subjects + 1)]
+    subject_id_max = subject_ids[-1]
     data_types = ["c map"]
     if get_tmaps:
         data_types.append("t map")
     rql_types = str.join(", ", ["\"%s\"" % x for x in data_types])
     root_url = "http://brainomics.cea.fr/localizer/"
+
+    base_query = ("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
+                  "X concerns S, "
+                  "X label XL, X identifier XI, "
+                  "X format XF, X description XD, "
+                  'S identifier <= "%s", ' % (subject_id_max, ) +
+                  'X type IN(%(types)s), X label "%(label)s"')
+
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
             % (root_url, i,
-               urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
-                            "X label XL, X identifier XI, "
-                            "X format XF, X description XD, "
-                            "X type IN(%s), X label \"%s\"" % (rql_types, c),
+               urllib.quote(base_query % {"types": rql_types,
+                                          "label": c},
                             safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
     filenames = []
-    for s in np.arange(1, n_subjects + 1):
+    for subject_id in subject_ids:
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
                 name_aux = str.replace(
                     str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
-                    "brainomics_data", "S%02d" % s, "%s.nii.gz" % name_aux)
+                    "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
                 file_tarball_url = urls[contrast_id]
                 filenames.append((file_path, file_tarball_url, opts))
     # Fetch masks if asked by user
     if get_masks:
         urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                    "X type XT, X label XL, X identifier XI, "
-                                    "X format XF, X description XD, "
-                                    "X type IN(\"boolean mask\"), "
-                                    "X label \"mask\"", safe=',()')))
-        for s in np.arange(1, n_subjects + 1):  # 94 subjects available
+                       urllib.quote(base_query % {"types": '"boolean mask"',
+                                                  "label": "mask"},
+                                    safe=',()')))
+        for subject_id in subject_ids:
             file_path = os.path.join(
-                "brainomics_data", "S%02d" % s, "boolean_mask.nii.gz")
+                "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
         urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                    "X type XT, X label XL, X identifier XI, "
-                                    "X format XF, X description XD, "
-                                    "X type IN(\"normalized T1\"), "
-                                    "X label \"anatomy\"", safe=',()')))
-        for s in np.arange(1, n_subjects + 1):
+                       urllib.quote(base_query % {"types": '"normalized T1"',
+                                                  "label": "anatomy"},
+                                    safe=',()')))
+        for subject_id in subject_ids:
             file_path = os.path.join(
-                "brainomics_data", "S%02d" % s,
+                "brainomics_data", subject_id,
                 "normalized_T1_anat_defaced.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))

@@ -25,11 +25,11 @@ from nilearn import datasets
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
 
-dataset = datasets.fetch_miyawaki2008()
-X_random = dataset.func[12:]
-X_figure = dataset.func[:12]
-y_random = dataset.label[12:]
-y_figure = dataset.label[:12]
+miyawaki_dataset = datasets.fetch_miyawaki2008()
+X_random_filenames = miyawaki_dataset.func[12:]
+X_figure_filenames = miyawaki_dataset.func[:12]
+y_random_filenames = miyawaki_dataset.label[12:]
+y_figure_filenames = miyawaki_dataset.label[:12]
 y_shape = (10, 10)
 
 sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
@@ -42,20 +42,20 @@ sys.stderr.write("Preprocessing data...")
 t0 = time.time()
 
 # Load and mask fMRI data
-masker = MultiNiftiMasker(mask_img=dataset.mask, detrend=True,
+masker = MultiNiftiMasker(mask_img=miyawaki_dataset.mask, detrend=True,
                           standardize=False)
 masker.fit()
-X_train = masker.transform(X_random)
-X_test = masker.transform(X_figure)
+X_train = masker.transform(X_random_filenames)
+X_test = masker.transform(X_figure_filenames)
 
 # Load visual stimuli from csv files
 y_train = []
-for y in y_random:
+for y in y_random_filenames:
     y_train.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
                               (-1,) + y_shape, order='F'))
 
 y_test = []
-for y in y_figure:
+for y in y_figure_filenames:
     y_test.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
                              (-1,) + y_shape, order='F'))
 
@@ -140,7 +140,7 @@ for i in range(y_train.shape[1]):
     clfs.append(clf)
 
 sys.stderr.write("Training classifiers %03d/%d... Done (%.2fs).\n" % (
-        n_clfs, n_clfs, time.time() - t0))
+    n_clfs, n_clfs, time.time() - t0))
 
 
 ### Prediction ################################################################
@@ -189,7 +189,7 @@ def split_multi_scale(y, y_shape):
     width_tf_i.flat[0] = 1
     width_tf_i.flat[-1] = 1
     y_pred_large = [np.dot(np.reshape(m, (yw, yh - 1)), width_tf_i).flatten()
-                   for m in y_preds[2]]
+                    for m in y_preds[2]]
     y_pred_large = np.asarray(y_pred_large)
 
     # y_pred_big is the image with 2x2 patch application. We use previous
@@ -204,26 +204,26 @@ def split_multi_scale(y, y_shape):
 
 
 y_pred, y_pred_tall, y_pred_large, y_pred_big = \
-        split_multi_scale(y_pred, y_shape)
+    split_multi_scale(y_pred, y_shape)
 
 y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
-    + .25 * y_pred_big)
+          + .25 * y_pred_big)
 
 sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
-from sklearn.metrics import accuracy_score, precision_score, recall_score, \
-                            f1_score
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                             f1_score)
 
 print "Scores"
 print "------"
 print "  - Accuracy (percent): %f" % np.mean([
-        accuracy_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+    accuracy_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
 print "  - Precision: %f" % np.mean([
-        precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+    precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
 print "  - Recall: %f" % np.mean([
-        recall_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+    recall_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
 print "  - F1-score: %f" % np.mean([
-        f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+    f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
 
 # Generate six images from reconstruction
 
@@ -240,9 +240,9 @@ for i in range(6):
     sp3.axis('off')
     plt.title('Binarized')
     sp1.imshow(np.reshape(y_test[j], (10, 10)), cmap=plt.cm.gray,
-    interpolation='nearest'),
+               interpolation='nearest'),
     sp2.imshow(np.reshape(y_pred[j], (10, 10)), cmap=plt.cm.gray,
-    interpolation='nearest'),
+               interpolation='nearest'),
     sp3.imshow(np.reshape(y_pred[j] > .5, (10, 10)), cmap=plt.cm.gray,
-    interpolation='nearest')
+               interpolation='nearest')
     plt.savefig('miyawaki2008_reconstruction_%d' % i)

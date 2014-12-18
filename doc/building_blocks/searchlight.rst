@@ -186,11 +186,11 @@ is its associated p-value. The
 :func:`nilearn.mass_univariate.permuted_ols` function returns the
 p-values computed with a permutation test.
 
-.. literalinclude:: ../../examples/manipulating_images_and_visualization/plot_haxby_mass_univariate.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_haxby_mass_univariate.py
    :start-after: from nilearn.input_data import NiftiMasker
    :end-before: ### Load Haxby dataset
 
-.. literalinclude:: ../../examples/manipulating_images_and_visualization/plot_haxby_mass_univariate.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_haxby_mass_univariate.py
    :start-after: ### Perform massively univariate analysis with permuted OLS
    :end-before: neg_log_pvals_unmasked
 
@@ -211,8 +211,8 @@ every voxel so that the F-statistics are comparable. This correction
 strategy is applied in Nilearn's
 :func:`nilearn.mass_univariate.permuted_ols` function.
 
-.. figure:: ../auto_examples/manipulating_images_and_visualization/images/plot_haxby_mass_univariate_1.png
-   :target: ../auto_examples/manipulating_images_and_visualization/plot_haxby_searchlight.html
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_mass_univariate_1.png
+   :target: ../auto_examples/manipulating_visualizing/plot_haxby_searchlight.html
    :align: center
    :scale: 60
 

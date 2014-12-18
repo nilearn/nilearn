@@ -13,12 +13,11 @@ import tarfile
 import gzip
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises,\
-    assert_raises_regexp
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from .. import datasets
 from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
-    FetchFilesMock
+    FetchFilesMock, assert_raises_regexp
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')

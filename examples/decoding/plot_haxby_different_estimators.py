@@ -10,11 +10,11 @@ import time
 
 ### Fetch data using nilearn dataset fetcher ################################
 from nilearn import datasets
-data_files = datasets.fetch_haxby(n_subjects=1)
+haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
 # load labels
 import numpy as np
-labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 stimuli = labels['labels']
 # identify resting state labels in order to be able to remove them
 resting_state = stimuli == "rest"
@@ -29,9 +29,10 @@ session_labels = labels["chunks"][resting_state == False]
 from nilearn.input_data import NiftiMasker
 
 # For decoding, standardizing is often very important
-masker = NiftiMasker(mask_img=data_files['mask_vt'][0], standardize=True)
-masked_timecourses = masker.fit_transform(
-    data_files.func[0])[resting_state == False]
+mask_filename = haxby_dataset.mask_vt[0]
+masker = NiftiMasker(mask_img=mask_filename, standardize=True)
+func_filename = haxby_dataset.func[0]
+masked_timecourses = masker.fit_transform(func_filename)[resting_state == False]
 
 ### Classifiers definition
 
@@ -56,10 +57,10 @@ logistic_l2 = LogisticRegression(C=1., penalty="l2")
 
 logistic_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
                            param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                      scoring='f1')
+                           scoring='f1')
 logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
-                           param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                      scoring='f1')
+                              param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
+                              scoring='f1')
 
 ridge = RidgeClassifier()
 ridge_cv = RidgeClassifierCV()
@@ -109,10 +110,10 @@ tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
 for color, classifier_name in zip(
-                    ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#ffaaaa'],
-                    sorted(classifiers)):
+        ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#ffaaaa'],
+        sorted(classifiers)):
     score_means = [classifiers_scores[classifier_name][category].mean()
-                for category in categories]
+                   for category in categories]
     plt.bar(tick_position, score_means, label=classifier_name,
             width=.11, color=color)
     tick_position = tick_position + .09
@@ -129,7 +130,7 @@ plt.tight_layout()
 
 # use the average EPI as a background
 from nilearn import image
-mean_epi_img = image.mean_img(data_files.func[0])
+mean_epi_img = image.mean_img(func_filename)
 
 # Restrict the decoding to face vs house
 condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')

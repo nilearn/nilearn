@@ -50,9 +50,9 @@ def plot_matrices(cov, prec, title):
 
 
 print("-- Fetching datasets ...")
-import nilearn.datasets
-atlas = nilearn.datasets.fetch_msdl_atlas()
-dataset = nilearn.datasets.fetch_adhd()
+from nilearn import datasets
+msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+adhd_dataset = datasets.fetch_adhd()
 
 import nilearn.image
 import nilearn.input_data
@@ -64,21 +64,24 @@ mem = Memory(".")
 n_subjects = 10
 subjects = []
 
-for subject_n in range(n_subjects):
-    filename = dataset["func"][subject_n]
-    print("Processing file %s" % filename)
+func_filenames = adhd_dataset.func
+confound_filenames = adhd_dataset.confounds
+for func_filename, confound_filename in zip(func_filenames,
+                                            confound_filenames):
+    print("Processing file %s" % func_filename)
 
     print("-- Computing confounds ...")
-    confound_file = dataset["confounds"][subject_n]
-    hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(filename)
+    hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(
+        func_filename)
 
     print("-- Computing region signals ...")
     masker = nilearn.input_data.NiftiMapsMasker(
-        atlas["maps"], resampling_target="maps", detrend=True,
+        msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
         low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
         memory=mem, memory_level=1, verbose=1)
-    region_ts = masker.fit_transform(filename,
-                                     confounds=[hv_confounds, confound_file])
+    region_ts = masker.fit_transform(func_filename,
+                                     confounds=[hv_confounds,
+                                                confound_filename])
     subjects.append(region_ts)
 
 

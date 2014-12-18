@@ -14,11 +14,12 @@ import numpy as np
 import nibabel
 from nilearn import datasets
 
-dataset_files = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby_simple()
 
-fmri_img = nibabel.load(dataset_files.func)
-y, session = np.loadtxt(dataset_files.session_target).astype("int").T
-conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
+fmri_filename = haxby_dataset.func
+fmri_img = nibabel.load(fmri_filename)
+y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 ### Restrict to faces and houses ##############################################
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
@@ -34,7 +35,7 @@ conditions = conditions[condition_mask]
 #   should be processed (we only keep the slice z = 26 and the back of the
 #   brain to speed up computation)
 
-mask_img = nibabel.load(dataset_files.mask)
+mask_img = nibabel.load(haxby_dataset.mask)
 
 # .astype() makes a copy.
 process_mask = mask_img.get_data().astype(np.int)
@@ -60,10 +61,11 @@ cv = KFold(y.size, n_folds=4)
 
 import nilearn.decoding
 # The radius is the one of the Searchlight sphere that will scan the volume
-searchlight = nilearn.decoding.SearchLight(mask_img,
-                                      process_mask_img=process_mask_img,
-                                      radius=5.6, n_jobs=n_jobs,
-                                      verbose=1, cv=cv)
+searchlight = nilearn.decoding.SearchLight(
+    mask_img,
+    process_mask_img=process_mask_img,
+    radius=5.6, n_jobs=n_jobs,
+    verbose=1, cv=cv)
 searchlight.fit(fmri_img, y)
 
 ### F-scores computation ######################################################

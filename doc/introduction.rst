@@ -140,7 +140,7 @@ Installing nilearn
 The simplest way to install nilearn is to run the following command in
 a command prompt::
 
-    $ pip install -U --pre --user nilearn
+    pip install -U --pre --user nilearn
 
 .. warning::
 
@@ -174,7 +174,7 @@ want the latest nilearn version you can do so by using git.
 * **Under Linux**, run the following command (as a shell command, not a
   Python command)::
 
-    $ git clone https://github.com/nilearn/nilearn.git
+    git clone https://github.com/nilearn/nilearn.git
 
 As time goes, you can update your copy of nilearn by doing "git pull" in
 this directory.
@@ -190,7 +190,7 @@ Setting up the development version
 In the ``nilearn`` directory created by the previous steps, run (as a
 shell command, once again)::
 
-    $ python setup.py install --user
+    python setup.py install --user
 
 To make sure that the installation went smoothly, you can follow the
 same steps as in :ref:`testing_installation`.
@@ -207,7 +207,7 @@ using Python for science, see the `scipy lecture notes
 We will be using `IPython <http://ipython.org>`_, which provides an
 interactive scientific environment. Start it with::
 
-    $ ipython --matplotlib
+    ipython --matplotlib
 
 which will open an interactive prompt::
 

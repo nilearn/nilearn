@@ -64,14 +64,9 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 2.6',
               'Programming Language :: Python :: 2.7',
           ],
-          packages=(find_packages() +
-                    # The following are actually not packages
-                    # and contain only data
-                    ['nilearn/data',
-                     'nilearn/plotting/glass_brain_files',
-                     'nilearn/tests/data']),
-          package_data={'nilearn/data': ['*.nii.gz'],
-                        'nilearn/plotting/glass_brain_files': ['*.json'],
-                        'nilearn/tests/data': ['*']},
+          packages=find_packages(),
+          package_data={'nilearn.data': ['*.nii.gz'],
+                        'nilearn.plotting.glass_brain_files': ['*.json'],
+                        'nilearn.tests.data': ['*']},
           install_requires=['nibabel>=1.1.0'],
     )
