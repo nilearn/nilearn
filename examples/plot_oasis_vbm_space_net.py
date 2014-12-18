@@ -9,6 +9,7 @@ Voxel-Based Morphometry on Oasis dataset with Space-Net prior
 n_subjects = 100  # more subjects requires more memory
 n_subjects_train = 100
 
+
 ### Load Oasis dataset ########################################################
 import numpy as np
 from nilearn import datasets
@@ -28,16 +29,16 @@ y_test = y_train.copy()
 
 ### Fit and predict ###########################################################
 from nilearn.decoding import SpaceNetRegressor
-for penalty in ['tvl-l1', 'smooth-lasso']:
-    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2)
+import matplotlib.pyplot as plt
+from nilearn.plotting import plot_stat_map
+for penalty in ['tv-l1', 'smooth-lasso']:
+    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2,
+                                n_jobs=20, standardize=False)
     decoder.fit(X_train, y_train)  # fit
     coef_img = decoder.coef_img_
     y_pred = decoder.predict(X_test).ravel()  # predict
 
     ### Visualization #########################################################
-    import matplotlib.pyplot as plt
-    from nilearn.plotting import plot_stat_map
-
     # weights map
     background_img = X[0]
     plot_stat_map(coef_img, background_img, title="%s weights" % penalty,

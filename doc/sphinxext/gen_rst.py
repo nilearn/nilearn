@@ -671,7 +671,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
     time_elapsed = 0
     time_m = 0
     time_s = 0
-    if plot_gallery and fname.startswith('plot'):
+    if plot_gallery and fname.startswith('plot_haxby_space_net.py'):
         # generate the plot as png image if file name
         # starts with plot and if it is more recent than an
         # existing image.
