@@ -6,7 +6,6 @@ the data with different layout of cuts.
 """
 
 import operator
-import itertools
 
 import numpy as np
 
