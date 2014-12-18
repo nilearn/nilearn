@@ -40,8 +40,7 @@ from nilearn.decoding import SpaceNetRegressor
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 for penalty in ['tv-l1', 'smooth-lasso'][1:]:
-    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2,
-                                n_jobs=24)
+    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2)
     decoder.fit(X_train, y_train)  # fit
     coef_img = decoder.coef_img_
     y_pred = decoder.predict(X_test).ravel()  # predict
