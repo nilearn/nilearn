@@ -193,7 +193,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                              ' requested (imgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
                              ' will be used.' % self.__class__.__name__)
-            self.mask_img_ = _utils.check_niimg(self.mask_img)
+            self.mask_img_ = _utils.check_niimg(self.mask_img, ensure_3d=True)
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.

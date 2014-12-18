@@ -43,6 +43,14 @@ def test_nifti_labels_masker():
     labels11_img = testing.generate_labeled_regions(shape1, affine=affine1,
                                                     n_regions=n_regions)
 
+    mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
+                                      affine=np.diag((4, 4, 4, 1)))
+
+    # verify that 4D mask arguments are refused
+    masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
+    testing.assert_raises_regexp(TypeError, "A 3D image is expected",
+                                 masker.fit)
+
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     testing.assert_raises_regexp(
@@ -287,6 +295,14 @@ def test_nifti_maps_masker_2():
 
     maps33_img, _ = \
                   testing.generate_maps(shape3, n_regions, affine=affine)
+
+    mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
+                                      affine=np.diag((4, 4, 4, 1)))
+
+    # verify that 4D mask arguments are refused
+    masker = NiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
+    testing.assert_raises_regexp(TypeError, "A 3D image is expected",
+                                 masker.fit)
 
     # Test error checking
     assert_raises(ValueError, NiftiMapsMasker, maps33_img,

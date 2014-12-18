@@ -36,6 +36,7 @@ def filter_and_mask(imgs, mask_img_,
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
 
+    mask_img_ = _utils.check_niimg(mask_img_, ensure_3d=True)
     imgs = _utils.check_niimgs(imgs, accept_3d=True)
 
     # Resampling: allows the user to change the affine, the shape or both
