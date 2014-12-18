@@ -1893,7 +1893,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # - Local (cached) version of the files can be checked for each contrast
     opts = {'uncompress': True}
     subject_ids = ["S%02d" % s for s in range(1, n_subjects + 1)]
-    subject_ids_str = ", ".join('"%s"' % (sid, ) for sid in subject_ids)
+    subject_id_max = subject_ids[-1]
     data_types = ["c map"]
     if get_tmaps:
         data_types.append("t map")
@@ -1904,7 +1904,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                   "X concerns S, "
                   "X label XL, X identifier XI, "
                   "X format XF, X description XD, "
-                  "S identifier IN(%s), " % (subject_ids_str, ) +
+                  'S identifier <= "%s", ' % (subject_id_max, ) +
                   'X type IN(%(types)s), X label "%(label)s"')
 
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
