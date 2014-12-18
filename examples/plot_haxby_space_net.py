@@ -1,7 +1,10 @@
 """
-Here is a simple example of decoding with a SpaceNet prior (i.e S-LASSO and
-TV-l1), reproducing the Haxby 2001 study on a face vs house discrimination
-task.
+Decoding with SpaceNet on Haxby dataset
+==========================================
+
+Here is a simple example of decoding with a SpaceNet prior (i.e S-LASSO,
+TV-l1, etc.), reproducing the Haxby 2001 study on a face vs house
+discrimination task.
 """
 # author: DOHMATOB Elvis Dopgima,
 #         VAROQUAUX Gael
@@ -40,7 +43,7 @@ decoders = {}
 accuracies = {}
 for penalty in penalties:
     ### Fit model on train data and predict on test data ######################
-    decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=2)
+    decoder = SpaceNetClassifier(memory="cache", penalty=penalty)
     decoder.fit(X_train, y_train)
     y_pred = decoder.predict(X_test)
     accuracies[penalty] = (y_pred == y_test).mean() * 100.
@@ -59,16 +62,6 @@ for penalty, decoder in sorted(decoders.items()):
                   title="%s: accuracy %g%%" % (penalty, accuracies[penalty]),
                   cut_coords=(20, -34, -16))
     coef_img.to_filename('haxby_%s_weights.nii' % penalty)
-
-    for f, ((best_alpha, best_l1_ratio), best_w) in enumerate(
-        zip(decoder.best_model_params_, decoder.all_coef_[0])):
-        plot_stat_map(decoder.masker_.inverse_transform(best_w),
-                      background_img,
-                      title=("%s: fold=%i, best alpha: %g, best "
-                             "l1_ratio: %g" % (penalty, f, best_alpha,
-                                               best_l1_ratio)),
-                      cut_coords=(20, -34, -16))
-
     print "- %s %s" % (penalty, '-' * 60)
     print "Number of train samples : %i" % condition_mask_train.sum()
     print "Number of test samples  : %i" % condition_mask_test.sum()
