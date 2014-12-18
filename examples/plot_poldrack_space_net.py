@@ -32,13 +32,4 @@ background_img = mean_img(X)
 for penalty, decoder in decoders.iteritems():
     plot_stat_map(mean_img(decoder.coef_img_), background_img, title=penalty,
                   display_mode="yz", cut_coords=[20, -2])
-    for f, ((best_alpha, best_l1_ratio), best_w) in enumerate(
-        zip(decoder.best_model_params_, decoder.all_coef_[0])):
-        plot_stat_map(decoder.masker_.inverse_transform(best_w),
-                      background_img,
-                      title=("%s: fold=%i, best alpha: %g, best "
-                             "l1_ratio: %g" % (penalty, f, best_alpha,
-                                               best_l1_ratio)),
-                      display_mode="yz", cut_coords=[20, -2])
-
 plt.show()
