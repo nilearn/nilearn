@@ -21,7 +21,7 @@ X = np.array(dataset_files.gray_matter_maps)
 from sklearn.utils import check_random_state
 from sklearn.cross_validation import train_test_split
 rng = check_random_state(42)
-X_train, X_test, y_train, y_test = train_test_split(X, age, test_size=.8,
+X_train, X_test, y_train, y_test = train_test_split(X, age, train_size=.8,
                                                     random_state=rng)
 
 # sort test data for better visualization (trend, etc.)
