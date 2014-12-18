@@ -30,17 +30,17 @@ import nilearn.image as image
 from nilearn.plotting.img_plotting import plot_roi
 
 # Load Miyawaki dataset
-miyawaki = datasets.fetch_miyawaki2008()
-miyawaki_img = nibabel.load(miyawaki.func[0])
+miyawaki_dataset = datasets.fetch_miyawaki2008()
+miyawaki_filename = miyawaki_dataset.func[0]
 
-miyawaki_mean_img = image.mean_img(miyawaki.func[0])
+miyawaki_mean_img = image.mean_img(miyawaki_filename)
 
 # This time, we can use the NiftiMasker without changing the default mask
 # strategy, as the data has already been masked, and thus lies on a
 # homogeneous background
 
 masker = NiftiMasker()
-masker.fit(miyawaki_img)
+masker.fit(miyawaki_filename)
 
 plot_roi(masker.mask_img_, miyawaki_mean_img,
          title="Mask from already masked data")
@@ -50,8 +50,9 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 # From raw EPI data
 
 # Load NYU resting-state dataset
-nyu = datasets.fetch_nyu_rest(n_subjects=1)
-nyu_img = nibabel.load(nyu.func[0])
+nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
+nyu_filename = nyu_dataset.func[0]
+nyu_img = nibabel.load(nyu_filename)
 # Restrict nyu to 100 frames to speed up computation
 nyu_func = nyu_img.get_data()[..., :100]
 

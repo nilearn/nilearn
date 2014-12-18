@@ -17,17 +17,19 @@ Pattern Recognition 2011.
 ### Load nyu_rest dataset #####################################################
 
 import numpy as np
-from nilearn import datasets, input_data
+from nilearn import datasets
+from nilearn import input_data
 from nilearn.plotting.img_plotting import plot_roi, plot_epi
-dataset = datasets.fetch_nyu_rest(n_subjects=1)
+nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 # This is resting-state data: the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the
 # EPI images
 nifti_masker = input_data.NiftiMasker(memory='nilearn_cache',
-                            mask_strategy='epi', memory_level=1,
-                            standardize=False)
-fmri_masked = nifti_masker.fit_transform(dataset.func[0])
+                                      mask_strategy='epi', memory_level=1,
+                                      standardize=False)
+func_filename = nyu_dataset.func[0]
+fmri_masked = nifti_masker.fit_transform(func_filename)
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
 ### Ward ######################################################################
@@ -64,7 +66,7 @@ labels_img = nifti_masker.inverse_transform(labels)
 
 from nilearn.image import mean_img
 import matplotlib.pyplot as plt
-mean_func_img = mean_img(dataset.func[0])
+mean_func_img = mean_img(func_filename)
 
 # common cut coordinates for all plots
 

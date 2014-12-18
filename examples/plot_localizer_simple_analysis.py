@@ -22,14 +22,16 @@ from nilearn.input_data import NiftiMasker
 
 ### Load Localizer contrast ###################################################
 n_samples = 20
-dataset_files = datasets.fetch_localizer_calculation_task(n_subjects=n_samples)
+localizer_dataset = datasets.fetch_localizer_calculation_task(
+    n_subjects=n_samples)
 tested_var = np.ones((n_samples, 1))
 
 ### Mask data #################################################################
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
     memory='nilearn_cache', memory_level=1)  # cache options
-fmri_masked = nifti_masker.fit_transform(dataset_files.cmaps)
+cmap_filenames = localizer_dataset.cmaps
+fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 
 ### Anova (parametric F-scores) ###############################################
 from nilearn._utils.fixes import f_regression

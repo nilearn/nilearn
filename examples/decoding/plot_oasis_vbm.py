@@ -48,8 +48,9 @@ from nilearn.input_data import NiftiMasker
 n_subjects = 100  # more subjects requires more memory
 
 ### Load Oasis dataset ########################################################
-dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
-age = dataset_files.ext_vars['age'].astype(float)
+oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+gray_matter_map_filenames = oasis_dataset.gray_matter_maps
+age = oasis_dataset.ext_vars['age'].astype(float)
 
 ### Preprocess data ###########################################################
 nifti_masker = NiftiMasker(
@@ -57,7 +58,7 @@ nifti_masker = NiftiMasker(
     smoothing_fwhm=2,
     memory='nilearn_cache')  # cache options
 # remove features with too low between-subject variance
-gm_maps_masked = nifti_masker.fit_transform(dataset_files.gray_matter_maps)
+gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
 gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 # final masking
 new_images = nifti_masker.inverse_transform(gm_maps_masked)
@@ -99,7 +100,7 @@ weight_img = nifti_masker.inverse_transform(coef)
 
 ### Create the figure
 from nilearn.plotting import plot_stat_map
-background_img = dataset_files.gray_matter_maps[0]
+bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
 from nilearn.image.resampling import coord_transform
 affine = weight_img.get_affine()
@@ -110,7 +111,7 @@ k_slice = round(k_slice)
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
 weight_slice_data = weight_img.get_data()[..., k_slice, 0]
 vmax = max(-np.min(weight_slice_data), np.max(weight_slice_data)) * 0.5
-display = plot_stat_map(weight_img, bg_img=background_img,
+display = plot_stat_map(weight_img, bg_img=bg_filename,
                         cmap=plt.cm.Spectral_r,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig, vmax=vmax)
@@ -144,7 +145,7 @@ threshold = -np.log10(0.1)  # 10% corrected
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
 
-display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=background_img,
+display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=bg_filename,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig)
