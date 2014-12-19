@@ -487,8 +487,9 @@ def reorder_img(img, resample=None):
 
     """
     img = _utils.check_niimg(img)
-
-    affine = img.get_affine()
+    # The copy is needed in order not to modify the input img affine
+    # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
+    affine = img.get_affine().copy()
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
