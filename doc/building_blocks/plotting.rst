@@ -76,7 +76,7 @@ different heuristics to find cutting coordinates.
 
    Each call to a plotting function creates a new figure by default. When
    used in non-interactive settings, such as a script or a program, these
-n   are not displayed, but still accumulate and eventually lead to slowing
+   are not displayed, but still accumulate and eventually lead to slowing
    the execution and running out of memory.
 
    To avoid this, you must close the plot as follow::
