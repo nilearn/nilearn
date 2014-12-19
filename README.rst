@@ -13,7 +13,7 @@ classification, decoding, or connectivity analysis.
 This work is made available by the INRIA Parietal Project Team and the
 scikit-learn folks, among which P. Gervais, A. Abraham, V. Michel, A.
 Gramfort, G. Varoquaux, F. Pedregosa, B. Thirion, M. Eickenberg, C. F. Gorgolewski,
-D. Bzdok and L. Estève
+D. Bzdok and L. Estève.
 
 Important links
 ===============
