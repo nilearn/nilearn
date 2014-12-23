@@ -47,10 +47,14 @@ import nibabel
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 
+plt.figure(facecolor='white')
 for i in range(n_components):
+    fig_id = plt.subplot(5, 4, i + 1)
     plot_stat_map(nibabel.Nifti1Image(components_img.get_data()[..., i],
                                       components_img.get_affine()),
-                  display_mode="z", title="IC %d" % i, cut_coords=1,
-                  colorbar=False)
+                  display_mode="z", title="IC %d" % (i + 1), cut_coords=1,
+                  colorbar=False, axes=fig_id)
 
+plt.suptitle('%i independent components as derived by CanICA' % n_components,
+    fontsize=20)
 plt.show()
