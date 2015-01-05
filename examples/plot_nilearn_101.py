@@ -1,3 +1,11 @@
+"""
+Basic nilearn example
+=====================
+
+A simple example showing how to load an existing Nifti file and use
+basic nilearn functionalities.
+"""
+
 import os
 from nilearn import data
 
