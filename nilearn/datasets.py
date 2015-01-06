@@ -427,7 +427,11 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     initial_size = 0
     try:
         # Download data
-        print 'Downloading data from %s ...' % url
+        if verbose == 0:
+            # Remove variables from url for better display
+            print 'Downloading data from %s ...' % url.split('?')[0]
+        else:
+            print 'Downloading data from %s ...' % url
         if resume and os.path.exists(temp_full_name):
             url_opener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
@@ -1807,6 +1811,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         BMC neuroscience 8.1 (2007): 91.
 
     """
+    if isinstance(contrasts, basestring):
+        raise ValueError('Constrasts should be a list of string, a single '
+                'string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (n_subjects > 94) or (n_subjects < 1):
