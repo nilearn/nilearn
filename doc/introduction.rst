@@ -90,7 +90,7 @@ Installation
 
 .. warning::
 
-   nilearn has been released as an alpha. It lacks functionality and
+   nilearn has been released as a beta. It lacks functionality and
    documentation, may have bugs, and will change in the future.
    Nonetheless, we strive to ensure its quality and hope that it may be
    useful in its current state, for technically-savvy users.

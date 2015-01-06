@@ -81,7 +81,7 @@
 
 .. warning::
 
-   NiLearn has been released as an alpha and is still in early
+   NiLearn has been released as a beta and is still in early
    development stages.
 
 

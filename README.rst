@@ -43,8 +43,8 @@ If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
 Install
 =======
 
-The simplest is to use pip. Not that nilearn has been released as an
-alpha so you need to use the ``--pre`` command-line parameter::
+The simplest is to use pip. Not that nilearn has been released as a
+beta so you need to use the ``--pre`` command-line parameter::
 
     pip install -U --pre --user nilearn
 
