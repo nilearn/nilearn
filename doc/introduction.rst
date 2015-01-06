@@ -147,6 +147,10 @@ a command prompt::
    Note that this is a "shell" command, that you need to type in a
    command prompt, and not a Python command.
 
+.. note::
+   nilearn has been released as a beta so you need to use the ``--pre``
+   command-line parameter only if your pip version is greater than 1.4.
+
 .. _testing_installation:
 
 Testing your installation
