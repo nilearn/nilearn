@@ -399,6 +399,10 @@ class BaseSlicer(object):
                                           copy=False)
             img = nibabel.Nifti1Image(data, img.get_affine())
 
+        # To make sure that add_overlay has a consistant default behavior
+        # with plot_stat_maps:
+        if not 'interpolation' in kwargs:
+            kwargs['interpolation'] = 'nearest'
         ims = self._map_show(img, type='imshow', **kwargs)
 
         if colorbar:
