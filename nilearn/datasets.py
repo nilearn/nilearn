@@ -1419,7 +1419,7 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
     References
     ----------
     :Download:
-        https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip
+        https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
 
     :Paper to cite:
         `Multi-subject dictionary learning to segment an atlas of brain
@@ -1434,7 +1434,7 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
         Gaël Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
-    url = 'https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip'
+    url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
     opts = {'uncompress': True}
 
     dataset_name = "msdl_atlas"
