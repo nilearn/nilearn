@@ -21,6 +21,8 @@ Loading data
 
 .. currentmodule:: nilearn.datasets
 
+.. _datasets:
+
 Fetching datasets
 -----------------
 
