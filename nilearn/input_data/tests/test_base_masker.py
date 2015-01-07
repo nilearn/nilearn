@@ -3,7 +3,7 @@ Test the base_masker module
 """
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_raises
+from numpy.testing import assert_array_almost_equal
 import nibabel
 
 from ..base_masker import filter_and_mask
