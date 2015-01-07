@@ -137,8 +137,9 @@ def test_apply_mask():
                          masking.apply_mask, data_img, mask_img_4d)
 
     # Check data shape and affine
-    assert_raises(TypeError, masking.apply_mask,
-                  data_img, Nifti1Image(mask[20, ...], affine))
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         masking.apply_mask, data_img,
+                         Nifti1Image(mask[20, ...], affine))
     assert_raises(ValueError, masking.apply_mask,
                   data_img, Nifti1Image(mask, affine / 2.))
     # Check that full masking raises error
