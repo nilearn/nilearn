@@ -296,9 +296,10 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                 max_norm=max_norm))
         else:
             suffix = ""
-        logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix} ..."
-                   "".format(iter_n=n, percentage=100. * n / max_iter,
-                             suffix=suffix), verbose=verbose)
+        if verbose > 1:
+            logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix}"
+                    " ...".format(iter_n=n, percentage=100. * n / max_iter,
+                                  suffix=suffix), verbose=verbose)
 
         omega_old[...] = omega
         for p in xrange(n_features):
