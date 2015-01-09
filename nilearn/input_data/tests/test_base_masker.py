@@ -8,7 +8,7 @@ import nibabel
 
 from ..base_masker import filter_and_mask
 from ... import image
-
+from ..._utils.testing import assert_raises_regexp
 
 def test_cropping_code_paths():
     # Will mask data with an identically sampled mask and
@@ -47,3 +47,12 @@ def test_cropping_code_paths():
                                 cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)
+
+
+def test_filter_and_mask():
+    data = np.zeros([20, 30, 40, 5])
+    mask = np.zeros([20, 30, 40, 2])
+    mask[10, 15, 20, :] = 1
+
+    assert_raises_regexp(TypeError, "A 3D image is expected", filter_and_mask,
+                         data, mask, {})
