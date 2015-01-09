@@ -7,8 +7,36 @@ nilearn version, required package versions, and utilities for checking
 
 __version__ = '0.1b1'
 
+# All metadata needed for required modules:
+#    * minver: minimum required version of the module
+#    * manual: whether the module must be installed manually
+# See more info in check_module_dependencies docstring.
+#
+# This is a list to preserve order, and to avoid the Python 2.7
+#   dependency of collections.OrderedDict
+REQUIRED_MODULE_METADATA = (
+    ('numpy', {
+        'minver': '1.6.0',
+        'manual_install': True,
+        'install_info': 'Install via your OS package manager (Linux) or Anaconda (OSX, Windows).'}),
+    ('scipy', {
+        'minver': '0.9.0',
+        'manual_install': True,
+        'install_info': 'Install via your OS package manager (Linux) or Anaconda (OSX, Windows).'}),
+    ('sklearn', {
+        'minver': '0.10',
+        'manual_install': True,
+        'install_info': 'Install via your OS package manager (Linux) or Anaconda (OSX, Windows).'}),
+    ('nibabel', {
+        'minver': '1.1.0',
+        'manual_install': False}),
+    ('gzip', {
+        'minver': '0.0.0',
+        'manual_install': True,
+        'install_info': 'Use a python version compiled with gzip.'}))
 
-def _import_module_with_version_check(module_name, minimum_version):
+
+def _import_module_with_version_check(module_name, minimum_version, install_info=None):
     """Check that module is installed with a recent enough version
     """
     from distutils.version import LooseVersion
@@ -16,9 +44,9 @@ def _import_module_with_version_check(module_name, minimum_version):
     try:
         module = __import__(module_name)
     except ImportError as exc:
-        user_friendly_info = ('{} could not be found, '
-                              'please install it properly to use nilearn'
-                              ).format(module_name)
+        user_friendly_info = ('Module "{}" could not be found.  {}').format(
+            module_name,
+            install_info or 'Please install it properly to use nilearn.')
         exc.args += (user_friendly_info,)
         raise
 
@@ -41,21 +69,7 @@ def _import_module_with_version_check(module_name, minimum_version):
 
     return module
 
-def get_required_module_metadata():
-    """Return all metadata needed for required modules:
-        * minver: minimum required version of the module
-        * manual: whether the module must be installed manually.
-
-    See more info in check_module_dependencies docstring.
-    """
-    return {
-        'numpy': {'minver': '1.6.0', 'manual_install': True},
-        'scipy': {'minver': '0.9.0', 'manual_install': True},
-        'sklearn': {'minver': '0.10', 'manual_install': True},
-        'nibabel': {'minver': '1.1.0', 'manual_install': False},
-        'gzip': {'minver': '0.0.0', 'manual_install': True}}
-
-def check_module_dependencies(manual_install_only=False):
+def _check_module_dependencies(manual_install_only=False):
     """We want to check dependencies in the following scenarios:
 
         * When running installation, we want to:
@@ -65,10 +79,13 @@ def check_module_dependencies(manual_install_only=False):
         * When running code from the nilearn package,
             + Fail if any needed module is missing
     """
-    for module_name, module_metadata in get_required_module_metadata().iteritems():
-        if module_metadata['manual_install'] and manual_install_only:
+    for (module_name, module_metadata) in REQUIRED_MODULE_METADATA:
+        if manual_install_only and not module_metadata['manual_install']:
             # Skip check for manual install, when manual_install_only is specified.
             continue
 
-        _import_module_with_version_check(module_name, module_metadata['minver'])
+        _import_module_with_version_check(
+            module_name=module_name,
+            minimum_version=module_metadata['minver'],
+            install_info=module_metadata.get('install_info'))
 
