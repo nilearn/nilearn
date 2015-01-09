@@ -9,9 +9,7 @@ from setuptools import setup, find_packages
 
 
 # Make sources available using relative paths from this file's directory.
-#  dirname can return '', so use 'or' below to avoid chdir on empty
-#  while being succinct.
-os.chdir(os.path.dirname(__file__) or os.getcwd())
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_version():
@@ -24,7 +22,8 @@ def load_version():
     # load all vars into globals, otherwise
     #   the later function call using global vars doesn't work.
     globals_dict = {}
-    execfile(os.path.join('nilearn', 'version.py'), globals_dict)
+    with open(os.path.join('nilearn', 'version.py')) as fp:
+        exec(fp.read(), globals_dict)
 
     return globals_dict
 
@@ -46,7 +45,7 @@ VERSION = _VERSION_GLOBALS['__version__']
 
 if __name__ == "__main__":
     if is_installing():
-        eval('_check_module_dependencies(manual_install_only=True)', _VERSION_GLOBALS)
+        _VERSION_GLOBALS['_check_module_dependencies'](manual_install_only=True)#eval('_check_module_dependencies(manual_install_only=True)', _VERSION_GLOBALS)
 
     old_path = os.getcwd()
     local_path = os.path.dirname(os.path.abspath(sys.argv[0]))

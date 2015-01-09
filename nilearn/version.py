@@ -18,15 +18,15 @@ REQUIRED_MODULE_METADATA = (
     ('numpy', {
         'minver': '1.6.0',
         'manual_install': True,
-        'install_info': 'Install via your OS package manager (Linux) or Anaconda (OSX, Windows).'}),
+        'install_info': 'See http://nilearn.github.io/introduction.html#installation for installation information.'}),
     ('scipy', {
         'minver': '0.9.0',
         'manual_install': True,
-        'install_info': 'Install via your OS package manager (Linux) or Anaconda (OSX, Windows).'}),
+        'install_info': 'See http://nilearn.github.io/introduction.html#installation for installation information'}),
     ('sklearn', {
         'minver': '0.10',
         'manual_install': True,
-        'install_info': 'Install via your OS package manager (Linux) or Anaconda (OSX, Windows).'}),
+        'install_info': 'See http://nilearn.github.io/introduction.html#installation for installation information'}),
     ('nibabel', {
         'minver': '1.1.0',
         'manual_install': False}),
@@ -73,7 +73,7 @@ def _check_module_dependencies(manual_install_only=False):
     """We want to check dependencies in the following scenarios:
 
         * When running installation, we want to:
-            + Fail if manually-installed packages are not intalled
+            + Fail if manually-installed packages are not installed
             + Communicate packages to install automatically
 
         * When running code from the nilearn package,
