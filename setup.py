@@ -25,7 +25,8 @@ def load_version():
 
 
 def is_installing():
-    return len(sys.argv) > 1 and sys.argv[1] == 'install'
+    # Allow command-lines such as "python setup.py build install"
+    return len(sys.argv) > 1 and 'install' in sys.argv
 
 
 _VERSION_GLOBALS = load_version()
