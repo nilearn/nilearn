@@ -14,19 +14,21 @@ __version__ = '0.1b1'
 #
 # This is a list to preserve order, and to avoid the Python 2.7
 #   dependency of collections.OrderedDict
+_NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
+    'http://nilearn.github.io/introduction.html#installation')
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
         'minver': '1.6.0',
         'manual_install': True,
-        'install_info': 'See http://nilearn.github.io/introduction.html#installation for installation information.'}),
+        'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
         'minver': '0.9.0',
         'manual_install': True,
-        'install_info': 'See http://nilearn.github.io/introduction.html#installation for installation information'}),
+        'install_info': _NILEARN_INSTALL_MSG}),
     ('sklearn', {
         'minver': '0.10',
         'manual_install': True,
-        'install_info': 'See http://nilearn.github.io/introduction.html#installation for installation information'}),
+        'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
         'minver': '1.1.0',
         'manual_install': False}),
@@ -36,7 +38,10 @@ REQUIRED_MODULE_METADATA = (
         'install_info': 'Use a python version compiled with gzip.'}))
 
 
-def _import_module_with_version_check(module_name, minimum_version, install_info=None):
+def _import_module_with_version_check(
+        module_name,
+        minimum_version,
+        install_info=None):
     """Check that module is installed with a recent enough version
     """
     from distutils.version import LooseVersion
@@ -69,7 +74,8 @@ def _import_module_with_version_check(module_name, minimum_version, install_info
 
     return module
 
-def _check_module_dependencies(manual_install_only=False):
+
+def _check_module_dependencies(preinstalled_modules_only=False):
     """We want to check dependencies in the following scenarios:
 
         * When running installation, we want to:
@@ -80,12 +86,12 @@ def _check_module_dependencies(manual_install_only=False):
             + Fail if any needed module is missing
     """
     for (module_name, module_metadata) in REQUIRED_MODULE_METADATA:
-        if manual_install_only and not module_metadata['manual_install']:
-            # Skip check for manual install, when manual_install_only is specified.
+        if preinstalled_modules_only and not module_metadata['manual_install']:
+            # Skip check for auto-installed modules,
+            #   when preinstalled_modules_only is specified.
             continue
 
         _import_module_with_version_check(
             module_name=module_name,
             minimum_version=module_metadata['minver'],
             install_info=module_metadata.get('install_info'))
-

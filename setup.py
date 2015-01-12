@@ -8,10 +8,6 @@ import os
 from setuptools import setup, find_packages
 
 
-# Make sources available using relative paths from this file's directory.
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-
 def load_version():
     """Returns the version found in nilearn/version.py
 
@@ -26,6 +22,7 @@ def load_version():
         exec(fp.read(), globals_dict)
 
     return globals_dict
+
 
 def is_installing():
     return len(sys.argv) > 1 and sys.argv[1] == 'install'
@@ -45,18 +42,19 @@ VERSION = _VERSION_GLOBALS['__version__']
 
 if __name__ == "__main__":
     if is_installing():
-        _VERSION_GLOBALS['_check_module_dependencies'](manual_install_only=True)#eval('_check_module_dependencies(manual_install_only=True)', _VERSION_GLOBALS)
+        module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
+        module_check_fn(preinstalled_modules_only=True)
 
-    old_path = os.getcwd()
+    # Make sources available using relative paths from this file's directory.
     local_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     os.chdir(local_path)
-    sys.path.insert(0, local_path)
 
     # Convert module metadata into list of {mod_name}>={minver}
     #   as required by install_requires
-    formatted_dependencies = ['%s>=%s' % (mod, meta['minver'])
-        for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-        if not meta['manual_install']]
+    formatted_dependencies = \
+        ['%s>=%s' % (mod, meta['minver'])
+            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
+            if not meta['manual_install']]
 
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
@@ -88,5 +86,4 @@ if __name__ == "__main__":
           package_data={'nilearn.data': ['*.nii.gz'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*']},
-          install_requires=formatted_dependencies,
-    )
+          install_requires=formatted_dependencies,)
