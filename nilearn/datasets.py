@@ -1054,11 +1054,14 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
-    More informations about its structure :
+    More information about its structure:
     http://dev.pymvpa.org/datadb/haxby2001.html
 
     See `additional information
     <http://www.sciencemag.org/content/293/5539/2425>`
+
+    Run 8 in subject 5 does not contain any task labels.
+    The anatomical image for subject 6 is unavailable.
     """
 
     if n_subjects > 6:
