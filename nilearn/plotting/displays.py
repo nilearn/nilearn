@@ -535,7 +535,7 @@ class BaseSlicer(object):
                 The color used to display the edge map
         """
         img = reorder_img(img)
-        data  = img.get_data()
+        data = img.get_data()
         affine = img.get_affine()
         kwargs = dict(cmap=cm.alpha_cmap(color=color))
         data_bounds = get_bounds(data.shape, img.get_affine())
