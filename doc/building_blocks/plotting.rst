@@ -16,23 +16,23 @@ Nilearn has a set of plotting functions to plot brain volumes that are
 fined tuned to specific applications. Amongst other things, they use
 different heuristics to find cutting coordinates.
 
-.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_1.png
+.. |plot_stat_map| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_1.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_stat_map| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_3.png
+.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_2.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_4.png
+.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_3.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_5.png
+.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_4.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_6.png
+.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_5.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
@@ -45,10 +45,6 @@ different heuristics to find cutting coordinates.
 
 =================== =========================================================
 =================== =========================================================
-|plot_glass_brain|   :func:`plot_glass_brain`
-                     |hack|
-                     Glass brain visualisation
-
 |plot_anat|          :func:`plot_anat`
                      |hack|
                      Plotting an anatomical image
@@ -56,6 +52,10 @@ different heuristics to find cutting coordinates.
 |plot_epi|           :func:`plot_epi`
                      |hack|
                      Plotting an EPI, or T2* image
+
+|plot_glass_brain|   :func:`plot_glass_brain`
+                     |hack|
+                     Glass brain visualization
 
 |plot_stat_map|      :func:`plot_stat_map`
                      |hack|

@@ -15,8 +15,8 @@
 
 .. Here we are building the carrousel
 
-.. |banner1| image:: auto_examples/manipulating_visualizing/images/plot_demo_plotting_2.png
-   :target: auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |banner1| image:: auto_examples/manipulating_visualizing/images/plot_demo_plotting_glass_brain_2.png
+   :target: auto_examples/manipulating_visualizing/plot_demo_plotting_glass_brain.html
 
 .. |banner2| image:: auto_examples/images/plot_haxby_simple_1.png
    :target: auto_examples/plot_haxby_simple.html

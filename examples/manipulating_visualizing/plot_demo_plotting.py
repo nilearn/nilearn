@@ -30,17 +30,14 @@ localizer_tmap_filename = localizer_dataset.tmaps[3]
 ###############################################################################
 # demo the different plotting functions
 
-# Plotting glass brain
-plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
-                          threshold=3)
-
-plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
-                          black_bg=True, display_mode='xz', threshold=3)
-
 # Plotting statistical maps
 plotting.plot_stat_map(localizer_cmap_filename, bg_img=localizer_anat_filename,
                        threshold=3, title="plot_stat_map",
                        cut_coords=(36, -27, 66))
+
+# Plotting glass brain
+plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+                          threshold=3)
 
 # Plotting anatomical maps
 plotting.plot_anat(haxby_anat_filename, title="plot_anat")
