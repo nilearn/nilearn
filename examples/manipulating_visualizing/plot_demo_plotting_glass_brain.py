@@ -6,17 +6,16 @@ See :ref:`plotting` for more plotting functionalities.
 """
 
 from nilearn import datasets
-from nilearn import plotting, image
-
+from nilearn import plotting
 
 ###############################################################################
 # Retrieve the data
 
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left vs right button press"],
-    n_subjects=4,
+    n_subjects=2,
     get_tmaps=True)
-localizer_tmap_filename = localizer_dataset.tmaps[3]
+localizer_tmap_filename = localizer_dataset.tmaps[1]
 
 ###############################################################################
 # demo glass brain plotting
