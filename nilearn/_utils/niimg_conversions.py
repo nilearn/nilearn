@@ -12,6 +12,8 @@ import numpy as np
 
 import nibabel
 
+from sklearn.externals.joblib import Memory
+from cache_mixin import cache
 
 def is_img(obj):
     """ Check for get_data and get_affine method in an object
@@ -184,8 +186,14 @@ def _to_4d(data):
     return out
 
 
-def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
-    """Concatenate a list of niimgs
+def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
+                  auto_resample=False, verbose=0,
+                  memory=Memory(cachedir=None), ref_memory_level=0):
+    """Concatenate a list of 3D/4D niimgs of varying lengths.
+
+    The niimgs list can contain niftis/paths to images of varying dimensions
+    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
+    will be matched to the first image in the list if auto_resample=True.
 
     Parameters
     ----------
@@ -199,21 +207,39 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
     accept_4d: boolean, optional
         Accept 4D images
 
+    auto_resample: boolean
+        Converts all images to the space of the first one.
+
+    verbose: int
+        Controls the amount of verbosity.
+
+    memory : instance of joblib.Memory or string
+        Used to cache the resampling process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    memory_level : integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
     Returns
     -------
     concatenated: nibabel.Nifti1Image
         A single image.
     """
 
-    first_img = check_niimg(iter(niimgs).next())
-    affine = first_img.get_affine()
-    first_data = first_img.get_data()
-    first_data_shape = first_data.shape
-    sizes = []
+    # get properties from first image
+    first_niimg = check_niimg(iter(niimgs).next())
+    target_affine = first_niimg.get_affine()
+    first_data = first_niimg.get_data()
+    target_item_shape = first_niimg.shape[:3]  # skip 4th/time dimension
+
+    # count how many images we have in all (might be list of different 4D's)
+    lengths = []
     for index, niimg in enumerate(niimgs):
         this_shape = _get_shape(check_niimg(niimg))
         if len(this_shape) == 3:
-            sizes.append(1)
+            lengths.append(1)
         else:
             if not accept_4d:
                 if (isinstance(niimg, basestring)):
@@ -222,42 +248,58 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False):
                     i_error = "Image #" + str(index)
                 raise ValueError("%s is a 4D shape (shape: %s), but this "
                                  "function accepts only 3D images"
-                                % (i_error, this_shape))
-            sizes.append(this_shape[3])
+                                 % (i_error, this_shape))
+            lengths.append(this_shape[3])
 
     # Using fortran order makes concatenation much faster than with C order,
     # because the voxels for a given image are grouped together in memory.
-    data = np.ndarray(first_data_shape[:3] + (sum(sizes), ),
+    data = np.ndarray(target_item_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
-    data[..., :sizes[0]] = _to_4d(first_data)
-    del first_data, first_img
 
-    for index, (iter_niimg, size) in enumerate(zip(niimgs, sizes)):
-        if index == 0:
+    data[..., :lengths[0]] = _to_4d(first_data)
+    cur_4d_index = 0
+    for index, (iter_niimg, size) in enumerate(zip(niimgs, lengths)):
+        # talk to user
+        if (isinstance(iter_niimg, basestring)):
+            nii_str = "image " + iter_niimg
+        else:
+            nii_str = "image #" + str(index)
+        if verbose > 0:
+            print "Concatenating {}/{}: {}".format(index + 1, sum(lengths),
+                                                   nii_str)
+
+        if index == 0:  # we have already loaded the first one
+            cur_4d_index += size
             continue
-        img = check_niimg(iter_niimg)
-        if not np.array_equal(img.get_affine(), affine):
-            if (isinstance(iter_niimg, basestring)):
-                i_error = "image " + iter_niimg
-            else:
-                i_error = "image #" + str(index)
 
-            raise ValueError("Affine of %s is different"
-                             " from reference affine"
-                             "\nReference affine:\n%s\n"
-                             "Wrong affine:\n%s"
-                             % (i_error,
-                             repr(affine), repr(img.get_affine())))
-        this_data = img.get_data()
-        if this_data.shape[:3] != first_data_shape[:3]:
-            if (isinstance(iter_niimg, basestring)):
-                i_error = "image " + iter_niimg
-            else:
-                i_error = "image #" + str(index)
-            raise ValueError("Shape of %s is different from first image shape."
-                             % i_error)
-        data[..., index:index + size] = _to_4d(this_data)
-    return nibabel.Nifti1Image(data, affine)
+        niimg = check_niimg(iter_niimg)
+        if (np.array_equal(niimg.get_affine(), target_affine) and
+            target_item_shape == niimg.shape[:3]):
+            this_data = niimg.get_data()
+        else:
+            if not auto_resample:
+                raise ValueError("Affine of %s is different"
+                                 " from reference affine"
+                                 "\nReference affine:\n%r\n"
+                                 "Wrong affine:\n%r"
+                                 % (nii_str,
+                                    target_affine,
+                                    niimg.get_affine()))
+            if verbose > 0:
+                print "...resampled to first nifti!"
+            
+            from .. import image  # we avoid a circular import
+            niimg = cache(image.resample_img, memory, ref_memory_level,
+                          memory_level=2)(
+                              niimg,
+                              target_affine=target_affine,
+                              target_shape=target_item_shape)
+            this_data = niimg.get_data()
+
+        data[..., cur_4d_index:cur_4d_index + size] = _to_4d(this_data)
+        cur_4d_index += size
+
+    return nibabel.Nifti1Image(data, target_affine)
 
 
 def check_niimgs(niimgs, accept_3d=False):
