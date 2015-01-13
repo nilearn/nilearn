@@ -87,6 +87,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         colorbar=colorbar)
 
     if bg_img is not None:
+        bg_img = _utils.check_niimg(bg_img, ensure_3d=True)
         display.add_overlay(bg_img,
                            vmin=bg_vmin, vmax=bg_vmax,
                            cmap=pl.cm.gray, interpolation=interpolation)

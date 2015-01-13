@@ -13,7 +13,7 @@ from .. import region
 from .._utils.testing import generate_timeseries, generate_regions_ts
 from .._utils.testing import generate_labeled_regions, generate_maps
 from .._utils.testing import generate_fake_fmri
-from .._utils.testing import write_tmp_imgs
+from .._utils.testing import write_tmp_imgs, assert_raises_regexp
 
 
 def test_generate_regions_ts():
@@ -78,6 +78,8 @@ def test_signals_extraction_with_labels():
     mask_data[1:-1, 1:-1, 1:-1] = 1
     mask_img = nibabel.Nifti1Image(mask_data, affine)
 
+    mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2, )), affine)
+
     # labels
     labels_data = np.zeros(shape, dtype=np.int)
     h0 = shape[0] / 2
@@ -94,12 +96,21 @@ def test_signals_extraction_with_labels():
 
     labels_img = nibabel.Nifti1Image(labels_data, affine)
 
+    labels_4d_data = np.zeros((shape) + (2, ))
+    labels_4d_data[..., 0] = labels_data
+    labels_4d_data[..., 1] = labels_data
+    labels_4d_img = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
+
     ## Without mask
     # from labels
     data_img = region.signals_to_img_labels(signals, labels_img)
     data = data_img.get_data()
     assert_true(data_img.shape == (shape + (n_instants,)))
     assert_true(np.all(data.std(axis=-1) > 0))
+
+    # verify that 4D label images are refused
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         region.img_to_signals_labels, data_img, labels_4d_img)
 
     # There must be non-zero data (safety net)
     assert_true(abs(data).max() > 1e-9)
@@ -122,8 +133,17 @@ def test_signals_extraction_with_labels():
         assert_true(labels_r == range(1, 9))
 
     ## Same thing, with mask.
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         region.img_to_signals_labels, data_img, labels_img,
+                         mask_img=mask_4d_img)
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         region.signals_to_img_labels, data_img, labels_img,
+                         mask_img=mask_4d_img)
+
     data_img = region.signals_to_img_labels(signals, labels_img,
                                             mask_img=mask_img)
+    assert_raises(TypeError, region.signals_to_img_labels,
+                  data_img, labels_4d_img, mask_img=mask_img)
     assert_true(data_img.shape == (shape + (n_instants,)))
 
     data = data_img.get_data()
@@ -195,11 +215,18 @@ def test_signal_extraction_with_maps():
     maps_data = maps_img.get_data()
     data = np.zeros(shape + (n_instants,), dtype=np.float32)
 
+    mask_4d_img = np.ones((shape + (2, )))
+
     signals = np.zeros((n_instants, maps_data.shape[-1]))
     for n in xrange(maps_data.shape[-1]):
         signals[:, n] = rand_gen.randn(n_instants)
         data[maps_data[..., n] > 0, :] = signals[:, n]
     img = nibabel.Nifti1Image(data, np.eye(4))
+
+    # verify that 4d masks are refused
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         region.img_to_signals_maps, img, maps_img,
+                         mask_img=mask_4d_img)
 
     ## Get signals
     signals_r, labels = region.img_to_signals_maps(img, maps_img,

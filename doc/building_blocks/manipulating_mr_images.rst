@@ -21,6 +21,8 @@ Loading data
 
 .. currentmodule:: nilearn.datasets
 
+.. _datasets:
+
 Fetching datasets
 -----------------
 
@@ -42,17 +44,7 @@ They return a structure that contains the different file names::
 
 |
 
-**The different data fetching functions**
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   fetch_haxby
-   fetch_haxby_simple
-   fetch_nyu_rest
-   fetch_adhd
-   fetch_miyawaki2008
+For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref`.
 
 The data are downloaded only once and stored locally, in one of the
 following directories (in order of priority):

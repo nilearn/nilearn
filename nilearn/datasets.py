@@ -427,7 +427,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     initial_size = 0
     try:
         # Download data
-        print 'Downloading data from %s ...' % url
+        displayed_url = urllib.splitquery(url)[0] if verbose == 0 else url
+        print 'Dowloading data from %s ...' % displayed_url
         if resume and os.path.exists(temp_full_name):
             url_opener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
@@ -725,7 +726,8 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     ]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -799,7 +801,8 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
             verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -872,7 +875,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
     data_dir = _get_dataset_dir('icbm152_2009', data_dir=data_dir)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
@@ -939,7 +943,8 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
              ]
 
     data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir)
-    files_ = _fetch_files(data_dir, files, resume=resume)
+    files_ = _fetch_files(data_dir, files, resume=resume,
+                          verbose=verbose)
 
     return Bunch(rsn20=files_[0], rsn10=files_[1], rsn70=files_[2],
             bm20=files_[3], bm10=files_[4], bm70=files_[5])
@@ -998,7 +1003,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
     ]
 
     data_dir = _get_dataset_dir('haxby2001_simple', data_dir=data_dir)
-    files = _fetch_files(data_dir, files, resume=resume)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -1049,11 +1054,14 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
-    More informations about its structure :
+    More information about its structure:
     http://dev.pymvpa.org/datadb/haxby2001.html
 
     See `additional information
     <http://www.sciencemag.org/content/293/5539/2425>`
+
+    Run 8 in subject 5 does not contain any task labels.
+    The anatomical image for subject 6 is unavailable.
     """
 
     if n_subjects > 6:
@@ -1065,7 +1073,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     # Dataset files
     if url is None:
         url = 'http://data.pymvpa.org/datasets/haxby2001/'
-    md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})])[0]
+    md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
+                           verbose=verbose)[0]
     md5sums = _read_md5_sum_file(md5sums)
 
     # definition of dataset files
@@ -1085,7 +1094,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
-    files = _fetch_files(data_dir, files, resume=resume)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     if n_subjects == 6:
         files.append(None)  # None value because subject 6 has no anat
@@ -1095,7 +1104,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         files = [(os.path.join('stimuli', 'README'),
                   url + 'stimuli-2010.01.14.tar.gz',
                   {'uncompress': True})]
-        readme = _fetch_files(data_dir, files, resume=resume)[0]
+        readme = _fetch_files(data_dir, files, resume=resume,
+                              verbose=verbose)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
@@ -1286,9 +1296,12 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         session += [i] * n_subjects
 
     data_dir = _get_dataset_dir('nyu_rest', data_dir=data_dir)
-    anat_anon = _fetch_files(data_dir, anat_anon, resume=resume)
-    anat_skull = _fetch_files(data_dir, anat_skull, resume=resume)
-    func = _fetch_files(data_dir, func, resume=resume)
+    anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
+                             verbose=verbose)
+    anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
+                              verbose=verbose)
+    func = _fetch_files(data_dir, func, resume=resume,
+                        verbose=verbose)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                  session=session)
@@ -1379,10 +1392,12 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subjects_confounds = subjects_confounds[:n_subjects]
 
     data_dir = _get_dataset_dir('adhd', data_dir=data_dir)
-    subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume)
+    subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume,
+                                  verbose=verbose)
     subjects_confounds = _fetch_files(data_dir, subjects_confounds,
-            resume=resume)
-    phenotypic = _fetch_files(data_dir, phenotypic, resume=resume)[0]
+            resume=resume, verbose=verbose)
+    phenotypic = _fetch_files(data_dir, phenotypic, resume=resume,
+                              verbose=verbose)[0]
 
     # Load phenotypic data
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -1419,7 +1434,7 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
     References
     ----------
     :Download:
-        https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip
+        https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
 
     :Paper to cite:
         `Multi-subject dictionary learning to segment an atlas of brain
@@ -1434,7 +1449,7 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
         Gaël Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
-    url = 'https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip'
+    url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
     opts = {'uncompress': True}
 
     dataset_name = "msdl_atlas"
@@ -1442,7 +1457,7 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
              (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    files = _fetch_files(data_dir, files, resume=resume)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     return Bunch(labels=files[0], maps=files[1])
 
@@ -1658,7 +1673,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
                  file_mask
 
     data_dir = _get_dataset_dir('miyawaki2008', data_dir=data_dir)
-    files = _fetch_files(data_dir, file_names, resume=resume)
+    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Return the data
     return Bunch(
@@ -1807,6 +1822,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         BMC neuroscience 8.1 (2007): 91.
 
     """
+    if isinstance(contrasts, basestring):
+        raise ValueError('Constrasts should be a list of string, a single '
+                         'string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (n_subjects > 94) or (n_subjects < 1):
@@ -1966,7 +1984,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Actual data fetching
     data_dir = _get_dataset_dir('brainomics_localizer', data_dir=data_dir)
-    files = _fetch_files(data_dir, filenames)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
     anats = None
     masks = None
     tmaps = None
@@ -2375,7 +2393,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Fetch the phenotypic file and load it
     csv = 'Phenotypic_V1_0b_preprocessed1.csv'
-    path_csv = _fetch_files(data_dir, [(csv, url + '/' + csv, {})])[0]
+    path_csv = _fetch_files(data_dir, [(csv, url + '/' + csv, {})],
+                            verbose=verbose)[0]
 
     # Note: the phenotypic file contains string that contains comma which mess
     # up numpy array csv loading. Here I use matplotlib and I load the names
@@ -2411,7 +2430,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                   '/'.join([url, derivative,
                             file_id + '_' + derivative + ext]),
                   {}) for file_id in file_ids]
-        files = _fetch_files(data_dir, files)
+        files = _fetch_files(data_dir, files, verbose=verbose)
         # Load derivatives if needed
         if ext == '.1D':
             files = [np.loadtxt(f) for f in files]

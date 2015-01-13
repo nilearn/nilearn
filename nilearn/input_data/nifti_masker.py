@@ -4,7 +4,6 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import warnings
 from sklearn.externals.joblib import Memory
 
 from .. import masking

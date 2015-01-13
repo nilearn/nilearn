@@ -13,7 +13,7 @@ classification, decoding, or connectivity analysis.
 This work is made available by the INRIA Parietal Project Team and the
 scikit-learn folks, among which P. Gervais, A. Abraham, V. Michel, A.
 Gramfort, G. Varoquaux, F. Pedregosa, B. Thirion, M. Eickenberg, C. F. Gorgolewski,
-D. Bzdok and L. Estève
+D. Bzdok and L. Estève.
 
 Important links
 ===============
@@ -43,11 +43,17 @@ If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
 Install
 =======
 
-The simplest is to use pip. Not that nilearn has been released as an
-alpha so you need to use the ``--pre`` command-line parameter::
+First make sure you have installed all the dependencies listed above.
+Then you can install nilearn by running the following command in
+a command prompt::
 
     pip install -U --pre --user nilearn
 
+Note that nilearn has been released as a beta so you need to use the
+``--pre`` command-line parameter only if your pip version is greater than 1.4.
+
+More detailed instructions are available at
+http://nilearn.github.io/introduction.html#installation.
 
 Development
 ===========

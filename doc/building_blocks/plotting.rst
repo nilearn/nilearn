@@ -20,21 +20,22 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_2.png
+.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_2.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_3.png
+.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_3.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_4.png
+.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_4.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_5.png
+.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_5.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
+
 
 .. A temporary hack to avoid a sphinx bug
 .. |hack| raw:: html
@@ -52,6 +53,10 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting an EPI, or T2* image
 
+|plot_glass_brain|   :func:`plot_glass_brain`
+                     |hack|
+                     Glass brain visualization
+
 |plot_stat_map|      :func:`plot_stat_map`
                      |hack|
                      Plotting a statistical map, like a T-map, a Z-map, or
@@ -60,10 +65,6 @@ different heuristics to find cutting coordinates.
 |plot_roi|           :func:`plot_roi`
                      |hack|
                      Plotting ROIs, or a mask, with an optional background
-
-|plot_glass_brain|   :func:`plot_glass_brain`
-                     |hack|
-                     Glass brain visualisation
 
 **plot_img**         :func:`plot_img`
                      |hack|
@@ -87,36 +88,36 @@ different heuristics to find cutting coordinates.
 Different display modes
 ========================
 
-.. |plot_ortho| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_6.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_ortho| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_1.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_7.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_2.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_8.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_3.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_x_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_9.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_x_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_4.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_10.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_z_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_5.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_11.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_xz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_6.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_12.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_yx| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_7.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_13.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_yz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_8.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
 
@@ -174,12 +175,12 @@ plot, and has methods to add overlays, contours or edge maps::
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_14.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_edges| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_9.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_15.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_contours| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_10.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
 ================= =========================================================

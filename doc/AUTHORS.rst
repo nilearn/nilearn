@@ -7,19 +7,17 @@ This work is made available by the `INRIA Parietal Project Team
 <https://parietal.saclay.inria.fr/>`_ and `scikit-learn
 <http://scikit-learn.org/>`_ folks, in particular:
 
-.. hlist::
-
-  * Alexandre Abraham
-  * `Alexandre Gramfort <http://alexandre.gramfort.net>`_
-  * Vincent Michel
-  * Bertrand Thirion
-  * `Fabian Pedregosa <http://fseoane.net>`_
-  * `Gael Varoquaux <http://gael-varoquaux.info/blog/>`_
-  * Philippe Gervais
-  * Michael Eickenberg
-  * Chris Filo Gorgolewski
-  * Danilo Bzdok
-  * Loïc Estève
+* Alexandre Abraham
+* `Alexandre Gramfort <http://alexandre.gramfort.net>`_
+* Vincent Michel
+* Bertrand Thirion
+* `Fabian Pedregosa <http://fseoane.net>`_
+* `Gael Varoquaux <http://gael-varoquaux.info/blog/>`_
+* Philippe Gervais
+* Michael Eickenberg
+* Chris Filo Gorgolewski
+* Danilo Bzdok
+* Loïc Estève
 
 Thanks to M. Hanke and Y. Halchenko for data and packaging.
 

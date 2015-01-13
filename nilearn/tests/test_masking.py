@@ -14,9 +14,10 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from ..masking import compute_epi_mask, compute_multi_epi_mask, \
-    compute_background_mask, unmask, intersect_masks, MaskWarning
+    compute_background_mask, unmask, intersect_masks, MaskWarning, \
+    _load_mask_img
 
-from .._utils.testing import write_tmp_imgs
+from .._utils.testing import write_tmp_imgs, assert_raises_regexp
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
@@ -130,9 +131,15 @@ def test_apply_mask():
     series = masking.apply_mask(data_img, mask_img, smoothing_fwhm=9)
     assert_true(np.all(np.isfinite(series)))
 
+    # veriy that 4D masks are rejected
+    mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), np.eye(4))
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         masking.apply_mask, data_img, mask_img_4d)
+
     # Check data shape and affine
-    assert_raises(ValueError, masking.apply_mask,
-                  data_img, Nifti1Image(mask[20, ...], affine))
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         masking.apply_mask, data_img,
+                         Nifti1Image(mask[20, ...], affine))
     assert_raises(ValueError, masking.apply_mask,
                   data_img, Nifti1Image(mask, affine / 2.))
     # Check that full masking raises error

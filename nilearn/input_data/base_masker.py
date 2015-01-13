@@ -36,6 +36,7 @@ def filter_and_mask(imgs, mask_img_,
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
 
+    mask_img_ = _utils.check_niimg(mask_img_, ensure_3d=True)
     imgs = _utils.check_niimgs(imgs, accept_3d=True)
 
     # Resampling: allows the user to change the affine, the shape or both
@@ -185,7 +186,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             List of imgs file to prepare. One item per subject.
 
         confounds: list of confounds, optional
-            List of confounds. Must be of same length than imgs_list.
+            List of confounds (2D arrays or filenames pointing to CSV
+            files). Must be of same length than imgs_list.
 
         copy: boolean, optional
             If True, guarantees that output array has no memory in common with
@@ -228,16 +230,17 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
         """Fit to data, then transform it
 
-        Fits transformer to X and y with optional parameters fit_params
-        and returns a transformed version of X.
-
         Parameters
         ----------
-        X : numpy array of shape [n_samples, n_features]
-            Training set.
+        X : niimgs
+            The nifti-like images to fit and transform.
 
         y : numpy array of shape [n_samples]
             Target values.
+
+        confounds: list of confounds, optional
+            List of confounds (2D arrays or filenames pointing to CSV
+            files). Must be of same length than imgs_list.
 
         Returns
         -------

@@ -15,8 +15,8 @@
 
 .. Here we are building the carrousel
 
-.. |banner1| image:: auto_examples/manipulating_visualizing/images/plot_demo_plotting_6.png
-   :target: auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |banner1| image:: auto_examples/manipulating_visualizing/images/plot_demo_plotting_glass_brain_2.png
+   :target: auto_examples/manipulating_visualizing/plot_demo_plotting_glass_brain.html
 
 .. |banner2| image:: auto_examples/images/plot_haxby_simple_1.png
    :target: auto_examples/plot_haxby_simple.html
@@ -84,7 +84,7 @@
 
 .. warning::
 
-   NiLearn has been released as an alpha and is still in early
+   NiLearn has been released as a beta and is still in early
    development stages.
 
 
