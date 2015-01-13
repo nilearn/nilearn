@@ -383,7 +383,7 @@ class BaseSlicer(object):
                 Extra keyword arguments are passed to imshow.
         """
         if colorbar and self._colorbar:
-            raise ValueError("This figure already has an overlay with a " \
+            raise ValueError("This figure already has an overlay with a "
                              "colorbar.")
         else:
             self._colorbar = colorbar
@@ -396,13 +396,12 @@ class BaseSlicer(object):
                 data = np.ma.masked_equal(data, 0, copy=False)
             else:
                 data = np.ma.masked_inside(data, -threshold, threshold,
-                                          copy=False)
+                                           copy=False)
             img = nibabel.Nifti1Image(data, img.get_affine())
 
         # To make sure that add_overlay has a consistant default behavior
-        # with plot_stat_maps:
-        if not 'interpolation' in kwargs:
-            kwargs['interpolation'] = 'nearest'
+        # with plot_stat_map
+        kwargs.setdefault('interpolation', 'nearest')
         ims = self._map_show(img, type='imshow', **kwargs)
 
         if colorbar:
