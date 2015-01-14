@@ -10,6 +10,7 @@ test_signal.py for this.
 from tempfile import mkdtemp
 import shutil
 import os
+import numpy as np
 from distutils.version import LooseVersion
 
 from nose.tools import assert_true, assert_false, assert_raises
@@ -108,6 +109,51 @@ def test_mask_3d():
                 as filename:
         masker = NiftiMasker(mask_img=filename)
         assert_raises(TypeError, masker.fit)
+
+
+def test_mask_4d():
+    # Dummy mask
+    mask = np.zeros((10, 10, 10))
+    mask[3:7, 3:7, 3:7] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    # Dummy data
+    data = np.zeros((10, 10, 10, 3))
+    data[..., 0] = 1
+    data[..., -1] = 1
+    data_img_4d = Nifti1Image(data, np.eye(4))
+    data_imgs = [Nifti1Image(data[..., 0], np.eye(4)),
+        Nifti1Image(data[..., 1], np.eye(4)),
+        Nifti1Image(data[..., 2], np.eye(4))]
+
+    # check mask_time type and values
+    masker1 = NiftiMasker(mask_img=mask_img, mask_time=(True, False, True))
+    masker1.fit()
+    assert_raises(TypeError, masker1.transform, data_imgs)
+
+    masker2 = NiftiMasker(mask_img=mask_img, mask_time=[0, 1, 0])
+    masker2.fit()
+    assert_raises(TypeError, masker2.transform, data_imgs)
+
+    masker3 = NiftiMasker(mask_img=mask_img, mask_time=[True, False])
+    masker3.fit()
+    assert_raises(ValueError, masker3.transform, data_imgs)
+
+    masker4 = NiftiMasker(mask_img=mask_img, mask_time=[True, False])
+    masker4.fit()
+    assert_raises(ValueError, masker4.transform, data_img_4d)
+
+    # check whether transform is indeed selecting niimgs subset
+    mask_time = [True, False, True]
+    masker5 = NiftiMasker(mask_img=mask_img, mask_time=mask_time)
+    masker5.fit()
+    data_trans = masker5.transform(data_imgs)
+    assert_true(np.all(data_trans))
+
+    masker5 = NiftiMasker(mask_img=mask_img, mask_time=mask_time)
+    masker5.fit()
+    data_trans = masker5.transform(data_img_4d)
+    assert_true(np.all(data_trans))
 
 
 def test_sessions():
