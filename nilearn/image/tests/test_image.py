@@ -274,13 +274,3 @@ def test_swap_img_hemispheres():
 
 def test_concat_imgs():
     assert_true(concat_imgs is niimg_conversions.concat_niimgs)
-    
-    # simply smoke-test the import from _utils.concat_niimgs
-    shape = (10, 11, 12)
-    affine = np.eye(4)
-    img1 = nibabel.Nifti1Image(np.ones(shape), affine)
-    img2 = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    concatenated = concat_imgs((img1, img2, img1),
-                               accept_4d=False)
-    assert_true(concatenated.shape == shape + (3, ))
