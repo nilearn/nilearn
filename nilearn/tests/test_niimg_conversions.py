@@ -13,8 +13,10 @@ import tempfile
 
 import nose
 from nose.tools import assert_raises, assert_equal, assert_true
+from nilearn._utils.testing import assert_raises_regexp
 
 import numpy as np
+from numpy.testing import assert_array_equal
 
 import nibabel
 from nibabel import Nifti1Image
@@ -128,6 +130,7 @@ def _remove_if_exists(file):
 
 
 def test_concat_niimgs():
+    # create images different in affine and 3D/4D shape
     shape = (10, 11, 12)
     affine = np.eye(4)
     img1 = Nifti1Image(np.ones(shape), affine)
@@ -135,25 +138,49 @@ def test_concat_niimgs():
     img3 = Nifti1Image(np.zeros(shape), affine)
     img4d = Nifti1Image(np.ones(shape + (2, )), affine)
 
-    concatenated = _utils.concat_niimgs((img1, img3, img1))
-    concatenate_true = np.ones(shape + (3,))
-    concatenate_true[..., 1] = 0
-    np.testing.assert_almost_equal(concatenated.get_data(), concatenate_true)
+    shape2 = (12, 11, 10)
+    img1b = Nifti1Image(np.ones(shape2), affine)
 
-    assert_raises(ValueError, _utils.concat_niimgs, [img1, img2])
+    shape3 = (11, 22, 33)
+    img1c = Nifti1Image(np.ones(shape2), affine)
+
+    # check basic concatenation with equal shape/affine
+    concatenated = _utils.concat_niimgs((img1, img3, img1),
+                                        accept_4d=False)
+    concatenate_true = np.ones(shape + (3,))
 
     # Smoke-test the accept_4d
     assert_raises(ValueError, _utils.concat_niimgs, [img1, img4d])
     concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
+    np.testing.assert_equal(concatenated.get_data(), concatenate_true,
+                            verbose=False)
+
+    # smoke-test auto_resample
+    concatenated = _utils.concat_niimgs((img1, img1b, img1c), accept_4d=False,
+        auto_resample=True)
+    assert_true(concatenated.shape == img1.shape + (3, ))
+
+    # check error for non-forced but necessary resampling
+    assert_raises_regexp(ValueError, 'different from reference affine',
+                         _utils.concat_niimgs, [img1, img2],
+                         accept_4d=False)
+
+    # Smoke-test the 4d parsing
+    concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
     assert_equal(concatenated.shape[3], 3)
 
+    # test list of 4D niimgs as input
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     _, tmpimg2 = tempfile.mkstemp(suffix='.nii')
     try:
         nibabel.save(img1, tmpimg1)
-        nibabel.save(img2, tmpimg2)
-        nose.tools.assert_raises(ValueError, _utils.concat_niimgs,
-                                 [tmpimg1, tmpimg2])
+        nibabel.save(img3, tmpimg2)
+        concatenated = _utils.concat_niimgs([tmpimg1, tmpimg2],
+                                            accept_4d=False)
+        assert_array_equal(
+            concatenated.get_data()[..., 0], img1.get_data())
+        assert_array_equal(
+            concatenated.get_data()[..., 1], img3.get_data())
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
