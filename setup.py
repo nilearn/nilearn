@@ -9,11 +9,11 @@ from setuptools import setup, find_packages
 
 
 def load_version():
-    """Returns the version found in nilearn/version.py
+    """Executes nilearn/version.py in a globals dictionary and return it.
 
-    Importing nilearn is not an option because there may dependencies
-    like nibabel which are not installed and setup.py is supposed to
-    install them.
+    Note: importing nilearn is not an option because there may be
+    dependencies like nibabel which are not installed and
+    setup.py is supposed to install them.
     """
     # load all vars into globals, otherwise
     #   the later function call using global vars doesn't work.
@@ -26,8 +26,11 @@ def load_version():
 
 def is_installing():
     # Allow command-lines such as "python setup.py build install"
-    return len(sys.argv) > 1 and 'install' in sys.argv
+    return 'install' in sys.argv
 
+
+# Make sources available using relative paths from this file's directory.
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 _VERSION_GLOBALS = load_version()
 DISTNAME = 'nilearn'
@@ -44,18 +47,12 @@ VERSION = _VERSION_GLOBALS['__version__']
 if __name__ == "__main__":
     if is_installing():
         module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
-        module_check_fn(preinstalled_modules_only=True)
+        module_check_fn(is_nilearn_installing=True)
 
-    # Make sources available using relative paths from this file's directory.
-    local_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-    os.chdir(local_path)
-
-    # Convert module metadata into list of {mod_name}>={minver}
-    #   as required by install_requires
-    formatted_dependencies = \
-        ['%s>=%s' % (mod, meta['minver'])
+    install_requires = \
+        ['%s>=%s' % (mod, meta['min_version'])
             for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-            if not meta['manual_install']]
+            if not meta['required_at_installation']]
 
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
@@ -87,4 +84,4 @@ if __name__ == "__main__":
           package_data={'nilearn.data': ['*.nii.gz'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*']},
-          install_requires=formatted_dependencies,)
+          install_requires=install_requires,)

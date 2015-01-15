@@ -2,40 +2,33 @@
 """
 nilearn version, required package versions, and utilities for checking
 """
-# Author: Alexandre Abraham, Philippe Gervais, Ben Cipollini
+# Author: Loïc Estève, Ben Cipollini
 # License: simplified BSD
 
 __version__ = '0.1b1'
 
-# All metadata needed for required modules:
-#    * minver: minimum required version of the module
-#    * manual: whether the module must be installed manually
-# See more info in check_module_dependencies docstring.
-#
-# This is a list to preserve order, and to avoid the Python 2.7
-#   dependency of collections.OrderedDict
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
+
+# This is a tuple to preserve order, so that dependencies are checked
+#   in some meaningful order (more => less 'core').  We avoid using
+#   collections.OrderedDict to preserve Python 2.6 compatibility.
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'minver': '1.6.0',
-        'manual_install': True,
+        'min_version': '1.6.0',
+        'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
-        'minver': '0.9.0',
-        'manual_install': True,
+        'min_version': '0.9.0',
+        'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('sklearn', {
-        'minver': '0.10',
-        'manual_install': True,
+        'min_version': '0.10',
+        'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
-        'minver': '1.1.0',
-        'manual_install': False}),
-    ('gzip', {
-        'minver': '0.0.0',
-        'manual_install': True,
-        'install_info': 'Use a python version compiled with gzip.'}))
+        'min_version': '1.1.0',
+        'required_at_installation': False}),)
 
 
 def _import_module_with_version_check(
@@ -75,23 +68,25 @@ def _import_module_with_version_check(
     return module
 
 
-def _check_module_dependencies(preinstalled_modules_only=False):
+def _check_module_dependencies(is_nilearn_installing=False):
     """We want to check dependencies in the following scenarios:
 
         * When running installation, we want to:
-            + Fail if manually-installed packages are not installed
+            + Fail if any required package that needs manual installation
+              is not already installed.
             + Communicate packages to install automatically
 
         * When running code from the nilearn package,
             + Fail if any needed module is missing
     """
-    for (module_name, module_metadata) in REQUIRED_MODULE_METADATA:
-        if preinstalled_modules_only and not module_metadata['manual_install']:
-            # Skip check for auto-installed modules,
-            #   when preinstalled_modules_only is specified.
-            continue
 
-        _import_module_with_version_check(
-            module_name=module_name,
-            minimum_version=module_metadata['minver'],
-            install_info=module_metadata.get('install_info'))
+    for (module_name, module_metadata) in REQUIRED_MODULE_METADATA:
+        if not (is_nilearn_installing and
+                not module_metadata['required_at_installation']):
+            # Skip check only when installing and it's a module that
+            # will be auto-installed.
+            _import_module_with_version_check(
+                module_name=module_name,
+                minimum_version=module_metadata['min_version'],
+                install_info=module_metadata.get('install_info'))
+    
