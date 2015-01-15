@@ -11,9 +11,6 @@ See http://nilearn.github.com for complete documentation.
 
 from .version import _check_module_dependencies, __version__
 
-
-# Each time nilearn is imported, check module dependencies
-#   so that a user gets a useful error message immediately.
 _check_module_dependencies()
 
 

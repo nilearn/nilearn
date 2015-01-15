@@ -69,15 +69,17 @@ def _import_module_with_version_check(
 
 
 def _check_module_dependencies(is_nilearn_installing=False):
-    """We want to check dependencies in the following scenarios:
+    """Throw an exception if nilearn dependencies are not installed.
 
-        * When running installation, we want to:
-            + Fail if any required package that needs manual installation
-              is not already installed.
-            + Communicate packages to install automatically
+    Parameters
+    ----------
+    is_nilearn_installing: boolean
+        if True, only error on missing packages that cannot be auto-installed.
+        if False, error on any missing package.
 
-        * When running code from the nilearn package,
-            + Fail if any needed module is missing
+    Throws
+    -------
+    ImportError
     """
 
     for (module_name, module_metadata) in REQUIRED_MODULE_METADATA:
