@@ -75,7 +75,7 @@ class ResumeURLOpener(urllib.FancyURLopener):
         pass
 
 
-def _chunk_report_(bytes_so_far, total_size, t0):
+def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
     Parameters
@@ -83,27 +83,38 @@ def _chunk_report_(bytes_so_far, total_size, t0):
     bytes_so_far: int
         Number of downloaded bytes
 
-    total_size: int, optional
-        Total size of the file. None is valid
+    total_size: int
+        Total size of the file (may be 0/None, depending on download method).
 
-    t0: int, optional
+    t0: int
         The time in seconds (as returned by time.time()) at which the
-        download was started.
+        download was resumed / started.
+
+    initial_size: int
+        If resuming, indicate the initial size of the file.
+        If not resuming, set to zero.
     """
-    if total_size:
-        percent = float(bytes_so_far) / total_size
-        percent = round(percent * 100, 2)
+
+    if not total_size:
+        sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
+
+    else:
+        # Estimate remaining download time
+        total_percent = float(bytes_so_far) / total_size
+
+        current_download_size = bytes_so_far - initial_size
+        bytes_remaining = total_size - bytes_so_far
         dt = time.time() - t0
-        # We use a max to avoid a division by zero
-        remaining = (100. - percent) / max(0.01, percent) * dt
-        # Trailing whitespace is too erase extra char when message length
+        download_rate = current_download_size / float(dt)
+        # Minimum rate of 0.01 bytes/s, to avoid dividing by zero.
+        time_remaining = bytes_remaining / max(0.01, download_rate)
+
+        # Trailing whitespace is to erase extra char when message length
         # varies
         sys.stderr.write(
             "Downloaded %d of %d bytes (%0.2f%%, %s remaining)  \r"
-            % (bytes_so_far, total_size, percent,
-               _format_time(remaining)))
-    else:
-        sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
+            % (bytes_so_far, total_size, total_percent * 100,
+               _format_time(time_remaining)))
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
@@ -157,7 +168,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
         local_file.write(chunk)
         if report_hook:
-            _chunk_report_(bytes_so_far, total_size, t0)
+            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
 
     return
 
