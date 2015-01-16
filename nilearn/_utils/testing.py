@@ -27,7 +27,7 @@ try:
     from nose.tools import assert_raises_regexp
 except ImportError:
     # for Py 2.6
-    def assert_raises_regex(expected_exception, expected_regexp,
+    def assert_raises_regexp(expected_exception, expected_regexp,
                             callable_obj=None, *args, **kwargs):
         """Helper function to check for message patterns in exceptions"""
 
