@@ -15,7 +15,7 @@ from .. import _utils
 
 try:
     import pylab as pl
-    from matplotlib import transforms
+    from matplotlib import transforms, colors
     from matplotlib.colorbar import ColorbarBase
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
@@ -24,7 +24,6 @@ except ImportError:
 # Local imports
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
-from . import cm
 from ..image.resampling import get_bounds, reorder_img, coord_transform,\
             get_mask_bounds
 
@@ -407,6 +406,8 @@ class BaseSlicer(object):
         if colorbar:
             self._colorbar_show(ims[0], threshold)
 
+        pl.draw_if_interactive()
+
     def add_contours(self, img, **kwargs):
         """ Contour a 3D map in all the views.
 
@@ -424,6 +425,7 @@ class BaseSlicer(object):
                 these contours.
         """
         self._map_show(img, type='contour', **kwargs)
+        pl.draw_if_interactive()
 
     def _map_show(self, img, type='imshow', **kwargs):
         img = reorder_img(img)
@@ -537,7 +539,7 @@ class BaseSlicer(object):
         img = reorder_img(img)
         data = img.get_data()
         affine = img.get_affine()
-        kwargs = dict(cmap=cm.alpha_cmap(color=color))
+        single_color_cmap = colors.ListedColormap([color])
         data_bounds = get_bounds(data.shape, img.get_affine())
 
         # For each ax, cut the data and plot it
@@ -549,7 +551,9 @@ class BaseSlicer(object):
                 # We are cutting outside the indices of the data
                 continue
             display_ax.draw_2d(edge_mask, data_bounds, data_bounds,
-                               type='imshow', **kwargs)
+                               type='imshow', cmap=single_color_cmap)
+
+        pl.draw_if_interactive()
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
