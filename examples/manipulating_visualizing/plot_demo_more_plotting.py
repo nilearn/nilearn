@@ -19,10 +19,10 @@ haxby_func_filename = haxby_dataset.func[0]
 
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left vs right button press"],
-    n_subjects=4,
+    n_subjects=2,
     get_anats=True)
-localizer_anat_filename = localizer_dataset.anats[3]
-localizer_cmap_filename = localizer_dataset.cmaps[3]
+localizer_anat_filename = localizer_dataset.anats[1]
+localizer_cmap_filename = localizer_dataset.cmaps[1]
 
 ###############################################################################
 # demo the different 'display_mode' options

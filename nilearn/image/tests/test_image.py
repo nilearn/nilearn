@@ -9,7 +9,8 @@ from numpy.testing import assert_array_equal
 
 from .. import image
 from .. import resampling
-from ..._utils import testing
+from .. import concat_imgs
+from ..._utils import testing, niimg_conversions
 
 def test_high_variance_confounds():
     # See also test_signals.test_high_variance_confounds()
@@ -271,3 +272,5 @@ def test_swap_img_hemispheres():
         data)
 
 
+def test_concat_imgs():
+    assert_true(concat_imgs is niimg_conversions.concat_niimgs)

@@ -8,20 +8,31 @@ import os
 from setuptools import setup, find_packages
 
 
-def get_version():
-    """Returns the version found in nilearn/version.py
+def load_version():
+    """Executes nilearn/version.py in a globals dictionary and return it.
 
-    Importing nilearn is not an option because there may dependencies
-    like nibabel which are not installed and setup.py is supposed to
-    install them.
+    Note: importing nilearn is not an option because there may be
+    dependencies like nibabel which are not installed and
+    setup.py is supposed to install them.
     """
-    locals_dict = {}
+    # load all vars into globals, otherwise
+    #   the later function call using global vars doesn't work.
     globals_dict = {}
     with open(os.path.join('nilearn', 'version.py')) as fp:
-        exec(fp.read(), globals_dict, locals_dict)
+        exec(fp.read(), globals_dict)
 
-    return locals_dict['__version__']
+    return globals_dict
 
+
+def is_installing():
+    # Allow command-lines such as "python setup.py build install"
+    return 'install' in sys.argv
+
+
+# Make sources available using relative paths from this file's directory.
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+_VERSION_GLOBALS = load_version()
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
 LONG_DESCRIPTION = open('README.rst').read()
@@ -30,13 +41,18 @@ MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.com'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'http://nilearn.github.com'
-VERSION = get_version()
+VERSION = _VERSION_GLOBALS['__version__']
+
 
 if __name__ == "__main__":
-    old_path = os.getcwd()
-    local_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-    os.chdir(local_path)
-    sys.path.insert(0, local_path)
+    if is_installing():
+        module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
+        module_check_fn(is_nilearn_installing=True)
+
+    install_requires = \
+        ['%s>=%s' % (mod, meta['min_version'])
+            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
+            if not meta['required_at_installation']]
 
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
@@ -68,5 +84,4 @@ if __name__ == "__main__":
           package_data={'nilearn.data': ['*.nii.gz'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*']},
-          install_requires=['nibabel>=1.1.0'],
-    )
+          install_requires=install_requires,)
