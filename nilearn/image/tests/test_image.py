@@ -293,11 +293,11 @@ def test_index_img():
                       [slice(2, 8, 2), [1, 2, 3, 2],
                        (np.arange(fourth_dim_size) % 3) == 1])
     for i in tested_indices:
-        this_img_3d = image.index_img(img_4d, i)
+        this_img = image.index_img(img_4d, i)
         expected_data_3d = img_4d.get_data()[..., i]
-        assert_array_equal(this_img_3d.get_data(),
+        assert_array_equal(this_img.get_data(),
                            expected_data_3d)
-        assert_array_equal(this_img_3d.get_affine(),
+        assert_array_equal(this_img.get_affine(),
                            img_4d.get_affine())
 
     for i in [fourth_dim_size, - fourth_dim_size - 1,
