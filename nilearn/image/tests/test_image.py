@@ -300,6 +300,12 @@ def test_index_img():
         assert_array_equal(this_img_3d.get_affine(),
                            img_4d.get_affine())
 
+    for i in [fourth_dim_size, - fourth_dim_size - 1,
+              [0, fourth_dim_size],
+              np.repeat(True, fourth_dim_size + 1)]:
+        assert_raises_regexp(IndexError, 'out of bounds',
+                             image.index_img, img_4d, i)
+
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
