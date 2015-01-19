@@ -1,7 +1,7 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false, assert_raises
+from nose.tools import assert_true, assert_false, assert_raises_regexp
 
 import nibabel
 import numpy as np
@@ -11,6 +11,7 @@ from .. import image
 from .. import resampling
 from .. import concat_imgs
 from ..._utils import testing, niimg_conversions
+
 
 def test_high_variance_confounds():
     # See also test_signals.test_high_variance_confounds()
@@ -274,3 +275,57 @@ def test_swap_img_hemispheres():
 
 def test_concat_imgs():
     assert_true(concat_imgs is niimg_conversions.concat_niimgs)
+
+
+def test_index_img():
+    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
+    assert_raises_regexp(TypeError, '4D Nifti image',
+                         image.index_img, img_3d, 0)
+
+    affine = np.array([[1., 2., 3., 4.],
+                       [5., 6., 7., 8.],
+                       [9., 10., 11., 12.],
+                       [0., 0., 0., 1.]])
+    img_4d, _ = testing.generate_fake_fmri(affine=affine)
+
+    fourth_dim_size = niimg_conversions._get_shape(img_4d)[3]
+    tested_indices = (range(fourth_dim_size) +
+                      [slice(2, 8, 2), [1, 2, 3, 2],
+                       (np.arange(fourth_dim_size) % 3) == 1])
+    for i in tested_indices:
+        this_img_3d = image.index_img(img_4d, i)
+        expected_data_3d = img_4d.get_data()[..., i]
+        assert_array_equal(this_img_3d.get_data(),
+                           expected_data_3d)
+        assert_array_equal(this_img_3d.get_affine(),
+                           img_4d.get_affine())
+
+
+def test_iter_img():
+    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
+    # No error raised when the iterator is created
+    iterator = image.iter_img(img_3d)
+    # Error raised only when next is called
+    assert_raises_regexp(TypeError, '4D Nifti image',
+                         next, iterator)
+
+    affine = np.array([[1., 2., 3., 4.],
+                       [5., 6., 7., 8.],
+                       [9., 10., 11., 12.],
+                       [0., 0., 0., 1.]])
+    img_4d, _ = testing.generate_fake_fmri(affine=affine)
+
+    for i, img in enumerate(image.iter_img(img_4d)):
+        expected_data_3d = img_4d.get_data()[..., i]
+        assert_array_equal(img.get_data(),
+                           expected_data_3d)
+        assert_array_equal(img.get_affine(),
+                           img_4d.get_affine())
+
+    img_3d_list = list(image.iter_img(img_4d))
+    for i, img in enumerate(image.iter_img(img_3d_list)):
+        expected_data_3d = img_4d.get_data()[..., i]
+        assert_array_equal(img.get_data(),
+                           expected_data_3d)
+        assert_array_equal(img.get_affine(),
+                           img_4d.get_affine())
