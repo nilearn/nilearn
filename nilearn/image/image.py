@@ -507,19 +507,24 @@ def swap_img_hemispheres(img):
     return out_img
 
 
-def index_img(imgs, index, check_imgs=True):
+def _index_img(imgs, index):
+    """Helper function for index_img and iter_img
+    """
+    return nibabel.Nifti1Image(imgs.get_data()[..., index],
+                               imgs.get_affine(),
+                               header=imgs.get_header())
+
+
+def index_img(imgs, index):
     """Indexes into a 4D Niimg-like object in the fourth dimension
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     imgs: 4D Niimg-like object
           See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
     index: Any type compatible with numpy array indexing
            Used for indexing the 4D data array in the fourth dimension
-
-    check_imgs: bool
-                Whether to check that `imgs` is a 4D Niimg-like object
 
     Returns
     -------
@@ -527,19 +532,15 @@ def index_img(imgs, index, check_imgs=True):
             4D image whose data is a subset of the original image data
 
     """
-    if check_imgs:
-        imgs = check_niimgs(imgs)
-
-    return nibabel.Nifti1Image(imgs.get_data()[:, :, :, index],
-                               imgs.get_affine(),
-                               header=imgs.get_header())
+    imgs = check_niimgs(imgs)
+    return _index_img(imgs, index)
 
 
 def iter_img(imgs):
     """Iterates over a 4D Niimg-like object in the fourth dimension
 
     Parameters
-    ---------
+    ----------
     imgs: 4D Niimg-like object
           See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
@@ -549,4 +550,4 @@ def iter_img(imgs):
     """
     imgs = check_niimgs(imgs)
     for i in range(_get_shape(imgs)[3]):
-        yield index_img(imgs, i, check_imgs=False)
+        yield _index_img(imgs, i)
