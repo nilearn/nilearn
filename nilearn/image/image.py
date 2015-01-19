@@ -548,6 +548,19 @@ def iter_img(imgs):
     -------
     output: iterator of 3D nibabel.Nifti1Image
     """
-    imgs = check_niimgs(imgs)
-    for i in range(_get_shape(imgs)[3]):
-        yield _index_img(imgs, i)
+    def generator_helper(imgs):
+        imgs = check_niimgs(imgs)
+        # Using a 'yield' so that we can advance until here to raise an
+        # exception if the image is not 4D
+        yield
+
+        for i in range(_get_shape(imgs)[3]):
+            yield _index_img(imgs, i)
+
+    generator = generator_helper(imgs)
+    # This 'next' advances to the first 'yield' and raises an
+    # exception if the image is not 4D. The point of this is to raise
+    # an exception when iter_img is called rather than when the
+    # generator returned by iter_img is used
+    next(generator)
+    return generator

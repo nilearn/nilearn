@@ -309,11 +309,8 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    # No error raised when the iterator is created
-    iterator = image.iter_img(img_3d)
-    # Error raised only when next is called
     assert_raises_regexp(TypeError, '4D Nifti image',
-                         next, iterator)
+                         image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
