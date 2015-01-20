@@ -13,35 +13,40 @@ equivalent to applying anisotropic smoothing to the data.
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 import numpy as np
-import nibabel
+from scipy import linalg
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.mass_univariate import randomized_parcellation_based_inference
 
 ### Load Haxby dataset ########################################################
-dataset_files = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby_simple()
 
 ### Mask data #################################################################
-mask_img = nibabel.load(dataset_files.mask)
+mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(
     standardize=True,  # important for RPBI not to be biased by anatomy
-    mask=dataset_files.mask,
+    mask_img=mask_filename,
     memory='nilearn_cache', memory_level=1)  # cache options
-fmri_masked = nifti_masker.fit_transform(dataset_files.func)
+func_filename = haxby_dataset.func
+fmri_masked = nifti_masker.fit_transform(func_filename)
 
 ### Restrict to faces and houses ##############################################
 conditions_encoded, sessions = np.loadtxt(
-    dataset_files.session_target).astype("int").T
-conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
+    haxby_dataset.session_target).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
 
+# We consider the mean image per session and per condition.
+# Otherwise, the observations cannot be exchanged at random because
+# a time dependence exists between observations within a same session.
 n_sessions = np.unique(sessions).size
 grouped_fmri_masked = np.empty((2 * n_sessions,  # two conditions per session
                                 fmri_masked.shape[1]))
 grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
+
 for s in range(n_sessions):
     session_mask = sessions[condition_mask] == s
     session_house_mask = np.logical_and(session_mask,
@@ -65,13 +70,13 @@ neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     two_sided_test=False,  # RPBI does not perform a two-sided test
     n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals).get_data()
+    neg_log_pvals)
 
 ### Randomized Parcellation Based Inference ###################################
 neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     grouped_conditions_encoded, grouped_fmri_masked,
     # + intercept as a covariate by default
-    np.asarray(mask_img.get_data()).astype(bool),
+    nifti_masker.mask_img_.get_data().astype(bool),
     n_parcellations=30,  # 30 for the sake of time, 100 is recommended
     n_parcels=1000,
     threshold='auto',
@@ -79,50 +84,58 @@ neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     random_state=0, memory='nilearn_cache',
     n_jobs=1, verbose=True)
 neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals_rpbi).get_data()
+    neg_log_pvals_rpbi)
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import ImageGrid
+from nilearn.plotting import plot_stat_map
 
 # Use the fMRI mean image as a surrogate of anatomical data
 from nilearn import image
-mean_fmri = image.mean_img(dataset_files.func).get_data()
+mean_fmri_img = image.mean_img(haxby_dataset.func)
 
 # Various plotting parameters
-picked_slice = 27  # plotted slice
-vmin = -np.log10(0.1)  # 10% corrected
-vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_rpbi))
-grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
-                 axes_pad=0.05, add_all=True, label_mode="1",
-                 share_all=True, cbar_location="right", cbar_mode="single",
-                 cbar_size="7%", cbar_pad="1%")
+z_slice = -17  # plotted slice
+from nilearn.image.resampling import coord_transform
+affine = neg_log_pvals_unmasked.get_affine()
+_, _, k_slice = coord_transform(0, 0, z_slice,
+                                linalg.inv(affine))
+k_slice = round(k_slice)
+threshold = -np.log10(0.1)  # 10% corrected
+vmax = min(neg_log_pvals.max(), neg_log_pvals_rpbi.max())
 
 # Plot permutation p-values map
-ax = grid[0]
-p_ma = np.ma.masked_inside(neg_log_pvals_unmasked, -vmin, vmin)[..., 0]
-ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.gray)
-im = ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-               cmap=plt.cm.RdBu_r, vmin=-vmax, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values'
-             '\n(Non-parametric two-sided test'
-             '\n+ max-type correction)'
-             '\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
-ax.axis('off')
+fig = plt.figure(figsize=(4, 5.5), facecolor='k')
+
+display = plot_stat_map(neg_log_pvals_unmasked, mean_fmri_img,
+                        threshold=threshold, cmap=plt.cm.RdBu_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax)
+
+neg_log_pvals_data = neg_log_pvals_unmasked.get_data()
+neg_log_pvals_slice_data = neg_log_pvals_data[..., k_slice, 0]
+n_detections = (neg_log_pvals_slice_data > threshold).sum()
+title = ('Negative $\log_{10}$ p-values'
+         '\n(Non-parametric two-sided test'
+         '\n+ max-type correction)'
+         '\n%d detections') % n_detections
+
+display.title(title, y=1.1)
 
 # Plot RPBI p-values map
-ax = grid[1]
-p_ma = np.ma.masked_less(neg_log_pvals_rpbi_unmasked[..., 0], vmin)
-ax.imshow(np.rot90(mean_fmri[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.gray)
-ax.imshow(np.rot90(p_ma[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.RdBu_r, vmin=-vmax, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(RPBI)'
-             + '\n\n%d detections' % (~p_ma.mask[..., picked_slice]).sum())
-ax.axis('off')
+fig = plt.figure(figsize=(4, 5.5), facecolor='k')
 
-# plot colorbar
-colorbar = grid[1].cax.colorbar(im)
-plt.subplots_adjust(0., 0.03, 1., 0.83)
+display = plot_stat_map(neg_log_pvals_rpbi_unmasked, mean_fmri_img,
+                        threshold=threshold, cmap=plt.cm.RdBu_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax)
+
+neg_log_pvals_rpbi_data = neg_log_pvals_rpbi_unmasked.get_data()
+neg_log_pvals_rpbi_slice_data = neg_log_pvals_rpbi_data[..., k_slice]
+n_detections = (neg_log_pvals_rpbi_slice_data > threshold).sum()
+title = ('Negative $\log_{10}$ p-values' + '\n(RPBI)'
+         '\n%d detections') % n_detections
+
+display.title(title, y=1.1)
+
 plt.show()
