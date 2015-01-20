@@ -58,9 +58,11 @@ else
     exit 1
 fi
 
-python --version
-python -c "import numpy; print('numpy %s' % numpy.__version__)"
-python -c "import scipy; print('scipy %s' % scipy.__version__)"
-python -c "import sklearn; print ('sklearn %s' % sklearn.__version__)"
-
 python setup.py install
+
+# Report versions after install, as some of these packages may depend 
+# on the install script.
+python --version
+for pkg in 'numpy' 'scipy' 'sklearn' 'matplotlib' 'nibabel'; do
+    python -c "import $pkg; print('$pkg %s' % $pkg.__version__)"
+done

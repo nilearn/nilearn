@@ -6,9 +6,7 @@ virtualenv:
 env:
   matrix:
     - DISTRIB="ubuntu" PYTHON_VERSION="2.7"
-      COVERAGE="false"
     - DISTRIB="neurodebian" PYTHON_VERSION="2.7"
-      COVERAGE="false"
     - DISTRIB="conda" PYTHON_VERSION="2.6"
       NUMPY_VERSION="1.9.0" SCIPY_VERSION="0.14.0"
       MATPLOTLIB_VERSION="1.4" SKLEARN_VERSION="0.15.2"
