@@ -10,6 +10,7 @@ import contextlib
 import warnings
 import inspect
 import re
+from six import string_types
 
 import numpy as np
 import scipy.signal
@@ -149,7 +150,7 @@ class mock_urllib2(object):
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
                          report_hook=None, verbose=0):
-        if not isinstance(response, basestring):
+        if not isinstance(response, string_types):
             return _chunk_read_(response, local_file,
                     initial_size=initial_size, chunk_size=chunk_size,
                     report_hook=report_hook, verbose=verbose)

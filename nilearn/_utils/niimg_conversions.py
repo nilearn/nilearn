@@ -7,11 +7,10 @@ Conversion utilities.
 import collections
 import copy
 import gc
-
 import numpy as np
+from six import string_types
 
 import nibabel
-
 from sklearn.externals.joblib import Memory
 from cache_mixin import cache
 
@@ -62,7 +61,7 @@ def _check_same_fov(img1, img2):
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
-    if isinstance(niimgs, basestring):
+    if isinstance(niimgs, string_types):
         return niimgs
     if isinstance(niimgs, collections.Iterable):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
@@ -162,7 +161,7 @@ def check_niimg(niimg, ensure_3d=False):
                             'image or a list of images' % niimg)
         return concat_niimgs(niimg)
 
-    if isinstance(niimg, basestring):
+    if isinstance(niimg, string_types):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
     elif not is_img(niimg):
@@ -252,7 +251,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
             lengths.append(1)
         else:
             if not accept_4d:
-                if (isinstance(niimg, basestring)):
+                if (isinstance(niimg, string_types)):
                     i_error = "Image " + niimg
                 else:
                     i_error = "Image #" + str(index)
@@ -270,7 +269,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     cur_4d_index = 0
     for index, (iter_niimg, size) in enumerate(zip(niimgs, lengths)):
         # talk to user
-        if (isinstance(iter_niimg, basestring)):
+        if (isinstance(iter_niimg, string_types)):
             nii_str = "image " + iter_niimg
         else:
             nii_str = "image #" + str(index)
@@ -351,7 +350,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     # dimensionality and make a consistent error message.
     depth = 0
     first_img = niimgs
-    if accept_3d and (isinstance(first_img, basestring)
+    if accept_3d and (isinstance(first_img, string_types)
                       or not isinstance(first_img, collections.Iterable)):
         niimg = check_niimg(niimgs)
         if len(_get_shape(niimg)) == 3:
@@ -362,7 +361,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     while hasattr(first_img, "__iter__") \
-            and not isinstance(first_img, basestring):
+            and not isinstance(first_img, string_types):
         if hasattr(first_img, '__len__') and len(first_img) == 0:
             raise TypeError('An empty object - %r - was passed instead of an '
                             'image or a list of images' % niimgs)

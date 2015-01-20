@@ -5,6 +5,7 @@ Utilities to download NeuroImaging datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
+import collections
 import os
 import urllib
 import urllib2
@@ -19,7 +20,8 @@ import warnings
 import cPickle as pickle
 import cStringIO as StringIO
 import re
-import collections
+from matplotlib import mlab
+from six import string_types
 
 import numpy as np
 from scipy import ndimage
@@ -356,7 +358,7 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if not isinstance(criteria, basestring) and \
+    if not isinstance(criteria, string_types) and \
             not isinstance(criteria, tuple) and \
             isinstance(criteria, collections.Iterable):
         filter = np.zeros(array.shape[0], dtype=np.bool)
@@ -1896,7 +1898,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         BMC neuroscience 8.1 (2007): 91.
 
     """
-    if isinstance(contrasts, basestring):
+    if isinstance(contrasts, string_types):
         raise ValueError('Constrasts should be a list of string, a single '
                          'string was given: "%s"' % contrasts)
     if n_subjects is None:

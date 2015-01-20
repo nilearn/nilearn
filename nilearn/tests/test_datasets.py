@@ -7,12 +7,15 @@ Test the datasets module
 import contextlib
 import os
 import shutil
-from tempfile import mkdtemp, mkstemp
 import numpy as np
 import zipfile
 import tarfile
 import gzip
+from tempfile import mkdtemp, mkstemp
+
 import nibabel
+
+from six import string_types
 
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
@@ -411,7 +414,7 @@ def test_miyawaki2008():
     dataset = datasets.fetch_miyawaki2008(data_dir=tmpdir, verbose=0)
     assert_equal(len(dataset.func), 32)
     assert_equal(len(dataset.label), 32)
-    assert_true(isinstance(dataset.mask, basestring))
+    assert_true(isinstance(dataset.mask, string_types))
     assert_equal(len(dataset.mask_roi), 38)
     assert_equal(len(url_mock.urls), 1)
 
@@ -420,8 +423,8 @@ def test_miyawaki2008():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_msdl_atlas():
     dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir, verbose=0)
-    assert_true(isinstance(dataset.labels, basestring))
-    assert_true(isinstance(dataset.maps, basestring))
+    assert_true(isinstance(dataset.labels, string_types))
+    assert_true(isinstance(dataset.maps, string_types))
     assert_equal(len(url_mock.urls), 1)
 
 
@@ -429,16 +432,16 @@ def test_fetch_msdl_atlas():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_icbm152_2009():
     dataset = datasets.fetch_icbm152_2009(data_dir=tmpdir, verbose=0)
-    assert_true(isinstance(dataset.csf, basestring))
-    assert_true(isinstance(dataset.eye_mask, basestring))
-    assert_true(isinstance(dataset.face_mask, basestring))
-    assert_true(isinstance(dataset.gm, basestring))
-    assert_true(isinstance(dataset.mask, basestring))
-    assert_true(isinstance(dataset.pd, basestring))
-    assert_true(isinstance(dataset.t1, basestring))
-    assert_true(isinstance(dataset.t2, basestring))
-    assert_true(isinstance(dataset.t2_relax, basestring))
-    assert_true(isinstance(dataset.wm, basestring))
+    assert_true(isinstance(dataset.csf, string_types))
+    assert_true(isinstance(dataset.eye_mask, string_types))
+    assert_true(isinstance(dataset.face_mask, string_types))
+    assert_true(isinstance(dataset.gm, string_types))
+    assert_true(isinstance(dataset.mask, string_types))
+    assert_true(isinstance(dataset.pd, string_types))
+    assert_true(isinstance(dataset.t1, string_types))
+    assert_true(isinstance(dataset.t2, string_types))
+    assert_true(isinstance(dataset.t2_relax, string_types))
+    assert_true(isinstance(dataset.wm, string_types))
     assert_equal(len(url_mock.urls), 1)
 
 
@@ -446,13 +449,13 @@ def test_fetch_icbm152_2009():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_yeo_2011_atlas():
     dataset = datasets.fetch_yeo_2011_atlas(data_dir=tmpdir, verbose=0)
-    assert_true(isinstance(dataset.anat, basestring))
-    assert_true(isinstance(dataset.colors_17, basestring))
-    assert_true(isinstance(dataset.colors_7, basestring))
-    assert_true(isinstance(dataset.thick_17, basestring))
-    assert_true(isinstance(dataset.thick_7, basestring))
-    assert_true(isinstance(dataset.thin_17, basestring))
-    assert_true(isinstance(dataset.thin_7, basestring))
+    assert_true(isinstance(dataset.anat, string_types))
+    assert_true(isinstance(dataset.colors_17, string_types))
+    assert_true(isinstance(dataset.colors_7, string_types))
+    assert_true(isinstance(dataset.thick_17, string_types))
+    assert_true(isinstance(dataset.thick_7, string_types))
+    assert_true(isinstance(dataset.thin_17, string_types))
+    assert_true(isinstance(dataset.thin_7, string_types))
     assert_equal(len(url_mock.urls), 1)
 
 
@@ -475,7 +478,7 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
     assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.cmaps), 94)
 
@@ -488,7 +491,7 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
-    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_equal(len(dataset.cmaps), 20)
     assert_equal(dataset.ext_vars.size, 20)
@@ -502,7 +505,7 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
     assert_equal(len(dataset.cmaps), 20 * 2)  # two contrasts are fetched
     assert_equal(dataset.ext_vars.size, 20)
 
@@ -515,8 +518,8 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.masks is None)
     assert_true(dataset.tmaps is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.anats[0], basestring))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.anats[0], string_types))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
     assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.anats), 94)
     assert_equal(len(dataset.cmaps), 94)
@@ -530,8 +533,8 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
-    assert_true(isinstance(dataset.masks[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
+    assert_true(isinstance(dataset.masks[0], string_types))
     assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.cmaps), 94)
     assert_equal(len(dataset.masks), 94)
@@ -545,8 +548,8 @@ def test_fetch_localizer_contrasts():
     assert_true(dataset.anats is None)
     assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
-    assert_true(isinstance(dataset.tmaps[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
+    assert_true(isinstance(dataset.tmaps[0], string_types))
     assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.cmaps), 94)
     assert_equal(len(dataset.tmaps), 94)
@@ -561,10 +564,10 @@ def test_fetch_localizer_contrasts():
                                                  verbose=0)
 
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.anats[0], basestring))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
-    assert_true(isinstance(dataset.masks[0], basestring))
-    assert_true(isinstance(dataset.tmaps[0], basestring))
+    assert_true(isinstance(dataset.anats[0], string_types))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
+    assert_true(isinstance(dataset.masks[0], string_types))
+    assert_true(isinstance(dataset.tmaps[0], string_types))
     assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.anats), 94)
     assert_equal(len(dataset.cmaps), 94)
@@ -587,7 +590,7 @@ def test_fetch_localizer_calculation_task():
                                                         url=local_url,
                                                         verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
     assert_equal(dataset.ext_vars.size, 94)
     assert_equal(len(dataset.cmaps), 94)
 
@@ -597,7 +600,7 @@ def test_fetch_localizer_calculation_task():
                                                         url=local_url,
                                                         verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], basestring))
+    assert_true(isinstance(dataset.cmaps[0], string_types))
     assert_equal(dataset.ext_vars.size, 20)
     assert_equal(len(dataset.cmaps), 20)
 
@@ -615,20 +618,20 @@ def test_fetch_oasis_vbm():
                                        verbose=0)
     assert_equal(len(dataset.gray_matter_maps), 403)
     assert_equal(len(dataset.white_matter_maps), 403)
-    assert_true(isinstance(dataset.gray_matter_maps[0], basestring))
-    assert_true(isinstance(dataset.white_matter_maps[0], basestring))
+    assert_true(isinstance(dataset.gray_matter_maps[0], string_types))
+    assert_true(isinstance(dataset.white_matter_maps[0], string_types))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.data_usage_agreement, basestring))
+    assert_true(isinstance(dataset.data_usage_agreement, string_types))
     assert_equal(len(url_mock.urls), 3)
 
     dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
                                        dartel_version=False, verbose=0)
     assert_equal(len(dataset.gray_matter_maps), 415)
     assert_equal(len(dataset.white_matter_maps), 415)
-    assert_true(isinstance(dataset.gray_matter_maps[0], basestring))
-    assert_true(isinstance(dataset.white_matter_maps[0], basestring))
+    assert_true(isinstance(dataset.gray_matter_maps[0], string_types))
+    assert_true(isinstance(dataset.white_matter_maps[0], string_types))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.data_usage_agreement, basestring))
+    assert_true(isinstance(dataset.data_usage_agreement, string_types))
     assert_equal(len(url_mock.urls), 4)
 
 

@@ -14,6 +14,7 @@ import time
 import sys
 import warnings
 from distutils.version import LooseVersion
+from six import string_types
 
 import numpy as np
 
@@ -314,7 +315,7 @@ class SearchLight(BaseEstimator):
                                     mask_affine))
 
         estimator = self.estimator
-        if isinstance(estimator, basestring):
+        if isinstance(estimator, string_types):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(X, y, estimator, A,
