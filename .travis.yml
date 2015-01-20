@@ -1,23 +1,20 @@
 language: python
 
-python:
-    - "2.7"
-
 virtualenv:
   system_site_packages: true
 
 env:
-  - NEURODEBIAN=0
-  - NEURODEBIAN=1
+  matrix:
+    - DISTRIB="ubuntu" PYTHON_VERSION="2.7"
+      COVERAGE="false"
+    - DISTRIB="neurodebian" PYTHON_VERSION="2.7"
+      COVERAGE="false"
+    - DISTRIB="conda" PYTHON_VERSION="2.6"
+      NUMPY_VERSION="1.9.0" SCIPY_VERSION="0.14.0"
+      MATPLOTLIB_VERSION="1.4" SKLEARN_VERSION="0.15.2"
 
-before_install:
-    - wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
-    - sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
-    - if [ $NEURODEBIAN -eq 1 ]; then sudo apt-get update -qq; fi
-    - sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
-
-install:
-    - python setup.py install
+install: 
+    source continuous_integration/install.sh
 
 script:
     - make clean
