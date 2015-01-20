@@ -148,9 +148,9 @@ display = plot_stat_map(signed_neg_log_pvals_unmasked, mean_fmri_img,
                         figure=fig, vmax=vmax)
 
 signed_neg_log_pvals_data = signed_neg_log_pvals_unmasked.get_data()
-signed_neg_log_pvals_data_slice_data = \
+signed_neg_log_pvals_slice_data = \
     signed_neg_log_pvals_data[..., k_slice, 0]
-n_detections = (np.abs(signed_neg_log_pvals_data_slice_data) > threshold).sum()
+n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric two-sided test'
          '\n+ max-type correction)'
