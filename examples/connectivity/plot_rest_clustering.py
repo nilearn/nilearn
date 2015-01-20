@@ -47,7 +47,7 @@ start = time.time()
 ward = WardAgglomeration(n_clusters=1000, connectivity=connectivity,
                          memory='nilearn_cache')
 ward.fit(fmri_masked)
-print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
+print ("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
 # Compute the ward with more clusters, should be faster as we are using
 # the caching mechanism
@@ -55,7 +55,7 @@ start = time.time()
 ward = WardAgglomeration(n_clusters=2000, connectivity=connectivity,
                          memory='nilearn_cache')
 ward.fit(fmri_masked)
-print "Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start)
+print ("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
 ### Show result ###############################################################
 

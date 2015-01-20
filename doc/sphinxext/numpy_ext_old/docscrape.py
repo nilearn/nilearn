@@ -420,12 +420,12 @@ class FunctionDoc(NumpyDocString):
         try:
             NumpyDocString.__init__(self, inspect.getdoc(func) or '')
         except ValueError as e:
-            print '*' * 78
-            print "ERROR: '%s' while parsing `%s`" % (e, self._f)
-            print '*' * 78
-            #print "Docstring follows:"
-            #print doclines
-            #print '='*78
+            print ('*' * 78)
+            print ("ERROR: '%s' while parsing `%s`" % (e, self._f))
+            print ('*' * 78)
+            #print ("Docstring follows:")
+            #print (doclines)
+            #print ('='*78)
 
         if not self['Signature']:
             func, func_name = self.get_func()
@@ -458,7 +458,7 @@ class FunctionDoc(NumpyDocString):
 
         if self._role:
             if not roles.has_key(self._role):
-                print "Warning: invalid role %s" % self._role
+                print ("Warning: invalid role %s" % self._role)
             out += '.. %s:: %s\n    \n\n' % (roles.get(self._role, ''),
                                              func_name)
 
@@ -491,7 +491,7 @@ class ClassDoc(NumpyDocString):
         out += "\n\n"
 
         #for m in self.methods:
-        #    print "Parsing `%s`" % m
+        #    print ("Parsing `%s`" % m)
         #    out += str(self._func_doc(getattr(self._cls,m), 'meth')) + '\n\n'
         #    out += '.. index::\n   single: %s; %s\n\n' % (self._name, m)
 

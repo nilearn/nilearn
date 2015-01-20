@@ -36,10 +36,10 @@ datasets and atlases. Dataset fetching functions can be imported from
 They return a structure that contains the different file names::
 
     >>> # The different files
-    >>> print haxby_files.keys()
+    >>> print (haxby_files.keys())
     ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
     >>> #  Path to first functional file
-    >>> print haxby_files.func[0] # doctest: +ELLIPSIS
+    >>> print (haxby_files.func[0] # doctest: +ELLIPSIS)
     /.../nilearn_data/haxby2001/subj1/bold.nii.gz
 
 |
@@ -172,7 +172,7 @@ presented to the subject::
     >>> import numpy as np
     >>> labels = np.genfromtxt(haxby_files.session_target[0], skip_header=1,
     ...                        usecols=[0], dtype=basestring)
-    >>> print np.unique(labels)
+    >>> print (np.unique(labels))
     ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
      'shoe']
 

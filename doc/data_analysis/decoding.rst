@@ -85,7 +85,7 @@ First, load the data using nilearn's data downloading function,
 The ``haxby_dataset`` object has several entries that contain paths to the files
 downloaded on the disk::
 
-    >>> print haxby_dataset # doctest: +SKIP
+    >>> print (haxby_dataset)  # doctest: +SKIP
     {'anat': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/anat.nii.gz'],
     'func': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/bold.nii.gz'],
     'mask_face': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8b_face_vt.nii.gz'],
@@ -237,7 +237,7 @@ under Windows)::
 **Prediction accuracy**: We can take a look at the results of the
 *cross_val_score* function::
 
-  >>> print cv_scores # doctest: +SKIP
+  >>> print (cv_scores) # doctest: +SKIP
   [0.72727272727272729, 0.46511627906976744, 0.72093023255813948, 0.58139534883720934, 0.7441860465116279]
 
 This is simply the prediction score for each fold, i.e. the fraction of
@@ -267,7 +267,7 @@ to use the session label, present in the behavioral data file, and
     >>> session_label = session_label[condition_mask] # doctest: +SKIP
     >>> cv = LeaveOneLabelOut(labels=session_label) # doctest: +SKIP
     >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
-    >>> print cv_scores
+    >>> print (cv_scores)
     [ 1.          0.61111111  0.94444444  0.88888889  0.88888889  0.94444444
       0.72222222  0.94444444  0.5         0.72222222  0.5         0.55555556]
 
@@ -467,9 +467,9 @@ and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, verbose=1)
     >>> classification_accuracy = np.mean(cv_scores)
-    >>> print "Classification accuracy: %f" % classification_accuracy, \
-    ...     " / Chance level: %f" % (1. / n_conditions) # doctest: +SKIP
-    Classification accuracy: 1.000000   / Chance level: 0.500000
+    >>> print ("Classification accuracy: %.4f / Chance Level: %.4f" % \
+    ...    (classification_accuracy, 1. / n_conditions)) # doctest: +SKIP
+    Classification accuracy: 1.0000 / Chance level: 0.5000
 
 
 Changing the feature selection

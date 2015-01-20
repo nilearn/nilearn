@@ -64,10 +64,10 @@ gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 new_images = nifti_masker.inverse_transform(gm_maps_masked)
 gm_maps_masked = nifti_masker.fit_transform(new_images)
 n_samples, n_features = gm_maps_masked.shape
-print n_samples, "subjects, ", n_features, "features"
+print ("%d samples, %d features" % (n_subjects, n_features))
 
 ### Prediction with SVR #######################################################
-print "ANOVA + SVR"
+print ("ANOVA + SVR")
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVR
@@ -123,12 +123,12 @@ cv_scores = cross_val_score(anova_svr, gm_maps_masked, age)
 
 ### Return the corresponding mean prediction accuracy
 prediction_accuracy = np.mean(cv_scores)
-print "=== ANOVA ==="
-print "Prediction accuracy: %f" % prediction_accuracy
-print
+print ("=== ANOVA ===")
+print ("Prediction accuracy: %f" % prediction_accuracy)
+print ("")
 
 ### Inference with massively univariate model #################################
-print "Massively univariate model"
+print ("Massively univariate model")
 
 ### Statistical inference
 from nilearn.mass_univariate import permuted_ols
@@ -156,6 +156,6 @@ display.title(title, y=1.2)
 signed_neg_log_pvals_slice_data = \
     signed_neg_log_pvals_unmasked.get_data()[..., k_slice, 0]
 n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
-print '\n%d detections' % n_detections
+print ('\n%d detections' % n_detections)
 
 plt.show()

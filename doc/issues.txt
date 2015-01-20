@@ -1,0 +1,18 @@
+Create RSA code
+
+
+Refactor datasets
+	* Separate base functions from fetch methods (code and tests)
+	* Make easily extensible (create a basic template)
+
+Create examples cache
+	* Make CacheMixin (or Memory) read from environment variables (if memory not specified)
+
+Silent datasets download
+    * 
+
+Single-location Memory
+    * 
+
+Python 3.x
+    * Many more warnings in decoding/plot_haxby_full_analysis.py for 3.4 vs. 2.6
