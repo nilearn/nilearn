@@ -164,7 +164,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         total_size = response.info().getheader('Content-Length').strip()
     try:
         total_size = int(total_size) + initial_size
-    except Exception, e:
+    except Exception as e:
         if verbose > 1:
             print "Warning: total size could not be determined."
             if verbose > 2:
@@ -502,14 +502,17 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         dt = time.time() - t0
         if verbose > 0:
             print '...done. (%i seconds, %i min)' % (dt, dt / 60)
+    except urllib2.HTTPError as e:
     except urllib2.HTTPError, e:
+        print 'Error while fetching file %s.' \
+            ' Dataset fetching aborted.' % file_name
         if verbose > 0:
             print 'Error while fetching file %s.' \
                 ' Dataset fetching aborted.' % file_name
         if verbose > 1:
             print "HTTP Error:", e, url
         raise
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         if verbose > 0:
             print 'Error while fetching file %s.' \
                 ' Dataset fetching aborted.' % file_name

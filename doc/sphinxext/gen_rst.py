@@ -963,10 +963,10 @@ def embed_code_links(app, exception):
                                 for name, link in str_repl.iteritems():
                                     line = line.replace(name, link)
                                 fid.write(line.encode('utf-8'))
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         print ("The following HTTP Error has occurred:\n")
         print e.code
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         print ("\n...\n"
                "Warning: Embedding the documentation hyperlinks requires "
                "internet access.\nPlease check your network connection.\n"
