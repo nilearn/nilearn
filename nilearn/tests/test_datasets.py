@@ -91,7 +91,7 @@ def test_get_dataset_dir():
     # Verify exception is raised on read-only directories
     no_write = os.path.join(tmpdir, 'no_write')
     os.makedirs(no_write)
-    os.chmod(no_write, 0400)
+    os.chmod(no_write, 0o400)
     assert_raises_regexp(OSError, 'Permission denied',
                          datasets._get_dataset_dir, 'test', no_write,
                          verbose=0)
