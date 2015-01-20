@@ -101,7 +101,7 @@ def test_get_dataset_dir():
     
     no_write = os.path.join(tmpdir, 'no_write')
     os.makedirs(no_write)
-    os.chmod(no_write, 0400)
+    os.chmod(no_write, 0o400)
     
     # Verify that default is used if non writeable dir
     os.environ['MY_DATA'] = no_write
