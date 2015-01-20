@@ -4,6 +4,7 @@ Test the datasets module
 # Author: Alexandre Abraham
 # License: simplified BSD
 
+import contextlib
 import os
 import shutil
 from tempfile import mkdtemp, mkstemp
@@ -618,7 +619,7 @@ def test_uncompress():
     # Create a zipfile
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.zip')
-    with zipfile.ZipFile(ztemp, 'w') as testzip:
+    with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
         testzip.write(temp)
     datasets._uncompress_file(ztemp)
     assert(os.path.exists(os.path.join(dtemp, temp)))
@@ -626,7 +627,7 @@ def test_uncompress():
 
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.tar')
-    with tarfile.open(ztemp, 'w') as tar:
+    with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
         tar.add(temp)
     datasets._uncompress_file(ztemp)
     assert(os.path.exists(os.path.join(dtemp, temp)))
