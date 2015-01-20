@@ -84,7 +84,7 @@ classifiers_scores = {}
 
 for classifier_name, classifier in sorted(classifiers.items()):
     classifiers_scores[classifier_name] = {}
-    print 70 * '_'
+    print (70 * '_')
 
     for category in categories:
         classification_target = stimuli[np.logical_not(resting_state)] == category
@@ -95,11 +95,11 @@ for classifier_name, classifier in sorted(classifiers.items()):
             classification_target,
             cv=cv, scoring="f1")
 
-        print "%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
+        print ("%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
             classifier_name, category,
             classifiers_scores[classifier_name][category].mean(),
             classifiers_scores[classifier_name][category].std(),
-            time.time() - t0)
+            time.time() - t0))
 
 ###############################################################################
 # make a rudimentary diagram

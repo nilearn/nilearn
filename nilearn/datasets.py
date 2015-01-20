@@ -157,9 +157,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         total_size = int(total_size) + initial_size
     except Exception as e:
         if verbose > 1:
-            print "Warning: total size could not be determined."
+            print ("Warning: total size could not be determined.")
             if verbose > 2:
-                print "Full stack trace: %s" % e
+                print ("Full stack trace: %s" % e)
         total_size = None
     bytes_so_far = initial_size
 
@@ -236,7 +236,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
         paths.append(os.path.expanduser('~/nilearn_data'))
 
     if verbose > 2:
-        print 'Dataset search paths:', paths
+        print ('Dataset search paths: %s' % paths)
 
     # Check if the dataset exists somewhere
     for path in paths:
@@ -285,7 +285,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     This handles zip, tar, gzip and bzip files only.
     """
     if verbose > 0:
-        print 'extracting data from %s...' % file_
+        print ('Extracting data from %s...' % file_)
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
@@ -325,10 +325,10 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         if delete_archive:
             os.remove(file_)
         if verbose > 0:
-            print '   ...done.'
+            print ('   ...done.')
     except Exception as e:
         if verbose > 0:
-            print 'Error uncompressing file: %s' % e
+            print ('Error uncompressing file: %s' % e)
         raise
 
 
@@ -469,7 +469,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         # Download data
         if verbose > 0:
             displayed_url = urllib.splitquery(url)[0] if verbose == 1 else url
-            print 'Dowloading data from %s ...' % displayed_url
+            print ('Downloading data from %s ...' % displayed_url)
         if resume and os.path.exists(temp_full_name):
             url_opener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
@@ -496,23 +496,20 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
-            print '...done. (%i seconds, %i min)' % (dt, dt / 60)
+            print ('...done. (%i seconds, %i min)' % (dt, dt / 60))
     except urllib2.HTTPError as e:
-    except urllib2.HTTPError, e:
-        print 'Error while fetching file %s.' \
-            ' Dataset fetching aborted.' % file_name
         if verbose > 0:
-            print 'Error while fetching file %s.' \
-                ' Dataset fetching aborted.' % file_name
+            print ('Error while fetching file %s. Dataset fetching aborted.' %
+                   (file_name))
         if verbose > 1:
-            print "HTTP Error:", e, url
+            print ("HTTP Error: %s, %s" % (e, url))
         raise
     except urllib2.URLError as e:
         if verbose > 0:
-            print 'Error while fetching file %s.' \
-                ' Dataset fetching aborted.' % file_name
+            print ('Error while fetching file %s. Dataset fetching aborted.' %
+                   (file_name))
         if verbose > 1:
-            print "URL Error:", e, url
+            print ("URL Error: %s, %s" % (e, url))
         raise
     finally:
         if local_file is not None:

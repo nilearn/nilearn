@@ -10,7 +10,7 @@ values.
 
 # Licence : BSD
 
-print __doc__
+print (__doc__)
 
 from time import time
 
@@ -150,7 +150,7 @@ for name, classifier in classifiers:
     # plot the results
     plot_slices(coefs, title=title)
 
-    print title
+    print (title)
 
 f_values, p_values = f_regression(X_train, y_train)
 p_values = np.reshape(p_values, (size, size, size))

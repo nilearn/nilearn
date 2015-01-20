@@ -345,7 +345,7 @@ plot_rst_template = """
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
 HLIST_HEADER = """
-.. rst-class:: horizontal
+.. rst-cglass:: horizontal
 
 """
 
@@ -519,11 +519,11 @@ def generate_dir_rst(dir, fhindex, example_dir, root_dir, plot_gallery):
         target_dir = root_dir
         src_dir = example_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print 80 * '_'
+        print (80 * '_')
         print ('Example directory %s does not have a README.txt file' %
-               src_dir)
-        print 'Skipping this directory'
-        print 80 * '_'
+              src_dir)
+        print ('Skipping this directory')
+        print (80 * '_')
         return
     fhindex.write("""
 
@@ -692,7 +692,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
         if not os.path.exists(first_image_file) or \
            os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime:
             # We need to execute the code
-            print 'plotting %s' % fname
+            print ('plotting %s' % fname)
             t0 = time()
             import matplotlib.pyplot as plt
             plt.close('all')
@@ -829,15 +829,15 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                     fig.savefig(image_path % fig_num, **kwargs)
                     figure_list.append(image_fname % fig_num)
             except:
-                print 80 * '_'
-                print '%s is not compiling:' % fname
+                print (80 * '_')
+                print ('%s is not compiling:' % fname)
                 traceback.print_exc()
-                print 80 * '_'
+                print (80 * '_')
             finally:
                 os.chdir(cwd)
                 sys.stdout = orig_stdout
 
-            print " - time elapsed : %.2g sec" % time_elapsed
+            print (" - time elapsed : %.2g sec" % time_elapsed)
         else:
             figure_list = [f[len(image_dir):]
                             for f in glob.glob(image_path % '[1-9]')]
@@ -899,7 +899,7 @@ def embed_code_links(app, exception):
     try:
         if exception is not None:
             return
-        print 'Embedding documentation hyperlinks in examples..'
+        print ('Embedding documentation hyperlinks in examples..')
 
         # Add resolvers for the packages for which we want to show links
         doc_resolvers = {}
@@ -932,7 +932,7 @@ def embed_code_links(app, exception):
 
         for dirpath, _, filenames in os.walk(html_example_dir):
             for fname in filenames:
-                print '\tprocessing: %s' % fname
+                print ('\tprocessing: %s' % fname)
                 full_fname = os.path.join(html_example_dir, dirpath, fname)
                 subpath = dirpath[len(html_example_dir) + 1:]
                 pickle_fname = os.path.join(example_dir, subpath,
@@ -971,14 +971,14 @@ def embed_code_links(app, exception):
                                 fid.write(line.encode('utf-8'))
     except urllib2.HTTPError as e:
         print ("The following HTTP Error has occurred:\n")
-        print e.code
+        print (e.code)
     except urllib2.URLError as e:
         print ("\n...\n"
                "Warning: Embedding the documentation hyperlinks requires "
                "internet access.\nPlease check your network connection.\n"
                "Unable to continue embedding due to a URL Error: \n")
-        print e.args
-    print '[done]'
+        print (e.args)
+    print ('[done]')
 
 
 def setup(app):
