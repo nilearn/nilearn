@@ -12,7 +12,8 @@ from six import string_types
 
 import nibabel
 from sklearn.externals.joblib import Memory
-from cache_mixin import cache
+from .cache_mixin import cache
+
 
 def is_img(obj):
     """ Check for get_data and get_affine method in an object
