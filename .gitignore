@@ -29,3 +29,6 @@ tags
 *.nt.bz2
 *.tar.gz
 *.tgz
+
+*.nii
+*.npz
