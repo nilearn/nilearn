@@ -28,7 +28,10 @@ REQUIRED_MODULE_METADATA = (
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '1.1.0',
-        'required_at_installation': False}),)
+        'required_at_installation': False}),
+    ('six', {
+        'min_version': '0.0.0',
+        'required_at_installation': False}))
 
 
 def _import_module_with_version_check(
