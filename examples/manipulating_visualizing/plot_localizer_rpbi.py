@@ -13,18 +13,23 @@ that it conveys more sensitivity.
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Mar. 2014
 import numpy as np
 from nilearn import datasets
+from scipy import linalg
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.mass_univariate import randomized_parcellation_based_inference
 
 ### Load Localizer motor contrast #############################################
 n_samples = 20
-dataset_files = datasets.fetch_localizer_calculation_task(n_subjects=n_samples)
+# localizer_dataset = datasets.fetch_localizer_calculation_task(
+#     n_subjects=n_samples)
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    ["calculation vs sentences"],
+    n_subjects=n_samples)
 
 ### Mask data #################################################################
 nifti_masker = NiftiMasker(
     memory='nilearn_cache', memory_level=1)  # cache options
-fmri_masked = nifti_masker.fit_transform(dataset_files.cmaps)
+fmri_masked = nifti_masker.fit_transform(localizer_dataset.cmaps)
 
 ### Perform massively univariate analysis with permuted OLS ###################
 tested_var = np.ones((n_samples, 1), dtype=float)  # intercept
@@ -50,44 +55,57 @@ neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import ImageGrid
+from nilearn.plotting import plot_stat_map
 
 # Here, we should use a structural image as a background, when available.
 
 # Various plotting parameters
-picked_slice = 30  # plotted slice
-vmin = - np.log10(0.1)  # 10% corrected
-vmax = min(np.amax(neg_log_pvals), np.amax(neg_log_pvals_rpbi))
-grid = ImageGrid(plt.figure(), 111, nrows_ncols=(1, 2), direction="row",
-                 axes_pad=0.05, add_all=True, label_mode="1",
-                 share_all=True, cbar_location="right", cbar_mode="single",
-                 cbar_size="7%", cbar_pad="1%")
+z_slice = 39  # plotted slice
+from nilearn.image.resampling import coord_transform
+affine = neg_log_pvals_unmasked.get_affine()
+_, _, k_slice = coord_transform(0, 0, z_slice,
+                                linalg.inv(affine))
+k_slice = round(k_slice)
+
+threshold = - np.log10(0.1)  # 10% corrected
+vmax = min(np.amax(neg_log_pvals),
+           np.amax(neg_log_pvals_rpbi))
 
 # Plot permutation p-values map
-ax = grid[0]
-masked_pvals = np.ma.masked_less(neg_log_pvals_unmasked.get_data(), vmin)
-ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
-          interpolation='nearest', cmap=plt.cm.gray)
-im = ax.imshow(np.rot90(masked_pvals[..., picked_slice]),
-               interpolation='nearest',
-               cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(Non-parametric + '
-             '\nmax-type correction)' +
-             '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum())
-ax.axis('off')
+fig = plt.figure(figsize=(5, 7), facecolor='k')
+
+display = plot_stat_map(neg_log_pvals_unmasked,
+                        threshold=threshold, cmap=plt.cm.autumn,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax, black_bg=True)
+
+neg_log_pvals_data = neg_log_pvals_unmasked.get_data()
+neg_log_pvals_slice_data = \
+    neg_log_pvals_data[..., k_slice]
+n_detections = (neg_log_pvals_slice_data > threshold).sum()
+title = ('Negative $\log_{10}$ p-values'
+         '\n(Non-parametric + '
+         '\nmax-type correction)'
+         '\n%d detections') % n_detections
+
+display.title(title, y=1.2)
 
 # Plot RPBI p-values map
-ax = grid[1]
-masked_pvals = np.ma.masked_less(neg_log_pvals_rpbi_unmasked.get_data(), vmin)
-ax.imshow(np.rot90(nifti_masker.mask_img_.get_data()[..., picked_slice]),
-          interpolation='nearest', cmap=plt.cm.gray)
-ax.imshow(np.rot90(masked_pvals[..., picked_slice]), interpolation='nearest',
-          cmap=plt.cm.autumn, vmin=vmin, vmax=vmax)
-ax.set_title(r'Negative $\log_{10}$ p-values' + '\n(RPBI)'
-             + '\n\n%d detections'
-             % (~masked_pvals.mask[..., picked_slice]).sum())
-ax.axis('off')
+fig = plt.figure(figsize=(5, 7), facecolor='k')
 
-grid[0].cax.colorbar(im)
-plt.subplots_adjust(0.02, 0.03, .95, 0.83)
+display = plot_stat_map(neg_log_pvals_rpbi_unmasked,
+                        threshold=threshold, cmap=plt.cm.autumn,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax, black_bg=True)
+
+neg_log_pvals_rpbi_data = \
+    neg_log_pvals_rpbi_unmasked.get_data()
+neg_log_pvals_rpbi_slice_data = \
+    neg_log_pvals_rpbi_data[..., k_slice]
+n_detections = (neg_log_pvals_rpbi_slice_data > threshold).sum()
+title = ('Negative $\log_{10}$ p-values' + '\n(RPBI)'
+         '\n%d detections') % n_detections
+
+display.title(title, y=1.2)
+
 plt.show()
