@@ -20,7 +20,7 @@ anat_img = nibabel.load(anat_filename)
 
 # Accessing image data and affine #############################################
 anat_data = anat_img.get_data()
-print ('anat_data has shape: %s' % anat_data.shape)
+print ('anat_data has shape: %s' % str(anat_data.shape))
 anat_affine = anat_img.get_affine()
 print ('anat_affine:\n%s' % anat_affine)
 
