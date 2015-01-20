@@ -3,6 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
+from six import string_types
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
@@ -35,7 +36,7 @@ def _compose_err_msg(msg, **kwargs):
     """
     updated_msg = msg
     for k, v in kwargs.iteritems():
-        if isinstance(v, basestring):
+        if isinstance(v, string_types):
             updated_msg += "\n" + k + ": " + v
 
     return updated_msg

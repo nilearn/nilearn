@@ -167,11 +167,12 @@ can be loaded with `numpy.genfromtxt` but you may have to specify some options
 For the Haxby datasets, we can load the categories of the images
 presented to the subject::
 
+    >>> from six import string_types
     >>> from nilearn import datasets
     >>> haxby_files = datasets.fetch_haxby(n_subjects=1)
     >>> import numpy as np
     >>> labels = np.genfromtxt(haxby_files.session_target[0], skip_header=1,
-    ...                        usecols=[0], dtype=basestring)
+    ...                        usecols=[0], dtype=string_types)
     >>> print (np.unique(labels))
     ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
      'shoe']

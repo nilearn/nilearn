@@ -21,10 +21,11 @@ import nibabel
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
 # Second, load the labels
+from six import string_types
 import numpy as np
 
 haxby_labels = np.genfromtxt(haxby_dataset.session_target[0], skip_header=1,
-                             usecols=[0], dtype=basestring)
+                             usecols=[0], dtype=string_types)
 
 ### Visualization function ####################################################
 

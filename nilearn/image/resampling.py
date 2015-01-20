@@ -6,6 +6,7 @@ Utilities to resample a Nifti Image
 
 import warnings
 from distutils.version import LooseVersion
+from six import string_types
 
 import numpy as np
 import scipy
@@ -362,7 +363,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
-    if isinstance(img, basestring):
+    if isinstance(img, string_types):
         # Avoid a useless copy
         input_img_is_string = True
     else:

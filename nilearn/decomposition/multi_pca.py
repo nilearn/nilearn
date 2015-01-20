@@ -1,16 +1,14 @@
 """
 PCA dimension reduction on multiple subjects
 """
-import warnings
 import itertools
-
-from scipy import linalg
 import numpy as np
+import warnings
+from scipy import linalg
+from six import string_types
 
 import nibabel
-
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
@@ -213,7 +211,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             the affine is considered the same for all.
         """
         # Hack to support single-subject data:
-        if isinstance(imgs, (basestring, nibabel.Nifti1Image)):
+        if isinstance(imgs, (string_types, nibabel.Nifti1Image)):
             imgs = [imgs]
             # This is a very incomplete hack, as it won't work right for
             # single-subject list of 3D filenames

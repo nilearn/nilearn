@@ -8,6 +8,7 @@ example files.
 Files that generate images should start with 'plot'
 
 """
+from six import string_types
 from time import time
 import os
 import re
@@ -710,7 +711,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                 for var_name, var in my_globals.iteritems():
                     if not hasattr(var, '__module__'):
                         continue
-                    if not isinstance(var.__module__, basestring):
+                    if not isinstance(var.__module__, string_types):
                         continue
                     if var.__module__.split('.')[0] not in DOCMODULES:
                         continue
@@ -754,7 +755,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                                 continue
                             if not hasattr(this_fun, '__module__'):
                                 continue
-                            if not isinstance(this_fun.__module__, basestring):
+                            if not isinstance(this_fun.__module__, string_types):
                                 continue
                             if (this_fun.__module__.split('.')[0]
                                     not in DOCMODULES):

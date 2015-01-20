@@ -7,6 +7,7 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+from six import string_types
 
 import numpy as np
 from scipy import ndimage
@@ -240,7 +241,7 @@ def smooth_img(imgs, fwhm):
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     if hasattr(imgs, "__iter__") \
-       and not isinstance(imgs, basestring):
+       and not isinstance(imgs, string_types):
         single_img = False
     else:
         single_img = True
@@ -428,7 +429,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         mean image
 
     """
-    if (isinstance(imgs, basestring) or
+    if (isinstance(imgs, string_types) or
         not isinstance(imgs, collections.Iterable)):
         imgs = [imgs, ]
         total_n_imgs = 1
