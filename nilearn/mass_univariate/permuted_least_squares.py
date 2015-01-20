@@ -5,6 +5,8 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
+from past.builtins import xrange
+
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state

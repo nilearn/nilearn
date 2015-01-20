@@ -6,6 +6,7 @@ Test for "region" module.
 import numpy as np
 import warnings
 from nose.tools import assert_raises, assert_true
+from past.builtins import xrange
 
 import nibabel
 

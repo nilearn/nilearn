@@ -12,7 +12,11 @@ import contextlib
 import warnings
 import inspect
 import re
+<<<<<<< HEAD
 from nose.tools import assert_true
+=======
+from past.builtins import xrange
+>>>>>>> Import xrange from past, for python2/3 support.
 from six import string_types
 
 import numpy as np

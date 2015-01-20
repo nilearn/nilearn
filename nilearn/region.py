@@ -6,6 +6,7 @@ or as weights in one image per region (maps).
 """
 # Author: Philippe Gervais
 # License: simplified BSD
+from past.builtins import xrange
 
 import numpy as np
 from scipy import linalg, ndimage

@@ -9,6 +9,7 @@ import warnings
 import collections
 import operator
 import itertools
+from past.builtins import xrange
 
 import numpy as np
 import scipy.linalg
