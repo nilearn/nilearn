@@ -108,7 +108,7 @@ def test_plot_img_empty():
 def test_plot_img_invalid():
     # Check that we get a meaningful error message when we give a wrong
     # display_mode argument
-    assert_raises(plot_anat, display_mode='zzz')
+    assert_raises(Exception, plot_anat, display_mode='zzz')
 
 
 def test_plot_img_with_auto_cut_coords():
