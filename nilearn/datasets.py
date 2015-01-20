@@ -2027,8 +2027,8 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
     """Fetch calculation task contrast maps from the localizer.
 
     This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding. The 'calculation vs
-    sentences' contrast is used.
+    to simplify examples reading and understanding.
+    The 'calculation (auditory and visual cue)' contrast is used.
 
     Parameters
     ----------
