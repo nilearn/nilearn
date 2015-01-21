@@ -2,15 +2,15 @@
 """
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
+import contextlib
 import functools
+import inspect
 import os
 import sys
-import urllib2
-import contextlib
-import warnings
-import inspect
 import re
+import warnings
 from six import string_types
+from six.moves import urllib
 
 import numpy as np
 import scipy.signal
@@ -115,30 +115,21 @@ def write_tmp_imgs(*imgs, **kwargs):
             yield imgs
 
 
-class mock_urllib2(object):
-
-    urlparse = urllib2.urlparse
-
+class mock_request(object):
     def __init__(self):
-        """Object that mocks the urllib2 module to store downloaded filenames.
+        """Object that mocks the urllib (future) module to store downloaded filenames.
 
         `urls` is the list of the files whose download has been
         requested.
         """
         self.urls = set()
 
-    class HTTPError(urllib2.URLError):
-        code = 404
-
-    class URLError(urllib2.URLError):
-        pass
-
     def urlopen(self, url):
         self.urls.add(url)
         # If the file is local, we try to open it
         if url.startswith('file://'):
             try:
-                return urllib2.urlopen(url)
+                return urllib.request.urlopen(url)
             except:
                 pass
         return url
@@ -161,7 +152,7 @@ def wrap_chunk_read_(_chunk_read_):
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
                                  chunk_size=8192, report_hook=None,
                                  verbose=0):
-    raise urllib2.HTTPError("url", 418, "I'm a teapot", None, None)
+    raise urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
 class FetchFilesMock (object):
