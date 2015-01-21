@@ -15,12 +15,9 @@ import time
 import hashlib
 import fnmatch
 import warnings
-import cPickle as pickle
-import cStringIO as StringIO
 import re
-from matplotlib import mlab
 from six import string_types
-from six.moves import urllib
+from six.moves import cPickle, StringIO, urllib
 
 import numpy as np
 from scipy import ndimage
@@ -2502,7 +2499,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
     pheno_f.close()
     pheno = '\n'.join(pheno)
-    pheno = StringIO.StringIO(pheno)
+    pheno = StringIO(pheno)
     # We enforce empty comments because it is 'sharp' by default
     pheno = np.recfromcsv(pheno, comments=[], case_sensitive=True)
 

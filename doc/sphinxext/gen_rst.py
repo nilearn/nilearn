@@ -8,20 +8,19 @@ example files.
 Files that generate images should start with 'plot'
 
 """
-from six import string_types
-from time import time
 import os
 import re
 import shutil
 import traceback
 import glob
 import sys
-import cPickle
 import gzip
 import posixpath
 import subprocess
-from StringIO import StringIO
-from six.moves import urllib
+from six import string_types
+from six.moves import cPickle, urllib
+from six.moves.StringIO import StringIO
+from time import time
 try:
     from PIL import Image
 except:
