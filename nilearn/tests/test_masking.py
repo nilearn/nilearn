@@ -179,7 +179,7 @@ def test_unmask():
     assert_array_equal(t, unmasked4D)
     t = unmask([masked4D], mask_img, order="F")
     t = [t_.get_data() for t_ in t]
-    assert_true(isinstance(t, types.ListType))
+    assert_true(isinstance(t, list))
     assert_equal(t[0].ndim, 4)
     assert_false(t[0].flags["C_CONTIGUOUS"])
     assert_true(t[0].flags["F_CONTIGUOUS"])
@@ -195,7 +195,7 @@ def test_unmask():
             assert_array_equal(t, unmasked3D)
             t = unmask([masked3D], filename, order="F")
             t = [t_.get_data() for t_ in t]
-            assert_true(isinstance(t, types.ListType))
+            assert_true(isinstance(t, list))
             assert_equal(t[0].ndim, 3)
             assert_false(t[0].flags["C_CONTIGUOUS"])
             assert_true(t[0].flags["F_CONTIGUOUS"])
@@ -217,7 +217,7 @@ def test_unmask():
     assert_array_equal(t, unmasked5D)
     t = unmask([masked5D], mask_img)
     t = [t_.get_data() for t_ in t]
-    assert_true(isinstance(t, types.ListType))
+    assert_true(isinstance(t, list))
     assert_equal(t[0].ndim, len(shape5D))
     assert_array_equal(t[0], unmasked5D)
 
