@@ -9,7 +9,6 @@ whose name starts with an underscore
 
 import os
 import tempfile
-import itertools
 
 from nose.tools import assert_equal, assert_true
 
@@ -102,7 +101,7 @@ def test_check_niimgs():
                                             return_iterator=True)
     img_3d_iterator_2 = _utils.check_niimgs(img_3d_iterator_1,
                                             return_iterator=True)
-    for img_1, img_2 in itertools.izip(img_3d_iterator_1, img_3d_iterator_2):
+    for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
         assert_array_equal(img_1.get_data(), img_2.get_data())
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
@@ -111,7 +110,7 @@ def test_check_niimgs():
                                             return_iterator=True)
     img_3d_iterator_2 = _utils.check_niimgs(img_4d_1,
                                             return_iterator=True)
-    for img_1, img_2 in itertools.izip(img_3d_iterator_1, img_3d_iterator_2):
+    for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
         assert_array_equal(img_1.get_data(), img_2.get_data())
         assert_array_equal(img_1.get_affine(), img_2.get_affine())

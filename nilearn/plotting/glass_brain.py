@@ -100,11 +100,11 @@ def _get_json_and_transform(direction):
         (_direction, os.path.join(
             dirname,
             'brain_schematics_{0}.json'.format(view_name)))
-        for _direction, view_name in direction_to_view_name.iteritems()])
+        for _direction, view_name in direction_to_view_name.items()])
 
     direction_to_transforms = dict([
         (_direction, transforms.Affine2D.from_values(*params))
-        for _direction, params in direction_to_transform_params.iteritems()])
+        for _direction, params in direction_to_transform_params.items()])
 
     direction_to_json_and_transform = dict([
         (_direction, (direction_to_filename[_direction],
@@ -117,7 +117,7 @@ def _get_json_and_transform(direction):
         message = ("No glass brain view associated with direction '{0}'. "
                    "Possible directions are {1}").format(
                        direction,
-                       direction_to_json_and_transform.keys())
+                       list(direction_to_json_and_transform.keys()))
         raise ValueError(message)
 
     return filename_and_transform

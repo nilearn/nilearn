@@ -39,7 +39,7 @@ example, we can download the data from the
 
 `dataset.func` contains filenames referring to dataset files on the disk::
 
-  >>> dataset.keys()
+  >>> list(dataset.keys())
   ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
   >>> dataset.func # doctest: +ELLIPSIS
   ['.../haxby2001/subj1/bold.nii.gz']

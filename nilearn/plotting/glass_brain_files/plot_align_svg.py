@@ -25,7 +25,7 @@ display = img_plotting.plot_glass_brain(bg_img, threshold=0,
 # e.g. parieto-occipital sulcus
 
 def add_brain_schematics(display):
-    for axes in display.axes.itervalues():
+    for axes in display.axes.values():
         kwargs = {'alpha': 0.5, 'linewidth': 1, 'edgecolor': 'orange'}
         object_bounds = glass_brain.plot_brain_schematics(axes.ax,
                                                           axes.direction,
