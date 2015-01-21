@@ -21,6 +21,7 @@ from six import string_types
 from six.moves import cPickle, urllib
 from six.moves.StringIO import StringIO
 from time import time
+
 try:
     from PIL import Image
 except:
@@ -227,11 +228,11 @@ class SphinxDocLinkResolver(object):
         if full_name in self._searchindex['objects']:
             value = self._searchindex['objects'][full_name]
             if isinstance(value, dict):
-                value = value[value.keys()[0]]
+                value = value[list(value.keys())[0]]
             fname_idx = value[0]
         elif cobj['module_short'] in self._searchindex['objects']:
             value = self._searchindex['objects'][cobj['module_short']]
-            if cobj['name'] in value.keys():
+            if cobj['name'] in list(value.keys()):
                 fname_idx = value[cobj['name']][0]
 
         if fname_idx is not None:
@@ -706,7 +707,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
 
                 # get variables so we can later add links to the documentation
                 example_code_obj = {}
-                for var_name, var in my_globals.iteritems():
+                for var_name, var in my_globals.items():
                     if not hasattr(var, '__module__'):
                         continue
                     if not isinstance(var.__module__, string_types):
@@ -938,7 +939,7 @@ def embed_code_links(app, exception):
                     fid.close()
                     str_repl = {}
                     # generate replacement strings with the links
-                    for name, cobj in example_code_obj.iteritems():
+                    for name, cobj in example_code_obj.items():
                         this_module = cobj['module'].split('.')[0]
 
                         if this_module not in doc_resolvers:
@@ -959,7 +960,7 @@ def embed_code_links(app, exception):
                         with open(full_fname, 'wb') as fid:
                             for line in lines_in:
                                 line = line.decode('utf-8')
-                                for name, link in str_repl.iteritems():
+                                for name, link in str_repl.items():
                                     line = line.replace(name, link)
                                 fid.write(line.encode('utf-8'))
     except urllib.error.HTTPError as e:

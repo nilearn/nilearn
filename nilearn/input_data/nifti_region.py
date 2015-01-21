@@ -35,7 +35,7 @@ def _compose_err_msg(msg, **kwargs):
         msg, with "key: value" appended. Only string values are appended.
     """
     updated_msg = msg
-    for k, v in kwargs.iteritems():
+    for k, v in kwargs.items():
         if isinstance(v, string_types):
             updated_msg += "\n" + k + ": " + v
 
