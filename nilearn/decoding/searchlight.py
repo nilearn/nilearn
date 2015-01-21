@@ -177,7 +177,7 @@ def _group_iter_search_light(list_rows, estimator, X, y,
                 else:
                     crlf = "\n"
                 percent = float(i) / len(list_rows)
-                percent = round(percent * 100, 2)
+                percent = np.round(percent * 100, 2)
                 dt = time.time() - t0
                 # We use a max to avoid a division by zero
                 remaining = (100. - percent) / max(0.01, percent) * dt

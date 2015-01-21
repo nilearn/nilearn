@@ -71,7 +71,7 @@ from nilearn.image.resampling import coord_transform
 affine = neg_log_pvals_anova_unmasked.get_affine()
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = round(k_slice)
+k_slice = np.round(k_slice)
 
 threshold = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals_permuted_ols),

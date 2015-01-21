@@ -4,6 +4,7 @@ Plot Haxby masks
 
 Small script to plot the masks of the Haxby dataset.
 """
+import numpy as np
 from scipy import linalg
 import matplotlib.pyplot as plt
 
@@ -20,7 +21,7 @@ from nilearn.image.resampling import coord_transform
 affine = mean_img.get_affine()
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = round(k_slice)
+k_slice = np.round(k_slice)
 
 fig = plt.figure(figsize=(4, 5.4), facecolor='k')
 
