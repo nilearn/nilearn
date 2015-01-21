@@ -16,13 +16,12 @@ import shutil
 import traceback
 import glob
 import sys
-from StringIO import StringIO
 import cPickle
-import urllib2
 import gzip
 import posixpath
 import subprocess
-
+from StringIO import StringIO
+from six.moves import urllib
 try:
     from PIL import Image
 except:
@@ -61,7 +60,7 @@ class Tee(object):
 def _get_data(url):
     """Helper function to get data over http or from a local file"""
     if url.startswith('http://'):
-        resp = urllib2.urlopen(url)
+        resp = urllib.request.urlopen(url)
         encoding = resp.headers.dict.get('content-encoding', 'plain')
         data = resp.read()
         if encoding == 'plain':
@@ -964,10 +963,10 @@ def embed_code_links(app, exception):
                                 for name, link in str_repl.iteritems():
                                     line = line.replace(name, link)
                                 fid.write(line.encode('utf-8'))
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         print ("The following HTTP Error has occurred:\n")
         print (e.code)
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
         print ("\n...\n"
                "Warning: Embedding the documentation hyperlinks requires "
                "internet access.\nPlease check your network connection.\n"

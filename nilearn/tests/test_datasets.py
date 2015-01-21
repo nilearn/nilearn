@@ -18,14 +18,13 @@ from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from .. import datasets
-from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
+from .._utils.testing import mock_request, wrap_chunk_read_,\
     FetchFilesMock, assert_raises_regexp, assert_warns_regex
-
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 tmpdir = None
-url_mock = None
+url_request = None
 file_mock = None
 
 
@@ -36,9 +35,9 @@ def setup_tmpdata():
 
 
 def setup_mock():
-    global url_mock
-    url_mock = mock_urllib2()
-    datasets.urllib2 = url_mock
+    global url_request
+    url_request = mock_request()
+    datasets.urllib.request = url_request
     datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     global file_mock
     file_mock = FetchFilesMock()
@@ -262,7 +261,7 @@ def test_fetch_craddock_2011_atlas():
             "tcorr05_2level_all.nii.gz",
             "random_all.nii.gz",
     ]
-    assert_equal(len(url_mock.urls), 1)
+    assert_equal(len(url_request.urls), 1)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
 
@@ -283,7 +282,7 @@ def test_fetch_smith_2009_atlas():
             "bm70.nii.gz",
     ]
 
-    assert_equal(len(url_mock.urls), 6)
+    assert_equal(len(url_request.urls), 6)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
 
@@ -294,7 +293,7 @@ def test_fetch_haxby():
     for i in range(1, 6):
         haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i,
                                      verbose=0)
-        assert_equal(len(url_mock.urls), 1 + (i == 1))  # subject_data + md5
+        assert_equal(len(url_request.urls), 1 + (i == 1))  # subject_data + md5
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
         assert_equal(len(haxby.session_target), i)
@@ -303,7 +302,7 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house), i)
         assert_equal(len(haxby.mask_face_little), i)
         assert_equal(len(haxby.mask_house_little), i)
-        url_mock.reset()
+        url_request.reset()
 
 
 @with_setup(setup_mock)
@@ -311,18 +310,18 @@ def test_fetch_haxby():
 def test_fetch_nyu_rest():
     # First session, all subjects
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, verbose=0)
-    assert_equal(len(url_mock.urls), 2)
+    assert_equal(len(url_request.urls), 2)
     assert_equal(len(nyu.func), 25)
     assert_equal(len(nyu.anat_anon), 25)
     assert_equal(len(nyu.anat_skull), 25)
     assert_true(np.all(np.asarray(nyu.session) == 1))
 
     # All sessions, 12 subjects
-    url_mock.reset()
+    url_request.reset()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
                                   n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
-    assert_equal(len(url_mock.urls), 2)
+    assert_equal(len(url_request.urls), 2)
     assert_equal(len(nyu.func), 36)
     assert_equal(len(nyu.anat_anon), 36)
     assert_equal(len(nyu.anat_skull), 36)
@@ -354,7 +353,7 @@ def test_fetch_adhd():
                                n_subjects=12, verbose=0)
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
-    assert_equal(len(url_mock.urls), 2)
+    assert_equal(len(url_request.urls), 2)
 
 
 @with_setup(setup_mock)
@@ -365,7 +364,7 @@ def test_miyawaki2008():
     assert_equal(len(dataset.label), 32)
     assert_true(isinstance(dataset.mask, string_types))
     assert_equal(len(dataset.mask_roi), 38)
-    assert_equal(len(url_mock.urls), 1)
+    assert_equal(len(url_request.urls), 1)
 
 
 @with_setup(setup_mock)
@@ -374,7 +373,7 @@ def test_fetch_msdl_atlas():
     dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.labels, string_types))
     assert_true(isinstance(dataset.maps, string_types))
-    assert_equal(len(url_mock.urls), 1)
+    assert_equal(len(url_request.urls), 1)
 
 
 @with_setup(setup_mock)
@@ -391,7 +390,7 @@ def test_fetch_icbm152_2009():
     assert_true(isinstance(dataset.t2, string_types))
     assert_true(isinstance(dataset.t2_relax, string_types))
     assert_true(isinstance(dataset.wm, string_types))
-    assert_equal(len(url_mock.urls), 1)
+    assert_equal(len(url_request.urls), 1)
 
 
 @with_setup(setup_mock)
@@ -405,7 +404,7 @@ def test_fetch_yeo_2011_atlas():
     assert_true(isinstance(dataset.thick_7, string_types))
     assert_true(isinstance(dataset.thin_17, string_types))
     assert_true(isinstance(dataset.thin_7, string_types))
-    assert_equal(len(url_mock.urls), 1)
+    assert_equal(len(url_request.urls), 1)
 
 
 @with_setup(setup_mock)
@@ -571,7 +570,7 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.white_matter_maps[0], string_types))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, string_types))
-    assert_equal(len(url_mock.urls), 3)
+    assert_equal(len(url_request.urls), 3)
 
     dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
                                        dartel_version=False, verbose=0)
@@ -581,7 +580,7 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.white_matter_maps[0], string_types))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, string_types))
-    assert_equal(len(url_mock.urls), 4)
+    assert_equal(len(url_request.urls), 4)
 
 
 def test_load_mni152_template():
