@@ -7,13 +7,10 @@ name starts with an underscore
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-
+import nose
 import os
 import tempfile
-
-import nose
-from nose.tools import assert_raises, assert_equal, assert_true
-from nilearn._utils.testing import assert_raises_regexp
+from nose.tools import assert_equal, assert_true
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -23,9 +20,10 @@ from nibabel import Nifti1Image
 
 from nilearn import _utils
 from nilearn._utils import testing
+from nilearn._utils.testing import assert_raises_regexp
 
 
-class PhonyNiimage:
+class PhonyNiimage(object):
 
     def __init__(self):
         self.data = np.ones((9, 9, 9, 9))
@@ -39,20 +37,18 @@ class PhonyNiimage:
 
 
 def test_check_niimg():
-    with assert_raises(TypeError) as cm:
-        _utils.check_niimg(0)
-    assert_true('image' in cm.exception.message
-                or 'affine' in cm.exception.message)
+    # check error for non-forced but necessary resampling
+    assert_raises_regexp(TypeError, 'image',
+                         _utils.check_niimg, 0)
 
-    with assert_raises(TypeError) as cm:
-        _utils.check_niimg([])
-    assert_true('image' in cm.exception.message
-                or 'affine' in cm.exception.message)
+    # check error for non-forced but necessary resampling
+    assert_raises_regexp(TypeError, 'image',
+                         _utils.check_niimg, [])
 
     # Test ensure_3d
-    with assert_raises(TypeError) as cm:
-        _utils.check_niimg(['test.nii', ], ensure_3d=True)
-    assert_true('3D' in cm.exception.message)
+    # check error for non-forced but necessary resampling
+    assert_raises_regexp(TypeError, '3D',
+                         _utils.check_niimg, ['test.nii', ], ensure_3d=True)
 
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 2))
@@ -63,14 +59,12 @@ def test_check_niimg():
         _utils.check_niimg(filename)
 
     # Test ensure_3d with a in-memory object
-    with assert_raises(TypeError) as cm:
-        _utils.check_niimg(data, ensure_3d=True)
-    assert_true('3D' in cm.exception.message)
+    assert_raises_regexp(TypeError, '3D',
+                         _utils.check_niimg, data, ensure_3d=True)
 
     # Test ensure_3d with a non 3D image
-    with assert_raises(TypeError) as cm:
-        _utils.check_niimg(data_img, ensure_3d=True)
-    assert_true('3D' in cm.exception.message)
+    assert_raises_regexp(TypeError, '3D',
+                         _utils.check_niimg, data_img, ensure_3d=True)
 
     # Test ensure_3d with a 4D image with a length 1 4th dim
     data = np.zeros((40, 40, 40, 1))
@@ -79,24 +73,19 @@ def test_check_niimg():
 
 
 def test_check_niimgs():
-    with assert_raises(TypeError) as cm:
-        _utils.check_niimgs(0)
-    assert_true('image' in cm.exception.message
-                or 'affine' in cm.exception.message)
+    assert_raises_regexp(TypeError, 'image',
+                         _utils.check_niimgs, 0)
 
-    with assert_raises(TypeError) as cm:
-        _utils.check_niimgs([])
-    assert_true('image' in cm.exception.message
-                or 'affine' in cm.exception.message)
+    assert_raises_regexp(TypeError, 'image',
+                         _utils.check_niimgs, [])
 
     affine = np.eye(4)
     img = Nifti1Image(np.ones((10, 10, 10)), affine)
 
     _utils.check_niimgs([img, img])
-    with assert_raises(TypeError) as cm:
-        # This should raise an error: a 3D img is given and we want a 4D
-        _utils.check_niimgs(img)
-    assert_true('image' in cm.exception.message)
+    # This should raise an error: a 3D img is given and we want a 4D
+    assert_raises_regexp(TypeError, 'image',
+                         _utils.check_niimgs, img)
     # This shouldn't raise an error
     _utils.check_niimgs(img, accept_3d=True)
 
@@ -114,14 +103,15 @@ def test_repr_niimgs():
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine)
     assert_equal(
-            _utils._repr_niimgs(img1),
-            ("%s(\nshape=%s,\naffine=%s\n)" % (img1.__class__.__name__,
-                            repr(shape), repr(affine))))
+        _utils._repr_niimgs(img1),
+        ("%s(\nshape=%s,\naffine=%s\n)" %
+            (img1.__class__.__name__,
+             repr(shape), repr(affine))))
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     nibabel.save(img1, tmpimg1)
     assert_equal(
-            _utils._repr_niimgs(img1),
-            ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
+        _utils._repr_niimgs(img1),
+        ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
 
 
 def _remove_if_exists(file):
@@ -150,7 +140,8 @@ def test_concat_niimgs():
     concatenate_true = np.ones(shape + (3,))
 
     # Smoke-test the accept_4d
-    assert_raises(ValueError, _utils.concat_niimgs, [img1, img4d])
+    assert_raises_regexp(ValueError, 'image',
+                         _utils.concat_niimgs, [img1, img4d])
     concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
     np.testing.assert_equal(concatenated.get_data(), concatenate_true,
                             verbose=False)

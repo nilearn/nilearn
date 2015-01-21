@@ -8,7 +8,7 @@ import numpy as np
 
 from numpy.testing import assert_array_equal
 from nose.tools import assert_true, assert_false, assert_equal, \
-    assert_raises, assert_is_instance
+    assert_raises
 
 from nibabel import Nifti1Image
 
@@ -64,7 +64,7 @@ def test_compute_epi_mask():
     with warnings.catch_warnings(True) as w:
         compute_epi_mask(mean_image, exclude_zeros=True)
     assert_equal(len(w), 1)
-    assert_is_instance(w[0].message, masking.MaskWarning)
+    assert_true(isinstance(w[0].message, masking.MaskWarning))
 
 
 def test_compute_background_mask():
@@ -90,7 +90,7 @@ def test_compute_background_mask():
     with warnings.catch_warnings(True) as w:
         compute_background_mask(mean_image)
     assert_equal(len(w), 1)
-    assert_is_instance(w[0].message, masking.MaskWarning)
+    assert_true(isinstance(w[0].message, masking.MaskWarning))
 
 
 def test_apply_mask():

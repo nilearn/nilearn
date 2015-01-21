@@ -265,8 +265,8 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
         else:
             nii_str = "image #" + str(index)
         if verbose > 0:
-            print "Concatenating {}/{}: {}".format(index + 1, sum(lengths),
-                                                   nii_str)
+            print "Concatenating {0}/{1}: {2}".format(index + 1, sum(lengths),
+                                                      nii_str)
 
         if index == 0:  # we have already loaded the first one
             cur_4d_index += size
