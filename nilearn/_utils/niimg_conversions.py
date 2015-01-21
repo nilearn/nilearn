@@ -34,7 +34,8 @@ def is_img(obj):
     try:
         get_data = getattr(obj, "get_data")
         get_affine = getattr(obj, "get_affine")
-        return callable(get_data) and callable(get_affine)
+        return isinstance(get_data, collections.Callable) and \
+               isinstance(get_affine, collections.Callable)
     except AttributeError:
         return False
 
@@ -143,7 +144,7 @@ def check_niimg(niimg, ensure_3d=False):
 
     Its application is idempotent.
     """
-    if hasattr(niimg, "__iter__"):
+    if hasattr(niimg, "__iter__") and not isinstance(niimg, string_types):
         if ensure_3d:
             raise TypeError("A 3D image is expected, but an iterable was"
                 " given: %s" % short_repr(niimg))

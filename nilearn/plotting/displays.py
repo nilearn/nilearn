@@ -4,9 +4,8 @@ The Slicer classes.
 The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
-
-import operator
-
+import collections
+import numbers
 import numpy as np
 
 import nibabel
@@ -22,12 +21,12 @@ except ImportError:
 
 
 # Local imports
+from . import glass_brain
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
-from ..image.resampling import get_bounds, reorder_img, coord_transform,\
-            get_mask_bounds
+from ..image.resampling import get_bounds, reorder_img, coord_transform, \
+                               get_mask_bounds
 
-from . import glass_brain
 
 ################################################################################
 # class BaseAxes
@@ -307,7 +306,7 @@ class BaseSlicer(object):
             axes = [0., 0., 1., 1.]
             if leave_space:
                 axes = [0.3, 0, .7, 1.]
-        if operator.isSequenceType(axes):
+        if isinstance(axes, collections.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
@@ -803,8 +802,8 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
         else:
-            if (not operator.isSequenceType(cut_coords) and
-                    operator.isNumberType(cut_coords)):
+            if (not isinstance(cut_coords, collections.Sequence) and
+                    isinstance(cut_coords, numbers.Number)):
                 cut_coords = find_cut_slices(img,
                                              direction=cls._direction,
                                              n_cuts=cut_coords)
