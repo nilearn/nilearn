@@ -6,7 +6,7 @@ import inspect
 import textwrap
 import re
 import pydoc
-from StringIO import StringIO
+from six.moves.StringIO import StringIO
 from warnings import warn
 
 
