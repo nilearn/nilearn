@@ -1,7 +1,7 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false, assert_raises_regexp
+from nose.tools import assert_true, assert_false
 
 import nibabel
 import numpy as np
@@ -279,8 +279,8 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    assert_raises_regexp(TypeError, '4D Nifti image',
-                         image.index_img, img_3d, 0)
+    testing.assert_raises_regexp(TypeError, '4D Nifti image',
+                                 image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -303,14 +303,14 @@ def test_index_img():
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
               np.repeat(True, fourth_dim_size + 1)]:
-        assert_raises_regexp(IndexError, 'out of bounds',
-                             image.index_img, img_4d, i)
+        testing.assert_raises_regexp(IndexError, 'out of bounds',
+                                     image.index_img, img_4d, i)
 
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    assert_raises_regexp(TypeError, '4D Nifti image',
-                         image.iter_img, img_3d)
+    testing.assert_raises_regexp(TypeError, '4D Nifti image',
+                                 image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
