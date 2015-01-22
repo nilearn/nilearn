@@ -518,8 +518,8 @@ def _index_img(imgs, index):
 def index_img(imgs, index):
     """Indexes into a 4D Niimg-like object in the fourth dimension.
 
-    Can be used to extract a 3D image out of `imgs` or create a 4D
-    image whose data is a subset of the `imgs` data.
+    Common use cases include extracting a 3D image out of `imgs` or
+    creating a 4D image whose data is a subset of `imgs` data.
 
     Parameters
     ----------
@@ -527,12 +527,11 @@ def index_img(imgs, index):
           See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
     index: Any type compatible with numpy array indexing
-           Used for indexing the 4D data array in the fourth dimension
+           Used for indexing the 4D data array in the fourth dimension.
 
     Returns
     -------
-    output: nibabel.Nifti1IMage
-            3D or 4D image depending on the index used
+    output: nibabel.Nifti1Image
 
     """
     imgs = check_niimgs(imgs)
