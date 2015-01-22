@@ -508,9 +508,9 @@ def swap_img_hemispheres(img):
 
 
 def _index_img(imgs, index):
-    """Helper function for index_img and iter_img
+    """Helper function for index_img and iter_img.
     """
-    return nibabel.Nifti1Image(imgs.get_data()[..., index],
+    return nibabel.Nifti1Image(imgs.get_data()[:, :, :, index],
                                imgs.get_affine(),
                                header=imgs.get_header())
 
