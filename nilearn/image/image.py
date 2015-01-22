@@ -508,8 +508,7 @@ def swap_img_hemispheres(img):
 
 
 def _index_img(imgs, index):
-    """Helper function for index_img and iter_img.
-    """
+    """Helper function for index_img and iter_img."""
     return nibabel.Nifti1Image(imgs.get_data()[:, :, :, index],
                                imgs.get_affine(),
                                header=imgs.get_header())
@@ -538,6 +537,16 @@ def index_img(imgs, index):
     return _index_img(imgs, index)
 
 
+class _Checked4DImageIterator(object):
+    """Helper class for iter_img, use iter_img directly and not this class."""
+    def __init__(self, imgs):
+        self.imgs = check_niimgs(imgs)
+
+    def __iter__(self):
+        for i in range(_get_shape(self.imgs)[3]):
+            yield _index_img(self.imgs, i)
+
+
 def iter_img(imgs):
     """Iterates over a 4D Niimg-like object in the fourth dimension.
 
@@ -550,12 +559,4 @@ def iter_img(imgs):
     -------
     output: iterator of 3D nibabel.Nifti1Image
     """
-    class Checked4DImageIterator(object):
-        def __init__(self, imgs):
-            self.imgs = check_niimgs(imgs)
-
-        def __iter__(self):
-            for i in range(_get_shape(self.imgs)[3]):
-                yield _index_img(self.imgs, i)
-
-    return Checked4DImageIterator(imgs)
+    return _Checked4DImageIterator(imgs)
