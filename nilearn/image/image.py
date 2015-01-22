@@ -516,7 +516,10 @@ def _index_img(imgs, index):
 
 
 def index_img(imgs, index):
-    """Indexes into a 4D Niimg-like object in the fourth dimension
+    """Indexes into a 4D Niimg-like object in the fourth dimension.
+
+    Can be used to extract a 3D image out of `imgs` or create a 4D
+    image whose data is a subset of the `imgs` data.
 
     Parameters
     ----------
@@ -529,7 +532,7 @@ def index_img(imgs, index):
     Returns
     -------
     output: nibabel.Nifti1IMage
-            4D image whose data is a subset of the original image data
+            3D or 4D image depending on the index used
 
     """
     imgs = check_niimgs(imgs)
@@ -537,7 +540,7 @@ def index_img(imgs, index):
 
 
 def iter_img(imgs):
-    """Iterates over a 4D Niimg-like object in the fourth dimension
+    """Iterates over a 4D Niimg-like object in the fourth dimension.
 
     Parameters
     ----------
