@@ -409,7 +409,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
-            The colormap for the anat
+            The colormap for specified image
         threshold : a number, None, or 'auto'
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
@@ -564,7 +564,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
-            The colormap for the anat
+            The colormap for specified image
 
         Notes
         -----
@@ -651,7 +651,7 @@ def plot_glass_brain(stat_map_img,
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
-            The colormap for the anat
+            The colormap for specified image
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics
 
