@@ -24,16 +24,17 @@ ____
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
 import numpy as np
+from scipy import linalg
 import matplotlib.pyplot as plt
-import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
 n_subjects = 50  # more subjects requires more memory and more time
 
 ### Load Oasis dataset ########################################################
-dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
-age = dataset_files.ext_vars['age'].astype(float)
+oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+gray_matter_map_filenames = oasis_dataset.gray_matter_maps
+age = oasis_dataset.ext_vars['age'].astype(float)
 
 ### Preprocess data ###########################################################
 nifti_masker = NiftiMasker(
@@ -41,7 +42,7 @@ nifti_masker = NiftiMasker(
     smoothing_fwhm=0,
     memory='nilearn_cache')  # cache options
 # remove features with too low between-subject variance
-gm_maps_masked = nifti_masker.fit_transform(dataset_files.gray_matter_maps)
+gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
 gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 # final masking
 new_images = nifti_masker.inverse_transform(gm_maps_masked)
@@ -59,26 +60,32 @@ neg_log_pvals, all_scores, _ = permuted_ols(
     two_sided_test=False,  # RPBI does not perform a two-sided test
     n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals)).get_data()
+    np.ravel(neg_log_pvals))
 
 ### Show results
-background_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
-picked_slice = 36
-plt.figure(figsize=(5, 5))
-vmin = -np.log10(0.1)  # 10% corrected
-masked_pvals = np.ma.masked_less(neg_log_pvals_unmasked, vmin)
-plt.imshow(np.rot90(background_img[:, :, picked_slice]),
-           interpolation='nearest', cmap=plt.cm.gray, vmin=0., vmax=1.)
-im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
-                interpolation='nearest', cmap=plt.cm.autumn,
-                vmin=vmin, vmax=np.amax(neg_log_pvals_unmasked))
-plt.axis('off')
-plt.colorbar(im)
-plt.title(r'Negative $\log_{10}$ p-values'
-          + '\n(Non-parametric + max-type correction)'
-          + '\n%d detections'
-          % (~masked_pvals.mask[..., picked_slice]).sum())
-plt.tight_layout()
+from nilearn.plotting import plot_stat_map
+bg_filename = gray_matter_map_filenames[0]
+z_slice = 0
+from nilearn.image.resampling import coord_transform
+affine = neg_log_pvals_unmasked.get_affine()
+_, _, k_slice = coord_transform(0, 0, z_slice,
+                                linalg.inv(affine))
+k_slice = round(k_slice)
+threshold = -np.log10(0.1)  # 10% corrected
+
+fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
+
+display = plot_stat_map(neg_log_pvals_unmasked, bg_img=bg_filename,
+                        threshold=threshold, cmap=plt.cm.RdBu_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig)
+
+neg_log_pvals_slice_data = neg_log_pvals_unmasked.get_data()[..., k_slice]
+n_detections = (neg_log_pvals_slice_data > threshold).sum()
+title = ('Negative $\log_{10}$ p-values'
+         '\n(Non-parametric + max-type correction)'
+         '\n%d detections') % n_detections
+display.title(title, y=1.2)
 
 ### Randomized Parcellation Based Inference ###################################
 from nilearn.mass_univariate import randomized_parcellation_based_inference
@@ -93,23 +100,22 @@ neg_log_pvals_rpbi, _, _ = randomized_parcellation_based_inference(
     n_perm=1000,  # 1,000 for the sake of time. 10,000 is recommended
     random_state=0, memory='nilearn_cache', n_jobs=1, verbose=True)
 neg_log_pvals_rpbi_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_rpbi)).get_data()
+    np.ravel(neg_log_pvals_rpbi))
 
 ### Show results
-plt.figure(figsize=(5, 5))
-vmin = -np.log10(0.1)  # 10% corrected
-masked_pvals = np.ma.masked_less(neg_log_pvals_rpbi_unmasked, vmin)
-print '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum()
-plt.imshow(np.rot90(background_img[:, :, picked_slice]),
-           interpolation='nearest', cmap=plt.cm.gray, vmin=0., vmax=1.)
-im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
-                interpolation='nearest', cmap=plt.cm.autumn,
-                vmin=vmin, vmax=np.amax(neg_log_pvals_unmasked))
-plt.axis('off')
-plt.colorbar(im)
-plt.title(r'Negative $\log_{10}$ p-values' + '\n(RPBI)'
-          + '%d detections'
-          % (~masked_pvals.mask[..., picked_slice]).sum())
-plt.tight_layout()
+fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
+
+display = plot_stat_map(neg_log_pvals_rpbi_unmasked, bg_img=bg_filename,
+                        threshold=threshold, cmap=plt.cm.RdBu_r,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig)
+
+neg_log_pvals_rpbi_slice_data = \
+    neg_log_pvals_rpbi_unmasked.get_data()[..., k_slice]
+n_detections = (neg_log_pvals_rpbi_slice_data > threshold).sum()
+title = ('Negative $\log_{10}$ p-values'
+         '\n(RPBI)'
+         '\n%d detections') % n_detections
+display.title(title, y=1.2)
 
 plt.show()
