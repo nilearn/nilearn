@@ -416,7 +416,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     verbose: int, optional
         Controls the amount of verbosity: higher numbers give
-        more messages
+        more messages (0 means no messages).
 
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
