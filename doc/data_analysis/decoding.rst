@@ -494,7 +494,7 @@ and create a new pipeline::
 and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=True) # doctest: +SKIP
+    ...     verbose=1) # doctest: +SKIP
 
 But, be aware that this can take A WHILE...
 
