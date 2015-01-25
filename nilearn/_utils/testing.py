@@ -2,6 +2,7 @@
 """
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
+import functools
 import os
 import sys
 import urllib2
@@ -53,8 +54,6 @@ except ImportError:
             warnings.simplefilter("ignore", warning_class)
             output = func(*args, **kw)
         return output
-
-original_fetch_files = datasets._fetch_files
 
 
 @contextlib.contextmanager
@@ -165,6 +164,7 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
 
 
 class FetchFilesMock (object):
+    _mock_fetch_files = functools.partial(datasets._fetch_files, mock=True)
 
     def __init__(self):
         """Create a mock that can fill a CSV file if needed
@@ -180,8 +180,7 @@ class FetchFilesMock (object):
         For test purpose, instead of actually fetching the dataset, this
         function creates empty files and return their paths.
         """
-        kwargs['mock'] = True
-        filenames = original_fetch_files(*args, **kwargs)
+        filenames = self._mock_fetch_files(*args, **kwargs)
         # Fill CSV files with given content if needed
         for fname in filenames:
             basename = os.path.basename(fname)

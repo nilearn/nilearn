@@ -20,6 +20,7 @@ from .. import datasets
 from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
     FetchFilesMock, assert_raises_regexp
 
+
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 tmpdir = None
@@ -33,8 +34,7 @@ def setup_tmpdata():
     tmpdir = mkdtemp()
 
 
-def setup_tmpdata_and_mock():
-    setup_tmpdata()
+def setup_mock():
     global url_mock
     url_mock = mock_urllib2()
     datasets.urllib2 = url_mock
@@ -68,21 +68,21 @@ def test_get_dataset_dir():
     os.environ.pop('NILEARN_SHARED_DATA', None)
 
     expected_base_dir = os.path.expanduser('~/nilearn_data')
-    data_dir = datasets._get_dataset_dir('test')
+    data_dir = datasets._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test')
+    data_dir = datasets._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test')
+    data_dir = datasets._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
@@ -92,14 +92,16 @@ def test_get_dataset_dir():
     os.makedirs(no_write)
     os.chmod(no_write, 0400)
     assert_raises_regexp(OSError, 'Permission denied',
-                         datasets._get_dataset_dir, 'test', no_write)
+                         datasets._get_dataset_dir, 'test', no_write,
+                         verbose=0)
 
     # Verify exception for a path which exists and is a file
     test_file = os.path.join(tmpdir, 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
     assert_raises_regexp(OSError, 'Not a directory',
-                         datasets._get_dataset_dir, 'test', test_file)
+                         datasets._get_dataset_dir, 'test', test_file,
+                         verbose=0)
 
 
 def test_read_md5_sum_file():
@@ -198,7 +200,8 @@ def test_movetree():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby_simple():
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
-    haxby = datasets.fetch_haxby_simple(data_dir=tmpdir, url=local_url)
+    haxby = datasets.fetch_haxby_simple(data_dir=tmpdir, url=local_url,
+                                        verbose=0)
     datasetdir = os.path.join(tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
     for key, file in [
             ('session_target', 'attributes.txt'),
@@ -231,7 +234,8 @@ def test_fail_fetch_haxby_simple():
     ]
 
     assert_raises(IOError, datasets._fetch_files,
-            os.path.join(tmpdir, 'haxby2001_simple'), files)
+            os.path.join(tmpdir, 'haxby2001_simple'), files,
+            verbose=0)
     dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
     stuff = dummy.read(5)
     dummy.close()
@@ -241,9 +245,10 @@ def test_fail_fetch_haxby_simple():
 # Smoke tests for the rest of the fetchers
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_craddock_2011_atlas():
-    bunch = datasets.fetch_craddock_2011_atlas(data_dir=tmpdir)
+    bunch = datasets.fetch_craddock_2011_atlas(data_dir=tmpdir, verbose=0)
 
     keys = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
@@ -260,9 +265,10 @@ def test_fetch_craddock_2011_atlas():
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_smith_2009_atlas():
-    bunch = datasets.fetch_smith_2009(data_dir=tmpdir)
+    bunch = datasets.fetch_smith_2009(data_dir=tmpdir, verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70",
             "bm20", "bm10", "bm70")
@@ -280,10 +286,12 @@ def test_fetch_smith_2009_atlas():
         assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby():
     for i in range(1, 6):
-        haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i)
+        haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i,
+                                     verbose=0)
         assert_equal(len(url_mock.urls), 1 + (i == 1))  # subject_data + md5
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
@@ -296,10 +304,11 @@ def test_fetch_haxby():
         url_mock.reset()
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_nyu_rest():
     # First session, all subjects
-    nyu = datasets.fetch_nyu_rest(data_dir=tmpdir)
+    nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, verbose=0)
     assert_equal(len(url_mock.urls), 2)
     assert_equal(len(nyu.func), 25)
     assert_equal(len(nyu.anat_anon), 25)
@@ -309,7 +318,7 @@ def test_fetch_nyu_rest():
     # All sessions, 12 subjects
     url_mock.reset()
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
-                                  n_subjects=12)
+                                  n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
     assert_equal(len(url_mock.urls), 2)
     assert_equal(len(nyu.func), 36)
@@ -321,7 +330,8 @@ def test_fetch_nyu_rest():
     assert_true(np.all(s[24:] == 3))
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_adhd():
     local_url = "file://" + datadir
 
@@ -338,15 +348,17 @@ def test_fetch_adhd():
     file_mock.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
             subs)
 
-    adhd = datasets.fetch_adhd(data_dir=tmpdir, url=local_url, n_subjects=12)
+    adhd = datasets.fetch_adhd(data_dir=tmpdir, url=local_url,
+                               n_subjects=12, verbose=0)
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
     assert_equal(len(url_mock.urls), 2)
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_miyawaki2008():
-    dataset = datasets.fetch_miyawaki2008(data_dir=tmpdir)
+    dataset = datasets.fetch_miyawaki2008(data_dir=tmpdir, verbose=0)
     assert_equal(len(dataset.func), 32)
     assert_equal(len(dataset.label), 32)
     assert_true(isinstance(dataset.mask, basestring))
@@ -354,17 +366,19 @@ def test_miyawaki2008():
     assert_equal(len(url_mock.urls), 1)
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_msdl_atlas():
-    dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir)
+    dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.labels, basestring))
     assert_true(isinstance(dataset.maps, basestring))
     assert_equal(len(url_mock.urls), 1)
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_icbm152_2009():
-    dataset = datasets.fetch_icbm152_2009(data_dir=tmpdir)
+    dataset = datasets.fetch_icbm152_2009(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.csf, basestring))
     assert_true(isinstance(dataset.eye_mask, basestring))
     assert_true(isinstance(dataset.face_mask, basestring))
@@ -378,9 +392,10 @@ def test_fetch_icbm152_2009():
     assert_equal(len(url_mock.urls), 1)
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_yeo_2011_atlas():
-    dataset = datasets.fetch_yeo_2011_atlas(data_dir=tmpdir)
+    dataset = datasets.fetch_yeo_2011_atlas(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.anat, basestring))
     assert_true(isinstance(dataset.colors_17, basestring))
     assert_true(isinstance(dataset.colors_7, basestring))
@@ -391,7 +406,8 @@ def test_fetch_yeo_2011_atlas():
     assert_equal(len(url_mock.urls), 1)
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_localizer_contrasts():
     local_url = "file://" + datadir
     ids = np.asarray(['S%2d' % i for i in range(94)])
@@ -403,7 +419,8 @@ def test_fetch_localizer_contrasts():
     # All subjects
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
                                                  data_dir=tmpdir,
-                                                 url=local_url)
+                                                 url=local_url,
+                                                 verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
@@ -416,7 +433,8 @@ def test_fetch_localizer_contrasts():
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
                                                  n_subjects=20,
                                                  data_dir=tmpdir,
-                                                 url=local_url)
+                                                 url=local_url,
+                                                 verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
@@ -428,7 +446,8 @@ def test_fetch_localizer_contrasts():
     # Multiple contrasts
     dataset = datasets.fetch_localizer_contrasts(
         ["checkerboard", "horizontal checkerboard"],
-        n_subjects=20, data_dir=tmpdir)
+        n_subjects=20, data_dir=tmpdir,
+        verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
@@ -441,7 +460,8 @@ def test_fetch_localizer_contrasts():
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
                                                  data_dir=tmpdir,
                                                  url=local_url,
-                                                 get_anats=True)
+                                                 get_anats=True,
+                                                 verbose=0)
     assert_true(dataset.masks is None)
     assert_true(dataset.tmaps is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
@@ -455,7 +475,8 @@ def test_fetch_localizer_contrasts():
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
                                                  data_dir=tmpdir,
                                                  url=local_url,
-                                                 get_masks=True)
+                                                 get_masks=True,
+                                                 verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
@@ -469,7 +490,8 @@ def test_fetch_localizer_contrasts():
     dataset = datasets.fetch_localizer_contrasts(["checkerboard"],
                                                  data_dir=tmpdir,
                                                  url=local_url,
-                                                 get_tmaps=True)
+                                                 get_tmaps=True,
+                                                 verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
@@ -485,7 +507,8 @@ def test_fetch_localizer_contrasts():
                                                  url=local_url,
                                                  get_anats=True,
                                                  get_masks=True,
-                                                 get_tmaps=True)
+                                                 get_tmaps=True,
+                                                 verbose=0)
 
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.anats[0], basestring))
@@ -499,7 +522,8 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.tmaps), 94)
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
     local_url = "file://" + datadir
     ids = np.asarray(['S%2d' % i for i in range(94)])
@@ -526,7 +550,8 @@ def test_fetch_localizer_calculation_task():
     assert_equal(len(dataset.cmaps), 20)
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_oasis_vbm():
     local_url = "file://" + datadir
     ids = np.asarray(['OAS1_%4d' % i for i in range(457)])
@@ -534,7 +559,8 @@ def test_fetch_oasis_vbm():
     file_mock.add_csv('oasis_cross-sectional.csv', ids)
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
-    dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url)
+    dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
+                                       verbose=0)
     assert_equal(len(dataset.gray_matter_maps), 403)
     assert_equal(len(dataset.white_matter_maps), 403)
     assert_true(isinstance(dataset.gray_matter_maps[0], basestring))
@@ -544,7 +570,7 @@ def test_fetch_oasis_vbm():
     assert_equal(len(url_mock.urls), 3)
 
     dataset = datasets.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
-                                       dartel_version=False)
+                                       dartel_version=False, verbose=0)
     assert_equal(len(dataset.gray_matter_maps), 415)
     assert_equal(len(dataset.white_matter_maps), 415)
     assert_true(isinstance(dataset.gray_matter_maps[0], basestring))
@@ -561,7 +587,8 @@ def test_load_mni152_template():
     assert_equal(template_nii.get_header().get_zooms(), (2.0, 2.0, 2.0))
 
 
-@with_setup(setup_tmpdata_and_mock, teardown_tmpdata)
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_abide_pcp():
     local_url = "file://" + datadir
     ids = ['50%03d' % i for i in range(800)]
@@ -574,7 +601,7 @@ def test_fetch_abide_pcp():
 
     # All subjects
     dataset = datasets.fetch_abide_pcp(data_dir=tmpdir, url=local_url,
-            quality_checked=False)
+                                       quality_checked=False, verbose=0)
     assert_equal(len(dataset.func_preproc), 400)
 
 
@@ -621,7 +648,7 @@ def test_uncompress():
     ztemp = os.path.join(dtemp, 'test.zip')
     with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
         testzip.write(temp)
-    datasets._uncompress_file(ztemp)
+    datasets._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
 
@@ -629,7 +656,7 @@ def test_uncompress():
     ztemp = os.path.join(dtemp, 'test.tar')
     with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
         tar.add(temp)
-    datasets._uncompress_file(ztemp)
+    datasets._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
 
@@ -637,7 +664,7 @@ def test_uncompress():
     ztemp = os.path.join(dtemp, 'test.gz')
     f = gzip.open(ztemp, 'wb')
     f.close()
-    datasets._uncompress_file(ztemp)
+    datasets._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
 
