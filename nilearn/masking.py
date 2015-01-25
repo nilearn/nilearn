@@ -162,13 +162,13 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
-def _post_process_mask(mask, affine, opening=2, connected=True, msg=""):
+def _post_process_mask(mask, affine, opening=2, connected=True, warning_msg=""):
     if opening:
         opening = int(opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
     mask_any = mask.any()
     if not mask_any:
-        warnings.warn("Computed an empty mask. %s" % msg,
+        warnings.warn("Computed an empty mask. %s" % warning_msg,
             MaskWarning, stacklevel=2)
     if connected and mask_any:
         mask = largest_connected_component(mask)
@@ -284,7 +284,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     mask = mean_epi >= threshold
 
     return _post_process_mask(mask, affine, opening=opening,
-        connected=connected, msg="Are you sure that input "
+        connected=connected, warning_msg="Are you sure that input "
             "data are EPI images not detrended. ")
 
 
@@ -442,7 +442,7 @@ def compute_background_mask(data_imgs, border_size=2,
         mask = data != background
 
     return _post_process_mask(mask, affine, opening=opening,
-        connected=connected, msg="Are you sure that input "
+        connected=connected, warning_msg="Are you sure that input "
             "images have a homogeneous background.")
 
 
