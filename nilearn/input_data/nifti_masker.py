@@ -187,7 +187,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.mask_img_.get_affine()
         # Load data in memory
         self.mask_img_.get_data()
-        if self.verbose > 10:
+        if self.verbose > 0:
             print "[%s.fit] Finished fit" % self.__class__.__name__
         return self
 
