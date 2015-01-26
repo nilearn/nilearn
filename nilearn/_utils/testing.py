@@ -266,8 +266,8 @@ def generate_regions_ts(n_features, n_regions,
     boundaries.sort()
 
     regions = np.zeros((n_regions, n_features), order="C")
-    overlap_end = int((overlap + 1) / 2)
-    overlap_start = int(overlap / 2)
+    overlap_end = int((overlap + 1) / 2.)
+    overlap_start = int(overlap / 2.)
     for n in xrange(len(boundaries) - 1):
         start = int(max(0, boundaries[n] - overlap_start))
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
@@ -422,14 +422,14 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     full_shape = shape + (length, )
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
-    width = [s / 2 for s in shape]
-    shift = [s / 4 for s in shape]
+    width = [s // 2 for s in shape]
+    shift = [s // 4 for s in shape]
 
     if kind == "noise":
         signals = rand_gen.randint(256, size=(width + [length]))
     elif kind == "step":
         signals = np.ones(width + [length])
-        signals[..., :length / 2] = 0.5
+        signals[..., :length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
 

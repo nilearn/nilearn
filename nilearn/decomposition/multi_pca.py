@@ -75,7 +75,7 @@ def session_pca(imgs, mask_img, parameters,
             verbose=verbose,
             confounds=confounds,
             copy=copy)
-    if n_components <= data.shape[0] / 4:
+    if n_components <= data.shape[0] // 4:
         U, S, _ = randomized_svd(data.T, n_components)
     else:
         U, S, _ = linalg.svd(data.T, full_matrices=False)

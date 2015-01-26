@@ -84,9 +84,9 @@ def test_signals_extraction_with_labels():
 
     # labels
     labels_data = np.zeros(shape, dtype=np.int)
-    h0 = shape[0] / 2
-    h1 = shape[1] / 2
-    h2 = shape[2] / 2
+    h0 = shape[0] // 2
+    h1 = shape[1] // 2
+    h2 = shape[2] // 2
     labels_data[:h0, :h1, :h2] = 1
     labels_data[:h0, :h1, h2:] = 2
     labels_data[:h0, h1:, :h2] = 3
@@ -364,9 +364,9 @@ def test__trim_maps():
 
     # maps
     maps_data = np.zeros(shape + (n_regions,), dtype=np.float32)
-    h0 = shape[0] / 2
-    h1 = shape[1] / 2
-    h2 = shape[2] / 2
+    h0 = shape[0] // 2
+    h1 = shape[1] // 2
+    h2 = shape[2] // 2
     maps_data[:h0, :h1, :h2, 0] = 1
     maps_data[:h0, :h1, h2:, 1] = 1.1
     maps_data[:h0, h1:, :h2, 2] = 1
