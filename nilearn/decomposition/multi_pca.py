@@ -207,7 +207,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
-            raise ValueError('Need one or more Niimg-like object as an entry, '
+            raise ValueError('Need one or more Niimg-like objects as input, '
                              'an empty list was given.')
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs))

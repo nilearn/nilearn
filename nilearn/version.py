@@ -42,7 +42,7 @@ def _import_module_with_version_check(
     try:
         module = __import__(module_name)
     except ImportError as exc:
-        user_friendly_info = ('Module "{}" could not be found.  {}').format(
+        user_friendly_info = ('Module "{0}" could not be found. {1}').format(
             module_name,
             install_info or 'Please install it properly to use nilearn.')
         exc.args += (user_friendly_info,)
@@ -91,4 +91,3 @@ def _check_module_dependencies(is_nilearn_installing=False):
                 module_name=module_name,
                 minimum_version=module_metadata['min_version'],
                 install_info=module_metadata.get('install_info'))
-    

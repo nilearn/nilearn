@@ -14,7 +14,7 @@ from matplotlib import transforms
 def _codes_bezier(pts):
     bezier_num = len(pts)
     # Next two lines are meant to handle both Bezier 3 and 4
-    path_attr = 'CURVE{}'.format(bezier_num)
+    path_attr = 'CURVE{0}'.format(bezier_num)
     codes = [getattr(Path, path_attr)] * (bezier_num - 1)
     return [Path.MOVETO] + codes
 
@@ -96,26 +96,26 @@ def _get_json_and_transform(direction):
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     dirname = os.path.join(dirname, 'glass_brain_files')
-    direction_to_filename = {
-        direction: os.path.join(
+    direction_to_filename = dict([
+        (_direction, os.path.join(
             dirname,
-            'brain_schematics_{}.json'.format(view_name))
-        for direction, view_name in direction_to_view_name.iteritems()}
+            'brain_schematics_{0}.json'.format(view_name)))
+        for _direction, view_name in direction_to_view_name.iteritems()])
 
-    direction_to_transforms = {
-        direction: transforms.Affine2D.from_values(*params)
-        for direction, params in direction_to_transform_params.iteritems()}
+    direction_to_transforms = dict([
+        (_direction, transforms.Affine2D.from_values(*params))
+        for _direction, params in direction_to_transform_params.iteritems()])
 
-    direction_to_json_and_transform = {
-        direction: (direction_to_filename[direction],
-                    direction_to_transforms[direction])
-        for direction in direction_to_filename}
+    direction_to_json_and_transform = dict([
+        (_direction, (direction_to_filename[_direction],
+                      direction_to_transforms[_direction]))
+        for _direction in direction_to_filename])
 
     filename_and_transform = direction_to_json_and_transform.get(direction)
 
     if filename_and_transform is None:
-        message = ("No glass brain view associated with direction '{}'. "
-                   "Possible directions are {}").format(
+        message = ("No glass brain view associated with direction '{0}'. "
+                   "Possible directions are {1}").format(
                        direction,
                        direction_to_json_and_transform.keys())
         raise ValueError(message)

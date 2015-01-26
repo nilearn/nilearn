@@ -349,7 +349,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         interpolation_order = 0
     else:
         message = ("interpolation must be either 'continuous' "
-                   "or 'nearest' but it was set to '{}'").format(interpolation)
+                   "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
     if isinstance(img, basestring):
