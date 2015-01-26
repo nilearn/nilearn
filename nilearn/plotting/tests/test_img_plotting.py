@@ -67,7 +67,8 @@ def test_demo_plot_roi():
     # Test the black background code path
     demo_plot_roi(black_bg=True)
 
-    out = demo_plot_roi(output_file=tempfile.TemporaryFile(suffix='.png'))
+    with tempfile.TemporaryFile(suffix='.png') as fp:
+        out = demo_plot_roi(output_file=fp)
     assert_true(out is None)
 
 
