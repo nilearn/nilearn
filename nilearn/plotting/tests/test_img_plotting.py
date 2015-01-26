@@ -54,7 +54,8 @@ def test_demo_plot_roi():
     # Test the black background code path
     demo_plot_roi(black_bg=True)
 
-    out = demo_plot_roi(output_file=tempfile.TemporaryFile(suffix='.png'))
+    with tempfile.TemporaryFile(suffix='.png') as fp:
+        out = demo_plot_roi(output_file=fp)
     assert_true(out is None)
 
 
@@ -69,16 +70,19 @@ def test_plot_functions():
     ortho_slicer = plot_anat(img, dim=True)
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
-    ortho_slicer.savefig(tempfile.TemporaryFile())
+    with tempfile.TemporaryFile() as fp:
+        ortho_slicer.savefig(fp)
     z_slicer = plot_anat(display_mode='z')
-    ortho_slicer.savefig(tempfile.TemporaryFile())
+    with tempfile.TemporaryFile() as fp:
+        ortho_slicer.savefig(fp)
     z_slicer.add_edges(img, color='c')
 
     for func in [plot_anat, plot_img, plot_stat_map,
                  plot_epi, plot_glass_brain]:
         ortho_slicer = func(img, cut_coords=(80, -120, -60))
         # Saving forces a draw, and thus smoke-tests the axes locators
-        ortho_slicer.savefig(tempfile.TemporaryFile())
+        with tempfile.TemporaryFile() as fp:
+            ortho_slicer.savefig(fp)
         ortho_slicer.add_edges(img, color='c')
 
         # Smoke test coordinate finder, with and without mask
@@ -87,7 +91,8 @@ def test_plot_functions():
         func(masked_img, display_mode='x')
         func(img, display_mode='y')
 
-        out = func(img, output_file=tempfile.TemporaryFile(suffix='.png'))
+        with tempfile.TemporaryFile(suffix='.png') as fp:
+            out = func(img, output_file=fp)
         assert_true(out is None)
     pl.close('all')
 

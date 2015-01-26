@@ -45,27 +45,27 @@ def _format_time(t):
 def _md5_sum_file(path):
     """ Calculates the MD5 sum of a file.
     """
-    f = open(path, 'rb')
-    m = hashlib.md5()
-    while True:
-        data = f.read(8192)
-        if not data:
-            break
-        m.update(data)
+    with open(path, 'rb') as f:
+        m = hashlib.md5()
+        while True:
+            data = f.read(8192)
+            if not data:
+                break
+            m.update(data)
     return m.hexdigest()
 
 
 def _read_md5_sum_file(path):
     """ Reads a MD5 checksum file and returns hashes as a dictionary.
     """
-    f = open(path, "r")
-    hashes = {}
-    while True:
-        line = f.readline()
-        if not line:
-            break
-        h, name = line.rstrip().split('  ', 1)
-        hashes[name] = h
+    with open(path, "r") as f:
+        hashes = {}
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            h, name = line.rstrip().split('  ', 1)
+            hashes[name] = h
     return hashes
 
 
@@ -293,9 +293,8 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     # We first try to see if it is a zip file
     try:
         filename, ext = os.path.splitext(file_)
-        fd = open(file_, "rb")
-        header = fd.read(4)
-        fd.close()
+        with open(file_, "rb") as fd:
+            header = fd.read(4)
         processed = False
         if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
@@ -318,9 +317,8 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             filename, ext = os.path.splitext(file_)
             processed = True
         if tarfile.is_tarfile(file_):
-            tar = tarfile.open(file_, "r")
-            tar.extractall(path=data_dir)
-            tar.close()
+            with tarfile.open(file_, "r") as tar:
+                tar.extractall(path=data_dir)
             processed = True
         if not processed:
             raise IOError(
@@ -2492,12 +2490,13 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
-    pheno_f = open(path_csv, 'r')
-    pheno = ['i' + pheno_f.readline()]
-    # This regexp replaces commas between double quotes
-    for line in pheno_f:
-        pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
-    pheno_f.close()
+    with open(path_csv, 'r') as pheno_f:
+        pheno = ['i' + pheno_f.readline()]
+        
+        # This regexp replaces commas between double quotes
+        for line in pheno_f:
+            pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
+
     pheno = '\n'.join(pheno)
     pheno = StringIO(pheno)
     # We enforce empty comments because it is 'sharp' by default

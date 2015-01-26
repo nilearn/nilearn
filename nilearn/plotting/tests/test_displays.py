@@ -40,7 +40,8 @@ def test_stacked_slicer():
     slicer = XSlicer.init_with_figure(img=img, cut_coords=3)
     slicer.add_overlay(img, cmap=pl.cm.gray)
     # Forcing a layout here, to test the locator code
-    slicer.savefig(tempfile.TemporaryFile())
+    with tempfile.TemporaryFile() as fp:
+        slicer.savefig(fp)
     slicer.close()
 
 
@@ -53,5 +54,6 @@ def test_demo_ortho_projector():
     img = load_mni152_template()
     oprojector = OrthoProjector.init_with_figure(img=img)
     oprojector.add_overlay(img, cmap=pl.cm.gray)
-    oprojector.savefig(tempfile.TemporaryFile())
+    with tempfile.TemporaryFile() as fp:
+        oprojector.savefig(fp)
     oprojector.close()
