@@ -10,6 +10,7 @@ import sklearn.externals.joblib as joblib
 from sklearn.externals.joblib import Memory
 from sklearn.utils import gen_even_slices, check_random_state
 from sklearn.preprocessing import binarize
+from sklearn.feature_extraction import image
 
 from nilearn._utils import check_n_jobs
 from nilearn._utils.cache_mixin import cache
@@ -165,10 +166,6 @@ class GrowableSparseArray(object):
 
 
 ### Parcellation building routines ############################################
-from sklearn.feature_extraction import image
-from sklearn.cluster import WardAgglomeration
-
-
 def _ward_fit_transform(all_subjects_data, fit_samples_indices,
                         connectivity, n_parcels, offset_labels):
     """Ward clustering algorithm on a subsample and apply to the whole dataset.
@@ -210,6 +207,18 @@ def _ward_fit_transform(all_subjects_data, fit_samples_indices,
       Labels giving the correspondance between voxels and parcels.
 
     """
+    # XXX: Delayed import is a mega hack which is unfortunately
+    # required. In scipy versions < 0.11, this import ends up
+    # importing matplotlib.pyplot. This sets the matplotlib backend
+    # which causes our matplotlib backend setting code in
+    # nilearn/plotting/__init__.py to have no effect. In environment
+    # without X, e.g. travis-ci, that means the tests will fail with
+    # the usual "TclError: no display name and no $DISPLAY environment
+    # variable". Note this is dependent on the order of import,
+    # whichever comes first has the only shot at setting the
+    # matplotlib backend.
+    from sklearn.cluster import WardAgglomeration
+
     # fit part
     data_fit = all_subjects_data[fit_samples_indices]
     ward = WardAgglomeration(n_clusters=n_parcels, connectivity=connectivity)
