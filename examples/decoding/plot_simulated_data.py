@@ -77,7 +77,7 @@ def plot_slices(data, title=None):
     plt.figure(figsize=(5.5, 2.2))
     vmax = np.abs(data).max()
     for i in (0, 6, 11):
-        plt.subplot(1, 3, i / 5 + 1)
+        plt.subplot(1, 3, i // 5 + 1)
         plt.imshow(data[:, :, i], vmin=-vmax, vmax=vmax,
                   interpolation="nearest", cmap=plt.cm.RdBu_r)
         plt.xticks(())

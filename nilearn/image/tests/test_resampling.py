@@ -45,7 +45,7 @@ def pad(array, *args):
                          len(args))
 
     all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
-    all_paddings[:len(args) / 2] = np.array(args).reshape(-1, 2)
+    all_paddings[:len(args) // 2] = np.array(args).reshape(-1, 2)
 
     lower_paddings, upper_paddings = all_paddings.T
     new_shape = np.array(array.shape) + upper_paddings + lower_paddings
@@ -107,7 +107,7 @@ def test_resampling_with_affine():
     """
     prng = np.random.RandomState(10)
     data = prng.randint(4, size=(1, 4, 4))
-    for angle in (0, np.pi, np.pi / 2, np.pi / 4, np.pi / 3):
+    for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
         rot = rotation(0, angle)
         rot_img = resample_img(Nifti1Image(data, np.eye(4)),
                                target_affine=rot,
@@ -472,7 +472,7 @@ def test_reorder_img_non_native_endianness():
 
         affine = np.eye(4)
 
-        theta = math.pi / 6
+        theta = math.pi / 6.
         c = math.cos(theta)
         s = math.sin(theta)
 

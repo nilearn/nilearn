@@ -492,7 +492,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
-            print ('...done. (%i seconds, %i min)' % (dt, dt / 60))
+            print ('...done. (%i seconds, %i min)' % (dt, dt // 60))
     except urllib.error.HTTPError as e:
         if verbose > 0:
             print ('Error while fetching file %s. Dataset fetching aborted.' %
@@ -1604,9 +1604,9 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
 
     labels = np.unique(atlas)
     slices = ndimage.find_objects(atlas)
-    middle_ind = (atlas.shape[0] - 1) / 2
+    middle_ind = (atlas.shape[0] - 1) // 2
     crosses_middle = [s.start < middle_ind and s.stop > middle_ind
-             for s, _, _ in slices]
+                      for s, _, _ in slices]
 
     # Split every zone crossing the median plane into two parts.
     # Assumes that the background label is zero.
