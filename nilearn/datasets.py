@@ -17,7 +17,8 @@ import hashlib
 import fnmatch
 import warnings
 import cPickle as pickle
-from matplotlib import mlab
+import cStringIO as StringIO
+import re
 import collections
 
 import numpy as np
@@ -2408,14 +2409,18 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                             verbose=verbose)[0]
 
     # Note: the phenotypic file contains string that contains comma which mess
-    # up numpy array csv loading. Here I use matplotlib and I load the names
-    # manually otherwise matplotlib convert them to lowercase. This can be
+    # up numpy array csv loading. This is why I do a pass to remove the last
+    # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
     pheno_f = open(path_csv, 'r')
-    names = pheno_f.readline()[:-1].split(',')
-    pheno = mlab.csv2rec(pheno_f, names=names, skiprows=1)
+    pheno = 'i' + pheno_f.read()
     pheno_f.close()
+    # This regexp replaces commas between double quotes
+    pheno = re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", pheno)
+    pheno = StringIO.StringIO(pheno)
+    # We enforce empty comments because it is 'sharp' by default
+    pheno = np.recfromcsv(pheno, comments=[], case_sensitive=True)
 
     # First, filter subjects with no filename
     pheno = pheno[pheno['FILE_ID'] != 'no_filename']
