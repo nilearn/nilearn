@@ -15,7 +15,8 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
-from .._utils.niimg_conversions import _safe_get_data, _get_shape
+from .._utils.niimg_conversions import (_safe_get_data, check_niimgs,
+                                        _index_niimgs)
 from .. import masking
 from nilearn.image import reorder_img
 
@@ -507,26 +508,19 @@ def swap_img_hemispheres(img):
     return out_img
 
 
-def _index_img(imgs, index):
-    """Helper function for index_img and iter_img."""
-    return nibabel.Nifti1Image(imgs.get_data()[:, :, :, index],
-                               imgs.get_affine(),
-                               header=imgs.get_header())
-
-
 def index_img(imgs, index):
     """Indexes into a 4D Niimg-like object in the fourth dimension.
 
-    Common use cases include extracting a 3D image out of `imgs` or
-    creating a 4D image whose data is a subset of `imgs` data.
+    Common use cases include extracting a 3D image out of `img` or
+    creating a 4D image whose data is a subset of `img` data.
 
     Parameters
     ----------
     imgs: 4D Niimg-like object
-          See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
     index: Any type compatible with numpy array indexing
-           Used for indexing the 4D data array in the fourth dimension.
+        Used for indexing the 4D data array in the fourth dimension.
 
     Returns
     -------
@@ -534,17 +528,7 @@ def index_img(imgs, index):
 
     """
     imgs = check_niimgs(imgs)
-    return _index_img(imgs, index)
-
-
-class _Checked4DImageIterator(object):
-    """Helper class for iter_img, use iter_img directly and not this class."""
-    def __init__(self, imgs):
-        self.imgs = check_niimgs(imgs)
-
-    def __iter__(self):
-        for i in range(_get_shape(self.imgs)[3]):
-            yield _index_img(self.imgs, i)
+    return _index_niimgs(imgs, index)
 
 
 def iter_img(imgs):
@@ -553,10 +537,10 @@ def iter_img(imgs):
     Parameters
     ----------
     imgs: 4D Niimg-like object
-          See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
     Returns
     -------
     output: iterator of 3D nibabel.Nifti1Image
     """
-    return _Checked4DImageIterator(imgs)
+    return check_niimgs(imgs, return_iterator=True)

@@ -302,7 +302,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     return nibabel.Nifti1Image(data, target_affine)
 
 
-def check_niimgs(niimgs, accept_3d=False):
+def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     """ Check that an object is a list of niimgs and load it if necessary
 
     Parameters
@@ -315,15 +315,19 @@ def check_niimgs(niimgs, accept_3d=False):
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
-    accept_3d (boolean)
+    accept_3d: boolean
        If True, consider a 3D image as a 4D one with last dimension equals
        to 1.
 
+    return_iterator: boolean
+        If False, a single 4D image is returned. When `niimgs` contains 3D
+        images they are concatenated together.
+        If True, an iterator of 3D images is returned. This reduces the memory
+        usage when `niimgs` contains 3D images.
+
     Returns
     -------
-    niimg: nibabel.Nifti1Image
-        One 4D image. If 3D images were provided as input, this is the
-        concatenation of all of them.
+    niimg: 4D nibabel.Nifti1Image or iterator of 3D nibabel.Nifti1Image
 
     Notes
     -----
@@ -372,7 +376,21 @@ def check_niimgs(niimgs, accept_3d=False):
 
     # Now, we load data as we know its format
     if dim == 4:
-        niimg = check_niimg(niimgs)
+        if return_iterator:
+            result = (_index_niimgs(niimgs, i)
+                      for i in range(_get_shape(niimgs)[3]))
+        else:
+            result = check_niimg(niimgs)
     else:
-        niimg = concat_niimgs(niimgs)
-    return niimg
+        if return_iterator:
+            result = (check_niimg(img) for img in niimgs)
+        else:
+            result = concat_niimgs(niimgs)
+    return result
+
+
+def _index_niimgs(niimgs, index):
+    """Helper function for check_niimgs."""
+    return nibabel.Nifti1Image(niimgs.get_data()[:, :, :, index],
+                               niimgs.get_affine(),
+                               header=niimgs.get_header())
