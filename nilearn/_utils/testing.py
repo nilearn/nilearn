@@ -14,7 +14,6 @@ import numpy as np
 import scipy.signal
 from sklearn.utils import check_random_state
 import scipy.linalg
-from matplotlib.mlab import rec2csv
 
 from nibabel import Nifti1Image
 import nibabel
@@ -188,7 +187,8 @@ class FetchFilesMock (object):
             basename = os.path.basename(f)
             if basename in self.csv_files:
                 array = self.csv_files[basename]
-                rec2csv(array, f)
+                np.savetxt(f, array, delimiter=',', fmt="%s",
+                        header=','.join(array.dtype.names))
         return files
 
 
