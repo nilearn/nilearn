@@ -2414,10 +2414,12 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
     pheno_f = open(path_csv, 'r')
-    pheno = 'i' + pheno_f.read()
-    pheno_f.close()
+    pheno = ['i' + pheno_f.readline()]
     # This regexp replaces commas between double quotes
-    pheno = re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", pheno)
+    for line in pheno_f:
+        pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
+    pheno_f.close()
+    pheno = '\n'.join(pheno)
     pheno = StringIO.StringIO(pheno)
     # We enforce empty comments because it is 'sharp' by default
     pheno = np.recfromcsv(pheno, comments=[], case_sensitive=True)
