@@ -2054,7 +2054,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                  ext_vars=csv_data)
 
 
-def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
+def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
+                                     verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
     This function is only a caller for the fetch_localizer_contrasts in order
@@ -2075,6 +2076,9 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
+    verbose: int, optional
+        verbosity level (0 means no message).
+
     Returns
     -------
     data: Bunch
@@ -2087,7 +2091,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=url, resume=True, verbose=1)
+                                     url=url, resume=True, verbose=verbose)
     data.pop('tmaps')
     data.pop('masks')
     data.pop('anats')
