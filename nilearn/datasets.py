@@ -296,7 +296,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             z.extractall(data_dir)
             z.close()
             processed = True
-        elif ext == '.gz' or header.startswith('\x1f\x8b'):
+        elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
             gz = gzip.open(file_)
             if ext == '.tgz':

@@ -59,7 +59,7 @@ def teardown_tmpdata():
 def test_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
-    os.write(out, 'abcfeg')
+    os.write(out, b'abcfeg')
     os.close(out)
     assert_equal(datasets._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
     os.remove(f)
@@ -131,8 +131,8 @@ def test_get_dataset_dir():
 def test_read_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
-    os.write(out, '20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
-              '70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
+    os.write(out, b'20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
+             b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
     h = datasets._read_md5_sum_file(f)
     assert_true('/tmp/test' in h)
