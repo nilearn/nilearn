@@ -2,15 +2,15 @@
 """
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
+import contextlib
 import functools
 import inspect
 import nose
 import os
-import sys
-import contextlib
-import warnings
-import inspect
 import re
+import sys
+import tempfile
+import warnings
 from nose.tools import assert_true
 from past.builtins import xrange
 from six import string_types
@@ -120,7 +120,7 @@ def write_tmp_imgs(*imgs, **kwargs):
     if len(invalid_keys) > 0:
         raise TypeError("%s: unexpected keyword argument(s): %s" %
                         (sys._getframe().f_code.co_name,
-                        " ".join(invalid_keys)))
+                         " ".join(invalid_keys)))
     create_files = kwargs.get("create_files", True)
 
     if create_files:
@@ -128,7 +128,9 @@ def write_tmp_imgs(*imgs, **kwargs):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for img in imgs:
-                filename = os.tempnam(None, "nilearn_") + ".nii"
+                (_, filename) = tempfile.mkstemp(prefix="nilearn_",
+                                                 suffix=".nii",
+                                                 dir=None)
                 filenames.append(filename)
                 nibabel.save(img, filename)
 
@@ -174,8 +176,9 @@ def wrap_chunk_read_(_chunk_read_):
                          report_hook=None, verbose=0):
         if not isinstance(response, string_types):
             return _chunk_read_(response, local_file,
-                    initial_size=initial_size, chunk_size=chunk_size,
-                    report_hook=report_hook, verbose=verbose)
+                                initial_size=initial_size,
+                                chunk_size=chunk_size,
+                                report_hook=report_hook, verbose=verbose)
         return response
     return mock_chunk_read_
 
@@ -209,6 +212,7 @@ class FetchFilesMock (object):
             basename = os.path.basename(fname)
             if basename in self.csv_files:
                 array = self.csv_files[basename]
+
                 # np.savetxt does not have a header argument for numpy 1.6
                 # np.savetxt(fname, array, delimiter=',', fmt="%s",
                 #            header=','.join(array.dtype.names))
@@ -568,7 +572,7 @@ def generate_group_sparse_gaussian_graphs(
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu((
         random_state.randint(0, high=int(1. / density),
-                         size=n_features * n_features)
+                             size=n_features * n_features)
     ).reshape(n_features, n_features) == 0, k=1)
 
     # Generate edges weights on topology
@@ -635,7 +639,7 @@ def skip_if_running_nose(skip_msg=None):
     skip_msg: string, optional
         The message issued when SkipTest is raised
     """
-    if not 'nose' in sys.modules:
+    if 'nose' not in sys.modules:
         return
     try:
         import nose
@@ -653,4 +657,3 @@ def skip_if_running_nose(skip_msg=None):
                 raise nose.SkipTest(skip_msg)
             else:
                 raise nose.SkipTest
-
