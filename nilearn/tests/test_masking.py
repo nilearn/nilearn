@@ -3,7 +3,6 @@ Test the mask-extracting utilities.
 """
 import types
 import distutils.version
-import warnings
 import numpy as np
 
 from numpy.testing import assert_array_equal
@@ -17,7 +16,9 @@ from ..masking import compute_epi_mask, compute_multi_epi_mask, \
     compute_background_mask, unmask, intersect_masks, MaskWarning, \
     _load_mask_img
 
-from .._utils.testing import write_tmp_imgs, assert_raises_regexp
+from .._utils.testing import write_tmp_imgs, assert_raises_regexp, \
+    assert_warns_regex
+
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
@@ -61,10 +62,8 @@ def test_compute_epi_mask():
     mean_image[0, 0, 0] = 1.2
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    with warnings.catch_warnings(True) as w:
-        compute_epi_mask(mean_image, exclude_zeros=True)
-    assert_equal(len(w), 1)
-    assert_true(isinstance(w[0].message, masking.MaskWarning))
+    assert_warns_regex(masking.MaskWarning, 'Computed an empty mask',
+                       compute_epi_mask, mean_image, exclude_zeros=True)
 
 
 def test_compute_background_mask():
@@ -87,10 +86,8 @@ def test_compute_background_mask():
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    with warnings.catch_warnings(True) as w:
-        compute_background_mask(mean_image)
-    assert_equal(len(w), 1)
-    assert_true(isinstance(w[0].message, masking.MaskWarning))
+    assert_warns_regex(masking.MaskWarning, 'Computed an empty mask',
+                       compute_background_mask, mean_image)
 
 
 def test_apply_mask():
@@ -318,10 +315,9 @@ def test_compute_multi_epi_mask():
     mask_b[2:6, 2:6] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", MaskWarning)
-        assert_raises(ValueError, compute_multi_epi_mask,
-                      [mask_a_img, mask_b_img])
+    assert_warns_regex(MaskWarning, 'Computed an empty mask',
+                       assert_raises, ValueError,
+                       compute_multi_epi_mask, [mask_a_img, mask_b_img])
     mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
     mask_ab[2, 2] = 1
     mask_ab_ = compute_multi_epi_mask([mask_a_img, mask_b_img], threshold=1.,

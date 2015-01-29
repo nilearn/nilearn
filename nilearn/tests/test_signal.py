@@ -10,11 +10,12 @@ import warnings
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
 
+import scipy.signal
+
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from .. import signal as nisignal
 from ..signal import clean
-import scipy.signal
 
 
 def generate_signals(n_features=17, n_confounds=5, length=41,
@@ -242,10 +243,12 @@ def test_clean_frequencies():
     sx = np.vstack((sx1, sx2)).T
     assert_true(clean(sx, standardize=False, high_pass=0.002, low_pass=None)
                 .max() > 0.1)
+
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', scipy.signal.filter_design.BadCoefficients)
         assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None)
                     .max() < 0.01)
+
     assert_true(clean(sx, standardize=False, low_pass=0.01).max() > 0.9)
     assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5)
 
