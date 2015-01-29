@@ -10,6 +10,8 @@ def print_package_version(package_name, indent='  '):
         version = package.__version__
     except ImportError:
         version = 'not installed'
+    except AttributeError:
+        version = None
 
     print('{0}{1}: {2}'.format(indent, package_name, version))
 
