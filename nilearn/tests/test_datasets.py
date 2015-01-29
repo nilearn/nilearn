@@ -23,7 +23,8 @@ from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
-                                    FetchFilesMock, assert_raises_regex)
+                                    FetchFilesMock, assert_raises_regex,
+                                    assert_warns_regex)
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -257,9 +258,10 @@ def test_fail_fetch_haxby_simple():
             (os.path.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
-    assert_raises(IOError, datasets._fetch_files,
-            os.path.join(tmpdir, 'haxby2001_simple'), files,
-            verbose=0)
+    assert_warns_regex(UserWarning, 'An error occured while fetching',
+                       assert_raises, IOError, datasets._fetch_files,
+                       os.path.join(tmpdir, 'haxby2001_simple'), files,
+                       verbose=0)
     dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
     stuff = dummy.read(5)
     dummy.close()
