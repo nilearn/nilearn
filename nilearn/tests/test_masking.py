@@ -165,10 +165,10 @@ def test_unmask():
 
     masked4D = data4D[mask, :].T
     unmasked4D = data4D.copy()
-    unmasked4D[-mask, :] = 0
+    unmasked4D[np.logical_not(mask), :] = 0
     masked3D = data3D[mask]
     unmasked3D = data3D.copy()
-    unmasked3D[-mask] = 0
+    unmasked3D[np.logical_not(mask)] = 0
 
     # 4D Test, test value ordering at the same time.
     t = unmask(masked4D, mask_img, order="C").get_data()
@@ -209,7 +209,7 @@ def test_unmask():
 
     masked5D = data5D[mask, :].T
     unmasked5D = data5D.copy()
-    unmasked5D[-mask, :] = 0
+    unmasked5D[np.logical_not(mask), :] = 0
 
     t = unmask(masked5D, mask_img).get_data()
     assert_equal(t.ndim, len(shape5D))
