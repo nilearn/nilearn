@@ -14,7 +14,8 @@ import nibabel
 from distutils.version import LooseVersion
 
 from ..multi_nifti_masker import MultiNiftiMasker
-from ..._utils import testing
+from ..._utils.testing import assert_raises_regexp, assert_warns_regex, \
+    write_tmp_imgs
 
 
 def test_auto_mask():
@@ -76,7 +77,9 @@ def test_different_affines():
     epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)),
                            affine=np.diag((3, 3, 3, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
-    epis = masker.fit_transform([epi_img1, epi_img2])
+    epis = assert_warns_regex(UserWarning,
+                              'Affine is different across subjects',
+                              masker.fit_transform, [epi_img1, epi_img2])
     for this_epi in epis:
         masker.inverse_transform(this_epi)
 
@@ -90,7 +93,9 @@ def test_3d_images():
     epi_img2 = Nifti1Image(np.ones((2, 2, 2)),
                            affine=np.diag((2, 2, 2, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
-    epis = masker.fit_transform([epi_img1, epi_img2])
+    epis = assert_warns_regex(UserWarning,
+                              'Affine is different across subjects',
+                              masker.fit_transform, [epi_img1, epi_img2])
     # This is mostly a smoke test
     assert_equal(len(epis), 2)
 
@@ -98,8 +103,8 @@ def test_3d_images():
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                               affine=np.diag((4, 4, 4, 1)))
     masker2 = MultiNiftiMasker(mask_img=mask_img_4d)
-    testing.assert_raises_regexp(TypeError, "A 3D image is expected",
-                                 masker2.fit)
+    assert_raises_regexp(TypeError, "A 3D image is expected",
+                         masker2.fit)
 
 
 def test_joblib_cache():
@@ -112,8 +117,7 @@ def test_joblib_cache():
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
 
-    with testing.write_tmp_imgs(mask_img, create_files=True)\
-                as filename:
+    with write_tmp_imgs(mask_img, create_files=True) as filename:
         masker = MultiNiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
