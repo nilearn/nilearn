@@ -48,12 +48,12 @@ def test_nifti_labels_masker():
 
     # verify that 4D mask arguments are refused
     masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    testing.assert_raises_regexp(TypeError, "A 3D image is expected",
+    testing.assert_raises_regex(TypeError, "A 3D image is expected",
                                  masker.fit)
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         ValueError,
         'has not been fitted. ', masker11.transform, fmri11_img)
 
@@ -91,7 +91,7 @@ def test_nifti_labels_masker():
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         ValueError, 'has not been fitted. ',
         NiftiLabelsMasker(labels11_img).inverse_transform, signals11)
 
@@ -231,7 +231,7 @@ def test_nifti_maps_masker():
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img,
                                resampling_target=None)
 
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         ValueError, 'has not been fitted. ',
         masker11.transform, fmri11_img)
     signals11 = masker11.fit().transform(fmri11_img)
@@ -266,7 +266,7 @@ def test_nifti_maps_masker():
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         ValueError, 'has not been fitted. ',
         NiftiMapsMasker(labels11_img).inverse_transform, signals11)
 
@@ -301,7 +301,7 @@ def test_nifti_maps_masker_2():
 
     # verify that 4D mask arguments are refused
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
-    testing.assert_raises_regexp(TypeError, "A 3D image is expected",
+    testing.assert_raises_regex(TypeError, "A 3D image is expected",
                                  masker.fit)
 
     # Test error checking

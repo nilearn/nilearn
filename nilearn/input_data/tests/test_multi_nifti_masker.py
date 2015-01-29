@@ -14,7 +14,7 @@ import nibabel
 from distutils.version import LooseVersion
 
 from ..multi_nifti_masker import MultiNiftiMasker
-from ..._utils.testing import assert_raises_regexp, assert_warns_regex, \
+from ..._utils.testing import assert_raises_regex, assert_warns_regex, \
     write_tmp_imgs
 
 
@@ -103,7 +103,7 @@ def test_3d_images():
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                               affine=np.diag((4, 4, 4, 1)))
     masker2 = MultiNiftiMasker(mask_img=mask_img_4d)
-    assert_raises_regexp(TypeError, "A 3D image is expected",
+    assert_raises_regex(TypeError, "A 3D image is expected",
                          masker2.fit)
 
 

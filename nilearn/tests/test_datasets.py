@@ -19,7 +19,7 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from .. import datasets
 from .._utils.testing import mock_request, wrap_chunk_read_,\
-    FetchFilesMock, assert_raises_regexp, assert_warns_regex
+    FetchFilesMock, assert_raises_regex, assert_warns_regex
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -91,7 +91,7 @@ def test_get_dataset_dir():
     no_write = os.path.join(tmpdir, 'no_write')
     os.makedirs(no_write)
     os.chmod(no_write, 0o400)
-    assert_raises_regexp(OSError, 'Permission denied',
+    assert_raises_regex(OSError, 'Permission denied',
                          datasets._get_dataset_dir, 'test', no_write,
                          verbose=0)
 
@@ -99,7 +99,7 @@ def test_get_dataset_dir():
     test_file = os.path.join(tmpdir, 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
-    assert_raises_regexp(OSError, 'Not a directory',
+    assert_raises_regex(OSError, 'Not a directory',
                          datasets._get_dataset_dir, 'test', test_file,
                          verbose=0)
 

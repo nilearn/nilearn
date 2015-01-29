@@ -138,7 +138,7 @@ def test_resampling_error_checks():
     # Invalid interpolation
     interpolation = 'an_invalid_interpolation'
     pattern = "interpolation must be either.+{0}".format(interpolation)
-    testing.assert_raises_regexp(ValueError, pattern,
+    testing.assert_raises_regex(ValueError, pattern,
                                  resample_img, img, target_shape=target_shape,
                                  target_affine=affine,
                                  interpolation="an_invalid_interpolation")
@@ -225,7 +225,7 @@ def test_raises_upon_3x3_affine_and_no_shape():
     message = ("Given target shape without anchor "
                "vector: Affine shape should be \(4, 4\) and "
                "not \(3, 3\)")
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         exception, message,
         resample_img, img, target_affine=np.eye(3) * 2,
         target_shape=(10, 10, 10))
@@ -272,7 +272,7 @@ def test_raises_bbox_error_if_data_outside_box():
                    "by the target affine does "
                    "not contain any of the data")
 
-        testing.assert_raises_regexp(
+        testing.assert_raises_regex(
             exception, message,
             resample_img, img, target_affine=new_affine)
 
@@ -417,7 +417,7 @@ def test_reorder_img():
     # exception
     affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, affine)
-    testing.assert_raises_regexp(ValueError, 'Cannot reorder the axes',
+    testing.assert_raises_regex(ValueError, 'Cannot reorder the axes',
                                  reorder_img, ref_img)
 
     # Test that no exception is raised when resample='continuous'
@@ -435,7 +435,7 @@ def test_reorder_img():
     # Make sure invalid resample argument is included in the error message
     interpolation = 'an_invalid_interpolation'
     pattern = "interpolation must be either.+{0}".format(interpolation)
-    testing.assert_raises_regexp(ValueError, pattern,
+    testing.assert_raises_regex(ValueError, pattern,
                                  reorder_img, ref_img,
                                  resample=interpolation)
 

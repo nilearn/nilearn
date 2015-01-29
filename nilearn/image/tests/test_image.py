@@ -279,7 +279,7 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regexp(TypeError, '4D Nifti image',
+    testing.assert_raises_regex(TypeError, '4D Nifti image',
                                  image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
@@ -303,7 +303,7 @@ def test_index_img():
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
               np.repeat(True, fourth_dim_size + 1)]:
-        testing.assert_raises_regexp(
+        testing.assert_raises_regex(
             IndexError,
             'out of bounds|invalid index|out of range',
             image.index_img, img_4d, i)
@@ -311,7 +311,7 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regexp(TypeError, '4D Nifti image',
+    testing.assert_raises_regex(TypeError, '4D Nifti image',
                                  image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
