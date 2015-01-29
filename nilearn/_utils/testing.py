@@ -78,7 +78,7 @@ def assert_warns_regex(warning_class, warning_regex,
         for w in ws:
             if isinstance(w.message, warning_class) and \
                 (warning_regex is None or
-                    re.compile(warning_regex).search(w.message[-1])):
+                    re.compile(warning_regex).search(w.message.args[-1])):
                 warning_found = True
 
         if not warning_found:
