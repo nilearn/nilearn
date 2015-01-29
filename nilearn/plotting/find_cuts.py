@@ -237,4 +237,4 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     cut_coords = coord_transform(**kwargs)[axis]
     # We need to atleast_1d to make sure that when n_cuts is 1 we do
     # get an iterable
-    return np.atleast_1d(cut_coords)
+    return np.atleast_1d(cut_coords).astype(int)
