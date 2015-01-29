@@ -476,7 +476,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         else:
             data = urllib2.urlopen(url)
             local_file = open(temp_full_name, "wb")
-        _chunk_read_(data, local_file, report_hook=True,
+        _chunk_read_(data, local_file, report_hook=(verbose > 0),
                      initial_size=initial_size, verbose=verbose)
         # temp file must be closed prior to the move
         if not local_file.closed:
