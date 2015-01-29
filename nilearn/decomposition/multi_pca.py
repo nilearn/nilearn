@@ -253,7 +253,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
                 setattr(self.masker_, param_name, our_param)
-        self.masker_.fit(imgs)
+        if self.masker_.mask_img:
+            self.masker_.fit()
+        else:
+            self.masker_.fit(imgs)
         self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(MultiNiftiMasker, self)

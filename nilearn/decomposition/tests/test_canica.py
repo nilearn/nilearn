@@ -41,6 +41,7 @@ def test_canica_square_img():
         this_data = np.rollaxis(this_data, 0, 4)
         data.append(nibabel.Nifti1Image(this_data, affine))
 
+    # Pass an explicit mask, as computing a mask on our fake data will fail
     mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
 
     # We do a large number of inits to be sure to find the good match
@@ -54,7 +55,7 @@ def test_canica_square_img():
     # Find pairs of matching components
     # compute the cross-correlation matrix between components
     K = np.corrcoef(components, maps.reshape(4, 400))[4:, :4]
-    # K should be a permutation matrix, hence its coefficients 
+    # K should be a permutation matrix, hence its coefficients
     # should all be close to 0 1 or -1
     K_abs = np.abs(K)
     assert_true(np.sum(K_abs > .9) == 4)
