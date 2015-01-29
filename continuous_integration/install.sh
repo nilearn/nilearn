@@ -19,6 +19,15 @@ if [[ "$DISTRIB" == "ubuntu" ]]; then
     # Use standard ubuntu packages in their default version
     sudo apt-get install -qq python-scipy python-nose python-pip python-sklearn
 
+elif [[ "$DISTRIB" == "ubuntu-no-matplotlib" ]]; then
+    # by default apt-get installs recommended packages and python-matplotlib is recommended by python-sklearn
+    # --no-install-recommends only installs explictly mentioned packages
+    # python-joblib seems to be required, probably because of a absolute import. Here is the stacktrace:
+    # File "/usr/lib/pymodules/python2.7/sklearn/externals/joblib/__init__.py", line 3, in <module>
+    #   from joblib import *
+    # ImportError: No module named joblib
+    sudo apt-get install --no-install-recommends -qq python-scipy python-nose python-pip python-sklearn python-joblib
+
 elif [[ "$DISTRIB" == "neurodebian" ]]; then
     wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
     sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
@@ -59,10 +68,3 @@ else
 fi
 
 python setup.py install
-
-# Report versions after install, as some of these packages may depend 
-# on the install script.
-python --version
-for pkg in 'numpy' 'scipy' 'sklearn' 'matplotlib' 'nibabel'; do
-    python -c "import $pkg; print('$pkg %s' % $pkg.__version__)"
-done
