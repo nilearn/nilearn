@@ -21,7 +21,7 @@ def test_group_sparse_covariance():
 
     # These executions must hit the tolerance limit
     emp_covs, omega = group_sparse_covariance(signals, alpha, max_iter=20,
-                                              tol=1e-2, debug=True, verbose=10)
+                                              tol=1e-2, debug=True, verbose=0)
     emp_covs, omega2 = group_sparse_covariance(signals, alpha, max_iter=20,
                                                tol=1e-2, debug=True, verbose=0)
 

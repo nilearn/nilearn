@@ -500,7 +500,7 @@ def generate_signals_from_precisions(precisions,
 
 def generate_group_sparse_gaussian_graphs(
         n_subjects=5, n_features=30, min_n_samples=30, max_n_samples=50,
-        density=0.1, random_state=0):
+        density=0.1, random_state=0, verbose=0):
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
@@ -521,6 +521,9 @@ def generate_group_sparse_gaussian_graphs(
 
     random_state : int or numpy.random.RandomState instance, optional
         random number generator, or seed.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
 
     Returns
     =======
@@ -571,7 +574,8 @@ def generate_group_sparse_gaussian_graphs(
     topology = topology > 0
     assert(np.all(topology == topology.T))
     logger.log("Sparsity: {0:f}".format(
-        1. * topology.sum() / (topology.shape[0] ** 2)))
+        1. * topology.sum() / (topology.shape[0] ** 2)),
+        verbose=verbose)
 
     # Generate temporal signals
     signals = generate_signals_from_precisions(precisions,
