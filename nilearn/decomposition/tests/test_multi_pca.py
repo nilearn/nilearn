@@ -40,8 +40,10 @@ def test_multi_pca():
     # Smoke test that multi_pca also works with single subject data
     multi_pca.fit(data[0])
 
-    # Check that asking for too little components raises a ValueError
-    multi_pca = MultiPCA()
+    # Check that asking for too little components raises a ValueError.
+    # pass an explicit mask, to avoid an additional error from computing
+    # a mask on dummy data.
+    multi_pca = MultiPCA(mask=mask_img)  
     nose.tools.assert_raises(ValueError, multi_pca.fit, data[:2])
 
     # Smoke test the use of a masker and without CCA
