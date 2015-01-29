@@ -5,6 +5,7 @@ Utilities to download NeuroImaging datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
+import contextlib
 import collections
 import os
 import tarfile
@@ -312,7 +313,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             filename, ext = os.path.splitext(file_)
             processed = True
         if tarfile.is_tarfile(file_):
-            with tarfile.open(file_, "r") as tar:
+            with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 tar.extractall(path=data_dir)
             processed = True
         if not processed:
