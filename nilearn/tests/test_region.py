@@ -4,7 +4,6 @@ Test for "region" module.
 # Author: Ph. Gervais
 # License: simplified BSD
 import warnings
-
 import numpy as np
 from nose.tools import assert_raises, assert_true
 from six.moves import xrange
@@ -16,6 +15,7 @@ from nilearn._utils.testing import generate_timeseries, generate_regions_ts
 from nilearn._utils.testing import generate_labeled_regions, generate_maps
 from nilearn._utils.testing import generate_fake_fmri
 from nilearn._utils.testing import write_tmp_imgs, assert_raises_regex
+from nilearn._utils.testing import assert_warns
 
 
 def test_generate_regions_ts():
@@ -308,15 +308,14 @@ def test_signal_extraction_with_maps_and_labels():
     mask_img = nibabel.Nifti1Image(mask_data.astype(np.int8),
                                    labels_img.get_affine())
     # Ignore a known warning about divide-by-zero on our dummy data.
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore', RuntimeWarning)
-        labels_signals, labels_labels =\
-                        region.img_to_signals_labels(fmri_img, labels_img,
-                                                     mask_img=mask_img)
+    labels_signals, labels_labels = \
+        assert_warns(RuntimeWarning,
+                     region.img_to_signals_labels,
+                     fmri_img, labels_img, mask_img=mask_img)
 
     maps_signals, maps_labels = \
-                  region.img_to_signals_maps(fmri_img, maps_img,
-                                             mask_img=mask_img)
+        region.img_to_signals_maps(fmri_img, maps_img,
+                                   mask_img=mask_img)
 
     np.testing.assert_almost_equal(maps_signals, labels_signals)
     assert_true(maps_signals.shape[1] == n_regions)

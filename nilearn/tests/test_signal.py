@@ -9,11 +9,12 @@ import os.path
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
 
+import scipy.signal
+
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
 from nilearn.signal import clean
-import scipy.signal
 
 
 def generate_signals(n_features=17, n_confounds=5, length=41,

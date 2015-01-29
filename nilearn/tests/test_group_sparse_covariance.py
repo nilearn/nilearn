@@ -1,11 +1,12 @@
 from nose.tools import assert_equal, assert_true, assert_raises
 
 import numpy as np
+
 from nilearn._utils.testing import generate_group_sparse_gaussian_graphs
 from nilearn.group_sparse_covariance import (group_sparse_covariance,
-                                       group_sparse_scores,
-                                       GroupSparseCovariance,
-                                       GroupSparseCovarianceCV)
+                                             group_sparse_scores,
+                                             GroupSparseCovariance,
+                                             GroupSparseCovarianceCV)
 
 
 def test_group_sparse_covariance():
@@ -20,10 +21,17 @@ def test_group_sparse_covariance():
     alpha = 0.1
 
     # These executions must hit the tolerance limit
-    emp_covs, omega = group_sparse_covariance(signals, alpha, max_iter=20,
-                                              tol=1e-2, debug=True, verbose=0)
-    emp_covs, omega2 = group_sparse_covariance(signals, alpha, max_iter=20,
-                                               tol=1e-2, debug=True, verbose=0)
+    emp_covs, omega = assert_warns_regex(UserWarning,
+                                         'input signals do not all have unit variance',
+                                         group_sparse_covariance,
+                                         signals, alpha, max_iter=20,
+                                         tol=1e-2, debug=True, verbose=0)
+
+    emp_covs2, omega2 = assert_warns_regex(UserWarning,
+                                           'input signals do not all have unit variance',
+                                           group_sparse_covariance,
+                                           signals, alpha, max_iter=20,
+                                           tol=1e-2, debug=True, verbose=0)
 
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
@@ -40,8 +48,12 @@ def test_group_sparse_covariance():
 
     # Use a probe to test for number of iterations and decreasing objective.
     probe = Probe()
-    emp_covs, omega = group_sparse_covariance(
-        signals, alpha, max_iter=4, tol=None, verbose=0, probe_function=probe)
+    emp_covs, omega = assert_warns_regex(UserWarning,
+                                         'input signals do not all have unit variance',
+                                         group_sparse_covariance,
+                                         signals, alpha, max_iter=4,
+                                         tol=None, verbose=0,
+                                         probe_function=probe)
     objective = probe.objective
     # check number of iterations
     assert_equal(len(objective), 4)
@@ -60,11 +72,15 @@ def test_group_sparse_covariance():
     # Check consistency between classes
     gsc1 = GroupSparseCovarianceCV(alphas=4, tol=1e-1, max_iter=20, verbose=0,
                                    early_stopping=True)
-    gsc1.fit(signals)
+    assert_warns_regex(UserWarning,
+                       'input signals do not all have unit variance',
+                       gsc1.fit, signals)
 
     gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_, tol=1e-1, max_iter=20,
                                  verbose=0)
-    gsc2.fit(signals)
+    assert_warns_regex(UserWarning,
+                       'input signals do not all have unit variance',
+                       gsc2.fit, signals)
 
     np.testing.assert_almost_equal(gsc1.precisions_, gsc2.precisions_,
                                    decimal=4)
