@@ -20,9 +20,6 @@ class MaskWarning(UserWarning):
     "A class to always raise warnings"
 
 
-warnings.simplefilter("always", MaskWarning)
-
-
 def _load_mask_img(mask_img, allow_empty=False):
     ''' Check that a mask is valid, ie with two values including 0 and load it.
 

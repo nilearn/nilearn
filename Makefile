@@ -2,6 +2,7 @@
 
 # caution: testing won't work on windows, see README
 
+export PYTHONWARNINGS=error::UserWarning::0  # treat user warnings as errors
 PYTHON ?= python
 CYTHON ?= cython
 NOSETESTS ?= nosetests
