@@ -16,7 +16,6 @@ from .._utils import cache_mixin
 from .._utils.testing import assert_warns_regex
 
 
-
 def f(x):
     # A simple test function
     return x
