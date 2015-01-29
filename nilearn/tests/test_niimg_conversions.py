@@ -20,7 +20,7 @@ from nibabel import Nifti1Image
 
 from nilearn import _utils
 from nilearn._utils import testing
-from nilearn._utils.testing import assert_raises_regexp
+from nilearn._utils.testing import assert_raises_regex
 
 
 class PhonyNiimage(object):
@@ -38,17 +38,17 @@ class PhonyNiimage(object):
 
 def test_check_niimg():
     # check error for non-forced but necessary resampling
-    assert_raises_regexp(TypeError, 'image',
-                         _utils.check_niimg, 0)
+    assert_raises_regex(TypeError, 'image',
+                        _utils.check_niimg, 0)
 
     # check error for non-forced but necessary resampling
-    assert_raises_regexp(TypeError, 'image',
-                         _utils.check_niimg, [])
+    assert_raises_regex(TypeError, 'image',
+                        _utils.check_niimg, [])
 
     # Test ensure_3d
     # check error for non-forced but necessary resampling
-    assert_raises_regexp(TypeError, '3D',
-                         _utils.check_niimg, ['test.nii', ], ensure_3d=True)
+    assert_raises_regex(TypeError, '3D',
+                        _utils.check_niimg, ['test.nii', ], ensure_3d=True)
 
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 2))
@@ -59,12 +59,12 @@ def test_check_niimg():
         _utils.check_niimg(filename)
 
     # Test ensure_3d with a in-memory object
-    assert_raises_regexp(TypeError, '3D',
-                         _utils.check_niimg, data, ensure_3d=True)
+    assert_raises_regex(TypeError, '3D',
+                        _utils.check_niimg, data, ensure_3d=True)
 
     # Test ensure_3d with a non 3D image
-    assert_raises_regexp(TypeError, '3D',
-                         _utils.check_niimg, data_img, ensure_3d=True)
+    assert_raises_regex(TypeError, '3D',
+                        _utils.check_niimg, data_img, ensure_3d=True)
 
     # Test ensure_3d with a 4D image with a length 1 4th dim
     data = np.zeros((40, 40, 40, 1))
@@ -73,11 +73,11 @@ def test_check_niimg():
 
 
 def test_check_niimgs():
-    assert_raises_regexp(TypeError, 'image',
-                         _utils.check_niimgs, 0)
+    assert_raises_regex(TypeError, 'image',
+                        _utils.check_niimgs, 0)
 
-    assert_raises_regexp(TypeError, 'image',
-                         _utils.check_niimgs, [])
+    assert_raises_regex(TypeError, 'image',
+                        _utils.check_niimgs, [])
 
     affine = np.eye(4)
     img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
@@ -116,8 +116,8 @@ def test_check_niimgs():
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
 
     # This should raise an error: a 3D img is given and we want a 4D
-    assert_raises_regexp(TypeError, 'image',
-                         _utils.check_niimgs, img_3d)
+    assert_raises_regex(TypeError, 'image',
+                        _utils.check_niimgs, img_3d)
     # This shouldn't raise an error
     _utils.check_niimgs(img_3d, accept_3d=True)
 
@@ -172,8 +172,8 @@ def test_concat_niimgs():
     concatenate_true = np.ones(shape + (3,))
 
     # Smoke-test the accept_4d
-    assert_raises_regexp(ValueError, 'image',
-                         _utils.concat_niimgs, [img1, img4d])
+    assert_raises_regex(ValueError, 'image',
+                        _utils.concat_niimgs, [img1, img4d])
     concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
     np.testing.assert_equal(concatenated.get_data(), concatenate_true,
                             verbose=0)
@@ -184,9 +184,9 @@ def test_concat_niimgs():
     assert_true(concatenated.shape == img1.shape + (3, ))
 
     # check error for non-forced but necessary resampling
-    assert_raises_regexp(ValueError, 'different from reference affine',
-                         _utils.concat_niimgs, [img1, img2],
-                         accept_4d=False)
+    assert_raises_regex(ValueError, 'different from reference affine',
+                        _utils.concat_niimgs, [img1, img2],
+                        accept_4d=False)
 
     # Smoke-test the 4d parsing
     concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)

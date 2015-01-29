@@ -22,7 +22,7 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
-                                    FetchFilesMock, assert_raises_regexp,
+                                    FetchFilesMock, assert_raises_regex,
                                     assert_warns_regex)
 
 
@@ -99,11 +99,11 @@ def test_get_dataset_dir():
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
-    
+
     no_write = os.path.join(tmpdir, 'no_write')
     os.makedirs(no_write)
     os.chmod(no_write, 0o400)
-    
+
     # Verify that default is used if non writeable dir
     os.environ['MY_DATA'] = no_write
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
@@ -115,17 +115,17 @@ def test_get_dataset_dir():
     shutil.rmtree(data_dir)
 
     # Verify exception is raised on read-only directories
-    assert_raises_regexp(OSError, 'Permission denied',
-                         datasets._get_dataset_dir, 'test', no_write,
-                         verbose=0)
+    assert_raises_regex(OSError, 'Permission denied',
+                        datasets._get_dataset_dir, 'test', no_write,
+                        verbose=0)
 
     # Verify exception for a path which exists and is a file
     test_file = os.path.join(tmpdir, 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
-    assert_raises_regexp(OSError, 'Not a directory',
-                         datasets._get_dataset_dir, 'test', test_file,
-                         verbose=0)
+    assert_raises_regex(OSError, 'Not a directory',
+                        datasets._get_dataset_dir, 'test', test_file,
+                        verbose=0)
 
 
 def test_read_md5_sum_file():
@@ -269,8 +269,8 @@ def test_fail_fetch_haxby_simple():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fail_fetch_harvard_oxford():
     # specify non-existing atlas item
-    assert_raises_regexp(ValueError, 'Invalid atlas name',
-                         datasets.fetch_harvard_oxford, 'not_inside')
+    assert_raises_regex(ValueError, 'Invalid atlas name',
+                        datasets.fetch_harvard_oxford, 'not_inside')
 
     # specify existing atlas item
     target_atlas = 'cort-maxprob-thr0-1mm'

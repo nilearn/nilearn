@@ -25,11 +25,11 @@ from .. import masking
 from . import logger
 
 try:
-    from nose.tools import assert_raises_regexp
+    from nose.tools import assert_raises_regex
 except ImportError:
     # for Py 2.6
-    def assert_raises_regexp(expected_exception, expected_regexp,
-                            callable_obj=None, *args, **kwargs):
+    def assert_raises_regex(expected_exception, expected_regexp,
+                             callable_obj=None, *args, **kwargs):
         """Helper function to check for message patterns in exceptions"""
 
         not_raised = False

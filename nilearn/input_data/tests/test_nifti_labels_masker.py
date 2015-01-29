@@ -48,8 +48,8 @@ def test_nifti_labels_masker():
 
     # verify that 4D mask arguments are refused
     masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    testing.assert_raises_regexp(TypeError, "A 3D image is expected",
-                                 masker.fit)
+    testing.assert_raises_regex(TypeError, "A 3D image is expected",
+                                masker.fit)
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
