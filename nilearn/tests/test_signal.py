@@ -3,7 +3,6 @@ Test the signals module
 """
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
-
 import os.path
 import warnings
 
@@ -335,7 +334,7 @@ def test_clean_confounds():
 def test_high_variance_confounds():
     # C and F order might take different paths in the function. Check that the
     # result is identical.
-    n_features = 1001
+    n_features = 1000
     length = 20
     n_confounds = 5
     seriesC, _, _ = generate_signals(n_features=n_features,
