@@ -155,7 +155,7 @@ def get_bounds(shape, affine):
                     [0,    bdim, cdim, 1],
                     [adim, bdim, cdim, 1]]).T
     box = np.dot(affine, box)[:3]
-    return zip(box.min(axis=-1), box.max(axis=-1))
+    return list(zip(box.min(axis=-1), box.max(axis=-1)))
 
 
 def get_mask_bounds(img):

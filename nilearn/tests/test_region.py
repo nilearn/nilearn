@@ -126,13 +126,13 @@ def test_signals_extraction_with_labels():
     # and back
     signals_r, labels_r = region.img_to_signals_labels(data_img, labels_img)
     np.testing.assert_almost_equal(signals_r, signals)
-    assert_true(labels_r == range(1, 9))
+    assert_true(labels_r == list(range(1, 9)))
 
     with write_tmp_imgs(data_img) as fname_img:
         signals_r, labels_r = region.img_to_signals_labels(fname_img,
                                                            labels_img)
         np.testing.assert_almost_equal(signals_r, signals)
-        assert_true(labels_r == range(1, 9))
+        assert_true(labels_r == list(range(1, 9)))
 
     ## Same thing, with mask.
     assert_raises_regex(TypeError, "A 3D image is expected",
@@ -179,7 +179,7 @@ def test_signals_extraction_with_labels():
     signals_r, labels_r = region.img_to_signals_labels(data_img, labels_img,
                                            mask_img=mask_img)
     np.testing.assert_almost_equal(signals_r, signals)
-    assert_true(labels_r == range(1, 9))
+    assert_true(labels_r == list(range(1, 9)))
 
     # Test input validation
     data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
@@ -279,7 +279,7 @@ def test_signal_extraction_with_maps_and_labels():
     length = 8
 
     # Generate labels
-    labels = range(n_regions + 1)  # 0 is background
+    labels = list(range(n_regions + 1))  # 0 is background
     labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
     labels_data = labels_img.get_data()
     # Convert to maps
@@ -318,7 +318,7 @@ def test_signal_extraction_with_maps_and_labels():
 
     np.testing.assert_almost_equal(maps_signals, labels_signals)
     assert_true(maps_signals.shape[1] == n_regions)
-    assert_true(maps_labels == range(len(maps_labels)))
+    assert_true(maps_labels == list(range(len(maps_labels))))
     assert_true(labels_signals.shape == (length, n_regions))
     assert_true(labels_labels == labels[1:])
 
@@ -389,7 +389,7 @@ def test__trim_maps():
     maps_i_correct[np.logical_not(mask_data), :] = 0
     np.testing.assert_almost_equal(maps_i_correct, maps_i)
     np.testing.assert_equal(mask_data, maps_i_mask)
-    np.testing.assert_equal(np.asarray(range(8)), maps_i_indices)
+    np.testing.assert_equal(np.asarray(list(range(8))), maps_i_indices)
 
     # mask intersecting half of the regions
     mask_data = np.zeros(shape, dtype=np.int8)
@@ -407,4 +407,4 @@ def test__trim_maps():
     mask_data[1, 1, 1] = 0  # for test to succeed
     np.testing.assert_equal(mask_data, maps_i_mask)
     mask_data[1, 1, 1] = 1  # reset, just in case.
-    np.testing.assert_equal(np.asarray(range(4)), maps_i_indices)
+    np.testing.assert_equal(np.asarray(list(range(4))), maps_i_indices)

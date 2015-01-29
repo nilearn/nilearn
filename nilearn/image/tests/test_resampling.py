@@ -243,13 +243,13 @@ def test_raises_bbox_error_if_data_outside_box():
     img = Nifti1Image(data, affine)
 
     # some axis flipping affines
-    axis_flips = np.array(map(np.diag,
+    axis_flips = np.array(list(map(np.diag,
                               [[-1, 1, 1, 1],
                                [1, -1, 1, 1],
                                [1, 1, -1, 1],
                                [-1, -1, 1, 1],
                                [-1, 1, -1, 1],
-                               [1, -1, -1, 1]]))
+                               [1, -1, -1, 1]])))
 
     # some in plane 90 degree rotations base on these
     # (by permuting two lines)

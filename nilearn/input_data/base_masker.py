@@ -228,7 +228,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                 reference_affine=reference_affine,
                                 copy=copy)
                           for imgs, confounds in zip(imgs_list, confounds))
-        return zip(*data)[0]
+        return list(zip(*data))[0]
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
         """Fit to data, then transform it
