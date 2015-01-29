@@ -3,10 +3,12 @@ Test the searchlight module
 """
 # Author: Alexandre Abraham
 # License: simplified BSD
+import warnings
 
 from nose.tools import assert_equal
 import numpy as np
 import nibabel
+
 from .. import searchlight
 
 
@@ -27,7 +29,6 @@ def test_searchlight():
     data[2, 2, 2][cond.astype(np.bool)] = 2
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-
     # Define cross validation
     from sklearn.cross_validation import check_cv
     # avoid using KFold for compatibility with sklearn 0.10-0.13
@@ -39,7 +40,9 @@ def test_searchlight():
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img,
                                  radius=0.5, n_jobs=n_jobs,
                                  scoring='accuracy', cv=cv)
-    sl.fit(data_img, cond)
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter('ignore', DeprecationWarning)
+        sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
     assert_equal(sl.scores_[2, 2, 2], 1.)
 
@@ -47,7 +50,9 @@ def test_searchlight():
 
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
-    sl.fit(data_img, cond)
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter('ignore', DeprecationWarning)
+        sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
     assert_equal(sl.scores_[2, 2, 2], 1.)
     assert_equal(sl.scores_[1, 2, 2], 1.)
@@ -60,6 +65,8 @@ def test_searchlight():
     # Big radius : big ball selected
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=2,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
-    sl.fit(data_img, cond)
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter('ignore', DeprecationWarning)
+        sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
     assert_equal(sl.scores_[2, 2, 2], 1.)
