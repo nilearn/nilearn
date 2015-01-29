@@ -23,7 +23,16 @@ import collections
 
 import numpy as np
 from scipy import ndimage
-from sklearn.datasets.base import Bunch
+
+# scikit-learn has a bug where recursive imports cause an ImportError.
+# numpy/scipy also have a poor interaction, raising visible warnings
+# without user intervention, triggered here.
+# This code simply quiets them both.
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore', ImportError)
+    if hasattr(np, 'VisibleDeprecationWarning'):
+        warnings.simplefilter('ignore', np.VisibleDeprecationWarning)
+    from sklearn.datasets.base import Bunch
 
 import nibabel
 
