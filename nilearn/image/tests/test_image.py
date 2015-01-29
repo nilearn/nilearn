@@ -289,7 +289,7 @@ def test_index_img():
     img_4d, _ = testing.generate_fake_fmri(affine=affine)
 
     fourth_dim_size = niimg_conversions._get_shape(img_4d)[3]
-    tested_indices = (range(fourth_dim_size) +
+    tested_indices = (list(range(fourth_dim_size)) +
                       [slice(2, 8, 2), [1, 2, 3, 2], [],
                        (np.arange(fourth_dim_size) % 3) == 1])
     for i in tested_indices:

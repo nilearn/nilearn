@@ -240,7 +240,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     """
 
     # get properties from first image
-    first_niimg = check_niimg(iter(niimgs).next())
+    first_niimg = check_niimg(next(iter(niimgs)))
     target_affine = first_niimg.get_affine()
     first_data = first_niimg.get_data()
     target_item_shape = first_niimg.shape[:3]  # skip 4th/time dimension
@@ -367,7 +367,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
         if hasattr(first_img, '__len__') and len(first_img) == 0:
             raise TypeError('An empty object - %r - was passed instead of an '
                             'image or a list of images' % niimgs)
-        first_img = iter(first_img).next()
+        first_img = next(iter(first_img))
         depth += 1
 
     # First image is supposed to be a path or a Niimg-like object

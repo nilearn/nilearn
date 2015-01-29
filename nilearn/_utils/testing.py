@@ -230,7 +230,7 @@ def generate_regions_ts(n_features, n_regions,
     # Start at 1 to avoid getting an empty region
     boundaries = np.zeros(n_regions + 1)
     boundaries[-1] = n_features
-    boundaries[1:-1] = rand_gen.permutation(range(1, n_features)
+    boundaries[1:-1] = rand_gen.permutation(list(range(1, n_features))
                                             )[:n_regions - 1]
     boundaries.sort()
 

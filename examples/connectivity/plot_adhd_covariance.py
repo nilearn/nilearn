@@ -26,7 +26,7 @@ def plot_matrices(cov, prec, title):
 
     # Put zeros on the diagonal, for graph clarity.
     size = prec.shape[0]
-    prec[range(size), range(size)] = 0
+    prec[list(range(size)), list(range(size))] = 0
     span = max(abs(prec.min()), abs(prec.max()))
 
     # Display covariance matrix

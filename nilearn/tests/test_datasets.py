@@ -650,9 +650,9 @@ def test_fetch_abide_pcp():
     ids = ['50%03d' % i for i in range(800)]
     filenames = ['no_filename'] * 800
     filenames[::2] = ['filename'] * 400
-    pheno = np.asarray(zip(ids, filenames), dtype=[('subject_id', int),
-                                                   ('FILE_ID', 'S11')])
-    #pheno = pheno.T.view()
+    pheno = np.asarray(list(zip(ids, filenames)), dtype=[('subject_id', int),
+                                                         ('FILE_ID', 'S11')])
+    # pheno = pheno.T.view()
     file_mock.add_csv('Phenotypic_V1_0b_preprocessed1.csv', pheno)
 
     # All subjects
@@ -667,7 +667,7 @@ def test_filter_columns():
     strings = np.asarray(['a', 'b', 'c'])
     value2 = strings[value1 % 3]
 
-    values = np.asarray(zip(value1, value2),
+    values = np.asarray(list(zip(value1, value2)),
                         dtype=[('INT', int), ('STR', 'S1')])
 
     f = datasets._filter_columns(values, {'INT': (23, 46)})
@@ -677,7 +677,7 @@ def test_filter_columns():
     assert_equal(np.sum(f), 15)
 
     value1 = value1 % 2
-    values = np.asarray(zip(value1, value2),
+    values = np.asarray(list(zip(value1, value2)),
                         dtype=[('INT', int), ('STR', 'S1')])
 
     # No filter
