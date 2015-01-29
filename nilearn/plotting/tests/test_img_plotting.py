@@ -18,9 +18,11 @@ except ImportError:
 
 import nibabel
 
+from ..._utils.testing import assert_warns_regex
 from ...image.resampling import coord_transform
 from ..img_plotting import MNI152TEMPLATE, plot_anat, plot_img, plot_roi,\
     plot_stat_map, plot_epi, plot_glass_brain
+
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                         [   0.,    2.,    0., -126.],
@@ -100,7 +102,8 @@ def test_plot_img_empty():
     data = np.zeros((20, 20, 20))
     img = nibabel.Nifti1Image(data, mni_affine)
     plot_anat(img)
-    slicer = plot_img(img, display_mode='y', threshold=1)
+    slicer = assert_warns_regex(UserWarning, 'empty mask',
+                                plot_img, img, display_mode='y', threshold=1)
     slicer.close()
     pl.close('all')
 
