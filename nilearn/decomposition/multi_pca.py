@@ -16,9 +16,10 @@ from sklearn.utils.extmath import randomized_svd
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
+from .._utils import as_ndarray
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
-from .._utils import as_ndarray
+
 
 def session_pca(imgs, mask_img, parameters,
                 n_components=20,
@@ -83,6 +84,18 @@ def session_pca(imgs, mask_img, parameters,
     U = U.T[:n_components].copy()
     S = S[:n_components]
     return U, S
+
+
+def is_same_memory_settings(mem1, mem2, memory_level1, memory_level2):
+    """Helper comparison function to tell if two sets of memory settings
+    are equivalent or not."""
+
+    if not mem1 or not mem2:
+        return not mem1 and not mem2
+    elif memory_level1 != memory_level2:
+        return False
+    else:
+        return mem1.cachedir == mem2.cachedir
 
 
 class MultiPCA(BaseEstimator, TransformerMixin):
@@ -244,14 +257,24 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
             for param_name in ['target_affine', 'target_shape',
                                'smoothing_fwhm', 'low_pass', 'high_pass',
-                               't_r', 'memory', 'memory_level']:
+                               't_r', 'memory']:
                 our_param = getattr(self, param_name)
                 if our_param is None:
                     # Default value
                     continue
-                if getattr(self.masker_, param_name) is not None:
-                    warnings.warn('Parameter %s of the masker overriden'
-                                  % param_name)
+                their_param = getattr(self.masker_, param_name)
+                if their_param is not None:
+                    if param_name == 'memory' and \
+                        is_same_memory_settings(
+                            our_param,
+                            their_param,
+                            getattr(self, 'memory_level'),
+                            getattr(self.masker_, 'memory_level')):
+                        continue
+                    elif param_name != 'memory' and our_param == their_param:
+                        continue
+                    warnings.warn('Parameter %s of the masker overriden (%s => %s, %s)'
+                                  % (param_name, their_param, our_param))
                 setattr(self.masker_, param_name, our_param)
         if self.masker_.mask_img:
             self.masker_.fit()
