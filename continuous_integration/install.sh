@@ -20,12 +20,11 @@ if [[ "$DISTRIB" == "ubuntu" ]]; then
     sudo apt-get install -qq python-scipy python-nose python-pip python-sklearn
 
 elif [[ "$DISTRIB" == "ubuntu-no-matplotlib" ]]; then
-    # by default apt-get installs recommended packages and python-matplotlib is recommended by python-sklearn
-    # --no-install-recommends only installs explictly mentioned packages
-    # python-joblib seems to be required, probably because of a absolute import. Here is the stacktrace:
-    # File "/usr/lib/pymodules/python2.7/sklearn/externals/joblib/__init__.py", line 3, in <module>
-    #   from joblib import *
-    # ImportError: No module named joblib
+    # --no-install-recommends only installs explictly mentioned
+    # packages. By default apt-get installs recommended packages and
+    # python-matplotlib is recommended by python-sklearn
+    # Note python-joblib needs to be added explicity because in 12.04
+    # it is marked 'recommends' rather than 'depends' by python-sklearn
     sudo apt-get install --no-install-recommends -qq python-scipy python-nose python-pip python-sklearn python-joblib
 
 elif [[ "$DISTRIB" == "neurodebian" ]]; then
