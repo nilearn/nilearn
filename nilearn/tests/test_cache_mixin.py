@@ -13,6 +13,7 @@ from sklearn.externals.joblib import Memory
 
 import nilearn
 from nilearn._utils import cache_mixin
+from nilearn._utils.testing import assert_warns_regex
 
 
 def f(x):
@@ -56,7 +57,8 @@ def test__safe_cache_flush():
 
         # First turn off version checking
         nilearn.check_cache_version = False
-        cache_mixin._safe_cache(mem, f)
+        assert_warns_regex(UserWarning, 'Incompatible cache',
+                           cache_mixin._safe_cache, mem, f)
         assert_true(os.path.exists(nibabel_dir))
 
         # Second turn on version checking
@@ -65,7 +67,8 @@ def test__safe_cache_flush():
         cache_mixin.__cache_checked = {}
         with open(version_file, 'w') as f:
             json.dump({"nibabel": [0, 0]}, f)
-        cache_mixin._safe_cache(mem, f)
+        assert_warns_regex(UserWarning, 'Incompatible cache',
+                           cache_mixin._safe_cache, mem, f)
         assert_true(os.path.exists(version_file))
         assert_false(os.path.exists(nibabel_dir))
     finally:
