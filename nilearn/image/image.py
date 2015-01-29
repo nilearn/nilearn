@@ -15,7 +15,8 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
-from .._utils.niimg_conversions import _safe_get_data
+from .._utils.niimg_conversions import (_safe_get_data, check_niimgs,
+                                        _index_niimgs)
 from .. import masking
 from nilearn.image import reorder_img
 
@@ -502,6 +503,44 @@ def swap_img_hemispheres(img):
 
     # create swapped nifti object
     out_img = nibabel.Nifti1Image(img.get_data()[::-1], img.get_affine(),
-        header=img.get_header())
+                                  header=img.get_header())
 
     return out_img
+
+
+def index_img(imgs, index):
+    """Indexes into a 4D Niimg-like object in the fourth dimension.
+
+    Common use cases include extracting a 3D image out of `img` or
+    creating a 4D image whose data is a subset of `img` data.
+
+    Parameters
+    ----------
+    imgs: 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+
+    index: Any type compatible with numpy array indexing
+        Used for indexing the 4D data array in the fourth dimension.
+
+    Returns
+    -------
+    output: nibabel.Nifti1Image
+
+    """
+    imgs = check_niimgs(imgs)
+    return _index_niimgs(imgs, index)
+
+
+def iter_img(imgs):
+    """Iterates over a 4D Niimg-like object in the fourth dimension.
+
+    Parameters
+    ----------
+    imgs: 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+
+    Returns
+    -------
+    output: iterator of 3D nibabel.Nifti1Image
+    """
+    return check_niimgs(imgs, return_iterator=True)

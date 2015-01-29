@@ -7,9 +7,10 @@ name starts with an underscore
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import nose
 import os
 import tempfile
+import itertools
+
 from nose.tools import assert_equal, assert_true
 
 import numpy as np
@@ -80,14 +81,46 @@ def test_check_niimgs():
                          _utils.check_niimgs, [])
 
     affine = np.eye(4)
-    img = Nifti1Image(np.ones((10, 10, 10)), affine)
+    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
 
-    _utils.check_niimgs([img, img])
+    # Tests with return_iterator=False
+    img_4d_1 = _utils.check_niimgs([img_3d, img_3d])
+    assert_true(img_4d_1.get_data().shape == (10, 10, 10, 2))
+    assert_array_equal(img_4d_1.get_affine(), affine)
+
+    img_4d_2 = _utils.check_niimgs(img_4d_1)
+    assert_array_equal(img_4d_2.get_data(), img_4d_2.get_data())
+    assert_array_equal(img_4d_2.get_affine(), img_4d_2.get_affine())
+
+    # Tests with return_iterator=True
+    img_3d_iterator = _utils.check_niimgs([img_3d, img_3d],
+                                          return_iterator=True)
+    img_3d_iterator_length = sum(1 for _ in img_3d_iterator)
+    assert_true(img_3d_iterator_length == 2)
+
+    img_3d_iterator_1 = _utils.check_niimgs([img_3d, img_3d],
+                                            return_iterator=True)
+    img_3d_iterator_2 = _utils.check_niimgs(img_3d_iterator_1,
+                                            return_iterator=True)
+    for img_1, img_2 in itertools.izip(img_3d_iterator_1, img_3d_iterator_2):
+        assert_true(img_1.get_data().shape == (10, 10, 10))
+        assert_array_equal(img_1.get_data(), img_2.get_data())
+        assert_array_equal(img_1.get_affine(), img_2.get_affine())
+
+    img_3d_iterator_1 = _utils.check_niimgs([img_3d, img_3d],
+                                            return_iterator=True)
+    img_3d_iterator_2 = _utils.check_niimgs(img_4d_1,
+                                            return_iterator=True)
+    for img_1, img_2 in itertools.izip(img_3d_iterator_1, img_3d_iterator_2):
+        assert_true(img_1.get_data().shape == (10, 10, 10))
+        assert_array_equal(img_1.get_data(), img_2.get_data())
+        assert_array_equal(img_1.get_affine(), img_2.get_affine())
+
     # This should raise an error: a 3D img is given and we want a 4D
     assert_raises_regexp(TypeError, 'image',
-                         _utils.check_niimgs, img)
+                         _utils.check_niimgs, img_3d)
     # This shouldn't raise an error
-    _utils.check_niimgs(img, accept_3d=True)
+    _utils.check_niimgs(img_3d, accept_3d=True)
 
     # Test a Niimage that does not hold a shape attribute
     phony_img = PhonyNiimage()
