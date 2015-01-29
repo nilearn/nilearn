@@ -40,8 +40,9 @@ def test_searchlight():
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img,
                                  radius=0.5, n_jobs=n_jobs,
                                  scoring='accuracy', cv=cv)
-    with warnings.catch_warnings(record=True):
+    with warnings.catch_warnings():
         warnings.simplefilter('ignore', DeprecationWarning)
+        warnings.simplefilter('ignore', UserWarning)  # old versions of sklearn
         sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
     assert_equal(sl.scores_[2, 2, 2], 1.)
