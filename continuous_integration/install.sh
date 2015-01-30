@@ -15,25 +15,17 @@ set -e
 export CC=gcc
 export CXX=g++
 
-if [[ "$DISTRIB" == "ubuntu" ]]; then
-    # Use standard ubuntu packages in their default version
-    sudo apt-get install -qq python-scipy python-nose python-pip python-sklearn
+create_new_venv() {
+    # At the time of writing numpy 1.9.1 is included in the travis
+    # virtualenv but we want to be in control of the numpy version
+    # we are using for example through apt-get install
+    deactivate
+    virtualenv --system-site-packages testvenv
+    source testvenv/bin/activate
+    pip install nose
+}
 
-elif [[ "$DISTRIB" == "ubuntu-no-matplotlib" ]]; then
-    # --no-install-recommends only installs explictly mentioned
-    # packages. By default apt-get installs recommended packages and
-    # python-matplotlib is recommended by python-sklearn
-    # Note python-joblib needs to be added explicity because in 12.04
-    # it is marked 'recommends' rather than 'depends' by python-sklearn
-    sudo apt-get install --no-install-recommends -qq python-scipy python-nose python-pip python-sklearn python-joblib
-
-elif [[ "$DISTRIB" == "neurodebian" ]]; then
-    wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
-    sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
-    sudo apt-get update -qq
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
-
-elif [[ "$DISTRIB" == "conda" ]]; then
+create_new_conda_env() {
     # Deactivate the travis-provided virtual environment and setup a
     # conda-based environment instead
     deactivate
@@ -60,6 +52,31 @@ elif [[ "$DISTRIB" == "conda" ]]; then
         # Make sure that MKL is not used
         conda remove --yes --features mkl || echo "MKL not installed"
     fi
+}
+
+if [[ "$DISTRIB" == "ubuntu" ]]; then
+    create_new_venv
+    # Use standard ubuntu packages in their default version
+    sudo apt-get install -qq python-scipy python-nose python-pip python-sklearn
+
+elif [[ "$DISTRIB" == "ubuntu-no-matplotlib" ]]; then
+    create_new_venv
+    # --no-install-recommends only installs explictly mentioned
+    # packages. By default apt-get installs recommended packages and
+    # python-matplotlib is recommended by python-sklearn
+    # Note python-joblib needs to be added explicity because in 12.04
+    # it is marked 'recommends' rather than 'depends' by python-sklearn
+    sudo apt-get install --no-install-recommends -qq python-scipy python-nose python-pip python-sklearn python-joblib
+
+elif [[ "$DISTRIB" == "neurodebian" ]]; then
+    create_new_venv
+    wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
+    sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
+    sudo apt-get update -qq
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
+
+elif [[ "$DISTRIB" == "conda" ]]; then
+    create_new_conda_env
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
