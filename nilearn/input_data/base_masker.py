@@ -40,40 +40,8 @@ def filter_and_mask(imgs, mask_img_,
 
     mask_img_ = _utils.check_niimg(mask_img_, ensure_3d=True)
     imgs = _utils.check_niimgs(imgs, accept_3d=True)
-    if mask_time is None:
-        imgs = _utils.check_niimgs(imgs, accept_3d=True)
-    else:
-        # check type and value of mask_time
-        if (not isinstance(mask_time, list) or
-            len(mask_time) == 0 or
-            not isinstance(mask_time[0], bool)):
-            raise TypeError("'mask_time' argument passed to NiftiMasker"
-                            " must be a list of boolean entries. "
-                            "%s %s was given." % (mask_time,
-                            type(mask_time)))
-        mask_time = np.asarray(mask_time)
-        if isinstance(imgs, list):
-            # imgs is list of paths or 3D imgs
-            if len(mask_time) != len(imgs):
-                raise ValueError("'mask_time' does not match the "
-                                 "specified list of nifti images in "
-                                 "number.")
-            imgs = np.asarray(imgs)
-            imgs = niimgs[mask_time]
-        else:
-            # imgs is a 4D nifti
-            if len(imgs.shape) == 3:
-                n_imgs = 1
-            else:
-                n_imgs = imgs.shape[3]
-            if len(mask_time) != n_imgs:
-                raise ValueError("'mask_time' does not match the "
-                                 "specified set of 3D nifti images in "
-                                 "number.")
-            imgs = Nifti1Image(
-                imgs.get_data()[..., np.asarray(mask_time)],
-                imgs.get_affine())
-        imgs = _utils.check_niimgs(imgs, accept_3d=True)
+    if mask_time is not None:
+        imgs = image.index_img(imgs, mask_time)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:

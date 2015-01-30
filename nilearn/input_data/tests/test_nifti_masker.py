@@ -116,6 +116,7 @@ def test_mask_4d():
     mask = np.zeros((10, 10, 10))
     mask[3:7, 3:7, 3:7] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
+    n_mask_vox = len(np.where(mask == True)[0])
 
     # Dummy data
     data = np.zeros((10, 10, 10, 3))
@@ -126,34 +127,19 @@ def test_mask_4d():
         Nifti1Image(data[..., 1], np.eye(4)),
         Nifti1Image(data[..., 2], np.eye(4))]
 
-    # check mask_time type and values
-    masker1 = NiftiMasker(mask_img=mask_img, mask_time=(True, False, True))
-    masker1.fit()
-    assert_raises(TypeError, masker1.transform, data_imgs)
-
-    masker2 = NiftiMasker(mask_img=mask_img, mask_time=[0, 1, 0])
-    masker2.fit()
-    assert_raises(TypeError, masker2.transform, data_imgs)
-
-    masker3 = NiftiMasker(mask_img=mask_img, mask_time=[True, False])
-    masker3.fit()
-    assert_raises(ValueError, masker3.transform, data_imgs)
-
-    masker4 = NiftiMasker(mask_img=mask_img, mask_time=[True, False])
-    masker4.fit()
-    assert_raises(ValueError, masker4.transform, data_img_4d)
-
     # check whether transform is indeed selecting niimgs subset
-    mask_time = [True, False, True]
+    mask_time = np.array([0, 2])
     masker5 = NiftiMasker(mask_img=mask_img, mask_time=mask_time)
     masker5.fit()
     data_trans = masker5.transform(data_imgs)
     assert_true(np.all(data_trans))
+    assert_true((2, n_mask_vox) == data_trans.shape)  # verify mask application
 
     masker5 = NiftiMasker(mask_img=mask_img, mask_time=mask_time)
     masker5.fit()
     data_trans = masker5.transform(data_img_4d)
     assert_true(np.all(data_trans))
+    assert_true((2, n_mask_vox) == data_trans.shape)  # verify mask application
 
 
 def test_sessions():
