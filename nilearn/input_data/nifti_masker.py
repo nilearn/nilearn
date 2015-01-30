@@ -73,7 +73,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    mask_time : list of  boolean
+    mask_time : Any type compatible with numpy array indexing
         Mask for the niimgs along time/4D dimension. Thus complements
         3D masking by mask_img argument. Data preprocessing will ignore
         the time mask, whereas NiftiMasker.transform will only consider
