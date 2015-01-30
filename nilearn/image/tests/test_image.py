@@ -303,8 +303,10 @@ def test_index_img():
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
               np.repeat(True, fourth_dim_size + 1)]:
-        testing.assert_raises_regexp(IndexError, 'out of bounds',
-                                     image.index_img, img_4d, i)
+        testing.assert_raises_regexp(
+            IndexError,
+            'out of bounds|invalid index|out of range',
+            image.index_img, img_4d, i)
 
 
 def test_iter_img():

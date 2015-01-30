@@ -181,15 +181,22 @@ class FetchFilesMock (object):
         function creates empty files and return their paths.
         """
         kwargs['mock'] = True
-        files = original_fetch_files(*args, **kwargs)
+        filenames = original_fetch_files(*args, **kwargs)
         # Fill CSV files with given content if needed
-        for f in files:
-            basename = os.path.basename(f)
+        for fname in filenames:
+            basename = os.path.basename(fname)
             if basename in self.csv_files:
                 array = self.csv_files[basename]
-                np.savetxt(f, array, delimiter=',', fmt="%s",
-                        header=','.join(array.dtype.names))
-        return files
+                # np.savetxt does not have a header argument for numpy 1.6
+                # np.savetxt(fname, array, delimiter=',', fmt="%s",
+                #            header=','.join(array.dtype.names))
+                # We need to add the header ourselves
+                with open(fname, 'w') as f:
+                    header = '# {0}\n'.format(','.join(array.dtype.names))
+                    f.write(header)
+                    np.savetxt(f, array, delimiter=',', fmt="%s")
+
+        return filenames
 
 
 def generate_timeseries(n_instants, n_features,
