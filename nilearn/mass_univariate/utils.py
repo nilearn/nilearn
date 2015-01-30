@@ -126,7 +126,7 @@ def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
       Normalized target variates, from which the effect of the covariates
       has been removed.
 
-    covars_orthonormed: np.ndarray, shape=(n_samples, n_covars)
+    covars_orthonormalized: np.ndarray, shape=(n_samples, n_covars)
       Confounding variates (covariates), orthonormalized.
 
     lost_dof: int,
@@ -137,11 +137,11 @@ def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
     """
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
-        covars_orthonormed = orthonormalize_matrix(confounding_vars)
-        if not covars_orthonormed.flags['C_CONTIGUOUS']:
+        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
+        if not covars_orthonormalized.flags['C_CONTIGUOUS']:
             # useful to developer
             warnings.warn('Confounding variates not C_CONTIGUOUS.')
-            covars_orthonormed = np.ascontiguousarray(covars_orthonormed)
+            covars_orthonormalized = np.ascontiguousarray(covars_orthonormalized)
         target_vars_normalized = normalize_matrix_on_axis(
             target_vars).T  # faster with F-ordered target_vars_chunk
         if not target_vars_normalized.flags['C_CONTIGUOUS']:
@@ -150,25 +150,25 @@ def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
             target_vars_normalized = np.ascontiguousarray(
                 target_vars_normalized)
         beta_target_vars_covars = np.dot(target_vars_normalized,
-                                        covars_orthonormed)
+                                        covars_orthonormalized)
         target_vars_resid_covars = target_vars_normalized - np.dot(
-            beta_target_vars_covars, covars_orthonormed.T)
+            beta_target_vars_covars, covars_orthonormalized.T)
         target_vars_resid_covars = normalize_matrix_on_axis(
             target_vars_resid_covars, axis=1)
-        lost_dof = covars_orthonormed.shape[1]
+        lost_dof = covars_orthonormalized.shape[1]
         # step 2: extract effect of covars from tested vars
         tested_vars_normalized = normalize_matrix_on_axis(tested_vars.T,
                                                           axis=1)
         beta_tested_vars_covars = np.dot(tested_vars_normalized,
-                                         covars_orthonormed)
+                                         covars_orthonormalized)
         tested_vars_resid_covars = tested_vars_normalized - np.dot(
-            beta_tested_vars_covars, covars_orthonormed.T)
+            beta_tested_vars_covars, covars_orthonormalized.T)
         tested_vars_resid_covars = normalize_matrix_on_axis(
             tested_vars_resid_covars, axis=1).T.copy()
     else:
         target_vars_resid_covars = normalize_matrix_on_axis(target_vars).T
         tested_vars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
-        covars_orthonormed = None
+        covars_orthonormalized = None
         lost_dof = 0
     # check arrays contiguousity (for the sake of code efficiency)
     if not target_vars_resid_covars.flags['C_CONTIGUOUS']:
@@ -184,7 +184,7 @@ def orthogonalize_design(tested_vars, target_vars, confounding_vars=None):
 
     orthogonalized_design = (tested_vars_resid_covars,
                              target_vars_resid_covars.T,
-                             covars_orthonormed, lost_dof)
+                             covars_orthonormalized, lost_dof)
     return orthogonalized_design
 
 

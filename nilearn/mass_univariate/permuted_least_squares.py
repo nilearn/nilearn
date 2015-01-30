@@ -246,12 +246,12 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                                                  confounding_vars)
     tested_vars_resid_covars = orthogonalized_design[0]
     target_vars_resid_covars = orthogonalized_design[1]
-    covars_orthonormed = orthogonalized_design[2]
+    covars_orthonormalized = orthogonalized_design[2]
 
     # OLS regression (t-scores) on original data
     scores_original_data = t_score_with_covars_and_normalized_design(
         tested_vars_resid_covars, target_vars_resid_covars,
-        covars_orthonormed)
+        covars_orthonormalized)
 
     if two_sided_test:
         sign_scores_original_data = np.sign(scores_original_data)
@@ -279,8 +279,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
-            scores_original_data, testedvars_resid_covars,
-            targetvars_resid_covars.T, covars_orthonormalized,
+            scores_original_data, tested_vars_resid_covars,
+            target_vars_resid_covars.T, covars_orthonormalized,
             n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
             two_sided_test=two_sided_test,
             random_state=rng.random_integers(np.iinfo(np.int32).max))

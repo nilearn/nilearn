@@ -670,7 +670,7 @@ def rpbi_core(tested_var, target_vars,
                                                  confounding_vars)
     tested_var_resid_covars = orthogonalized_design[0]
     target_vars_resid_covars = orthogonalized_design[1]
-    covars_orthonormed = orthogonalized_design[2]
+    covars_orthonormalized = orthogonalized_design[2]
     lost_dof = orthogonalized_design[3]
 
     # set RPBI threshold
@@ -688,7 +688,7 @@ def rpbi_core(tested_var, target_vars,
         joblib.delayed(_univariate_analysis_on_chunk)
         (n_perm, perm_chunk_start, perm_chunk_stop,
          tested_var_resid_covars, target_vars_resid_covars,
-         covars_orthonormed, lost_dof, intercept_test=intercept_test,
+         covars_orthonormalized, lost_dof, intercept_test=intercept_test,
          sparsity_threshold=threshold,
          random_state=rng.random_integers(np.iinfo(np.int32).max))
         for (perm_chunk_start, perm_chunk_stop) in perm_chunks)
