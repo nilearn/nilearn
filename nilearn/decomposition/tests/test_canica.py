@@ -1,11 +1,16 @@
 """Test CanICA"""
+import os
+
 import nibabel
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 from nose.tools import assert_equal
+
 from nilearn.decomposition.canica import CanICA
+from nilearn._utils.testing import skip_if
 
 
+@skip_if(os.environ.get('DISTRIB') == 'neurodebian')
 def test_canica_square_img():
     shape = (20, 20, 1)
     affine = np.eye(4)
