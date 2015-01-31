@@ -3,6 +3,8 @@
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
 import functools
+import inspect
+import nose
 import os
 import sys
 import urllib2
@@ -613,12 +615,31 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def skip_if_running_nose(msg=None):
+def skip_if(skip, skip_msg=None):
     """ Raise a SkipTest if we appear to be running the nose test loader.
 
     Parameters
     ==========
-    msg: string, optional
+    skip: bool
+        Whether the test should be skipped
+
+    skip_msg: string, optional
+        The message issued when SkipTest is raised
+    """
+    def wrap(f):
+        if skip:
+            raise nose.SkipTest(skip_msg)
+        else:
+            return f
+    return wrap
+
+
+def skip_if_running_nose(skip_msg=None):
+    """ Raise a SkipTest if we appear to be running the nose test loader.
+
+    Parameters
+    ==========
+    skip_msg: string, optional
         The message issued when SkipTest is raised
     """
     if not 'nose' in sys.modules:
@@ -635,8 +656,8 @@ def skip_if_running_nose(msg=None):
         loader_file_name = loader_file_name[:-1]
     for _, file_name, _, _, _, _ in stack:
         if file_name == loader_file_name:
-            if msg is not None:
-                raise nose.SkipTest(msg)
+            if skip_msg is not None:
+                raise nose.SkipTest(skip_msg)
             else:
                 raise nose.SkipTest
 
