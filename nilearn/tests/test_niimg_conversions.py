@@ -177,7 +177,7 @@ def test_concat_niimgs():
                          _utils.concat_niimgs, [img1, img4d])
     concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
     np.testing.assert_equal(concatenated.get_data(), concatenate_true,
-                            verbose=False)
+                            verbose=0)
 
     # smoke-test auto_resample
     concatenated = _utils.concat_niimgs((img1, img1b, img1c), accept_4d=False,

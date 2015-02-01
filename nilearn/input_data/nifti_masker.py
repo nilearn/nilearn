@@ -165,7 +165,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                               memory_level=1,
                               ignore=['verbose'])(
                 imgs,
-                verbose=(self.verbose - 1),
+                verbose=max(0, self.verbose - 1),
                 **mask_args)
         else:
             self.mask_img_ = _utils.check_niimg(self.mask_img,

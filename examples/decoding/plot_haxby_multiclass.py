@@ -61,9 +61,9 @@ svc_ova = OneVsRestClassifier(Pipeline([
 ### Cross-validation scores ###################################################
 from sklearn.cross_validation import cross_val_score
 
-cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=True)
+cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
 
-cv_scores_ova = cross_val_score(svc_ova, X, y, cv=5, verbose=True)
+cv_scores_ova = cross_val_score(svc_ova, X, y, cv=5, verbose=1)
 
 print 79 * "_"
 print 'OvO', cv_scores_ovo.mean()

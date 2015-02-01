@@ -185,7 +185,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                             target_shape=self.target_shape,
                             n_jobs=self.n_jobs,
                             memory=self.memory,
-                            verbose=(self.verbose - 1),
+                            verbose=max(0, self.verbose - 1),
                         **mask_args)
         else:
             if imgs is not None:

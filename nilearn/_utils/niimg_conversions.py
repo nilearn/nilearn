@@ -211,7 +211,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
         Converts all images to the space of the first one.
 
     verbose: int
-        Controls the amount of verbosity.
+        Controls the amount of verbosity (0 means no messages).
 
     memory : instance of joblib.Memory or string
         Used to cache the resampling process.

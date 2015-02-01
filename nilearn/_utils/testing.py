@@ -2,6 +2,7 @@
 """
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
+import functools
 import os
 import sys
 import urllib2
@@ -53,8 +54,6 @@ except ImportError:
             warnings.simplefilter("ignore", warning_class)
             output = func(*args, **kw)
         return output
-
-original_fetch_files = datasets._fetch_files
 
 
 @contextlib.contextmanager
@@ -165,6 +164,7 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
 
 
 class FetchFilesMock (object):
+    _mock_fetch_files = functools.partial(datasets._fetch_files, mock=True)
 
     def __init__(self):
         """Create a mock that can fill a CSV file if needed
@@ -180,8 +180,7 @@ class FetchFilesMock (object):
         For test purpose, instead of actually fetching the dataset, this
         function creates empty files and return their paths.
         """
-        kwargs['mock'] = True
-        filenames = original_fetch_files(*args, **kwargs)
+        filenames = self._mock_fetch_files(*args, **kwargs)
         # Fill CSV files with given content if needed
         for fname in filenames:
             basename = os.path.basename(fname)
@@ -501,7 +500,7 @@ def generate_signals_from_precisions(precisions,
 
 def generate_group_sparse_gaussian_graphs(
         n_subjects=5, n_features=30, min_n_samples=30, max_n_samples=50,
-        density=0.1, random_state=0):
+        density=0.1, random_state=0, verbose=0):
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
@@ -522,6 +521,9 @@ def generate_group_sparse_gaussian_graphs(
 
     random_state : int or numpy.random.RandomState instance, optional
         random number generator, or seed.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
 
     Returns
     =======
@@ -572,7 +574,8 @@ def generate_group_sparse_gaussian_graphs(
     topology = topology > 0
     assert(np.all(topology == topology.T))
     logger.log("Sparsity: {0:f}".format(
-        1. * topology.sum() / (topology.shape[0] ** 2)))
+        1. * topology.sum() / (topology.shape[0] ** 2)),
+        verbose=verbose)
 
     # Generate temporal signals
     signals = generate_signals_from_precisions(precisions,

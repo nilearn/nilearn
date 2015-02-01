@@ -391,7 +391,7 @@ def _compute_mean(imgs, target_affine=None,
 
 
 def mean_img(imgs, target_affine=None, target_shape=None,
-             verbose=False, n_jobs=1):
+             verbose=0, n_jobs=1):
     """ Compute the mean of the images (in the time dimension of 4th dimension)
 
     Note that if list of 4D images are given, the mean of each 4D image is
@@ -416,7 +416,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     verbose: int, optional
         Controls the amount of verbosity: higher numbers give
-        more messages
+        more messages (0 means no messages).
 
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
