@@ -1897,8 +1897,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     """
     if isinstance(contrasts, string_types):
-        raise ValueError('Constrasts should be a list of string, a single '
-                         'string was given: "%s"' % contrasts)
+        raise ValueError('Constrasts should be a list of strings, but'
+                         'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (n_subjects > 94) or (n_subjects < 1):
@@ -2323,13 +2323,13 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     # Keep CSV information only for selected subjects
     csv_data = np.recfromcsv(ext_vars_file)
-    actual_subjects_ids = ["OAS1"
-                           + str.split(os.path.basename(x), "OAS1")[1][:9]
+    # Comparisons to recfromcsv data must be bytes.
+    actual_subjects_ids = [("OAS1" +
+                            str.split(os.path.basename(x),
+                                      "OAS1")[1][:9]).encode()
                            for x in gm_maps]
-    subject_mask = np.zeros(csv_data.size, dtype=bool)
-    for i, subject_id in enumerate(csv_data['id']):
-        if subject_id in actual_subjects_ids:
-            subject_mask[i] = True
+    subject_mask = np.asarray([subject_id in actual_subjects_ids
+                               for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
 
     return Bunch(
