@@ -280,7 +280,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
             scores_original_data, tested_vars_resid_covars,
-            target_vars_resid_covars.T, covars_orthonormalized,
+            target_vars_resid_covars, covars_orthonormalized,
             n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
             two_sided_test=two_sided_test,
             random_state=rng.random_integers(np.iinfo(np.int32).max))
