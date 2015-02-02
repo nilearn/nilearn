@@ -858,7 +858,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
             as rst_file:
         fdescr = rst_file.read()
 
-    params = dict([('description', fdescr)] + zip(keys, sub_files))
+    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
 
 
