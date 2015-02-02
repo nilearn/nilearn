@@ -47,11 +47,10 @@ components_masked = ica.fit_transform(fmri_masked.T).T
 components = nifti_masker.inverse_transform(components_masked)
 
 ### Show results ##############################################################
-import nibabel
 from nilearn.plotting import plot_stat_map
+from nilearn.image import index_img
 
-plot_stat_map(nibabel.Nifti1Image(components.get_data()[:, :, :, 0],
-                                  components.get_affine()), mean_func_img,
-              display_mode='y', cut_coords=4, title="Component 0")
+plot_stat_map(index_img(components, 0), mean_func_img, display_mode='y',
+              cut_coords=4, title="Component 0")
 
 plt.show()

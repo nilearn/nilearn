@@ -53,11 +53,10 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 nyu_filename = nyu_dataset.func[0]
 nyu_img = nibabel.load(nyu_filename)
-# Restrict nyu to 100 frames to speed up computation
-nyu_func = nyu_img.get_data()[..., :100]
 
-# nyu_func is a 4D-array, we want to make an img out of it:
-nyu_img = nibabel.Nifti1Image(nyu_func, nyu_img.get_affine())
+# Restrict nyu to 100 frames to speed up computation
+from nilearn.image import index_img
+nyu_img = index_img(nyu_img, slice(0, 100))
 
 # To display the background
 nyu_mean_img = image.mean_img(nyu_img)
