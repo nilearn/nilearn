@@ -1021,14 +1021,14 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             #   of alpha.
             # - precisions_list: corresponding precisions matrices, for each
             #   value of alpha.
-            precisions_list, scores = zip(*this_path)
+            precisions_list, scores = list(zip(*this_path))
             # now scores[i][j] is the score for the i-th folding, j-th value of
             # alpha (analoguous for precisions_list)
-            precisions_list = zip(*precisions_list)
+            precisions_list = list(zip(*precisions_list))
             scores = [np.mean(sc) for sc in zip(*scores)]
             # scores[i] is the mean score obtained for the i-th value of alpha.
 
-            path.extend(zip(alphas, scores, precisions_list))
+            path.extend(list(zip(alphas, scores, precisions_list)))
             path = sorted(path, key=operator.itemgetter(0), reverse=True)
 
             # Find the maximum score (avoid using the built-in 'max' function
