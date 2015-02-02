@@ -219,7 +219,7 @@ class FetchFilesMock (object):
                 # We need to add the header ourselves
                 with open(fname, 'wb') as f:
                     header = '# {0}\n'.format(','.join(array.dtype.names))
-                    f.write(header)
+                    f.write(header.encode())
                     np.savetxt(f, array, delimiter=',', fmt='%s')
 
         return filenames
