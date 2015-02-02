@@ -994,10 +994,10 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             train_test_subjs = []
             for train_test in zip(*cv):
                 assert(len(train_test) == n_subjects)
-                train_test_subjs.append(zip(*[(subject[train, :],
-                                               subject[test, :])
-                                            for subject, (train, test)
-                                            in zip(subjects, train_test)]))
+                train_test_subjs.append(list(zip(*[(subject[train, :],
+                                                    subject[test, :])
+                                             for subject, (train, test)
+                                             in zip(subjects, train_test)])))
             if self.early_stopping:
                 probes = [EarlyStopProbe(test_subjs, verbose=self.verbose)
                           for _, test_subjs in train_test_subjs]
