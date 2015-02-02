@@ -389,18 +389,23 @@ def test_fetch_nyu_rest():
 def test_fetch_adhd():
     local_url = "file://" + datadir
 
-    sub1 = ['3902469', '7774305', '3699991']
-    sub2 = ['2014113', '4275075', '1019436', '3154996', '3884955', '0027034',
-            '4134561', '0027018', '6115230', '0027037', '8409791', '0027011']
-    sub3 = ['3007585', '8697774', '9750701', '0010064', '0021019', '0010042',
-            '0010128', '2497695', '4164316', '1552181', '4046678', '0023012']
-    sub4 = ['1679142', '1206380', '0023008', '4016887', '1418396', '2950754',
-            '3994098', '3520880', '1517058', '9744150', '1562298', '3205761',
-            '3624598']
+    sub1 = [3902469, 7774305, 3699991]
+    sub2 = [2014113, 4275075, 1019436,
+            3154996, 3884955,   27034,
+            4134561,   27018, 6115230,
+              27037, 8409791,   27011]
+    sub3 = [3007585, 8697774, 9750701,
+              10064,   21019,   10042,
+              10128, 2497695, 4164316,
+            1552181, 4046678,   23012]
+    sub4 = [1679142, 1206380,   23008,
+            4016887, 1418396, 2950754,
+            3994098, 3520880, 1517058,
+            9744150, 1562298, 3205761, 3624598]
     subs = np.asarray(sub1 + sub2 + sub3 + sub4)
-    subs = subs.view(dtype=[('Subject', 'S7')])
+    subs = subs.view(dtype=[('Subject', '<i8')])
     file_mock.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
-            subs)
+                      subs)
 
     adhd = datasets.fetch_adhd(data_dir=tmpdir, url=local_url,
                                n_subjects=12, verbose=0)
@@ -464,7 +469,7 @@ def test_fetch_yeo_2011_atlas():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_localizer_contrasts():
     local_url = "file://" + datadir
-    ids = np.asarray(['S%2d' % i for i in range(94)])
+    ids = np.asarray([('S%2d' % i).encode() for i in range(94)])
     ids = ids.view(dtype=[('subject_id', 'S3')])
     file_mock.add_csv('cubicwebexport.csv', ids)
     file_mock.add_csv('cubicwebexport2.csv', ids)
@@ -647,11 +652,11 @@ def test_load_mni152_template():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_abide_pcp():
     local_url = "file://" + datadir
-    ids = ['50%03d' % i for i in range(800)]
+    ids = [('50%03d' % i).encode() for i in range(800)]
     filenames = ['no_filename'] * 800
     filenames[::2] = ['filename'] * 400
     pheno = np.asarray(list(zip(ids, filenames)), dtype=[('subject_id', int),
-                                                         ('FILE_ID', 'S11')])
+                                                         ('FILE_ID', 'U11')])
     # pheno = pheno.T.view()
     file_mock.add_csv('Phenotypic_V1_0b_preprocessed1.csv', pheno)
 
@@ -678,19 +683,19 @@ def test_filter_columns():
 
     value1 = value1 % 2
     values = np.asarray(list(zip(value1, value2)),
-                        dtype=[('INT', int), ('STR', 'S1')])
+                        dtype=[('INT', int), ('STR', b'S1')])
 
     # No filter
     f = datasets._filter_columns(values, [])
     assert_equal(np.sum(f), 500)
 
-    f = datasets._filter_columns(values, {'STR': 'b'})
+    f = datasets._filter_columns(values, {'STR': b'b'})
     assert_equal(np.sum(f), 167)
 
-    f = datasets._filter_columns(values, {'INT': 1, 'STR': 'b'})
+    f = datasets._filter_columns(values, {'INT': 1, 'STR': b'b'})
     assert_equal(np.sum(f), 84)
 
-    f = datasets._filter_columns(values, {'INT': 1, 'STR': 'b'},
+    f = datasets._filter_columns(values, {'INT': 1, 'STR': b'b'},
             combination='or')
     assert_equal(np.sum(f), 333)
 

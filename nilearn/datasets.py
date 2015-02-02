@@ -17,8 +17,9 @@ import hashlib
 import fnmatch
 import warnings
 import re
+from io import BytesIO
 from six import string_types
-from six.moves import cPickle, StringIO, urllib
+from six.moves import cPickle, urllib
 
 import numpy as np
 from scipy import ndimage
@@ -353,13 +354,15 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if not isinstance(criteria, string_types) and \
-            not isinstance(criteria, tuple) and \
-            isinstance(criteria, collections.Iterable):
+    if (not isinstance(criteria, string_types) and
+        not isinstance(criteria, bytes) and
+        not isinstance(criteria, tuple) and
+            isinstance(criteria, collections.Iterable)):
+
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
-                        _filter_column(array, col, criterion))
+                                   _filter_column(array, col, criterion))
         return filter
 
     if isinstance(criteria, tuple):
@@ -2450,7 +2453,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Parameter check
     for derivative in derivatives:
-        if not derivative in ['alff', 'degree_binarize', 'degree_weighted',
+        if derivative not in [
+                'alff', 'degree_binarize', 'degree_weighted',
                 'dual_regression', 'eigenvector_binarize',
                 'eigenvector_weighted', 'falff', 'func_mask', 'func_mean',
                 'func_preproc', 'lfcd', 'reho', 'rois_aal', 'rois_cc200',
@@ -2492,21 +2496,22 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # pheno = pandas.read_csv(path_csv).to_records()
     with open(path_csv, 'r') as pheno_f:
         pheno = ['i' + pheno_f.readline()]
-        
+
         # This regexp replaces commas between double quotes
         for line in pheno_f:
             pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
 
-    pheno = '\n'.join(pheno)
-    pheno = StringIO(pheno)
+    # bytes (encode()) needed for python 2/3 compat with numpy
+    pheno = '\n'.join(pheno).encode()
+    pheno = BytesIO(pheno)
     # We enforce empty comments because it is 'sharp' by default
-    pheno = np.recfromcsv(pheno, comments=[], case_sensitive=True)
+    pheno = np.recfromcsv(pheno, comments='xyzpdq', case_sensitive=True)
 
     # First, filter subjects with no filename
-    pheno = pheno[pheno['FILE_ID'] != 'no_filename']
+    pheno = pheno[pheno['FILE_ID'] != b'no_filename']
     # Apply user defined filters
-    filter = _filter_columns(pheno, kwargs)
-    pheno = pheno[filter]
+    user_filter = _filter_columns(pheno, kwargs)
+    pheno = pheno[user_filter]
 
     # Go into specific data folder and url
     data_dir = os.path.join(data_dir, pipeline, strategy)
@@ -2514,7 +2519,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Get the files
     results = {}
-    file_ids = pheno['FILE_ID']
+    file_ids = [file_id.decode() for file_id in pheno['FILE_ID']]
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
@@ -2531,5 +2536,4 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         if ext == '.1D':
             files = [np.loadtxt(f) for f in files]
         results[derivative] = files
-
     return Bunch(**results)
