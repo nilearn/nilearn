@@ -13,7 +13,6 @@ the fMRI (see the generated figures).
 import numpy as np
 import nibabel
 from nilearn import datasets
-from nilearn.image import index_img
 
 haxby_dataset = datasets.fetch_haxby_simple()
 
@@ -23,6 +22,8 @@ y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 ### Restrict to faces and houses ##############################################
+from nilearn.image import index_img
+
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 
 fmri_img = index_img(fmri_img, condition_mask)
