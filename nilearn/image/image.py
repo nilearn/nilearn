@@ -216,7 +216,7 @@ def smooth_img(imgs, fwhm):
 
     Parameters
     ==========
-    imgs: Niimg-like object or iterable of Niimg-like object
+    imgs: Niimg-like object or iterable of Niimg-like objects
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         One or several niimage(s), either 3D or 4D.
 

@@ -460,6 +460,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     Parameters
     ----------
     data_imgs: list of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
         If 3D images is given, we suggest to use the mean image of each
@@ -529,11 +530,12 @@ def apply_mask(imgs, mask_img, dtype='f',
 
     Parameters
     -----------
-    imgs: list of 4D Niimg-like object
+    imgs: list of 4D Niimg-like objects
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Images to be masked. list of lists of 3D images are also accepted.
 
     mask_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         3D mask array: True where a voxel should be used.
 
     dtype: numpy dtype or 'f'
