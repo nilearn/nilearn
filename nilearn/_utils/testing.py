@@ -48,52 +48,40 @@ except ImportError:
 
 
 try:
-    from sklearn.utils.testing import clean_warning_registry
-except ImportError:
-    def clean_warning_registry():
-        """Safe way to reset warnings """
-        warnings.resetwarnings()
-        reg = "__warningregistry__"
-        for mod_name, mod in list(sys.modules.items()):
-            if 'six.moves' in mod_name:
-                continue
-            if hasattr(mod, reg):
-                getattr(mod, reg).clear()
-
-
-try:
     from sklearn.utils.testing import assert_warns
 except ImportError:
     # sklearn.utils.testing.assert_warns new in scikit-learn 0.14
-    def assert_warns(warning_class, func, *args, **kw):
-        #clean_warning_registry()
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter('always', warning_class)
-            output = func(*args, **kw)
-        return output
+    def assert_warns(warning_class, func, *args, **kwargs):
+        return assert_warns_regex(warning_class, None,
+                                  func, *args, **kwargs)
 
 
-def assert_warns_regex(expected_warning, expected_regexp,
+def assert_warns_regex(warning_class, warning_regex,
                        callable_obj, *args, **kwargs):
-    #clean_warning_registry()
+    """
+    This function expects a warning of type <warning_class>
+    to be raised when calling callable_obj with the provided
+    arguments, with the warning message text matching warning_regex.
+
+    The function returns the value of calling callable_obj
+    with the supplied parameters.
+    """
     with warnings.catch_warnings(record=True) as ws:
-        warnings.simplefilter('always')
-        outputs = callable_obj(*args, **kwargs)
+        warnings.simplefilter('always', warning_class)
+        output = callable_obj(*args, **kwargs)
         warning_found = False
         for w in ws:
-            if isinstance(w.message, expected_warning) and \
-                (not expected_regexp or
-                    re.compile(expected_regexp).search(w.message[-1])):
+            if isinstance(w.message, warning_class) and \
+                (warning_regex is None or
+                    re.compile(warning_regex).search(w.message[-1])):
                 warning_found = True
 
         if not warning_found:
             assert_true(len(ws) > 0,
                         "No warning detected; should have raised %r" %
-                        expected_warning(expected_regexp))
+                        warning_class(warning_regex))
             assert_true(False, "Failed.")
-    return outputs
-
-
+    return output
 
 
 @contextlib.contextmanager
