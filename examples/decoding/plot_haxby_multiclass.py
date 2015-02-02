@@ -16,7 +16,7 @@ haxby_dataset = datasets.fetch_haxby_simple()
 func_filename = haxby_dataset.func
 mask_filename = haxby_dataset.mask
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 # Remove the rest condition, it is not very interesting

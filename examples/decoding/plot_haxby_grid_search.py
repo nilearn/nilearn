@@ -38,7 +38,7 @@ from nilearn import datasets
 import numpy as np
 haxby_dataset = datasets.fetch_haxby_simple()
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 ### Preprocess data ###########################################################

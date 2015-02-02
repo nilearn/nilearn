@@ -119,7 +119,7 @@ for i, cond in enumerate(condition_names):
         fmri_img.get_affine())
     mask_data = masker.transform(cond_maps)
     X1[:, i], X2[:, i] = mask_data[:, 0], mask_data[:, 1]
-condition_names[condition_names.index(b'scrambledpix')] = 'scrambled'
+condition_names[condition_names.index(b'scrambledpix')] = b'scrambled'
 
 plt.figure(figsize=(15, 7))
 for i in np.arange(2):
