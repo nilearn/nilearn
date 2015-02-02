@@ -995,10 +995,10 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             train_test_subjs = []
             for train_test in zip(*cv):
                 assert(len(train_test) == n_subjects)
-                train_test_subjs.append(zip(*[(subject[train, :],
-                                               subject[test, :])
-                                            for subject, (train, test)
-                                            in zip(subjects, train_test)]))
+                train_test_subjs.append(list(zip(*[(subject[train, :],
+                                                    subject[test, :])
+                                             for subject, (train, test)
+                                             in zip(subjects, train_test)])))
             if self.early_stopping:
                 probes = [EarlyStopProbe(test_subjs, verbose=self.verbose)
                           for _, test_subjs in train_test_subjs]
@@ -1014,7 +1014,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                     precisions_init=None if self.early_stopping else prec_init,
                     probe_function=probe)
                 for (train_subjs, test_subjs), prec_init, probe
-                in list(zip(train_test_subjs, covs_init, probes)))
+                in zip(train_test_subjs, covs_init, probes))
 
             # this_path[i] is a tuple (precisions_list, scores)
             # - scores: scores obtained with the i-th folding, for each value
