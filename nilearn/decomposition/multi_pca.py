@@ -260,22 +260,35 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                't_r', 'memory']:
                 our_param = getattr(self, param_name)
                 if our_param is None:
-                    # Default value
-                    continue
+                    continue  # nothing to change
                 their_param = getattr(self.masker_, param_name)
                 if their_param is not None:
-                    if param_name == 'memory' and \
-                        is_same_memory_settings(
-                            our_param,
-                            their_param,
-                            getattr(self, 'memory_level'),
-                            getattr(self.masker_, 'memory_level')):
+                    # This block: conflict reporting & resolution
+                    if param_name != 'memory' and our_param == their_param:
+                        continue  # no conflict; values match.
+                    if param_name == 'memory':
+                        # Memory takes a more complex comparison and setting
+                        their_memory_level = getattr(self.masker_, 'memory_level')
+                        our_memory_level = getattr(self, 'memory_level')
+                        if is_same_memory_settings(our_param, their_param,
+                                                   our_memory_level,
+                                                   their_memory_level):
+                            continue  # no conflict, memory value matches
+                        elif their_memory_level != our_memory_level:
+                            # Must set memory_level when memory differs,
+                            #   as it is not independently in the list.
+                            setattr(self.masker_, 'memory_level', our_memory_level)
+                        setattr(self.masker_, param_name, our_param)
                         continue
-                    elif param_name != 'memory' and our_param == their_param:
-                        continue
-                    warnings.warn('Parameter %s of the masker overriden (%s => %s, %s)'
-                                  % (param_name, their_param, our_param))
+                    # Us & them both set & different; give a warning.
+                    trunc = lambda s, l: s[:l] if len(s) <= l else s[:l-3] + '...'
+                    warnings.warn('Parameter %s of the masker overriden '
+                                  '(%s => %s, %s)' % (
+                                      param_name,
+                                      trunc(str(their_param), 25),
+                                      trunc(str(our_param), 25)))
                 setattr(self.masker_, param_name, our_param)
+
         if self.masker_.mask_img:
             self.masker_.fit()
         else:
