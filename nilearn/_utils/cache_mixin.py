@@ -88,7 +88,8 @@ def _safe_cache(memory, func, **kwargs):
     return memory.cache(func, **kwargs)
 
 
-def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
+def cache(func, memory, func_memory_level=None, memory_level=None,
+          **kwargs):
     """ Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
@@ -105,14 +106,14 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
     memory: instance of joblib.Memory or string
         Used to cache the function call.
 
-    ref_memory_level: int
-        The reference memory_level used to determine if function call must
-        be cached or not (if memory_level is larger than ref_memory_level
-        the function is cached)
-
-    memory_level: int
+    func_memory_level: int, optional
         The memory_level from which caching must be enabled for the wrapped
         function.
+
+    memory_level: int, optional
+        The memory_level used to determine if function call must
+        be cached or not (if user_memory_level is equal of grater than
+        func_memory_level the function is cached)
 
     kwargs: keyword arguments
         The keyword arguments passed to memory.cache
@@ -126,22 +127,21 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
         returned.
     """
 
-    if ref_memory_level <= memory_level or memory is None:
+    if func_memory_level < memory_level or memory is None:
         memory = Memory(cachedir=None)
     else:
-        memory = memory
         if isinstance(memory, basestring):
             memory = Memory(cachedir=memory)
         if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
                             "joblib.Memory object. "
                             "%s %s was given." % (memory, type(memory)))
-        if memory.cachedir is None and ref_memory_level > 1:
+        if memory.cachedir is None and memory_level > 1:
             warnings.warn("Caching has been enabled (memory_level = %d) "
                           "but no Memory object or path has been provided"
                           " (parameter memory). Caching deactivated for "
                           "function %s." %
-                          (ref_memory_level, func.func_name),
+                          (memory_level, func.func_name),
                           stacklevel=2)
     return _safe_cache(memory, func, **kwargs)
 
@@ -185,12 +185,16 @@ class CacheMixin(object):
             returned.
         """
 
+        verbose = getattr(self, 'verbose', 0)
+
         # Creates attributes if they don't exist
         # This is to make creating them in __init__() optional.
         if not hasattr(self, "memory_level"):
             self.memory_level = 0
         if not hasattr(self, "memory"):
-            self.memory = Memory(cachedir=None)
+            self.memory = Memory(cachedir=None, verbose=verbose)
+        if isinstance(self.memory, basestring):
+            self.memory = Memory(cachedir=self.memory, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
@@ -201,22 +205,6 @@ class CacheMixin(object):
                               "a Memory object has been provided. "
                               "Setting memory_level to 1.")
                 self.memory_level = 1
-        verbose = getattr(self, 'verbose', 0)
 
-        if self.memory_level < memory_level:
-            memory = Memory(cachedir=None, verbose=verbose)
-            return _safe_cache(memory, func, **kwargs)
-        else:
-            memory = self.memory
-            if isinstance(memory, basestring):
-                memory = Memory(cachedir=memory, verbose=verbose)
-            if not isinstance(memory, memory_classes):
-                raise TypeError("'memory' argument must be a string or a "
-                                "joblib.Memory object.")
-            if memory.cachedir is None and self.memory_level > 1:
-                warnings.warn("Caching has been enabled (memory_level = %d) "
-                              "but no Memory object or path has been provided"
-                              " (parameter memory). Caching deactivated for "
-                              "function %s." %
-                              (self.memory_level, func.func_name))
-            return _safe_cache(memory, func, **kwargs)
+        return cache(func, self.memory, func_memory_level=memory_level,
+                     memory_level=self.memory_level, **kwargs)
