@@ -130,7 +130,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     if (func_memory_level is None
             or memory_level is None
             or memory is None
-            or func_memory_level < memory_level):
+            or memory_level < func_memory_level):
         memory = Memory(cachedir=None)
     else:
         if isinstance(memory, basestring):
