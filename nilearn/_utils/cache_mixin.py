@@ -9,7 +9,6 @@ import os
 import shutil
 from distutils.version import LooseVersion
 import json
-import numpy as np
 
 import nibabel
 from sklearn.externals.joblib import Memory
@@ -54,7 +53,7 @@ def _safe_cache(memory, func, **kwargs):
     if len(collisions) > 0:
         if nilearn.check_cache_version:
             warnings.warn("Incompatible cache in %s: "
-                          "old version of nibabel. Deleting "
+                          "different version of nibabel. Deleting "
                           "the cache. Put nilearn.check_cache_version "
                           "to false to avoid this behavior."
                           % cachedir)
