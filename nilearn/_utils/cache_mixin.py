@@ -26,70 +26,64 @@ import nilearn
 __cache_checked = dict()
 
 
-
 def _safe_cache(memory, func, **kwargs):
     """ A wrapper for mem.cache that flushes the cache if the version
         number of nibabel has changed.
     """
     cachedir = memory.cachedir
-    if cachedir is not None and not cachedir in __cache_checked:
-        version_file = os.path.join(cachedir, 'module_versions.json')
-        if not os.path.exists(version_file):
-            versions = dict()
+
+    if cachedir is None or cachedir in __cache_checked:
+        return memory.cache(func, **kwargs)
+
+    version_file = os.path.join(cachedir, 'module_versions.json')
+
+    versions = dict()
+    if os.path.exists(version_file):
+        with open(version_file, 'r') as _version_file:
+            versions = json.load(_version_file)
+
+    modules = (nibabel, )
+    # Keep only the major + minor version numbers
+    my_versions = dict((m.__name__, LooseVersion(m.__version__).version[:2])
+                       for m in modules)
+    commons = set(versions.keys()).intersection(set(my_versions.keys()))
+    collisions = [m for m in commons if versions[m] != my_versions[m]]
+
+    # Flush cache if version collision
+    if len(collisions) > 0:
+        if nilearn.check_cache_version:
+            warnings.warn("Incompatible cache in %s: "
+                          "old version of nibabel. Deleting "
+                          "the cache. Put nilearn.check_cache_version "
+                          "to false to avoid this behavior."
+                          % cachedir)
+            try:
+                tmp_dir = (os.path.split(cachedir)[:-1]
+                            + ('old_%i' % os.getpid(), ))
+                tmp_dir = os.path.join(*tmp_dir)
+                # We use rename + unlink to be more robust to race
+                # conditions
+                os.rename(cachedir, tmp_dir)
+                shutil.rmtree(tmp_dir)
+            except OSError:
+                # Another process could have removed this dir
+                pass
+
+            try:
+                os.makedirs(cachedir)
+            except OSError:
+                # File exists?
+                pass
         else:
-            with open(version_file, 'r') as _version_file:
-                versions = json.load(_version_file)
+            warnings.warn("Incompatible cache in %s: "
+                          "old version of nibabel." % cachedir)
 
-        write_file = False
-        flush_cache = False
+    # Write json files if configuration is different
+    if versions != my_versions:
+        with open(version_file, 'w') as _version_file:
+            json.dump(my_versions, _version_file)
 
-        for module in (nibabel, ):
-            # Keep only the major + minor version numbers
-            this_version = LooseVersion(module.__version__).version[:2]
-            this_name = module.__name__
-            if not this_name in versions:
-                versions[this_name] = this_version
-                write_file = True
-            else:
-                previous_version = versions[this_name]
-                if previous_version != this_version:
-                    flush_cache = True
-                    write_file = True
-                    versions[this_name] = this_version
-
-        if flush_cache:
-            if nilearn.check_cache_version:
-                warnings.warn("Incompatible cache in %s: "
-                              "old version of nibabel. Deleting "
-                              "the cache. Put nilearn.check_cache_version "
-                              "to false to avoid this behavior."
-                              % cachedir)
-                try:
-                    tmp_dir = (os.path.split(cachedir)[:-1]
-                                + ('old_%i' % os.getpid(), ))
-                    tmp_dir = os.path.join(*tmp_dir)
-                    # We use rename + unlink to be more robust to race
-                    # conditions
-                    os.rename(cachedir, tmp_dir)
-                    shutil.rmtree(tmp_dir)
-                except OSError:
-                    # Another process could have removed this dir
-                    pass
-
-                try:
-                    os.makedirs(cachedir)
-                except OSError:
-                    # File exists?
-                    pass
-            else:
-                warnings.warn("Incompatible cache in %s: "
-                              "old version of nibabel." % cachedir)
-
-        if write_file:
-            with open(version_file, 'w') as _version_file:
-                versions = json.dump(versions, _version_file)
-
-        __cache_checked[cachedir] = True
+    __cache_checked[cachedir] = True
 
     return memory.cache(func, **kwargs)
 
