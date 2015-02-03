@@ -9,6 +9,7 @@ import os
 import shutil
 from distutils.version import LooseVersion
 import json
+import numpy as np
 
 import nibabel
 from sklearn.externals.joblib import Memory
@@ -127,7 +128,10 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         returned.
     """
 
-    if func_memory_level < memory_level or memory is None:
+    if (func_memory_level is None
+            or memory_level is None
+            or memory is None
+            or func_memory_level < memory_level):
         memory = Memory(cachedir=None)
     else:
         if isinstance(memory, basestring):
