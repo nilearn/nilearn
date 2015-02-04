@@ -415,7 +415,7 @@ class BaseSlicer(object):
             -----------
             img: Niimg-like object
                 See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-                Provides images to plot.
+                Provides image to plot.
             kwargs:
                 Extra keyword arguments are passed to contour, see the
                 documentation of pylab.contour
