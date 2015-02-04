@@ -23,7 +23,7 @@ from .._utils import as_ndarray
 def session_pca(imgs, mask_img, parameters,
                 n_components=20,
                 confounds=None,
-                func_memory_level=0,
+                memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
                 copy=True):
@@ -52,7 +52,7 @@ def session_pca(imgs, mask_img, parameters,
     n_components: integer, optional
         Number of components to be extracted by the PCA
 
-    ref_memory_level: integer, optional
+    memory_level: integer, optional
         Integer indicating the level of memorization. The higher, the more
         function calls are cached.
 
@@ -67,11 +67,11 @@ def session_pca(imgs, mask_img, parameters,
     """
 
     data, affine = cache(
-        filter_and_mask, memory, func_memory_level=func_memory_level,
-        memory_level=2,
-        ignore=['verbose', 'memory', 'ref_memory_level', 'copy'])(
+        filter_and_mask, memory, memory_level=memory_level,
+        func_memory_level=2,
+        ignore=['verbose', 'memory', 'memory_level', 'copy'])(
             imgs, mask_img, parameters,
-            func_memory_level=func_memory_level,
+            memory_level=memory_level,
             memory=memory,
             verbose=verbose,
             confounds=confounds,
@@ -274,7 +274,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 parameters,
                 n_components=self.n_components,
                 memory=self.memory,
-                ref_memory_level=self.memory_level,
+                memory_level=self.memory_level,
                 confounds=confound,
                 verbose=self.verbose
             )

@@ -129,7 +129,7 @@ def filter_and_mask(imgs, mask_img_,
 
 def _safe_filter_and_mask(imgs, mask_img_,
                          parameters,
-                         ref_memory_level=0,
+                         memory_level=0,
                          memory=Memory(cachedir=None),
                          verbose=0,
                          confounds=None,
@@ -147,7 +147,7 @@ def _safe_filter_and_mask(imgs, mask_img_,
         parameters = parameters.copy()
         parameters['target_affine'] = reference_affine
 
-    return filter_and_mask(imgs, mask_img_, parameters, ref_memory_level,
+    return filter_and_mask(imgs, mask_img_, parameters, memory_level,
             memory, verbose, confounds, copy)
 
 
