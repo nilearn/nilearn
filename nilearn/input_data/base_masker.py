@@ -165,7 +165,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # just invalid the cache for no good reason
         for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
-        data, _ = self._cache(filter_and_mask, memory_level=1,
+        data, _ = self._cache(filter_and_mask, func_memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])(
                                 imgs, self.mask_img_,
                                 params,
@@ -213,7 +213,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             reference_affine = _utils.check_niimgs(imgs_list[0],
                                                    accept_3d=True).get_affine()
 
-        func = self._cache(_safe_filter_and_mask, memory_level=1,
+        func = self._cache(_safe_filter_and_mask, func_memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
@@ -272,7 +272,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        img = self._cache(masking.unmask, memory_level=1,
+        img = self._cache(masking.unmask, func_memory_level=1,
             )(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array

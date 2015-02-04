@@ -161,7 +161,7 @@ class CacheMixin(object):
     parameter to self._cache(). See _cache() documentation for details.
     """
 
-    def _cache(self, func, memory_level=1, **kwargs):
+    def _cache(self, func, func_memory_level=1, **kwargs):
         """ Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -209,5 +209,5 @@ class CacheMixin(object):
                               "Setting memory_level to 1.")
                 self.memory_level = 1
 
-        return cache(func, self.memory, func_memory_level=memory_level,
+        return cache(func, self.memory, func_memory_level=func_memory_level,
                      memory_level=self.memory_level, **kwargs)
