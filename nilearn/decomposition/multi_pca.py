@@ -23,7 +23,7 @@ from .._utils import as_ndarray
 def session_pca(imgs, mask_img, parameters,
                 n_components=20,
                 confounds=None,
-                ref_memory_level=0,
+                func_memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
                 copy=True):
@@ -67,11 +67,11 @@ def session_pca(imgs, mask_img, parameters,
     """
 
     data, affine = cache(
-        filter_and_mask, memory=memory, ref_memory_level=ref_memory_level,
+        filter_and_mask, memory, func_memory_level=func_memory_level,
         memory_level=2,
         ignore=['verbose', 'memory', 'ref_memory_level', 'copy'])(
             imgs, mask_img, parameters,
-            ref_memory_level=ref_memory_level,
+            func_memory_level=func_memory_level,
             memory=memory,
             verbose=verbose,
             confounds=confounds,
@@ -297,8 +297,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 data[index * self.n_components:
                      (index + 1) * self.n_components] = subject_pca
             data, variance, _ = cache(randomized_svd,
-                                memory=self.memory,
-                                ref_memory_level=3,
+                                self.memory,
+                                func_memory_level=3,
                                 memory_level=self.memory_level)(
                         data.T, n_components=self.n_components)
             # as_ndarray is to get rid of memmapping
