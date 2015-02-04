@@ -47,8 +47,6 @@ component_img = masker.inverse_transform(components_masked)
 
 ### Visualize the results #####################################################
 # Show some interesting components
-
-import nibabel
 import pylab as plt
 from nilearn import image
 from nilearn.plotting import plot_stat_map
@@ -56,10 +54,8 @@ from nilearn.plotting import plot_stat_map
 # Use the mean as a background
 mean_img = image.mean_img(func_filename)
 
-plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:, :, :, 5],
-                                  component_img.get_affine()), mean_img)
+plot_stat_map(image.index_img(component_img, 5), mean_img)
 
-plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:, :, :, 12],
-                                  component_img.get_affine()), mean_img)
+plot_stat_map(image.index_img(component_img, 12), mean_img)
 
 plt.show()

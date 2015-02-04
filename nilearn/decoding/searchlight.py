@@ -265,7 +265,7 @@ class SearchLight(BaseEstimator):
 
         Parameters
         ----------
-        img : Niimg-like object
+        imgs : Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             4D image.
 

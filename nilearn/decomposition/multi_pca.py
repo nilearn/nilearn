@@ -60,7 +60,7 @@ def session_pca(imgs, mask_img, parameters,
         Used to cache the function calls.
 
     verbose: integer, optional
-        Indicate the level of verbosity
+        Indicate the level of verbosity (0 means no messages).
 
     copy: boolean, optional
         Whether or not data should be copied
@@ -315,7 +315,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        imgs: iterable of Niimg-like object
+        imgs: iterable of Niimg-like objects
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data to be projected
 

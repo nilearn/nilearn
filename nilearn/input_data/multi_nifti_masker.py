@@ -84,7 +84,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose: interger, optional
+    verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
     Attributes
@@ -185,7 +185,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                             target_shape=self.target_shape,
                             n_jobs=self.n_jobs,
                             memory=self.memory,
-                            verbose=(self.verbose - 1),
+                            verbose=max(0, self.verbose - 1),
                         **mask_args)
         else:
             if imgs is not None:

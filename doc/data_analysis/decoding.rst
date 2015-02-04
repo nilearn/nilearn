@@ -71,7 +71,7 @@ corresponding category.
 Loading the data into Python
 -----------------------------
 
-Launch ipython::
+Launch IPython::
 
   ipython --matplotlib
 
@@ -82,10 +82,10 @@ First, load the data using nilearn's data downloading function,
     :start-after: ### Load haxby dataset ########################################################
     :end-before: ### Load Target labels ########################################################
 
-The ``data`` object has several entries that contain paths to the files
+The ``haxby_dataset`` object has several entries that contain paths to the files
 downloaded on the disk::
 
-    >>> print data # doctest: +SKIP
+    >>> print haxby_dataset # doctest: +SKIP
     {'anat': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/anat.nii.gz'],
     'func': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/bold.nii.gz'],
     'mask_face': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8b_face_vt.nii.gz'],
@@ -494,7 +494,7 @@ and create a new pipeline::
 and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=True) # doctest: +SKIP
+    ...     verbose=1) # doctest: +SKIP
 
 But, be aware that this can take A WHILE...
 

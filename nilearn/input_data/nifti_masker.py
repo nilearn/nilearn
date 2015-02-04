@@ -136,6 +136,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -165,7 +166,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                               memory_level=1,
                               ignore=['verbose'])(
                 imgs,
-                verbose=(self.verbose - 1),
+                verbose=max(0, self.verbose - 1),
                 **mask_args)
         else:
             self.mask_img_ = _utils.check_niimg(self.mask_img,

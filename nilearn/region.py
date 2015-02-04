@@ -273,7 +273,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     """Create image from region signals defined as maps.
 
-    labels_img, mask_img must have the same shapes and affines.
+    region_signals, mask_img must have the same shapes and affines.
 
     Parameters
     ==========

@@ -162,13 +162,13 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     return Nifti1Image(grp_mask, ref_affine)
 
 
-def _post_process_mask(mask, affine, opening=2, connected=True, msg=""):
+def _post_process_mask(mask, affine, opening=2, connected=True, warning_msg=""):
     if opening:
         opening = int(opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
     mask_any = mask.any()
     if not mask_any:
-        warnings.warn("Computed an empty mask. %s" % msg,
+        warnings.warn("Computed an empty mask. %s" % warning_msg,
             MaskWarning, stacklevel=2)
     if connected and mask_any:
         mask = largest_connected_component(mask)
@@ -284,7 +284,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     mask = mean_epi >= threshold
 
     return _post_process_mask(mask, affine, opening=opening,
-        connected=connected, msg="Are you sure that input "
+        connected=connected, warning_msg="Are you sure that input "
             "data are EPI images not detrended. ")
 
 
@@ -442,7 +442,7 @@ def compute_background_mask(data_imgs, border_size=2,
         mask = data != background
 
     return _post_process_mask(mask, affine, opening=opening,
-        connected=connected, msg="Are you sure that input "
+        connected=connected, warning_msg="Are you sure that input "
             "images have a homogeneous background.")
 
 
@@ -460,6 +460,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     Parameters
     ----------
     data_imgs: list of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
         If 3D images is given, we suggest to use the mean image of each
@@ -529,11 +530,12 @@ def apply_mask(imgs, mask_img, dtype='f',
 
     Parameters
     -----------
-    imgs: list of 4D Niimg-like object
+    imgs: list of 4D Niimg-like objects
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Images to be masked. list of lists of 3D images are also accepted.
 
     mask_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         3D mask array: True where a voxel should be used.
 
     dtype: numpy dtype or 'f'

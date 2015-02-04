@@ -123,7 +123,7 @@ from sklearn.grid_search import GridSearchCV
 
 # Note that GridSearchCV takes an n_jobs argument that can make it go
 # much faster
-grid = GridSearchCV(anova_svc, param_grid={'anova__k': k_range}, verbose=True)
+grid = GridSearchCV(anova_svc, param_grid={'anova__k': k_range}, verbose=1)
 nested_cv_scores = cross_val_score(grid, X, y)
 
 plt.axhline(np.mean(nested_cv_scores),

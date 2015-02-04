@@ -5,8 +5,10 @@ Utilities to resample a Nifti Image
 # License: simplified BSD
 
 import warnings
+from distutils.version import LooseVersion
 
 import numpy as np
+import scipy
 from scipy import ndimage, linalg
 from nibabel import Nifti1Image
 
@@ -244,7 +246,9 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
 
     # Bug in ndimage.affine_transform when out does not have native endianness
     # see https://github.com/nilearn/nilearn/issues/275
-    if not out.dtype.isnative:
+    # Bug was fixed in scipy 0.15
+    if (LooseVersion(scipy.__version__) < LooseVersion('0.15') and
+        not out.dtype.isnative):
         out.byteswap(True)
 
     if has_not_finite:
