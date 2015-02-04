@@ -28,7 +28,8 @@ def _load_mask_img(mask_img, allow_empty=False):
 
     Parameters
     ----------
-    mask_img: nifti-like image
+    mask_img: niimg: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         The mask to check
 
     allow_empty: boolean, optional
@@ -123,7 +124,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     Returns
     -------
-        grp_mask: 3D nifti-like image
+        grp_mask: nibabel.Nifti1Image
             intersection of all masks.
     """
     if len(mask_imgs) == 0:
@@ -346,7 +347,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
 
     Returns
     -------
-    mask : 3D nifti-like image
+    mask : nibabel.Nifti1Image
         The brain mask.
     """
     if len(epi_imgs) == 0:
@@ -497,7 +498,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
 
     Returns
     -------
-    mask : 3D nifti-like image
+    mask : nibabel.Nifti1Image
         The brain mask.
     """
     if len(data_imgs) == 0:
@@ -525,8 +526,7 @@ def apply_mask(imgs, mask_img, dtype='f',
                smoothing_fwhm=None, ensure_finite=True):
     """Extract signals from images using specified mask.
 
-    Read the time series from the given nifti images or filepaths,
-    using the mask.
+    Read the time series from the given Niimg-like object, using the mask.
 
     Parameters
     -----------
@@ -627,7 +627,8 @@ def _unmask_3d(X, mask, order="C"):
     X: numpy.ndarray
         Masked data. shape: (samples,)
 
-    mask: numpy.ndarray
+    mask: niimg: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """
 
@@ -681,12 +682,13 @@ def unmask(X, mask_img, order="F"):
     X: numpy.ndarray (or list of)
         Masked data. shape: (samples #, features #).
         If X is one-dimensional, it is assumed that samples# == 1.
-    mask_img: nifti-like image
-        Mask. Must be 3-dimensional.
+    mask_img: niimg: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Must be 3-dimensional.
 
     Returns
     =======
-    data: nifti-like image (or list of)
+    data: nibabel.Nift1Image object
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
 

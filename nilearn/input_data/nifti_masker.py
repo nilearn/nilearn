@@ -18,8 +18,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     Parameters
     ----------
-    mask_img : filename or NiImage, optional
-        Mask of the data. If not given, a mask is computed in the fit step.
+    mask_img : Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
         fine tune the mask extraction.
 
@@ -86,13 +87,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     Attributes
     ----------
-
-    `mask_img_` : Nifti like image
+    `mask_img_` : nibabel.Nifti1Image
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
     `affine_` : 4x4 numpy array
-        Affine of the transformed NiImages.
+        Affine of the transformed image.
 
     See also
     --------

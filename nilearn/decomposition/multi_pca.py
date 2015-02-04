@@ -38,7 +38,8 @@ def session_pca(imgs, mask_img, parameters,
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         List of subject data
 
-    mask_img: Niimage
+    mask_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply on the data
 
     parameters: dictionary
@@ -158,7 +159,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         this is a copy of it. Otherwise, a masker is created using the value
         of `mask` and other NiftiMasker related parameters as initialization.
 
-    `mask_img_`: Nifti like image
+    `mask_img_`: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 

@@ -1,5 +1,6 @@
 """
-Functions to do automatic visualization of nifti-like images
+Functions to do automatic visualization of Niimg-like objects
+See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
 Only matplotlib is required.
 """
@@ -119,7 +120,6 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         ----------
         img: Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            Path to a nifti file or nifti-like object
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
@@ -294,7 +294,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 
         Parameters
         ----------
-        anat_img : a nifti-image like object or a filename
+        anat_img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
         cut_coords: None, a tuple of floats, or an integer
@@ -440,10 +441,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
         Parameters
         ----------
-        roi_img : a nifti-image like object or a filename
+        roi_img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The ROI/mask image, it could be binary mask or an atlas or ROIs
             with integer values.
-        bg_img : a nifti-image like object or a filename
+        bg_img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
         cut_coords: None, or a tuple of floats
@@ -514,9 +517,11 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
         Parameters
         ----------
-        stat_map_img : a nifti-image like object or a filename
+        stat_map_img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The statistical map image
-        bg_img : a nifti-image like object or a filename
+        bg_img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The background image that the ROI/mask will be plotted on top of. If
             not specified MNI152 template will be used.
         cut_coords : None, a tuple of floats, or an integer
@@ -622,7 +627,8 @@ def plot_glass_brain(stat_map_img,
 
         Parameters
         ----------
-        stat_map_img : a nifti-image like object or a filename
+        stat_map_img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The statistical map image. It needs to be in MNI space
             in order to align with the brain schematics.
         output_file : string, or None, optional

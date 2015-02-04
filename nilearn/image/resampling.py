@@ -1,5 +1,6 @@
 """
-Utilities to resample a Nifti Image
+Utilities to resample a Niimg-like object
+See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
@@ -263,13 +264,12 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
 
 def resample_img(img, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
-    """Resample a Nifti image
+    """Resample a Niimg-like object
 
     Parameters
     ----------
     img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        Path to a nifti file or nifti-like object
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -480,7 +480,6 @@ def reorder_img(img, resample=None):
         -----------
         img: Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            Path to a nifti file or nifti-like object
 
         resample: None or string in {'continuous', 'nearest'}, optional
             If resample is None (default), no resampling is performed, the
