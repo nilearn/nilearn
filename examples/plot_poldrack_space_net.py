@@ -28,8 +28,7 @@ for penalty in penalties:
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 from nilearn.image import mean_img
-background_img = mean_img(X)
 for penalty, decoder in decoders.iteritems():
-    plot_stat_map(mean_img(decoder.coef_img_), background_img, title=penalty,
+    plot_stat_map(mean_img(decoder.coef_img_), title=penalty,
                   display_mode="yz", cut_coords=[20, -2])
 plt.show()
