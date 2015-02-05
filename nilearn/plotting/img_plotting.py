@@ -112,7 +112,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             figure=None, axes=None, title=None, threshold=None,
-            annotate=True, draw_cross=True, black_bg=False, **kwargs):
+            annotate=True, draw_cross=True, black_bg=False, colorbar=True, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
@@ -162,6 +162,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
+        colorbar: boolean, optional
+            If True, display a colorbar on the right of the plots.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
     """
@@ -170,7 +172,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
                     figure=figure, axes=axes, title=title,
                     threshold=threshold, annotate=annotate,
                     draw_cross=draw_cross,
-                    black_bg=black_bg, **kwargs)
+                    black_bg=black_bg, colorbar=colorbar, **kwargs)
 
     return display
 
