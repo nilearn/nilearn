@@ -615,7 +615,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         stat_map_min = np.nanmin(stat_map_data)
 
     if symmetric_cbar == 'auto':
-        symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+        symmetric_cbar = (stat_map_min < 0) and (stat_map_max > 0)
 
     if 'vmax' in kwargs:
         vmax = kwargs.pop('vmax')
@@ -629,8 +629,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                          'the map, use the "threshold" argument')
     vmin = -vmax
 
-    negative_range = stat_map_max <= 0
-    positive_range = stat_map_min >= 0
+    negative_range = (stat_map_max <= 0)
+    positive_range = (stat_map_min >= 0)
     if symmetric_cbar:
         cbar_vmin, cbar_vmax = None, None
     else:
