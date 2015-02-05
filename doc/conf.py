@@ -281,7 +281,15 @@ extlinks = {
     'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
 }
 
-
+sphinxgallery_conf = {
+    'doc_module'        : 'nilearn',
+    'resolver_urls'     : {
+        'matplotlib': 'http://matplotlib.org',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
+        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
+        'nibabel': 'http://nipy.org/nibabel',
+        'sklearn': 'http://scikit-learn.org/stable'}
+    }
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples
