@@ -253,21 +253,23 @@ def test_fail_fetch_harvard_oxford():
     target_atlas = 'cort-maxprob-thr0-1mm'
     target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
 
-    HO_dir = os.path.join(tmpdir, 'HO_stuff')
+    HO_dir = os.path.join(tmpdir, 'harvard_oxford')
     os.mkdir(HO_dir)
+    nifti_dir = os.path.join(HO_dir, 'HarvardOxford')
+    os.mkdir(nifti_dir)
 
-    target_atlas_nii = os.path.join(HO_dir, target_atlas_fname)
+    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
     datasets.load_mni152_template().to_filename(target_atlas_nii)
 
-    dummy = open(os.path.join(tmpdir, 'HarvardOxford-Cortical.xml'), 'w')
+    dummy = open(os.path.join(HO_dir, 'HarvardOxford-Cortical.xml'), 'w')
     dummy.write("<?xml version='1.0' encoding='us-ascii'?> "
                 "<metadata>"
                 "</metadata>")
     dummy.close()
 
-    out_nii, arr = datasets.fetch_harvard_oxford(target_atlas, HO_dir)
+    out_nii, arr = datasets.fetch_harvard_oxford(target_atlas, data_dir=tmpdir)
 
-    assert_true(isinstance(out_nii, nibabel.Nifti1Image))
+    assert_true(isinstance(nibabel.load(out_nii), nibabel.Nifti1Image))
     assert_true(isinstance(arr, np.ndarray))
 
 
