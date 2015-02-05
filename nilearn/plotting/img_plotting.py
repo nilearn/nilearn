@@ -194,7 +194,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
                     output_file=output_file, display_mode=display_mode,
                     figure=figure, axes=axes, title=title,
                     threshold=threshold, annotate=annotate,
-                    draw_cross=draw_cross,
+                    draw_cross=draw_cross, resampling_interpolation='continuous',
                     black_bg=black_bg, colorbar=colorbar, **kwargs)
 
     return display
@@ -383,6 +383,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
+		      resampling_interpolation='continuous',
                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
     return display
 
@@ -453,6 +454,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
+		      resampling_interpolation='continuous',
                       cmap=cmap, **kwargs)
     return display
 
@@ -528,6 +530,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=0.5,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
+			       resampling_interpolation='continuous',
                                alpha=alpha, cmap=cmap, **kwargs)
     return display
 
@@ -661,6 +664,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
                                vmin=vmin, vmax=vmax, colorbar=colorbar,
                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+			       resampling_interpolation='continuous',
                                **kwargs)
 
     return display
@@ -734,6 +738,7 @@ def plot_glass_brain(stat_map_img,
                                 black_bg=black_bg, threshold=threshold,
                                 cmap=cmap, colorbar=False,
                                 display_factory=display_factory,
+				resampling_interpolation='continuous',
                                 **kwargs)
 
     return display

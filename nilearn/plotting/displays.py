@@ -427,8 +427,8 @@ class BaseSlicer(object):
         self._map_show(img, type='contour', **kwargs)
         pl.draw_if_interactive()
 
-    def _map_show(self, img, type='imshow', **kwargs):
-        img = reorder_img(img)
+    def _map_show(self, img, type='imshow', resampling_interpolation='continuous', **kwargs):
+        img = reorder_img(img, resample=resampling_interpolation)
 
         affine = img.get_affine()
         data = img.get_data()
