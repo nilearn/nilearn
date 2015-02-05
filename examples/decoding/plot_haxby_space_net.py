@@ -1,16 +1,13 @@
 """
-Decoding with SpaceNet on Haxby dataset
-==========================================
+Decoding with SpaceNet: face vs house object recognition
+=========================================================
 
 Here is a simple example of decoding with a SpaceNet prior (i.e S-LASSO,
 TV-l1, etc.), reproducing the Haxby 2001 study on a face vs house
 discrimination task.
 """
-# author: DOHMATOB Elvis Dopgima,
-#         VAROQUAUX Gael
 
-
-### Load haxby dataset ########################################################
+### Load Haxby dataset ########################################################
 from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby()
 
@@ -19,20 +16,19 @@ import numpy as np
 labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
 
 
-### split data into train and test samples ####################################
+### Split data into train and test samples ####################################
 target = labels['labels']
 condition_mask = np.logical_or(target == "face", target == "house")
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 
-# make X (design matrix) and y (response variable)
+### make X (design matrix) and y (response variable)
 import nibabel
+from nilearn.image import index_img
 niimgs  = nibabel.load(data_files.func[0])
-X_train = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask_train],
-                        niimgs.get_affine())
+X_train = index_img(niimgs, condition_mask_train)
+X_test = index_img(niimgs, condition_mask_test)
 y_train = target[condition_mask_train]
-X_test = nibabel.Nifti1Image(niimgs.get_data()[:, :, :, condition_mask_test],
-                        niimgs.get_affine())
 y_test = target[condition_mask_test]
 
 
@@ -48,6 +44,7 @@ for penalty in penalties:
     y_pred = decoder.predict(X_test)
     accuracies[penalty] = (y_pred == y_test).mean() * 100.
     decoders[penalty] = decoder
+
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
