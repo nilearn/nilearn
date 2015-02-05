@@ -122,7 +122,7 @@ def test_check_niimgs():
     # This shouldn't raise an error
     _utils.check_niimgs(img_3d, accept_3d=True)
 
-    # Test a Niimage that does not hold a shape attribute
+    # Test a Niimg-like object that does not hold a shape attribute
     phony_img = PhonyNiimage()
     _utils.check_niimgs(phony_img)
 
