@@ -495,7 +495,24 @@ and recompute the cross-validation score::
 
 But, be aware that this can take A WHILE...
 
-|
+SpaceNet prior (sparsity + structure)
+-------------------------------------
+SpaceNet is a suite of multi-variate priors which for improved brain decoding. It uses priors like TV (Total Variation) [Michel et al. 2011], TV-L1 [Baldassarre et al. 2012], [Gramfort et al. 2013], and Smooth-Lasso [Hebiri et al. 2011] (known as GraphNet in neuroimaging [Grosenick 2013]) to regularize classification and regression problems in brain imaging. The result are brain maps which are both sparse (i.e regression coefficients are zero everywhere, except at predictive voxels) and structured (blobby). The superiority of TV-L1 over methods without structured priors like the Lasso, SVM, ANOVA, Ridge, etc. for yielding more interpretable maps and improved prediction scores is now well established [Baldassarre et al. 2012], [Gramfort et al. 2013], [Grosenick et al. 2013].
+
+Examples
+........
+
+* Haxby
+
+.. figure:: ../auto_examples/images/plot_haxby_space_net_1.png
+   :align: right
+   :scale: 60
+
+.. figure:: ../auto_examples/images/plot_haxby_space_net_2.png
+   :scale: 60
+
+For a detailed example on real data:
+:doc:`plot_haxby_space_net.py <../auto_examples/decoding/plot_haxby_space_net>`
 
 .. seealso::
 
