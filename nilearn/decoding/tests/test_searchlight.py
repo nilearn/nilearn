@@ -32,7 +32,10 @@ def test_searchlight():
     # Define cross validation
     from sklearn.cross_validation import check_cv
     # avoid using KFold for compatibility with sklearn 0.10-0.13
-    cv = check_cv(4, cond)
+    with warnings.catch_warnings():
+        #  check_cv will return indices instead of boolean masks from 0.17
+        warnings.simplefilter('ignore', DeprecationWarning)
+        cv = check_cv(4, cond)
     n_jobs = 1
 
     # Run Searchlight with different radii
@@ -42,7 +45,7 @@ def test_searchlight():
                                  scoring='accuracy', cv=cv)
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', DeprecationWarning)
-        warnings.simplefilter('ignore', UserWarning)  # old versions of sklearn
+        #warnings.simplefilter('ignore', UserWarning)  # old versions of sklearn
         sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
     assert_equal(sl.scores_[2, 2, 2], 1.)
