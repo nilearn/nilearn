@@ -4,9 +4,12 @@ Test the searchlight module
 # Author: Alexandre Abraham
 # License: simplified BSD
 
-from nose.tools import assert_equal
 import numpy as np
+import warnings
+from nose.tools import assert_equal
+
 import nibabel
+
 from nilearn.decoding import searchlight
 
 
@@ -39,7 +42,12 @@ def test_searchlight():
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img,
                                  radius=0.5, n_jobs=n_jobs,
                                  scoring='accuracy', cv=cv)
-    sl.fit(data_img, cond)
+    with warnings.catch_warnings():
+        #  check_cv will return indices instead of boolean masks from 0.17
+        warnings.simplefilter('ignore', DeprecationWarning)
+        warnings.filterwarnings('ignore', 'Scikit-learn version is too old.',
+                                UserWarning)  # old versions of sklearn
+        sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
     assert_equal(sl.scores_[2, 2, 2], 1.)
 
@@ -47,7 +55,10 @@ def test_searchlight():
 
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
-    sl.fit(data_img, cond)
+    with warnings.catch_warnings(record=True):
+        #  check_cv will return indices instead of boolean masks from 0.17
+        warnings.simplefilter('ignore', DeprecationWarning)
+        sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
     assert_equal(sl.scores_[2, 2, 2], 1.)
     assert_equal(sl.scores_[1, 2, 2], 1.)
@@ -60,6 +71,9 @@ def test_searchlight():
     # Big radius : big ball selected
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=2,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
-    sl.fit(data_img, cond)
+    with warnings.catch_warnings(record=True):
+        #  check_cv will return indices instead of boolean masks from 0.17
+        warnings.simplefilter('ignore', DeprecationWarning)
+        sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
     assert_equal(sl.scores_[2, 2, 2], 1.)
