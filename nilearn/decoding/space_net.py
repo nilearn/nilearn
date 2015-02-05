@@ -69,7 +69,7 @@ def _crop_mask(mask):
 
 
 def _univariate_feature_screening(
-        X, y, mask, is_classif, screening_percentile, smooth=2.):
+        X, y, mask, is_classif, screening_percentile, smoothing_fwhm=2.):
     """
     Selects the most import features, via a univariate test
 
@@ -91,7 +91,7 @@ def _univariate_feature_screening(
         Only the `screening_percentile * 100" percent most import voxels will
         be retained.
 
-    smooth : float, optional (default 2.)
+    smoothing_fwhm : float, optional (default 2.)
         FWHM for isotropically smoothing the data X before F-testing. A value
         of zero means "don't smooth".
 
@@ -110,12 +110,12 @@ def _univariate_feature_screening(
         original mask.
     """
     # smooth the data (with isotropic Gaussian kernel) before screening
-    if smooth > 0.:
+    if smoothing_fwhm > 0.:
         sX = np.empty(X.shape)
         for sample in xrange(sX.shape[0]):
             sX[sample] = ndimage.gaussian_filter(
                 _unmask(X[sample].copy(),  # avoid modifying X
-                        mask), (smooth, smooth, smooth))[mask]
+                        mask), (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm))[mask]
     else:
         sX = X
 
