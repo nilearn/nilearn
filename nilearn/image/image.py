@@ -218,6 +218,7 @@ def smooth_img(imgs, fwhm):
     ==========
     imgs: Niimg-like object or iterable of Niimg-like objects
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Image(s) to smooth.
 
     fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a Full-Width at Half Maximum, in millimeters.

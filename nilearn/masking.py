@@ -28,7 +28,7 @@ def _load_mask_img(mask_img, allow_empty=False):
 
     Parameters
     ----------
-    mask_img: niimg: Niimg-like object
+    mask_img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         The mask to check
 
@@ -124,7 +124,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     Returns
     -------
-        grp_mask: nibabel.Nifti1Image
+        grp_mask: 3D nibabel.Nifti1Image
             intersection of all masks.
     """
     if len(mask_imgs) == 0:
@@ -347,7 +347,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
 
     Returns
     -------
-    mask : nibabel.Nifti1Image
+    mask : 3D nibabel.Nifti1Image
         The brain mask.
     """
     if len(epi_imgs) == 0:
@@ -498,7 +498,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
 
     Returns
     -------
-    mask : nibabel.Nifti1Image
+    mask : 3D nibabel.Nifti1Image
         The brain mask.
     """
     if len(data_imgs) == 0:
