@@ -237,7 +237,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 logger.log("resampling labels", verbose=self.verbose)
                 self._resampled_labels_img_ = self._cache(image.resample_img,
                     memory_level=1)(
-                        self.labels_img_, interpolation="continuous",
+                        self.labels_img_, interpolation="nearest",
                         target_shape=_utils._get_shape(imgs)[:3],
                         target_affine=imgs.get_affine(),
                     )

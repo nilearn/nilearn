@@ -212,7 +212,7 @@ def test_nifti_labels_masker_resampling():
 
     masker.fit_transform(fmri22_img)
     np.testing.assert_array_equal(
-        masker._resampled_labels_img_.affine,
+        masker._resampled_labels_img_.get_affine(),
         affine2)
 
 
