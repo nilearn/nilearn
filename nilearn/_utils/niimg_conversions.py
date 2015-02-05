@@ -188,7 +188,7 @@ def _to_4d(data):
 
 def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
                   auto_resample=False, verbose=0,
-                  memory=Memory(cachedir=None), ref_memory_level=0):
+                  memory=Memory(cachedir=None), memory_level=0):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
 
     The niimgs list can contain niftis/paths to images of varying dimensions
@@ -289,8 +289,8 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
                 print "...resampled to first nifti!"
             
             from .. import image  # we avoid a circular import
-            niimg = cache(image.resample_img, memory, ref_memory_level,
-                          memory_level=2)(
+            niimg = cache(image.resample_img, memory, func_memory_level=2,
+                          memory_level=memory_level)(
                               niimg,
                               target_affine=target_affine,
                               target_shape=target_item_shape)

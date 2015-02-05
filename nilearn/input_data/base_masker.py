@@ -22,7 +22,7 @@ from .._utils.class_inspect import enclosing_scope_name, get_params
 
 def filter_and_mask(imgs, mask_img_,
                     parameters,
-                    ref_memory_level=0,
+                    memory_level=0,
                     memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
@@ -54,8 +54,8 @@ def filter_and_mask(imgs, mask_img_,
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
 
-        imgs = cache(image.resample_img, memory, ref_memory_level,
-                    memory_level=2, ignore=['copy'])(
+        imgs = cache(image.resample_img, memory, memory_level=memory_level,
+                     func_memory_level=2, ignore=['copy'])(
                         imgs,
                         target_affine=mask_img_.get_affine(),
                         target_shape=mask_img_.shape,
@@ -88,8 +88,9 @@ def filter_and_mask(imgs, mask_img_,
                 and parameters['low_pass'] is not None):
             clean_memory_level = 4
 
-        data = cache(signal.clean, memory, ref_memory_level,
-                     memory_level=clean_memory_level)(
+        data = cache(signal.clean, memory,
+                     func_memory_level=clean_memory_level,
+                     memory_level=memory_level)(
                         data,
                         confounds=confounds, low_pass=parameters['low_pass'],
                         high_pass=parameters['high_pass'],
@@ -106,7 +107,8 @@ def filter_and_mask(imgs, mask_img_,
             if confounds is not None:
                 confounds = confounds[sessions == s]
             data[sessions == s, :] = \
-                cache(signal.clean, memory, ref_memory_level, memory_level=2)(
+                cache(signal.clean, memory, func_memory_level=2,
+                      memory_level=memory_level)(
                         data[sessions == s, :],
                         confounds=confounds,
                         low_pass=parameters['low_pass'],
@@ -127,7 +129,7 @@ def filter_and_mask(imgs, mask_img_,
 
 def _safe_filter_and_mask(imgs, mask_img_,
                          parameters,
-                         ref_memory_level=0,
+                         memory_level=0,
                          memory=Memory(cachedir=None),
                          verbose=0,
                          confounds=None,
@@ -145,7 +147,7 @@ def _safe_filter_and_mask(imgs, mask_img_,
         parameters = parameters.copy()
         parameters['target_affine'] = reference_affine
 
-    return filter_and_mask(imgs, mask_img_, parameters, ref_memory_level,
+    return filter_and_mask(imgs, mask_img_, parameters, memory_level,
             memory, verbose, confounds, copy)
 
 
@@ -163,15 +165,15 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # just invalid the cache for no good reason
         for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
-        data, _ = self._cache(filter_and_mask, memory_level=1,
+        data, _ = self._cache(filter_and_mask, func_memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])(
-                              imgs, self.mask_img_,
-                              params,
-                              ref_memory_level=self.memory_level,
-                              memory=self.memory,
-                              verbose=self.verbose,
-                              confounds=confounds,
-                              copy=copy
+                                imgs, self.mask_img_,
+                                params,
+                                memory_level=self.memory_level,
+                                memory=self.memory,
+                                verbose=self.verbose,
+                                confounds=confounds,
+                                copy=copy
                             )
         return data
 
@@ -211,19 +213,19 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             reference_affine = _utils.check_niimgs(imgs_list[0],
                                                    accept_3d=True).get_affine()
 
-        func = self._cache(_safe_filter_and_mask, memory_level=1,
+        func = self._cache(_safe_filter_and_mask, func_memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
         data = Parallel(n_jobs=n_jobs)(delayed(func)(
-                              imgs, self.mask_img_,
-                              params,
-                              ref_memory_level=self.memory_level,
-                              memory=self.memory,
-                              verbose=self.verbose,
-                              confounds=confounds,
-                              reference_affine=reference_affine,
-                              copy=copy)
+                                imgs, self.mask_img_,
+                                params,
+                                memory_level=self.memory_level,
+                                memory=self.memory,
+                                verbose=self.verbose,
+                                confounds=confounds,
+                                reference_affine=reference_affine,
+                                copy=copy)
                           for imgs, confounds in zip(imgs_list, confounds))
         return zip(*data)[0]
 
@@ -270,7 +272,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        img = self._cache(masking.unmask, memory_level=1,
+        img = self._cache(masking.unmask, func_memory_level=1,
             )(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
