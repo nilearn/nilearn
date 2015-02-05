@@ -84,13 +84,17 @@ plot_roi(nibabel.Nifti1Image(dil_bin_p_values_and_vt.astype(np.int),
          annotate=False)
 
 # Identification of connected components
+plt.figure()
 labels, n_labels = ndimage.label(dil_bin_p_values_and_vt)
 first_roi_data = (labels == 1).astype(np.int)
 second_roi_data = (labels == 2).astype(np.int)
+fig_id = plt.subplot(2, 1, 1)
 plot_roi(nibabel.Nifti1Image(first_roi_data, fmri_img.get_affine()),
-         mean_img, title='Connected components: first ROI')
+         mean_img, title='Connected components: first ROI', axes=fig_id)
+fig_id = plt.subplot(2, 1, 2)
 plot_roi(nibabel.Nifti1Image(second_roi_data, fmri_img.get_affine()),
-         mean_img, title='Connected components: second ROI')
+         mean_img, title='Connected components: second ROI', axes=fig_id)
+plt.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
 plot_roi(nibabel.Nifti1Image(first_roi_data, fmri_img.get_affine()),
          mean_img, title='Connected components: first ROI_',
          output_file='snapshot_first_ROI.png')
