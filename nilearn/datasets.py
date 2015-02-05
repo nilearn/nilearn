@@ -202,7 +202,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
 
     Notes
     -----
-    This function retrieve the datasets directory (or data directory) using
+    This function retrieves the datasets directory (or data directory) using
     the following priority :
     1. the keyword argument data_dir
     2. the global environment variable NILEARN_SHARED_DATA
@@ -1504,13 +1504,12 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(labels=files[0], maps=files[1])
 
 
-def load_harvard_oxford(atlas_name,
-                        dirname="/usr/share/data/harvard-oxford-atlases/"
-                        "HarvardOxford/", symmetric_split=False):
+def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
+                        resume=True, verbose=1):
     """Load Harvard-Oxford parcellation.
 
-    This function does not download anything, files must all be already on
-    disk. They are distributed with FSL.
+    This function locates the niftis in nilearn_data or downloads them if
+    necessary. They are distributed with FSL.
 
     Parameters
     ==========
@@ -1526,8 +1525,8 @@ def load_harvard_oxford(atlas_name,
         sub-prob-1mm, sub-prob-2mm
 
     dirname: string, optional
-        This is the neurodebian's directory for FSL data. It may be different
-        with another distribution / installation.
+        FSL installation directory. It may be different with another
+        distribution / installation.
 
     symmetric_split: bool, optional
         If True, split every symmetric region in left and right parts.
@@ -1539,25 +1538,61 @@ def load_harvard_oxford(atlas_name,
     regions: nibabel.Nifti1Image
         regions definition, as a label image.
     """
-    if atlas_name not in ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                          "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                          "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                          "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                          "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                          "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                          "cort-prob-1mm", "cort-prob-2mm",
-                          "sub-prob-1mm", "sub-prob-2mm"
-                          ):
+    atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+                   "cort-prob-1mm", "cort-prob-2mm",
+                   "sub-prob-1mm", "sub-prob-2mm")
+    if atlas_name not in atlas_items:
         raise ValueError("Invalid atlas name: {0}".format(atlas_name))
 
-    filename = os.path.join(dirname, "HarvardOxford-") + atlas_name + ".nii.gz"
+    if dirname == None:
+        # find atlas + meta-data from local FSL installation path
+        if 'FSL_DIR' in os.environ.keys():
+            local_dir = os.path.join(os.environ['FSL_DIR'], 'data', 'atlases',
+                                     'HarvardOxford')
+            xls1_found = os.path.exists(os.path.join(local_dir, '..',
+                                        'HarvardOxford-Cortical.xml'))
+            xls2_found = os.path.exists(os.path.join(local_dir, '..',
+                                        'HarvardOxford-SubCortical.xml'))
+            if xls1_found and xls2_found:
+                dirname = local_dir
+
+    if dirname is not None:
+        # grab data locally
+        filename = os.path.join(dirname, "HarvardOxford-") + atlas_name + ".nii.gz"
+        if atlas_name[0] == 'c':
+            name_map = os.path.join(dirname, '..', 'HarvardOxford-Cortical.xml')
+        else:
+            name_map = os.path.join(dirname, '..', 'HarvardOxford-SubCortical.xml')
+    else:
+        # grab data from internet first
+        url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
+        dataset_name = 'harvard_oxford'
+        new_data_dir = _get_dataset_dir(dataset_name, None, verbose=verbose)
+        opts = {'uncompress': True}
+        filenames1 = [(
+            os.path.join("HarvardOxford", "HarvardOxford-" + atlas_name + '.nii.gz'),
+                         url, opts)
+        ]
+        filenames2 = [(f, url, opts)
+            for f in (
+                'HarvardOxford-Cortical.xml', 'HarvardOxford-Subcortical.xml')
+        ]
+        filenames = filenames1 + filenames2
+        sub_files = _fetch_files(new_data_dir, filenames, resume=resume,
+                                 verbose=verbose)
+        filename = sub_files[0]
+        if atlas_name[0] == 'c':
+            name_map = sub_files[1]
+        else:
+            name_map = sub_files[2]
+
     regions_img = nibabel.load(filename)
 
-    # Load atlas name
-    if atlas_name[0] == 'c':
-        name_map = os.path.join(dirname, '..', 'HarvardOxford-Cortical.xml')
-    else:
-        name_map = os.path.join(dirname, '..', 'HarvardOxford-SubCortical.xml')
     names = {}
     from lxml import etree
     names[0] = 'Background'
