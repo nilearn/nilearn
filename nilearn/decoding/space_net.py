@@ -688,11 +688,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
         Parameters
         ----------
-        X : list of filenames or NiImages of length n_samples, or 2D array of
-           shape (n_samples, n_features)
-            Brain images on which the which a structured weights map is to be
-            learned. This is the independent variable (e.g gray-matter maps
-            from VBM analysis, etc.)
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/
+            manipulating_mr_images.html#niimg.
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
 
         y : array or list of length n_samples
             The dependent variable (age, sex, QI, etc.)
@@ -896,8 +896,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
         Parameters
         ----------
-        X : ndarray, shape(n_samples, n_features)
-            Samples.
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/
+            manipulating_mr_images.html#niimg.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
 
         Returns
         -------
