@@ -1,6 +1,6 @@
 """
 Simple example of decoding: the Haxby data
-==============================================
+===========================================
 
 Here is a simple example of decoding, reproducing the Haxby 2001
 study on a face vs cat discrimination task in a mask of the ventral
