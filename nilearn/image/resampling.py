@@ -270,6 +270,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     ----------
     img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Image(s) to resample.
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -480,6 +481,7 @@ def reorder_img(img, resample=None):
         -----------
         img: Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            Image to reorder.
 
         resample: None or string in {'continuous', 'nearest'}, optional
             If resample is None (default), no resampling is performed, the

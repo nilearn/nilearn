@@ -627,7 +627,7 @@ def _unmask_3d(X, mask, order="C"):
     X: numpy.ndarray
         Masked data. shape: (samples,)
 
-    mask: niimg: Niimg-like object
+    mask: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """

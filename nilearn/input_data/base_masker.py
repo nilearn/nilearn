@@ -232,7 +232,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        X : niimg: Niimg-like object
+        X : Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
         y : numpy array of shape [n_samples]
