@@ -68,7 +68,7 @@ if [[ "$DISTRIB" == "neurodebian-no-matplotlib" ]]; then
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
-    sudo pip install -I nibabel=$NIBABEL_VERSION
+    sudo pip install -I nibabel==$NIBABEL_VERSION
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
