@@ -535,10 +535,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         axis 0. This is here because nearly all linear models will want
         their data to be centered.
 
-    normalize : boolean, optional (default False)
-        If True, then the data (X, y) will be normalized (to have unit std)
-        before regression.
-
     fit_intercept : bool
         Fit or not an intercept.
 
@@ -1003,10 +999,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         This is here because nearly all linear models will want their data
         to be centered.
 
-    normalize : boolean, optional (default False)
-        If True, then the data (X, y) will be normalized (to have unit std)
-        before regression.
-
     fit_intercept : bool
         Fit or not an intercept.
 
@@ -1167,10 +1159,6 @@ class SpaceNetRegressor(BaseSpaceNet):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
-
-    normalize : boolean, optional (default False)
-        If True, then the data (X, y) will be normalized (to have unit std)
-        before regression.
 
     fit_intercept : bool
         Fit or not an intercept.
