@@ -29,10 +29,10 @@ stimuli = labels['labels']
 resting_state = stimuli == "rest"
 
 # find names of remaining active labels
-categories = np.unique(stimuli[resting_state == False])
+categories = np.unique(stimuli[np.logical_not(resting_state)])
 
 # extract tags indicating to which acquisition run a tag belongs
-session_labels = labels["chunks"][resting_state == False]
+session_labels = labels["chunks"][np.logical_not(resting_state)]
 
 # The classifier: a support vector classifier
 from sklearn.svm import SVC
@@ -58,14 +58,14 @@ for mask_name in mask_names:
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
     masked_timecourses = masker.fit_transform(
-        func_filename)[resting_state == False]
+        func_filename)[np.logical_not(resting_state)]
 
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
         print "Processing %s %s" % (mask_name, category)
-        classification_target = stimuli[resting_state == False] == category
+        classification_target = stimuli[np.logical_not(resting_state)] == category
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
             masked_timecourses,

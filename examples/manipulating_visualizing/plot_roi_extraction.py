@@ -40,10 +40,8 @@ fmri_filename = haxby_dataset.func[0]
 fmri_img = image.smooth_img(fmri_filename, fwhm=6)
 
 # Plot the mean image
-fig_id = plt.subplot(2, 1, 1)
 mean_img = image.mean_img(fmri_img)
-plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=cut_coords,
-         axes=fig_id)
+plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=cut_coords)
 
 # Run a T-test for face and houses
 from scipy import stats
@@ -56,19 +54,14 @@ _, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == 'face'],
 log_p_values = -np.log10(p_values)
 log_p_values[np.isnan(log_p_values)] = 0.
 log_p_values[log_p_values > 10.] = 10.
-fig_id = plt.subplot(2, 1, 2)
-plot_stat_map(nibabel.Nifti1Image(log_p_values, fmri_img.get_affine()), mean_img,
-              title="p-values", cut_coords=cut_coords, axes=fig_id)
-plt.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
-
+plot_stat_map(nibabel.Nifti1Image(log_p_values, fmri_img.get_affine()),
+              mean_img, title="p-values", cut_coords=cut_coords)
 ### Build a mask ##############################################################
-plt.figure()
-fig_id = plt.subplot(3, 1, 1)
 # Thresholding
 log_p_values[log_p_values < 5] = 0
-plot_stat_map(nibabel.Nifti1Image(log_p_values, fmri_img.get_affine()), mean_img,
-              title='Thresholded p-values', annotate=False, colorbar=False,
-              cut_coords=cut_coords, axes=fig_id)
+plot_stat_map(nibabel.Nifti1Image(log_p_values, fmri_img.get_affine()),
+              mean_img, title='Thresholded p-values', annotate=False,
+              colorbar=False, cut_coords=cut_coords)
 
 # Binarization and intersection with VT mask
 # (intersection corresponds to an "AND conjunction")
@@ -77,21 +70,18 @@ mask_vt_filename = haxby_dataset.mask_vt[0]
 vt = nibabel.load(mask_vt_filename).get_data().astype(bool)
 bin_p_values_and_vt = np.logical_and(bin_p_values, vt)
 
-fig_id = plt.subplot(3, 1, 2)
 plot_roi(nibabel.Nifti1Image(bin_p_values_and_vt.astype(np.int),
          fmri_img.get_affine()),
          mean_img, title='Intersection with ventral temporal mask',
-         cut_coords=cut_coords, axes=fig_id)
+         cut_coords=cut_coords)
 
 # Dilation
-fig_id = plt.subplot(3, 1, 3)
 from scipy import ndimage
 dil_bin_p_values_and_vt = ndimage.binary_dilation(bin_p_values_and_vt)
 plot_roi(nibabel.Nifti1Image(dil_bin_p_values_and_vt.astype(np.int),
                              fmri_img.get_affine()),
          mean_img, title='Dilated mask', cut_coords=cut_coords,
-         axes=fig_id, annotate=False)
-plt.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
+         annotate=False)
 
 # Identification of connected components
 plt.figure()
