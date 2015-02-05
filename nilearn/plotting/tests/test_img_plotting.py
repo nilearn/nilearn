@@ -129,7 +129,7 @@ def test_plot_img_with_auto_cut_coords():
 def test_plot_img_with_resampling():
     import pylab as pl
     pl.switch_backend('svg')
-    data = MNI152TEMPLATE.get_data()
+    data = MNI152TEMPLATE.get_data()[:5, :5, :5]
     affine = np.array([[ 1., -1.,  0.,  0.],
                        [ 1.,  1.,  0.,  0.],
                        [ 0.,  0.,  1.,  0.],
