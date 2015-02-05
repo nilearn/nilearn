@@ -1504,12 +1504,12 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(labels=files[0], maps=files[1])
 
 
-def load_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
+def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
                         resume=True, verbose=1):
     """Load Harvard-Oxford parcellation.
 
-    This function does not download anything, files must all be already on
-    disk. They are distributed with FSL.
+    This function locates the niftis in nilearn_data or downloads them if
+    necessary. They are distributed with FSL.
 
     Parameters
     ==========
@@ -1525,8 +1525,8 @@ def load_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
         sub-prob-1mm, sub-prob-2mm
 
     dirname: string, optional
-        This is the neurodebian's directory for FSL data. It may be different
-        with another distribution / installation.
+        FSL installation directory. It may be different with another
+        distribution / installation.
 
     symmetric_split: bool, optional
         If True, split every symmetric region in left and right parts.
@@ -1575,18 +1575,21 @@ def load_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
         new_data_dir = _get_dataset_dir(dataset_name, None, verbose=verbose)
         opts = {'uncompress': True}
         filenames1 = [(
-            os.path.join("HarvardOxford", "HarvardOxford", f + '.nii.gz'),
+            os.path.join("HarvardOxford", "HarvardOxford-" + atlas_name + '.nii.gz'),
                          url, opts)
-            for f in atlas_items
         ]
-        filenames2 = [(
-            os.path.join("HarvardOxford", f), url, opts)
+        filenames2 = [(f, url, opts)
             for f in (
                 'HarvardOxford-Cortical.xml', 'HarvardOxford-Subcortical.xml')
         ]
         filenames = filenames1 + filenames2
         sub_files = _fetch_files(new_data_dir, filenames, resume=resume,
                                  verbose=verbose)
+        filename = sub_files[0]
+        if atlas_name[0] == 'c':
+            name_map = sub_files[1]
+        else:
+            name_map = sub_files[2]
 
     regions_img = nibabel.load(filename)
 
