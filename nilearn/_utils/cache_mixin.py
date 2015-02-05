@@ -127,14 +127,16 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         returned.
     """
 
+    verbose = kwargs.get('verbose', 0)
+
     if (func_memory_level is None
             or memory_level is None
             or memory is None
             or memory_level < func_memory_level):
-        memory = Memory(cachedir=None)
+        memory = Memory(cachedir=None, verbose=verbose)
     else:
         if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory)
+            memory = Memory(cachedir=memory, verbose=verbose)
         if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
                             "joblib.Memory object. "
