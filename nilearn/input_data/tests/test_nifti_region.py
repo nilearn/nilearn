@@ -294,6 +294,22 @@ def test_nifti_maps_masker():
                                    fmri11_img.get_affine())
 
 
+    # Test with data and atlas of different shape: the atlas should be
+    # resampled to the data
+    shape22 = (5, 5, 6)
+    affine2 = 2 * np.eye(4)
+    affine2[-1, -1] = 1
+
+    fmri22_img, _ = generate_random_img(shape22, affine=affine2,
+                                                 length=length)
+    masker = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
+
+    masker.fit_transform(fmri22_img)
+    np.testing.assert_array_equal(
+        masker._resampled_maps_img_.get_affine(),
+        affine2)
+
+
 def test_nifti_maps_masker_2():
     # Test resampling in NiftiMapsMasker
     affine = np.eye(4)
