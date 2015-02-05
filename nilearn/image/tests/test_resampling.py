@@ -507,3 +507,18 @@ def test_coord_transform_trivial():
     np.testing.assert_array_equal(z+1, z_)
 
 
+def test_resample_img_segmentation_fault():
+    # see https://github.com/nilearn/nilearn/issues/346
+    shape_in = (64, 64, 64)
+    aff_in = np.diag([2., 2., 2., 1.])
+    aff_out = np.diag([3., 3., 3., 1.])
+    # fourth_dim = 1024 works fine but for 1025 creates a segmentation
+    # fault with scipy < 0.14.1
+    fourth_dim = 1025
+    data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
+
+    img_in = Nifti1Image(data, aff_in)
+
+    resample_img(img_in,
+                 target_affine=aff_out,
+                 interpolation='nearest')
