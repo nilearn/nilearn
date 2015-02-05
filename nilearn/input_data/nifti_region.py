@@ -236,7 +236,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             if not _check_same_fov(imgs, self._resampled_labels_img_):
                 logger.log("resampling labels", verbose=self.verbose)
                 self._resampled_labels_img_ = self._cache(image.resample_img,
-                    memory_level=1)(
+                    func_memory_level=1)(
                         self.labels_img_, interpolation="nearest",
                         target_shape=_utils._get_shape(imgs)[:3],
                         target_affine=imgs.get_affine(),
@@ -259,7 +259,6 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         logger.log("extracting region signals", verbose=self.verbose)
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_labels, func_memory_level=1)(
-                imgs, self.labels_img_,
                 imgs, self._resampled_labels_img_,
                 background_label=self.background_label)
 
@@ -510,14 +509,14 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             if not _check_same_fov(imgs, self._resampled_maps_img_):
                 logger.log("resampling labels", verbose=self.verbose)
                 self._resampled_maps_img_ = self._cache(image.resample_img,
-                    memory_level=1)(
+                    func_memory_level=1)(
                         self.maps_img_, interpolation="continuous",
                         target_shape=_utils._get_shape(imgs)[:3],
                         target_affine=imgs.get_affine(),
                     )
             if not _check_same_fov(imgs, mask_img):
                 mask_img = self._cache(image.resample_img,
-                    memory_level=1)(
+                    func_memory_level=1)(
                         mask_img, interpolation="nearest",
                         target_shape=_utils._get_shape(imgs)[:3],
                         target_affine=imgs.get_affine(),
@@ -527,7 +526,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             if not _check_same_fov(self.mask_img_, self._resampled_maps_img_):
                 logger.log("resampling labels", verbose=self.verbose)
                 self._resampled_maps_img_ = self._cache(image.resample_img,
-                    memory_level=1)(
+                    func_memory_level=1)(
                         self.labels_img_, interpolation="continuous",
                         target_shape=_utils._get_shape(self.mask_img_)[:3],
                         target_affine=self.mask_img_.get_affine(),
