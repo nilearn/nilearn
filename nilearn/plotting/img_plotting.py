@@ -453,7 +453,6 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      resampling_interpolation='continuous',
                       cmap=cmap, **kwargs)
     return display
 
@@ -529,7 +528,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                annotate=annotate, draw_cross=draw_cross,
                                black_bg=black_bg, threshold=0.5,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
-                               resampling_interpolation='continuous',
+                               resampling_interpolation='nearest',
                                alpha=alpha, cmap=cmap, **kwargs)
     return display
 
