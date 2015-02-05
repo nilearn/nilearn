@@ -108,24 +108,22 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     if title is not None and not title == '':
         display.title(title)
     if (cbar_vmax is not None) or (cbar_vmin is not None):
-        if not hasattr(display, '_cbar'):
-            raise ValueError("Specified colorbar bounds, but there is no"
-                             " colorbar. Set colorbar=True to avoid this"
-                             " error message.")
-        cbar = display._cbar
-        cbar_tick_locs = cbar.locator.locs
-        if cbar_vmax is None:
-            cbar_vmax = cbar_tick_locs.max()
-        if cbar_vmin is None:
-            cbar_vmin = cbar_tick_locs.min()
-        new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, len(cbar_tick_locs))
-        cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-        outline = cbar_outline_get_xy(cbar.outline)
-        outline[:2, 1] += cbar.norm(cbar_vmin)
-        outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
-        outline[6:, 1] += cbar.norm(cbar_vmin)
-        cbar_outline_set_xy(cbar.outline, outline)
-        cbar.set_ticks(new_tick_locs, update_ticks=True)
+        if hasattr(display, '_cbar'):
+            cbar = display._cbar
+            cbar_tick_locs = cbar.locator.locs
+            if cbar_vmax is None:
+                cbar_vmax = cbar_tick_locs.max()
+            if cbar_vmin is None:
+                cbar_vmin = cbar_tick_locs.min()
+            new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
+                                        len(cbar_tick_locs))
+            cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
+            outline = cbar_outline_get_xy(cbar.outline)
+            outline[:2, 1] += cbar.norm(cbar_vmin)
+            outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
+            outline[6:, 1] += cbar.norm(cbar_vmin)
+            cbar_outline_set_xy(cbar.outline, outline)
+            cbar.set_ticks(new_tick_locs, update_ticks=True)
 
     if output_file is not None:
         display.savefig(output_file)
@@ -611,7 +609,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                                     black_bg=black_bg)
 
     # make sure that the color range is symmetrical
-    if ('vmax' not in kwargs) or (symmetric_cbar == 'auto'):
+    if ('vmax' not in kwargs) or (symmetric_cbar in ['auto', False]):
         stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
         stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
@@ -636,11 +634,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                          'the map, use the "threshold" argument')
     vmin = -vmax
 
-    negative_range = (stat_map_max <= 0)
-    positive_range = (stat_map_min >= 0)
-    if symmetric_cbar:
-        cbar_vmin, cbar_vmax = None, None
-    else:
+    if not symmetric_cbar:
+        negative_range = (stat_map_max <= 0)
+        positive_range = (stat_map_min >= 0)
         if positive_range:
             cbar_vmin = 0
             cbar_vmax = None
@@ -650,6 +646,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         else:
             cbar_vmin = stat_map_min
             cbar_vmax = stat_map_max
+    else:
+        cbar_vmin, cbar_vmax = None, None
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords,
