@@ -29,6 +29,8 @@ except ImportError:
 
 from .. import _utils
 from .._utils.extmath import fast_abs_percentile
+from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
+                                                 cbar_outline_set_xy)
 from ..datasets import load_mni152_template
 from .displays import get_slicer, get_projector
 from . import cm
@@ -44,6 +46,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       draw_cross=True, black_bg=False,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
                       display_factory=get_slicer,
+                      cbar_vmin=None, cbar_vmax=None,
                       **kwargs):
     """ Internal function, please refer to the docstring of plot_img for parameters
         not listed below.
@@ -104,6 +107,26 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.draw_cross()
     if title is not None and not title == '':
         display.title(title)
+    if (cbar_vmax is not None) or (cbar_vmin is not None):
+        if not hasattr(display, '_cbar'):
+            raise ValueError("Specified colorbar bounds, but there is no"
+                             " colorbar. Set colorbar=True to avoid this"
+                             " error message.")
+        cbar = display._cbar
+        cbar_tick_locs = cbar.locator.locs
+        if cbar_vmax is None:
+            cbar_vmax = cbar_tick_locs.max()
+        if cbar_vmin is None:
+            cbar_vmin = cbar_tick_locs.min()
+        new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, len(cbar_tick_locs))
+        cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
+        outline = cbar_outline_get_xy(cbar.outline)
+        outline[:2, 1] += cbar.norm(cbar_vmin)
+        outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
+        outline[6:, 1] += cbar.norm(cbar_vmin)
+        cbar_outline_set_xy(cbar.outline, outline)
+        cbar.set_ticks(new_tick_locs, update_ticks=True)
+
     if output_file is not None:
         display.savefig(output_file)
         display.close()
@@ -513,7 +536,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   output_file=None, display_mode='ortho', colorbar=True,
                   figure=None, axes=None, title=None, threshold=1e-6,
                   annotate=True, draw_cross=True, black_bg='auto',
-                  cmap=cm.cold_hot, dim=True, **kwargs):
+                  cmap=cm.cold_hot, symmetric_cbar="auto",
+                  dim=True, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -572,6 +596,10 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             savefig.
         cmap: matplotlib colormap, optional
             The colormap for specified image
+        symmetric_cbar: boolean or 'auto', optional, default 'auto'
+            Specifies whether the colorbar should range from -vmax to vmax
+            or from 0 to vmax. Setting to 'auto' will select the latter if
+            the whole image is non-negative.
 
         Notes
         -----
@@ -583,9 +611,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                                     black_bg=black_bg)
 
     # make sure that the color range is symmetrical
-    if 'vmax' in kwargs:
-        vmax = kwargs.pop('vmax')
-    else:
+    if ('vmax' not in kwargs) or (symmetric_cbar == 'auto'):
         stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
         stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
@@ -594,13 +620,36 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                     np.logical_not(stat_map_data._mask)])
         stat_map_max = np.nanmax(stat_map_data)
         stat_map_min = np.nanmin(stat_map_data)
+
+    if symmetric_cbar == 'auto':
+        symmetric_cbar = (stat_map_min < 0) and (stat_map_max > 0)
+
+    if 'vmax' in kwargs:
+        vmax = kwargs.pop('vmax')
+    else:
         vmax = max(-stat_map_min, stat_map_max)
+
     if 'vmin' in kwargs:
         raise ValueError('plot_stat_map does not accept a "vmin" '
                          'argument, as it uses a symmetrical range '
                          'defined via the vmax argument. To threshold '
                          'the map, use the "threshold" argument')
     vmin = -vmax
+
+    negative_range = (stat_map_max <= 0)
+    positive_range = (stat_map_min >= 0)
+    if symmetric_cbar:
+        cbar_vmin, cbar_vmax = None, None
+    else:
+        if positive_range:
+            cbar_vmin = 0
+            cbar_vmax = None
+        elif negative_range:
+            cbar_vmax = 0
+            cbar_vmin = None
+        else:
+            cbar_vmin = stat_map_min
+            cbar_vmax = stat_map_max
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords,
@@ -611,7 +660,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                black_bg=black_bg, threshold=threshold,
                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
                                vmin=vmin, vmax=vmax, colorbar=colorbar,
+                               cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
                                **kwargs)
+
     return display
 
 

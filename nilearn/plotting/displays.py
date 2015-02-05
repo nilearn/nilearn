@@ -510,9 +510,10 @@ class BaseSlicer(object):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
         our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
 
-        ColorbarBase(self._colorbar_ax, ticks=ticks, norm=im.norm,
-                     orientation='vertical', cmap=our_cmap, boundaries=bounds,
-                     spacing='proportional')
+        self._cbar = ColorbarBase(
+            self._colorbar_ax, ticks=ticks, norm=im.norm,
+            orientation='vertical', cmap=our_cmap, boundaries=bounds,
+            spacing='proportional')
 
         self._colorbar_ax.yaxis.tick_left()
         self._colorbar_ax.set_yticklabels(["% 2.2g" % t for t in ticks])
