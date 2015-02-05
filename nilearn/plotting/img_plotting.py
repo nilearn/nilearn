@@ -28,6 +28,8 @@ except ImportError:
 
 from .. import _utils
 from .._utils.extmath import fast_abs_percentile
+from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
+                                                 cbar_outline_set_xy)
 from ..datasets import load_mni152_template
 from .displays import get_slicer, get_projector
 from . import cm
@@ -117,11 +119,11 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             cbar_vmin = cbar_tick_locs.min()
         new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, len(cbar_tick_locs))
         cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-        outline = cbar.outline.get_ydata()
-        outline[:2] += cbar.norm(cbar_vmin)
-        outline[2:6] -= (1. - cbar.norm(cbar_vmax))
-        outline[6:] += cbar.norm(cbar_vmin)
-        cbar.outline.set_ydata(outline)
+        outline = cbar_outline_get_xy(cbar.outline)
+        outline[:2, 1] += cbar.norm(cbar_vmin)
+        outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
+        outline[6:, 1] += cbar.norm(cbar_vmin)
+        cbar_outline_set_xy(cbar.outline, outline)
         cbar.set_ticks(new_tick_locs, update_ticks=True)
 
     if output_file is not None:
