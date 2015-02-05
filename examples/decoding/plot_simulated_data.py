@@ -41,9 +41,9 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     w[-roi_size:, -roi_size:, 0:roi_size] = 0.5
     w[0:roi_size, -roi_size:, -roi_size:] = -0.6
     w[-roi_size:, 0:roi_size:, -roi_size:] = 0.5
-    w[(size - roi_size) / 2:(size + roi_size) / 2,
-      (size - roi_size) / 2:(size + roi_size) / 2,
-      (size - roi_size) / 2:(size + roi_size) / 2] = 0.5
+    w[(size - roi_size) // 2:(size + roi_size) // 2,
+      (size - roi_size) // 2:(size + roi_size) // 2,
+      (size - roi_size) // 2:(size + roi_size) // 2] = 0.5
     w = w.ravel()
     ### Generate smooth background noise
     XX = generator.randn(n_samples, size, size, size)
@@ -65,10 +65,10 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     X += noise
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]
-    X_test = X[n_samples / 2:, :]
-    X_train = X[:n_samples / 2, :]
-    y_test = y[n_samples / 2:]
-    y = y[:n_samples / 2]
+    X_test = X[n_samples // 2:, :]
+    X_train = X[:n_samples // 2, :]
+    y_test = y[n_samples // 2:]
+    y = y[:n_samples // 2]
 
     return X_train, X_test, y, y_test, snr, noise, w, size
 
