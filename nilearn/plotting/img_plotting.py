@@ -383,7 +383,6 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      resampling_interpolation='continuous',
                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
     return display
 
