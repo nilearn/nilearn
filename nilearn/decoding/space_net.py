@@ -38,12 +38,12 @@ from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
 MNI152_BRAIN_VOLUME = 1827243.
 
 
-def _get_mask_volume(mask):
+def _get_mask_volume(mask_img):
     """Computes the volume of a brain mask in mm^3
 
     Parameters
     ----------
-    mask : nibabel image object
+    mask_img : nibabel image object
         Input image whose voxel dimensions are to be computed.
 
     Returns
@@ -51,8 +51,8 @@ def _get_mask_volume(mask):
     vol : float
         The computed volume.
     """
-    vox_dims = mask.get_header().get_zooms()[:3]
-    return 1. * np.prod(vox_dims) * mask.get_data().astype(np.bool).sum()
+    vox_dims = mask_img.get_header().get_zooms()[:3]
+    return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
 
 
 def _crop_mask(mask):
