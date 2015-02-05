@@ -814,6 +814,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
 
     Licence: unknown.
     """
+    module_path = os.path.dirname(__file__)
     if url is None:
         url = "ftp://surfer.nmr.mgh.harvard.edu/" \
               "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
@@ -823,8 +824,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     keys = ("tight_7", "liberal_7",
             "tight_17", "liberal_17",
             "colors_7", "colors_17", "anat")
-    filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
-        for f in (
+    basenames = (
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
         "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
@@ -832,14 +832,20 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
         "Yeo2011_7Networks_ColorLUT.txt",
         "Yeo2011_17Networks_ColorLUT.txt",
         "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
-    ]
+
+    filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
+                 for f in basenames]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
             verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    params = dict(zip(keys, sub_files))
+    with open(os.path.join(module_path, 'description', 'yeo.rst'))\
+            as rst_file:
+        fdescr = rst_file.read()
+
+    params = dict([('DESCRIPTION', fdescr)] + zip(keys, sub_files))
     return Bunch(**params)
 
 
