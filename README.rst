@@ -28,14 +28,13 @@ The required dependencies to use the software are:
 
 * Python >= 2.6,
 * setuptools
-* Numpy >= 1.3
-* SciPy >= 0.7
+* Numpy >= 1.7
+* SciPy >= 0.11
 * Scikit-learn >= 0.12.1
 * Nibabel >= 1.1.0.
-This configuration almost matches the Ubuntu 10.04 LTS release from
-April 2010, except for scikit-learn, which must be installed separately.
+This configuration corresponds to versions about the end of 2012.
 
-Running the examples requires matplotlib >= 0.99.1
+Running the examples requires matplotlib >= 1.2
 
 If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
 
