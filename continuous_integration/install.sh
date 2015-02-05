@@ -42,8 +42,7 @@ create_new_conda_env() {
     # provided versions
     conda create -n testenv --yes python=$PYTHON_VERSION pip nose \
         numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION \
-        matplotlib=$MATPLOTLIB_VERSION scikit-learn=$SKLEARN_VERSION \
-    	nibabel=$NIBABEL_VERSION
+        matplotlib=$MATPLOTLIB_VERSION scikit-learn=$SKLEARN_VERSION
     source activate testenv
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
@@ -69,6 +68,7 @@ if [[ "$DISTRIB" == "neurodebian-no-matplotlib" ]]; then
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
+    sudo pip install -I nibabel=$NIBABEL_VERSION
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
