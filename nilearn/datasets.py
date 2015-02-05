@@ -800,10 +800,10 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "tight_7", "liberal_7": 7-region parcellations, resp. tightly
-          fitted to cortex shape, and liberally fitted.
+        - "thin_7", "thick_7": 7-region parcellations,
+          fitted to resp. thin and thick template cortex segmentations.
 
-        - "tight_17", "liberal_17": 17-region parcellations.
+        - "thin_17", "thick_17": 17-region parcellations.
 
         - "colors_7", "colors_17": colormaps (text files) for 7- and 17-region
           parcellation respectively.
@@ -829,8 +829,8 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     opts = {'uncompress': True}
 
     dataset_name = "yeo_2011"
-    keys = ("tight_7", "liberal_7",
-            "tight_17", "liberal_17",
+    keys = ("thin_7", "thick_7",
+            "thin_17", "thick_17",
             "colors_7", "colors_17", "anat")
     basenames = (
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
