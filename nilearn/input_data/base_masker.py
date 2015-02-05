@@ -234,8 +234,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        X : niimgs
-            The nifti-like images to fit and transform.
+        X : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
         y : numpy array of shape [n_samples]
             Target values.

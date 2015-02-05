@@ -37,7 +37,7 @@ uses.
    fetch_icbm152_2009
    fetch_msdl_atlas
    fetch_yeo_2011_atlas
-   load_harvard_oxford
+   fetch_harvard_oxford
 
 .. _decoding_ref:
 

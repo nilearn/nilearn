@@ -49,6 +49,16 @@ def _get_shape(img):
     return shape
 
 
+def _check_same_fov(img1, img2):
+    """ Return True if img1 and img2 have the same field of view
+        (shape and affine), False elsewhere.
+    """
+    img1 = check_niimgs(img1, accept_3d=True)
+    img2 = check_niimgs(img2, accept_3d=True)
+    return (_get_shape(img1)[:3] == _get_shape(img2)[:3]
+            and np.allclose(img1.get_affine(), img2.get_affine()))
+
+
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
@@ -77,7 +87,7 @@ def _safe_get_data(img):
         Nifti1Image object
     """
     if hasattr(img, '_data_cache') and img._data_cache is None:
-        # Copy locally the nifti_image to avoid the side effect of data
+        # Copy locally the Nift1Image object to avoid the side effect of data
         # loading
         img = copy.deepcopy(img)
     # typically the line below can double memory usage
@@ -92,7 +102,7 @@ def copy_img(img):
     Parameters
     ==========
     img: image
-        Nifti image to copy.
+        nibabel.Nifti1Image object to copy.
 
     Returns
     =======
@@ -130,9 +140,9 @@ def check_niimg(niimg, ensure_3d=False):
 
     Returns
     -------
-    result: nifti-like
-       result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-       that the returned object has get_data() and get_affine() methods.
+    result: Niimg-like object
+        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+        that the returned object has get_data() and get_affine() methods.
 
     Notes
     -----
@@ -331,8 +341,8 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
 
     Notes
     -----
-    This function is the equivalent of check_niimg() for niimages with a
-    session level.
+    This function is the equivalent to check_niimg() for Niimg-like objects
+    with a session level.
 
     Its application is idempotent.
     """
@@ -359,7 +369,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
         first_img = iter(first_img).next()
         depth += 1
 
-    # First image is supposed to be a path or a Nifti-like element
+    # First image is supposed to be a path or a Niimg-like object
     first_img = check_niimg(first_img)
 
     # Check dimension and depth
@@ -369,10 +379,10 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     if (dim + depth) != 4:
         # Detailed error message that tells exactly the user what
         # was provided and what should have been provided.
-        raise TypeError("Data must be either a 4D Nifti image or a"
-                        " list of 3D Nifti images. You provided a %s%dD"
-                        " image(s), of shape %s." % ('list of ' * depth,
-                        dim, shape))
+        raise TypeError("Data must be a 4D Niimg-like object. You provided a "
+                        "%s%dD image(s), of shape %s. "
+                        "See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg." % (
+                        'list of ' * depth, dim, shape))
 
     # Now, we load data as we know its format
     if dim == 4:

@@ -218,7 +218,7 @@ def smooth_img(imgs, fwhm):
     ==========
     imgs: Niimg-like object or iterable of Niimg-like objects
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        One or several niimage(s), either 3D or 4D.
+        Image(s) to smooth.
 
     fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a Full-Width at Half Maximum, in millimeters.
@@ -402,8 +402,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     imgs: Niimg-like object or iterable of Niimg-like objects
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        One or several niimage(s), either 3D or 4D (note that these
-        can be file names).
+        Images to mean.
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -478,7 +477,7 @@ def swap_img_hemispheres(img):
     ----------
     img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        One or several niimgs.
+        Images to swap.
 
     Returns
     -------

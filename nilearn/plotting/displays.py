@@ -369,8 +369,8 @@ class BaseSlicer(object):
             -----------
             img: Niimg-like object
                 See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-                The nifti-image-like. If it is a masked array, only
-                the non-masked part will be plotted.
+                If it is a masked array, only the non-masked part will be
+                plotted.
             threshold : a number, None
                 If None is given, the maps are not thresholded.
                 If a number is given, it is used to threshold the maps:
@@ -415,7 +415,7 @@ class BaseSlicer(object):
             -----------
             img: Niimg-like object
                 See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-                The Nifti-Image like object to plot
+                Provides image to plot.
             kwargs:
                 Extra keyword arguments are passed to contour, see the
                 documentation of pylab.contour
@@ -510,9 +510,10 @@ class BaseSlicer(object):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
         our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
 
-        ColorbarBase(self._colorbar_ax, ticks=ticks, norm=im.norm,
-                     orientation='vertical', cmap=our_cmap, boundaries=bounds,
-                     spacing='proportional')
+        self._cbar = ColorbarBase(
+            self._colorbar_ax, ticks=ticks, norm=im.norm,
+            orientation='vertical', cmap=our_cmap, boundaries=bounds,
+            spacing='proportional')
 
         self._colorbar_ax.yaxis.tick_left()
         self._colorbar_ax.set_yticklabels(["% 2.2g" % t for t in ticks])

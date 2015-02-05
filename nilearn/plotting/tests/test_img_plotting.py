@@ -6,6 +6,7 @@ import numpy as np
 
 from nose import SkipTest
 from nose.tools import assert_raises, assert_true
+from functools import partial
 
 try:
     import matplotlib as mp
@@ -73,7 +74,9 @@ def test_plot_functions():
     z_slicer.add_edges(img, color='c')
 
     for func in [plot_anat, plot_img, plot_stat_map,
-                 plot_epi, plot_glass_brain]:
+                 plot_epi, plot_glass_brain,
+                 partial(plot_stat_map, symmetric_cbar=True),
+                 partial(plot_stat_map, symmetric_cbar=False)]:
         ortho_slicer = func(img, cut_coords=(80, -120, -60))
         # Saving forces a draw, and thus smoke-tests the axes locators
         ortho_slicer.savefig(tempfile.TemporaryFile())

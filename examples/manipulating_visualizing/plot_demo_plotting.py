@@ -24,14 +24,13 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
     get_anats=True,
     get_tmaps=True)
 localizer_anat_filename = localizer_dataset.anats[1]
-localizer_cmap_filename = localizer_dataset.cmaps[1]
 localizer_tmap_filename = localizer_dataset.tmaps[1]
 
 ###############################################################################
 # demo the different plotting functions
 
 # Plotting statistical maps
-plotting.plot_stat_map(localizer_cmap_filename, bg_img=localizer_anat_filename,
+plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
                        threshold=3, title="plot_stat_map",
                        cut_coords=(36, -27, 66))
 
