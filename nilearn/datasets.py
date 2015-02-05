@@ -1547,7 +1547,9 @@ def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
                    "cort-prob-1mm", "cort-prob-2mm",
                    "sub-prob-1mm", "sub-prob-2mm")
     if atlas_name not in atlas_items:
-        raise ValueError("Invalid atlas name: {0}".format(atlas_name))
+        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
+                         "among:\n{1}".format(
+                             atlas_name, '\n'.join(atlas_items)))
 
     if dirname == None:
         # find atlas + meta-data from local FSL installation path
