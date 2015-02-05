@@ -399,10 +399,10 @@ def test_fetch_yeo_2011_atlas():
     assert_true(isinstance(dataset.anat, basestring))
     assert_true(isinstance(dataset.colors_17, basestring))
     assert_true(isinstance(dataset.colors_7, basestring))
-    assert_true(isinstance(dataset.liberal_17, basestring))
-    assert_true(isinstance(dataset.liberal_7, basestring))
-    assert_true(isinstance(dataset.tight_17, basestring))
-    assert_true(isinstance(dataset.tight_7, basestring))
+    assert_true(isinstance(dataset.thick_17, basestring))
+    assert_true(isinstance(dataset.thick_7, basestring))
+    assert_true(isinstance(dataset.thin_17, basestring))
+    assert_true(isinstance(dataset.thin_7, basestring))
     assert_equal(len(url_mock.urls), 1)
 
 

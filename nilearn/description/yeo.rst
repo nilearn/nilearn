@@ -13,10 +13,10 @@ considered (7 or 17).
 Content
 -------
     :'anat': Background anatomical image for reference and visualization
-    :'tight_17': Cortical parcelation into 17 regions, thin cortical model
-    :'tight_7': Cortical parcelation into 7 regions, thin cortical model
-    :'liberal_7': Cortical parcelation into 17 regions, thick cortical model
-    :'liberal_17': Cortical parcelation into 17 regions, thick cortical model
+    :'thin_7': Cortical parcelation into 7 regions, thin cortical model
+    :'thin_17': Cortical parcelation into 17 regions, thin cortical model
+    :'thick_7': Cortical parcelation into 17 regions, thick cortical model
+    :'thick_17': Cortical parcelation into 17 regions, thick cortical model
     :'colors_7': Text file for the coloring of 7-regions parcellation
     :'colors_17': Text file for the coloring of 17-regions parcellation
 
