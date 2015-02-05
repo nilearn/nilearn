@@ -1593,9 +1593,9 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
         resume=resume, verbose=verbose)
 
     names = {}
-    from lxml import etree
+    from xml.etree import ElementTree
     names[0] = 'Background'
-    for label in etree.parse(label_file).findall('.//label'):
+    for label in ElementTree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
     names = np.asarray(names.values())
 
