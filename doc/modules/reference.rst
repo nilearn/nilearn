@@ -65,6 +65,7 @@ uses.
    :template: class.rst
 
    SearchLight
+   SpaceNet
 
 .. _decomposition_ref:
 
