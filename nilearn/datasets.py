@@ -180,7 +180,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
+def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False, verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -191,6 +191,10 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    lookup_defaults: boolean, optional
+        If data_dir is not None, indicates if defaults directory should still
+        be searched.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -215,7 +219,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
         paths = data_dir.split(':')
-    else:
+    if lookup_defaults or data_dir is None:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
             paths.extend(global_data.split(':'))
@@ -249,7 +253,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
                 return path
             except Exception as exc:
                 short_error_message = getattr(exc, 'strerror', str(exc))
-                errors.append('\n -{0} ({1})'.format(path, short_error_message))
+                errors.append('\n -{0} ({1})'.format(
+                    path, short_error_message))
 
     raise OSError('Nilearn tried to store the dataset in the following '
             'directories, but:' + ''.join(errors))
@@ -1550,6 +1555,8 @@ def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
         raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
+
+    # Add FSL_DIR as a non-readable data_dir
 
     if dirname == None:
         # find atlas + meta-data from local FSL installation path
