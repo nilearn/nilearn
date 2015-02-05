@@ -223,7 +223,7 @@ def test_unmask():
 
     # Error test
     dummy = generator.rand(500)
-    if np_version >= [1, 7, 1]:
+    if np_version >= [1, 7, 0]:
         assert_raises(IndexError, unmask, dummy, mask_img)
         assert_raises(IndexError, unmask, [dummy], mask_img)
     else:
