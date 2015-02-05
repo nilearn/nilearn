@@ -611,7 +611,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                                     black_bg=black_bg)
 
     # make sure that the color range is symmetrical
-    if ('vmax' not in kwargs) or (symmetric_cbar == 'auto'):
+    if ('vmax' not in kwargs) or (symmetric_cbar in ['auto', False]):
         stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
         stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
@@ -636,11 +636,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                          'the map, use the "threshold" argument')
     vmin = -vmax
 
-    negative_range = (stat_map_max <= 0)
-    positive_range = (stat_map_min >= 0)
-    if symmetric_cbar:
-        cbar_vmin, cbar_vmax = None, None
-    else:
+    if not symmetric_cbar:
+        negative_range = (stat_map_max <= 0)
+        positive_range = (stat_map_min >= 0)
         if positive_range:
             cbar_vmin = 0
             cbar_vmax = None
@@ -650,6 +648,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         else:
             cbar_vmin = stat_map_min
             cbar_vmax = stat_map_max
+    else:
+        cbar_vmin, cbar_vmax = None, None
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                cut_coords=cut_coords,
