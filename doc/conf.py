@@ -15,12 +15,12 @@
 import sys
 import os
 import shutil
+import sphinxgallery
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-sys.path.insert(0, os.path.abspath('sphinxext'))
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -42,10 +42,10 @@ except:
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['gen_rst',
-              'sphinx.ext.autodoc', 'sphinx.ext.autosummary',
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
               'numpy_ext.numpydoc',
+              'sphinxgallery.gen_gallery',
               ]
 
 autosummary_generate = True
@@ -163,7 +163,7 @@ html_favicon = 'logos/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['images']
+html_static_path = ['images', sphinxgallery._path_static()]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
