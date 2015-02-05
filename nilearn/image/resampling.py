@@ -237,6 +237,12 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
         data = _extrapolate_out_mask(data, np.logical_not(not_finite),
                                      iterations=2)[0]
 
+    # See https://github.com/nilearn/nilearn/issues/346 Copying the
+    # array makes it C continuous and as such the int32 index in the C
+    # code is a lot less likely to overflow
+    if (LooseVersion(scipy.__version__) < LooseVersion('0.14.1')):
+        data = data.copy()
+
     # The resampling itself
     ndimage.affine_transform(data, A,
                              offset=np.dot(A_inv, b),
