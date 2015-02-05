@@ -106,7 +106,6 @@ a look at it.
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
-____
 
 We can make the outline of the mask more by increasing the number of
 opening steps (*opening=10*) using the `mask_args` argument of the
@@ -121,7 +120,6 @@ opening steps (*opening=10*) using the `mask_args` argument of the
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
-____
 
 Looking at the :func:`nilearn.masking.compute_epi_mask` called by the
 :class:`NiftiMasker` object, we see two interesting parameters:
