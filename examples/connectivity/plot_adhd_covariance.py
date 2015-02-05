@@ -20,13 +20,11 @@ plt.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
 def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
 
+    # Compute sparsity pattern
+    sparsity = (prec == 0)
+    
     prec = prec.copy()  # avoid side effects
 
-    # Display sparsity pattern
-    sparsity = prec == 0
-    plt.figure()
-    plt.imshow(sparsity, interpolation="nearest")
-    plt.title("%s / sparsity" % title)
 
     # Put zeros on the diagonal, for graph clarity.
     size = prec.shape[0]
@@ -39,6 +37,11 @@ def plot_matrices(cov, prec, title):
               vmin=-1, vmax=1, cmap=plt.cm.get_cmap("bwr"))
     plt.colorbar()
     plt.title("%s / covariance" % title)
+    
+    # Display sparsity pattern
+    plt.figure()
+    plt.imshow(sparsity, interpolation="nearest")
+    plt.title("%s / sparsity" % title)
 
     # Display precision matrix
     plt.figure()
