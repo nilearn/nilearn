@@ -799,14 +799,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 "Brain mask is bigger than volume of standard brain!")
         self.screening_percentile_ = self.screening_percentile * (
             mask_volume / MNI152_BRAIN_VOLUME)
-        if self.verbose > 10:
+        if self.verbose > 1:
             print "Mask volume = %gmm^3 = %gcm^3" % (
-                mask_volume, mask_volume / 1000.)
+                mask_volume, mask_volume / 1.e3)
             print "Standard brain volume = %gmm^3 = %gcm^3" % (
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1000.)
+                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3)
             print "Original screening-percentile: %g" % (
                 self.screening_percentile)
-        if self.verbose > 1:
             print "Volume-corrected screening-percentile: %g" % (
                 self.screening_percentile_)
 
