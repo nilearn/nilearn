@@ -120,7 +120,7 @@ def check_niimg(niimg, ensure_3d=False):
     ----------
     niimg: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        If niimg is a string, consider it as a path to nifti image and
+        If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
 
@@ -131,8 +131,8 @@ def check_niimg(niimg, ensure_3d=False):
     Returns
     -------
     result: Niimg-like object
-       result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-       that the returned object has get_data() and get_affine() methods.
+        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+        that the returned object has get_data() and get_affine() methods.
 
     Notes
     -----
@@ -311,7 +311,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
-        If niimg is a string, consider it as a path to nifti image and
+        If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
@@ -369,9 +369,10 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     if (dim + depth) != 4:
         # Detailed error message that tells exactly the user what
         # was provided and what should have been provided.
-        raise TypeError("Data must a be Niimg-like object. You provided a %s%dD"
-                        " image(s), of shape %s." % ('list of ' * depth,
-                        dim, shape))
+        raise TypeError("Data must be a 4D Niimg-like object. You provided a "
+                        "%s%dD image(s), of shape %s. "
+                        "See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg." % (
+                        'list of ' * depth, dim, shape))
 
     # Now, we load data as we know its format
     if dim == 4:

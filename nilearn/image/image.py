@@ -401,6 +401,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     imgs: Niimg-like object or iterable of Niimg-like objects
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to mean.
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -475,6 +476,7 @@ def swap_img_hemispheres(img):
     ----------
     img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to swap.
 
     Returns
     -------
