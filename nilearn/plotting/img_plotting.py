@@ -115,8 +115,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                 cbar_vmax = cbar_tick_locs.max()
             if cbar_vmin is None:
                 cbar_vmin = cbar_tick_locs.min()
-                new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
-                                            len(cbar_tick_locs))
+            new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
+                                        len(cbar_tick_locs))
             cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
             outline = cbar_outline_get_xy(cbar.outline)
             outline[:2, 1] += cbar.norm(cbar_vmin)
