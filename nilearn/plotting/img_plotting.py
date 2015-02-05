@@ -112,7 +112,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             figure=None, axes=None, title=None, threshold=None,
-            annotate=True, draw_cross=True, black_bg=False, colorbar=True, **kwargs):
+            annotate=True, draw_cross=True, black_bg=False, colorbar=False, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
