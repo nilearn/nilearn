@@ -12,6 +12,7 @@ import nibabel
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
+from .._utils.niimg_conversions import _check_same_fov
 from .. import signal
 from .. import region
 from .. import masking
@@ -81,12 +82,13 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    resampling_target: {"labels", None}, optional.
+    resampling_target: {"data", "labels", None}, optional.
         Gives which image gives the final shape/size. For example, if
-        `resampling_target` is"labels" then mask_img and images provided to
-        fit() are resampled to the shape and affine of maps_img. "None" means
-        no resampling: if shapes and affines do not match, a ValueError is
-        raised. Defaults to "labels".
+        `resampling_target` is "data", the atlas is resampled to the
+        shape of the data if needed. If it is "labels" then mask_img
+        and images provided to fit() are resampled to the shape and
+        affine of maps_img. "None" means no resampling: if shapes and
+        affines do not match, a ValueError is raised. Defaults to "data".
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
@@ -100,12 +102,6 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
-    Notes
-    =====
-    With the default value for resampling_target, every 3D image processed by
-    transform() will be resampled to the shape of labels_img. It may lead to a
-    very large memory consumption is the voxel number in labels_img is large.
-
     See also
     ========
     nilearn.input_data.NiftiMasker
@@ -115,7 +111,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def __init__(self, labels_img, background_label=0, mask_img=None,
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
-                 resampling_target="labels",
+                 resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
                  verbose=0):
         self.labels_img = labels_img
@@ -140,7 +136,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-        if resampling_target not in ("labels", None):
+        if resampling_target not in ("labels", "data", None):
             raise ValueError("invalid value for 'resampling_target' "
                              "parameter: " + str(resampling_target))
 
@@ -163,7 +159,10 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         # Check shapes and affines or resample.
         if self.mask_img_ is not None:
-            if self.resampling_target is None:
+            if self.resampling_target == "data":
+                # resampling will be done at transform time
+                pass
+            elif self.resampling_target is None:
                 if _utils._get_shape(self.mask_img_) \
                         != _utils._get_shape(self.labels_img_)[:3]:
                     raise ValueError(
@@ -186,7 +185,6 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                                 self.labels_img_)[:3],
                     interpolation="nearest",
                     copy=True)
-
             else:
                 raise ValueError("Invalid value for resampling_target: "
                                  + str(self.resampling_target))
@@ -232,12 +230,26 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                    _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
         imgs = _utils.check_niimgs(imgs)
 
-        if self.resampling_target == "labels":
+        if self.resampling_target == "data":
+            if not hasattr(self, '_resampled_labels_img_'):
+                self._resampled_labels_img_ = self.labels_img_
+            if not _check_same_fov(imgs, self._resampled_labels_img_):
+                logger.log("resampling labels", verbose=self.verbose)
+                self._resampled_labels_img_ = self._cache(image.resample_img,
+                    memory_level=1)(
+                        self.labels_img_, interpolation="continuous",
+                        target_shape=_utils._get_shape(imgs)[:3],
+                        target_affine=imgs.get_affine(),
+                    )
+        elif self.resampling_target == "labels":
+            self._resampled_labels_img_ = self.labels_img_
             logger.log("resampling images", verbose=self.verbose)
             imgs = self._cache(image.resample_img, func_memory_level=1)(
                 imgs, interpolation="continuous",
                 target_shape=_utils._get_shape(self.labels_img_),
                 target_affine=self.labels_img_.get_affine())
+        else:
+            self._resampled_labels_img_ = self.labels_img_
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
@@ -248,6 +260,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         region_signals, self.labels_ = self._cache(
             region.img_to_signals_labels, func_memory_level=1)(
                 imgs, self.labels_img_,
+                imgs, self._resampled_labels_img_,
                 background_label=self.background_label)
 
         logger.log("cleaning extracted signals", verbose=self.verbose)
