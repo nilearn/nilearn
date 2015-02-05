@@ -44,8 +44,10 @@ def test_searchlight():
                                  radius=0.5, n_jobs=n_jobs,
                                  scoring='accuracy', cv=cv)
     with warnings.catch_warnings():
+        #  check_cv will return indices instead of boolean masks from 0.17
         warnings.simplefilter('ignore', DeprecationWarning)
-        #warnings.simplefilter('ignore', UserWarning)  # old versions of sklearn
+        warnings.filterwarnings('ignore', 'Scikit-learn version is too old.',
+                                UserWarning)  # old versions of sklearn
         sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
     assert_equal(sl.scores_[2, 2, 2], 1.)
@@ -55,6 +57,7 @@ def test_searchlight():
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
     with warnings.catch_warnings(record=True):
+        #  check_cv will return indices instead of boolean masks from 0.17
         warnings.simplefilter('ignore', DeprecationWarning)
         sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
@@ -70,6 +73,7 @@ def test_searchlight():
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=2,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
     with warnings.catch_warnings(record=True):
+        #  check_cv will return indices instead of boolean masks from 0.17
         warnings.simplefilter('ignore', DeprecationWarning)
         sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
