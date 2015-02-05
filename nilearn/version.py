@@ -15,7 +15,7 @@ _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
 #   collections.OrderedDict to preserve Python 2.6 compatibility.
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.7.0',
+        'min_version': '1.6.0',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
