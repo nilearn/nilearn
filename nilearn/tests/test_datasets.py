@@ -12,13 +12,14 @@ import numpy as np
 import zipfile
 import tarfile
 import gzip
+import nibabel
 
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from .. import datasets
-from .._utils.testing import mock_urllib2, wrap_chunk_read_,\
-    FetchFilesMock, assert_raises_regexp
+from .._utils.testing import (mock_urllib2, wrap_chunk_read_,
+    FetchFilesMock, assert_raises_regexp)
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -240,6 +241,34 @@ def test_fail_fetch_haxby_simple():
     stuff = dummy.read(5)
     dummy.close()
     assert_equal(stuff, 'stuff')
+
+
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fail_fetch_harvard_oxford():
+    # specify non-existing atlas item
+    assert_raises_regexp(ValueError, 'Invalid atlas name',
+                         datasets.fetch_harvard_oxford, 'not_inside')
+
+    # specify existing atlas item
+    target_atlas = 'cort-maxprob-thr0-1mm'
+    target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
+
+    HO_dir = os.path.join(tmpdir, 'HO_stuff')
+    os.mkdir(HO_dir)
+
+    target_atlas_nii = os.path.join(HO_dir, target_atlas_fname)
+    datasets.load_mni152_template().to_filename(target_atlas_nii)
+
+    dummy = open(os.path.join(tmpdir, 'HarvardOxford-Cortical.xml'), 'w')
+    dummy.write("<?xml version='1.0' encoding='us-ascii'?> "
+                "<metadata>"
+                "</metadata>")
+    dummy.close()
+
+    out_nii, arr = datasets.fetch_harvard_oxford(target_atlas, HO_dir)
+
+    assert_true(isinstance(out_nii, nibabel.Nifti1Image))
+    assert_true(isinstance(arr, np.ndarray))
 
 
 # Smoke tests for the rest of the fetchers
