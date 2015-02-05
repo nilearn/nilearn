@@ -1,9 +1,5 @@
 """Backports for matplotlib compatibility across versions"""
 import matplotlib
-from distutils.version import LooseVersion
-mpl_version = LooseVersion(matplotlib.__version__)
-version1_4 = LooseVersion('1.4.0')
-
 
 def cbar_outline_get_xy(cbar_outline):
     """In the matplotlib versions >= 1.4.0, ColorbarBase.outline is a
@@ -18,7 +14,8 @@ def cbar_outline_get_xy(cbar_outline):
     This function unifies getters and setters of ColorbarBase outline xy
     coordinates."""
 
-    if mpl_version >= version1_4:
+    if hasattr(cbar_outline, "get_xy"):
+        # loose version >= 1.4.x
         return cbar_outline.get_xy()
     else:
         return cbar_outline.get_xydata()
@@ -29,7 +26,8 @@ def cbar_outline_set_xy(cbar_outline, xy):
     See cbar_outline_get_xy for more information.
     """
 
-    if mpl_version >= version1_4:
+    if hasattr(cbar_outline, "set_xy"):
+        # loose version >= 1.4.x
         return cbar_outline.set_xy(xy)
     else:
         cbar_outline.set_xdata(xy[:, 0])
