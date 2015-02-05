@@ -180,7 +180,8 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
+def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False,
+                     verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -191,6 +192,10 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    lookup_defaults: boolean, optional
+        If data_dir is not None, indicates if defaults directory should still
+        be searched.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -215,7 +220,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
         paths = data_dir.split(':')
-    else:
+    if lookup_defaults or data_dir is None:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
             paths.extend(global_data.split(':'))
@@ -249,7 +254,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=1):
                 return path
             except Exception as exc:
                 short_error_message = getattr(exc, 'strerror', str(exc))
-                errors.append('\n -{0} ({1})'.format(path, short_error_message))
+                errors.append('\n -{0} ({1})'.format(
+                    path, short_error_message))
 
     raise OSError('Nilearn tried to store the dataset in the following '
             'directories, but:' + ''.join(errors))
@@ -1504,12 +1510,13 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(labels=files[0], maps=files[1])
 
 
-def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
+def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                         resume=True, verbose=1):
-    """Load Harvard-Oxford parcellation.
+    """Load Harvard-Oxford parcellation from FSL if installed or download it.
 
-    This function locates the niftis in nilearn_data or downloads them if
-    necessary. They are distributed with FSL.
+    This function looks up for Harvard Oxford atlas in the system and load it
+    if present. If not, it downloads it and store it in NILEARN_DATA
+    directory.
 
     Parameters
     ==========
@@ -1524,9 +1531,9 @@ def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
         cort-prob-1mm, cort-prob-2mm,
         sub-prob-1mm, sub-prob-2mm
 
-    dirname: string, optional
-        FSL installation directory. It may be different with another
-        distribution / installation.
+    data_dir: string, optional
+        Path of data directory. It can be FSL installation directory
+        (which is dependent on your installation).
 
     symmetric_split: bool, optional
         If True, split every symmetric region in left and right parts.
@@ -1547,86 +1554,73 @@ def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
                    "cort-prob-1mm", "cort-prob-2mm",
                    "sub-prob-1mm", "sub-prob-2mm")
     if atlas_name not in atlas_items:
-        raise ValueError("Invalid atlas name: {0}".format(atlas_name))
+        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
+                         "among:\n{1}".format(
+                             atlas_name, '\n'.join(atlas_items)))
 
-    if dirname == None:
-        # find atlas + meta-data from local FSL installation path
-        if 'FSL_DIR' in os.environ.keys():
-            local_dir = os.path.join(os.environ['FSL_DIR'], 'data', 'atlases',
-                                     'HarvardOxford')
-            xls1_found = os.path.exists(os.path.join(local_dir, '..',
-                                        'HarvardOxford-Cortical.xml'))
-            xls2_found = os.path.exists(os.path.join(local_dir, '..',
-                                        'HarvardOxford-SubCortical.xml'))
-            if xls1_found and xls2_found:
-                dirname = local_dir
+    # Add FSL_DIR as a non-readable data_dir
+    data_dirs = []
+    fsl_dir = os.getenv('FSL_DIR', os.getenv('FSLDIR'))
+    if fsl_dir is not None:
+        data_dirs.append(fsl_dir)
+    if data_dir is not None:
+        data_dirs.append(data_dir)
+    data_dir = ':'.join(data_dirs) if len(data_dirs) > 0 else None
 
-    if dirname is not None:
-        # grab data locally
-        filename = os.path.join(dirname, "HarvardOxford-") + atlas_name + ".nii.gz"
-        if atlas_name[0] == 'c':
-            name_map = os.path.join(dirname, '..', 'HarvardOxford-Cortical.xml')
-        else:
-            name_map = os.path.join(dirname, '..', 'HarvardOxford-SubCortical.xml')
+    # grab data from internet first
+    url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
+    dataset_name = 'harvard_oxford'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                lookup_defaults=(data_dir is None),
+                                verbose=verbose)
+    opts = {'uncompress': True}
+    atlas_file = os.path.join('HarvardOxford',
+                              'HarvardOxford-' + atlas_name + '.nii.gz')
+    if atlas_name[0] == 'c':
+        label_file = 'HarvardOxford-Cortical.xml'
     else:
-        # grab data from internet first
-        url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
-        dataset_name = 'harvard_oxford'
-        new_data_dir = _get_dataset_dir(dataset_name, None, verbose=verbose)
-        opts = {'uncompress': True}
-        filenames1 = [(
-            os.path.join("HarvardOxford", "HarvardOxford-" + atlas_name + '.nii.gz'),
-                         url, opts)
-        ]
-        filenames2 = [(f, url, opts)
-            for f in (
-                'HarvardOxford-Cortical.xml', 'HarvardOxford-Subcortical.xml')
-        ]
-        filenames = filenames1 + filenames2
-        sub_files = _fetch_files(new_data_dir, filenames, resume=resume,
-                                 verbose=verbose)
-        filename = sub_files[0]
-        if atlas_name[0] == 'c':
-            name_map = sub_files[1]
-        else:
-            name_map = sub_files[2]
+        label_file = 'HarvardOxford-Subcortical.xml'
 
-    regions_img = nibabel.load(filename)
+    atlas_img, label_file = _fetch_files(
+        data_dir,
+        [(atlas_file, url, opts), (label_file, url, opts)],
+        resume=resume, verbose=verbose)
 
     names = {}
     from lxml import etree
     names[0] = 'Background'
-    for label in etree.parse(name_map).findall('.//label'):
+    for label in etree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
     names = np.asarray(names.values())
 
     if not symmetric_split:
-        return regions_img, names
+        return atlas_img, names
 
     if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm"):
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
 
-    regions = regions_img.get_data()
+    atlas_img = nibabel.load(atlas_img)
+    atlas = atlas_img.get_data()
 
-    labels = np.unique(regions)
-    slices = ndimage.find_objects(regions)
-    middle_ind = (regions.shape[0] - 1) / 2
+    labels = np.unique(atlas)
+    slices = ndimage.find_objects(atlas)
+    middle_ind = (atlas.shape[0] - 1) / 2
     crosses_middle = [s.start < middle_ind and s.stop > middle_ind
              for s, _, _ in slices]
 
     # Split every zone crossing the median plane into two parts.
     # Assumes that the background label is zero.
-    half = np.zeros(regions.shape, dtype=np.bool)
+    half = np.zeros(atlas.shape, dtype=np.bool)
     half[:middle_ind, ...] = True
     new_label = max(labels) + 1
     # Put zeros on the median plane
-    regions[middle_ind, ...] = 0
+    atlas[middle_ind, ...] = 0
     for label, crosses in zip(labels[1:], crosses_middle):
         if not crosses:
             continue
-        regions[np.logical_and(regions == label, half)] = new_label
+        atlas[np.logical_and(atlas == label, half)] = new_label
         new_label += 1
 
     # Duplicate labels for right and left
@@ -1636,7 +1630,7 @@ def fetch_harvard_oxford(atlas_name, dirname=None, symmetric_split=False,
     for n in names[1:]:
         new_names.append(n + ', left part')
 
-    return nibabel.Nifti1Image(regions, regions_img.get_affine()), new_names
+    return nibabel.Nifti1Image(atlas, atlas_img.get_affine()), new_names
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
