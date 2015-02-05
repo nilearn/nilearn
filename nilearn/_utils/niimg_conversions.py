@@ -49,6 +49,16 @@ def _get_shape(img):
     return shape
 
 
+def _check_same_fov(img1, img2):
+    """ Return True if img1 and img2 have the same field of view
+        (shape and affine), False elsewhere.
+    """
+    img1 = check_niimgs(img1, accept_3d=True)
+    img2 = check_niimgs(img2, accept_3d=True)
+    return (_get_shape(img1)[:3] == _get_shape(img2)[:3]
+            and np.allclose(img1.get_affine(), img2.get_affine()))
+
+
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
