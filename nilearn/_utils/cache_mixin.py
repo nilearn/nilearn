@@ -26,75 +26,70 @@ import nilearn
 __cache_checked = dict()
 
 
-
 def _safe_cache(memory, func, **kwargs):
     """ A wrapper for mem.cache that flushes the cache if the version
         number of nibabel has changed.
     """
     cachedir = memory.cachedir
-    if cachedir is not None and not cachedir in __cache_checked:
-        version_file = os.path.join(cachedir, 'module_versions.json')
-        if not os.path.exists(version_file):
-            versions = dict()
+
+    if cachedir is None or cachedir in __cache_checked:
+        return memory.cache(func, **kwargs)
+
+    version_file = os.path.join(cachedir, 'module_versions.json')
+
+    versions = dict()
+    if os.path.exists(version_file):
+        with open(version_file, 'r') as _version_file:
+            versions = json.load(_version_file)
+
+    modules = (nibabel, )
+    # Keep only the major + minor version numbers
+    my_versions = dict((m.__name__, LooseVersion(m.__version__).version[:2])
+                       for m in modules)
+    commons = set(versions.keys()).intersection(set(my_versions.keys()))
+    collisions = [m for m in commons if versions[m] != my_versions[m]]
+
+    # Flush cache if version collision
+    if len(collisions) > 0:
+        if nilearn.check_cache_version:
+            warnings.warn("Incompatible cache in %s: "
+                          "different version of nibabel. Deleting "
+                          "the cache. Put nilearn.check_cache_version "
+                          "to false to avoid this behavior."
+                          % cachedir)
+            try:
+                tmp_dir = (os.path.split(cachedir)[:-1]
+                            + ('old_%i' % os.getpid(), ))
+                tmp_dir = os.path.join(*tmp_dir)
+                # We use rename + unlink to be more robust to race
+                # conditions
+                os.rename(cachedir, tmp_dir)
+                shutil.rmtree(tmp_dir)
+            except OSError:
+                # Another process could have removed this dir
+                pass
+
+            try:
+                os.makedirs(cachedir)
+            except OSError:
+                # File exists?
+                pass
         else:
-            with open(version_file, 'r') as _version_file:
-                versions = json.load(_version_file)
+            warnings.warn("Incompatible cache in %s: "
+                          "old version of nibabel." % cachedir)
 
-        write_file = False
-        flush_cache = False
+    # Write json files if configuration is different
+    if versions != my_versions:
+        with open(version_file, 'w') as _version_file:
+            json.dump(my_versions, _version_file)
 
-        for module in (nibabel, ):
-            # Keep only the major + minor version numbers
-            this_version = LooseVersion(module.__version__).version[:2]
-            this_name = module.__name__
-            if not this_name in versions:
-                versions[this_name] = this_version
-                write_file = True
-            else:
-                previous_version = versions[this_name]
-                if previous_version != this_version:
-                    flush_cache = True
-                    write_file = True
-                    versions[this_name] = this_version
-
-        if flush_cache:
-            if nilearn.check_cache_version:
-                warnings.warn("Incompatible cache in %s: "
-                              "old version of nibabel. Deleting "
-                              "the cache. Put nilearn.check_cache_version "
-                              "to false to avoid this behavior."
-                              % cachedir)
-                try:
-                    tmp_dir = (os.path.split(cachedir)[:-1]
-                                + ('old_%i' % os.getpid(), ))
-                    tmp_dir = os.path.join(*tmp_dir)
-                    # We use rename + unlink to be more robust to race
-                    # conditions
-                    os.rename(cachedir, tmp_dir)
-                    shutil.rmtree(tmp_dir)
-                except OSError:
-                    # Another process could have removed this dir
-                    pass
-
-                try:
-                    os.makedirs(cachedir)
-                except OSError:
-                    # File exists?
-                    pass
-            else:
-                warnings.warn("Incompatible cache in %s: "
-                              "old version of nibabel." % cachedir)
-
-        if write_file:
-            with open(version_file, 'w') as _version_file:
-                versions = json.dump(versions, _version_file)
-
-        __cache_checked[cachedir] = True
+    __cache_checked[cachedir] = True
 
     return memory.cache(func, **kwargs)
 
 
-def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
+def cache(func, memory, func_memory_level=None, memory_level=None,
+          **kwargs):
     """ Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
@@ -111,14 +106,14 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
     memory: instance of joblib.Memory or string
         Used to cache the function call.
 
-    ref_memory_level: int
-        The reference memory_level used to determine if function call must
-        be cached or not (if memory_level is larger than ref_memory_level
-        the function is cached)
-
-    memory_level: int
+    func_memory_level: int, optional
         The memory_level from which caching must be enabled for the wrapped
         function.
+
+    memory_level: int, optional
+        The memory_level used to determine if function call must
+        be cached or not (if user_memory_level is equal of grater than
+        func_memory_level the function is cached)
 
     kwargs: keyword arguments
         The keyword arguments passed to memory.cache
@@ -132,22 +127,26 @@ def cache(func, memory, ref_memory_level=2, memory_level=1, **kwargs):
         returned.
     """
 
-    if ref_memory_level <= memory_level or memory is None:
-        memory = Memory(cachedir=None)
+    verbose = kwargs.get('verbose', 0)
+
+    if (func_memory_level is None
+            or memory_level is None
+            or memory is None
+            or memory_level < func_memory_level):
+        memory = Memory(cachedir=None, verbose=verbose)
     else:
-        memory = memory
         if isinstance(memory, basestring):
-            memory = Memory(cachedir=memory)
+            memory = Memory(cachedir=memory, verbose=verbose)
         if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
                             "joblib.Memory object. "
                             "%s %s was given." % (memory, type(memory)))
-        if memory.cachedir is None and ref_memory_level > 1:
+        if memory.cachedir is None and memory_level > 1:
             warnings.warn("Caching has been enabled (memory_level = %d) "
                           "but no Memory object or path has been provided"
                           " (parameter memory). Caching deactivated for "
                           "function %s." %
-                          (ref_memory_level, func.func_name),
+                          (memory_level, func.func_name),
                           stacklevel=2)
     return _safe_cache(memory, func, **kwargs)
 
@@ -164,7 +163,7 @@ class CacheMixin(object):
     parameter to self._cache(). See _cache() documentation for details.
     """
 
-    def _cache(self, func, memory_level=1, **kwargs):
+    def _cache(self, func, func_memory_level=1, **kwargs):
         """ Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -191,12 +190,16 @@ class CacheMixin(object):
             returned.
         """
 
+        verbose = getattr(self, 'verbose', 0)
+
         # Creates attributes if they don't exist
         # This is to make creating them in __init__() optional.
         if not hasattr(self, "memory_level"):
             self.memory_level = 0
         if not hasattr(self, "memory"):
-            self.memory = Memory(cachedir=None)
+            self.memory = Memory(cachedir=None, verbose=verbose)
+        if isinstance(self.memory, basestring):
+            self.memory = Memory(cachedir=self.memory, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
@@ -207,22 +210,6 @@ class CacheMixin(object):
                               "a Memory object has been provided. "
                               "Setting memory_level to 1.")
                 self.memory_level = 1
-        verbose = getattr(self, 'verbose', 0)
 
-        if self.memory_level < memory_level:
-            memory = Memory(cachedir=None, verbose=verbose)
-            return _safe_cache(memory, func, **kwargs)
-        else:
-            memory = self.memory
-            if isinstance(memory, basestring):
-                memory = Memory(cachedir=memory, verbose=verbose)
-            if not isinstance(memory, memory_classes):
-                raise TypeError("'memory' argument must be a string or a "
-                                "joblib.Memory object.")
-            if memory.cachedir is None and self.memory_level > 1:
-                warnings.warn("Caching has been enabled (memory_level = %d) "
-                              "but no Memory object or path has been provided"
-                              " (parameter memory). Caching deactivated for "
-                              "function %s." %
-                              (self.memory_level, func.func_name))
-            return _safe_cache(memory, func, **kwargs)
+        return cache(func, self.memory, func_memory_level=func_memory_level,
+                     memory_level=self.memory_level, **kwargs)
