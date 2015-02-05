@@ -104,7 +104,6 @@ a look at it.
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_2.png
     :target: ../auto_examples/plot_mask_computation.html
-    :align: left
     :scale: 50%
 
 ____
@@ -120,7 +119,6 @@ opening steps (*opening=10*) using the `mask_args` argument of the
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_3.png
     :target: ../auto_examples/plot_mask_computation.html
-    :align: left
     :scale: 50%
 
 ____
@@ -141,7 +139,6 @@ voxels that are very light on the EPI image.
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_4.png
     :target: ../auto_examples/plot_mask_computation.html
-    :align: left
     :scale: 50%
 
 

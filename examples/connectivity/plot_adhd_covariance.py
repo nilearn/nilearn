@@ -21,7 +21,7 @@ def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
 
     # Compute sparsity pattern
-    sparsity = prec == 0
+    sparsity = (prec == 0)
     
     prec = prec.copy()  # avoid side effects
 
