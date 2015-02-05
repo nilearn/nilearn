@@ -217,3 +217,40 @@ little guarantee on the brain maps.
    :scale: 70
 
 
+SpaceNet
+========
+SpaceNet implements a suite of multi-variate priors which for improved brain decoding. It uses priors like TV (Total Variation) [Michel et al. 2011], TV-L1 [Baldassarre et al. 2012], [Gramfort et al. 2013] (`penalty="tvl1"), and Smooth-Lasso [Hebiri et al. 2011] (known as GraphNet in neuroimaging [Grosenick 2013]) to regularize classification and regression problems in brain imaging. The result are brain maps which are both sparse (i.e regression coefficients are zero everywhere, except at predictive voxels) and structured (blobby). The superiority of TV-L1 over methods without structured priors like the Lasso, SVM, ANOVA, Ridge, etc. for yielding more interpretable maps and improved prediction scores is now well established [Baldassarre et al. 2012], [Gramfort et al. 2013], [Grosenick et al. 2013].
+
+Note that TV-L1 prior leads to a hard optimization problem, and so can be slow to run.
+The follow ing table summarizes the parameter(s) used to activate a given prior:
+
+- TV-L1: `penalty="tv-l1"`
+- Smooth-Lasso: `penalty="smooth-lasso"` (this is the default prior in SpaceNet)
+- TV: `l1_ratio=0`
+- Lasso: `l1_ratio=1`
+
+Examples
+........
+
+* Mixed gambles
+
+.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_1.png
+   :align: right
+   :scale: 60
+
+.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_2.png
+   :scale: 60
+
+.. literalinclude:: ../../examples/decoding/plot_poldrack_space_net.py
+
+* Haxby
+
+.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_1.png
+   :align: right
+   :scale: 60
+
+.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_2.png
+   :scale: 60
+
+See the script here:
+:doc:`plot_haxby_space_net.py <../auto_examples/decoding/plot_haxby_space_net>`
