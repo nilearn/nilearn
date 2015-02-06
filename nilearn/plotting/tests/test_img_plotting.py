@@ -1,3 +1,4 @@
+
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import tempfile
@@ -76,7 +77,11 @@ def test_plot_functions():
     for func in [plot_anat, plot_img, plot_stat_map,
                  plot_epi, plot_glass_brain,
                  partial(plot_stat_map, symmetric_cbar=True),
-                 partial(plot_stat_map, symmetric_cbar=False)]:
+                 partial(plot_stat_map, symmetric_cbar=False),
+                 partial(plot_stat_map, symmetric_cbar=False, vmax=10),
+                 partial(plot_stat_map, symmetric_cbar=True, vmax=10),
+                 partial(plot_stat_map, colorbar=False)
+                 ]:
         ortho_slicer = func(img, cut_coords=(80, -120, -60))
         # Saving forces a draw, and thus smoke-tests the axes locators
         ortho_slicer.savefig(tempfile.TemporaryFile())
