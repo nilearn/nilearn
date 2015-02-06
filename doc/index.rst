@@ -78,12 +78,5 @@
    </div>
    <div style="clear: left"></div>
 
-
-.. warning::
-
-   NiLearn has been released as a beta and is still in early
-   development stages.
-
-
 NiLearn is part of the `NiPy ecosystem <http://nipy.org>`_.
 
