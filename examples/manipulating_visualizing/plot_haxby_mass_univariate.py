@@ -121,12 +121,9 @@ vmax = min(signed_neg_log_pvals.max(),
            neg_log_pvals_bonferroni.max())
 
 # Plot thresholded p-values map corresponding to F-scores
-fig = plt.figure(figsize=(4, 5.5), facecolor='k')
-
 display = plot_stat_map(neg_log_pvals_bonferroni_unmasked, mean_fmri_img,
-                        threshold=threshold, cmap=plt.cm.RdBu_r,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax)
+                        threshold=threshold, display_mode='z',
+                        cut_coords=[z_slice], vmax=vmax)
 
 neg_log_pvals_bonferroni_data = neg_log_pvals_bonferroni_unmasked.get_data()
 neg_log_pvals_bonferroni_slice_data = \
@@ -135,17 +132,15 @@ n_detections = (neg_log_pvals_bonferroni_slice_data > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric two-sided F-test'
          '\n+ Bonferroni correction)'
-         '\n%d detections') % n_detections
+         '\n%d detections' % n_detections)
 
 display.title(title, y=1.1)
 
-# Plot permutation p-values map
-fig = plt.figure(figsize=(4, 5.5), facecolor='k')
 
+# Plot permutation p-values map
 display = plot_stat_map(signed_neg_log_pvals_unmasked, mean_fmri_img,
-                        threshold=threshold, cmap=plt.cm.RdBu_r,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax)
+                        threshold=threshold, display_mode='z',
+                        cut_coords=[z_slice], vmax=vmax)
 
 signed_neg_log_pvals_data = signed_neg_log_pvals_unmasked.get_data()
 signed_neg_log_pvals_slice_data = \
@@ -154,7 +149,7 @@ n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric two-sided test'
          '\n+ max-type correction)'
-         '\n%d detections') % n_detections
+         '\n%d detections' % n_detections)
 
 display.title(title, y=1.1)
 
