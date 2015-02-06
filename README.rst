@@ -47,10 +47,7 @@ First make sure you have installed all the dependencies listed above.
 Then you can install nilearn by running the following command in
 a command prompt::
 
-    pip install -U --pre --user nilearn
-
-Note that nilearn has been released as a beta so you need to use the
-``--pre`` command-line parameter only if your pip version is greater than 1.4.
+    pip install -U --user nilearn
 
 More detailed instructions are available at
 http://nilearn.github.io/introduction.html#installation.
