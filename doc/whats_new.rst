@@ -5,14 +5,14 @@ Changelog
 ---------
 First release of nilearn.
 
-Contributors (from ``git shortlog -sn``)::
+Contributors (from ``git shortlog -ns``)::
 
-   597  Gaël Varoquaux
+   600  Gaël Varoquaux
    483  Alexandre Abraham
-   295  Loïc Estève
+   302  Loïc Estève
    254  Philippe Gervais
    122  Virgile Fritsch
-    81  Michael Eickenberg
+    83  Michael Eickenberg
     59  Jean Kossaifi
     57  Jaques Grobler
     46  Danilo Bzdok
@@ -28,7 +28,7 @@ Contributors (from ``git shortlog -sn``)::
      6  Elvis Dohmatob
      4  Konstantin Shmelkov
      3  Jason Gors
-     3  salma
+     3  Salma Bougacha
      1  Alexandre Savio
      1  Jan Margeta
      1  Matthias Ekman
