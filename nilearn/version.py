@@ -5,7 +5,7 @@ nilearn version, required package versions, and utilities for checking
 # Author: Loïc Estève, Ben Cipollini
 # License: simplified BSD
 
-__version__ = '0.1b1'
+__version__ = '0.1'
 
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
