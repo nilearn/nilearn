@@ -1,5 +1,5 @@
 """
-Simple plotting in nilearn
+Plotting in nilearn
 ==========================
 
 Nilearn comes with a set of plotting function for Nifti-like images,
