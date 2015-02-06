@@ -5,7 +5,7 @@ Introduction to the neuroimaging machine-learning pipeline
 ============================================================
 
 Nilearn comes with code to simplify the use of scikit-learn when dealing
-with neuroimaging data. For the moment, Nilearn is focused on functional MRI
+with neuroimaging data. For the moment, nilearn is focused on functional MRI
 data.
 
 Before using a machine learning tool, we may need to apply the following
@@ -27,7 +27,7 @@ Data loading and preprocessing
 Downloading the data
 ----------------------
 
-To run demos, data are retrieved using a function provided by Nilearn
+To run demos, data are retrieved using a function provided by nilearn
 which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in :ref:`loading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
@@ -75,7 +75,7 @@ This can be done as follows:
 .. note::
 
     If you are not comfortable with this kind of data processing, do not
-    worry: there are plenty of examples in Nilearn that allows you to easily
+    worry: there are plenty of examples in nilearn that allows you to easily
     load data from provided datasets. Do not hesitate to copy/paste the
     code and adapt it to your own data format if needed. More information
     can be found in the :ref:`data manipulation <data_manipulation>`

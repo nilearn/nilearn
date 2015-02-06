@@ -251,7 +251,7 @@ Inverse transform: unmasking data
 Once voxel signals have been processed, the result can be visualized as
 images after unmasking (turning voxel signals into a series of images,
 using the same mask as for masking). This step is present in almost all
-the :ref:`examples <examples-index>` provided in Nilearn. Below is
+the :ref:`examples <examples-index>` provided in nilearn. Below is
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 <example_decoding_plot_haxby_anova_svm.py>`):
 
@@ -365,7 +365,7 @@ some explanation. The voxels that correspond to the brain or a region
 of interest in an fMRI image do not fill the entire
 image. Consequently, in the labels image, there must be a label
 corresponding to "outside" the brain, for which no signal should be
-extracted.  By default, this label is set to zero in Nilearn, and is
+extracted.  By default, this label is set to zero in nilearn, and is
 referred to as "background". Should some non-zero value occur, it is
 possible to change the background value with the `background_label`
 keyword.

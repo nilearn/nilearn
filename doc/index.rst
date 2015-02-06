@@ -38,7 +38,7 @@
    <div id="index-grid" class="section group">
     <div class="col span_1_of_3">
         <h3><a href="introduction.html">First Steps</a></h3>
-        <p>Get started with NiLearn</p>
+        <p>Get started with nilearn</p>
 
         <h3><a href="auto_examples/index.html"> Examples</a></h3>
         <p>Visit our example gallery</p>

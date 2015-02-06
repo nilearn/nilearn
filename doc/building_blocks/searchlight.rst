@@ -208,7 +208,7 @@ For each permutation, only the maximum value of the F-statistic across
 voxels is considered and is used to build the null distribution. It is
 crucial to assume that the distribution of the signal is the same in
 every voxel so that the F-statistics are comparable. This correction
-strategy is applied in Nilearn's
+strategy is applied in nilearn
 :func:`nilearn.mass_univariate.permuted_ols` function.
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_mass_univariate_1.png
@@ -220,7 +220,7 @@ We observe that the results obtained with a permutation test are less
 conservative than the ones obtained with a Bonferroni correction
 strategy.
 
-In Nilearn's :func:`nilearn.mass_univariate.permuted_ols` function, we
+In nilearn :func:`nilearn.mass_univariate.permuted_ols` function, we
 permute a parametric t-test. Unlike F-test, a t-test can be signed
 (*one-sided test*), that is both the absolute value and the sign of an
 effect are considered. Thus, only positive effects
@@ -251,6 +251,6 @@ viewing faces.
     performed but one can estimate the null distribution by assuming
     symmetry about some reference value. When this value is zero, one can
     randomly swap the sign of the target variates (the imaging
-    signal). Nilearn's
+    signal). nilearn
     :func:`nilearn.mass_univariate.permuted_ols` function automatically
     adopts the suitable strategy according to the input data.

@@ -126,7 +126,7 @@ once:
    :end-before: pl.subplot(n_displayed, 4, 4)
 
 Running a group-sparse estimation is very similar, the estimator comes
-from NiLearn this time:
+from nilearn this time:
 
 ..
    gsc
