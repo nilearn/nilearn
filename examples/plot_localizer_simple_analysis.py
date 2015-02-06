@@ -59,7 +59,7 @@ threshold = - np.log10(0.1)  # 10% corrected
 # Plot Anova p-values
 fig = plt.figure(figsize=(5, 6), facecolor='w')
 display = plot_stat_map(neg_log_pvals_anova_unmasked,
-                        cmap=plt.cm.autumn, threshold=threshold,
+                        threshold=threshold,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig)
 

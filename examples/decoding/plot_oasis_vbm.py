@@ -112,7 +112,6 @@ fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
 weight_slice_data = weight_img.get_data()[..., k_slice, 0]
 vmax = max(-np.min(weight_slice_data), np.max(weight_slice_data)) * 0.5
 display = plot_stat_map(weight_img, bg_img=bg_filename,
-                        cmap=plt.cm.Spectral_r,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig, vmax=vmax)
 display.title('SVM weights', y=1.2)
