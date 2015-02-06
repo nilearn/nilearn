@@ -124,3 +124,16 @@ def test_plot_img_with_auto_cut_coords():
     for display_mode in 'xyz':
         plot_img(img, cut_coords=None, display_mode=display_mode,
                  black_bg=True)
+
+
+def test_plot_img_with_resampling():
+    import pylab as pl
+    pl.switch_backend('svg')
+    data = MNI152TEMPLATE.get_data()[:5, :5, :5]
+    affine = np.array([[ 1., -1.,  0.,  0.],
+                       [ 1.,  1.,  0.,  0.],
+                       [ 0.,  0.,  1.,  0.],
+                       [ 0.,  0.,  0.,  1.]])
+    img = nibabel.Nifti1Image(data, affine)
+    display = plot_img(img)
+    display.add_overlay(img)
