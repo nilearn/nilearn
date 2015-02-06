@@ -135,4 +135,5 @@ def test_plot_img_with_resampling():
                        [ 0.,  0.,  1.,  0.],
                        [ 0.,  0.,  0.,  1.]])
     img = nibabel.Nifti1Image(data, affine)
-    plot_img(img)
+    display = plot_img(img)
+    display.add_overlay(img)
