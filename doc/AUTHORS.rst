@@ -3,9 +3,10 @@
 People
 ------
 
-This work is made available by a community, amongst which the `INRIA
-Parietal Project Team <https://parietal.saclay.inria.fr/>`_ and
-the `scikit-learn <http://scikit-learn.org/>`_ folks, in particular:
+This work is made available by a community of people, amongst which
+the `INRIA Parietal Project Team <https://parietal.saclay.inria.fr/>`_
+and the `scikit-learn <http://scikit-learn.org/>`_ folks, in
+particular:
 
 * Alexandre Abraham
 * `Alexandre Gramfort <http://alexandre.gramfort.net>`_
