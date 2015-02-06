@@ -3,7 +3,7 @@
 nilearn
 =======
 
-NiLearn is a Python module for fast and easy statistical learning on
+Nilearn is a Python module for fast and easy statistical learning on
 NeuroImaging data.
 
 It leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate

@@ -1,4 +1,4 @@
-"""Logging facility for NiLearn"""
+"""Logging facility for nilearn"""
 
 # Author: Philippe Gervais
 # License: simplified BSD

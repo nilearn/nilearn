@@ -146,9 +146,9 @@ def check_niimg(niimg, ensure_3d=False):
 
     Notes
     -----
-    In NiLearn, special care has been taken to make image manipulation easy.
+    In nilearn, special care has been taken to make image manipulation easy.
     This method is a kind of pre-requisite for any data processing method in
-    NiLearn because it checks if data have a correct format and loads them if
+    nilearn because it checks if data have a correct format and loads them if
     necessary.
 
     Its application is idempotent.

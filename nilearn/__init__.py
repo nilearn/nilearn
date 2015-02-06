@@ -2,7 +2,7 @@
 Machine Learning module for NeuroImaging in python
 ==================================================
 
-NiLearn aims to simplify the use of the scikit-learn in the context of
+Nilearn aims to simplify the use of the scikit-learn in the context of
 neuroimaging. It provides specific input/output functions, algorithms and
 visualization tools.
 

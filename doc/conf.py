@@ -76,7 +76,7 @@ plot_gallery = True
 master_doc = 'user_guide'
 
 # General information about the project.
-project = u'NiLearn'
+project = u'Nilearn'
 copyright = u'INRIA Parietal 2010-2013'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -154,7 +154,7 @@ html_theme_path = ['themes']
 html_title = "Machine learning for NeuroImaging"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = 'NiLearn'
+html_short_title = 'Nilearn'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.

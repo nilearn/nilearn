@@ -5,7 +5,7 @@
 
 .. container:: index-paragraph
 
-    NiLearn is a Python module for **fast and easy statistical learning on
+    Nilearn is a Python module for **fast and easy statistical learning on
     NeuroImaging** data.
 
     It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
@@ -78,5 +78,5 @@
    </div>
    <div style="clear: left"></div>
 
-NiLearn is part of the `NiPy ecosystem <http://nipy.org>`_.
+Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
 

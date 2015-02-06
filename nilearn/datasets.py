@@ -2271,7 +2271,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
                         334, 347, 360, 364, 391, 393, 412, 414, 427, 436]
 
     if dartel_version:
-        # DARTEL produces outliers that are hidden by Nilearn's API
+        # DARTEL produces outliers that are hidden by nilearn API
         removed_outliers = [27, 57, 66, 83, 122, 157, 222, 269, 282, 287,
                             309, 428]
         missing_subjects = sorted(missing_subjects + removed_outliers)
@@ -2290,7 +2290,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects]
     else:
-        # only one gross outlier produced, hidden by Nilearn's API
+        # only one gross outlier produced, hidden by nilearn API
         removed_outliers = [390]
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
