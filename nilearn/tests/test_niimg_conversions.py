@@ -23,6 +23,8 @@ from nilearn import _utils
 from nilearn._utils import testing
 from nilearn._utils.testing import assert_raises_regexp
 
+from .. import datasets
+
 
 class PhonyNiimage(object):
 
@@ -208,3 +210,28 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
+
+
+def test_is_hdr_equal():
+    img1 = datasets.load_mni152_template()
+    aff1 = img1.get_affine()
+    data1 = img1.get_data()
+
+    assert_true(_utils.is_hdr_equal(img1, img1))
+
+    # check affine skipping
+    from copy import deepcopy
+    aff2 = deepcopy(aff1)
+    aff2[0, 0] = -123
+    img2 = nibabel.Nifti1Image(img1.get_data(), affine=aff2)
+    assert_true(_utils.is_hdr_equal(img1, img2, skip_affine=True))
+    assert_true(not _utils.is_hdr_equal(img1, img2, skip_affine=False))
+
+    # check dtype skipping
+    data3 = np.array(data1, dtype=np.float64)  # cast int16 into float64
+    img3 = nibabel.Nifti1Image(data3, affine=aff1)
+    assert_true(_utils.is_hdr_equal(img1, img3, skip_affine=True,
+                                    skip_datatype=True))
+    assert_true(not _utils.is_hdr_equal(img1, img3, skip_affine=True,
+                                 skip_datatype=False))
+

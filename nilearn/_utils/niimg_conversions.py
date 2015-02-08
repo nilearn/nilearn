@@ -429,8 +429,10 @@ def is_hdr_equal(niimg1, niimg2, skip_affine=True, skip_datatype=False):
         hdr_items_to_check.remove('srow_x')
         hdr_items_to_check.remove('srow_y')
         hdr_items_to_check.remove('srow_z')
+        hdr_items_to_check.remove('pixdim')
     if skip_datatype:
         hdr_items_to_check.remove('datatype')
+        hdr_items_to_check.remove('bitpix')
 
     # compare the two headers field-by-field
     hdr1 = img1.get_header()
