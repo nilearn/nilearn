@@ -1,8 +1,8 @@
 """
 Test the niimg_conversions
 
-This test file is in nilearn/tests because nosetests seems to ignore modules whose
-name starts with an underscore
+This test file is in nilearn/tests because nosetests seems to ignore modules
+whose name starts with an underscore
 """
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
