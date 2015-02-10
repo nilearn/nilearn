@@ -6,9 +6,9 @@ import tempfile
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
@@ -20,9 +20,9 @@ from ...datasets import load_mni152_template
 
 def test_demo_ortho_slicer():
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     pl.clf()
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     img = load_mni152_template()
@@ -32,9 +32,9 @@ def test_demo_ortho_slicer():
 
 def test_stacked_slicer():
     # Test stacked slicers, like the XSlicer
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     pl.clf()
     img = load_mni152_template()
     slicer = XSlicer.init_with_figure(img=img, cut_coords=3)
@@ -46,9 +46,9 @@ def test_stacked_slicer():
 
 def test_demo_ortho_projector():
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     pl.clf()
     img = load_mni152_template()
     oprojector = OrthoProjector.init_with_figure(img=img)

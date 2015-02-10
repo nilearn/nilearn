@@ -12,9 +12,9 @@ from functools import partial
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
 except ImportError:
     raise SkipTest('Could not import matplotlib')
 
@@ -47,9 +47,9 @@ def demo_plot_roi(**kwargs):
 
 def test_demo_plot_roi():
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     demo_plot_roi()
     # Test the black background code path
     demo_plot_roi(black_bg=True)
@@ -60,9 +60,9 @@ def test_demo_plot_roi():
 
 def test_plot_functions():
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     data_positive = np.zeros((7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = 1
     data_negative = -data_positive
@@ -111,9 +111,9 @@ def test_plot_img_empty():
     # Test that things don't crash when we give a map with nothing above
     # threshold
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('template', warn=False)
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     data = np.zeros((20, 20, 20))
     img = nibabel.Nifti1Image(data, mni_affine)
     plot_anat(img)
@@ -130,7 +130,7 @@ def test_plot_img_invalid():
 
 def test_plot_img_with_auto_cut_coords():
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -142,7 +142,7 @@ def test_plot_img_with_auto_cut_coords():
 
 def test_plot_img_with_resampling():
     import pylab as pl
-    pl.switch_backend('svg')
+    pl.switch_backend('template')
     data = MNI152TEMPLATE.get_data()[:5, :5, :5]
     affine = np.array([[ 1., -1.,  0.,  0.],
                        [ 1.,  1.,  0.,  0.],
