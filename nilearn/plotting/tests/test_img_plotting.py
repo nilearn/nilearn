@@ -104,7 +104,7 @@ def test_plot_functions():
             out = func(img,
                        output_file=tempfile.TemporaryFile(suffix='.png'))
             assert_true(out is None)
-        pl.close('all')
+            pl.close('all')
 
 
 def test_plot_img_empty():
