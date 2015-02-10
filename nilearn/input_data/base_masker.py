@@ -176,7 +176,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                            ignore=['verbose', 'memory', 'copy'])(
                               imgs, self.mask_img_,
                               params,
-                              ref_memory_level=self.memory_level,
+                              memory_level=self.memory_level,
                               memory=self.memory,
                               verbose=self.verbose,
                               confounds=confounds,

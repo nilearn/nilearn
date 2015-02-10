@@ -77,8 +77,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Mask for the niimgs along time/fourth dimension. Thus complements
         3D masking by mask_img argument. Data preprocessing will ignore
         the time mask, whereas NiftiMasker.transform will only consider
-        time-masked images. Use case: Data subselection as part of a
-        sklearn pipeline.
+        time-masked images. This is useful to perform data subselection as part
+        of an sklearn pipeline.
 
     memory : instance of joblib.Memory or string
         Used to cache the masking process.
