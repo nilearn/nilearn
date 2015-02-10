@@ -10,12 +10,12 @@ test_signal.py for this.
 from tempfile import mkdtemp
 import shutil
 import os
-import numpy as np
 from distutils.version import LooseVersion
 
 from nose.tools import assert_true, assert_false, assert_raises
 from nose import SkipTest
 import numpy as np
+from numpy.testing import assert_array_equal
 
 from nibabel import Nifti1Image
 import nibabel
@@ -115,31 +115,33 @@ def test_mask_4d():
     # Dummy mask
     mask = np.zeros((10, 10, 10))
     mask[3:7, 3:7, 3:7] = 1
+    mask_bool = mask.astype(bool)
     mask_img = Nifti1Image(mask, np.eye(4))
-    n_mask_vox = len(np.where(mask == True)[0])
+    n_mask_vox = mask_bool.sum()
 
     # Dummy data
     data = np.zeros((10, 10, 10, 3))
     data[..., 0] = 1
-    data[..., -1] = 1
+    data[..., 1] = 2
+    data[..., 2] = 3
     data_img_4d = Nifti1Image(data, np.eye(4))
     data_imgs = [Nifti1Image(data[..., 0], np.eye(4)),
         Nifti1Image(data[..., 1], np.eye(4)),
         Nifti1Image(data[..., 2], np.eye(4))]
 
     # check whether transform is indeed selecting niimgs subset
-    mask_time = np.array([0, 2])
-    masker5 = NiftiMasker(mask_img=mask_img, mask_time=mask_time)
-    masker5.fit()
-    data_trans = masker5.transform(data_imgs)
-    assert_true(np.all(data_trans))
-    assert_true((2, n_mask_vox) == data_trans.shape)  # verify mask application
+    sample_mask = (True, False, True)
+    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker.fit()
+    data_trans = masker.transform(data_imgs)
+    data_trans_direct = data_img_4d.get_data()[mask_bool, :][..., sample_mask]
+    data_trans_direct = np.swapaxes(data_trans_direct, 0, 1)
+    assert_array_equal(data_trans, data_trans_direct)
 
-    masker5 = NiftiMasker(mask_img=mask_img, mask_time=mask_time)
-    masker5.fit()
-    data_trans = masker5.transform(data_img_4d)
-    assert_true(np.all(data_trans))
-    assert_true((2, n_mask_vox) == data_trans.shape)  # verify mask application
+    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker.fit()
+    data_trans2 = masker.transform(data_img_4d)
+    assert_array_equal(data_trans2, data_trans_direct)
 
 
 def test_sessions():

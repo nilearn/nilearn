@@ -28,7 +28,7 @@ def filter_and_mask(imgs, mask_img_,
                     verbose=0,
                     confounds=None,
                     copy=True,
-                    mask_time=None):
+                    sample_mask=None):
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
 
@@ -39,9 +39,11 @@ def filter_and_mask(imgs, mask_img_,
         class_name = enclosing_scope_name(stack_level=2)
 
     mask_img_ = _utils.check_niimg(mask_img_, ensure_3d=True)
-    imgs = _utils.check_niimgs(imgs, accept_3d=True)
-    if mask_time is not None:
-        imgs = image.index_img(imgs, mask_time)
+
+    if sample_mask is not None:
+        imgs = image.index_img(imgs, sample_mask)
+    else:
+        imgs = _utils.check_niimgs(imgs, accept_3d=True)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
@@ -160,7 +162,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """
 
     def transform_single_imgs(self, imgs, confounds=None, copy=True,
-                                mask_time=None):
+                                sample_mask=None):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
