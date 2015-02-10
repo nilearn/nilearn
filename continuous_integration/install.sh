@@ -70,9 +70,7 @@ elif [[ "$DISTRIB" == "ubuntu-no-matplotlib" ]]; then
 
 elif [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
-    wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
-    sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
-    sudo apt-get update -qq
+    bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
 
 elif [[ "$DISTRIB" == "conda" ]]; then
