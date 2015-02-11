@@ -162,7 +162,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """
 
     def transform_single_imgs(self, imgs, confounds=None, copy=True,
-                                sample_mask=None):
+                              sample_mask=None):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
