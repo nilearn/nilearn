@@ -14,7 +14,10 @@ from .base_masker import BaseMasker
 
 
 class NiftiMasker(BaseMasker, CacheMixin):
-    """Nifti data loader with preprocessing
+    """Helper for masking of Niimg-like objects. NiftiMasker is useful when
+    preprocessing (detrending, standardization, resampling, etc.) of in-mask
+    voxels is necessary. Use case: working with time series of resting-state
+    or task maps.
 
     Parameters
     ----------
