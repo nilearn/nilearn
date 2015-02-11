@@ -239,7 +239,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False,
         path = os.path.join(path, dataset_name)
         if os.path.exists(path) and os.path.isdir(path):
             if verbose > 1:
-                print 'Dataset found in', path
+                print('\nDataset found in %s\n' % path)
             return path
 
     # If not, create a folder in the first writeable directory
@@ -250,7 +250,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False,
             try:
                 os.makedirs(path)
                 if verbose > 0:
-                    print 'Dataset created in', path
+                    print('\nDataset created in %s\n' % path)
                 return path
             except Exception as exc:
                 short_error_message = getattr(exc, 'strerror', str(exc))
