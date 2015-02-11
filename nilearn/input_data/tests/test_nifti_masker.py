@@ -22,6 +22,7 @@ import nibabel
 
 from ..nifti_masker import NiftiMasker
 from ..._utils import testing
+from ...image import index_img
 
 
 def test_auto_mask():
@@ -125,16 +126,16 @@ def test_mask_4d():
     data[..., 1] = 2
     data[..., 2] = 3
     data_img_4d = Nifti1Image(data, np.eye(4))
-    data_imgs = [Nifti1Image(data[..., 0], np.eye(4)),
-        Nifti1Image(data[..., 1], np.eye(4)),
-        Nifti1Image(data[..., 2], np.eye(4))]
+    data_imgs = [index_img(data_img_4d, 0), index_img(data_img_4d, 1),
+                 index_img(data_img_4d, 2)]
 
     # check whether transform is indeed selecting niimgs subset
-    sample_mask = (True, False, True)
+    sample_mask = np.array([0, 2])
     masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
     masker.fit()
     data_trans = masker.transform(data_imgs)
-    data_trans_direct = data_img_4d.get_data()[mask_bool, :][..., sample_mask]
+    data_trans_img = index_img(data_img_4d, sample_mask)
+    data_trans_direct = data_trans_img.get_data()[mask_bool, :]
     data_trans_direct = np.swapaxes(data_trans_direct, 0, 1)
     assert_array_equal(data_trans, data_trans_direct)
 

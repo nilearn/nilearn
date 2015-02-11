@@ -173,16 +173,16 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
         data, _ = self._cache(filter_and_mask, func_memory_level=1,
-                           ignore=['verbose', 'memory', 'copy'])(
-                              imgs, self.mask_img_,
-                              params,
-                              memory_level=self.memory_level,
-                              memory=self.memory,
-                              verbose=self.verbose,
-                              confounds=confounds,
-                              copy=copy,
-                              sample_mask=sample_mask
-                            )
+                              ignore=['verbose', 'memory', 'copy'])(
+                                  imgs, self.mask_img_,
+                                  params,
+                                  memory_level=self.memory_level,
+                                  memory=self.memory,
+                                  verbose=self.verbose,
+                                  confounds=confounds,
+                                  copy=copy,
+                                  sample_mask=sample_mask
+                                  )
         return data
 
     def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):
