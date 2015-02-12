@@ -77,7 +77,7 @@ master_doc = 'user_guide'
 
 # General information about the project.
 project = u'Nilearn'
-copyright = u'INRIA Parietal 2010-2013'
+copyright = u'The nilearn developers 2010-2015'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
