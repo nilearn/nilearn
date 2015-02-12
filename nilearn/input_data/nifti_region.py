@@ -43,7 +43,12 @@ def _compose_err_msg(msg, **kwargs):
 
 
 class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Extract labeled-defined region signals from images.
+    """Class for masking of Niimg-like objects.
+    
+    NiftiLabelsMasker is useful when data from non-overlapping volumes should
+    be extracted (contrarily to NiftiMapsMasker). Use case: Summarize brain
+    signals from clusters that were obtained by prior K-means or Ward
+    clustering.
 
     Parameters
     ==========
@@ -299,7 +304,11 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
 
 class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Extract maps-defined region signals from images.
+    """Class for masking of Niimg-like objects.
+    
+    NiftiMapsMasker is useful when data from overlapping volumes should be
+    extracted (contrarily to NiftiLabelsMasker). Use case: Summarize brain
+    signals from large-scale networks obtained by prior PCA or ICA.
 
     Parameters
     ==========
