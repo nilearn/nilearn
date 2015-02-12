@@ -40,10 +40,9 @@ def filter_and_mask(imgs, mask_img_,
 
     mask_img_ = _utils.check_niimg(mask_img_, ensure_3d=True)
 
+    imgs = _utils.check_niimgs(imgs, accept_3d=True)
     if sample_mask is not None:
         imgs = image.index_img(imgs, sample_mask)
-    else:
-        imgs = _utils.check_niimgs(imgs, accept_3d=True)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
