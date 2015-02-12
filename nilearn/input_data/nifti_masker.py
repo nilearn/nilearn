@@ -77,6 +77,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
+    sample_mask : Any type compatible with numpy-array indexing
+        Masks the niimgs along time/fourth dimension. This complements
+        3D masking by the mask_img argument. This masking step is applied
+        before data preprocessing at the beginning of NiftiMasker.transform.
+        This is useful to perform data subselection as part of a scikit-learn
+        pipeline.
+
     memory : instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -111,7 +118,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
-                 mask_args=None,
+                 mask_args=None, sample_mask=None,
                  memory_level=1, memory=Memory(cachedir=None),
                  verbose=0
                  ):
@@ -129,6 +136,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
+        self.sample_mask = sample_mask
 
         self.memory = memory
         self.memory_level = memory_level
@@ -209,4 +217,4 @@ class NiftiMasker(BaseMasker, CacheMixin):
             related documentation for details
         """
         return self.transform_single_imgs(
-            imgs, confounds)
+            imgs, confounds, sample_mask=self.sample_mask)

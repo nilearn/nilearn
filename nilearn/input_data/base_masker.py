@@ -8,6 +8,7 @@ import warnings
 
 import numpy as np
 import itertools
+from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory, Parallel, delayed
@@ -26,7 +27,8 @@ def filter_and_mask(imgs, mask_img_,
                     memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    copy=True):
+                    copy=True,
+                    sample_mask=None):
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
 
@@ -37,7 +39,10 @@ def filter_and_mask(imgs, mask_img_,
         class_name = enclosing_scope_name(stack_level=2)
 
     mask_img_ = _utils.check_niimg(mask_img_, ensure_3d=True)
+
     imgs = _utils.check_niimgs(imgs, accept_3d=True)
+    if sample_mask is not None:
+        imgs = image.index_img(imgs, sample_mask)
 
     # Resampling: allows the user to change the affine, the shape or both
     if verbose > 1:
@@ -155,7 +160,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
 
-    def transform_single_imgs(self, imgs, confounds=None, copy=True):
+    def transform_single_imgs(self, imgs, confounds=None, copy=True,
+                              sample_mask=None):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
@@ -166,15 +172,16 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
         data, _ = self._cache(filter_and_mask, func_memory_level=1,
-                           ignore=['verbose', 'memory', 'copy'])(
-                                imgs, self.mask_img_,
-                                params,
-                                memory_level=self.memory_level,
-                                memory=self.memory,
-                                verbose=self.verbose,
-                                confounds=confounds,
-                                copy=copy
-                            )
+                              ignore=['verbose', 'memory', 'copy'])(
+                                  imgs, self.mask_img_,
+                                  params,
+                                  memory_level=self.memory_level,
+                                  memory=self.memory,
+                                  verbose=self.verbose,
+                                  confounds=confounds,
+                                  copy=copy,
+                                  sample_mask=sample_mask
+                                  )
         return data
 
     def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):
