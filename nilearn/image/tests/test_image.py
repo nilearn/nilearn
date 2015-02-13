@@ -327,6 +327,14 @@ def test_iter_img():
         assert_array_equal(img.get_affine(),
                            img_4d.get_affine())
 
+    with testing.write_tmp_imgs(img_4d) as img_4d_filename:
+        for i, img in enumerate(image.iter_img(img_4d_filename)):
+            expected_data_3d = img_4d.get_data()[..., i]
+            assert_array_equal(img.get_data(),
+                               expected_data_3d)
+            assert_array_equal(img.get_affine(),
+                               img_4d.get_affine())
+
     img_3d_list = list(image.iter_img(img_4d))
     for i, img in enumerate(image.iter_img(img_3d_list)):
         expected_data_3d = img_4d.get_data()[..., i]
@@ -334,3 +342,11 @@ def test_iter_img():
                            expected_data_3d)
         assert_array_equal(img.get_affine(),
                            img_4d.get_affine())
+
+    with testing.write_tmp_imgs(*img_3d_list) as img_3d_filenames:
+        for i, img in enumerate(image.iter_img(img_3d_filenames)):
+            expected_data_3d = img_4d.get_data()[..., i]
+            assert_array_equal(img.get_data(),
+                               expected_data_3d)
+            assert_array_equal(img.get_affine(),
+                               img_4d.get_affine())
