@@ -387,10 +387,10 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     # Now, we load data as we know its format
     if dim == 4:
         if return_iterator:
-            result = (_index_niimgs(niimgs, i)
-                      for i in range(_get_shape(niimgs)[3]))
+            result = (_index_niimgs(first_img, i)
+                      for i in range(shape[3]))
         else:
-            result = check_niimg(niimgs)
+            result = first_img
     else:
         if return_iterator:
             result = (check_niimg(img) for img in niimgs)
