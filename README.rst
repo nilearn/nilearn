@@ -20,7 +20,7 @@ Important links
 ===============
 
 - Official source code repo: https://github.com/nilearn/nilearn/
-- HTML documentation (stable release): http://nilearn.github.com/
+- HTML documentation (stable release): http://nilearn.github.io/
 
 Dependencies
 ============

@@ -38,9 +38,9 @@ DESCRIPTION = 'Statistical learning for neuroimaging in Python'
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
-URL = 'http://nilearn.github.com'
+URL = 'http://nilearn.github.io'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'http://nilearn.github.com'
+DOWNLOAD_URL = 'http://nilearn.github.io'
 VERSION = _VERSION_GLOBALS['__version__']
 
 

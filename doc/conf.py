@@ -223,7 +223,7 @@ htmlhelp_basename = 'PythonScientic'
 latex_documents = [
   ('index', 'nilearn.tex', u'NeuroImaging with scikit-learn',
    ur"""Gaël Varoquaux and Alexandre Abraham"""
-   + r"\\\relax ~\\\relax http://nilearn.github.com",
+   + r"\\\relax ~\\\relax http://nilearn.github.io",
    'manual'),
 
 ]
