@@ -17,9 +17,11 @@ from .base_masker import BaseMasker
 
 
 class MultiNiftiMasker(BaseMasker, CacheMixin):
-    """Helper for masking of Niimg-like objects. MultiNiftiMasker is useful
-    when dealing with image sets from multiple subjects. Use case: integrates
-    well with decomposition by MultiPCA and CanICA (multi-subject models)
+    """Class for masking of Niimg-like objects.
+
+    MultiNiftiMasker is useful when dealing with image sets from multiple
+    subjects. Use case: integrates well with decomposition by MultiPCA and
+    CanICA (multi-subject models)
 
     Parameters
     ==========
