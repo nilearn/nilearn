@@ -18,8 +18,6 @@ def generate_gallery_rst(app):
     except TypeError:
         plot_gallery = bool(app.builder.config.plot_gallery)
 
-    if not plot_gallery:
-        return
 
     input_conf = app.config.sphinxgallery_conf
     gallery_conf = DEFAULT_CONF
