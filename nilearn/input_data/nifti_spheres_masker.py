@@ -163,9 +163,15 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
             seeds = np.asarray(seeds)
             self.seeds_ = np.dot(seeds_img.get_affine(), seeds)[:3].T
         else:
-            for seed in self.seeds:
-                if not len(seed) == 3:
-                    raise ValueError('Seeds must be triples')
+            # This is not elegant but this is the easiest way to test it.
+            try:
+                for seed in self.seeds:
+                    assert(len(seed) == 3)
+            except Exception as e:
+                if self.verbose > 0:
+                    print('Seeds not valid, error' + str(e))
+                raise ValueError('Seeds must be a list of triplets of '
+                                 'coordinates in native space.')
             self.seeds_ = self.seeds
         return self
 

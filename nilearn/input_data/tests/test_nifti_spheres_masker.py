@@ -2,6 +2,7 @@ import nibabel
 import numpy as np
 from numpy.testing import assert_array_equal
 from nilearn.input_data import NiftiSpheresMasker
+from nilearn._utils.testing import assert_raises_regexp
 
 
 def test_seed_extraction():
@@ -95,3 +96,8 @@ def test_niimg_extraction():
     s = masker.transform(img)
     assert_array_equal(s[:, 0], data[0, 2, 0])
     assert_array_equal(s[:, 1], data[2, 0, 0])
+
+
+def test_errors():
+    masker = NiftiSpheresMasker(([1, 2]), radius=.2)
+    assert_raises_regexp(ValueError, 'Seeds must be a list .+', masker.fit)
