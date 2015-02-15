@@ -10,9 +10,8 @@ from sklearn.externals.joblib import Memory
 import nibabel
 
 from .. import _utils
-from .._utils import logger
-from .._utils import CacheMixin
-from .._utils.niimg_conversions import _check_same_fov
+from .._utils import logger, CacheMixin
+from .._utils.niimg_conversions import is_img, check_niimg
 from .. import signal
 from .. import region
 from .. import masking
@@ -23,23 +22,25 @@ def _signals_from_seeds(seeds, niimg, radius):
     """ Note: this function is sub-optimal for small radius
     """
     n_seeds = len(seeds)
-    niimg = _check_niimg(niimg)
+    niimg = check_niimg(niimg)
     shape = niimg.get_data().shape
     affine = niimg.get_affine()
     signals = np.empty((shape[3], n_seeds))
     # Create an array of shape (3, array.shape) containing the i, j, k indices
-    coords = np.vstack((np.indices(array.shape[:3]),
-                        np.ones((1,) + array.shape[:3])))
+    coords = np.vstack((np.indices(shape[:3]),
+                        np.ones((1,) + shape[:3])))
     # Transform the indices into native space
     coords = np.tensordot(affine, coords, axes=[[1], [0]])[:3]
     for i, seed in enumerate(seeds):
+        seed = np.asarray(seed)
         # Compute square distance to the seed
         dist = ((coords - seed[:, None, None, None]) ** 2).sum(axis=0)
         if radius is None or radius ** 2 < np.min(dist):
-            signal[:, i] = signals[np.argmin(dist)]
+            signals[:, i] = niimg.get_data()[
+                    np.unravel_index(np.argmin(dist), dist.shape)]
         else:
             mask = (dist <= radius ** 2)
-            signals[:, i] = np.mean(signals[mask], axis=0)
+            signals[:, i] = np.mean(niimg.get_data()[mask], axis=0)
     return signals
 
 
@@ -213,19 +214,18 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         logger.log("extracting region signals", verbose=self.verbose)
         signals = self._cache(
             _signals_from_seeds, func_memory_level=1)(
-                self.seeds_, imgs,
-                background_label=self.background_label)
+                self.seeds_, imgs, radius=self.radius)
 
         logger.log("cleaning extracted signals", verbose=self.verbose)
-        region_signals = self._cache(signal.clean, func_memory_level=1
-                                     )(region_signals,
+        signals = self._cache(signal.clean, func_memory_level=1
+                                     )(signals,
                                        detrend=self.detrend,
                                        standardize=self.standardize,
                                        t_r=self.t_r,
                                        low_pass=self.low_pass,
                                        high_pass=self.high_pass,
                                        confounds=confounds)
-        return region_signals
+        return signals
 
     def inverse_transform(self, signals):
         raise ValueError('Inverse transformation has no sense for seeds.')
