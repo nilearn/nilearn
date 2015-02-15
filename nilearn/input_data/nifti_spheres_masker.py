@@ -83,12 +83,22 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ==========
+<<<<<<< HEAD
     seeds: List of triplet of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
     radius: float, optional.
         Indicates, in millimeters, the radius for the sphere around the seed.
+=======
+    seeds: Niimg-like object or list of triplet of coordinates in native space
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Seed definitions. If a Niimg-like object is given, the seeds are all
+        non-zero values.
+
+    radius: float, optional.
+        Indicates, in millimeters, the radius fo the sphere around the seed.
+>>>>>>> Add the NiftiSeedsMasker.
         Default is None (signal is extracted on a single voxel).
 
     smoothing_fwhm: float, optional
@@ -97,7 +107,11 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
+<<<<<<< HEAD
         their mean is set to 0 and their variance to 1 in the time dimension.
+=======
+        their mean is put to 0 and their variance to 1 in the time dimension.
+>>>>>>> Add the NiftiSeedsMasker.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -125,7 +139,11 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         the number of functions that will be cached. Zero means no caching.
 
     verbose: integer, optional
+<<<<<<< HEAD
         Indicate the level of verbosity. By default, nothing is printed.
+=======
+        Indicate the level of verbosity. By default, nothing is printed
+>>>>>>> Add the NiftiSeedsMasker.
 
     See also
     ========
