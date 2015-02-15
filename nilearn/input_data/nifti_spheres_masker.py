@@ -77,10 +77,9 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ==========
-    seeds: Niimg-like object or list of triplet of coordinates in native space
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        Seed definitions. If a Niimg-like object is given, the seeds are taken
-        to be the locations indicated by all voxels with non-zero values.
+    seeds: List of triplet of coordinates in native space
+        Seed definitions. List of coordinates of the seeds in the same space
+        as the images (typically MNI or TAL).
 
     radius: float, optional.
         Indicates, in millimeters, the radius for the sphere around the seed.
@@ -156,24 +155,16 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         All parameters are unused, they are for scikit-learn compatibility.
         """
-        if isinstance(self.seeds, basestring) or is_img(self.seeds):
-            # Take the coordinates of seeds in native space
-            seeds_img = check_niimg(self.seeds, ensure_3d=True)
-            seeds = list(np.where(seeds_img.get_data()))
-            seeds.append(np.ones(len(seeds[0])))
-            seeds = np.asarray(seeds)
-            self.seeds_ = np.dot(seeds_img.get_affine(), seeds)[:3].T
-        else:
             # This is not elegant but this is the easiest way to test it.
-            try:
-                for seed in self.seeds:
-                    assert(len(seed) == 3)
-            except Exception as e:
-                if self.verbose > 0:
-                    print('Seeds not valid, error' + str(e))
-                raise ValueError('Seeds must be a list of triplets of '
-                                 'coordinates in native space.')
-            self.seeds_ = self.seeds
+        try:
+            for seed in self.seeds:
+                assert(len(seed) == 3)
+        except Exception as e:
+            if self.verbose > 0:
+                print('Seeds not valid, error' + str(e))
+            raise ValueError('Seeds must be a list of triplets of '
+                             'coordinates in native space.')
+        self.seeds_ = self.seeds
         return self
 
     def fit_transform(self, imgs, confounds=None):
