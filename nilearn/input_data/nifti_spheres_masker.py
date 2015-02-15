@@ -157,11 +157,11 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         if isinstance(self.seeds, basestring) or is_img(self.seeds):
             # Take the coordinates of seeds in native space
-            seeds_img = check_niimage(self.seeds, ensure_3d=True)
-            seeds = np.where(seeds_img.get_data())
+            seeds_img = check_niimg(self.seeds, ensure_3d=True)
+            seeds = list(np.where(seeds_img.get_data()))
             seeds.append(np.ones(len(seeds[0])))
             seeds = np.asarray(seeds)
-            self.seeds_ = np.dot(seeds_img.get_affine(), seeds)[3:].T
+            self.seeds_ = np.dot(seeds_img.get_affine(), seeds)[:3].T
         else:
             for seed in self.seeds:
                 if not len(seed) == 3:
