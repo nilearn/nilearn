@@ -27,6 +27,7 @@ def _signals_from_seeds(seeds, niimg, radius):
     affine = niimg.get_affine()
     signals = np.empty((shape[3], n_seeds))
     # Create an array of shape (3, array.shape) containing the i, j, k indices
+    # in voxel space
     coords = np.vstack((np.indices(shape[:3]),
                         np.ones((1,) + shape[:3])))
     # Transform the indices into native space
@@ -185,7 +186,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              % self.__class__.__name__)
 
     def transform(self, imgs, confounds=None):
-        """Extract signals from images.
+        """Extract signals from Nifti-like objects.
 
         Parameters
         ==========
@@ -232,6 +233,3 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        high_pass=self.high_pass,
                                        confounds=confounds)
         return signals
-
-    def inverse_transform(self, signals):
-        raise ValueError('Inverse transformation has no sense for seeds.')
