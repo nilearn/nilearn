@@ -20,9 +20,9 @@ from numpy.testing import assert_array_equal
 from nibabel import Nifti1Image
 import nibabel
 
-from ..nifti_masker import NiftiMasker
-from ..._utils import testing
-from ...image import index_img
+from nilearn.input_data.nifti_masker import NiftiMasker
+from nilearn._utils import testing
+from nilearn.image import index_img
 
 
 def test_auto_mask():

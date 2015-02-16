@@ -12,10 +12,11 @@ try:
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
-from ..displays import OrthoSlicer, XSlicer, OrthoProjector
-from ...datasets import load_mni152_template
+from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
+from nilearn.datasets import load_mni152_template
 
-################################################################################
+
+###############################################################################
 # Some smoke testing for graphics-related code
 
 def test_demo_ortho_slicer():

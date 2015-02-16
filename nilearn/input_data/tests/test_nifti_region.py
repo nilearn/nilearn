@@ -10,9 +10,8 @@ import numpy as np
 
 import nibabel
 
-from ..nifti_region import NiftiLabelsMasker, NiftiMapsMasker
-from ..._utils import testing
-from ..._utils import as_ndarray
+from nilearn.input_data.nifti_region import NiftiLabelsMasker, NiftiMapsMasker
+from nilearn._utils import testing, as_ndarray
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
@@ -57,7 +56,7 @@ def test_nifti_labels_masker():
         ValueError,
         'has not been fitted. ', masker11.transform, fmri11_img)
 
-    # No exception raised here    
+    # No exception raised here
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
@@ -199,7 +198,6 @@ def test_nifti_labels_masker_resampling():
     assert_equal(fmri11_img_r.shape,
                  (masker.labels_img_.shape[:3] + (length,)))
 
-
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
     shape22 = (5, 5, 6)
@@ -292,7 +290,6 @@ def test_nifti_maps_masker():
     assert_equal(fmri11_img_r.shape, fmri11_img.shape)
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
                                    fmri11_img.get_affine())
-
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
@@ -425,4 +422,3 @@ def test_nifti_maps_masker_2():
                                    masker.maps_img_.get_affine())
     assert_equal(fmri11_img_r.shape,
                  (masker.maps_img_.shape[:3] + (length,)))
-

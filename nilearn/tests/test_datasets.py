@@ -17,8 +17,8 @@ import nibabel
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
-from .. import datasets
-from .._utils.testing import (mock_urllib2, wrap_chunk_read_,
+from nilearn import datasets
+from nilearn._utils.testing import (mock_urllib2, wrap_chunk_read_,
     FetchFilesMock, assert_raises_regexp)
 
 

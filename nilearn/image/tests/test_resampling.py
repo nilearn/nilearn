@@ -12,9 +12,10 @@ import numpy as np
 
 from nibabel import Nifti1Image
 
-from ..resampling import resample_img, BoundingBoxError, reorder_img, \
-    from_matrix_vector, coord_transform
-from ..._utils import testing
+from nilearn.image.resampling import resample_img, BoundingBoxError, \
+        reorder_img, from_matrix_vector, coord_transform
+from nilearn._utils import testing
+
 
 ###############################################################################
 # Helper function
@@ -51,7 +52,7 @@ def pad(array, *args):
 
     padded = np.zeros(new_shape, dtype=array.dtype)
     source_slices = [slice(max(-lp, 0), min(s + up, s))
-                     for lp, up, s in zip(lower_paddings, 
+                     for lp, up, s in zip(lower_paddings,
                                           upper_paddings,
                                           array.shape)]
     target_slices = [slice(max(lp, 0), min(s - up, s))
@@ -61,6 +62,7 @@ def pad(array, *args):
 
     padded[target_slices] = array[source_slices].copy()
     return padded
+
 
 ###############################################################################
 # Tests
@@ -368,8 +370,7 @@ def test_resampling_nan():
 
         # Check that what was not finite is still not finite
         assert_false(np.any(np.isfinite(
-                        resampled_data[np.logical_not(non_nan)]
-                     )))
+                        resampled_data[np.logical_not(non_nan)])))
 
     # Test with an actual resampling, in the case of a bigish hole
     # This checks the extrapolation mechanism: if we don't do any
@@ -398,7 +399,7 @@ def test_reorder_img():
     ref_img = Nifti1Image(data, affine)
     # Test with purely positive matrices and compare to a rotation
     for theta, phi in np.random.randint(4, size=(5, 2)):
-        rot = rotation(theta*np.pi/2, phi*np.pi/2)
+        rot = rotation(theta * np.pi / 2, phi * np.pi / 2)
         rot[np.abs(rot) < 0.001] = 0
         rot[rot > 0.9] = 1
         rot[rot < -0.9] = 1
@@ -444,7 +445,7 @@ def test_reorder_img():
     for i in (0, 1, 2):
         # Make a diagonal affine with a negative axis, and check that
         # can be reordered, also vary the shape
-        shape = (i+1, i+2, 3-i)
+        shape = (i + 1, i + 2, 3 - i)
         affine = np.eye(4)
         affine[i, i] *= -1
         img = Nifti1Image(data, affine)
@@ -460,7 +461,7 @@ def test_reorder_img():
         # Test that the affine is indeed diagonal:
         np.testing.assert_array_equal(img2.get_affine()[:3, :3],
                                       np.diag(np.diag(
-                                            img2.get_affine()[:3, :3])))
+                                              img2.get_affine()[:3, :3])))
         assert_true(np.all(np.diag(img2.get_affine()) >= 0))
 
 
@@ -502,9 +503,9 @@ def test_coord_transform_trivial():
 
     sform[:, -1] = 1
     x_, y_, z_ = coord_transform(x, y, z, sform)
-    np.testing.assert_array_equal(x+1, x_)
-    np.testing.assert_array_equal(y+1, y_)
-    np.testing.assert_array_equal(z+1, z_)
+    np.testing.assert_array_equal(x + 1, x_)
+    np.testing.assert_array_equal(y + 1, y_)
+    np.testing.assert_array_equal(z + 1, z_)
 
 
 def test_resample_img_segmentation_fault():

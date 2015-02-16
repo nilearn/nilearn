@@ -13,8 +13,8 @@ from nibabel import Nifti1Image
 import nibabel
 from distutils.version import LooseVersion
 
-from ..multi_nifti_masker import MultiNiftiMasker
-from ..._utils import testing
+from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
+from nilearn._utils import testing
 
 
 def test_auto_mask():

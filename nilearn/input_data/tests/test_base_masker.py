@@ -6,9 +6,10 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 import nibabel
 
-from ..base_masker import filter_and_mask
-from ... import image
-from ..._utils.testing import assert_raises_regexp
+from nilearn.input_data.base_masker import filter_and_mask
+from nilearn import image
+from nilearn._utils.testing import assert_raises_regexp
+
 
 def test_cropping_code_paths():
     # Will mask data with an identically sampled mask and

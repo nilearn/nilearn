@@ -12,8 +12,8 @@ from nose.tools import assert_true, assert_false, assert_equal, \
 
 from nibabel import Nifti1Image
 
-from .. import masking
-from ..masking import compute_epi_mask, compute_multi_epi_mask, \
+from nilearn import masking
+from nilearn.masking import compute_epi_mask, compute_multi_epi_mask, \
     compute_background_mask, unmask, intersect_masks, MaskWarning, \
     _load_mask_img
 

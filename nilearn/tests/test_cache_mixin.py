@@ -12,7 +12,7 @@ from nose.tools import assert_false, assert_true
 from sklearn.externals.joblib import Memory
 
 import nilearn
-from .._utils import cache_mixin
+from nilearn._utils import cache_mixin
 
 
 def f(x):
