@@ -18,8 +18,7 @@ import gzip
 import posixpath
 import subprocess
 from six import string_types
-from six.moves import cPickle, urllib
-from six.moves.StringIO import StringIO
+from six.moves import cPickle, urllib, StringIO
 from time import time
 
 try:
