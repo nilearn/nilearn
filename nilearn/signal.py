@@ -297,6 +297,16 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     return u
 
 
+def _ensure_float(data):
+    "Make sure that data is a float type"
+    if not data.dtype.kind == 'f':
+        if data.dtype.itemsize == '8':
+            data = data.astype(np.float64)
+        else:
+            data = data.astype(np.float32)
+    return data
+
+
 def clean(signals, detrend=True, standardize=True, confounds=None,
           low_pass=None, high_pass=None, t_r=2.5):
     """Improve SNR on masked fMRI signals.
@@ -363,13 +373,13 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                       (list, tuple, basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
-
     # Standardize / detrend
     normalize = False
     if confounds is not None:
         # If confounds are to be removed, then force normalization to improve
         # matrix conditioning.
         normalize = True
+    signals = _ensure_float(signals)
     signals = _standardize(signals, normalize=normalize, detrend=detrend)
 
     # Remove confounds
@@ -409,6 +419,8 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         # Restrict the signal to the orthogonal of the confounds
         confounds = np.hstack(all_confounds)
         del all_confounds
+
+        confounds = _ensure_float(confounds)
         confounds = _standardize(confounds, normalize=True, detrend=detrend)
         Q = linalg.qr(confounds, mode='economic')[0]
         signals -= np.dot(Q, np.dot(Q.T, signals))
