@@ -308,6 +308,7 @@ def test_signal_extraction_with_maps_and_labels():
     labels_signals, labels_labels =\
                     region.img_to_signals_labels(fmri_img, labels_img,
                                                  mask_img=mask_img)
+
     maps_signals, maps_labels = \
                   region.img_to_signals_maps(fmri_img, maps_img,
                                              mask_img=mask_img)

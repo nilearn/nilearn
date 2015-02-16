@@ -53,7 +53,7 @@ def test_nifti_labels_masker():
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         ValueError,
         'has not been fitted. ', masker11.transform, fmri11_img)
 
@@ -91,7 +91,7 @@ def test_nifti_labels_masker():
     signals11 = masker11.fit_transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         ValueError, 'has not been fitted. ',
         NiftiLabelsMasker(labels11_img).inverse_transform, signals11)
 
