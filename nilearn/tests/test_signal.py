@@ -11,8 +11,8 @@ from nose.tools import assert_true, assert_false, assert_raises
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
-from .. import signal as nisignal
-from ..signal import clean
+from nilearn import signal as nisignal
+from nilearn.signal import clean
 import scipy.signal
 
 

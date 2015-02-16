@@ -13,7 +13,7 @@ try:
 except ImportError:
     raise SkipTest('Could not import matplotlib')
 
-from ..cm import dim_cmap, replace_inside
+from nilearn.plotting.cm import dim_cmap, replace_inside
 
 
 def test_dim_cmap():

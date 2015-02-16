@@ -9,11 +9,11 @@ from nose.tools import assert_raises, assert_true
 
 import nibabel
 
-from .. import region
-from .._utils.testing import generate_timeseries, generate_regions_ts
-from .._utils.testing import generate_labeled_regions, generate_maps
-from .._utils.testing import generate_fake_fmri
-from .._utils.testing import write_tmp_imgs, assert_raises_regexp
+from nilearn import region
+from nilearn._utils.testing import generate_timeseries, generate_regions_ts
+from nilearn._utils.testing import generate_labeled_regions, generate_maps
+from nilearn._utils.testing import generate_fake_fmri
+from nilearn._utils.testing import write_tmp_imgs, assert_raises_regexp
 
 
 def test_generate_regions_ts():

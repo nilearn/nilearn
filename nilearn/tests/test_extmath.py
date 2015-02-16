@@ -6,7 +6,7 @@ import nose
 
 import numpy as np
 
-from .._utils.extmath import fast_abs_percentile, is_spd
+from nilearn._utils.extmath import fast_abs_percentile, is_spd
 
 
 def test_fast_abs_percentile():

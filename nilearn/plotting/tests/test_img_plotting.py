@@ -20,9 +20,9 @@ except ImportError:
 
 import nibabel
 
-from ...image.resampling import coord_transform
-from ..img_plotting import MNI152TEMPLATE, plot_anat, plot_img, plot_roi,\
-    plot_stat_map, plot_epi, plot_glass_brain
+from nilearn.image.resampling import coord_transform
+from nilearn.plotting.img_plotting import MNI152TEMPLATE, plot_anat, \
+        plot_img, plot_roi, plot_stat_map, plot_epi, plot_glass_brain
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                         [   0.,    2.,    0., -126.],
@@ -39,8 +39,8 @@ def demo_plot_roi(**kwargs):
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z,
                                           np.linalg.inv(mni_affine))
-    data[int(x_map)-5:int(x_map)+5, int(y_map)-3:int(y_map)+3,
-         int(z_map)-10:int(z_map)+10] = 1
+    data[int(x_map) - 5:int(x_map) + 5, int(y_map) - 3:int(y_map) + 3,
+         int(z_map) - 10:int(z_map) + 10] = 1
     img = nibabel.Nifti1Image(data, mni_affine)
     return plot_roi(img, title="Broca's area", **kwargs)
 
