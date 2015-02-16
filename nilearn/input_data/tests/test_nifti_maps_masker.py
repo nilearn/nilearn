@@ -10,7 +10,8 @@ import numpy as np
 
 import nibabel
 
-from nilearn.input_data.nifti_region import NiftiLabelsMasker, NiftiMapsMasker
+from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
+from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray
 
 
@@ -18,6 +19,7 @@ def generate_random_img(shape, length=1, affine=np.eye(4),
                         rand_gen=np.random.RandomState(0)):
     data = rand_gen.randn(*(shape + (length,)))
     return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
+                    as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
 
 def test_nifti_maps_masker():

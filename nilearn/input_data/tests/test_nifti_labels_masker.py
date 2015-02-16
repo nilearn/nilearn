@@ -10,9 +10,9 @@ import numpy as np
 
 import nibabel
 
-from ..nifti_labels_masker import NiftiLabelsMasker
-from ..._utils import testing
-from ..._utils import as_ndarray
+from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
+from nilearn._utils import testing
+from nilearn._utils import as_ndarray
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
