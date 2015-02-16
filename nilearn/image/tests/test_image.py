@@ -7,7 +7,7 @@ import nibabel
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from nilearn import image
+from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
 from nilearn._utils import testing, niimg_conversions
