@@ -66,7 +66,7 @@ for train, test in cv:
     cv_scores.append(np.sum(prediction == target[test])
                      / float(np.size(target[test])))
 
-print (cv_scores)
+print(cv_scores)
 
 ### Unmasking #################################################################
 

@@ -156,7 +156,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print ("[%s.fit] Loading data from %s" % (
+            print("[%s.fit] Loading data from %s" % (
                             self.__class__.__name__,
                             _utils._repr_niimgs(imgs)[:200]))
 
@@ -172,7 +172,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                     "Acceptable values are 'background' and 'epi'." % self.mask_strategy)
             if self.verbose > 0:
-                print ("[%s.fit] Computing the mask" % self.__class__.__name__)
+                print("[%s.fit] Computing the mask" % self.__class__.__name__)
             imgs = _utils.check_niimgs(imgs, accept_3d=True)
             self.mask_img_ = self._cache(compute_mask,
                               func_memory_level=1,
@@ -187,7 +187,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
-            print ("[%s.fit] Resampling mask" % self.__class__.__name__)
+            print("[%s.fit] Resampling mask" % self.__class__.__name__)
         self.mask_img_ = self._cache(image.resample_img, func_memory_level=1)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -199,8 +199,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.affine_ = self.mask_img_.get_affine()
         # Load data in memory
         self.mask_img_.get_data()
-        if self.verbose > 10:
-            print ("[%s.fit] Finished fit" % self.__class__.__name__)
+        if self.verbose > 0:
+            print("[%s.fit] Finished fit" % self.__class__.__name__)
         return self
 
     def transform(self, imgs, confounds=None):

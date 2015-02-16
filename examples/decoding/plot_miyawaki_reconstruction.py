@@ -214,15 +214,15 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score)
 
-print ("Scores")
-print ("------")
-print ("  - Accuracy (percent): %f" % np.mean([
+print("Scores")
+print("------")
+print("  - Accuracy (percent): %f" % np.mean([
     accuracy_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
-print ("  - Precision: %f" % np.mean([
+print("  - Precision: %f" % np.mean([
     precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
-print ("  - Recall: %f" % np.mean([
+print("  - Recall: %f" % np.mean([
     recall_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
-print ("  - F1-score: %f" % np.mean([
+print("  - F1-score: %f" % np.mean([
     f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
 
 # Generate six images from reconstruction

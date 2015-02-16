@@ -152,13 +152,13 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print ("[%s.fit] Loading data from %s" % (
+            print("[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
                 _utils._repr_niimgs(imgs)[:200]))
         # Compute the mask if not given by the user
         if self.mask_img is None:
             if self.verbose > 0:
-                print ("[%s.fit] Computing mask" % self.__class__.__name__)
+                print("[%s.fit] Computing mask" % self.__class__.__name__)
             data = []
             if not isinstance(imgs, collections.Iterable) \
                     or isinstance(imgs, string_types):
@@ -204,7 +204,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
-            print ("[%s.transform] Resampling mask" % self.__class__.__name__)
+            print("[%s.transform] Resampling mask" % self.__class__.__name__)
         self.mask_img_ = self._cache(image.resample_img,
                                     func_memory_level=1)(
             self.mask_img_,

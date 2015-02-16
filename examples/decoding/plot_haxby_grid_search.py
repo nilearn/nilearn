@@ -100,12 +100,12 @@ for k in k_range:
     feature_selection.k = k
     cv_scores.append(np.mean(
         cross_val_score(anova_svc, X[session < 10], y[session < 10])))
-    print ("CV score: %.4f" % cv_scores[-1])
+    print("CV score: %.4f" % cv_scores[-1])
 
     anova_svc.fit(X[session < 10], y[session < 10])
     y_pred = anova_svc.predict(X[session == 10])
     scores_validation.append(np.mean(y_pred == y[session == 10]))
-    print ("score validation: %.4f" % scores_validation[-1])
+    print("score validation: %.4f" % scores_validation[-1])
 
 
 from matplotlib import pyplot as plt

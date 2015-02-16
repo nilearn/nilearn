@@ -10,7 +10,7 @@ values.
 
 # Licence : BSD
 
-print (__doc__)
+print(__doc__)
 
 from time import time
 
@@ -60,7 +60,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     noise_coef = norm_noise / linalg.norm(noise, 2)
     noise *= noise_coef
     snr = 20 * np.log(linalg.norm(X, 2) / linalg.norm(noise, 2))
-    print ("SNR: %.1f dB" % snr)
+    print("SNR: %.1f dB" % snr)
     ### Mixing of signal + noise and splitting into train/test
     X += noise
     X -= X.mean(axis=-1)[:, np.newaxis]
@@ -150,7 +150,7 @@ for name, classifier in classifiers:
     # plot the results
     plot_slices(coefs, title=title)
 
-    print (title)
+    print(title)
 
 f_values, p_values = f_regression(X_train, y_train)
 p_values = np.reshape(p_values, (size, size, size))

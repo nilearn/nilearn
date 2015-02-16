@@ -65,9 +65,9 @@ cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
 
 cv_scores_ova = cross_val_score(svc_ova, X, y, cv=5, verbose=1)
 
-print (79 * "_")
-print ('OvO', cv_scores_ovo.mean())
-print ('OvA', cv_scores_ova.mean())
+print(79 * "_")
+print('OvO', cv_scores_ovo.mean())
+print('OvA', cv_scores_ova.mean())
 
 plt.figure(figsize=(4, 3))
 plt.boxplot([cv_scores_ova, cv_scores_ovo])

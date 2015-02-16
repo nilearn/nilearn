@@ -111,8 +111,8 @@ for train, test in cv:
 classification_accuracy = np.mean(cv_scores)
 
 ### Printing the results
-print ("=== ANOVA ===")
-print ("Classification accuracy: %.4f / Chance level: %f" % \
+print("=== ANOVA ===")
+print("Classification accuracy: %.4f / Chance level: %f" % \
     (classification_accuracy, 1. / n_conditions))
 # Classification accuracy: 0.9861 / Chance level: 0.5000
 
