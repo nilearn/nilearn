@@ -7,24 +7,27 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
-import nibabel
-
 from .. import _utils
 from .._utils import logger, CacheMixin
-from .._utils.niimg_conversions import is_img, check_niimg
+from .._utils.niimg_conversions import check_niimg
 from .. import signal
-from .. import region
-from .. import masking
 from .. import image
+from .. import masking
 
 
-def _signals_from_seeds(seeds, niimg, radius):
+def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
     """ Note: this function is sub-optimal for small radius
     """
     n_seeds = len(seeds)
     niimg = check_niimg(niimg)
     shape = niimg.get_data().shape
     affine = niimg.get_affine()
+    if mask_img is not None:
+        mask_img = check_niimg(mask_img, ensure_3d=True)
+        mask_img = image.resample_img(mask_img, target_affine=affine,
+                                      target_shape=shape,
+                                      interpolation='nearest')
+        mask, _ = masking._load_mask_img(mask_img)
     signals = np.empty((shape[3], n_seeds))
     # Create an array of shape (3, array.shape) containing the i, j, k indices
     # in voxel space
@@ -37,11 +40,14 @@ def _signals_from_seeds(seeds, niimg, radius):
         # Compute square distance to the seed
         dist = ((coords - seed[:, None, None, None]) ** 2).sum(axis=0)
         if radius is None or radius ** 2 < np.min(dist):
-            signals[:, i] = niimg.get_data()[
-                    np.unravel_index(np.argmin(dist), dist.shape)]
+            dist_mask = (dist == np.min(dist))
         else:
-            mask = (dist <= radius ** 2)
-            signals[:, i] = np.mean(niimg.get_data()[mask], axis=0)
+            dist_mask = (dist <= radius ** 2)
+        if mask_img is not None:
+            dist_mask = np.logical_and(mask, dist_mask)
+        if not dist_mask.any():
+            raise ValueError('Seed #%i is out of the mask' % i)
+        signals[:, i] = np.mean(niimg.get_data()[dist_mask], axis=0)
     return signals
 
 
@@ -127,11 +133,13 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, seeds, radius=None, smoothing_fwhm=None, standardize=False,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
+    def __init__(self, seeds, radius=None, mask_img=None,
+                 smoothing_fwhm=None, standardize=False, detrend=False,
+                 low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
                  verbose=0):
         self.seeds = seeds
+        self.mask_img = mask_img
         self.radius = radius
 
         # Parameters for _smooth_array
@@ -212,7 +220,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         logger.log("extracting region signals", verbose=self.verbose)
         signals = self._cache(
             _signals_from_seeds, func_memory_level=1)(
-                self.seeds_, imgs, radius=self.radius)
+                self.seeds_, imgs, radius=self.radius, mask_img=self.mask_img)
 
         logger.log("cleaning extracted signals", verbose=self.verbose)
         signals = self._cache(signal.clean, func_memory_level=1
