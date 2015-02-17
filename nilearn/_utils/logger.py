@@ -87,14 +87,19 @@ def _compose_err_msg(msg, **kwargs):
     =======
     updated_msg: string
         msg, with "key: value" appended. Only string values are appended.
-        For instance:  "Regions and mask do not have the same shape\n"
-                       "mask_img: specified_mask.nii\n"
-                       "labels_img: specified_label"
+
+    Example
+    =======
+    >>> _compose_err_msg('Error message with arguments...', arg_num=123, \
+        arg_str='filename.nii', arg_bool=True)
+    'Error message with arguments...\\narg_str:filename.nii'
+    >>>
     """
     updated_msg = msg
-    for k, v in sorted(kwargs.keys()):
-        if isinstance(v, basestring):
-            updated_msg += "\n" + k + ": " + v
+    for i, k in enumerate(sorted(kwargs.keys())):
+        v = kwargs[k]
+        if isinstance(v, basestring):  # print only str-like arguments
+            updated_msg += "\n" + k + ":" + v
 
     return updated_msg
 
