@@ -81,4 +81,5 @@ else
     exit 1
 fi
 
+pip install coverage coveralls
 python setup.py install
