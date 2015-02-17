@@ -55,6 +55,16 @@ def test_anisotropic_sphere_extraction():
     mask = np.zeros((3, 3, 3), dtype=np.bool)
     mask[1, :, 1] = True
     assert_array_equal(s[:, 0], np.mean(data[mask], axis=0))
+    # Now with a mask
+    mask_img = np.zeros((3, 2, 3))
+    mask_img[1, 0, 1] = 1
+    affine_2 = affine.copy()
+    affine_2[0, 0] = 4
+    mask_img = nibabel.Nifti1Image(mask_img, affine=affine_2)
+    masker = NiftiSpheresMasker([(2, 1, 2)], radius=1, mask_img=mask_img)
+    masker.fit()
+    s = masker.transform(img)
+    assert_array_equal(s[:, 0], data[1, 0, 1])
 
 
 def test_errors():
