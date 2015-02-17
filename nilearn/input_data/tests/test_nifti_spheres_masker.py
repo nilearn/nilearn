@@ -24,26 +24,22 @@ def test_sphere_extraction():
     masker.fit()
     # Test the transform
     s = masker.transform(img)
-    mask = np.asarray(
-        [
-            [
-                [0, 0, 0],
-                [0, 1, 0],
-                [0, 0, 0]
-            ],
-            [
-                [0, 1, 0],
-                [1, 1, 1],
-                [0, 1, 0]
-            ],
-            [
-                [0, 0, 0],
-                [0, 1, 0],
-                [0, 0, 0]
-            ]
-        ], dtype=bool
-    )
+    mask = np.zeros((3, 3, 3), dtype=np.bool)
+    mask[:, 1, 1] = True
+    mask[1, :, 1] = True
+    mask[1, 1, :] = True
     assert_array_equal(s[:, 0], np.mean(data[mask], axis=0))
+    # Now with a mask
+    mask_img = np.zeros((3, 3, 3))
+    mask_img[1, :, :] = 1
+    mask_img = nibabel.Nifti1Image(mask_img, np.eye(4))
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, mask_img=mask_img)
+    masker.fit()
+    s = masker.transform(img)
+    assert_array_equal(s[:, 0],
+                       np.mean(data[np.logical_and(mask, mask_img.get_data())],
+                               axis=0))
+
 
 def test_anisotropic_sphere_extraction():
     data = np.random.random((3, 3, 3, 5))
@@ -56,25 +52,8 @@ def test_anisotropic_sphere_extraction():
     masker.fit()
     # Test the transform
     s = masker.transform(img)
-    mask = np.asarray(
-        [
-            [
-                [0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0]
-            ],
-            [
-                [0, 1, 0],
-                [0, 1, 0],
-                [0, 1, 0]
-            ],
-            [
-                [0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0]
-            ]
-        ], dtype=bool
-    )
+    mask = np.zeros((3, 3, 3), dtype=np.bool)
+    mask[1, :, 1] = True
     assert_array_equal(s[:, 0], np.mean(data[mask], axis=0))
 
 

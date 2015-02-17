@@ -25,7 +25,7 @@ def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
     if mask_img is not None:
         mask_img = check_niimg(mask_img, ensure_3d=True)
         mask_img = image.resample_img(mask_img, target_affine=affine,
-                                      target_shape=shape,
+                                      target_shape=shape[:3],
                                       interpolation='nearest')
         mask, _ = masking._load_mask_img(mask_img)
     signals = np.empty((shape[3], n_seeds))
