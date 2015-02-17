@@ -71,3 +71,26 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
             func_name = "%s.%s" % (object_self.__class__.__name__, func_name)
 
         print("[{func_name}] {msg}".format(func_name=func_name, msg=msg))
+
+
+def _compose_err_msg(msg, **kwargs):
+    """Append key-value pairs to msg, for display.
+
+    Parameters
+    ==========
+    msg: string
+        arbitrary message
+    kwargs: dict
+        arbitrary dictionary
+
+    Returns
+    =======
+    updated_msg: string
+        msg, with "key: value" appended. Only string values are appended.
+    """
+    updated_msg = msg
+    for k, v in kwargs.iteritems():
+        if isinstance(v, basestring):
+            updated_msg += "\n" + k + ": " + v
+
+    return updated_msg

@@ -12,34 +12,12 @@ import nibabel
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
+from .._utils import _compose_err_msg
 from .._utils.niimg_conversions import _check_same_fov
 from .. import signal
 from .. import region
 from .. import masking
 from .. import image
-
-
-def _compose_err_msg(msg, **kwargs):
-    """Append key-value pairs to msg, for display.
-
-    Parameters
-    ==========
-    msg: string
-        arbitrary message
-    kwargs: dict
-        arbitrary dictionary
-
-    Returns
-    =======
-    updated_msg: string
-        msg, with "key: value" appended. Only string values are appended.
-    """
-    updated_msg = msg
-    for k, v in kwargs.iteritems():
-        if isinstance(v, basestring):
-            updated_msg += "\n" + k + ": " + v
-
-    return updated_msg
 
 
 class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
