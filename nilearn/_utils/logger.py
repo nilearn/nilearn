@@ -87,10 +87,14 @@ def _compose_err_msg(msg, **kwargs):
     =======
     updated_msg: string
         msg, with "key: value" appended. Only string values are appended.
+        For instance:  "Regions and mask do not have the same shape\n"
+                       "mask_img: specified_mask.nii\n"
+                       "labels_img: specified_label"
     """
     updated_msg = msg
-    for k, v in kwargs.iteritems():
+    for k, v in sorted(kwargs.keys()):
         if isinstance(v, basestring):
             updated_msg += "\n" + k + ": " + v
 
     return updated_msg
+
