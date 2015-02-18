@@ -1,5 +1,12 @@
 .. -*- mode: rst -*-
 
+.. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
+   :target: https://travis-ci.org/nilearn/nilearn
+   :alt: Build Status
+
+.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
+   :target: https://coveralls.io/r/nilearn/nilearn
+
 nilearn
 =======
 
@@ -55,15 +62,6 @@ http://nilearn.github.io/introduction.html#installation.
 
 Development
 ===========
-
-Build Status
-------------
-.. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
-   :target: https://travis-ci.org/nilearn/nilearn
-   :alt: Build Status
-
-.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
-   :target: https://coveralls.io/r/nilearn/nilearn
 
 Code
 ----
