@@ -92,14 +92,13 @@ def _compose_err_msg(msg, **kwargs):
     =======
     >>> _compose_err_msg('Error message with arguments...', arg_num=123, \
         arg_str='filename.nii', arg_bool=True)
-    'Error message with arguments...\\narg_str:filename.nii'
+    'Error message with arguments...\\narg_str: filename.nii'
     >>>
     """
     updated_msg = msg
-    for i, k in enumerate(sorted(kwargs.keys())):
-        v = kwargs[k]
+    for k, v in sorted(kwargs.items()):
         if isinstance(v, basestring):  # print only str-like arguments
-            updated_msg += "\n" + k + ":" + v
+            updated_msg += "\n" + k + ": " + v
 
     return updated_msg
 
