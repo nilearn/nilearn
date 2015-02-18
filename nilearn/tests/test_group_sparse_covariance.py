@@ -2,7 +2,8 @@ from nose.tools import assert_equal, assert_true, assert_raises
 
 import numpy as np
 
-from nilearn._utils.testing import generate_group_sparse_gaussian_graphs
+from nilearn._utils.testing import (generate_group_sparse_gaussian_graphs,
+                                    assert_warns_regex)
 from nilearn.group_sparse_covariance import (group_sparse_covariance,
                                              group_sparse_scores,
                                              GroupSparseCovariance,
