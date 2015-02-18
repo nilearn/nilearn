@@ -65,7 +65,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     np.seterr(**np_err)
     # Where the noise variance is 0, Wiener can create nans
     img[np.isnan(img)] = image[np.isnan(img)]
-    img /= img.max()
+    img /= (img.max() or 1.)  # avoid divide-by-zero warnings
     grad_x = ndimage.sobel(img, mode='constant', axis=0)
     grad_y = ndimage.sobel(img, mode='constant', axis=1)
     grad_mag = np.sqrt(grad_x**2 + grad_y**2)
@@ -78,7 +78,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     for angle in np.arange(0, 2, .25):
         thinner = thinner | (
                 (grad_mag > .85*ndimage.maximum_filter(grad_mag,
-                                    footprint=_orientation_kernel(angle))) 
+                                    footprint=_orientation_kernel(angle)))
                 & (((grad_angle - angle) % 2) < .75)
                )
     # Remove the edges next to the side of the image: they are not reliable
