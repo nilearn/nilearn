@@ -62,7 +62,7 @@ Build Status
    :target: https://travis-ci.org/nilearn/nilearn
    :alt: Build Status
 
-.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg
+.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
    :target: https://coveralls.io/r/nilearn/nilearn
 
 Code
