@@ -58,11 +58,12 @@ Development
 
 Build Status
 ------------
-.. |travis-master| image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
+.. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
    :target: https://travis-ci.org/nilearn/nilearn
    :alt: Build Status
 
-|travis-master|
+.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg
+   :target: https://coveralls.io/r/nilearn/nilearn
 
 Code
 ----
