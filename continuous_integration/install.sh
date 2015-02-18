@@ -81,5 +81,10 @@ else
     exit 1
 fi
 
-pip install coverage coveralls
+pip install coverage
+
+if [[ "$COVERAGE" == "true" ]]; then
+    pip install coveralls
+fi
+
 python setup.py install
