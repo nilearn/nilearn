@@ -201,6 +201,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
         """
+
         # Hack to support single-subject data:
         if isinstance(imgs, (basestring, nibabel.Nifti1Image)):
             imgs = [imgs]
@@ -294,9 +295,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                             dtype=subject_pcas[0].dtype)
             for index, subject_pca in enumerate(subject_pcas):
                 if self.n_components > subject_pca.shape[0]:
-                    raise ValueError('You asked for %i components.'
-                                     'This is smaller than single-subject '
-                                     'data size.' % self.n_components)
+                    raise ValueError('You asked for %i components. '
+                                     'This is larger than the single-subject '
+                                     'data size (%d).' % (self.n_components,
+                                                          subject_pca.shape[0]))
                 data[index * self.n_components:
                      (index + 1) * self.n_components] = subject_pca
             data, variance, _ = cache(randomized_svd,
