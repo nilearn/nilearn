@@ -60,7 +60,7 @@ import nilearn.image
 import nilearn.input_data
 
 from sklearn.externals.joblib import Memory
-mem = Memory(".")
+mem = Memory('nilearn_cache')
 
 subjects = []
 
