@@ -6,9 +6,7 @@ This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
 n_subjects = 10  # Number of subjects to consider for group-sparse covariance
- 
 plotted_subject = 0  # subject to plot
-
 
 import matplotlib.pyplot as plt
 from nilearn.plotting import cm
@@ -19,9 +17,8 @@ def plot_matrices(cov, prec, title):
 
     # Compute sparsity pattern
     sparsity = (prec == 0)
-    
-    prec = prec.copy()  # avoid side effects
 
+    prec = prec.copy()  # avoid side effects
 
     # Put zeros on the diagonal, for graph clarity.
     size = prec.shape[0]
@@ -34,7 +31,7 @@ def plot_matrices(cov, prec, title):
                vmin=-1, vmax=1, cmap=cm.bwr)
     plt.colorbar()
     plt.title("%s / covariance" % title)
-    
+
     # Display sparsity pattern
     plt.figure()
     plt.imshow(sparsity, interpolation="nearest")
