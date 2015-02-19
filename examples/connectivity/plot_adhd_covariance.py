@@ -17,14 +17,16 @@ from nilearn.plotting import cm
 
 
 def plot_connectome(cov, atlas_maps, **kwargs):
-    imgs = image.iter_img(msdl_atlas_dataset.maps)
+    """Plot connectome given a covariance matrix and atlas maps"""
+    imgs = image.iter_img(atlas_maps)
     regions_coords = np.array([
         map(np.asscalar, plotting.find_xyz_cut_coords(img)) for img in imgs])
     np.random.seed(42)
-    node_colors = np.random.rand(39, 3)
+    node_colors = np.random.rand(len(atlas_maps), 3)
     plotting.plot_connectome(cov, regions_coords,
                              nodes_kwargs={'s': 50, 'c': node_colors},
                              **kwargs)
+
 
 def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
