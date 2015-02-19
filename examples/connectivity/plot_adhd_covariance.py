@@ -10,11 +10,7 @@ plotted_subject = 0  # subject to plot
 
 
 import matplotlib.pyplot as plt
-import matplotlib
-# Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
-_bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
-plt.cm.register_cmap(cmap=matplotlib.colors.LinearSegmentedColormap.from_list(
-    "bwr", _bwr_data))
+from nilearn.plotting import cm
 
 
 def plot_matrices(cov, prec, title):
@@ -34,7 +30,7 @@ def plot_matrices(cov, prec, title):
     # Display covariance matrix
     plt.figure()
     plt.imshow(cov, interpolation="nearest",
-              vmin=-1, vmax=1, cmap=plt.cm.get_cmap("bwr"))
+               vmin=-1, vmax=1, cmap=cm.bwr)
     plt.colorbar()
     plt.title("%s / covariance" % title)
     
@@ -46,8 +42,8 @@ def plot_matrices(cov, prec, title):
     # Display precision matrix
     plt.figure()
     plt.imshow(prec, interpolation="nearest",
-              vmin=-span, vmax=span,
-              cmap=plt.cm.get_cmap("bwr"))
+               vmin=-span, vmax=span,
+               cmap=cm.bwr)
     plt.colorbar()
     plt.title("%s / precision" % title)
 
