@@ -5,6 +5,7 @@ Computation of covariance matrix between brain regions
 This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
+n_subjects = 10  # Number of subjects to consider for group-sparse covariance
  
 plotted_subject = 0  # subject to plot
 
@@ -52,7 +53,7 @@ def plot_matrices(cov, prec, title):
 print("-- Fetching datasets ...")
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_msdl_atlas()
-adhd_dataset = datasets.fetch_adhd()
+adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
 
 # Extracting region signals ###################################################
 import nilearn.image
@@ -61,8 +62,6 @@ import nilearn.input_data
 from sklearn.externals.joblib import Memory
 mem = Memory(".")
 
-# Number of subjects to consider for group-sparse covariance
-n_subjects = 10
 subjects = []
 
 func_filenames = adhd_dataset.func
