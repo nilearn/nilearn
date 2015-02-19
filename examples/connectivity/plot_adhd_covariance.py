@@ -65,7 +65,7 @@ mem = Memory('nilearn_cache')
 masker = nilearn.input_data.NiftiMapsMasker(
     msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
     low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
-    memory=mem, memory_level=1, verbose=verbose)
+    memory=mem, memory_level=1, verbose=2)
 masker.fit()
 
 subjects = []
@@ -87,12 +87,12 @@ for func_filename, confound_filename in zip(func_filenames,
 # Computing group-sparse precision matrices ###################################
 print("-- Computing group-sparse precision matrices ...")
 from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
-gsc = GroupSparseCovarianceCV(verbose=2, n_jobs=3)
+gsc = GroupSparseCovarianceCV(n_jobs=3, verbose=2)
 gsc.fit(subjects)
 
 print("-- Computing graph-lasso precision matrices ...")
 from sklearn import covariance
-gl = covariance.GraphLassoCV(n_jobs=3)
+gl = covariance.GraphLassoCV(n_jobs=3, verbose=2)
 gl.fit(subjects[plotted_subject])
 
 # Displaying results ##########################################################
