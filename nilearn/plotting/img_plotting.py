@@ -839,7 +839,15 @@ def plot_connectome(adjacency_matrix, nodes_coords,
                 exc.args += (message, )
                 raise
 
-            edges_threshold = fast_abs_percentile(adjacency_matrix, percentile)
+            # Keep a percentile of edges with the highest absolute
+            # values, so only need to look at the covariance
+            # coefficients below the diagonal
+            lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                          k=-1)
+            lower_diagonal_values = adjacency_matrix[lower_diagonal_indices]
+            lower_diagonal_abs_values = np.abs(lower_diagonal_values)
+            edges_threshold = fast_abs_percentile(lower_diagonal_abs_values,
+                                                  percentile)
 
         elif not isinstance(edges_threshold, numbers.Real):
             raise TypeError('edges_threshold should be either a number '
