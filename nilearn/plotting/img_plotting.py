@@ -839,8 +839,6 @@ def plot_connectome(adjacency_matrix, nodes_coords,
                 exc.args += (message, )
                 raise
 
-            # TODO: do I want to do the lower diagonal here, probably
-            # or divide or multiply percentile by 2 I don't know
             edges_threshold = fast_abs_percentile(adjacency_matrix, percentile)
 
         elif not isinstance(edges_threshold, numbers.Real):

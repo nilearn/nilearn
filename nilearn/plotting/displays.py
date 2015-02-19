@@ -238,9 +238,6 @@ class GlassBrainAxes(BaseAxes):
 
     def _add_graph_nodes(self, nodes_coords, **kwargs):
         """Plot graph nodes"""
-        # TODO: add diagonal element values to this function
-        # in case we want to use them to plot the node differently
-        # based on the value???
         nodes_coords_2d = _coords_3d_to_2d(nodes_coords, self.direction)
 
         first_coords, second_coords = zip(*nodes_coords_2d)
@@ -280,7 +277,6 @@ class GlassBrainAxes(BaseAxes):
         for index in itertools.izip(*non_zero_indices):
             adjacency_matrix_value = adjacency_matrix[index]
             color = scalar_mappable.to_rgba(adjacency_matrix_value)
-            # TODO: pass in linewidths or linewidth function or multiplication scalar
             linewidth = 1 + 2 * abs_norm(abs(adjacency_matrix_value))
             # Hacky way to put the strongest connections on top of the weakest
             # note sign does not matter hence using 'abs'
