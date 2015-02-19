@@ -263,10 +263,11 @@ class GlassBrainAxes(BaseAxes):
             adjacency_matrix[adjacency_matrix.mask] = 0
             adjacency_matrix = np.asarray(adjacency_matrix)
 
-        norm = colors.Normalize(vmin=adjacency_matrix.min(),
-                                vmax=adjacency_matrix.max())
+        abs_adjacency_matrix_max = np.abs(adjacency_matrix).max()
+        norm = colors.Normalize(vmin=-abs_adjacency_matrix_max,
+                                vmax=abs_adjacency_matrix_max)
         abs_norm = colors.Normalize(vmin=0,
-                                    vmax=np.abs(adjacency_matrix).max())
+                                    vmax=abs_adjacency_matrix_max)
 
         cmap = kwargs.pop('cmap', cm.bwr)
         scalar_mappable = pl.cm.ScalarMappable(norm=norm, cmap=cmap)
