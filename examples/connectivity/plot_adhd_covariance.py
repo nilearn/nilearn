@@ -62,8 +62,13 @@ import nilearn.input_data
 from sklearn.externals.joblib import Memory
 mem = Memory('nilearn_cache')
 
-subjects = []
+masker = nilearn.input_data.NiftiMapsMasker(
+    msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
+    low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+    memory=mem, memory_level=1, verbose=verbose)
+masker.fit()
 
+subjects = []
 func_filenames = adhd_dataset.func
 confound_filenames = adhd_dataset.confounds
 for func_filename, confound_filename in zip(func_filenames,
@@ -75,13 +80,8 @@ for func_filename, confound_filename in zip(func_filenames,
         func_filename)
 
     print("-- Computing region signals ...")
-    masker = nilearn.input_data.NiftiMapsMasker(
-        msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
-        low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
-        memory=mem, memory_level=1, verbose=1)
-    region_ts = masker.fit_transform(func_filename,
-                                     confounds=[hv_confounds,
-                                                confound_filename])
+    region_ts = masker.transform(func_filename,
+                                 confounds=[hv_confounds, confound_filename])
     subjects.append(region_ts)
 
 # Computing group-sparse precision matrices ###################################
