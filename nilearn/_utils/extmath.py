@@ -47,8 +47,9 @@ def fast_abs_percentile(data, percentile=80):
     return data[index + 1]
 
 
-def is_spd(M, decimal=15, verbose=1):
-    """Assert that input matrix is symmetric positive definite.
+def is_spd(M, accept_semi_definite=False,
+           decimal=15, verbose=1):
+    """Assert that input matrix is symmetric positive (semi-)definite.
 
     M must be symmetric down to specified decimal places.
     The check is performed by checking that all eigenvalues are positive.
@@ -57,21 +58,25 @@ def is_spd(M, decimal=15, verbose=1):
     ==========
     M: numpy.ndarray
         symmetric positive definite matrix.
-
+    semi_definite: bool
+        whether to check for positive semi-definite vs positive definite
     verbose: int, optional
         verbosity level (0 means no message)
 
     Returns
     =======
     answer: boolean
-        True if matrix is symmetric positive definite, False otherwise.
+        True if matrix is symmetric positive (semi-)definite, False otherwise.
     """
     if not np.allclose(M, M.T, atol=0, rtol=10 ** -decimal):
         if verbose > 0:
             print("matrix not symmetric to %d decimals" % decimal)
         return False
     eigvalsh = np.linalg.eigvalsh(M)
-    ispd = eigvalsh.min() > 0
+    eigvalsh_min = eigvalsh.min()
+    ispd = eigvalsh_min > 0 or (
+        accept_semi_definite and
+        np.isclose(eigvalsh_min, 0, atol=10 ** -decimal, rtol=0))
     if not ispd and verbose > 0:
-        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
+        print("matrix has a negative eigenvalue: %.3e" % eigvalsh.min())
     return ispd

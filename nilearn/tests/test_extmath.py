@@ -50,3 +50,16 @@ def test_is_spd_with_symmetrical_matrix():
     matrix = np.array([[2, 1],
                        [1, 1]])
     assert is_spd(matrix, verbose=0)
+
+
+def test_is_spd_with_semi_definite_matrix():
+    matrix = np.ones((2, 2))
+    assert is_spd(matrix, accept_semi_definite=True, verbose=0)
+
+    # minimum eigen val is 1e-6
+    matrix = np.array([[1, 1 + 1e-6], [1 + 1e-6, 1]])
+
+    assert not is_spd(matrix, decimal=6, verbose=0)
+    assert is_spd(matrix, decimal=6, accept_semi_definite=True, verbose=0)
+    assert not is_spd(matrix, decimal=7, accept_semi_definite=True, verbose=0)
+
