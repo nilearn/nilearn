@@ -6,6 +6,7 @@ the data with different layout of cuts.
 """
 
 import operator
+import itertools
 
 import numpy as np
 
@@ -24,10 +25,10 @@ except ImportError:
 # Local imports
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
-from ..image.resampling import get_bounds, reorder_img, coord_transform,\
-            get_mask_bounds
+from ..image.resampling import (get_bounds, reorder_img, coord_transform,
+                                get_mask_bounds)
 
-from . import glass_brain
+from . import glass_brain, cm
 
 ################################################################################
 # class BaseAxes
@@ -184,6 +185,23 @@ class CutAxes(BaseAxes):
                 **kwargs)
 
 
+def _coords_3d_to_2d(coords_3d, direction):
+    """Project 3d coordinates into 2d ones given the direction of a cut
+    """
+    direction_to_index = {'x': slice(1, None),
+                          'y': [0, 2],
+                          'z': slice(None, 2)}
+    index = direction_to_index.get(direction)
+
+    if index is None:
+        message = (
+            '{0} is not a valid direction. '
+            "Allowed values are 'x', 'y' and 'z'").format(direction)
+        raise ValueError(message)
+
+    return coords_3d[:, index]
+
+
 class GlassBrainAxes(BaseAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
     volumes with a schematic view of the brain.
@@ -217,6 +235,80 @@ class GlassBrainAxes(BaseAxes):
         # It does not make sense to draw crosses for the position of
         # the cuts since we are taking the max along one axis
         pass
+
+    def _add_graph_nodes(self, nodes_coords, **kwargs):
+        """Plot graph nodes"""
+        # TODO: add diagonal element values to this function
+        # in case we want to use them to plot the node differently
+        # based on the value???
+        nodes_coords_2d = _coords_3d_to_2d(nodes_coords, self.direction)
+
+        first_coords, second_coords = zip(*nodes_coords_2d)
+
+        defaults = {'marker': 'o',
+                    's': 30,
+                    'c': 'green',
+                    'zorder': 1000}
+        for k, v in defaults.items():
+            kwargs.setdefault(k, v)
+
+        self.ax.scatter(first_coords, second_coords, **kwargs)
+
+    def _add_graph_edges(self, adjacency_matrix, nodes_coords, **kwargs):
+        """Plot graph edges"""
+        defaults = {'marker': None}
+        for k, v in defaults.items():
+            kwargs.setdefault(k, v)
+
+        # For a mask array, masked values are replaced with zeros
+        if hasattr(adjacency_matrix, 'mask'):
+            adjacency_matrix = adjacency_matrix.copy()
+            adjacency_matrix[adjacency_matrix.mask] = 0
+            adjacency_matrix = np.asarray(adjacency_matrix)
+
+        norm = colors.Normalize(vmin=adjacency_matrix.min(),
+                                vmax=adjacency_matrix.max())
+        abs_norm = colors.Normalize(vmin=0,
+                                    vmax=np.abs(adjacency_matrix).max())
+
+        cmap = kwargs.pop('cmap', cm.bwr)
+        scalar_mappable = pl.cm.ScalarMappable(norm=norm, cmap=cmap)
+
+        lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
+        non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+
+        for index in itertools.izip(*non_zero_indices):
+            adjacency_matrix_value = adjacency_matrix[index]
+            color = scalar_mappable.to_rgba(adjacency_matrix_value)
+            # TODO: pass in linewidths or linewidth function or multiplication scalar
+            linewidth = 1 + 2 * abs_norm(abs(adjacency_matrix_value))
+            # Hacky way to put the strongest connections on top of the weakest
+            # note sign does not matter hence using 'abs'
+            zorder = 10 + 10 * abs_norm(abs(adjacency_matrix_value))
+
+            this_coords = nodes_coords[list(index)]
+            this_coords_2d = _coords_3d_to_2d(this_coords, self.direction)
+            this_first_coords, this_second_coords = zip(*this_coords_2d)
+
+            this_kwargs = {'color': color, 'linewidth': linewidth,
+                           'zorder': zorder}
+            this_kwargs.update(kwargs)
+            self.ax.plot(this_first_coords, this_second_coords,
+                         **this_kwargs)
+
+    def add_graph(self, adjacency_matrix, nodes_coords,
+                  edges_kwargs=None, nodes_kwargs=None):
+        """Plot undirected graph.
+
+        See OrthoProjector.add_graph for more details.
+        """
+        if edges_kwargs is None:
+            edges_kwargs = {}
+        if nodes_kwargs is None:
+            nodes_kwargs = {}
+
+        self._add_graph_edges(adjacency_matrix, nodes_coords, **edges_kwargs)
+        self._add_graph_nodes(nodes_coords, **nodes_kwargs)
 
 
 ################################################################################
@@ -663,7 +755,7 @@ class OrthoSlicer(BaseSlicer):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes([0.3*index*(x1 - x0) + x0, y0,
                               .3*(x1 - x0), y1 - y0],
-                             axisbg=axisbg)
+                             axisbg=axisbg, aspect='equal')
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
@@ -945,6 +1037,31 @@ class OrthoProjector(OrthoSlicer):
         # It does not make sense to draw crosses for the position of
         # the cuts since we are taking the max along one axis
         pass
+
+    def add_graph(self, adjacency_matrix, nodes_coords,
+                  edges_kwargs=None, nodes_kwargs=None):
+        """Plot undirected graph on each of the axes
+
+            Parameters
+            ----------
+            adjacency_matrix: numpy array of shape (n, n)
+                represents the edges strengths of the graph. Assumed to be
+                a symmetric matrix
+            nodes_coords: numpy array of shape (n, )
+                3d coordinates of the graph nodes in world space
+            edges_kwargs: dict
+                will be passed as kwargs to the plt.plot call that plots each
+                edge one by one
+            nodes_kwargs: dict
+                will be passed as kwargs to the plt.scatter call that plots all
+                the nodes in one go
+
+        """
+        for ax in self.axes.values():
+            ax.add_graph(adjacency_matrix, nodes_coords, nodes_kwargs,
+                         edges_kwargs)
+
+        pl.draw_if_interactive()
 
 
 class XProjector(OrthoProjector):

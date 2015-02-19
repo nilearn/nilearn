@@ -76,7 +76,7 @@ def is_spd(M, accept_semi_definite=False,
     eigvalsh_min = eigvalsh.min()
     ispd = eigvalsh_min > 0 or (
         accept_semi_definite and
-        np.isclose(eigvalsh_min, 0, atol=10 ** -decimal, rtol=0))
+        np.allclose(eigvalsh_min, 0, atol=10 ** -decimal, rtol=0))
     if not ispd and verbose > 0:
         print("matrix has a negative eigenvalue: %.3e" % eigvalsh.min())
     return ispd

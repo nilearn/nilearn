@@ -1,8 +1,19 @@
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+<<<<<<< HEAD
 import numpy as np
 import tempfile
+=======
+import tempfile
+import os
+
+import numpy as np
+from scipy import sparse
+
+from nose import SkipTest
+from nose.tools import assert_raises, assert_true
+>>>>>>> Add nilearn.plotting.plot_connectome
 from functools import partial
 from nose import SkipTest
 from nose.tools import assert_raises, assert_true, assert_equal
@@ -19,9 +30,16 @@ except ImportError:
 import nibabel
 
 from nilearn.image.resampling import coord_transform
+<<<<<<< HEAD
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain)
+=======
+from nilearn.plotting.img_plotting import MNI152TEMPLATE, plot_anat, \
+        plot_img, plot_roi, plot_stat_map, plot_epi, plot_glass_brain, \
+        plot_connectome
+from nilearn._utils.testing import assert_raises_regexp
+>>>>>>> Add nilearn.plotting.plot_connectome
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                        [   0.,    2.,    0., -126.],
@@ -178,3 +196,99 @@ def test_plot_noncurrent_axes():
     for ax_name, niax in slicer.axes.items():
         ax_fh = niax.ax.get_figure()
         assert_equal(ax_fh, fh1, 'New axis %s should be in fh1.' % ax_name)
+
+
+def test_plot_connectome():
+    import pylab as pl
+    pl.switch_backend('template')
+    nodes_colors = ['green', 'blue', 'k', 'cyan']
+    adjacency_matrix = np.array([[1., -0.2, 0.3, 0.],
+                                 [-0.2, 1, 0., 0.],
+                                 [0.3, 0., 1., 0.],
+                                 [0., 0., 0., 1.]])
+    nodes_coords = np.arange(3 * 4).reshape(4, 3)
+
+    args = adjacency_matrix, nodes_coords
+    kwargs = dict(edges_threshold=0.38,
+                  title='threshold=0.38',
+                  nodes_kwargs={
+                      's': 50, 'c': nodes_colors})
+    plot_connectome(*args, **kwargs)
+
+    # saving to file
+    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
+        display = plot_connectome(*args, output_file=fp.name,
+                                  **kwargs)
+        assert_true(display is None)
+        assert_true(os.path.isfile(fp.name) and
+                    os.path.getsize(fp.name) > 0)
+
+    # with edges_kwargs arguments
+    plot_connectome(*args,
+                    edges_threshold='70%',
+                    title='threshold=70%',
+                    nodes_kwargs={
+                        's': [10, 20, 30, 40],
+                        'c': np.zeros((4, 3))},
+                    edges_kwargs={
+                        'linewidth': 4})
+
+    # sparse matrix support
+    sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
+    plot_connectome(sparse_adjacency_matrix, nodes_coords,
+                    **kwargs)
+
+    # symmetric *semi-*definite positive
+    plot_connectome(np.zeros((4, 4)), nodes_coords, **kwargs)
+
+
+def test_plot_connectome_exceptions():
+    import pylab as pl
+    pl.switch_backend('template')
+    wrong_adjacency_matrix = np.array([[1., 2],
+                                       [0.4, 1.]])
+    nodes_coords = np.arange(2 * 3).reshape((2, 3))
+
+    # adjacency_matrix is not symmetric
+    assert_raises_regexp(ValueError,
+                         'not symmetric positive semi-definite',
+                         plot_connectome,
+                         wrong_adjacency_matrix, nodes_coords)
+
+    # adjacency_matrix is symmetric but not positive semi-definite
+    wrong_adjacency_matrix[1, 0] = 2.
+    assert_raises_regexp(ValueError,
+                         'not symmetric positive semi-definite',
+                         plot_connectome,
+                         wrong_adjacency_matrix, nodes_coords)
+
+    adjacency_matrix = np.array([[1., 0.1],
+                                 [0.1, 1.]])
+    # edges threshold is neither a number or a string
+    assert_raises_regexp(TypeError,
+                         'should be either a number or a string',
+                         plot_connectome,
+                         adjacency_matrix, nodes_coords,
+                         edges_threshold=object())
+
+    # wrong shapes for nodes_coords or adjacency_matrix
+    assert_raises_regexp(ValueError,
+                         r'supposed to have shape \(n, n\).+\(1, 2\)',
+                         plot_connectome, adjacency_matrix[:1, :], nodes_coords)
+
+    assert_raises_regexp(ValueError, r'shape \(n, 3\).+\(2,\)',
+                         plot_connectome, adjacency_matrix, nodes_coords[:, 2])
+
+    wrong_adjacency_matrix = np.zeros((3, 3))
+    assert_raises_regexp(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
+                         plot_connectome,
+                         wrong_adjacency_matrix, nodes_coords)
+
+    # a few not correctly formatted strings for 'edges_threshold'
+    wrong_edges_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
+    for wrong_edges_threshold in wrong_edges_thresholds:
+        assert_raises_regexp(ValueError,
+                             'should be a number followed by the percent sign',
+                             plot_connectome,
+                             adjacency_matrix, nodes_coords,
+                             edges_threshold=wrong_edges_threshold)

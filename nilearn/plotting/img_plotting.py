@@ -11,11 +11,13 @@ Only matplotlib is required.
 # Standard library imports
 import operator
 import functools
+import numbers
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
+from scipy import sparse
 
 import nibabel
 
@@ -28,7 +30,7 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
-from .._utils.extmath import fast_abs_percentile
+from .._utils.extmath import fast_abs_percentile, is_spd
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
 from ..datasets import load_mni152_template
@@ -736,5 +738,132 @@ def plot_glass_brain(stat_map_img,
                                 display_factory=display_factory,
                                 resampling_interpolation='continuous',
                                 **kwargs)
+
+    return display
+
+
+def plot_connectome(adjacency_matrix, nodes_coords,
+                    nodes_kwargs=None, edges_kwargs=None, edges_threshold=None,
+                    output_file=None, display_mode='ortho',
+                    figure=None, axes=None, title=None,
+                    annotate=True, black_bg=False,
+                    alpha=0.7, **kwargs):
+    """Plot connectome on top of the brain glass schematics.
+
+        Parameters
+        ----------
+        adjacency_matrix: numpy array of shape (n, n)
+            represents the link strengths of the graph. Assumed to be
+            a symmetric matrix
+        nodes_coords: numpy array of shape (n, 3)
+            3d coordinates of the graph nodes in world space
+        edges_kwargs: dict
+            will be passed as kwargs to the plt.plot call that plots each
+            link one by one
+        nodes_kwargs: dict
+            will be passed as kwargs to the plt.scatter call that plots all
+            the nodes in one go
+        edges_threshold: str or number
+            If it is a number only the edges with a value greater than
+            edges_threshold will be shown.
+            If it is a string it must finish with a percent sign, e.g. "25.3%"
+            and only the edges with a abs(value) above the given percentile
+            will be shown.
+        output_file : string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode : {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you wish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        alpha: float between 0 and 1
+            Alpha transparency for the brain schematics
+
+    """
+    adjacency_matrix_shape = adjacency_matrix.shape
+    if (len(adjacency_matrix_shape) != 2 or
+            adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+        raise ValueError("'adjacency_matrix' is supposed to have shape (n, n)."
+                         ' Its shape was {0}'.format(adjacency_matrix_shape))
+
+    nodes_coords_shape = nodes_coords.shape
+    if len(nodes_coords_shape) != 2 or nodes_coords_shape[1] != 3:
+        raise ValueError("'nodes_coords' should be a array with shape (n, 3). "
+                         'Its shape was {0}'.format(nodes_coords_shape))
+
+    if nodes_coords_shape[0] != adjacency_matrix_shape[0]:
+        raise ValueError(
+            "Shape mismatch between 'adjacency_matrix' "
+            "and 'nodes_coords'"
+            "'adjacency_matrix' shape is {0}, 'nodes_coords' shape is {1}"
+            .format(adjacency_matrix_shape, nodes_coords_shape))
+
+    if sparse.issparse(adjacency_matrix):
+        adjacency_matrix = adjacency_matrix.toarray()
+
+    if not is_spd(adjacency_matrix, accept_semi_definite=True):
+        raise ValueError("'adjacency_matrix' should be "
+                         'a covariance or correlation matrix. '
+                         "The 'adjacency_matrix' you provided is not "
+                         'symmetric positive semi-definite')
+
+    if edges_threshold is not None:
+        if isinstance(edges_threshold, basestring):
+            message = ("If 'edges_threshold' is given as a string it "
+                       'should be a number followed by the percent sign, '
+                       'e.g. "25.3%"')
+            if not edges_threshold.endswith('%'):
+                raise ValueError(message)
+
+            try:
+                percentile = float(edges_threshold[:-1])
+            except ValueError as exc:
+                exc.args += (message, )
+                raise
+
+            # TODO: do I want to do the lower diagonal here, probably
+            # or divide or multiply percentile by 2 I don't know
+            edges_threshold = fast_abs_percentile(adjacency_matrix, percentile)
+
+        elif not isinstance(edges_threshold, numbers.Real):
+            raise TypeError('edges_threshold should be either a number '
+                            'or a string finishing with a percent sign')
+
+        adjacency_matrix = np.ma.masked_array(
+            adjacency_matrix.copy(),
+            np.abs(adjacency_matrix) < edges_threshold)
+
+    display = plot_glass_brain(None,
+                               display_mode=display_mode,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate,
+                               black_bg=black_bg,
+                               **kwargs)
+
+    display.add_graph(adjacency_matrix, nodes_coords,
+                      nodes_kwargs, edges_kwargs)
+
+    if output_file is not None:
+        display.savefig(output_file)
+        display.close()
+        display = None
 
     return display

@@ -31,9 +31,10 @@ _set_mpl_backend()
 
 from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
-    plot_roi, plot_stat_map, plot_glass_brain
+    plot_roi, plot_stat_map, plot_glass_brain, plot_connectome
 from .find_cuts import find_xyz_cut_coords
 
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
+           'plot_connectome',
            'find_xyz_cut_coords']
