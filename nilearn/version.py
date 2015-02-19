@@ -29,6 +29,9 @@ REQUIRED_MODULE_METADATA = (
     ('nibabel', {
         'min_version': '1.1.0',
         'required_at_installation': False}),
+    ('future', {
+        'min_version': '0.0.0',
+        'required_at_installation': False}),
     ('six', {
         'min_version': '0.0.0',
         'required_at_installation': False}))
