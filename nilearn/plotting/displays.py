@@ -660,8 +660,10 @@ class OrthoSlicer(BaseSlicer):
         # Create our axes:
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
-            ax = pl.axes([0.3*index*(x1 - x0) + x0, y0, .3*(x1 - x0), y1 - y0],
-                         axisbg=axisbg)
+            fh = self.frame_axes.get_figure()
+            ax = fh.add_axes([0.3*index*(x1 - x0) + x0, y0,
+                              .3*(x1 - x0), y1 - y0],
+                             axisbg=axisbg)
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
@@ -819,19 +821,20 @@ class BaseStackedSlicer(BaseSlicer):
         fraction = 1./len(self.cut_coords)
         for index, coord in enumerate(self.cut_coords):
             coord = float(coord)
-            ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
-                          fraction*(x1-x0), y1-y0])
+            fh = self.frame_axes.get_figure()
+            ax = fh.add_axes([fraction*index*(x1-x0) + x0, y0,
+                              fraction*(x1-x0), y1-y0])
             ax.axis('off')
             display_ax = self._axes_class(ax, self._direction,
-                                         coord, **kwargs)
+                                          coord, **kwargs)
             self.axes[coord] = display_ax
             ax.set_axes_locator(self._locator)
 
         if self._black_bg:
             for ax in self.axes.values():
                 ax.ax.imshow(np.zeros((2, 2, 3)),
-                            extent=[-5000, 5000, -5000, 5000],
-                            zorder=-500, aspect='auto')
+                             extent=[-5000, 5000, -5000, 5000],
+                             zorder=-500, aspect='auto')
 
             # To have a black background in PDF, we need to create a
             # patch in black for the background
