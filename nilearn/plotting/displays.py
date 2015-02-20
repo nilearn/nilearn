@@ -236,20 +236,30 @@ class GlassBrainAxes(BaseAxes):
         # the cuts since we are taking the max along one axis
         pass
 
-    def _add_graph_nodes(self, nodes_coords, **kwargs):
+    def _add_graph_nodes(self, nodes_coords, node_color, node_size, **kwargs):
         """Plot graph nodes"""
+        if 's' in kwargs:
+            raise ValueError("Please use 'node_size' and not 'nodes_kwargs' "
+                             "to specify node sizes")
+        if 'c' in kwargs:
+            raise ValueError("Please use 'node_color' and not 'nodes_kwargs' "
+                             "to specify node colors")
+        if node_size is None:
+            node_size = 50
+        if node_color is None:
+            node_color = 'green'
+
         nodes_coords_2d = _coords_3d_to_2d(nodes_coords, self.direction)
 
         first_coords, second_coords = zip(*nodes_coords_2d)
 
         defaults = {'marker': 'o',
-                    's': 30,
-                    'c': 'green',
                     'zorder': 1000}
         for k, v in defaults.items():
             kwargs.setdefault(k, v)
 
-        self.ax.scatter(first_coords, second_coords, **kwargs)
+        self.ax.scatter(first_coords, second_coords, s=node_size, c=node_color,
+                        **kwargs)
 
     def _add_graph_edges(self, adjacency_matrix, nodes_coords, **kwargs):
         """Plot graph edges"""
@@ -294,6 +304,7 @@ class GlassBrainAxes(BaseAxes):
                          **this_kwargs)
 
     def add_graph(self, adjacency_matrix, nodes_coords,
+                  node_color, node_size,
                   edges_kwargs=None, nodes_kwargs=None):
         """Plot undirected graph.
 
@@ -305,7 +316,8 @@ class GlassBrainAxes(BaseAxes):
             nodes_kwargs = {}
 
         self._add_graph_edges(adjacency_matrix, nodes_coords, **edges_kwargs)
-        self._add_graph_nodes(nodes_coords, **nodes_kwargs)
+        self._add_graph_nodes(nodes_coords, node_color, node_size,
+                              **nodes_kwargs)
 
 
 ################################################################################
@@ -1036,6 +1048,7 @@ class OrthoProjector(OrthoSlicer):
         pass
 
     def add_graph(self, adjacency_matrix, nodes_coords,
+                  node_color=None, node_size=None,
                   edges_kwargs=None, nodes_kwargs=None):
         """Plot undirected graph on each of the axes
 
@@ -1046,6 +1059,10 @@ class OrthoProjector(OrthoSlicer):
                 a symmetric matrix
             nodes_coords: numpy array of shape (n, )
                 3d coordinates of the graph nodes in world space
+            node_color: color or sequence of colors
+                color(s) of the nodes.
+            node_size: scalar or array_like
+                size(s) of the nodes in points^2.
             edges_kwargs: dict
                 will be passed as kwargs to the plt.plot call that plots each
                 edge one by one
@@ -1055,8 +1072,9 @@ class OrthoProjector(OrthoSlicer):
 
         """
         for ax in self.axes.values():
-            ax.add_graph(adjacency_matrix, nodes_coords, nodes_kwargs,
-                         edges_kwargs)
+            ax.add_graph(adjacency_matrix, nodes_coords,
+                         node_color, node_size,
+                         nodes_kwargs, edges_kwargs)
 
         pl.draw_if_interactive()
 

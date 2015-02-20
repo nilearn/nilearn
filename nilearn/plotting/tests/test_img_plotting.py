@@ -201,7 +201,7 @@ def test_plot_noncurrent_axes():
 def test_plot_connectome():
     import pylab as pl
     pl.switch_backend('template')
-    nodes_colors = ['green', 'blue', 'k', 'cyan']
+    nodes_color = ['green', 'blue', 'k', 'cyan']
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
                                  [-2., 1, 0., 0.],
                                  [0.3, 0., 1., 0.],
@@ -211,8 +211,7 @@ def test_plot_connectome():
     args = adjacency_matrix, nodes_coords
     kwargs = dict(edges_threshold=0.38,
                   title='threshold=0.38',
-                  nodes_kwargs={
-                      's': 50, 'c': nodes_colors})
+                  node_size=10, node_color=nodes_color)
     plot_connectome(*args, **kwargs)
 
     # saving to file
@@ -223,13 +222,14 @@ def test_plot_connectome():
         assert_true(os.path.isfile(fp.name) and
                     os.path.getsize(fp.name) > 0)
 
-    # with edges_kwargs arguments
+    # with node_kwargs and edges_kwargs arguments
     plot_connectome(*args,
                     edges_threshold='70%',
                     title='threshold=70%',
+                    node_size=[10, 20, 30, 40],
+                    node_color=np.zeros((4, 3)),
                     nodes_kwargs={
-                        's': [10, 20, 30, 40],
-                        'c': np.zeros((4, 3))},
+                        'marker': 'v'},
                     edges_kwargs={
                         'linewidth': 4})
 
@@ -283,3 +283,17 @@ def test_plot_connectome_exceptions():
                              plot_connectome,
                              adjacency_matrix, nodes_coords,
                              edges_threshold=wrong_edges_threshold)
+
+    # specifying node sizes via node_kwargs
+    assert_raises_regexp(ValueError,
+                         "Please use 'node_size' and not 'nodes_kwargs'",
+                         plot_connectome,
+                         adjacency_matrix, nodes_coords,
+                         nodes_kwargs={'s': 50})
+
+    # specifying node colors via nodes_kwargs
+    assert_raises_regexp(ValueError,
+                         "Please use 'node_color' and not 'nodes_kwargs'",
+                         plot_connectome,
+                         adjacency_matrix, nodes_coords,
+                         nodes_kwargs={'c': 'blue'})

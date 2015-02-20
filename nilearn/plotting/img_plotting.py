@@ -743,6 +743,7 @@ def plot_glass_brain(stat_map_img,
 
 
 def plot_connectome(adjacency_matrix, nodes_coords,
+                    node_color=None, node_size=None,
                     nodes_kwargs=None, edges_kwargs=None, edges_threshold=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None,
@@ -757,6 +758,10 @@ def plot_connectome(adjacency_matrix, nodes_coords,
             a symmetric matrix.
         nodes_coords: numpy array of shape (n, 3)
             3d coordinates of the graph nodes in world space.
+        node_color: color or sequence of colors
+            color(s) of the nodes.
+        node_size: scalar or array_like
+            size(s) of the nodes in points^2.
         edges_kwargs: dict
             will be passed as kwargs to the plt.plot call that plots each
             link one by one.
@@ -862,6 +867,7 @@ def plot_connectome(adjacency_matrix, nodes_coords,
                                **kwargs)
 
     display.add_graph(adjacency_matrix, nodes_coords,
+                      node_color, node_size,
                       nodes_kwargs, edges_kwargs)
 
     if output_file is not None:
