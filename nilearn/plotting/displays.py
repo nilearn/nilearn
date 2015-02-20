@@ -239,10 +239,10 @@ class GlassBrainAxes(BaseAxes):
     def _add_graph_nodes(self, nodes_coords, node_color, node_size, **kwargs):
         """Plot graph nodes"""
         if 's' in kwargs:
-            raise ValueError("Please use 'node_size' and not 'nodes_kwargs' "
+            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
                              "to specify node sizes")
         if 'c' in kwargs:
-            raise ValueError("Please use 'node_color' and not 'nodes_kwargs' "
+            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
                              "to specify node colors")
         if node_size is None:
             node_size = 50
@@ -305,19 +305,19 @@ class GlassBrainAxes(BaseAxes):
 
     def add_graph(self, adjacency_matrix, nodes_coords,
                   node_color, node_size,
-                  edges_kwargs=None, nodes_kwargs=None):
+                  edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph.
 
         See OrthoProjector.add_graph for more details.
         """
-        if edges_kwargs is None:
-            edges_kwargs = {}
-        if nodes_kwargs is None:
-            nodes_kwargs = {}
+        if edge_kwargs is None:
+            edge_kwargs = {}
+        if node_kwargs is None:
+            node_kwargs = {}
 
-        self._add_graph_edges(adjacency_matrix, nodes_coords, **edges_kwargs)
+        self._add_graph_edges(adjacency_matrix, nodes_coords, **edge_kwargs)
         self._add_graph_nodes(nodes_coords, node_color, node_size,
-                              **nodes_kwargs)
+                              **node_kwargs)
 
 
 ################################################################################
@@ -1049,7 +1049,7 @@ class OrthoProjector(OrthoSlicer):
 
     def add_graph(self, adjacency_matrix, nodes_coords,
                   node_color=None, node_size=None,
-                  edges_kwargs=None, nodes_kwargs=None):
+                  edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph on each of the axes
 
             Parameters
@@ -1063,10 +1063,10 @@ class OrthoProjector(OrthoSlicer):
                 color(s) of the nodes.
             node_size: scalar or array_like
                 size(s) of the nodes in points^2.
-            edges_kwargs: dict
+            edge_kwargs: dict
                 will be passed as kwargs to the plt.plot call that plots each
                 edge one by one
-            nodes_kwargs: dict
+            node_kwargs: dict
                 will be passed as kwargs to the plt.scatter call that plots all
                 the nodes in one go
 
@@ -1074,7 +1074,7 @@ class OrthoProjector(OrthoSlicer):
         for ax in self.axes.values():
             ax.add_graph(adjacency_matrix, nodes_coords,
                          node_color, node_size,
-                         nodes_kwargs, edges_kwargs)
+                         node_kwargs, edge_kwargs)
 
         pl.draw_if_interactive()
 

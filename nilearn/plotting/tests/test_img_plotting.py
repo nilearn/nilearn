@@ -222,15 +222,15 @@ def test_plot_connectome():
         assert_true(os.path.isfile(fp.name) and
                     os.path.getsize(fp.name) > 0)
 
-    # with node_kwargs and edges_kwargs arguments
+    # with node_kwargs and edge_kwargs arguments
     plot_connectome(*args,
                     edges_threshold='70%',
                     title='threshold=70%',
                     node_size=[10, 20, 30, 40],
                     node_color=np.zeros((4, 3)),
-                    nodes_kwargs={
+                    node_kwargs={
                         'marker': 'v'},
-                    edges_kwargs={
+                    edge_kwargs={
                         'linewidth': 4})
 
     # sparse matrix support
@@ -286,14 +286,14 @@ def test_plot_connectome_exceptions():
 
     # specifying node sizes via node_kwargs
     assert_raises_regexp(ValueError,
-                         "Please use 'node_size' and not 'nodes_kwargs'",
+                         "Please use 'node_size' and not 'node_kwargs'",
                          plot_connectome,
                          adjacency_matrix, nodes_coords,
-                         nodes_kwargs={'s': 50})
+                         node_kwargs={'s': 50})
 
-    # specifying node colors via nodes_kwargs
+    # specifying node colors via node_kwargs
     assert_raises_regexp(ValueError,
-                         "Please use 'node_color' and not 'nodes_kwargs'",
+                         "Please use 'node_color' and not 'node_kwargs'",
                          plot_connectome,
                          adjacency_matrix, nodes_coords,
-                         nodes_kwargs={'c': 'blue'})
+                         node_kwargs={'c': 'blue'})

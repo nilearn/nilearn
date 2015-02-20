@@ -24,7 +24,7 @@ def plot_connectome(cov, atlas_maps, **kwargs):
     np.random.seed(42)
     node_colors = np.random.rand(cov.shape[0], 3)
     plotting.plot_connectome(cov, regions_coords,
-                             nodes_kwargs={'s': 50, 'c': node_colors},
+                             node_kwargs={'s': 50, 'c': node_colors},
                              **kwargs)
 
 
