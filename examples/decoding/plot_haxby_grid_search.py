@@ -44,7 +44,7 @@ conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 ### Preprocess data ###########################################################
 
 # Keep only data corresponding to shoes or bottles
-condition_mask = np.logical_or(conditions == 'shoe', conditions == 'bottle')
+condition_mask = np.logical_or(conditions == b'shoe', conditions == b'bottle')
 y = y[condition_mask]
 conditions = conditions[condition_mask]
 

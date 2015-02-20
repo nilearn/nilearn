@@ -24,7 +24,7 @@ conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 ### Restrict to faces and houses ##############################################
 from nilearn.image import index_img
 
-condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 
 fmri_img = index_img(fmri_img, condition_mask)
 y, session = y[condition_mask], session[condition_mask]

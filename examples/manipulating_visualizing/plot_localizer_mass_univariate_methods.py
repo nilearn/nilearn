@@ -30,7 +30,7 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'], n_subjects=n_samples)
 tested_var = localizer_dataset.ext_vars['pseudo']
 # Quality check / Remove subjects with bad tested variate
-mask_quality_check = np.where(tested_var != 'None')[0]
+mask_quality_check = np.where(tested_var != b'None')[0]
 n_samples = mask_quality_check.size
 contrast_map_filenames = [localizer_dataset.cmaps[i]
                           for i in mask_quality_check]

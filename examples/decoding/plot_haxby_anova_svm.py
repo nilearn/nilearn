@@ -18,7 +18,7 @@ conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 ### Preprocess data ###########################################################
 
 ### Restrict to faces and houses ##############################################
-condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 y = y[condition_mask]
 conditions = conditions[condition_mask]
 

@@ -17,7 +17,7 @@ import numpy as np
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 stimuli = labels['labels']
 # identify resting state labels in order to be able to remove them
-resting_state = stimuli == "rest"
+resting_state = stimuli == b"rest"
 
 # find names of remaining active labels
 categories = np.unique(stimuli[np.logical_not(resting_state)])
@@ -133,11 +133,11 @@ from nilearn import image
 mean_epi_img = image.mean_img(func_filename)
 
 # Restrict the decoding to face vs house
-condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')
+condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
 masked_timecourses = masked_timecourses[condition_mask[np.logical_not(resting_state)]]
 stimuli = stimuli[condition_mask]
 # Transform the stimuli to binary values
-stimuli = (stimuli == 'face').astype(np.int)
+stimuli = (stimuli == b'face').astype(np.int)
 
 from nilearn.plotting import plot_stat_map
 

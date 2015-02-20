@@ -20,7 +20,7 @@ y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 # Remove the rest condition, it is not very interesting
-non_rest = conditions != 'rest'
+non_rest = conditions != b'rest'
 conditions = conditions[non_rest]
 y = y[non_rest]
 
