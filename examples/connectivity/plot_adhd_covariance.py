@@ -22,7 +22,7 @@ def plot_connectome(cov, atlas_maps, **kwargs):
     regions_coords = np.array(
         [plotting.find_xyz_cut_coords(img) for img in imgs])
     np.random.seed(42)
-    node_colors = np.random.rand(len(atlas_maps), 3)
+    node_colors = np.random.rand(cov.shape[0], 3)
     plotting.plot_connectome(cov, regions_coords,
                              nodes_kwargs={'s': 50, 'c': node_colors},
                              **kwargs)
