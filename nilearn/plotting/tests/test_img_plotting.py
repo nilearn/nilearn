@@ -202,8 +202,8 @@ def test_plot_connectome():
     import pylab as pl
     pl.switch_backend('template')
     nodes_colors = ['green', 'blue', 'k', 'cyan']
-    adjacency_matrix = np.array([[1., -0.2, 0.3, 0.],
-                                 [-0.2, 1, 0., 0.],
+    adjacency_matrix = np.array([[1., -2., 0.3, 0.],
+                                 [-2., 1, 0., 0.],
                                  [0.3, 0., 1., 0.],
                                  [0., 0., 0., 1.]])
     nodes_coords = np.arange(3 * 4).reshape(4, 3)
@@ -238,9 +238,6 @@ def test_plot_connectome():
     plot_connectome(sparse_adjacency_matrix, nodes_coords,
                     **kwargs)
 
-    # symmetric *semi-*definite positive
-    plot_connectome(np.zeros((4, 4)), nodes_coords, **kwargs)
-
 
 def test_plot_connectome_exceptions():
     import pylab as pl
@@ -251,19 +248,12 @@ def test_plot_connectome_exceptions():
 
     # adjacency_matrix is not symmetric
     assert_raises_regexp(ValueError,
-                         'not symmetric positive semi-definite',
+                         'should be symmetric',
                          plot_connectome,
                          wrong_adjacency_matrix, nodes_coords)
 
-    # adjacency_matrix is symmetric but not positive semi-definite
-    wrong_adjacency_matrix[1, 0] = 2.
-    assert_raises_regexp(ValueError,
-                         'not symmetric positive semi-definite',
-                         plot_connectome,
-                         wrong_adjacency_matrix, nodes_coords)
-
-    adjacency_matrix = np.array([[1., 0.1],
-                                 [0.1, 1.]])
+    adjacency_matrix = np.array([[1., 2.],
+                                 [2., 1.]])
     # edges threshold is neither a number or a string
     assert_raises_regexp(TypeError,
                          'should be either a number or a string',
@@ -274,7 +264,8 @@ def test_plot_connectome_exceptions():
     # wrong shapes for nodes_coords or adjacency_matrix
     assert_raises_regexp(ValueError,
                          r'supposed to have shape \(n, n\).+\(1, 2\)',
-                         plot_connectome, adjacency_matrix[:1, :], nodes_coords)
+                         plot_connectome, adjacency_matrix[:1, :],
+                         nodes_coords)
 
     assert_raises_regexp(ValueError, r'shape \(n, 3\).+\(2,\)',
                          plot_connectome, adjacency_matrix, nodes_coords[:, 2])

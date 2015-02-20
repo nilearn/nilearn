@@ -754,12 +754,12 @@ def plot_connectome(adjacency_matrix, nodes_coords,
         ----------
         adjacency_matrix: numpy array of shape (n, n)
             represents the link strengths of the graph. Assumed to be
-            a symmetric matrix
+            a symmetric matrix.
         nodes_coords: numpy array of shape (n, 3)
-            3d coordinates of the graph nodes in world space
+            3d coordinates of the graph nodes in world space.
         edges_kwargs: dict
             will be passed as kwargs to the plt.plot call that plots each
-            link one by one
+            link one by one.
         nodes_kwargs: dict
             will be passed as kwargs to the plt.scatter call that plots all
             the nodes in one go
@@ -795,7 +795,7 @@ def plot_connectome(adjacency_matrix, nodes_coords,
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         alpha: float between 0 and 1
-            Alpha transparency for the brain schematics
+            Alpha transparency for the brain schematics.
 
     """
     adjacency_matrix_shape = adjacency_matrix.shape
@@ -819,11 +819,8 @@ def plot_connectome(adjacency_matrix, nodes_coords,
     if sparse.issparse(adjacency_matrix):
         adjacency_matrix = adjacency_matrix.toarray()
 
-    if not is_spd(adjacency_matrix, accept_semi_definite=True):
-        raise ValueError("'adjacency_matrix' should be "
-                         'a covariance or correlation matrix. '
-                         "The 'adjacency_matrix' you provided is not "
-                         'symmetric positive semi-definite')
+    if not np.allclose(adjacency_matrix, adjacency_matrix.T):
+        raise ValueError("'adjacency_matrix' should be symmetric")
 
     if edges_threshold is not None:
         if isinstance(edges_threshold, basestring):
