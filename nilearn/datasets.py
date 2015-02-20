@@ -2373,7 +2373,8 @@ def load_mni152_template():
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
-                    strategy='nofilt_noglobal', derivatives=['func_preproc'],
+                    band_pass_filtering=False, global_signal_regression=False,
+                    derivatives=['func_preproc'],
                     quality_checked=True, url=None, verbose=1, **kwargs):
     """ Fetch ABIDE dataset
 
@@ -2395,10 +2396,13 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     pipeline: string, optional
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
 
-    strategy: string, optional
-        Nuisance removal strategy. The first part describe the band filtering
-        strategy (either "filt" or "nofilt") and the second part indicate the
-        global signal regression strategy ("global" or "noglobal").
+    band_pass_filtering: boolean, optional
+        Due to controversies in the literature, band pass filtering is
+        optional. If true, signal is band filtered between 0.01Hz and 0.1Hz.
+
+    global_signal_regression: boolean optional
+        Indicates if global signal regression should be applied on the
+        signals.
 
     derivatives: string list, optional
         Types of downloaded files. Possible values are: alff, degree_binarize,
@@ -2460,6 +2464,14 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                 'rois_cc400', 'rois_dosenbach160', 'rois_ez', 'rois_ho',
                 'rois_tt', 'vmhc']:
             raise KeyError('%s is not a valid derivative' % derivative)
+
+    strategy = ''
+    if not band_pass_filtering:
+        strategy += 'no'
+    strategy += 'filt_'
+    if not global_signal_regression:
+        strategy += 'no'
+    strategy += 'global'
 
     # General file: phenotypic information
     data_dir = _get_dataset_dir('ABIDE_pcp', data_dir=data_dir,
