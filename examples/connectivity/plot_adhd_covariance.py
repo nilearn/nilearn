@@ -5,7 +5,7 @@ Computation of covariance matrix between brain regions
 This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
-n_subjects = 10  # # subjects to consider for group-sparse covariance (max: 40)
+n_subjects = 10  # subjects to consider for group-sparse covariance (max: 40)
 plotted_subject = 0  # subject index to plot
 
 
@@ -95,13 +95,13 @@ gl.fit(subjects[plotted_subject])
 
 # Displaying results ##########################################################
 print("-- Displaying results")
-title = "{0:d} GroupSparseCovariance $\\alpha={1:.2e}$".format(plotted_subject,
-                                                     gsc.alpha_)
+title = ("Subject {0:d} GroupSparseCovariance "
+         "$\\alpha={1:.2e}$").format(plotted_subject, gsc.alpha_)
 plot_matrices(gsc.covariances_[..., plotted_subject],
               gsc.precisions_[..., plotted_subject], title)
 
-title = "{0:d} GraphLasso $\\alpha={1:.2e}$".format(plotted_subject,
-                                                     gl.alpha_)
+title = ("Subject {0:d} GraphLasso "
+         "$\\alpha={1:.2e}$").format(plotted_subject, gl.alpha_)
 plot_matrices(gl.covariance_, gl.precision_, title)
 
 plt.show()
