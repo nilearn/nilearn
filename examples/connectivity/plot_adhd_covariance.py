@@ -5,8 +5,9 @@ Computation of covariance matrix between brain regions
 This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
-n_subjects = 10  # Number of subjects to consider for group-sparse covariance
-plotted_subject = 0  # subject to plot
+n_subjects = 10  # # subjects to consider for group-sparse covariance (max: 40)
+plotted_subject = 0  # subject index to plot
+
 
 import matplotlib.pyplot as plt
 from nilearn.plotting import cm
@@ -84,12 +85,12 @@ for func_filename, confound_filename in zip(func_filenames,
 # Computing group-sparse precision matrices ###################################
 print("-- Computing group-sparse precision matrices ...")
 from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
-gsc = GroupSparseCovarianceCV(n_jobs=3, verbose=2)
+gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subjects)
 
 print("-- Computing graph-lasso precision matrices ...")
 from sklearn import covariance
-gl = covariance.GraphLassoCV(n_jobs=3, verbose=2)
+gl = covariance.GraphLassoCV(verbose=2)
 gl.fit(subjects[plotted_subject])
 
 # Displaying results ##########################################################
