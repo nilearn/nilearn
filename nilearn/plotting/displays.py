@@ -188,9 +188,9 @@ class CutAxes(BaseAxes):
 def _coords_3d_to_2d(coords_3d, direction):
     """Project 3d coordinates into 2d ones given the direction of a cut
     """
-    direction_to_index = {'x': slice(1, None),
+    direction_to_index = {'x': [1, 2],
                           'y': [0, 2],
-                          'z': slice(None, 2)}
+                          'z': [0, 1]}
     index = direction_to_index.get(direction)
 
     if index is None:
