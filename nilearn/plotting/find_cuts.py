@@ -88,10 +88,9 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     cut_coords = ndimage.center_of_mass(np.abs(my_map))
     x_map, y_map, z_map = cut_coords + offset
 
-    return coord_transform(x_map, y_map, z_map,
-                           img.get_affine())
-
-
+    # Return as a list of scalars
+    return np.asarray(coord_transform(x_map, y_map, z_map,
+                                      img.get_affine())).tolist()
 
 ################################################################################
 
