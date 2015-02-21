@@ -49,6 +49,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
     offset = np.zeros(3)
+
     # Deal with masked arrays:
     if hasattr(data, 'mask'):
         not_mask = np.logical_not(data.mask)
@@ -57,6 +58,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         else:
             mask *= not_mask
         data = np.asarray(data)
+
     # Get rid of potential memmapping
     data = as_ndarray(data)
     my_map = data.copy()
@@ -66,11 +68,12 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
         offset += [slice_x.start, slice_y.start, slice_z.start]
+
     # Testing min and max is faster than np.all(my_map == 0)
     if (my_map.max() == 0) and (my_map.min() == 0):
         return .5 * np.array(data.shape)
     if activation_threshold is None:
-        activation_threshold = fast_abs_percentile(my_map[my_map !=0].ravel(),
+        activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
                                                    80)
     mask = np.abs(my_map) > activation_threshold - 1.e-15
     mask = largest_connected_component(mask)
@@ -79,10 +82,11 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
     offset += [slice_x.start, slice_y.start, slice_z.start]
+
     # For the second threshold, we use a mean, as it is much faster,
     # althought it is less robust
     second_threshold = np.abs(np.mean(my_map[mask]))
-    second_mask = (np.abs(my_map)>second_threshold)
+    second_mask = (np.abs(my_map) > second_threshold)
     if second_mask.sum() > 50:
         my_map *= largest_connected_component(second_mask)
     cut_coords = ndimage.center_of_mass(np.abs(my_map))
@@ -92,7 +96,6 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     return np.asarray(coord_transform(x_map, y_map, z_map,
                                       img.get_affine())).tolist()
 
-################################################################################
 
 def _get_auto_mask_bounds(img):
     """ Compute the bounds of the data with an automaticaly computed mask
@@ -118,6 +121,7 @@ def _get_auto_mask_bounds(img):
     xmin, xmax, ymin, ymax, zmin, zmax = \
             get_mask_bounds(nibabel.Nifti1Image(mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
+
 
 def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
