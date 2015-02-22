@@ -12,25 +12,23 @@ Refernce :
     1914-1928. doi:10.1002/hbm.21333.
 """
 
-from sklearn.feature_extraction.image import grid_to_graph
-
-### Load adhd dataset #########################################################
-
 import numpy as np
 import scipy as sp
-import matplotlib.pyplot as plt
-from nilearn import datasets, input_data
 import time
 
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.image import grid_to_graph
+
+from nilearn import datasets, input_data
+from nilearn._utils.cache_mixin import cache
 
 ### Fetch and mask data #######################################################
 
 dataset = datasets.fetch_adhd(n_subjects=1)
 nifti_masker = input_data.NiftiMasker(memory='nilearn_cache', memory_level=1,
-                              smoothing_fwhm=12., standardize=False)
+                                      smoothing_fwhm=12., standardize=False)
 X = nifti_masker.fit_transform(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
-print nifti_masker.mask_img_.get_affine()
 
 ### Spectral clustering #######################################################
 
@@ -46,9 +44,6 @@ for i, (r, c) in enumerate(zip(rows, cols)):
     if np.isnan(corr):
         values[i] = 0.
         continue
-    #if corr <= 0.9:
-        # Sparsify matrix
-        #corr = 0.
     values[i] = corr
 # Keep a number of correlation equal to XX% of the number of voxels
 n_voxels = connectivity.shape[0]
