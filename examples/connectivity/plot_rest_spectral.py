@@ -23,6 +23,7 @@ from nilearn import datasets, input_data
 from nilearn._utils.cache_mixin import cache
 
 ### Fetch and mask data #######################################################
+print('Loading dataset and masking subject data... ')
 
 dataset = datasets.fetch_adhd(n_subjects=1)
 nifti_masker = input_data.NiftiMasker(memory='nilearn_cache', memory_level=1,
@@ -30,9 +31,9 @@ nifti_masker = input_data.NiftiMasker(memory='nilearn_cache', memory_level=1,
 X = nifti_masker.fit_transform(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
-### Spectral clustering #######################################################
+### Affinity Matrix #######################################################
+print('Computing affinity matrix... ')
 
-print 'Computing affinity matrix... '
 # Compute the connectivity graph (it is sparse)
 connectivity = grid_to_graph(*mask.shape, mask=mask)
 
@@ -48,21 +49,22 @@ for i, (r, c) in enumerate(zip(rows, cols)):
 # Keep a number of correlation equal to XX% of the number of voxels
 n_voxels = connectivity.shape[0]
 thr = np.sort(values)[- int(n_voxels * 1.8)]
-print n_voxels, thr
+print("Voxels: %d; thresshold: %.2f" % (n_voxels, thr))
 rows = rows[np.where(values >= thr)]
 cols = cols[np.where(values >= thr)]
 values = values[np.where(values >= thr)]
 
 affinity = sp.sparse.coo_matrix((values, (rows, cols)))
-# End computing affinity matrix
+### Spectral clustering #######################################################
+print('Running spectral clustering... ')
 
-print 'Running spectral clustering... '
-# Apply spectral clustering on affinity matrix
 from sklearn.cluster import spectral_clustering
 clustering = spectral_clustering(affinity,
         n_clusters=20, assign_labels='discretize')
-# End spectral clustering
 
+### Plot results #######################################################
+
+from nilearn.image import index_img
 clustering = nifti_masker.inverse_transform(clustering)
 
 plt.imshow(clustering.get_data()[..., 25] + 1, cmap='Set1',
