@@ -162,3 +162,21 @@ def test_plot_img_with_resampling():
     img = nibabel.Nifti1Image(data, affine)
     display = plot_img(img)
     display.add_overlay(img)
+
+
+def test_plot_noncurrent_axes():
+    """Regression test for Issue #450"""
+
+    maps_img = nibabel.Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
+    fh1 = pl.figure()
+    fh2 = pl.figure()
+    ax1 = fh1.add_subplot(1, 1, 1)
+
+    assert_equal(pl.gcf(), fh2, "fh2  was the last plot created.")
+
+    # Since we gave ax1, the figure should be plotted in fh1.
+    # Before #451, it was plotted in fh2.
+    slicer = plot_glass_brain(maps_img, axes=ax1, title='test')
+    for ax_name, niax in slicer.axes.items():
+        ax_fh = niax.ax.get_figure()
+        assert_equal(ax_fh, fh1, 'New axis %s should be in fh1.' % ax_name)
