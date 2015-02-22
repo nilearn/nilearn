@@ -34,7 +34,6 @@ print nifti_masker.mask_img_.get_affine()
 
 ### Spectral clustering #######################################################
 
-t0 = time.time()
 print 'Computing affinity matrix... '
 # Compute the connectivity graph (it is sparse)
 connectivity = grid_to_graph(*mask.shape, mask=mask)
@@ -61,16 +60,13 @@ values = values[np.where(values >= thr)]
 
 affinity = sp.sparse.coo_matrix((values, (rows, cols)))
 # End computing affinity matrix
-print '... done (%.2fs)' % (time.time() - t0)
 
-t0 = time.time()
 print 'Running spectral clustering... '
 # Apply spectral clustering on affinity matrix
 from sklearn.cluster import spectral_clustering
 clustering = spectral_clustering(affinity,
         n_clusters=20, assign_labels='discretize')
 # End spectral clustering
-print '... done (%.2fs)' % (time.time() - t0)
 
 clustering = nifti_masker.inverse_transform(clustering)
 
