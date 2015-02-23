@@ -67,12 +67,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         data = img.get_data()
         affine = img.get_affine()
 
-        # Remove NaNs
-        nan_mask = np.isnan(np.asarray(data))
-        if np.any(nan_mask):
-            data = data.copy()
-            data[nan_mask] = 0
-        del nan_mask
+        if np.any(np.isnan(data)):
+            data = np.nan_to_num(data)
 
         # Deal with automatic settings of plot parameters
         if threshold == 'auto':
