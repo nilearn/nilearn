@@ -18,51 +18,60 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.image import grid_to_graph
 
 ### Fetch and mask data #######################################################
-print('Loading dataset and masking subject data... ')
+print("Loading dataset and masking subject data...")
 
 from nilearn import datasets, input_data
 
 dataset = datasets.fetch_adhd(n_subjects=1)
 nifti_masker = input_data.NiftiMasker(memory='nilearn_cache', memory_level=1,
-                                      smoothing_fwhm=12., standardize=False)
+                                      smoothing_fwhm=0., standardize=True, detrend=True)
 X = nifti_masker.fit_transform(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
 ### Affinity Matrix #######################################################
-print('Computing affinity matrix... ')
+print("Computing affinity matrix...")
+
+# Set up a caching function.  Using 'partial' allows us to make the
+#   cache function be called with the same memory and verbose parameters
+#   every time, making for more consistent, and shorter, calls.
+import functools
+from nilearn._utils.cache_mixin import cache
+my_cache_fn = functools.partial(cache, memory='nilearn_cache', verbose=10)
 
 # Compute the connectivity graph (it is sparse)
-connectivity = grid_to_graph(*mask.shape, mask=mask)
+def compute_affinity(X, mask):
+    connectivity = grid_to_graph(*mask.shape, mask=mask)
 
-# Compute the Pearson correlation matrix from data and connectivity
-rows, cols = connectivity.nonzero()
-values = np.zeros(rows.shape)
-for i, (r, c) in enumerate(zip(rows, cols)):
-    corr = sp.stats.pearsonr(X[:, r], X[:, c])[0]
-    if np.isnan(corr):
-        values[i] = 0.
-        continue
-    values[i] = corr
+    # Compute the Pearson correlation matrix from data and connectivity
+    rows, cols = connectivity.nonzero()
+    values = np.zeros(rows.shape)
+    for xi, (r, c) in enumerate(zip(rows, cols)):
+        values[xi] = sp.stats.pearsonr(X[:, r], X[:, c])[0]
 
-# Keep a number of correlation equal to XX% of the number of voxels
-n_voxels = connectivity.shape[0]
-thr = np.sort(values)[- int(n_voxels * 1.8)]
-print("Voxels: %d; thresshold: %.4f" % (n_voxels, thr))
+    # Keep a number of correlation equal to XX% of the number of voxels
+    n_voxels = connectivity.shape[0]
+    thr = np.sort(values)[-int(n_voxels * 1.8)]
+    rows = rows[np.where(values >= thr)]
+    cols = cols[np.where(values >= thr)]
+    values = values[np.where(values >= thr)]
 
-rows = rows[np.where(values >= thr)]
-cols = cols[np.where(values >= thr)]
-values = values[np.where(values >= thr)]
+    pct_kept = len(values) * 100. / connectivity.nnz
+    pct_possible = len(values) * 100. / n_voxels**2
+    print("Voxels: %d; cutoff: %.4f; %% kept %.2f, %% possible: %.4f"
+          % (n_voxels, thr, pct_kept, pct_possible))
 
-affinity = sp.sparse.coo_matrix((values, (rows, cols)))
+    return sp.sparse.coo_matrix((values, (rows, cols)))
+affinity = my_cache_fn(compute_affinity)(X, mask)
+
 ### Spectral clustering #######################################################
-print('Running spectral clustering... ')
+print("Running spectral clustering...")
 
 from sklearn.cluster import spectral_clustering
-clustering = spectral_clustering(affinity,
-        n_clusters=20, assign_labels='discretize')
+clustering = my_cache_fn(spectral_clustering)(affinity, n_clusters=100,
+                                              assign_labels='discretize')
 
 ### Plot results #######################################################
-
+print("Plotting the results...")
 from nilearn.plotting import plot_roi
 
 cluster_img = nifti_masker.inverse_transform(clustering)
