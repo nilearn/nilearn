@@ -1,3 +1,4 @@
+
 """
 Example generation for the scikit learn
 
@@ -415,7 +416,7 @@ def generate_example_rst(app):
         examples.
     """
     root_dir = os.path.join(app.builder.srcdir, 'auto_examples')
-    example_dir = os.path.abspath(app.builder.srcdir + '/..')
+    example_dir = os.path.abspath(app.builder.srcdir + '/../' + 'examples')
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
     except TypeError:
@@ -448,6 +449,18 @@ def generate_example_rst(app):
 
 Examples
 ========
+
+.. warning::
+
+   If you want to run the examples you need to make sure you have
+   installed nilearn by following the instructions :ref:`there
+   <installation>`.
+
+.. note::
+
+    A few examples may not run with scikit-learn versions older than
+    0.14.1.
+
 
 """)
     # Here we don't use an os.walk, but we recurse only twice: flat is
@@ -641,7 +654,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
         last_dir = ''
     else:
         last_dir += '_'
-    short_fname = fname
+    short_fname = last_dir + fname
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
@@ -804,8 +817,16 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                     matplotlib._pylab_helpers.Gcf.get_all_fig_managers()):
                     # Set the fig_num figure as the current figure as we can't
                     # save a figure that's not the current figure.
-                    plt.figure(fig_num)
-                    plt.savefig(image_path % fig_num)
+                    fig = plt.figure(fig_num)
+                    kwargs = {}
+                    to_rgba = matplotlib.colors.colorConverter.to_rgba
+                    for attr in ['facecolor', 'edgecolor']:
+                        fig_attr = getattr(fig, 'get_' + attr)()
+                        default_attr = matplotlib.rcParams['figure.' + attr]
+                        if to_rgba(fig_attr) != to_rgba(default_attr):
+                            kwargs[attr] = fig_attr
+
+                    fig.savefig(image_path % fig_num, **kwargs)
                     figure_list.append(image_fname % fig_num)
             except:
                 print 80 * '_'

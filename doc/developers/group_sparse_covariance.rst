@@ -32,7 +32,7 @@ matrices. The structure is of a block coordinate descent, with a line
 search as innermost loop.
 
 The present implementation relies solely on NumPy, SciPy and Scikit-Learn.
-NiLearn contains only Python code.
+Nilearn contains only Python code.
 
 In addition to the basic algorithm described in the article, several
 additions were implemented:

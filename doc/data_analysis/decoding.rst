@@ -39,29 +39,29 @@ activity recorded in masks of the ventral stream. Significant prediction
 shows that the signal in the region contains information on the
 corresponding category.
 
-.. figure:: ../auto_examples/images/plot_haxby_stimuli_4.png
-   :target: ../auto_examples/plot_haxby_stimuli.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_stimuli_4.png
+   :target: ../auto_examples/decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Face stimuli
 
-.. figure:: ../auto_examples/images/plot_haxby_stimuli_2.png
-   :target: ../auto_examples/plot_haxby_stimuli.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_stimuli_2.png
+   :target: ../auto_examples/decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Cat stimuli
 
-.. figure:: ../auto_examples/images/plot_haxby_masks_1.png
-   :target: ../auto_examples/plot_haxby_masks.html
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_masks_1.png
+   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
    :scale: 30
    :align: left
 
    Masks
 
-.. figure:: ../auto_examples/images/plot_haxby_full_analysis_1.png
-   :target: ../auto_examples/plot_haxby_full_analysis.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_full_analysis_1.png
+   :target: ../auto_examples/decoding/plot_haxby_full_analysis.html
    :scale: 35
    :align: left
 
@@ -71,21 +71,21 @@ corresponding category.
 Loading the data into Python
 -----------------------------
 
-Launch ipython::
+Launch IPython::
 
-  $ ipython -pylab
+  ipython --matplotlib
 
-First, load the data using nilearn's data downloading function,
+First, load the data using nilearn data downloading function,
 :func:`nilearn.datasets.fetch_haxby_simple`:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Load haxby dataset ########################################################
     :end-before: ### Load Target labels ########################################################
 
-The ``data`` object has several entries that contain paths to the files
+The ``haxby_dataset`` object has several entries that contain paths to the files
 downloaded on the disk::
 
-    >>> print data # doctest: +SKIP
+    >>> print haxby_dataset # doctest: +SKIP
     {'anat': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/anat.nii.gz'],
     'func': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/bold.nii.gz'],
     'mask_face': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8b_face_vt.nii.gz'],
@@ -99,7 +99,7 @@ downloaded on the disk::
 We load the behavioral labels from the corresponding text file and limit
 our analysis to the `face` and `cat` conditions:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################
     :end-before: ### Prepare the data: apply the mask ##########################################
 
@@ -116,7 +116,7 @@ n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks).
    for instance standardizing the data.
 
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Prepare the data: apply the mask ##########################################
     :end-before: ### Prediction ################################################################
 
@@ -144,7 +144,7 @@ We use here a simple `Support Vector Classification
 linear kernel. We first import the correct module from scikit-learn and we
 define the classifier, :class:`sklearn.svm.SVC`:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: # Here we use a Support Vector Classification, with a linear kernel
     :end-before: # And we run it
 
@@ -184,7 +184,7 @@ In scikit-learn, the prediction objects have two important methods:
   Here, we just have to give the new set of images (as the target should be
   unknown):
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: # And we run it
     :end-before: ### Cross-validation ##########################################################
 
@@ -213,7 +213,7 @@ We use a cross-validation object,
 :class:`sklearn.cross_validation.KFold`, that simply generates the
 indices of the folds within a loop.
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Cross-validation ##########################################################
     :end-before: ### Unmasking #################################################################
 
@@ -323,7 +323,7 @@ permutation testing on the labels, with
 .. topic:: **Putting it all together**
 
     The :ref:`ROI-based decoding example
-    <example_plot_haxby_full_analysis.py>` does a decoding analysis per
+    <example_decoding_plot_haxby_full_analysis.py>` does a decoding analysis per
     mask, giving the f1-score of the prediction for each object.
 
     It uses all the notions presented above, with ``for`` loop to iterate
@@ -331,16 +331,16 @@ permutation testing on the labels, with
     scores.
 
 
-.. figure:: ../auto_examples/images/plot_haxby_masks_1.png
-   :target: ../auto_examples/plot_haxby_masks.html
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_masks_1.png
+   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
    :scale: 55
    :align: left
 
    Masks
 
 
-.. figure:: ../auto_examples/images/plot_haxby_full_analysis_1.png
-   :target: ../auto_examples/plot_haxby_full_analysis.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_full_analysis_1.png
+   :target: ../auto_examples/decoding/plot_haxby_full_analysis.html
    :scale: 70
    :align: left
 
@@ -361,14 +361,14 @@ We can visualize the weights of the decoder:
    :align: right
    :scale: 65
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualize the mask ########################################################
 
 
 .. seealso::
 
-   * :ref:`visualizing`
+   * :ref:`plotting`
 
 
 Decoding without a mask: Anova-SVM
@@ -391,9 +391,10 @@ based feature selection (a.k.a.
 that we will put before the SVC in a `pipeline`
 (:class:`sklearn.pipeline.Pipeline`):
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
+.. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
     :start-after: ### Dimension reduction #######################################################
     :end-before: ### Visualization #############################################################
+
 We can use our ``anova_svc`` object exactly as we were using our ``svc``
 object previously.
 
@@ -407,24 +408,24 @@ To visualize the results, we need to:
 - then, as before, inverse the masking process to retrieve the weights
   and plot them.
 
-.. figure:: ../auto_examples/images/plot_haxby_anova_svm_1.png
-   :target: ../auto_examples/plot_haxby_anova_svm.html
+.. figure:: ../auto_examples/decoding/images/plot_haxby_anova_svm_1.png
+   :target: ../auto_examples/decoding/plot_haxby_anova_svm.html
    :align: right
    :scale: 65
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
+.. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
     :start-after: ### Visualization #############################################################
     :end-before: ### Cross validation ##########################################################
 
 .. seealso::
 
-   * :ref:`visualizing`
+   * :ref:`plotting`
 
 
 .. topic:: **Final script**
 
     The complete script to do an SVM-Anova analysis can be found as
-    :ref:`an example <example_plot_haxby_anova_svm.py>`.
+    :ref:`an example <example_decoding_plot_haxby_anova_svm.py>`.
 
 
 .. seealso::
@@ -493,7 +494,7 @@ and create a new pipeline::
 and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=True) # doctest: +SKIP
+    ...     verbose=1) # doctest: +SKIP
 
 But, be aware that this can take A WHILE...
 

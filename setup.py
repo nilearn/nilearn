@@ -1,94 +1,61 @@
 #! /usr/bin/env python
-#
-# Copyright (C) 2007-2009 Cournapeau David <cournape@gmail.com>
-#               2010 Fabian Pedregosa <fabian.pedregosa@inria.fr>
 
 descr = """A set of python modules for neuroimaging..."""
 
 import sys
 import os
-import shutil
 
+from setuptools import setup, find_packages
+
+
+def load_version():
+    """Executes nilearn/version.py in a globals dictionary and return it.
+
+    Note: importing nilearn is not an option because there may be
+    dependencies like nibabel which are not installed and
+    setup.py is supposed to install them.
+    """
+    # load all vars into globals, otherwise
+    #   the later function call using global vars doesn't work.
+    globals_dict = {}
+    with open(os.path.join('nilearn', 'version.py')) as fp:
+        exec(fp.read(), globals_dict)
+
+    return globals_dict
+
+
+def is_installing():
+    # Allow command-lines such as "python setup.py build install"
+    return 'install' in sys.argv
+
+
+# Make sources available using relative paths from this file's directory.
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+_VERSION_GLOBALS = load_version()
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
-URL = 'http://nilearn.github.com'
+URL = 'http://nilearn.github.io'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'http://nilearn.github.com'
-VERSION = '0.1-git'
-
-from numpy.distutils.core import setup
-
-
-# For some commands, use setuptools
-if len(set(('develop', 'sdist', 'release', 'bdist_egg', 'bdist_rpm',
-           'bdist', 'bdist_dumb', 'bdist_wininst', 'install_egg_info',
-           'build_sphinx', 'egg_info', 'easy_install', 'upload',
-            )).intersection(sys.argv)) > 0:
-    from setuptools import setup
-
-
-def configuration(parent_package='', top_path=None):
-    if os.path.exists('MANIFEST'):
-        os.remove('MANIFEST')
-
-    from numpy.distutils.misc_util import Configuration
-    config = Configuration(None, parent_package, top_path)
-
-    config.add_subpackage('nilearn')
-    config.add_subpackage('nilearn/input_data')
-    config.add_subpackage('nilearn/decomposition')
-    config.add_subpackage('nilearn/decoding')
-    config.add_subpackage('nilearn/mass_univariate')
-    config.add_subpackage('nilearn/image')
-    config.add_subpackage('nilearn/plotting')
-    config.add_subpackage('nilearn/_utils')
-    config.add_subpackage('nilearn/_utils/fixes')
-    config.add_subpackage("nilearn/plotting")
-    return config
+DOWNLOAD_URL = 'http://nilearn.github.io'
+VERSION = _VERSION_GLOBALS['__version__']
 
 
 if __name__ == "__main__":
+    if is_installing():
+        module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
+        module_check_fn(is_nilearn_installing=True)
 
-    old_path = os.getcwd()
-    local_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-    # python 3 compatibility stuff.
-    # Simplified version of scipy strategy: copy files into
-    # build/py3k, and patch them using lib2to3.
-    if sys.version_info[0] == 3:
-        try:
-            import lib2to3cache
-        except ImportError:
-            pass
-        local_path = os.path.join(local_path, 'build', 'py3k')
-        if os.path.exists(local_path):
-            shutil.rmtree(local_path)
-        print("Copying source tree into build/py3k for 2to3 transformation"
-              "...")
-        shutil.copytree(os.path.join(old_path, 'nilearn'),
-                        os.path.join(local_path, 'nilearn'))
-        import lib2to3.main
-        from io import StringIO
-        print("Converting to Python3 via 2to3...")
-        _old_stdout = sys.stdout
-        try:
-            sys.stdout = StringIO()  # supress noisy output
-            res = lib2to3.main.main("lib2to3.fixes", ['-x', 'import', '-w', local_path])
-        finally:
-            sys.stdout = _old_stdout
+    install_requires = \
+        ['%s>=%s' % (mod, meta['min_version'])
+            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
+            if not meta['required_at_installation']]
 
-        if res != 0:
-            raise Exception('2to3 failed, exiting ...')
-
-    os.chdir(local_path)
-    sys.path.insert(0, local_path)
-
-    setup(configuration=configuration,
-          name=DISTNAME,
+    setup(name=DISTNAME,
           maintainer=MAINTAINER,
-          include_package_data=True,
           maintainer_email=MAINTAINER_EMAIL,
           description=DESCRIPTION,
           license=LICENSE,
@@ -96,7 +63,7 @@ if __name__ == "__main__":
           version=VERSION,
           download_url=DOWNLOAD_URL,
           long_description=LONG_DESCRIPTION,
-          zip_safe=False, # the package can run out of an .egg file
+          zip_safe=False,  # the package can run out of an .egg file
           classifiers=[
               'Intended Audience :: Science/Research',
               'Intended Audience :: Developers',
@@ -108,6 +75,14 @@ if __name__ == "__main__":
               'Operating System :: Microsoft :: Windows',
               'Operating System :: POSIX',
               'Operating System :: Unix',
-              'Operating System :: MacOS'
-             ],
-    )
+              'Operating System :: MacOS',
+              'Programming Language :: Python :: 2',
+              'Programming Language :: Python :: 2.6',
+              'Programming Language :: Python :: 2.7',
+          ],
+          packages=find_packages(),
+          package_data={'nilearn.data': ['*.nii.gz'],
+                        'nilearn.plotting.glass_brain_files': ['*.json'],
+                        'nilearn.tests.data': ['*'],
+                        'nilearn.description': ['*.rst']},
+          install_requires=install_requires,)

@@ -23,7 +23,7 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from ._utils import CacheMixin
 from ._utils import logger
-from ._utils.testing import is_spd
+from ._utils.extmath import is_spd
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -296,9 +296,10 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                 max_norm=max_norm))
         else:
             suffix = ""
-        logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix} ..."
-                   "".format(iter_n=n, percentage=100. * n / max_iter,
-                             suffix=suffix), verbose=verbose)
+        if verbose > 1:
+            logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix}"
+                    " ...".format(iter_n=n, percentage=100. * n / max_iter,
+                                  suffix=suffix), verbose=verbose)
 
         omega_old[...] = omega
         for p in xrange(n_features):
@@ -541,10 +542,10 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
         logger.log("Computing precision matrices", verbose=self.verbose)
         ret = self._cache(
-            _group_sparse_covariance, memory_level=1)(
+            _group_sparse_covariance, func_memory_level=1)(
                 self.covariances_, n_samples, self.alpha,
                 tol=self.tol, max_iter=self.max_iter,
-                verbose=self.verbose - 1, debug=False)
+                verbose=max(0, self.verbose - 1), debug=False)
 
         self.precisions_ = ret
         return self

@@ -5,7 +5,7 @@ Introduction to the neuroimaging machine-learning pipeline
 ============================================================
 
 Nilearn comes with code to simplify the use of scikit-learn when dealing
-with neuroimaging data. For the moment, Nilearn is focused on functional MRI
+with neuroimaging data. For the moment, nilearn is focused on functional MRI
 data.
 
 Before using a machine learning tool, we may need to apply the following
@@ -27,7 +27,7 @@ Data loading and preprocessing
 Downloading the data
 ----------------------
 
-To run demos, data are retrieved using a function provided by Nilearn
+To run demos, data are retrieved using a function provided by nilearn
 which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in :ref:`loading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
@@ -44,36 +44,38 @@ example, we can download the data from the
   >>> dataset.func # doctest: +ELLIPSIS
   ['.../haxby2001/subj1/bold.nii.gz']
 
+The complete list of the data-downloading functions can be found in the
+:ref:`reference documentation for the datasets <datasets_ref>`.
 
 Loading non image data: experiment description
 -----------------------------------------------
 
 An experiment may need additional information about subjects, sessions or
 experiments. In the Haxby experiment, fMRI data are acquired while
-presenting different category of pictures to the subject (face, house...)
+presenting different category of pictures to the subject (face, cat, ...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
 These conditions are presented as string into a CSV file. The numpy function
-`loadtxt` is very useful to load this kind of data.
+`recfromcsv` is very useful to load this kind of data.
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Load Target labels ########################################################
-    :end-before: ### Keep only data corresponding to faces or houses ###########################
+    :end-before: ### Keep only data corresponding to faces or cats ###########################
 
 
 For example, we will now remove the *rest* condition from our dataset.
 This can be done as follows:
 
-.. literalinclude:: ../../plot_haxby_simple.py
-    :start-after: ### Keep only data corresponding to faces or houses ###########################
+.. literalinclude:: ../../examples/plot_haxby_simple.py
+    :start-after: ### Keep only data corresponding to faces or cats ###########################
     :end-before: ### Prepare the data: apply the mask ##########################################
 
 
 .. note::
 
     If you are not comfortable with this kind of data processing, do not
-    worry: there are plenty of examples in Nilearn that allows you to easily
+    worry: there are plenty of examples in nilearn that allows you to easily
     load data from provided datasets. Do not hesitate to copy/paste the
     code and adapt it to your own data format if needed. More information
     can be found in the :ref:`data manipulation <data_manipulation>`
@@ -124,7 +126,7 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Prepare the data: apply the mask ##########################################
     :end-before: ### Prediction ################################################################
 
@@ -152,7 +154,7 @@ scikit-learn, using its `fit`, `predict` or `transform` methods.
 Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Prediction ################################################################
     :end-before: ### Cross-validation ##########################################################
 
@@ -170,7 +172,7 @@ masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualization #############################################################
 
@@ -188,7 +190,7 @@ discriminating weight.
     :align: right
     :scale: 50%
 
-.. literalinclude:: ../../plot_haxby_simple.py
+.. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Visualization #############################################################
     :end-before: ### Visualize the mask ########################################################
 

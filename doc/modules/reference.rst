@@ -29,15 +29,21 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   fetch_abide_pcp
    fetch_adhd
    fetch_craddock_2011_atlas
+   fetch_harvard_oxford
    fetch_haxby
    fetch_haxby_simple
-   fetch_nyu_rest
    fetch_icbm152_2009
+   fetch_localizer_contrasts
+   fetch_localizer_calculation_task
+   fetch_miyawaki2008
    fetch_msdl_atlas
+   fetch_nyu_rest
+   fetch_oasis_vbm
+   fetch_smith_2009
    fetch_yeo_2011_atlas
-   load_harvard_oxford
 
 .. _decoding_ref:
 
@@ -100,6 +106,7 @@ uses.
    reorder_img
    crop_img
    mean_img
+   swap_img_hemispheres
 
 
 .. _io_ref:
@@ -203,7 +210,7 @@ uses.
 
 **Classes**:
 
-.. currentmodule:: nilearn.plotting.slicers
+.. currentmodule:: nilearn.plotting.displays
 
 .. autosummary::
    :toctree: generated/

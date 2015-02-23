@@ -15,21 +15,24 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
-from .._utils.niimg_conversions import _safe_get_data
+from .._utils.niimg_conversions import (_safe_get_data, check_niimgs,
+                                        _index_niimgs)
 from .. import masking
+from nilearn.image import reorder_img
 
-
-def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
+def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
     """ Return confounds signals extracted from input signals with highest
         variance.
 
         Parameters
         ==========
-        niimgs: niimg
+        imgs: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             4D image.
 
-        mask_img: niimg
+        mask_img: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             If provided, confounds are extracted from voxels inside the mask.
             If not provided, all voxels are used.
 
@@ -68,18 +71,67 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
     """
 
     if mask_img is not None:
-        sigs = masking.apply_mask(niimgs, mask_img)
+        sigs = masking.apply_mask(imgs, mask_img)
     else:
         # Load the data only if it doesn't need to be masked
-        niimgs = check_niimgs(niimgs)
-        sigs = as_ndarray(niimgs.get_data())
+        imgs = check_niimgs(imgs)
+        sigs = as_ndarray(imgs.get_data())
         # Not using apply_mask here saves memory in most cases.
-        del niimgs  # help reduce memory consumption
+        del imgs  # help reduce memory consumption
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
     return signal.high_variance_confounds(sigs, n_confounds=n_confounds,
                                            percentile=percentile,
                                            detrend=detrend)
+
+
+def _fast_smooth_array(arr):
+    """Simple smoothing which is less computationally expensive than
+    applying a gaussian filter.
+
+    Only the first three dimensions of the array will be smoothed. The
+    filter uses [0.2, 1, 0.2] weights in each direction and use a
+    normalisation to preserve the local average value.
+
+    Parameters
+    ==========
+    arr: numpy.ndarray
+        4D array, with image number as last dimension. 3D arrays are
+        also accepted.
+
+    Returns
+    =======
+    smoothed_arr: numpy.ndarray
+        Smoothed array.
+
+    Note
+    ====
+    Rather than calling this function directly, users are encouraged
+    to call the high-level function :func:`smooth_img` with
+    fwhm='fast'.
+
+    """
+    neighbor_weight = 0.2
+    # 6 neighbors in 3D if not on an edge
+    nb_neighbors = 6
+    # This scale ensures that a uniform array stays uniform
+    # except on the array edges
+    scale = 1 + nb_neighbors * neighbor_weight
+
+    # Need to copy because the smoothing is done in multiple statements
+    # and there does not seem to be an easy way to do it in place
+    smoothed_arr = arr.copy()
+    weighted_arr = neighbor_weight * arr
+
+    smoothed_arr[:-1] += weighted_arr[1:]
+    smoothed_arr[1:] += weighted_arr[:-1]
+    smoothed_arr[:, :-1] += weighted_arr[:, 1:]
+    smoothed_arr[:, 1:] += weighted_arr[:, :-1]
+    smoothed_arr[:, :, :-1] += weighted_arr[:, :, 1:]
+    smoothed_arr[:, :, 1:] += weighted_arr[:, :, :-1]
+    smoothed_arr /= scale
+
+    return smoothed_arr
 
 
 def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
@@ -96,13 +148,18 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     affine: numpy.ndarray
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
+        If fwhm='fast', the affine is not used and can be None
 
-    fwhm: scalar or numpy.ndarray
+    fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If fwhm == 'fast', a fast smoothing will be performed with
+        a filter [0.2, 1, 0.2] in each direction and a normalisation
+        to preserve the local average value.
         If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed)
+        of non-finite values is needed).
+
 
     ensure_finite: bool
         if True, replace every non-finite values (like NaNs) by zero before
@@ -131,26 +188,27 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     if copy:
         arr = arr.copy()
 
-    # Keep only the scale part.
-    affine = affine[:3, :3]
-
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
 
-    if fwhm is not None:
+    if fwhm == 'fast':
+        arr = _fast_smooth_array(arr)
+    elif fwhm is not None:
+        # Keep only the scale part.
+        affine = affine[:3, :3]
+
         # Convert from a FWHM to a sigma:
-        # Do not use /=, fwhm may be a numpy scalar
-        fwhm = fwhm / np.sqrt(8 * np.log(2))
+        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
-        sigma = fwhm / vox_size
+        sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
         for n, s in enumerate(sigma):
             ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
 
     return arr
 
 
-def smooth_img(niimgs, fwhm):
+def smooth_img(imgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of arr.
@@ -158,34 +216,38 @@ def smooth_img(niimgs, fwhm):
 
     Parameters
     ==========
-    niimgs: niimgs or iterable of niimgs
-        One or several niimage(s), either 3D or 4D.
+    imgs: Niimg-like object or iterable of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Image(s) to smooth.
 
-    fwhm: scalar or numpy.ndarray
+    fwhm: scalar, numpy.ndarray, 'fast' or None
         Smoothing strength, as a Full-Width at Half Maximum, in millimeters.
         If a scalar is given, width is identical on all three directions.
         A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If fwhm == 'fast', a fast smoothing will be performed with
+        a filter [0.2, 1, 0.2] in each direction and a normalisation
+        to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed)
 
     Returns
     =======
     filtered_img: nibabel.Nifti1Image or list of.
-        Input image, filtered. If niimgs is an iterable, then filtered_img is a
+        Input image, filtered. If imgs is an iterable, then filtered_img is a
         list.
     """
 
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
-    if hasattr(niimgs, "__iter__") \
-       and not isinstance(niimgs, basestring):
+    if hasattr(imgs, "__iter__") \
+       and not isinstance(imgs, basestring):
         single_img = False
     else:
         single_img = True
-        niimgs = [niimgs]
+        imgs = [imgs]
 
     ret = []
-    for img in niimgs:
+    for img in imgs:
         img = check_niimg(img)
         affine = img.get_affine()
         filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
@@ -198,16 +260,17 @@ def smooth_img(niimgs, fwhm):
         return ret
 
 
-def _crop_img_to(niimg, slices, copy=True):
-    """Crops niimg to a smaller size
+def _crop_img_to(img, slices, copy=True):
+    """Crops image to a smaller size
 
-    Crop niimg to size indicated by slices and adjust affine
+    Crop img to size indicated by slices and adjust affine
     accordingly
 
     Parameters
     ==========
-    niimg: niimg
-        niimg to be cropped. If slices has less entries than niimg
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Img to be cropped. If slices has less entries than img
         has dimensions, the slices will be applied to the first len(slices)
         dimensions
 
@@ -222,14 +285,15 @@ def _crop_img_to(niimg, slices, copy=True):
 
     Returns
     =======
-    cropped_img: niimg
+    cropped_img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Cropped version of the input image
     """
 
-    niimg = check_niimg(niimg)
+    img = check_niimg(img)
 
-    data = niimg.get_data()
-    affine = niimg.get_affine()
+    data = img.get_data()
+    affine = img.get_affine()
 
     cropped_data = data[slices]
     if copy:
@@ -244,23 +308,24 @@ def _crop_img_to(niimg, slices, copy=True):
     new_affine[:3, :3] = linear_part
     new_affine[:3, 3] = new_origin
 
-    new_niimg = nibabel.Nifti1Image(cropped_data, new_affine)
+    new_img = nibabel.Nifti1Image(cropped_data, new_affine)
 
-    return new_niimg
+    return new_img
 
 
-def crop_img(niimg, rtol=1e-8, copy=True):
-    """Crops niimg as much as possible
+def crop_img(img, rtol=1e-8, copy=True):
+    """Crops img as much as possible
 
-    Will crop niimg, removing as many zero entries as possible
+    Will crop img, removing as many zero entries as possible
     without touching non-zero entries. Will leave one voxel of
     zero padding around the obtained non-zero area in order to
     avoid sampling issues later on.
 
     Parameters
     ==========
-    niimg: niimg
-        niimg to be cropped.
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        img to be cropped.
 
     rtol: float
         relative tolerance (with respect to maximal absolute
@@ -272,12 +337,12 @@ def crop_img(niimg, rtol=1e-8, copy=True):
 
     Returns
     =======
-    cropped_img: niimg
+    cropped_img: image
         Cropped version of the input image
     """
 
-    niimg = check_niimg(niimg)
-    data = niimg.get_data()
+    img = check_niimg(img)
+    data = img.get_data()
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(data < -rtol * infinity_norm,
                                      data > rtol * infinity_norm)
@@ -294,7 +359,7 @@ def crop_img(niimg, rtol=1e-8, copy=True):
 
     slices = [slice(s, e) for s, e in zip(start, end)]
 
-    return _crop_img_to(niimg, slices, copy=copy)
+    return _crop_img_to(img, slices, copy=copy)
 
 
 def _compute_mean(imgs, target_affine=None,
@@ -325,8 +390,8 @@ def _compute_mean(imgs, target_affine=None,
     return mean_img, affine
 
 
-def mean_img(niimgs, target_affine=None, target_shape=None,
-             verbose=False, n_jobs=1):
+def mean_img(imgs, target_affine=None, target_shape=None,
+             verbose=0, n_jobs=1):
     """ Compute the mean of the images (in the time dimension of 4th dimension)
 
     Note that if list of 4D images are given, the mean of each 4D image is
@@ -335,9 +400,9 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     Parameters
     ==========
 
-    niimgs: niimgs or iterable of niimgs
-        One or several niimage(s), either 3D or 4D (note that these
-        can be file names).
+    imgs: Niimg-like object or iterable of Niimg-like objects
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to mean.
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -350,7 +415,7 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
 
     verbose: int, optional
         Controls the amount of verbosity: higher numbers give
-        more messages
+        more messages (0 means no messages).
 
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
@@ -362,23 +427,23 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
         mean image
 
     """
-    if (isinstance(niimgs, basestring) or
-        not isinstance(niimgs, collections.Iterable)):
-        niimgs = [niimgs, ]
+    if (isinstance(imgs, basestring) or
+        not isinstance(imgs, collections.Iterable)):
+        imgs = [imgs, ]
         total_n_imgs = 1
     else:
         try:
-            total_n_imgs = len(niimgs)
+            total_n_imgs = len(imgs)
         except:
             total_n_imgs = None
 
-    niimgs_iter = iter(niimgs)
+    imgs_iter = iter(imgs)
 
     if target_affine is None or target_shape is None:
         # Compute the first mean to retrieve the reference
         # target_affine and target_shape
         n_imgs = 1
-        running_mean, target_affine = _compute_mean(next(niimgs_iter),
+        running_mean, target_affine = _compute_mean(next(imgs_iter),
                     target_affine=target_affine,
                     target_shape=target_shape)
         target_shape = running_mean.shape[:3]
@@ -390,7 +455,7 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
         for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
                 delayed(_compute_mean)(n, target_affine=target_affine,
                                        target_shape=target_shape)
-                for n in niimgs_iter):
+                for n in imgs_iter):
             n_imgs += 1
             # _compute_mean returns (mean_img, affine)
             this_mean = this_mean[0]
@@ -403,3 +468,78 @@ def mean_img(niimgs, target_affine=None, target_shape=None,
     return nibabel.Nifti1Image(running_mean, target_affine)
 
 
+def swap_img_hemispheres(img):
+    """Performs swapping of hemispheres in the indicated nifti.
+
+       Use case: synchronizing ROIs across hemispheres
+
+    Parameters
+    ----------
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to swap.
+
+    Returns
+    -------
+    output: nibabel.Nifti1Image
+        hemispherically swapped image
+
+    Notes
+    -----
+    Supposes a nifti of a brain that is sagitally aligned
+
+    Should be used with caution (confusion might be caused with
+    radio/neuro conventions)
+
+    Note that this does not require a change of the affine matrix.
+    """
+
+    # Check input is really a path to a nifti file or a nifti object
+    img = check_niimg(img)
+
+    # get nifti in x-y-z order
+    img = reorder_img(img)
+
+    # create swapped nifti object
+    out_img = nibabel.Nifti1Image(img.get_data()[::-1], img.get_affine(),
+                                  header=img.get_header())
+
+    return out_img
+
+
+def index_img(imgs, index):
+    """Indexes into a 4D Niimg-like object in the fourth dimension.
+
+    Common use cases include extracting a 3D image out of `img` or
+    creating a 4D image whose data is a subset of `img` data.
+
+    Parameters
+    ----------
+    imgs: 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+
+    index: Any type compatible with numpy array indexing
+        Used for indexing the 4D data array in the fourth dimension.
+
+    Returns
+    -------
+    output: nibabel.Nifti1Image
+
+    """
+    imgs = check_niimgs(imgs)
+    return _index_niimgs(imgs, index)
+
+
+def iter_img(imgs):
+    """Iterates over a 4D Niimg-like object in the fourth dimension.
+
+    Parameters
+    ----------
+    imgs: 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+
+    Returns
+    -------
+    output: iterator of 3D nibabel.Nifti1Image
+    """
+    return check_niimgs(imgs, return_iterator=True)

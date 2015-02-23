@@ -11,8 +11,8 @@ from nose.tools import assert_true, assert_false, assert_raises
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
-from .. import signal as nisignal
-from ..signal import clean
+from nilearn import signal as nisignal
+from nilearn.signal import clean
 import scipy.signal
 
 
@@ -297,8 +297,8 @@ def test_clean_confounds():
 
     signals, _, confounds = generate_signals(n_features=41,
                                                   n_confounds=3, length=20)
-    filename1 = os.path.join(current_dir, "test_files", "spm_confounds.txt")
-    filename2 = os.path.join(current_dir, "test_files",
+    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
+    filename2 = os.path.join(current_dir, "data",
                              "confounds_with_header.csv")
 
     nisignal.clean(signals, detrend=False, standardize=False,

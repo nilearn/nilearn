@@ -101,7 +101,7 @@ def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)
     var2 = rng.randn(n_samples, 1)
     var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
-    # compute t-scores with nilearn's routine
+    # compute t-scores with nilearn routine
     t_val_own = _t_score_with_covars_and_normalized_design(var1, var2)
     # compute t-scores with linalg or statsmodels
     t_val_alt = get_tvalue_with_alternative_library(var1, var2)
@@ -123,7 +123,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1
     covars = orthonormalize_matrix(covars)
-    # nilearn's t-score
+    # nilearn t-score
     own_score = _t_score_with_covars_and_normalized_design(var1, var2, covars)
     # compute t-scores with linalg or statmodels
     ref_score = get_tvalue_with_alternative_library(var1, var2, covars)
@@ -441,7 +441,7 @@ def test_permuted_ols_intercept_nocovar_multivariate(random_state=0):
     # create design
     target_vars = rng.randn(n_samples, n_targets)
     tested_vars = np.ones((n_samples, 1))
-    # compute t-scores with nilearn's routine
+    # compute t-scores with nilearn routine
     ref_scores = get_tvalue_with_alternative_library(tested_vars, target_vars)
     # permuted OLS
     _, own_scores, _ = permuted_ols(

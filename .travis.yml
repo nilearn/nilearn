@@ -1,24 +1,32 @@
 language: python
 
-python:
-    - "2.7"
-
 virtualenv:
   system_site_packages: true
 
 env:
-  - NEURODEBIAN=0
-  - NEURODEBIAN=1
+  matrix:
+    - DISTRIB="ubuntu" PYTHON_VERSION="2.7"
+    - DISTRIB="ubuntu-no-matplotlib" PYTHON_VERSION="2.7"
+    - DISTRIB="neurodebian" PYTHON_VERSION="2.7" COVERAGE="true"
+    - DISTRIB="conda" PYTHON_VERSION="2.6"
+      NUMPY_VERSION="1.9.1" SCIPY_VERSION="0.15.1"
+      MATPLOTLIB_VERSION="1.4.2" SKLEARN_VERSION="0.15.2"
 
-before_install:
-    - wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
-    - sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
-    - if [ $NEURODEBIAN -eq 1 ]; then sudo apt-get update -qq; fi
-    - sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
+install: 
+    - source continuous_integration/install.sh
 
-install:
-    - python setup.py install
+before_script:
+    - make clean
 
 script:
-    - make clean
-    - make test-code
+    - python continuous_integration/show-python-packages-versions.py
+    # We want to back out of the current working directory to make
+    # sure we are using nilearn installed in site-packages rather
+    # than the one from the current working directory
+    - cd && make -C $OLDPWD test-code && cd -
+
+after_success:
+    # Ignore coveralls failures as the coveralls server is not very reliable
+    # but we don't want travis to report a failure in the github UI just
+    # because the coverage report failed to be published.
+    - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi

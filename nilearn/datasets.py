@@ -17,6 +17,9 @@ import hashlib
 import fnmatch
 import warnings
 import cPickle as pickle
+import cStringIO as StringIO
+import re
+import collections
 
 import numpy as np
 from scipy import ndimage
@@ -73,7 +76,7 @@ class ResumeURLOpener(urllib.FancyURLopener):
         pass
 
 
-def _chunk_report_(bytes_so_far, total_size, t0):
+def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
     Parameters
@@ -81,31 +84,42 @@ def _chunk_report_(bytes_so_far, total_size, t0):
     bytes_so_far: int
         Number of downloaded bytes
 
-    total_size: int, optional
-        Total size of the file. None is valid
+    total_size: int
+        Total size of the file (may be 0/None, depending on download method).
 
-    t0: int, optional
+    t0: int
         The time in seconds (as returned by time.time()) at which the
-        download was started.
+        download was resumed / started.
+
+    initial_size: int
+        If resuming, indicate the initial size of the file.
+        If not resuming, set to zero.
     """
-    if total_size:
-        percent = float(bytes_so_far) / total_size
-        percent = round(percent * 100, 2)
+
+    if not total_size:
+        sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
+
+    else:
+        # Estimate remaining download time
+        total_percent = float(bytes_so_far) / total_size
+
+        current_download_size = bytes_so_far - initial_size
+        bytes_remaining = total_size - bytes_so_far
         dt = time.time() - t0
-        # We use a max to avoid a division by zero
-        remaining = (100. - percent) / max(0.01, percent) * dt
-        # Trailing whitespace is too erase extra char when message length
+        download_rate = current_download_size / float(dt)
+        # Minimum rate of 0.01 bytes/s, to avoid dividing by zero.
+        time_remaining = bytes_remaining / max(0.01, download_rate)
+
+        # Trailing whitespace is to erase extra char when message length
         # varies
         sys.stderr.write(
             "Downloaded %d of %d bytes (%0.2f%%, %s remaining)  \r"
-            % (bytes_so_far, total_size, percent,
-               _format_time(remaining)))
-    else:
-        sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
+            % (bytes_so_far, total_size, total_percent * 100,
+               _format_time(time_remaining)))
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
-                 initial_size=0, total_size=None, verbose=0):
+                 initial_size=0, total_size=None, verbose=1):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -125,6 +139,12 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     initial_size: int, optional
         If resuming, indicate the initial size of the file
 
+    total_size: int, optional
+        Expected final size of download (None means it is unknown).
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
     Returns
     -------
     data: string
@@ -136,9 +156,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     try:
         total_size = int(total_size) + initial_size
     except Exception, e:
-        if verbose > 0:
+        if verbose > 1:
             print "Warning: total size could not be determined."
-            if verbose > 1:
+            if verbose > 2:
                 print "Full stack trace: %s" % e
         total_size = None
     bytes_so_far = initial_size
@@ -155,12 +175,13 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
         local_file.write(chunk)
         if report_hook:
-            _chunk_report_(bytes_so_far, total_size, t0)
+            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
 
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
+def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False,
+                     verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -172,6 +193,13 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
+    lookup_defaults: boolean, optional
+        If data_dir is not None, indicates if defaults directory should still
+        be searched.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
     Returns
     -------
     data_dir: string
@@ -179,12 +207,12 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
 
     Notes
     -----
-    This function retrieve the datasets directory (or data directory) using
+    This function retrieves the datasets directory (or data directory) using
     the following priority :
     1. the keyword argument data_dir
     2. the global environment variable NILEARN_SHARED_DATA
     3. the user environment variable NILEARN_DATA
-    4. "nilearn_data" directory into the current working directory
+    4. nilearn_data in the user home folder
     """
     # We build an array of successive paths by priority
     paths = []
@@ -192,7 +220,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
         paths = data_dir.split(':')
-    else:
+    if lookup_defaults or data_dir is None:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
             paths.extend(global_data.split(':'))
@@ -201,7 +229,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
         if local_data is not None:
             paths.extend(local_data.split(':'))
 
-        paths.append(os.path.join(os.getcwd(), 'nilearn_data'))
+        paths.append(os.path.expanduser('~/nilearn_data'))
 
     if verbose > 2:
         print 'Dataset search paths:', paths
@@ -209,23 +237,31 @@ def _get_dataset_dir(dataset_name, data_dir=None, verbose=0):
     # Check if the dataset exists somewhere
     for path in paths:
         path = os.path.join(path, dataset_name)
-        if os.path.exists(path):
+        if os.path.exists(path) and os.path.isdir(path):
             if verbose > 1:
-                print 'Dataset found in', path
+                print('\nDataset found in %s\n' % path)
             return path
 
     # If not, create a folder in the first writeable directory
+    errors = []
     for path in paths:
-        if os.access(path, os.W_OK):
-            path = os.path.join(path, dataset_name)
-            os.mkdir(path)
-            print 'Dataset created in', path
-            return path
+        path = os.path.join(path, dataset_name)
+        if not os.path.exists(path):
+            try:
+                os.makedirs(path)
+                if verbose > 0:
+                    print('\nDataset created in %s\n' % path)
+                return path
+            except Exception as exc:
+                short_error_message = getattr(exc, 'strerror', str(exc))
+                errors.append('\n -{0} ({1})'.format(
+                    path, short_error_message))
 
-    raise ValueError('Could not find a writable directory to store dataset')
+    raise OSError('Nilearn tried to store the dataset in the following '
+            'directories, but:' + ''.join(errors))
 
 
-def _uncompress_file(file_, delete_archive=True):
+def _uncompress_file(file_, delete_archive=True, verbose=1):
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -237,24 +273,33 @@ def _uncompress_file(file_, delete_archive=True):
         Wheteher or not to delete archive once it is uncompressed.
         Default: True
 
+    verbose: int, optional
+        verbosity level (0 means no message).
+
     Notes
     -----
     This handles zip, tar, gzip and bzip files only.
     """
-    print 'extracting data from %s...' % file_
+    if verbose > 0:
+        print 'extracting data from %s...' % file_
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
         filename, ext = os.path.splitext(file_)
+        fd = open(file_, "rb")
+        header = fd.read(4)
+        fd.close()
         processed = False
-        if ext == '.zip':
+        if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
             z.extractall(data_dir)
             z.close()
             processed = True
-        elif ext == '.gz':
+        elif ext == '.gz' or header.startswith('\x1f\x8b'):
             import gzip
             gz = gzip.open(file_)
+            if ext == '.tgz':
+                filename = filename + '.tar'
             out = open(filename, 'wb')
             shutil.copyfileobj(gz, out, 8192)
             gz.close()
@@ -265,23 +310,102 @@ def _uncompress_file(file_, delete_archive=True):
             file_ = filename
             filename, ext = os.path.splitext(file_)
             processed = True
-        if ext in ['.tar', '.tgz', '.bz2']:
+        if tarfile.is_tarfile(file_):
             tar = tarfile.open(file_, "r")
             tar.extractall(path=data_dir)
             tar.close()
             processed = True
         if not processed:
-            raise IOError("Uncompress: unknown file extension: %s" % ext)
+            raise IOError(
+                    "[Uncompress] unknown archive file format: %s" % file_)
         if delete_archive:
             os.remove(file_)
-        print '   ...done.'
+        if verbose > 0:
+            print '   ...done.'
     except Exception as e:
-        print 'Error uncompressing file: %s' % e
+        if verbose > 0:
+            print 'Error uncompressing file: %s' % e
         raise
 
 
+def _filter_column(array, col, criteria):
+    """ Return index array matching criteria
+
+    Parameters
+    ----------
+
+    array: numpy array with columns
+        Array in which data will be filtered
+
+    col: string
+        Name of the column
+
+    criteria: integer (or float), pair of integers, string or list of these
+        if integer, select elements in column matching integer
+        if a tuple, select elements between the limits given by the tuple
+        if a string, select elements that match the string
+    """
+    # Raise an error if the column does not exist. This is the only way to
+    # test it across all possible types (pandas, recarray...)
+    try:
+        array[col]
+    except:
+        raise KeyError('Filtering criterion %s does not exist' % col)
+
+    if not isinstance(criteria, basestring) and \
+            not isinstance(criteria, tuple) and \
+            isinstance(criteria, collections.Iterable):
+        filter = np.zeros(array.shape[0], dtype=np.bool)
+        for criterion in criteria:
+            filter = np.logical_or(filter,
+                        _filter_column(array, col, criterion))
+        return filter
+
+    if isinstance(criteria, tuple):
+        if len(criteria) != 2:
+            raise ValueError("An interval must have 2 values")
+        if criteria[0] is None:
+            return array[col] <= criteria[1]
+        if criteria[1] is None:
+            return array[col] >= criteria[0]
+        filter = array[col] <= criteria[1]
+        return np.logical_and(filter, array[col] >= criteria[0])
+
+    return array[col] == criteria
+
+
+def _filter_columns(array, filters, combination='and'):
+    """ Return indices of recarray entries that match criteria.
+
+    Parameters
+    ----------
+
+    array: numpy array with columns
+        Array in which data will be filtered
+
+    filters: list of criteria
+        See _filter_column
+
+    combination: string, optional
+        String describing the combination operator. Possible values are "and"
+        and "or".
+    """
+    if combination == 'and':
+        fcomb = np.logical_and
+        mask = np.ones(array.shape[0], dtype=np.bool)
+    elif combination == 'or':
+        fcomb = np.logical_or
+        mask = np.zeros(array.shape[0], dtype=np.bool)
+    else:
+        raise ValueError('Combination mode not known: %s' % combination)
+
+    for column in filters:
+        mask = fcomb(mask, _filter_column(array, column, filters[column]))
+    return mask
+
+
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, verbose=0):
+                md5sum=None, verbose=1):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -303,7 +427,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         MD5 sum of the file. Checked if download of the file is required
 
     verbose: int, optional
-        Defines the level of verbosity of the output
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -339,7 +463,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     initial_size = 0
     try:
         # Download data
-        print 'Downloading data from %s ...' % url
+        if verbose > 0:
+            displayed_url = urllib.splitquery(url)[0] if verbose == 1 else url
+            print 'Dowloading data from %s ...' % displayed_url
         if resume and os.path.exists(temp_full_name):
             url_opener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
@@ -352,30 +478,33 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 # There is a problem that may be due to resuming. Switch back
                 # to complete download method
                 return _fetch_file(url, data_dir, resume=False,
-                                   overwrite=False)
+                                   overwrite=False, verbose=verbose)
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
             data = urllib2.urlopen(url)
             local_file = open(temp_full_name, "wb")
-        _chunk_read_(data, local_file, report_hook=True,
+        _chunk_read_(data, local_file, report_hook=(verbose > 0),
                      initial_size=initial_size, verbose=verbose)
         # temp file must be closed prior to the move
         if not local_file.closed:
             local_file.close()
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
-        print '...done. (%i seconds, %i min)' % (dt, dt / 60)
-    except urllib2.HTTPError, e:
-        print 'Error while fetching file %s.' \
-            ' Dataset fetching aborted.' % file_name
         if verbose > 0:
+            print '...done. (%i seconds, %i min)' % (dt, dt / 60)
+    except urllib2.HTTPError, e:
+        if verbose > 0:
+            print 'Error while fetching file %s.' \
+                ' Dataset fetching aborted.' % file_name
+        if verbose > 1:
             print "HTTP Error:", e, url
         raise
     except urllib2.URLError, e:
-        print 'Error while fetching file %s.' \
-            ' Dataset fetching aborted.' % file_name
         if verbose > 0:
+            print 'Error while fetching file %s.' \
+                ' Dataset fetching aborted.' % file_name
+        if verbose > 1:
             print "URL Error:", e, url
         raise
     finally:
@@ -418,12 +547,15 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
+def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     """Load requested dataset, downloading it if needed or requested.
 
-    If needed, _fetch_files download data in a sandbox and check that all files
-    are present before moving it to their final destination. This avoids
-    corruption of an existing dataset.
+    This function retrieves files from the hard drive or download them from
+    the given urls. Note to developpers: All the files will be first
+    downloaded in a sandbox and, if everything goes well, they will be moved
+    into the folder of the dataset. This prevents corrupting previously
+    downloaded data. In case of a big dataset, do not hesitate to make several
+    calls if needed.
 
     Parameters
     ----------
@@ -447,6 +579,9 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
     mock: boolean, optional
         If true, create empty files if the file cannot be downloaded. Test use
         only.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -508,7 +643,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=0):
             if 'uncompress' in opts:
                 try:
                     if not mock or os.path.getsize(dl_file) != 0:
-                        _uncompress_file(dl_file)
+                        _uncompress_file(dl_file, verbose=verbose)
                     else:
                         os.remove(dl_file)
                 except Exception as e:
@@ -575,7 +710,7 @@ def _tree(path, pattern=None, dictionary=False):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2011 parcellation
 
     The provided images are in MNI152 space.
@@ -633,14 +768,15 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
             ("random_all.nii.gz", url, opts)
     ]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
 
 
-def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
     The provided images are in MNI152 space.
@@ -664,10 +800,10 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "tight_7", "liberal_7": 7-region parcellations, resp. tightly
-          fitted to cortex shape, and liberally fitted.
+        - "thin_7", "thick_7": 7-region parcellations,
+          fitted to resp. thin and thick template cortex segmentations.
 
-        - "tight_17", "liberal_17": 17-region parcellations.
+        - "thin_17", "thick_17": 17-region parcellations.
 
         - "colors_7", "colors_17": colormaps (text files) for 7- and 17-region
           parcellation respectively.
@@ -686,17 +822,17 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
 
     Licence: unknown.
     """
+    module_path = os.path.dirname(__file__)
     if url is None:
         url = "ftp://surfer.nmr.mgh.harvard.edu/" \
               "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
     opts = {'uncompress': True}
 
     dataset_name = "yeo_2011"
-    keys = ("tight_7", "liberal_7",
-            "tight_17", "liberal_17",
+    keys = ("thin_7", "thick_7",
+            "thin_17", "thick_17",
             "colors_7", "colors_17", "anat")
-    filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
-        for f in (
+    basenames = (
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
         "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
         "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
@@ -704,17 +840,24 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=0):
         "Yeo2011_7Networks_ColorLUT.txt",
         "Yeo2011_17Networks_ColorLUT.txt",
         "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
-    ]
+
+    filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
+                 for f in basenames]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
             verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
 
-    params = dict(zip(keys, sub_files))
+    with open(os.path.join(module_path, 'description', 'yeo.rst'))\
+            as rst_file:
+        fdescr = rst_file.read()
+
+    params = dict([('description', fdescr)] + zip(keys, sub_files))
     return Bunch(**params)
 
 
-def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009)
 
     Parameters
@@ -780,15 +923,17 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=0):
                               "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
-    data_dir = _get_dataset_dir('icbm152_2009', data_dir=data_dir)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume)
+    data_dir = _get_dataset_dir('icbm152_2009', data_dir=data_dir,
+                                verbose=verbose)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
 
     params = dict(zip(keys, sub_files))
     return Bunch(**params)
 
 
 def fetch_smith_2009(data_dir=None, url=None, resume=True,
-        verbose=0):
+        verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009)
 
     Parameters
@@ -847,14 +992,16 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
              ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
              ]
 
-    data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir)
-    files_ = _fetch_files(data_dir, files, resume=resume)
+    data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir,
+                                verbose=verbose)
+    files_ = _fetch_files(data_dir, files, resume=resume,
+                          verbose=verbose)
 
     return Bunch(rsn20=files_[0], rsn10=files_[1], rsn70=files_[2],
             bm20=files_[3], bm10=files_[4], bm70=files_[5])
 
 
-def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load an example haxby dataset
 
     Parameters
@@ -906,8 +1053,9 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
              url, opts),
     ]
 
-    data_dir = _get_dataset_dir('haxby2001_simple', data_dir=data_dir)
-    files = _fetch_files(data_dir, files, resume=resume)
+    data_dir = _get_dataset_dir('haxby2001_simple', data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -915,7 +1063,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=0):
 
 
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
-                url=None, resume=True, verbose=0):
+                url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -958,23 +1106,28 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
-    More informations about its structure :
+    More information about its structure:
     http://dev.pymvpa.org/datadb/haxby2001.html
 
     See `additional information
     <http://www.sciencemag.org/content/293/5539/2425>`
+
+    Run 8 in subject 5 does not contain any task labels.
+    The anatomical image for subject 6 is unavailable.
     """
 
     if n_subjects > 6:
         warnings.warn('Warning: there are only 6 subjects')
         n_subjects = 6
 
-    data_dir = _get_dataset_dir('haxby2001', data_dir=data_dir)
+    data_dir = _get_dataset_dir('haxby2001', data_dir=data_dir,
+                                verbose=verbose)
 
     # Dataset files
     if url is None:
         url = 'http://data.pymvpa.org/datasets/haxby2001/'
-    md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})])[0]
+    md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
+                           verbose=verbose)[0]
     md5sums = _read_md5_sum_file(md5sums)
 
     # definition of dataset files
@@ -994,17 +1147,18 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
-    files = _fetch_files(data_dir, files, resume=resume)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     if n_subjects == 6:
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
     if fetch_stimuli:
-        readme = _fetch_files('haxby2001',
-                [(os.path.join('stimuli', 'README'),
-                  url + 'stimuli-2010.01.14.tar.gz', {'uncompress': True})],
-                data_dir=data_dir, resume=resume)[0]
+        files = [(os.path.join('stimuli', 'README'),
+                  url + 'stimuli-2010.01.14.tar.gz',
+                  {'uncompress': True})]
+        readme = _fetch_files(data_dir, files, resume=resume,
+                              verbose=verbose)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
@@ -1022,7 +1176,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
-                   verbose=0):
+                   verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
     Parameters
@@ -1194,17 +1348,20 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         func += func_files[i - 1][:n_subjects]
         session += [i] * n_subjects
 
-    data_dir = _get_dataset_dir('nyu_rest', data_dir=data_dir)
-    anat_anon = _fetch_files(data_dir, anat_anon, resume=resume)
-    anat_skull = _fetch_files(data_dir, anat_skull, resume=resume)
-    func = _fetch_files(data_dir, func, resume=resume)
+    data_dir = _get_dataset_dir('nyu_rest', data_dir=data_dir, verbose=verbose)
+    anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
+                             verbose=verbose)
+    anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
+                              verbose=verbose)
+    func = _fetch_files(data_dir, func, resume=resume,
+                        verbose=verbose)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                  session=session)
 
 
 def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
-               verbose=0):
+               verbose=1):
     """Download and load the ADHD resting-state dataset.
 
     Parameters
@@ -1287,11 +1444,13 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subjects_funcs = subjects_funcs[:n_subjects]
     subjects_confounds = subjects_confounds[:n_subjects]
 
-    data_dir = _get_dataset_dir('adhd', data_dir=data_dir)
-    subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume)
+    data_dir = _get_dataset_dir('adhd', data_dir=data_dir, verbose=verbose)
+    subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume,
+                                  verbose=verbose)
     subjects_confounds = _fetch_files(data_dir, subjects_confounds,
-            resume=resume)
-    phenotypic = _fetch_files(data_dir, phenotypic, resume=resume)[0]
+            resume=resume, verbose=verbose)
+    phenotypic = _fetch_files(data_dir, phenotypic, resume=resume,
+                              verbose=verbose)[0]
 
     # Load phenotypic data
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -1305,7 +1464,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
                  phenotypic=phenotypic)
 
 
-def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
     Parameters
@@ -1328,7 +1487,7 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
     References
     ----------
     :Download:
-        https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip
+        https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
 
     :Paper to cite:
         `Multi-subject dictionary learning to segment an atlas of brain
@@ -1343,26 +1502,27 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=0):
         Gaël Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
-    url = 'https://team.inria.fr/parietal/files/2013/05/MSDL_rois.zip'
+    url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
     opts = {'uncompress': True}
 
     dataset_name = "msdl_atlas"
     files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
              (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
-    files = _fetch_files(data_dir, files, resume=resume)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     return Bunch(labels=files[0], maps=files[1])
 
 
-def load_harvard_oxford(atlas_name,
-                        dirname="/usr/share/data/harvard-oxford-atlases/"
-                        "HarvardOxford/", symmetric_split=False):
-    """Load Harvard-Oxford parcellation.
+def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
+                        resume=True, verbose=1):
+    """Load Harvard-Oxford parcellation from FSL if installed or download it.
 
-    This function does not download anything, files must all be already on
-    disk. They are distributed with FSL.
+    This function looks up for Harvard Oxford atlas in the system and load it
+    if present. If not, it downloads it and store it in NILEARN_DATA
+    directory.
 
     Parameters
     ==========
@@ -1377,9 +1537,9 @@ def load_harvard_oxford(atlas_name,
         cort-prob-1mm, cort-prob-2mm,
         sub-prob-1mm, sub-prob-2mm
 
-    dirname: string, optional
-        This is the neurodebian's directory for FSL data. It may be different
-        with another distribution / installation.
+    data_dir: string, optional
+        Path of data directory. It can be FSL installation directory
+        (which is dependent on your installation).
 
     symmetric_split: bool, optional
         If True, split every symmetric region in left and right parts.
@@ -1391,59 +1551,82 @@ def load_harvard_oxford(atlas_name,
     regions: nibabel.Nifti1Image
         regions definition, as a label image.
     """
-    if atlas_name not in ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                          "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                          "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                          "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                          "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                          "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                          "cort-prob-1mm", "cort-prob-2mm",
-                          "sub-prob-1mm", "sub-prob-2mm"
-                          ):
-        raise ValueError("Invalid atlas name: {0}".format(atlas_name))
+    atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+                   "cort-prob-1mm", "cort-prob-2mm",
+                   "sub-prob-1mm", "sub-prob-2mm")
+    if atlas_name not in atlas_items:
+        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
+                         "among:\n{1}".format(
+                             atlas_name, '\n'.join(atlas_items)))
 
-    filename = os.path.join(dirname, "HarvardOxford-") + atlas_name + ".nii.gz"
-    regions_img = nibabel.load(filename)
+    # Add FSL_DIR as a non-readable data_dir
+    data_dirs = []
+    fsl_dir = os.getenv('FSL_DIR', os.getenv('FSLDIR'))
+    if fsl_dir is not None:
+        data_dirs.append(fsl_dir)
+    if data_dir is not None:
+        data_dirs.append(data_dir)
+    data_dir = ':'.join(data_dirs) if len(data_dirs) > 0 else None
 
-    # Load atlas name
+    # grab data from internet first
+    url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
+    dataset_name = 'harvard_oxford'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                lookup_defaults=(data_dir is None),
+                                verbose=verbose)
+    opts = {'uncompress': True}
+    atlas_file = os.path.join('HarvardOxford',
+                              'HarvardOxford-' + atlas_name + '.nii.gz')
     if atlas_name[0] == 'c':
-        name_map = os.path.join(dirname, '..', 'HarvardOxford-Cortical.xml')
+        label_file = 'HarvardOxford-Cortical.xml'
     else:
-        name_map = os.path.join(dirname, '..', 'HarvardOxford-SubCortical.xml')
+        label_file = 'HarvardOxford-Subcortical.xml'
+
+    atlas_img, label_file = _fetch_files(
+        data_dir,
+        [(atlas_file, url, opts), (label_file, url, opts)],
+        resume=resume, verbose=verbose)
+
     names = {}
-    from lxml import etree
+    from xml.etree import ElementTree
     names[0] = 'Background'
-    for label in etree.parse(name_map).findall('.//label'):
+    for label in ElementTree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
     names = np.asarray(names.values())
 
     if not symmetric_split:
-        return regions_img, names
+        return atlas_img, names
 
     if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm"):
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
 
-    regions = regions_img.get_data()
+    atlas_img = nibabel.load(atlas_img)
+    atlas = atlas_img.get_data()
 
-    labels = np.unique(regions)
-    slices = ndimage.find_objects(regions)
-    middle_ind = (regions.shape[0] - 1) / 2
+    labels = np.unique(atlas)
+    slices = ndimage.find_objects(atlas)
+    middle_ind = (atlas.shape[0] - 1) / 2
     crosses_middle = [s.start < middle_ind and s.stop > middle_ind
              for s, _, _ in slices]
 
     # Split every zone crossing the median plane into two parts.
     # Assumes that the background label is zero.
-    half = np.zeros(regions.shape, dtype=np.bool)
+    half = np.zeros(atlas.shape, dtype=np.bool)
     half[:middle_ind, ...] = True
     new_label = max(labels) + 1
     # Put zeros on the median plane
-    regions[middle_ind, ...] = 0
+    atlas[middle_ind, ...] = 0
     for label, crosses in zip(labels[1:], crosses_middle):
         if not crosses:
             continue
-        regions[np.logical_and(regions == label, half)] = new_label
+        atlas[np.logical_and(atlas == label, half)] = new_label
         new_label += 1
 
     # Duplicate labels for right and left
@@ -1453,10 +1636,10 @@ def load_harvard_oxford(atlas_name,
     for n in names[1:]:
         new_names.append(n + ', left part')
 
-    return nibabel.Nifti1Image(regions, regions_img.get_affine()), new_names
+    return nibabel.Nifti1Image(atlas, atlas_img.get_affine()), new_names
 
 
-def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
+def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB)
 
     Returns
@@ -1566,8 +1749,9 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
                  label_figure + label_random + \
                  file_mask
 
-    data_dir = _get_dataset_dir('miyawaki2008', data_dir=data_dir)
-    files = _fetch_files(data_dir, file_names, resume=resume)
+    data_dir = _get_dataset_dir('miyawaki2008', data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Return the data
     return Bunch(
@@ -1579,7 +1763,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=0):
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
-                              data_dir=None, url=None, resume=True, verbose=0):
+                              data_dir=None, url=None, resume=True, verbose=1):
     """Download and load Brainomics Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -1715,13 +1899,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
          individual functional cognitive networks."
         BMC neuroscience 8.1 (2007): 91.
 
-    Caveats
-    -------
-    When n_subjects < 94 is specified, all subjects are actually downloaded.
-    However, the caching system only checks for the presence of the n_subjects
-    first subjects on disk.
-
     """
+    if isinstance(contrasts, basestring):
+        raise ValueError('Constrasts should be a list of string, a single '
+                         'string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (n_subjects > 94) or (n_subjects < 1):
@@ -1807,55 +1988,59 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     #   is generated on the remote server)
     # - Local (cached) version of the files can be checked for each contrast
     opts = {'uncompress': True}
+    subject_ids = ["S%02d" % s for s in range(1, n_subjects + 1)]
+    subject_id_max = subject_ids[-1]
     data_types = ["c map"]
     if get_tmaps:
-        data_types.append(["t map"])
+        data_types.append("t map")
     rql_types = str.join(", ", ["\"%s\"" % x for x in data_types])
     root_url = "http://brainomics.cea.fr/localizer/"
+
+    base_query = ("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
+                  "X concerns S, "
+                  "X label XL, X identifier XI, "
+                  "X format XF, X description XD, "
+                  'S identifier <= "%s", ' % (subject_id_max, ) +
+                  'X type IN(%(types)s), X label "%(label)s"')
+
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
             % (root_url, i,
-               urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
-                            "X label XL, X identifier XI, "
-                            "X format XF, X description XD, "
-                            "X type IN(%s), X label \"%s\"" % (rql_types, c),
+               urllib.quote(base_query % {"types": rql_types,
+                                          "label": c},
                             safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
     filenames = []
-    for s in np.arange(1, n_subjects + 1):
+    for subject_id in subject_ids:
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
                 name_aux = str.replace(
                     str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
-                    "brainomics_data", "S%02d" % s, "%s.nii.gz" % name_aux)
+                    "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
                 file_tarball_url = urls[contrast_id]
                 filenames.append((file_path, file_tarball_url, opts))
     # Fetch masks if asked by user
     if get_masks:
         urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                    "X type XT, X label XL, X identifier XI, "
-                                    "X format XF, X description XD, "
-                                    "X type IN(\"boolean mask\"), "
-                                    "X label \"mask\"", safe=',()')))
-        for s in np.arange(1, n_subjects + 1):  # 94 subjects available
+                       urllib.quote(base_query % {"types": '"boolean mask"',
+                                                  "label": "mask"},
+                                    safe=',()')))
+        for subject_id in subject_ids:
             file_path = os.path.join(
-                "brainomics_data", "S%02d" % s, "boolean_mask.nii.gz")
+                "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))
     # Fetch anats if asked by user
     if get_anats:
         urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.quote("Any X,XT,XL,XI,XF,XD WHERE X is Scan, "
-                                    "X type XT, X label XL, X identifier XI, "
-                                    "X format XF, X description XD, "
-                                    "X type IN(\"normalized T1\"), "
-                                    "X label \"anatomy\"", safe=',()')))
-        for s in np.arange(1, n_subjects + 1):
+                       urllib.quote(base_query % {"types": '"normalized T1"',
+                                                  "label": "anatomy"},
+                                    safe=',()')))
+        for subject_id in subject_ids:
             file_path = os.path.join(
-                "brainomics_data", "S%02d" % s,
+                "brainomics_data", subject_id,
                 "normalized_T1_anat_defaced.nii.gz")
             file_tarball_url = urls[-1]
             filenames.append((file_path, file_tarball_url, opts))
@@ -1876,8 +2061,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                   ("cubicwebexport2.csv", url_csv2, {})]
 
     # Actual data fetching
-    data_dir = _get_dataset_dir('brainomics_localizer', data_dir=data_dir)
-    files = _fetch_files(data_dir, filenames)
+    data_dir = _get_dataset_dir('brainomics_localizer', data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
     anats = None
     masks = None
     tmaps = None
@@ -1899,18 +2085,19 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         masks = files[-n_subjects:]
         files = files[:-n_subjects]
     if get_tmaps:
-        tmaps = files(slice(1, len(files) + 1, 2))
-        files = files(slice(0, len(files), 2))
+        tmaps = files[1::2]
+        files = files[::2]
     return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
                  ext_vars=csv_data)
 
 
-def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
+def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
+                                     verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
     This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding. The 'calculation vs
-    sentences' contrast is used.
+    to simplify examples reading and understanding.
+    The 'calculation (auditory and visual cue)' contrast is used.
 
     Parameters
     ----------
@@ -1926,6 +2113,9 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
+    verbose: int, optional
+        verbosity level (0 means no message).
+
     Returns
     -------
     data: Bunch
@@ -1938,7 +2128,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=url, resume=True, verbose=0)
+                                     url=url, resume=True, verbose=verbose)
     data.pop('tmaps')
     data.pop('masks')
     data.pop('anats')
@@ -1946,7 +2136,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None):
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
-                    data_dir=None, url=None, resume=True, verbose=0):
+                    data_dir=None, url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     Parameters
@@ -1971,7 +2161,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
         If true, try resuming download if possible
 
     verbose: int, optional
-        Defines the level of verbosity of the output
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -2081,7 +2271,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
                         334, 347, 360, 364, 391, 393, 412, 414, 427, 436]
 
     if dartel_version:
-        # DARTEL produces outliers that are hidden by Nilearn's API
+        # DARTEL produces outliers that are hidden by nilearn API
         removed_outliers = [27, 57, 66, 83, 122, 157, 222, 269, 282, 287,
                             309, 428]
         missing_subjects = sorted(missing_subjects + removed_outliers)
@@ -2100,7 +2290,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects]
     else:
-        # only one gross outlier produced, hidden by Nilearn's API
+        # only one gross outlier produced, hidden by nilearn API
         removed_outliers = [390]
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
@@ -2125,7 +2315,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     file_names = (file_names_gm + file_names_wm
                   + file_names_extvars + file_names_dua)
-    data_dir = _get_dataset_dir('oasis1', data_dir=data_dir)
+    data_dir = _get_dataset_dir('oasis1', data_dir=data_dir, verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume,
                          verbose=verbose)
 
@@ -2180,3 +2370,172 @@ def load_mni152_template():
     path = os.path.join(package_directory, "data", "avg152T1_brain.nii.gz")
 
     return nibabel.load(path)
+
+
+def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
+                    band_pass_filtering=False, global_signal_regression=False,
+                    derivatives=['func_preproc'],
+                    quality_checked=True, url=None, verbose=1, **kwargs):
+    """ Fetch ABIDE dataset
+
+    Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
+    that can be passed as parameter. Note that this is the preprocessed
+    version of ABIDE provided by the preprocess connectome projects (PCP).
+
+    Parameters
+    ----------
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
+
+    pipeline: string, optional
+        Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
+
+    band_pass_filtering: boolean, optional
+        Due to controversies in the literature, band pass filtering is
+        optional. If true, signal is band filtered between 0.01Hz and 0.1Hz.
+
+    global_signal_regression: boolean optional
+        Indicates if global signal regression should be applied on the
+        signals.
+
+    derivatives: string list, optional
+        Types of downloaded files. Possible values are: alff, degree_binarize,
+        degree_weighted, dual_regression, eigenvector_binarize,
+        eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
+        reho, rois_aal, rois_cc200, rois_cc400, rois_dosenbach160, rois_ez,
+        rois_ho, rois_tt, and vmhc. Please refer to the PCP site for more
+        details.
+
+    quality_checked: boolean, optional
+        if true (default), restrict the list of the subjects to the one that
+        passed quality assessment for all raters.
+
+    kwargs: parameter list, optional
+        Any extra keyword argument will be used to filter downloaded subjects
+        according to the CSV phenotypic file. Some examples of filters are
+        indicated below.
+
+    SUB_ID: list of integers in [50001, 50607], optional
+        Ids of the subjects to be loaded.
+
+    DX_GROUP: integer in {1, 2}, optional
+        1 is autism, 2 is control
+
+    DSM_IV_TR: integer in [0, 4], optional
+        O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
+        4 is Asperger or PPD-NOS
+
+    AGE_AT_SCAN: float in [6.47, 64], optional
+        Age of the subject
+
+    SEX: integer in {1, 2}, optional
+        1 is male, 2 is female
+
+    HANDEDNESS_CATEGORY: string in {'R', 'L', 'Mixed', 'Ambi'}, optional
+        R = Right, L = Left, Ambi = Ambidextrous
+
+    HANDEDNESS_SCORE: integer in [-100, 100], optional
+        Positive = Right, Negative = Left, 0 = Ambidextrous
+
+    Notes
+    -----
+    Code and description of preprocessing pipelines are provided on the
+    `PCP website <http://preprocessed-connectomes-project.github.io/>`.
+
+    References
+    ----------
+    Nielsen, Jared A., et al. "Multisite functional connectivity MRI
+    classification of autism: ABIDE results." Frontiers in human neuroscience
+    7 (2013).
+    """
+
+    # Parameter check
+    for derivative in derivatives:
+        if not derivative in ['alff', 'degree_binarize', 'degree_weighted',
+                'dual_regression', 'eigenvector_binarize',
+                'eigenvector_weighted', 'falff', 'func_mask', 'func_mean',
+                'func_preproc', 'lfcd', 'reho', 'rois_aal', 'rois_cc200',
+                'rois_cc400', 'rois_dosenbach160', 'rois_ez', 'rois_ho',
+                'rois_tt', 'vmhc']:
+            raise KeyError('%s is not a valid derivative' % derivative)
+
+    strategy = ''
+    if not band_pass_filtering:
+        strategy += 'no'
+    strategy += 'filt_'
+    if not global_signal_regression:
+        strategy += 'no'
+    strategy += 'global'
+
+    # General file: phenotypic information
+    data_dir = _get_dataset_dir('ABIDE_pcp', data_dir=data_dir,
+                                verbose=verbose)
+    if url is None:
+        url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
+               'ABIDE_Initiative')
+
+    if quality_checked:
+        kwargs['qc_rater_1'] = 'OK'
+        kwargs['qc_anat_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_func_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_anat_rater_3'] = 'OK'
+        kwargs['qc_func_rater_3'] = 'OK'
+
+    # Fetch the phenotypic file and load it
+    csv = 'Phenotypic_V1_0b_preprocessed1.csv'
+    path_csv = _fetch_files(data_dir, [(csv, url + '/' + csv, {})],
+                            verbose=verbose)[0]
+
+    # Note: the phenotypic file contains string that contains comma which mess
+    # up numpy array csv loading. This is why I do a pass to remove the last
+    # field. This can be
+    # done simply with pandas but we don't want such dependency ATM
+    # pheno = pandas.read_csv(path_csv).to_records()
+    pheno_f = open(path_csv, 'r')
+    pheno = ['i' + pheno_f.readline()]
+    # This regexp replaces commas between double quotes
+    for line in pheno_f:
+        pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
+    pheno_f.close()
+    pheno = '\n'.join(pheno)
+    pheno = StringIO.StringIO(pheno)
+    # We enforce empty comments because it is 'sharp' by default
+    pheno = np.recfromcsv(pheno, comments=[], case_sensitive=True)
+
+    # First, filter subjects with no filename
+    pheno = pheno[pheno['FILE_ID'] != 'no_filename']
+    # Apply user defined filters
+    filter = _filter_columns(pheno, kwargs)
+    pheno = pheno[filter]
+
+    # Go into specific data folder and url
+    data_dir = os.path.join(data_dir, pipeline, strategy)
+    url = '/'.join([url, 'Outputs', pipeline, strategy])
+
+    # Get the files
+    results = {}
+    file_ids = pheno['FILE_ID']
+    if n_subjects is not None:
+        file_ids = file_ids[:n_subjects]
+        pheno = pheno[:n_subjects]
+
+    results['phenotypic'] = pheno
+    for derivative in derivatives:
+        ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
+        files = [(file_id + '_' + derivative + ext,
+                  '/'.join([url, derivative,
+                            file_id + '_' + derivative + ext]),
+                  {}) for file_id in file_ids]
+        files = _fetch_files(data_dir, files, verbose=verbose)
+        # Load derivatives if needed
+        if ext == '.1D':
+            files = [np.loadtxt(f) for f in files]
+        results[derivative] = files
+
+    return Bunch(**results)
