@@ -23,10 +23,23 @@ print("Loading dataset and masking subject data...")
 from nilearn import datasets, input_data
 
 dataset = datasets.fetch_adhd(n_subjects=1)
-nifti_masker = input_data.NiftiMasker(memory='nilearn_cache', memory_level=1,
-                                      smoothing_fwhm=0., standardize=True, detrend=True)
-X = nifti_masker.fit_transform(dataset.func[0])
+
+# Do only one hemisphere, to speed up computation.
+from nilearn.input_data.hemisphere_masker import HemisphereMasker
+hemi_masker = HemisphereMasker(hemisphere='L',
+                               memory='nilearn_cache', memory_level=100, verbose=10)
+lh_X = hemi_masker.fit_transform(dataset.func[0])
+#lh_img = dataset.func[0]
+lh_img = hemi_masker.inverse_transform(lh_X)
+
+nifti_masker = input_data.NiftiMasker(smoothing_fwhm=0., standardize=False, detrend=True,
+                                      memory='nilearn_cache', memory_level=100, verbose=10)
+X = nifti_masker.fit_transform(lh_img)
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+
+from nilearn.image import index_img
+from nilearn.plotting import plot_roi, plot_stat_map
+plot_stat_map(index_img(nifti_masker.inverse_transform(X), -1))  # nifti_masker.mask_img_)
 
 ### Affinity Matrix #######################################################
 print("Computing affinity matrix...")
@@ -60,20 +73,21 @@ def compute_affinity(X, mask):
     print("Voxels: %d; cutoff: %.4f; %% kept %.2f, %% possible: %.4f"
           % (n_voxels, thr, pct_kept, pct_possible))
 
-    return sp.sparse.coo_matrix((values, (rows, cols)))
-affinity = my_cache_fn(compute_affinity)(X, mask)
+    affinity = sp.sparse.coo_matrix((values, (rows, cols)))
+    return affinity, connectivity
+affinity, connectivity = my_cache_fn(compute_affinity)(X, mask)
+
+plot_stat_map(nifti_masker.inverse_transform(np.array(connectivity.sum(0))))
+plt.show()
 
 ### Spectral clustering #######################################################
 print("Running spectral clustering...")
 
 from sklearn.cluster import spectral_clustering
-clustering = my_cache_fn(spectral_clustering)(affinity, n_clusters=100,
-                                              assign_labels='discretize')
-
+clustering = my_cache_fn(spectral_clustering)(affinity, n_clusters=5)
+import pdb; pdb.set_trace()
 ### Plot results #######################################################
 print("Plotting the results...")
-from nilearn.plotting import plot_roi
-
-cluster_img = nifti_masker.inverse_transform(clustering)
+cluster_img = hemi_masker.inverse_transform(clustering)
 plot_roi(cluster_img)
 plt.show()
