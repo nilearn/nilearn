@@ -67,7 +67,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         data = img.get_data()
         affine = img.get_affine()
 
-        if np.any(np.isnan(data)):
+        if np.isnan(np.sum(data)):
             data = np.nan_to_num(data)
 
         # Deal with automatic settings of plot parameters
