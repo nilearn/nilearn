@@ -231,7 +231,8 @@ def test_unmask():
         assert_raises(ValueError, unmask, [dummy], mask_img)
 
     # Error test: transposed vector
-    assert_raises(TypeError, unmask, np.empty(np.count_nonzero(mask_img), 1))
+    out = unmask(np.ones((np.sum(mask), 1)), mask_img)
+    assert_equal(out.shape, mask.shape + (1,))
 
 
 def test_intersect_masks():
@@ -354,3 +355,5 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     X = rng.randn(n_samples, n_features)
     # 2D X (should be ok)
     unmask(X, mask_img)
+
+
