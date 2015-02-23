@@ -129,10 +129,9 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     verbose = kwargs.get('verbose', 0)
 
-    if (func_memory_level is None
-            or memory_level is None
-            or memory is None
-            or memory_level < func_memory_level):
+    if (memory is None
+            or memory_level < func_memory_level
+            or func_memory_level is not None and memory_level is None):
         memory = Memory(cachedir=None, verbose=verbose)
     else:
         if isinstance(memory, basestring):
