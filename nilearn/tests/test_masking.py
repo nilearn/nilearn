@@ -230,6 +230,9 @@ def test_unmask():
         assert_raises(ValueError, unmask, dummy, mask_img)
         assert_raises(ValueError, unmask, [dummy], mask_img)
 
+    # Error test: transposed vector
+    assert_raises(TypeError, unmask, np.empty(np.count_nonzero(mask_img), 1))
+
 
 def test_intersect_masks():
     """ Test the intersect_masks function
@@ -331,7 +334,7 @@ def test_compute_multi_epi_mask():
     assert_array_equal(mask_ab, mask_ab_.get_data())
 
 
-def test_warning_shape(random_state=42, shape=(3, 5, 7, 11)):
+def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
 
     rng = np.random.RandomState(random_state)

@@ -635,7 +635,7 @@ def _unmask_3d(X, mask, order="C"):
     if mask.dtype != np.bool:
         raise ValueError("mask must be a boolean array")
     if X.ndim != 1:
-        raise ValueError("X must be a 1-dimensional array")
+        raise TypeError("X must be a 1-dimensional array")
 
     data = np.zeros(
         (mask.shape[0], mask.shape[1], mask.shape[2]),
@@ -665,7 +665,7 @@ def _unmask_nd(X, mask, order="C"):
     if mask.dtype != np.bool:
         raise ValueError("mask must be a boolean array")
     if X.ndim != 2:
-        raise ValueError("X must be a 2-dimensional array")
+        raise TypeError("X must be a 2-dimensional array")
     n_features = mask.sum()
     if X.shape[-1] != n_features:
         # Handle (potential) transpose as a special case, as this
@@ -673,7 +673,7 @@ def _unmask_nd(X, mask, order="C"):
         if X.shape[0] == n_features:
             X = X.T
         else:
-            raise ValueError('X must be of shape (samples, %d).' % n_features)
+            raise TypeError('X must be of shape (samples, %d).' % n_features)
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
@@ -719,8 +719,7 @@ def unmask(X, mask_img, order="F"):
     elif X.ndim == 1:
         unmasked = _unmask_3d(X, mask, order=order)
     else:
-        raise TypeError(
-            "Masked data X must be 2D or 1D array; got shape: %s" % str(
-                X.shape))
+        raise TypeError("Masked data X must be 2D or 1D array; "
+                        "got shape: %s" % str(X.shape))
 
     return Nifti1Image(unmasked, affine)
