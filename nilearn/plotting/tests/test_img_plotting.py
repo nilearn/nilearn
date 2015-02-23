@@ -1,20 +1,13 @@
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-<<<<<<< HEAD
-import numpy as np
-import tempfile
-=======
 import tempfile
 import os
+from functools import partial
 
 import numpy as np
 from scipy import sparse
 
-from nose import SkipTest
-from nose.tools import assert_raises, assert_true
->>>>>>> Add nilearn.plotting.plot_connectome
-from functools import partial
 from nose import SkipTest
 from nose.tools import assert_raises, assert_true, assert_equal
 
@@ -30,16 +23,11 @@ except ImportError:
 import nibabel
 
 from nilearn.image.resampling import coord_transform
-<<<<<<< HEAD
+
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
-                                           plot_glass_brain)
-=======
-from nilearn.plotting.img_plotting import MNI152TEMPLATE, plot_anat, \
-        plot_img, plot_roi, plot_stat_map, plot_epi, plot_glass_brain, \
-        plot_connectome
+                                           plot_glass_brain, plot_connectome)
 from nilearn._utils.testing import assert_raises_regexp
->>>>>>> Add nilearn.plotting.plot_connectome
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                        [   0.,    2.,    0., -126.],
