@@ -1,13 +1,11 @@
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import tempfile
-
 import numpy as np
-
-from nose import SkipTest
-from nose.tools import assert_raises, assert_true
+import tempfile
 from functools import partial
+from nose import SkipTest
+from nose.tools import assert_raises, assert_true, assert_equal
 
 try:
     import matplotlib as mp
@@ -21,13 +19,14 @@ except ImportError:
 import nibabel
 
 from nilearn.image.resampling import coord_transform
-from nilearn.plotting.img_plotting import MNI152TEMPLATE, plot_anat, \
-        plot_img, plot_roi, plot_stat_map, plot_epi, plot_glass_brain
+from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
+                                           plot_roi, plot_stat_map, plot_epi,
+                                           plot_glass_brain)
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
-                        [   0.,    2.,    0., -126.],
-                        [   0.,    0.,    2.,  -72.],
-                        [   0.,    0.,    0.,    1.]])
+                       [   0.,    2.,    0., -126.],
+                       [   0.,    0.,    2.,  -72.],
+                       [   0.,    0.,    0.,    1.]])
 
 
 def demo_plot_roi(**kwargs):
@@ -85,13 +84,12 @@ def test_plot_functions():
         pl.close()
 
         for func in [plot_anat, plot_img, plot_stat_map,
-                 plot_epi, plot_glass_brain,
-                 partial(plot_stat_map, symmetric_cbar=True),
-                 partial(plot_stat_map, symmetric_cbar=False),
-                 partial(plot_stat_map, symmetric_cbar=False, vmax=10),
-                 partial(plot_stat_map, symmetric_cbar=True, vmax=10),
-                 partial(plot_stat_map, colorbar=False)
-                 ]:
+                     plot_epi, plot_glass_brain,
+                     partial(plot_stat_map, symmetric_cbar=True),
+                     partial(plot_stat_map, symmetric_cbar=False),
+                     partial(plot_stat_map, symmetric_cbar=False, vmax=10),
+                     partial(plot_stat_map, symmetric_cbar=True, vmax=10),
+                     partial(plot_stat_map, colorbar=False)]:
             ax = pl.subplot(111, rasterized=True)
             ortho_slicer = func(img, cut_coords=(80, -120, -60), axes=ax)
             # Saving forces a draw, and thus smoke-tests the axes locators
@@ -155,10 +153,28 @@ def test_plot_img_with_resampling():
     import pylab as pl
     pl.switch_backend('template')
     data = MNI152TEMPLATE.get_data()[:5, :5, :5]
-    affine = np.array([[ 1., -1.,  0.,  0.],
-                       [ 1.,  1.,  0.,  0.],
-                       [ 0.,  0.,  1.,  0.],
-                       [ 0.,  0.,  0.,  1.]])
+    affine = np.array([[1., -1.,  0.,  0.],
+                       [1.,  1.,  0.,  0.],
+                       [0.,  0.,  1.,  0.],
+                       [0.,  0.,  0.,  1.]])
     img = nibabel.Nifti1Image(data, affine)
     display = plot_img(img)
     display.add_overlay(img)
+
+
+def test_plot_noncurrent_axes():
+    """Regression test for Issue #450"""
+
+    maps_img = nibabel.Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
+    fh1 = pl.figure()
+    fh2 = pl.figure()
+    ax1 = fh1.add_subplot(1, 1, 1)
+
+    assert_equal(pl.gcf(), fh2, "fh2  was the last plot created.")
+
+    # Since we gave ax1, the figure should be plotted in fh1.
+    # Before #451, it was plotted in fh2.
+    slicer = plot_glass_brain(maps_img, axes=ax1, title='test')
+    for ax_name, niax in slicer.axes.items():
+        ax_fh = niax.ax.get_figure()
+        assert_equal(ax_fh, fh1, 'New axis %s should be in fh1.' % ax_name)
