@@ -19,12 +19,12 @@ from nilearn.plotting import cm
 def plot_connectome(cov, atlas_maps, **kwargs):
     """Plot connectome given a covariance matrix and atlas maps"""
     imgs = image.iter_img(atlas_maps)
-    regions_coords = np.array(
+    region_coords = np.array(
         [plotting.find_xyz_cut_coords(img) for img in imgs])
     np.random.seed(42)
-    node_colors = np.random.rand(cov.shape[0], 3)
-    plotting.plot_connectome(cov, regions_coords,
-                             node_kwargs={'s': 50, 'c': node_colors},
+    node_color = np.random.rand(cov.shape[0], 3)
+    plotting.plot_connectome(cov, region_coords,
+                             node_size=50, node_color=node_color,
                              **kwargs)
 
 
