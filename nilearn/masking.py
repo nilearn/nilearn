@@ -666,6 +666,12 @@ def _unmask_nd(X, mask, order="C"):
         raise ValueError("mask must be a boolean array")
     if X.ndim != 2:
         raise ValueError("X must be a 2-dimensional array")
+    if X.shape[-1] == 1:
+        # Handle (potential) transpose as a special case, as this
+        #   mistake can lead to system-fatal memory allocation below.
+        mask_nnz = np.count_nonzero(mask)
+        if X.shape[-1] != mask_nnz:
+            raise ValueError('X must be of shape (samples, %d).' % mask_nnz)
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
