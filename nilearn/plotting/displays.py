@@ -267,7 +267,7 @@ class GlassBrainAxes(BaseAxes):
         for k, v in defaults.items():
             kwargs.setdefault(k, v)
 
-        # For a mask array, masked values are replaced with zeros
+        # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
             adjacency_matrix = adjacency_matrix.copy()
             adjacency_matrix[adjacency_matrix.mask] = 0
