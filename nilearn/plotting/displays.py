@@ -774,14 +774,14 @@ class OrthoSlicer(BaseSlicer):
         if self._black_bg:
             for ax in self.axes.values():
                 ax.ax.imshow(np.zeros((2, 2, 3)),
-                            extent=[-5000, 5000, -5000, 5000],
-                            zorder=-500, aspect='auto')
+                             extent=[-5000, 5000, -5000, 5000],
+                             zorder=-500, aspect='equal')
 
             # To have a black background in PDF, we need to create a
             # patch in black for the background
             self.frame_axes.imshow(np.zeros((2, 2, 3)),
                                    extent=[-5000, 5000, -5000, 5000],
-                                   zorder=-500, aspect='auto')
+                                   zorder=-500, aspect='equal')
             self.frame_axes.set_zorder(-1000)
 
     def _locator(self, axes, renderer):
@@ -935,13 +935,13 @@ class BaseStackedSlicer(BaseSlicer):
             for ax in self.axes.values():
                 ax.ax.imshow(np.zeros((2, 2, 3)),
                              extent=[-5000, 5000, -5000, 5000],
-                             zorder=-500, aspect='auto')
+                             zorder=-500, aspect='equal')
 
             # To have a black background in PDF, we need to create a
             # patch in black for the background
             self.frame_axes.imshow(np.zeros((2, 2, 3)),
                                    extent=[-5000, 5000, -5000, 5000],
-                                   zorder=-500, aspect='auto')
+                                   zorder=-500, aspect='equal')
             self.frame_axes.set_zorder(-1000)
 
 
