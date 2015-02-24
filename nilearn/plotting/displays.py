@@ -1105,9 +1105,7 @@ class OrthoProjector(OrthoSlicer):
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
-            adjacency_matrix = adjacency_matrix.copy()
-            adjacency_matrix[adjacency_matrix.mask] = 0
-            adjacency_matrix = np.asarray(adjacency_matrix)
+            adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
             if isinstance(edge_threshold, basestring):
