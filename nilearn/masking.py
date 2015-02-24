@@ -633,7 +633,7 @@ def _unmask_3d(X, mask, order="C"):
     """
 
     if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+        raise TypeError("mask must be a boolean array")
     if X.ndim != 1:
         raise TypeError("X must be a 1-dimensional array")
 
@@ -663,7 +663,7 @@ def _unmask_4d(X, mask, order="C"):
     """
 
     if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+        raise TypeError("mask must be a boolean array")
     if X.ndim != 2:
         raise TypeError("X must be a 2-dimensional array")
     n_features = mask.sum()

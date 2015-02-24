@@ -13,9 +13,9 @@ from nose.tools import assert_true, assert_false, assert_equal, \
 from nibabel import Nifti1Image
 
 from nilearn import masking
-from nilearn.masking import compute_epi_mask, compute_multi_epi_mask, \
-    compute_background_mask, unmask, intersect_masks, MaskWarning, \
-    _load_mask_img
+from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
+                             compute_background_mask, unmask, _unmask_3d,
+                             _unmask_4d, intersect_masks, MaskWarning)
 
 from nilearn._utils.testing import write_tmp_imgs, assert_raises_regexp
 
@@ -233,6 +233,12 @@ def test_unmask():
     # Transposed vector (succeeds)
     transposed_vector = np.ones((np.sum(mask), 1))
     assert_raises(TypeError, unmask, transposed_vector, mask_img)
+    # Error test: mask type
+    assert_raises_regexp(TypeError, 'mask must be a boolean array',
+                         _unmask_3d, vec_1D, mask.astype(np.int))
+    assert_raises_regexp(TypeError, 'mask must be a boolean array',
+                         _unmask_4d, vec_2D, mask.astype(np.float64))
+
 
 
 def test_intersect_masks():
