@@ -245,7 +245,7 @@ class GlassBrainAxes(BaseAxes):
         """Plot markers"""
         marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
 
-        xdata, ydata = zip(*marker_coords_2d)
+        xdata, ydata = marker_coords_2d.T
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -292,7 +292,7 @@ class GlassBrainAxes(BaseAxes):
             # kwargs should have priority over this_kwargs so that the
             # user can override the default logic
             this_kwargs.update(kwargs)
-            xdata, ydata = zip(*start_end_point_2d)
+            xdata, ydata = start_end_point_2d.T
             line = lines.Line2D(xdata, ydata, **this_kwargs)
             self.ax.add_line(line)
 
