@@ -202,6 +202,10 @@ def test_plot_connectome():
                   node_size=10, node_color=node_color)
     plot_connectome(*args, **kwargs)
 
+    # node_coords not an array but a list of tuples
+    plot_connectome(adjacency_matrix,
+                    map(tuple, node_coords.tolist()),
+                    **kwargs)
     # saving to file
     with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         display = plot_connectome(*args, output_file=fp.name,

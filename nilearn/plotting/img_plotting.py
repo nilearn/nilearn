@@ -755,7 +755,7 @@ def plot_connectome(adjacency_matrix, node_coords,
         adjacency_matrix: numpy array of shape (n, n)
             represents the link strengths of the graph. Assumed to be
             a symmetric matrix.
-        node_coords: numpy array of shape (n, 3)
+        node_coords: numpy array_like of shape (n, 3)
             3d coordinates of the graph nodes in world space.
         node_color: color or sequence of colors
             color(s) of the nodes.

@@ -1035,7 +1035,7 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix: numpy array of shape (n, n)
                 represents the edges strengths of the graph. Assumed to be
                 a symmetric matrix.
-            node_coords: numpy array of shape (n, 3)
+            node_coords: numpy array_like of shape (n, 3)
                 3d coordinates of the graph nodes in world space.
             node_color: color or sequence of colors
                 color(s) of the nodes.
@@ -1068,6 +1068,8 @@ class OrthoProjector(OrthoSlicer):
             node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
         if edge_cmap is None:
             edge_cmap = cm.bwr
+
+        node_coords = np.asarray(node_coords)
 
         # safety checks
         if 's' in node_kwargs:
