@@ -1032,7 +1032,7 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix: numpy array of shape (n, n)
                 represents the edges strengths of the graph. Assumed to be
                 a symmetric matrix.
-            nodes_coords: numpy array of shape (n, )
+            nodes_coords: numpy array of shape (n, 3)
                 3d coordinates of the graph nodes in world space.
             node_color: color or sequence of colors
                 color(s) of the nodes.
