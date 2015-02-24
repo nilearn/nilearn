@@ -741,8 +741,8 @@ def plot_glass_brain(stat_map_img,
 
 
 def plot_connectome(adjacency_matrix, node_coords,
-                    node_color=None, node_size=None,
-                    edge_cmap=None, edge_threshold=None,
+                    node_color='auto', node_size=50,
+                    edge_cmap=cm.bwr, edge_threshold=None,
                     edge_kwargs=None, node_kwargs=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None,

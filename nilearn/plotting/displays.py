@@ -1025,8 +1025,8 @@ class OrthoProjector(OrthoSlicer):
         pass
 
     def add_graph(self, adjacency_matrix, node_coords,
-                  node_color=None, node_size=None,
-                  edge_cmap=None, edge_threshold=None,
+                  node_color='auto', node_size=50,
+                  edge_cmap=cm.bwr, edge_threshold=None,
                   edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph on each of the axes
 
@@ -1061,13 +1061,9 @@ class OrthoProjector(OrthoSlicer):
             edge_kwargs = {}
         if node_kwargs is None:
             node_kwargs = {}
-        if node_size is None:
-            node_size = 50
-        if node_color is None:
+        if node_color == 'auto':
             nb_nodes = len(node_coords)
             node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
-        if edge_cmap is None:
-            edge_cmap = cm.bwr
 
         node_coords = np.asarray(node_coords)
 
