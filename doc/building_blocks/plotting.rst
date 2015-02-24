@@ -24,6 +24,10 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
+.. |plot_connectome| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_1.png
+     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
+     :scale: 50
+
 .. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_3.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
@@ -56,6 +60,10 @@ different heuristics to find cutting coordinates.
 |plot_glass_brain|   :func:`plot_glass_brain`
                      |hack|
                      Glass brain visualization
+
+|plot_connectome|    :func:`plot_connectome`
+                     |hack|
+                     Plotting a connectome
 
 |plot_stat_map|      :func:`plot_stat_map`
                      |hack|
