@@ -61,10 +61,6 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Glass brain visualization
 
-|plot_connectome|    :func:`plot_connectome`
-                     |hack|
-                     Plotting a connectome
-
 |plot_stat_map|      :func:`plot_stat_map`
                      |hack|
                      Plotting a statistical map, like a T-map, a Z-map, or
@@ -73,6 +69,10 @@ different heuristics to find cutting coordinates.
 |plot_roi|           :func:`plot_roi`
                      |hack|
                      Plotting ROIs, or a mask, with an optional background
+
+|plot_connectome|    :func:`plot_connectome`
+                     |hack|
+                     Plotting a connectome
 
 **plot_img**         :func:`plot_img`
                      |hack|
