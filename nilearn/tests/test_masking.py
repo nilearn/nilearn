@@ -221,24 +221,25 @@ def test_unmask():
     assert_equal(t[0].ndim, len(shape5D))
     assert_array_equal(t[0], unmasked5D)
 
-    # Error test
-    dummy = generator.rand(500)
-    if np_version >= [1, 7, 1]:
-        assert_raises(IndexError, unmask, dummy, mask_img)
-        assert_raises(IndexError, unmask, [dummy], mask_img)
-    else:
-        assert_raises(ValueError, unmask, dummy, mask_img)
-        assert_raises(ValueError, unmask, [dummy], mask_img)
+    # Error test: shape
+    vec_1D = np.empty((500,), dtype=np.int)
+    assert_raises(TypeError, unmask, vec_1D, mask_img)
+    assert_raises(TypeError, unmask, [vec_1D], mask_img)
 
-    # Transposed vector (succeeds)
-    transposed_vector = np.ones((np.sum(mask), 1))
-    assert_raises(TypeError, unmask, transposed_vector, mask_img)
+    vec_2D = np.empty((500, 500), dtype=np.float64)
+    assert_raises(TypeError, unmask, vec_2D, mask_img)
+    assert_raises(TypeError, unmask, [vec_2D], mask_img)
+
     # Error test: mask type
     assert_raises_regexp(TypeError, 'mask must be a boolean array',
                          _unmask_3d, vec_1D, mask.astype(np.int))
     assert_raises_regexp(TypeError, 'mask must be a boolean array',
                          _unmask_4d, vec_2D, mask.astype(np.float64))
 
+    # Transposed vector
+    transposed_vector = np.ones((np.sum(mask), 1), dtype=np.bool)
+    assert_raises_regexp(TypeError, 'X must be of shape',
+                         unmask, transposed_vector, mask_img)
 
 
 def test_intersect_masks():

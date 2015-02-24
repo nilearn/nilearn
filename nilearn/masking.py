@@ -636,6 +636,9 @@ def _unmask_3d(X, mask, order="C"):
         raise TypeError("mask must be a boolean array")
     if X.ndim != 1:
         raise TypeError("X must be a 1-dimensional array")
+    n_features = mask.sum()
+    if X.shape[0] != n_features:
+        raise TypeError('X must be of shape (samples, %d).' % n_features)
 
     data = np.zeros(
         (mask.shape[0], mask.shape[1], mask.shape[2]),
