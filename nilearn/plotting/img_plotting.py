@@ -744,8 +744,8 @@ def plot_glass_brain(stat_map_img,
 
 def plot_connectome(adjacency_matrix, node_coords,
                     node_color=None, node_size=None,
-                    node_kwargs=None, edge_kwargs=None, edge_threshold=None,
-                    edge_cmap=None,
+                    edge_cmap=None, edge_threshold=None,
+                    edge_kwargs=None, node_kwargs=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None,
                     annotate=True, black_bg=False,
@@ -765,17 +765,17 @@ def plot_connectome(adjacency_matrix, node_coords,
             size(s) of the nodes in points^2.
         edge_cmap: colormap
             colormap used for representing the strength of the edges.
-        edge_kwargs: dict
-            will be passed as kwargs for each edge matlotlib Line2D.
-        node_kwargs: dict
-            will be passed as kwargs to the plt.scatter call that plots all
-            the nodes in one go
         edge_threshold: str or number
             If it is a number only the edges with a value greater than
             edge_threshold will be shown.
             If it is a string it must finish with a percent sign, e.g. "25.3%"
             and only the edges with a abs(value) above the given percentile
             will be shown.
+        edge_kwargs: dict
+            will be passed as kwargs for each edge matlotlib Line2D.
+        node_kwargs: dict
+            will be passed as kwargs to the plt.scatter call that plots all
+            the nodes in one go
         output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
