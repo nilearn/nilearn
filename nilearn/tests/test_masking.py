@@ -230,7 +230,7 @@ def test_unmask():
         assert_raises(ValueError, unmask, dummy, mask_img)
         assert_raises(ValueError, unmask, [dummy], mask_img)
 
-    # Error test: transposed vector
+    # Transposed vector (succeeds)
     out = unmask(np.ones((np.sum(mask), 1)), mask_img)
     assert_equal(out.shape, mask.shape + (1,))
 
