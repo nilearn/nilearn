@@ -16,18 +16,6 @@ from nilearn import plotting, image
 from nilearn.plotting import cm
 
 
-def plot_connectome(cov, atlas_maps, **kwargs):
-    """Plot connectome given a covariance matrix and atlas maps"""
-    imgs = image.iter_img(atlas_maps)
-    region_coords = np.array(
-        [plotting.find_xyz_cut_coords(img) for img in imgs])
-    np.random.seed(42)
-    node_color = np.random.rand(cov.shape[0], 3)
-    plotting.plot_connectome(cov, region_coords,
-                             node_size=50, node_color=node_color,
-                             **kwargs)
-
-
 def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
 
@@ -110,20 +98,24 @@ gl.fit(subjects[plotted_subject])
 
 # Displaying results ##########################################################
 print("-- Displaying results")
+atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
+atlas_region_coords = np.array(
+    [plotting.find_xyz_cut_coords(img) for img in atlas_imgs])
+
 title = "Subject {0:d} GroupSparseCovariance $\\alpha={1:.2e}$".format(
     plotted_subject, gsc.alpha_)
 
-plot_connectome(gsc.covariances_[..., plotted_subject],
-                msdl_atlas_dataset.maps, edges_threshold='80%',
-                title=title)
+plotting.plot_connectome(gsc.covariances_[..., plotted_subject],
+                         atlas_region_coords, edges_threshold='80%',
+                         title=title)
 plot_matrices(gsc.covariances_[..., plotted_subject],
               gsc.precisions_[..., plotted_subject], title)
 
 title = "Subject {0:d} GraphLasso $\\alpha={1:.2e}$".format(
     plotted_subject, gl.alpha_)
-plot_connectome(gl.covariance_,
-                msdl_atlas_dataset.maps, edges_threshold='80%',
-                title=title)
+
+plotting.plot_connectome(gl.covariance_, atlas_region_coords,
+                         edges_threshold='80%', title=title)
 plot_matrices(gl.covariance_, gl.precision_, title)
 
 plt.show()
