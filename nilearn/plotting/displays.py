@@ -1041,8 +1041,7 @@ class OrthoProjector(OrthoSlicer):
             edge_cmap: colormap
                 colormap used for representing the strength of the edges.
             edge_kwargs: dict
-                will be passed as kwargs to the plt.plot call that plots each
-                edge one by one.
+                will be passed as kwargs for each edge matlotlib Line2D.
             node_kwargs: dict
                 will be passed as kwargs to the plt.scatter call that plots all
                 the nodes in one go.
