@@ -210,12 +210,13 @@ def test_plot_connectome():
         assert_true(os.path.isfile(fp.name) and
                     os.path.getsize(fp.name) > 0)
 
-    # with node_kwargs and edge_kwargs arguments
+    # with node_kwargs, edge_kwargs and edge_cmap arguments
     plot_connectome(*args,
                     edge_threshold='70%',
                     title='threshold=70%',
                     node_size=[10, 20, 30, 40],
                     node_color=np.zeros((4, 3)),
+                    edge_cmap='RdBu',
                     node_kwargs={
                         'marker': 'v'},
                     edge_kwargs={
