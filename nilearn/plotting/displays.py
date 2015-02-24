@@ -7,12 +7,15 @@ the data with different layout of cuts.
 
 import operator
 import itertools
+import numbers
 
 import numpy as np
+from scipy import sparse
 
 import nibabel
 from .._utils.testing import skip_if_running_nose
 from .. import _utils
+from .._utils.extmath import fast_abs_percentile
 
 try:
     import pylab as pl
@@ -1023,7 +1026,7 @@ class OrthoProjector(OrthoSlicer):
 
     def add_graph(self, adjacency_matrix, node_coords,
                   node_color=None, node_size=None,
-                  edge_cmap=None,
+                  edge_cmap=None, edge_threshold=None,
                   edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph on each of the axes
 
@@ -1040,6 +1043,12 @@ class OrthoProjector(OrthoSlicer):
                 size(s) of the nodes in points^2.
             edge_cmap: colormap
                 colormap used for representing the strength of the edges.
+            edge_threshold: str or number
+                If it is a number only the edges with a value greater than
+                edge_threshold will be shown.
+                If it is a string it must finish with a percent sign,
+                e.g. "25.3%", and only the edges with a abs(value) above
+                the given percentile will be shown.
             edge_kwargs: dict
                 will be passed as kwargs for each edge matlotlib Line2D.
             node_kwargs: dict
@@ -1047,18 +1056,11 @@ class OrthoProjector(OrthoSlicer):
                 the nodes in one go.
 
         """
+        # set defaults
         if edge_kwargs is None:
             edge_kwargs = {}
         if node_kwargs is None:
             node_kwargs = {}
-
-        if 's' in node_kwargs:
-            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
-                             "to specify node sizes")
-        if 'c' in node_kwargs:
-            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
-                             "to specify node colors")
-
         if node_size is None:
             node_size = 50
         if node_color is None:
@@ -1067,11 +1069,78 @@ class OrthoProjector(OrthoSlicer):
         if edge_cmap is None:
             edge_cmap = cm.bwr
 
+        # safety checks
+        if 's' in node_kwargs:
+            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
+                             "to specify node sizes")
+        if 'c' in node_kwargs:
+            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
+                             "to specify node colors")
+
+        adjacency_matrix_shape = adjacency_matrix.shape
+        if (len(adjacency_matrix_shape) != 2 or
+                adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+            raise ValueError(
+                "'adjacency_matrix' is supposed to have shape (n, n)."
+                ' Its shape was {0}'.format(adjacency_matrix_shape))
+
+        node_coords_shape = node_coords.shape
+        if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
+            raise ValueError(
+                "'node_coords' should be a array with shape (n, 3). "
+                'Its shape was {0}'.format(node_coords_shape))
+
+        if node_coords_shape[0] != adjacency_matrix_shape[0]:
+            raise ValueError(
+                "Shape mismatch between 'adjacency_matrix' "
+                "and 'node_coords'"
+                "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
+                .format(adjacency_matrix_shape, node_coords_shape))
+
+        if sparse.issparse(adjacency_matrix):
+            adjacency_matrix = adjacency_matrix.toarray()
+
+        if not np.allclose(adjacency_matrix, adjacency_matrix.T):
+            raise ValueError("'adjacency_matrix' should be symmetric")
+
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
             adjacency_matrix = adjacency_matrix.copy()
             adjacency_matrix[adjacency_matrix.mask] = 0
             adjacency_matrix = np.asarray(adjacency_matrix)
+
+        if edge_threshold is not None:
+            if isinstance(edge_threshold, basestring):
+                message = ("If 'edge_threshold' is given as a string it "
+                           'should be a number followed by the percent sign, '
+                           'e.g. "25.3%"')
+                if not edge_threshold.endswith('%'):
+                    raise ValueError(message)
+
+                try:
+                    percentile = float(edge_threshold[:-1])
+                except ValueError as exc:
+                    exc.args += (message, )
+                    raise
+
+                # Keep a percentile of edges with the highest absolute
+                # values, so only need to look at the covariance
+                # coefficients below the diagonal
+                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                              k=-1)
+                lower_diagonal_values = adjacency_matrix[
+                    lower_diagonal_indices]
+                lower_diagonal_abs_values = np.abs(lower_diagonal_values)
+                edge_threshold = fast_abs_percentile(
+                    lower_diagonal_abs_values, percentile)
+
+            elif not isinstance(edge_threshold, numbers.Real):
+                raise TypeError('edge_threshold should be either a number '
+                                'or a string finishing with a percent sign')
+
+            adjacency_matrix = adjacency_matrix.copy()
+            threshold_mask = np.abs(adjacency_matrix) < edge_threshold
+            adjacency_matrix[threshold_mask] = 0
 
         lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
         non_zero_indices = lower_triangular_adjacency_matrix.nonzero()

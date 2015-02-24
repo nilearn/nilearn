@@ -11,13 +11,11 @@ Only matplotlib is required.
 # Standard library imports
 import operator
 import functools
-import numbers
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
-from scipy import sparse
 
 import nibabel
 
@@ -768,9 +766,9 @@ def plot_connectome(adjacency_matrix, node_coords,
         edge_threshold: str or number
             If it is a number only the edges with a value greater than
             edge_threshold will be shown.
-            If it is a string it must finish with a percent sign, e.g. "25.3%"
-            and only the edges with a abs(value) above the given percentile
-            will be shown.
+            If it is a string it must finish with a percent sign,
+            e.g. "25.3%", and only the edges with a abs(value) above
+            the given percentile will be shown.
         edge_kwargs: dict
             will be passed as kwargs for each edge matlotlib Line2D.
         node_kwargs: dict
@@ -805,62 +803,6 @@ def plot_connectome(adjacency_matrix, node_coords,
             Alpha transparency for the brain schematics.
 
     """
-    adjacency_matrix_shape = adjacency_matrix.shape
-    if (len(adjacency_matrix_shape) != 2 or
-            adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
-        raise ValueError("'adjacency_matrix' is supposed to have shape (n, n)."
-                         ' Its shape was {0}'.format(adjacency_matrix_shape))
-
-    node_coords_shape = node_coords.shape
-    if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
-        raise ValueError("'node_coords' should be a array with shape (n, 3). "
-                         'Its shape was {0}'.format(node_coords_shape))
-
-    if node_coords_shape[0] != adjacency_matrix_shape[0]:
-        raise ValueError(
-            "Shape mismatch between 'adjacency_matrix' "
-            "and 'node_coords'"
-            "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
-            .format(adjacency_matrix_shape, node_coords_shape))
-
-    if sparse.issparse(adjacency_matrix):
-        adjacency_matrix = adjacency_matrix.toarray()
-
-    if not np.allclose(adjacency_matrix, adjacency_matrix.T):
-        raise ValueError("'adjacency_matrix' should be symmetric")
-
-    if edge_threshold is not None:
-        if isinstance(edge_threshold, basestring):
-            message = ("If 'edge_threshold' is given as a string it "
-                       'should be a number followed by the percent sign, '
-                       'e.g. "25.3%"')
-            if not edge_threshold.endswith('%'):
-                raise ValueError(message)
-
-            try:
-                percentile = float(edge_threshold[:-1])
-            except ValueError as exc:
-                exc.args += (message, )
-                raise
-
-            # Keep a percentile of edges with the highest absolute
-            # values, so only need to look at the covariance
-            # coefficients below the diagonal
-            lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
-                                                          k=-1)
-            lower_diagonal_values = adjacency_matrix[lower_diagonal_indices]
-            lower_diagonal_abs_values = np.abs(lower_diagonal_values)
-            edge_threshold = fast_abs_percentile(lower_diagonal_abs_values,
-                                                  percentile)
-
-        elif not isinstance(edge_threshold, numbers.Real):
-            raise TypeError('edge_threshold should be either a number '
-                            'or a string finishing with a percent sign')
-
-        adjacency_matrix = np.ma.masked_array(
-            adjacency_matrix.copy(),
-            np.abs(adjacency_matrix) < edge_threshold)
-
     display = plot_glass_brain(None,
                                display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
@@ -870,7 +812,7 @@ def plot_connectome(adjacency_matrix, node_coords,
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
-                      edge_cmap=edge_cmap,
+                      edge_cmap=edge_cmap, edge_threshold=edge_threshold,
                       edge_kwargs=edge_kwargs, node_kwargs=node_kwargs)
 
     if output_file is not None:
