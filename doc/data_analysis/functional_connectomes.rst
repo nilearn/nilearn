@@ -39,11 +39,11 @@ This can be achieved using the inverse of the covariance matrix, ie the
 covariances between two regions conditioned on all the others. It thus
 gives only direct connections between regions.
 
-.. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_5.png
+.. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_6.png
    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
    :scale: 39
 
-.. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_6.png
+.. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_8.png
    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
    :scale: 39
 
