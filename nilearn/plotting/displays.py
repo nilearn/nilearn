@@ -18,6 +18,8 @@ try:
     import pylab as pl
     from matplotlib import transforms, colors
     from matplotlib.colorbar import ColorbarBase
+    from matplotlib import cm as mpl_cm
+    from matplotlib import lines
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
@@ -236,88 +238,60 @@ class GlassBrainAxes(BaseAxes):
         # the cuts since we are taking the max along one axis
         pass
 
-    def _add_graph_nodes(self, nodes_coords, node_color, node_size, **kwargs):
-        """Plot graph nodes"""
-        if 's' in kwargs:
-            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
-                             "to specify node sizes")
-        if 'c' in kwargs:
-            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
-                             "to specify node colors")
-        if node_size is None:
-            node_size = 50
-        if node_color is None:
-            node_color = 'green'
+    def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
+        """Plot markers"""
+        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
 
-        nodes_coords_2d = _coords_3d_to_2d(nodes_coords, self.direction)
-
-        first_coords, second_coords = zip(*nodes_coords_2d)
+        xdata, ydata = zip(*marker_coords_2d)
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
         for k, v in defaults.items():
             kwargs.setdefault(k, v)
 
-        self.ax.scatter(first_coords, second_coords, s=node_size, c=node_color,
-                        **kwargs)
+        self.ax.scatter(xdata, ydata, s=marker_size,
+                        c=marker_color, **kwargs)
 
-    def _add_graph_edges(self, adjacency_matrix, nodes_coords, **kwargs):
-        """Plot graph edges"""
-        defaults = {'marker': None}
-        for k, v in defaults.items():
-            kwargs.setdefault(k, v)
+    def _add_lines(self, line_coords, line_values, cmap, **kwargs):
+        """Plot lines
 
-        # For a masked array, masked values are replaced with zeros
-        if hasattr(adjacency_matrix, 'mask'):
-            adjacency_matrix = adjacency_matrix.copy()
-            adjacency_matrix[adjacency_matrix.mask] = 0
-            adjacency_matrix = np.asarray(adjacency_matrix)
-
-        abs_adjacency_matrix_max = np.abs(adjacency_matrix).max()
-        norm = colors.Normalize(vmin=-abs_adjacency_matrix_max,
-                                vmax=abs_adjacency_matrix_max)
+            Parameters
+            ----------
+            line_coords: list of numpy arrays of shape (2, 3)
+                3d coordinates of lines start points and end points.
+            line_values: array_like
+                values of the lines.
+            cmap: colormap
+                colormap used to map line_values to a color.
+            kwargs: dict
+                additional arguments to pass to matplotlib Line2D.
+        """
+        abs_line_values_max = np.abs(line_values).max()
+        norm = colors.Normalize(vmin=-abs_line_values_max,
+                                vmax=abs_line_values_max)
         abs_norm = colors.Normalize(vmin=0,
-                                    vmax=abs_adjacency_matrix_max)
+                                    vmax=abs_line_values_max)
+        value_to_color = pl.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
-        cmap = kwargs.pop('cmap', cm.bwr)
-        scalar_mappable = pl.cm.ScalarMappable(norm=norm, cmap=cmap)
+        for start_end_point_3d, line_value in itertools.izip(
+                line_coords, line_values):
+            start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
+                                                  self.direction)
 
-        lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
-        non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
-
-        for index in itertools.izip(*non_zero_indices):
-            adjacency_matrix_value = adjacency_matrix[index]
-            color = scalar_mappable.to_rgba(adjacency_matrix_value)
-            linewidth = 1 + 2 * abs_norm(abs(adjacency_matrix_value))
+            color = value_to_color(line_value)
+            abs_line_value = abs(line_value)
+            linewidth = 1 + 2 * abs_norm(abs_line_value)
             # Hacky way to put the strongest connections on top of the weakest
             # note sign does not matter hence using 'abs'
-            zorder = 10 + 10 * abs_norm(abs(adjacency_matrix_value))
-
-            this_coords = nodes_coords[list(index)]
-            this_coords_2d = _coords_3d_to_2d(this_coords, self.direction)
-            this_first_coords, this_second_coords = zip(*this_coords_2d)
-
+            zorder = 10 + 10 * abs_norm(abs_line_value)
             this_kwargs = {'color': color, 'linewidth': linewidth,
                            'zorder': zorder}
+            # kwargs should have priority over this_kwargs so that the
+            # user can override the default logic
             this_kwargs.update(kwargs)
-            self.ax.plot(this_first_coords, this_second_coords,
-                         **this_kwargs)
-
-    def add_graph(self, adjacency_matrix, nodes_coords,
-                  node_color, node_size,
-                  edge_kwargs=None, node_kwargs=None):
-        """Plot undirected graph.
-
-        See OrthoProjector.add_graph for more details.
-        """
-        if edge_kwargs is None:
-            edge_kwargs = {}
-        if node_kwargs is None:
-            node_kwargs = {}
-
-        self._add_graph_edges(adjacency_matrix, nodes_coords, **edge_kwargs)
-        self._add_graph_nodes(nodes_coords, node_color, node_size,
-                              **node_kwargs)
+            xdata, ydata = zip(*start_end_point_2d)
+            line = lines.Line2D(xdata, ydata, **this_kwargs)
+            self.ax.add_line(line)
 
 
 ################################################################################
@@ -1049,6 +1023,7 @@ class OrthoProjector(OrthoSlicer):
 
     def add_graph(self, adjacency_matrix, nodes_coords,
                   node_color=None, node_size=None,
+                  edges_cmap=None,
                   edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph on each of the axes
 
@@ -1056,25 +1031,60 @@ class OrthoProjector(OrthoSlicer):
             ----------
             adjacency_matrix: numpy array of shape (n, n)
                 represents the edges strengths of the graph. Assumed to be
-                a symmetric matrix
+                a symmetric matrix.
             nodes_coords: numpy array of shape (n, )
-                3d coordinates of the graph nodes in world space
+                3d coordinates of the graph nodes in world space.
             node_color: color or sequence of colors
                 color(s) of the nodes.
             node_size: scalar or array_like
                 size(s) of the nodes in points^2.
+            edges_cmap: colormap
+                colormap used for representing the strength of the edges.
             edge_kwargs: dict
                 will be passed as kwargs to the plt.plot call that plots each
-                edge one by one
+                edge one by one.
             node_kwargs: dict
                 will be passed as kwargs to the plt.scatter call that plots all
-                the nodes in one go
+                the nodes in one go.
 
         """
+        if edge_kwargs is None:
+            edge_kwargs = {}
+        if node_kwargs is None:
+            node_kwargs = {}
+
+        if 's' in node_kwargs:
+            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
+                             "to specify node sizes")
+        if 'c' in node_kwargs:
+            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
+                             "to specify node colors")
+
+        if node_size is None:
+            node_size = 50
+        if node_color is None:
+            nb_nodes = len(nodes_coords)
+            node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
+        if edges_cmap is None:
+            edges_cmap = cm.bwr
+
+        # For a masked array, masked values are replaced with zeros
+        if hasattr(adjacency_matrix, 'mask'):
+            adjacency_matrix = adjacency_matrix.copy()
+            adjacency_matrix[adjacency_matrix.mask] = 0
+            adjacency_matrix = np.asarray(adjacency_matrix)
+
+        lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
+        non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+
+        line_coords = [nodes_coords[list(index)]
+                       for index in itertools.izip(*non_zero_indices)]
+
+        adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():
-            ax.add_graph(adjacency_matrix, nodes_coords,
-                         node_color, node_size,
-                         node_kwargs, edge_kwargs)
+            ax._add_markers(nodes_coords, node_color, node_size, **node_kwargs)
+            ax._add_lines(line_coords, adjacency_matrix_values, edges_cmap,
+                          **edge_kwargs)
 
         pl.draw_if_interactive()
 
