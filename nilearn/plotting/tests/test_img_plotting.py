@@ -189,17 +189,17 @@ def test_plot_noncurrent_axes():
 def test_plot_connectome():
     import pylab as pl
     pl.switch_backend('template')
-    nodes_color = ['green', 'blue', 'k', 'cyan']
+    node_color = ['green', 'blue', 'k', 'cyan']
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
                                  [-2., 1, 0., 0.],
                                  [0.3, 0., 1., 0.],
                                  [0., 0., 0., 1.]])
-    nodes_coords = np.arange(3 * 4).reshape(4, 3)
+    node_coords = np.arange(3 * 4).reshape(4, 3)
 
-    args = adjacency_matrix, nodes_coords
-    kwargs = dict(edges_threshold=0.38,
+    args = adjacency_matrix, node_coords
+    kwargs = dict(edge_threshold=0.38,
                   title='threshold=0.38',
-                  node_size=10, node_color=nodes_color)
+                  node_size=10, node_color=node_color)
     plot_connectome(*args, **kwargs)
 
     # saving to file
@@ -212,7 +212,7 @@ def test_plot_connectome():
 
     # with node_kwargs and edge_kwargs arguments
     plot_connectome(*args,
-                    edges_threshold='70%',
+                    edge_threshold='70%',
                     title='threshold=70%',
                     node_size=[10, 20, 30, 40],
                     node_color=np.zeros((4, 3)),
@@ -223,7 +223,7 @@ def test_plot_connectome():
 
     # sparse matrix support
     sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
-    plot_connectome(sparse_adjacency_matrix, nodes_coords,
+    plot_connectome(sparse_adjacency_matrix, node_coords,
                     **kwargs)
 
 
@@ -232,13 +232,13 @@ def test_plot_connectome_exceptions():
     pl.switch_backend('template')
     wrong_adjacency_matrix = np.array([[1., 2],
                                        [0.4, 1.]])
-    nodes_coords = np.arange(2 * 3).reshape((2, 3))
+    node_coords = np.arange(2 * 3).reshape((2, 3))
 
     # adjacency_matrix is not symmetric
     assert_raises_regexp(ValueError,
                          'should be symmetric',
                          plot_connectome,
-                         wrong_adjacency_matrix, nodes_coords)
+                         wrong_adjacency_matrix, node_coords)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
@@ -246,42 +246,42 @@ def test_plot_connectome_exceptions():
     assert_raises_regexp(TypeError,
                          'should be either a number or a string',
                          plot_connectome,
-                         adjacency_matrix, nodes_coords,
-                         edges_threshold=object())
+                         adjacency_matrix, node_coords,
+                         edge_threshold=object())
 
-    # wrong shapes for nodes_coords or adjacency_matrix
+    # wrong shapes for node_coords or adjacency_matrix
     assert_raises_regexp(ValueError,
                          r'supposed to have shape \(n, n\).+\(1, 2\)',
                          plot_connectome, adjacency_matrix[:1, :],
-                         nodes_coords)
+                         node_coords)
 
     assert_raises_regexp(ValueError, r'shape \(n, 3\).+\(2,\)',
-                         plot_connectome, adjacency_matrix, nodes_coords[:, 2])
+                         plot_connectome, adjacency_matrix, node_coords[:, 2])
 
     wrong_adjacency_matrix = np.zeros((3, 3))
     assert_raises_regexp(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
                          plot_connectome,
-                         wrong_adjacency_matrix, nodes_coords)
+                         wrong_adjacency_matrix, node_coords)
 
-    # a few not correctly formatted strings for 'edges_threshold'
-    wrong_edges_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
-    for wrong_edges_threshold in wrong_edges_thresholds:
+    # a few not correctly formatted strings for 'edge_threshold'
+    wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
+    for wrong_edge_threshold in wrong_edge_thresholds:
         assert_raises_regexp(ValueError,
                              'should be a number followed by the percent sign',
                              plot_connectome,
-                             adjacency_matrix, nodes_coords,
-                             edges_threshold=wrong_edges_threshold)
+                             adjacency_matrix, node_coords,
+                             edge_threshold=wrong_edge_threshold)
 
     # specifying node sizes via node_kwargs
     assert_raises_regexp(ValueError,
                          "Please use 'node_size' and not 'node_kwargs'",
                          plot_connectome,
-                         adjacency_matrix, nodes_coords,
+                         adjacency_matrix, node_coords,
                          node_kwargs={'s': 50})
 
     # specifying node colors via node_kwargs
     assert_raises_regexp(ValueError,
                          "Please use 'node_color' and not 'node_kwargs'",
                          plot_connectome,
-                         adjacency_matrix, nodes_coords,
+                         adjacency_matrix, node_coords,
                          node_kwargs={'c': 'blue'})

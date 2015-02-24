@@ -742,10 +742,10 @@ def plot_glass_brain(stat_map_img,
     return display
 
 
-def plot_connectome(adjacency_matrix, nodes_coords,
+def plot_connectome(adjacency_matrix, node_coords,
                     node_color=None, node_size=None,
-                    node_kwargs=None, edge_kwargs=None, edges_threshold=None,
-                    edges_cmap=None,
+                    node_kwargs=None, edge_kwargs=None, edge_threshold=None,
+                    edge_cmap=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None,
                     annotate=True, black_bg=False,
@@ -757,22 +757,22 @@ def plot_connectome(adjacency_matrix, nodes_coords,
         adjacency_matrix: numpy array of shape (n, n)
             represents the link strengths of the graph. Assumed to be
             a symmetric matrix.
-        nodes_coords: numpy array of shape (n, 3)
+        node_coords: numpy array of shape (n, 3)
             3d coordinates of the graph nodes in world space.
         node_color: color or sequence of colors
             color(s) of the nodes.
         node_size: scalar or array_like
             size(s) of the nodes in points^2.
-        edges_cmap: colormap
+        edge_cmap: colormap
             colormap used for representing the strength of the edges.
         edge_kwargs: dict
             will be passed as kwargs for each edge matlotlib Line2D.
         node_kwargs: dict
             will be passed as kwargs to the plt.scatter call that plots all
             the nodes in one go
-        edges_threshold: str or number
+        edge_threshold: str or number
             If it is a number only the edges with a value greater than
-            edges_threshold will be shown.
+            edge_threshold will be shown.
             If it is a string it must finish with a percent sign, e.g. "25.3%"
             and only the edges with a abs(value) above the given percentile
             will be shown.
@@ -811,17 +811,17 @@ def plot_connectome(adjacency_matrix, nodes_coords,
         raise ValueError("'adjacency_matrix' is supposed to have shape (n, n)."
                          ' Its shape was {0}'.format(adjacency_matrix_shape))
 
-    nodes_coords_shape = nodes_coords.shape
-    if len(nodes_coords_shape) != 2 or nodes_coords_shape[1] != 3:
-        raise ValueError("'nodes_coords' should be a array with shape (n, 3). "
-                         'Its shape was {0}'.format(nodes_coords_shape))
+    node_coords_shape = node_coords.shape
+    if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
+        raise ValueError("'node_coords' should be a array with shape (n, 3). "
+                         'Its shape was {0}'.format(node_coords_shape))
 
-    if nodes_coords_shape[0] != adjacency_matrix_shape[0]:
+    if node_coords_shape[0] != adjacency_matrix_shape[0]:
         raise ValueError(
             "Shape mismatch between 'adjacency_matrix' "
-            "and 'nodes_coords'"
-            "'adjacency_matrix' shape is {0}, 'nodes_coords' shape is {1}"
-            .format(adjacency_matrix_shape, nodes_coords_shape))
+            "and 'node_coords'"
+            "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
+            .format(adjacency_matrix_shape, node_coords_shape))
 
     if sparse.issparse(adjacency_matrix):
         adjacency_matrix = adjacency_matrix.toarray()
@@ -829,16 +829,16 @@ def plot_connectome(adjacency_matrix, nodes_coords,
     if not np.allclose(adjacency_matrix, adjacency_matrix.T):
         raise ValueError("'adjacency_matrix' should be symmetric")
 
-    if edges_threshold is not None:
-        if isinstance(edges_threshold, basestring):
-            message = ("If 'edges_threshold' is given as a string it "
+    if edge_threshold is not None:
+        if isinstance(edge_threshold, basestring):
+            message = ("If 'edge_threshold' is given as a string it "
                        'should be a number followed by the percent sign, '
                        'e.g. "25.3%"')
-            if not edges_threshold.endswith('%'):
+            if not edge_threshold.endswith('%'):
                 raise ValueError(message)
 
             try:
-                percentile = float(edges_threshold[:-1])
+                percentile = float(edge_threshold[:-1])
             except ValueError as exc:
                 exc.args += (message, )
                 raise
@@ -850,16 +850,16 @@ def plot_connectome(adjacency_matrix, nodes_coords,
                                                           k=-1)
             lower_diagonal_values = adjacency_matrix[lower_diagonal_indices]
             lower_diagonal_abs_values = np.abs(lower_diagonal_values)
-            edges_threshold = fast_abs_percentile(lower_diagonal_abs_values,
+            edge_threshold = fast_abs_percentile(lower_diagonal_abs_values,
                                                   percentile)
 
-        elif not isinstance(edges_threshold, numbers.Real):
-            raise TypeError('edges_threshold should be either a number '
+        elif not isinstance(edge_threshold, numbers.Real):
+            raise TypeError('edge_threshold should be either a number '
                             'or a string finishing with a percent sign')
 
         adjacency_matrix = np.ma.masked_array(
             adjacency_matrix.copy(),
-            np.abs(adjacency_matrix) < edges_threshold)
+            np.abs(adjacency_matrix) < edge_threshold)
 
     display = plot_glass_brain(None,
                                display_mode=display_mode,
@@ -868,9 +868,9 @@ def plot_connectome(adjacency_matrix, nodes_coords,
                                black_bg=black_bg,
                                **kwargs)
 
-    display.add_graph(adjacency_matrix, nodes_coords,
+    display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
-                      edges_cmap=edges_cmap,
+                      edge_cmap=edge_cmap,
                       edge_kwargs=edge_kwargs, node_kwargs=node_kwargs)
 
     if output_file is not None:

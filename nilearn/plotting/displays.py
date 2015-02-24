@@ -1021,9 +1021,9 @@ class OrthoProjector(OrthoSlicer):
         # the cuts since we are taking the max along one axis
         pass
 
-    def add_graph(self, adjacency_matrix, nodes_coords,
+    def add_graph(self, adjacency_matrix, node_coords,
                   node_color=None, node_size=None,
-                  edges_cmap=None,
+                  edge_cmap=None,
                   edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph on each of the axes
 
@@ -1032,13 +1032,13 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix: numpy array of shape (n, n)
                 represents the edges strengths of the graph. Assumed to be
                 a symmetric matrix.
-            nodes_coords: numpy array of shape (n, 3)
+            node_coords: numpy array of shape (n, 3)
                 3d coordinates of the graph nodes in world space.
             node_color: color or sequence of colors
                 color(s) of the nodes.
             node_size: scalar or array_like
                 size(s) of the nodes in points^2.
-            edges_cmap: colormap
+            edge_cmap: colormap
                 colormap used for representing the strength of the edges.
             edge_kwargs: dict
                 will be passed as kwargs to the plt.plot call that plots each
@@ -1063,10 +1063,10 @@ class OrthoProjector(OrthoSlicer):
         if node_size is None:
             node_size = 50
         if node_color is None:
-            nb_nodes = len(nodes_coords)
+            nb_nodes = len(node_coords)
             node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
-        if edges_cmap is None:
-            edges_cmap = cm.bwr
+        if edge_cmap is None:
+            edge_cmap = cm.bwr
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
@@ -1077,13 +1077,13 @@ class OrthoProjector(OrthoSlicer):
         lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
         non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
 
-        line_coords = [nodes_coords[list(index)]
+        line_coords = [node_coords[list(index)]
                        for index in itertools.izip(*non_zero_indices)]
 
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():
-            ax._add_markers(nodes_coords, node_color, node_size, **node_kwargs)
-            ax._add_lines(line_coords, adjacency_matrix_values, edges_cmap,
+            ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
+            ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                           **edge_kwargs)
 
         pl.draw_if_interactive()

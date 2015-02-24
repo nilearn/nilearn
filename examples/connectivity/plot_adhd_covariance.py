@@ -106,7 +106,7 @@ title = "Subject {0:d} GroupSparseCovariance $\\alpha={1:.2e}$".format(
     plotted_subject, gsc.alpha_)
 
 plotting.plot_connectome(gsc.covariances_[..., plotted_subject],
-                         atlas_region_coords, edges_threshold='80%',
+                         atlas_region_coords, edge_threshold='80%',
                          title=title)
 plot_matrices(gsc.covariances_[..., plotted_subject],
               gsc.precisions_[..., plotted_subject], title)
@@ -115,7 +115,7 @@ title = "Subject {0:d} GraphLasso $\\alpha={1:.2e}$".format(
     plotted_subject, gl.alpha_)
 
 plotting.plot_connectome(gl.covariance_, atlas_region_coords,
-                         edges_threshold='80%', title=title)
+                         edge_threshold='80%', title=title)
 plot_matrices(gl.covariance_, gl.precision_, title)
 
 plt.show()
