@@ -625,7 +625,7 @@ def _unmask_3d(X, mask, order="C"):
     Parameters
     ==========
     X: numpy.ndarray
-        Masked data. shape: (samples,)
+        Masked data. shape: (features,)
 
     mask: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
@@ -644,8 +644,8 @@ def _unmask_3d(X, mask, order="C"):
     return data
 
 
-def _unmask_nd(X, mask, order="C"):
-    """Take masked data and bring them back to n-dimension
+def _unmask_4d(X, mask, order="C"):
+    """Take masked data and bring them back to 4D.
 
     Parameters
     ==========
@@ -653,7 +653,7 @@ def _unmask_nd(X, mask, order="C"):
         Masked data. shape: (samples, features)
 
     mask: numpy.ndarray
-        Mask. mask.ndim must be equal to 3, and dtype equal to bool.
+        Mask. mask.ndim must be equal to 4, and dtype *must* be bool.
 
     Returns
     =======
@@ -710,7 +710,7 @@ def unmask(X, mask_img, order="F"):
     mask, affine = _load_mask_img(mask_img)
 
     if X.ndim == 2:
-        unmasked = _unmask_nd(X, mask, order=order)
+        unmasked = _unmask_4d(X, mask, order=order)
     elif X.ndim == 1:
         unmasked = _unmask_3d(X, mask, order=order)
     else:

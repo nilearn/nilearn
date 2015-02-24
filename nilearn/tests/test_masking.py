@@ -355,5 +355,3 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     X = rng.randn(n_samples, n_features)
     # 2D X (should be ok)
     unmask(X, mask_img)
-
-
