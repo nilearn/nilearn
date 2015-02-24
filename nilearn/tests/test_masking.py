@@ -231,8 +231,8 @@ def test_unmask():
         assert_raises(ValueError, unmask, [dummy], mask_img)
 
     # Transposed vector (succeeds)
-    out = unmask(np.ones((np.sum(mask), 1)), mask_img)
-    assert_equal(out.shape, mask.shape + (1,))
+    transposed_vector = np.ones((np.sum(mask), 1))
+    assert_raises(TypeError, unmask, transposed_vector, mask_img)
 
 
 def test_intersect_masks():

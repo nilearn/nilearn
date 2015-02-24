@@ -667,13 +667,8 @@ def _unmask_nd(X, mask, order="C"):
     if X.ndim != 2:
         raise TypeError("X must be a 2-dimensional array")
     n_features = mask.sum()
-    if X.shape[-1] != n_features:
-        # Handle (potential) transpose as a special case, as this
-        #   mistake can lead to system-fatal memory allocation below.
-        if X.shape[0] == n_features:
-            X = X.T
-        else:
-            raise TypeError('X must be of shape (samples, %d).' % n_features)
+    if X.shape[1] != n_features:
+        raise TypeError('X must be of shape (samples, %d).' % n_features)
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
