@@ -99,8 +99,7 @@ gl.fit(subjects[plotted_subject])
 # Displaying results ##########################################################
 print("-- Displaying results")
 atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
-atlas_region_coords = np.array(
-    [plotting.find_xyz_cut_coords(img) for img in atlas_imgs])
+atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
 
 title = "Subject {0:d} GroupSparseCovariance $\\alpha={1:.2e}$".format(
     plotted_subject, gsc.alpha_)
