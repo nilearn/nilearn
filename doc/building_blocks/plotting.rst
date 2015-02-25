@@ -24,7 +24,7 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_connectome| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_1.png
+.. |plot_connectome| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_5.png
      :target: ../auto_examples/connectivity/plot_adhd_covariance.html
      :scale: 50
 
