@@ -338,7 +338,9 @@ class BaseSlicer(object):
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
         self._colorbar_margin = dict(left=0.25 * bb.width,
-                                     right=0.02 * bb.width)
+                                     right=0.02 * bb.width,
+                                     top=0.05 * bb.height,
+                                     bottom=0.05 * bb.height)
         self._init_axes(**kwargs)
 
     @staticmethod
@@ -561,17 +563,16 @@ class BaseSlicer(object):
 
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
-        x0, y0, x1, y1 = self.rect
-        y_width = y1 - y0
-
-        y_margin = 0.05 * y_width / 2.
+        _, y0, x1, y1 = self.rect
+        height = y1 - y0
         x_adjusted_width = self._colorbar_width / len(self.axes)
         x_adjusted_margin = self._colorbar_margin['right'] / len(self.axes)
-        self._colorbar_ax = figure.add_axes([
-            x1 - (x_adjusted_width + x_adjusted_margin),
-            y0 + y_margin,
-            x_adjusted_width,
-            y_width - 2 * y_margin], axis_bgcolor='w')
+        lt_wid_top_ht = [x1 - (x_adjusted_width + x_adjusted_margin),
+                         y0 + self._colorbar_margin['top'],
+                         x_adjusted_width,
+                         height - (self._colorbar_margin['top'] +
+                                   self._colorbar_margin['bottom'])]
+        self._colorbar_ax = figure.add_axes(lt_wid_top_ht, axis_bgcolor='w')
 
         our_cmap = im.cmap
         # edge case where the data has a single value
