@@ -308,9 +308,6 @@ class BaseSlicer(object):
     """
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
-    _colorbar = False
-    # pseudo absolute value
-    _colorbar_width = 0.06
     _colorbar_labels_margin = 2.8
     _axes_class = CutAxes
 
@@ -339,6 +336,8 @@ class BaseSlicer(object):
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._black_bg = black_bg
+        self._colorbar = False
+        self._colorbar_width = 0.06 * bb.width / 2
         self._init_axes(**kwargs)
 
     @staticmethod
@@ -560,18 +559,19 @@ class BaseSlicer(object):
             offset = im.norm.vmax
 
         # create new  axis for the colorbar
-        x_adjusted_width = self._colorbar_width / len(self.axes)
-        x_adjusted_right_margin = 0.01 / len(self.axes)
         figure = self.frame_axes.figure
-        _, y0, x1, y1 = self.rect
+        x0, y0, x1, y1 = self.rect
         y_width = y1 - y0
-        y_margin = 0.05 * y_width
+        x_width = x1 - x0  # between 0 and 1
 
+        y_margin = 0.05 * y_width / 2.
+        x_adjusted_width = self._colorbar_width / len(self.axes)
+        x_adjusted_right_margin = -self._colorbar_width / len(self.axes)
         self._colorbar_ax = figure.add_axes([
             x1 - (x_adjusted_width + x_adjusted_right_margin),
             y0 + y_margin,
-            x_adjusted_width - x_adjusted_right_margin,
-            y_width - 2 * y_margin])
+            x_adjusted_width,
+            y_width - 2 * y_margin], axis_bgcolor='w')
 
         our_cmap = im.cmap
         # edge case where the data has a single value
