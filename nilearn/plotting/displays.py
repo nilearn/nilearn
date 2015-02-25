@@ -337,7 +337,8 @@ class BaseSlicer(object):
         self._black_bg = black_bg
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
-        self._colorbar_labels_margin = 0.2 * bb.width
+        self._colorbar_margin = dict(left=0.25 * bb.width,
+                                     right=0.02 * bb.width)
         self._init_axes(**kwargs)
 
     @staticmethod
@@ -562,13 +563,12 @@ class BaseSlicer(object):
         figure = self.frame_axes.figure
         x0, y0, x1, y1 = self.rect
         y_width = y1 - y0
-        x_width = x1 - x0  # between 0 and 1
 
         y_margin = 0.05 * y_width / 2.
         x_adjusted_width = self._colorbar_width / len(self.axes)
-        x_adjusted_right_margin = self._colorbar_width / len(self.axes)
+        x_adjusted_margin = self._colorbar_margin['right'] / len(self.axes)
         self._colorbar_ax = figure.add_axes([
-            x1 - (x_adjusted_width + x_adjusted_right_margin),
+            x1 - (x_adjusted_width + x_adjusted_margin),
             y0 + y_margin,
             x_adjusted_width,
             y_width - 2 * y_margin], axis_bgcolor='w')
@@ -777,8 +777,8 @@ class OrthoSlicer(BaseSlicer):
 
         if self._colorbar:
             adjusted_width = self._colorbar_width / len(self.axes)
-            right_margin = self._colorbar_width / len(self.axes)
-            ticks_margin = self._colorbar_labels_margin / len(self.axes)
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
             x1 = x1 - (adjusted_width + ticks_margin + right_margin)
 
         for display_ax in display_ax_dict.values():
@@ -937,8 +937,8 @@ class BaseStackedSlicer(BaseSlicer):
 
         if self._colorbar:
             adjusted_width = self._colorbar_width/len(self.axes)
-            right_margin = self._colorbar_width / len(self.axes)
-            ticks_margin = adjusted_width * self._colorbar_labels_margin
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
             x1 = x1 - (adjusted_width + right_margin + ticks_margin)
 
         for display_ax in display_ax_dict.values():
