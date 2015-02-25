@@ -1129,9 +1129,8 @@ class OrthoProjector(OrthoSlicer):
                                                               k=-1)
                 lower_diagonal_values = adjacency_matrix[
                     lower_diagonal_indices]
-                lower_diagonal_abs_values = np.abs(lower_diagonal_values)
                 edge_threshold = fast_abs_percentile(
-                    lower_diagonal_abs_values, percentile)
+                    lower_diagonal_values, percentile)
 
             elif not isinstance(edge_threshold, numbers.Real):
                 raise TypeError('edge_threshold should be either a number '
