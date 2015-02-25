@@ -308,7 +308,6 @@ class BaseSlicer(object):
     """
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
-    _colorbar_labels_margin = 2.8
     _axes_class = CutAxes
 
     def __init__(self, cut_coords, axes=None, black_bg=False, **kwargs):
@@ -337,7 +336,8 @@ class BaseSlicer(object):
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._black_bg = black_bg
         self._colorbar = False
-        self._colorbar_width = 0.06 * bb.width / 2
+        self._colorbar_width = 0.05 * bb.width
+        self._colorbar_labels_margin = 0.2 * bb.width
         self._init_axes(**kwargs)
 
     @staticmethod
@@ -566,7 +566,7 @@ class BaseSlicer(object):
 
         y_margin = 0.05 * y_width / 2.
         x_adjusted_width = self._colorbar_width / len(self.axes)
-        x_adjusted_right_margin = -self._colorbar_width / len(self.axes)
+        x_adjusted_right_margin = self._colorbar_width / len(self.axes)
         self._colorbar_ax = figure.add_axes([
             x1 - (x_adjusted_width + x_adjusted_right_margin),
             y0 + y_margin,
@@ -776,8 +776,9 @@ class OrthoSlicer(BaseSlicer):
 
         if self._colorbar:
             adjusted_width = self._colorbar_width / len(self.axes)
-            ticks_margin = adjusted_width * self._colorbar_labels_margin
-            x1 = x1 - (adjusted_width + ticks_margin)
+            right_margin = self._colorbar_width / len(self.axes)
+            ticks_margin = self._colorbar_labels_margin / len(self.axes)
+            x1 = x1 - (adjusted_width + ticks_margin + right_margin)
 
         for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
@@ -789,9 +790,10 @@ class OrthoSlicer(BaseSlicer):
                 bounds = [0, 1, 0, 1]
             xmin, xmax, ymin, ymax = bounds
             width_dict[display_ax.ax] = (xmax - xmin)
+
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
-            width_dict[ax] = width/total_width*(x1 -x0)
+            width_dict[ax] = width / total_width * (x1 - x0)
         x_ax = display_ax_dict.get('x', dummy_ax)
         y_ax = display_ax_dict.get('y', dummy_ax)
         z_ax = display_ax_dict.get('z', dummy_ax)
@@ -799,6 +801,7 @@ class OrthoSlicer(BaseSlicer):
         left_dict[y_ax.ax] = x0
         left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
         left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
+
         return transforms.Bbox([[left_dict[axes], y0],
                           [left_dict[axes] + width_dict[axes], y1]])
 
@@ -933,8 +936,9 @@ class BaseStackedSlicer(BaseSlicer):
 
         if self._colorbar:
             adjusted_width = self._colorbar_width/len(self.axes)
-            ticks_margin = adjusted_width*self._colorbar_labels_margin
-            x1 = x1 - (adjusted_width+ticks_margin)
+            right_margin = self._colorbar_width / len(self.axes)
+            ticks_margin = adjusted_width * self._colorbar_labels_margin
+            x1 = x1 - (adjusted_width + right_margin + ticks_margin)
 
         for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
@@ -948,7 +952,7 @@ class BaseStackedSlicer(BaseSlicer):
             width_dict[display_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
-            width_dict[ax] = width/total_width*(x1 -x0)
+            width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = dict()
         left = float(x0)
         for coord, display_ax in sorted(display_ax_dict.items()):
