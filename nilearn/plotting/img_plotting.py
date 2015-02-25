@@ -747,7 +747,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None,
                     annotate=True, black_bg=False,
-                    alpha=0.7, **kwargs):
+                    alpha=0.7):
     """Plot connectome on top of the brain glass schematics.
 
         Parameters
@@ -807,8 +807,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                                display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate,
-                               black_bg=black_bg,
-                               **kwargs)
+                               black_bg=black_bg)
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
