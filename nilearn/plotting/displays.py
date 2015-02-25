@@ -1101,7 +1101,7 @@ class OrthoProjector(OrthoSlicer):
         if sparse.issparse(adjacency_matrix):
             adjacency_matrix = adjacency_matrix.toarray()
 
-        if not np.allclose(adjacency_matrix, adjacency_matrix.T):
+        if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             raise ValueError("'adjacency_matrix' should be symmetric")
 
         # For a masked array, masked values are replaced with zeros

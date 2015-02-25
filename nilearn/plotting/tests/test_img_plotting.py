@@ -190,8 +190,9 @@ def test_plot_connectome():
     import pylab as pl
     pl.switch_backend('template')
     node_color = ['green', 'blue', 'k', 'cyan']
+    # symmetric up to 1e-3 relative tolerance
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
-                                 [-2., 1, 0., 0.],
+                                 [-2.002, 1, 0., 0.],
                                  [0.3, 0., 1., 0.],
                                  [0., 0., 0., 1.]])
     node_coords = np.arange(3 * 4).reshape(4, 3)
