@@ -259,7 +259,7 @@ def test_plot_connectome_exceptions():
                          plot_connectome, adjacency_matrix[:1, :],
                          node_coords)
 
-    assert_raises_regexp(ValueError, r'shape \(n, 3\).+\(2,\)',
+    assert_raises_regexp(ValueError, r'shape \(2, 3\).+\(2,\)',
                          plot_connectome, adjacency_matrix, node_coords[:, 2])
 
     wrong_adjacency_matrix = np.zeros((3, 3))
