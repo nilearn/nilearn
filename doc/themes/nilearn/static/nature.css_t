@@ -1405,6 +1405,7 @@ div.body .jcarousel li {
 div.body div.jcarousel img {
     max-width: 420px;
     max-height: 250px;
+    vertical-align: middle;
 }
 
 
