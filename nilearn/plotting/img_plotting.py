@@ -743,11 +743,11 @@ def plot_glass_brain(stat_map_img,
 def plot_connectome(adjacency_matrix, node_coords,
                     node_color='auto', node_size=50,
                     edge_cmap=cm.bwr, edge_threshold=None,
-                    edge_kwargs=None, node_kwargs=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None,
                     annotate=True, black_bg=False,
-                    alpha=0.7):
+                    alpha=0.7,
+                    edge_kwargs=None, node_kwargs=None):
     """Plot connectome on top of the brain glass schematics.
 
         Parameters
@@ -769,11 +769,6 @@ def plot_connectome(adjacency_matrix, node_coords,
             If it is a string it must finish with a percent sign,
             e.g. "25.3%", and only the edges with a abs(value) above
             the given percentile will be shown.
-        edge_kwargs: dict
-            will be passed as kwargs for each edge matlotlib Line2D.
-        node_kwargs: dict
-            will be passed as kwargs to the plt.scatter call that plots all
-            the nodes in one go
         output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
@@ -801,6 +796,11 @@ def plot_connectome(adjacency_matrix, node_coords,
             savefig.
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics.
+        edge_kwargs: dict
+            will be passed as kwargs for each edge matlotlib Line2D.
+        node_kwargs: dict
+            will be passed as kwargs to the plt.scatter call that plots all
+            the nodes in one go
 
     """
     display = plot_glass_brain(None,
