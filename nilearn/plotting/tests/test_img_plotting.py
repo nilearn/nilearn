@@ -226,6 +226,12 @@ def test_plot_connectome():
                     edge_kwargs={
                         'linewidth': 4})
 
+    # masked array support
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, np.abs(adjacency_matrix) < 0.5)
+    plot_connectome(masked_adjacency_matrix, node_coords,
+                    **kwargs)
+
     # sparse matrix support
     sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
     plot_connectome(sparse_adjacency_matrix, node_coords,
@@ -235,18 +241,27 @@ def test_plot_connectome():
 def test_plot_connectome_exceptions():
     import pylab as pl
     pl.switch_backend('template')
-    wrong_adjacency_matrix = np.array([[1., 2],
-                                       [0.4, 1.]])
     node_coords = np.arange(2 * 3).reshape((2, 3))
 
     # adjacency_matrix is not symmetric
+    non_symmetric_adjacency_matrix = np.array([[1., 2],
+                                               [0.4, 1.]])
     assert_raises_regexp(ValueError,
                          'should be symmetric',
                          plot_connectome,
-                         wrong_adjacency_matrix, node_coords)
+                         non_symmetric_adjacency_matrix, node_coords)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
+    # adjacency_matrix mask is not symmetric
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, [[False, True], [False, False]])
+
+    assert_raises_regexp(ValueError,
+                         'non symmetric mask',
+                         plot_connectome,
+                         masked_adjacency_matrix, node_coords)
+
     # edges threshold is neither a number nor a string
     assert_raises_regexp(TypeError,
                          'should be either a number or a string',

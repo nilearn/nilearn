@@ -1106,6 +1106,9 @@ class OrthoProjector(OrthoSlicer):
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
+            if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
+                raise ValueError(
+                    "'adjacency_matrix' was masked with a non symmetric mask")
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
