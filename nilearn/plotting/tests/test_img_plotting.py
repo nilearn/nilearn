@@ -247,7 +247,7 @@ def test_plot_connectome_exceptions():
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
-    # edges threshold is neither a number or a string
+    # edges threshold is neither a number nor a string
     assert_raises_regexp(TypeError,
                          'should be either a number or a string',
                          plot_connectome,
