@@ -10,7 +10,7 @@ for more details.
 
 Contributors (from ``git shortlog -ns 0.1..0.1.1``)::
 
-    78  Loïc Estève
+    79  Loïc Estève
     18  Alexandre Abraham
     18  Danilo Bzdok
     14  Ben Cipollini
