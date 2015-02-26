@@ -41,7 +41,7 @@ Why is machine learning relevant to NeuroImaging: a few examples
     learning <Supervised_learning>` e.g. `[Mourao-Miranda 2012]
     <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
 
-:Generalization scores:
+:Measuring generalization scores:
 
     * **Information mapping**: using the prediction accuracy of a classifier
       to test links between brain images and stimuli. (e.g.
@@ -54,11 +54,11 @@ Why is machine learning relevant to NeuroImaging: a few examples
       `[Knops 2009]
       <http://www.sciencemag.org/content/324/5934/1583.short>`_)
 
-:Statistical estimation:
+:High-dimensional multivariate statistics:
 
     From a statistical point of view, machine learning implements
     statistical estimation of models with a large number of parameters.
-    The tricks pulled in machine learning (e.g. regularization) can
+    Tricks pulled in machine learning (e.g. regularization) can
     make this estimation possible with a small number of observations
     `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
     usage of machine learning requires some understanding of the models.
@@ -106,6 +106,7 @@ Glossary: machine learning vocabulary
     In neuroimaging, it is typically used to study resting state, or to
     find sub-populations in diseases.
 
+|
 
 .. _installation:
 
@@ -155,6 +156,8 @@ a command prompt::
 
    Note that this is a "shell" command, that you need to type in a
    command prompt, and not a Python command.
+
+|
 
 .. _testing_installation:
 
