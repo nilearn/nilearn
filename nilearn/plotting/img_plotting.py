@@ -738,3 +738,85 @@ def plot_glass_brain(stat_map_img,
                                 **kwargs)
 
     return display
+
+
+def plot_connectome(adjacency_matrix, node_coords,
+                    node_color='auto', node_size=50,
+                    edge_cmap=cm.bwr, edge_threshold=None,
+                    output_file=None, display_mode='ortho',
+                    figure=None, axes=None, title=None,
+                    annotate=True, black_bg=False,
+                    alpha=0.7,
+                    edge_kwargs=None, node_kwargs=None):
+    """Plot connectome on top of the brain glass schematics.
+
+        Parameters
+        ----------
+        adjacency_matrix: numpy array of shape (n, n)
+            represents the link strengths of the graph. Assumed to be
+            a symmetric matrix.
+        node_coords: numpy array_like of shape (n, 3)
+            3d coordinates of the graph nodes in world space.
+        node_color: color or sequence of colors
+            color(s) of the nodes.
+        node_size: scalar or array_like
+            size(s) of the nodes in points^2.
+        edge_cmap: colormap
+            colormap used for representing the strength of the edges.
+        edge_threshold: str or number
+            If it is a number only the edges with a value greater than
+            edge_threshold will be shown.
+            If it is a string it must finish with a percent sign,
+            e.g. "25.3%", and only the edges with a abs(value) above
+            the given percentile will be shown.
+        output_file : string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode : {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you wish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        alpha: float between 0 and 1
+            Alpha transparency for the brain schematics.
+        edge_kwargs: dict
+            will be passed as kwargs for each edge matlotlib Line2D.
+        node_kwargs: dict
+            will be passed as kwargs to the plt.scatter call that plots all
+            the nodes in one go
+
+    """
+    display = plot_glass_brain(None,
+                               display_mode=display_mode,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate,
+                               black_bg=black_bg)
+
+    display.add_graph(adjacency_matrix, node_coords,
+                      node_color=node_color, node_size=node_size,
+                      edge_cmap=edge_cmap, edge_threshold=edge_threshold,
+                      edge_kwargs=edge_kwargs, node_kwargs=node_kwargs)
+
+    if output_file is not None:
+        display.savefig(output_file)
+        display.close()
+        display = None
+
+    return display

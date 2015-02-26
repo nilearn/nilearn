@@ -1,9 +1,13 @@
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import numpy as np
 import tempfile
+import os
 from functools import partial
+
+import numpy as np
+from scipy import sparse
+
 from nose import SkipTest
 from nose.tools import assert_raises, assert_true, assert_equal
 
@@ -19,9 +23,11 @@ except ImportError:
 import nibabel
 
 from nilearn.image.resampling import coord_transform
+
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
-                                           plot_glass_brain)
+                                           plot_glass_brain, plot_connectome)
+from nilearn._utils.testing import assert_raises_regexp
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                        [   0.,    2.,    0., -126.],
@@ -178,3 +184,124 @@ def test_plot_noncurrent_axes():
     for ax_name, niax in slicer.axes.items():
         ax_fh = niax.ax.get_figure()
         assert_equal(ax_fh, fh1, 'New axis %s should be in fh1.' % ax_name)
+
+
+def test_plot_connectome():
+    import pylab as pl
+    pl.switch_backend('template')
+    node_color = ['green', 'blue', 'k', 'cyan']
+    # symmetric up to 1e-3 relative tolerance
+    adjacency_matrix = np.array([[1., -2., 0.3, 0.],
+                                 [-2.002, 1, 0., 0.],
+                                 [0.3, 0., 1., 0.],
+                                 [0., 0., 0., 1.]])
+    node_coords = np.arange(3 * 4).reshape(4, 3)
+
+    args = adjacency_matrix, node_coords
+    kwargs = dict(edge_threshold=0.38,
+                  title='threshold=0.38',
+                  node_size=10, node_color=node_color)
+    plot_connectome(*args, **kwargs)
+
+    # node_coords not an array but a list of tuples
+    plot_connectome(adjacency_matrix,
+                    map(tuple, node_coords.tolist()),
+                    **kwargs)
+    # saving to file
+    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
+        display = plot_connectome(*args, output_file=fp.name,
+                                  **kwargs)
+        assert_true(display is None)
+        assert_true(os.path.isfile(fp.name) and
+                    os.path.getsize(fp.name) > 0)
+
+    # with node_kwargs, edge_kwargs and edge_cmap arguments
+    plot_connectome(*args,
+                    edge_threshold='70%',
+                    node_size=[10, 20, 30, 40],
+                    node_color=np.zeros((4, 3)),
+                    edge_cmap='RdBu',
+                    node_kwargs={
+                        'marker': 'v'},
+                    edge_kwargs={
+                        'linewidth': 4})
+
+    # masked array support
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, np.abs(adjacency_matrix) < 0.5)
+    plot_connectome(masked_adjacency_matrix, node_coords,
+                    **kwargs)
+
+    # sparse matrix support
+    sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
+    plot_connectome(sparse_adjacency_matrix, node_coords,
+                    **kwargs)
+
+
+def test_plot_connectome_exceptions():
+    import pylab as pl
+    pl.switch_backend('template')
+    node_coords = np.arange(2 * 3).reshape((2, 3))
+
+    # adjacency_matrix is not symmetric
+    non_symmetric_adjacency_matrix = np.array([[1., 2],
+                                               [0.4, 1.]])
+    assert_raises_regexp(ValueError,
+                         'should be symmetric',
+                         plot_connectome,
+                         non_symmetric_adjacency_matrix, node_coords)
+
+    adjacency_matrix = np.array([[1., 2.],
+                                 [2., 1.]])
+    # adjacency_matrix mask is not symmetric
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, [[False, True], [False, False]])
+
+    assert_raises_regexp(ValueError,
+                         'non symmetric mask',
+                         plot_connectome,
+                         masked_adjacency_matrix, node_coords)
+
+    # edges threshold is neither a number nor a string
+    assert_raises_regexp(TypeError,
+                         'should be either a number or a string',
+                         plot_connectome,
+                         adjacency_matrix, node_coords,
+                         edge_threshold=object())
+
+    # wrong shapes for node_coords or adjacency_matrix
+    assert_raises_regexp(ValueError,
+                         r'supposed to have shape \(n, n\).+\(1, 2\)',
+                         plot_connectome, adjacency_matrix[:1, :],
+                         node_coords)
+
+    assert_raises_regexp(ValueError, r'shape \(2, 3\).+\(2,\)',
+                         plot_connectome, adjacency_matrix, node_coords[:, 2])
+
+    wrong_adjacency_matrix = np.zeros((3, 3))
+    assert_raises_regexp(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
+                         plot_connectome,
+                         wrong_adjacency_matrix, node_coords)
+
+    # a few not correctly formatted strings for 'edge_threshold'
+    wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
+    for wrong_edge_threshold in wrong_edge_thresholds:
+        assert_raises_regexp(ValueError,
+                             'should be a number followed by the percent sign',
+                             plot_connectome,
+                             adjacency_matrix, node_coords,
+                             edge_threshold=wrong_edge_threshold)
+
+    # specifying node sizes via node_kwargs
+    assert_raises_regexp(ValueError,
+                         "Please use 'node_size' and not 'node_kwargs'",
+                         plot_connectome,
+                         adjacency_matrix, node_coords,
+                         node_kwargs={'s': 50})
+
+    # specifying node colors via node_kwargs
+    assert_raises_regexp(ValueError,
+                         "Please use 'node_color' and not 'node_kwargs'",
+                         plot_connectome,
+                         adjacency_matrix, node_coords,
+                         node_kwargs={'c': 'blue'})

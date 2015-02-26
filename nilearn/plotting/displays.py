@@ -6,17 +6,23 @@ the data with different layout of cuts.
 """
 
 import operator
+import itertools
+import numbers
 
 import numpy as np
+from scipy import sparse
 
 import nibabel
 from .._utils.testing import skip_if_running_nose
 from .. import _utils
+from .._utils.extmath import fast_abs_percentile
 
 try:
     import pylab as pl
     from matplotlib import transforms, colors
     from matplotlib.colorbar import ColorbarBase
+    from matplotlib import cm as mpl_cm
+    from matplotlib import lines
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
@@ -24,10 +30,10 @@ except ImportError:
 # Local imports
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
-from ..image.resampling import get_bounds, reorder_img, coord_transform,\
-            get_mask_bounds
+from ..image.resampling import (get_bounds, reorder_img, coord_transform,
+                                get_mask_bounds)
 
-from . import glass_brain
+from . import glass_brain, cm
 
 ################################################################################
 # class BaseAxes
@@ -184,6 +190,23 @@ class CutAxes(BaseAxes):
                 **kwargs)
 
 
+def _coords_3d_to_2d(coords_3d, direction):
+    """Project 3d coordinates into 2d ones given the direction of a cut
+    """
+    direction_to_index = {'x': [1, 2],
+                          'y': [0, 2],
+                          'z': [0, 1]}
+    index = direction_to_index.get(direction)
+
+    if index is None:
+        message = (
+            '{0} is not a valid direction. '
+            "Allowed values are 'x', 'y' and 'z'").format(direction)
+        raise ValueError(message)
+
+    return coords_3d[:, index]
+
+
 class GlassBrainAxes(BaseAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
     volumes with a schematic view of the brain.
@@ -217,6 +240,61 @@ class GlassBrainAxes(BaseAxes):
         # It does not make sense to draw crosses for the position of
         # the cuts since we are taking the max along one axis
         pass
+
+    def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
+        """Plot markers"""
+        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
+
+        xdata, ydata = marker_coords_2d.T
+
+        defaults = {'marker': 'o',
+                    'zorder': 1000}
+        for k, v in defaults.items():
+            kwargs.setdefault(k, v)
+
+        self.ax.scatter(xdata, ydata, s=marker_size,
+                        c=marker_color, **kwargs)
+
+    def _add_lines(self, line_coords, line_values, cmap, **kwargs):
+        """Plot lines
+
+            Parameters
+            ----------
+            line_coords: list of numpy arrays of shape (2, 3)
+                3d coordinates of lines start points and end points.
+            line_values: array_like
+                values of the lines.
+            cmap: colormap
+                colormap used to map line_values to a color.
+            kwargs: dict
+                additional arguments to pass to matplotlib Line2D.
+        """
+        abs_line_values_max = np.abs(line_values).max()
+        norm = colors.Normalize(vmin=-abs_line_values_max,
+                                vmax=abs_line_values_max)
+        abs_norm = colors.Normalize(vmin=0,
+                                    vmax=abs_line_values_max)
+        value_to_color = pl.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+
+        for start_end_point_3d, line_value in itertools.izip(
+                line_coords, line_values):
+            start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
+                                                  self.direction)
+
+            color = value_to_color(line_value)
+            abs_line_value = abs(line_value)
+            linewidth = 1 + 2 * abs_norm(abs_line_value)
+            # Hacky way to put the strongest connections on top of the weakest
+            # note sign does not matter hence using 'abs'
+            zorder = 10 + 10 * abs_norm(abs_line_value)
+            this_kwargs = {'color': color, 'linewidth': linewidth,
+                           'zorder': zorder}
+            # kwargs should have priority over this_kwargs so that the
+            # user can override the default logic
+            this_kwargs.update(kwargs)
+            xdata, ydata = start_end_point_2d.T
+            line = lines.Line2D(xdata, ydata, **this_kwargs)
+            self.ax.add_line(line)
 
 
 ################################################################################
@@ -663,7 +741,7 @@ class OrthoSlicer(BaseSlicer):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes([0.3*index*(x1 - x0) + x0, y0,
                               .3*(x1 - x0), y1 - y0],
-                             axisbg=axisbg)
+                             axisbg=axisbg, aspect='equal')
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
@@ -673,8 +751,8 @@ class OrthoSlicer(BaseSlicer):
         if self._black_bg:
             for ax in self.axes.values():
                 ax.ax.imshow(np.zeros((2, 2, 3)),
-                            extent=[-5000, 5000, -5000, 5000],
-                            zorder=-500, aspect='auto')
+                             extent=[-5000, 5000, -5000, 5000],
+                             zorder=-500, aspect='equal')
 
             # To have a black background in PDF, we need to create a
             # patch in black for the background
@@ -834,7 +912,7 @@ class BaseStackedSlicer(BaseSlicer):
             for ax in self.axes.values():
                 ax.ax.imshow(np.zeros((2, 2, 3)),
                              extent=[-5000, 5000, -5000, 5000],
-                             zorder=-500, aspect='auto')
+                             zorder=-500, aspect='equal')
 
             # To have a black background in PDF, we need to create a
             # patch in black for the background
@@ -945,6 +1023,139 @@ class OrthoProjector(OrthoSlicer):
         # It does not make sense to draw crosses for the position of
         # the cuts since we are taking the max along one axis
         pass
+
+    def add_graph(self, adjacency_matrix, node_coords,
+                  node_color='auto', node_size=50,
+                  edge_cmap=cm.bwr, edge_threshold=None,
+                  edge_kwargs=None, node_kwargs=None):
+        """Plot undirected graph on each of the axes
+
+            Parameters
+            ----------
+            adjacency_matrix: numpy array of shape (n, n)
+                represents the edges strengths of the graph. Assumed to be
+                a symmetric matrix.
+            node_coords: numpy array_like of shape (n, 3)
+                3d coordinates of the graph nodes in world space.
+            node_color: color or sequence of colors
+                color(s) of the nodes.
+            node_size: scalar or array_like
+                size(s) of the nodes in points^2.
+            edge_cmap: colormap
+                colormap used for representing the strength of the edges.
+            edge_threshold: str or number
+                If it is a number only the edges with a value greater than
+                edge_threshold will be shown.
+                If it is a string it must finish with a percent sign,
+                e.g. "25.3%", and only the edges with a abs(value) above
+                the given percentile will be shown.
+            edge_kwargs: dict
+                will be passed as kwargs for each edge matlotlib Line2D.
+            node_kwargs: dict
+                will be passed as kwargs to the plt.scatter call that plots all
+                the nodes in one go.
+
+        """
+        # set defaults
+        if edge_kwargs is None:
+            edge_kwargs = {}
+        if node_kwargs is None:
+            node_kwargs = {}
+        if node_color == 'auto':
+            nb_nodes = len(node_coords)
+            node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
+
+        node_coords = np.asarray(node_coords)
+
+        # safety checks
+        if 's' in node_kwargs:
+            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
+                             "to specify node sizes")
+        if 'c' in node_kwargs:
+            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
+                             "to specify node colors")
+
+        adjacency_matrix_shape = adjacency_matrix.shape
+        if (len(adjacency_matrix_shape) != 2 or
+                adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+            raise ValueError(
+                "'adjacency_matrix' is supposed to have shape (n, n)."
+                ' Its shape was {0}'.format(adjacency_matrix_shape))
+
+        node_coords_shape = node_coords.shape
+        if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
+            raise ValueError(
+                "Invalid shape for 'node_coords'. You passed an "
+                "'adjacency_matrix' of shape {0} therefore "
+                "'node_coords' should be a array with shape ({0[0]}, 3) "
+                'while its shape was {1}'.format(adjacency_matrix_shape,
+                                                 node_coords_shape))
+
+        if node_coords_shape[0] != adjacency_matrix_shape[0]:
+            raise ValueError(
+                "Shape mismatch between 'adjacency_matrix' "
+                "and 'node_coords'"
+                "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
+                .format(adjacency_matrix_shape, node_coords_shape))
+
+        if sparse.issparse(adjacency_matrix):
+            adjacency_matrix = adjacency_matrix.toarray()
+
+        if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
+            raise ValueError("'adjacency_matrix' should be symmetric")
+
+        # For a masked array, masked values are replaced with zeros
+        if hasattr(adjacency_matrix, 'mask'):
+            if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
+                raise ValueError(
+                    "'adjacency_matrix' was masked with a non symmetric mask")
+            adjacency_matrix = adjacency_matrix.filled(0)
+
+        if edge_threshold is not None:
+            if isinstance(edge_threshold, basestring):
+                message = ("If 'edge_threshold' is given as a string it "
+                           'should be a number followed by the percent sign, '
+                           'e.g. "25.3%"')
+                if not edge_threshold.endswith('%'):
+                    raise ValueError(message)
+
+                try:
+                    percentile = float(edge_threshold[:-1])
+                except ValueError as exc:
+                    exc.args += (message, )
+                    raise
+
+                # Keep a percentile of edges with the highest absolute
+                # values, so only need to look at the covariance
+                # coefficients below the diagonal
+                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                              k=-1)
+                lower_diagonal_values = adjacency_matrix[
+                    lower_diagonal_indices]
+                edge_threshold = fast_abs_percentile(
+                    lower_diagonal_values, percentile)
+
+            elif not isinstance(edge_threshold, numbers.Real):
+                raise TypeError('edge_threshold should be either a number '
+                                'or a string finishing with a percent sign')
+
+            adjacency_matrix = adjacency_matrix.copy()
+            threshold_mask = np.abs(adjacency_matrix) < edge_threshold
+            adjacency_matrix[threshold_mask] = 0
+
+        lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
+        non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+
+        line_coords = [node_coords[list(index)]
+                       for index in itertools.izip(*non_zero_indices)]
+
+        adjacency_matrix_values = adjacency_matrix[non_zero_indices]
+        for ax in self.axes.values():
+            ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
+            ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
+                          **edge_kwargs)
+
+        pl.draw_if_interactive()
 
 
 class XProjector(OrthoProjector):

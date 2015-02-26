@@ -8,8 +8,11 @@ and to estimate a covariance matrix based on these signals.
 n_subjects = 10  # subjects to consider for group-sparse covariance (max: 40)
 plotted_subject = 0  # subject index to plot
 
+import numpy as np
 
 import matplotlib.pyplot as plt
+
+from nilearn import plotting, image
 from nilearn.plotting import cm
 
 
@@ -95,13 +98,23 @@ gl.fit(subjects[plotted_subject])
 
 # Displaying results ##########################################################
 print("-- Displaying results")
-title = ("Subject {0:d} GroupSparseCovariance "
-         "$\\alpha={1:.2e}$").format(plotted_subject, gsc.alpha_)
+atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
+atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
+
+title = "Subject {0:d} GroupSparseCovariance $\\alpha={1:.2e}$".format(
+    plotted_subject, gsc.alpha_)
+
+plotting.plot_connectome(gsc.covariances_[..., plotted_subject],
+                         atlas_region_coords, edge_threshold='90%',
+                         title=title)
 plot_matrices(gsc.covariances_[..., plotted_subject],
               gsc.precisions_[..., plotted_subject], title)
 
-title = ("Subject {0:d} GraphLasso "
-         "$\\alpha={1:.2e}$").format(plotted_subject, gl.alpha_)
+title = "Subject {0:d} GraphLasso $\\alpha={1:.2e}$".format(
+    plotted_subject, gl.alpha_)
+
+plotting.plot_connectome(gl.covariance_, atlas_region_coords,
+                         edge_threshold='90%', title=title)
 plot_matrices(gl.covariance_, gl.precision_, title)
 
 plt.show()

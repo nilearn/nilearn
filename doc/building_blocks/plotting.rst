@@ -24,6 +24,10 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
+.. |plot_connectome| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_5.png
+     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
+     :scale: 50
+
 .. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_3.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
@@ -65,6 +69,10 @@ different heuristics to find cutting coordinates.
 |plot_roi|           :func:`plot_roi`
                      |hack|
                      Plotting ROIs, or a mask, with an optional background
+
+|plot_connectome|    :func:`plot_connectome`
+                     |hack|
+                     Plotting a connectome
 
 **plot_img**         :func:`plot_img`
                      |hack|
