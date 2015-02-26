@@ -5,7 +5,7 @@ Changelog
 ---------
 First release of nilearn.
 
-Contributors (from ``git shortlog -ns``)::
+Contributors (from ``git shortlog -ns 0.1``)::
 
    600  Gaël Varoquaux
    483  Alexandre Abraham
