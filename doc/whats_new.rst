@@ -1,3 +1,23 @@
+0.1.1
+=====
+Changelog
+---------
+
+The main change compared to 0.1 is the addition of connectome plotting
+via the nilearn.plotting.plot_connectome function. See the
+`plotting documentation <building_blocks/plotting.html>`_
+for more details.
+
+Contributors (from ``git shortlog -ns 0.1..0.1.1``)::
+
+    78  Loïc Estève
+    18  Alexandre Abraham
+    18  Danilo Bzdok
+    14  Ben Cipollini
+     2  Gaël Varoquaux
+
+
+
 0.1
 ===
 
