@@ -206,6 +206,8 @@ uses.
    plot_epi
    plot_roi
    plot_stat_map
+   plot_glass_brain
+   plot_connectome
    find_xyz_cut_coords
 
 **Classes**:
