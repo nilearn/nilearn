@@ -6,8 +6,30 @@ Introduction: nilearn in two words
     :local:
     :depth: 1
 
-Nilearn: MVPA and machine learning for neuroimaging
-============================================================
+
+What is nilearn: MVPA, decoding, predictive models, functional connectivity
+===========================================================================
+
+.. topic:: **Why use nilearn?**
+
+    Nilearn makes it easy to use many advanced **machine learning**,
+    **pattern recognition** and **multivariate statistical** technics on
+    neuroimaging data for applications such as **MVPA** (Mutli-Voxel
+    Pattern Analysis),
+    :ref:`decoding <fmri_decoding>`,
+    :ref:`predictive modelling <Supervised_learning>`,
+    :ref:`functional connectivity <functional_connectomes>`,
+    :ref:`brain parcellations <parcellating_brain>`, 
+    :ref:`connectomes <functional_connectomes>`.
+
+    Nilearn can readily be used on :ref:`task fMRI <fmri_decoding>`,
+    :ref:`resting-state <functional_connectomes>`, or 
+    :ref:`VBM <example_decoding_plot_oasis_vbm.py>` data.
+
+    For a machine-learning expert, the value of nilearn can be seen as
+    domain-specific **feature engineering** construction, to go from
+    neuroimaging data to a feature-matrix well suited to statistical
+    learning, or vice versa.
 
 
 Why is machine learning relevant to NeuroImaging: a few examples
@@ -41,7 +63,7 @@ Why is machine learning relevant to NeuroImaging: a few examples
     `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
     usage of machine learning requires some understanding of the models.
 
-:Data mining:
+:Data mining / exploration:
 
     Data-driven exploration of brain images. :ref:`unsupervised_learning`
     extracts structure from the data, such as `clusters
@@ -54,7 +76,7 @@ Why is machine learning relevant to NeuroImaging: a few examples
     <http://www.springerlink.com/content/7377x70p5515v778/>`_).
 
 Glossary: machine learning vocabulary
-......................................
+--------------------------------------
 
 :Supervised learning:
 
@@ -155,8 +177,7 @@ want the latest nilearn version you can do so by using git.
 * **Under Windows or Max OSX**, you can easily to that by going to
   https://github.com/nilearn/nilearn and clicking the 'Clone in Desktop'
   button on the lower right of the page. This will install a software
-  that will download nilearn and that you can use to update nilearn as we
-  move forward.
+  that will download nilearn and that you can use to update nilearn.
   
 * **Under Linux**, run the following command (as a shell command, not a
   Python command)::
@@ -178,7 +199,7 @@ https://github.com/nilearn/nilearn/archive/master.zip
 To make sure that the installation went smoothly, you can follow the
 same steps as in :ref:`testing_installation`.
 
-Python for NeuroImaging: a quick-start
+Python for NeuroImaging, a quick start
 ==========================================
 
 If you don't know Python, **Don't panic. Python is easy**. Here, we give
@@ -216,16 +237,73 @@ which will open an interactive prompt::
    these input lines directly into *IPython*, click on the `>>>` located
    at the top right of the code block
 
+
+Your first steps with nilearn
+------------------------------
+
+nilearn does not have a graphical user interface, it is used via Python
+code. Most important function to process neuroimaging data take as an
+input either a filename, or a `NiftiImage object
+<http://nipy.org/nibabel/nibabel_images.html>`_, which we call a
+"niimg-like".
+
+For instance, suppose that you have a Tmap file saved in a Nifti file
+"t_map000.nii", in the directory "/home/user", to visualize it, you will
+first import the plotting functionality::
+
+    from nilearn import plotting
+
+then you can call the function that creates a "glass brain" by giving it
+the file name::
+
+    plotting.plot_glass_brain("/home/user/t_map000.nii")
+
+.. image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_1.png
+    :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
+    :align: center
+    :scale: 60
+
+.. currentmodule:: nilearn
+
+For simple operations on images, there exists many functions, such as in
+the :mod:`nilearn.image` module for image manipulation, eg
+:func:`image.smooth_img` for smoothing::
+
+    >>> from nilearn import image
+    >>> smoothed_img = image.smooth_img("/home/user/t_map000.nii", fwhm=5)
+
+The returned value, `smoothed_img` is a `NiftiImage object
+<http://nipy.org/nibabel/nibabel_images.html>`_, and can be either passed
+to other nilearn functions operating on niimgs (neuroimaging images), or
+saved to disk with::
+
+    >>> smoothed_img.to_filename(""/home/user/t_map000_smoothed.nii")
+
+|
+
+____
+
+Now, if you want readily-made methods to process neuroimaging data, jump
+directly to the section you need:
+
+* :ref:`Decoding <fmri_decoding>`
+
+* :ref:`Functional connectivity <functional_connectomes>`
+
+|
+
 Scientific computing with Python
 ---------------------------------
+
+If you are interesting in a casual use of nilearn, you will not need
+numerics in Python. To go further, here are a few pointers.
 
 Basic numerics
 ...............
 
-In Python, to get scientific features, you need to import the relevant
-libraries:
-
 :Numerical arrays:
+
+  The numerical data (eg matrices) are stored in numpy arrays:
 
   ::
 
@@ -246,7 +324,7 @@ libraries:
   `More documentation ...
   <http://scipy-lectures.github.com/intro/numpy/index.html>`__
 
-:Plotting:
+:Plotting and figures:
 
  .. figure:: auto_examples/images/plot_python_101_1.png
    :target: auto_examples/plot_python_101.html
@@ -300,7 +378,7 @@ libraries:
 Scikit-learn: machine learning in Python
 .........................................
 
-.. topic:: What is scikit-learn?
+.. topic:: **What is scikit-learn?**
 
     `Scikit-learn <http://scikit-learn.org>`_ is a Python library for machine
     learning. Its strong points are:
@@ -373,7 +451,10 @@ Finding help
       Be careful to consult the documentation relative to the version of
       scikit-learn that you are using.
 
-:Mailing lists:
+:Mailing lists and forums:
+
+    * Don't hesitate to ask questions about nilearn on `neurostars
+      <https://neurostars.org/t/nilearn/>`_.
 
     * You can find help with neuroimaging in Python (file I/O,
       neuroimaging-specific questions) via the nipy user group:
