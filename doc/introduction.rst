@@ -1,43 +1,13 @@
-============
-Introduction
-============
+=====================================
+Introduction: nilearn in two words
+=====================================
 
-Machine Learning in NeuroImaging: what and why
-===============================================
+.. contents:: **Section contents**
+    :local:
+    :depth: 1
 
-Machine learning problems and vocabulary
------------------------------------------
-
-Machine learning is interested in learning empirical rules from data to
-make **predictions**. Two kinds of problems appear:
-
-:Supervised learning:
-
-    :ref:`supervised_learning` is interested in predicting an **output
-    variable**, or **target**, `y`, from **data** `X`. Typically, we start
-    from labeled data (the **training set**) for which we know the `y`
-    for each instance of `X` and train a model; this model is then
-    applied to new unlabeled data (the **test set**) to predict the
-    labels. It may be:
-    
-    * a **regression** problem: predicting a continuous quantity such 
-      as age
-    
-    * a **classification** problem: predicting the class each 
-      observation belongs to, such as patient or control
-
-    In neuroimaging, supervised learning is typically used to relate
-    brain images to behavioral or clinical observations.
-
-:Unsupervised learning:
-
-    :ref:`unsupervised_learning` is concerned with data `X` without any
-    labels. It analyzes the structure of a dataset, for instance
-    **clustering** or extracting latent factors such as independent
-    components.
-
-    In neuroimaging, it is typically used to study resting state, or to
-    find sub-populations in diseases.
+Nilearn: MVPA and machine learning for neuroimaging
+============================================================
 
 
 Why is machine learning relevant to NeuroImaging: a few examples
@@ -51,12 +21,12 @@ Why is machine learning relevant to NeuroImaging: a few examples
 
 :Generalization scores:
 
-    * Information mapping: using the prediction accuracy of a classifier
+    * **Information mapping**: using the prediction accuracy of a classifier
       to test links between brain images and stimuli. (e.g.
       :ref:`searchlight <searchlight>`) `[Kriegeskorte 2005]
       <http://www.pnas.org/content/103/10/3863.short>`_
 
-    * Transfer learning: measuring how much an estimator trained on a
+    * **Transfer learning**: measuring how much an estimator trained on a
       task generalizes to another task (e.g. discriminating left from
       right eye movements also discriminates additions from subtractions
       `[Knops 2009]
@@ -83,28 +53,62 @@ Why is machine learning relevant to NeuroImaging: a few examples
     the data (e.g. in `[Thirion 2009]
     <http://www.springerlink.com/content/7377x70p5515v778/>`_).
 
+Glossary: machine learning vocabulary
+......................................
+
+:Supervised learning:
+
+    :ref:`supervised_learning` is interested in predicting an **output
+    variable**, or **target**, `y`, from **data** `X`. Typically, we start
+    from labeled data (the **training set**) for which we know the `y`
+    for each instance of `X` and train a model; this model is then
+    applied to new unlabeled data (the **test set**) to predict the
+    labels. It may be:
+    
+    * a **regression** problem: predicting a continuous quantity such 
+      as age
+    
+    * a **classification** problem: predicting the class each 
+      observation belongs to, such as patient or control
+
+    In neuroimaging, supervised learning is typically used to relate
+    brain images to behavioral or clinical observations.
+
+:Unsupervised learning:
+
+    :ref:`unsupervised_learning` is concerned with data `X` without any
+    labels. It analyzes the structure of a dataset, for instance
+    **clustering** or extracting latent factors such as with **independent
+    components analysis (ICA)**.
+
+    In neuroimaging, it is typically used to study resting state, or to
+    find sub-populations in diseases.
+
+
 .. _installation:
 
-Installation
-=============
+Installing nilearn
+====================
 
-Installing the environment
----------------------------
+Installing the Python scientific environment
+----------------------------------------------
 
-Python scientific stack
-........................
-
-We recommend that you **install a complete scientific Python
-distribution**, and not download the bare Python. Indeed, the scientific
-Python tool stack is rich. Installing the different packages needed one
-after another is time-consuming and error prone.
+We recommend that you **install a complete scientific Python distribution**,
+and not download the bare Python. Indeed, the scientific Python tool stack is
+rich. Installing the different packages needed is time-consuming and error
+prone.
 
 :Windows and MacOSX:
-  We suggest that you install Anaconda_. [1]_
+  We suggest that you install Anaconda_.
+
+  `Enthought Canopy`_, `PythonXY <http://code.google.com/p/pythonxy/>`_ are
+  other options. Enthought Canopy Express, the free version, should cover all
+  the required packages.
+
 
 :Linux:
   While Anaconda_ is available for Linux, most recent linux
-  distributions come with the packages that are needed for this tutorial.
+  distributions come with the packages that are needed for nilearn.
   Ask your system administrator to install, using the distribution
   package manager, the following packages:
 
@@ -116,16 +120,6 @@ after another is time-consuming and error prone.
 .. _Enthought Canopy: https://store.enthought.com/
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda/
-
-|
-
-.. [1]
-
-  `Enthought Canopy`_, `PythonXY
-  <http://code.google.com/p/pythonxy/>`_ are other options. Enthought
-  Canopy Express, i.e. the free version, should cover all the needed
-  packages as far as the standard python scientific stack is
-  concerned.
 
 Installing nilearn
 -------------------
@@ -152,10 +146,10 @@ following, in the Python prompt::
 
 If you do not get any errors, you have installed nilearn correctly.
 
-Downloading the development version
+Installing the development version
 ....................................
 
-As an alternative to using pip, and only in the case if you
+**Downloading** As an alternative to using pip, and only in the case if you
 want the latest nilearn version you can do so by using git.
 
 * **Under Windows or Max OSX**, you can easily to that by going to
@@ -176,12 +170,8 @@ If you really don't want to use git, you download the latest development
 snapshot from the following link and unziping it:
 https://github.com/nilearn/nilearn/archive/master.zip
 
-
-Setting up the development version
-..................................
-
-In the ``nilearn`` directory created by the previous steps, run (as a
-shell command, once again)::
+**Installing** In the ``nilearn`` directory created by the previous steps, run
+(as a shell command, once again)::
 
     python setup.py install --user
 
