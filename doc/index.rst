@@ -54,11 +54,11 @@
 
 * |glass_brain|
 
-* |connectome|
-
 * |haxby_weights|
 
 * |oasis_weights|
+
+* |connectome|
 
 * |rest_clustering|
 
