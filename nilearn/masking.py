@@ -625,7 +625,7 @@ def _unmask_3d(X, mask, order="C"):
     Parameters
     ==========
     X: numpy.ndarray
-        Masked data. shape: (samples,)
+        Masked data. shape: (features,)
 
     mask: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
@@ -633,9 +633,12 @@ def _unmask_3d(X, mask, order="C"):
     """
 
     if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+        raise TypeError("mask must be a boolean array")
     if X.ndim != 1:
-        raise ValueError("X must be a 1-dimensional array")
+        raise TypeError("X must be a 1-dimensional array")
+    n_features = mask.sum()
+    if X.shape[0] != n_features:
+        raise TypeError('X must be of shape (samples, %d).' % n_features)
 
     data = np.zeros(
         (mask.shape[0], mask.shape[1], mask.shape[2]),
@@ -644,8 +647,8 @@ def _unmask_3d(X, mask, order="C"):
     return data
 
 
-def _unmask_nd(X, mask, order="C"):
-    """Take masked data and bring them back to n-dimension
+def _unmask_4d(X, mask, order="C"):
+    """Take masked data and bring them back to 4D.
 
     Parameters
     ==========
@@ -653,7 +656,7 @@ def _unmask_nd(X, mask, order="C"):
         Masked data. shape: (samples, features)
 
     mask: numpy.ndarray
-        Mask. mask.ndim must be equal to 3, and dtype equal to bool.
+        Mask. mask.ndim must be equal to 4, and dtype *must* be bool.
 
     Returns
     =======
@@ -663,9 +666,12 @@ def _unmask_nd(X, mask, order="C"):
     """
 
     if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+        raise TypeError("mask must be a boolean array")
     if X.ndim != 2:
-        raise ValueError("X must be a 2-dimensional array")
+        raise TypeError("X must be a 2-dimensional array")
+    n_features = mask.sum()
+    if X.shape[1] != n_features:
+        raise TypeError('X must be of shape (samples, %d).' % n_features)
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
@@ -707,12 +713,11 @@ def unmask(X, mask_img, order="F"):
     mask, affine = _load_mask_img(mask_img)
 
     if X.ndim == 2:
-        unmasked = _unmask_nd(X, mask, order=order)
+        unmasked = _unmask_4d(X, mask, order=order)
     elif X.ndim == 1:
         unmasked = _unmask_3d(X, mask, order=order)
     else:
-        raise TypeError(
-            "Masked data X must be 2D or 1D array; got shape: %s" % str(
-                X.shape))
+        raise TypeError("Masked data X must be 2D or 1D array; "
+                        "got shape: %s" % str(X.shape))
 
     return Nifti1Image(unmasked, affine)

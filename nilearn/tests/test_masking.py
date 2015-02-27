@@ -13,9 +13,9 @@ from nose.tools import assert_true, assert_false, assert_equal, \
 from nibabel import Nifti1Image
 
 from nilearn import masking
-from nilearn.masking import compute_epi_mask, compute_multi_epi_mask, \
-    compute_background_mask, unmask, intersect_masks, MaskWarning, \
-    _load_mask_img
+from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
+                             compute_background_mask, unmask, _unmask_3d,
+                             _unmask_4d, intersect_masks, MaskWarning)
 
 from nilearn._utils.testing import write_tmp_imgs, assert_raises_regexp
 
@@ -221,14 +221,25 @@ def test_unmask():
     assert_equal(t[0].ndim, len(shape5D))
     assert_array_equal(t[0], unmasked5D)
 
-    # Error test
-    dummy = generator.rand(500)
-    if np_version >= [1, 7, 1]:
-        assert_raises(IndexError, unmask, dummy, mask_img)
-        assert_raises(IndexError, unmask, [dummy], mask_img)
-    else:
-        assert_raises(ValueError, unmask, dummy, mask_img)
-        assert_raises(ValueError, unmask, [dummy], mask_img)
+    # Error test: shape
+    vec_1D = np.empty((500,), dtype=np.int)
+    assert_raises(TypeError, unmask, vec_1D, mask_img)
+    assert_raises(TypeError, unmask, [vec_1D], mask_img)
+
+    vec_2D = np.empty((500, 500), dtype=np.float64)
+    assert_raises(TypeError, unmask, vec_2D, mask_img)
+    assert_raises(TypeError, unmask, [vec_2D], mask_img)
+
+    # Error test: mask type
+    assert_raises_regexp(TypeError, 'mask must be a boolean array',
+                         _unmask_3d, vec_1D, mask.astype(np.int))
+    assert_raises_regexp(TypeError, 'mask must be a boolean array',
+                         _unmask_4d, vec_2D, mask.astype(np.float64))
+
+    # Transposed vector
+    transposed_vector = np.ones((np.sum(mask), 1), dtype=np.bool)
+    assert_raises_regexp(TypeError, 'X must be of shape',
+                         unmask, transposed_vector, mask_img)
 
 
 def test_intersect_masks():
@@ -331,7 +342,7 @@ def test_compute_multi_epi_mask():
     assert_array_equal(mask_ab, mask_ab_.get_data())
 
 
-def test_warning_shape(random_state=42, shape=(3, 5, 7, 11)):
+def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
 
     rng = np.random.RandomState(random_state)
