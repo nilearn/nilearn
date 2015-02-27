@@ -161,7 +161,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         threshold : a number, None, or 'auto'
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
@@ -341,7 +341,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -416,7 +416,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -491,7 +491,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -571,7 +571,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         threshold : a number, None, or 'auto'
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
@@ -698,7 +698,7 @@ def plot_glass_brain(stat_map_img,
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -783,7 +783,7 @@ def plot_connectome(adjacency_matrix, node_coords,
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
