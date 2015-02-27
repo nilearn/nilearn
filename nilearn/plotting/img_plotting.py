@@ -663,7 +663,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
 
 def plot_glass_brain(stat_map_img,
-                     output_file=None, display_mode='ortho',
+                     output_file=None, display_mode='ortho', colorbar=False,
                      figure=None, axes=None, title=None, threshold='auto',
                      annotate=True,
                      black_bg=False,
@@ -688,6 +688,8 @@ def plot_glass_brain(stat_map_img,
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
+        colorbar : boolean, optional
+            If True, display a colorbar on the right of the plots.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -728,7 +730,7 @@ def plot_glass_brain(stat_map_img,
                                 figure=figure, axes=axes, title=title,
                                 annotate=annotate,
                                 black_bg=black_bg, threshold=threshold,
-                                cmap=cmap, colorbar=False,
+                                cmap=cmap, colorbar=colorbar,
                                 display_factory=display_factory,
                                 resampling_interpolation='continuous',
                                 **kwargs)
