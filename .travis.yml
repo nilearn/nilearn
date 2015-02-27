@@ -20,10 +20,15 @@ before_script:
 
 script:
     - python continuous_integration/show-python-packages-versions.py
+    # Copy setup.cfg to /tmp where we are going to run the tests from
+    # Mainly for nose config settings
+    - cp setup.cfg /tmp
     # We want to back out of the current working directory to make
     # sure we are using nilearn installed in site-packages rather
     # than the one from the current working directory
-    - cd && make -C $OLDPWD test-code && cd -
+    # Parentheses (run in a subshell) are used to leave
+    # the current directory unchanged
+    - (cd /tmp && make -f $OLDPWD/Makefile test-code)
 
 after_success:
     # Ignore coveralls failures as the coveralls server is not very reliable
