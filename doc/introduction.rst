@@ -2,7 +2,7 @@
 Introduction: nilearn in two words
 =====================================
 
-.. contents:: **Section contents**
+.. contents:: **Contents**
     :local:
     :depth: 1
 
@@ -16,13 +16,13 @@ What is nilearn: MVPA, decoding, predictive models, functional connectivity
     **pattern recognition** and **multivariate statistical** technics on
     neuroimaging data for applications such as **MVPA** (Mutli-Voxel
     Pattern Analysis),
-    :ref:`decoding <fmri_decoding>`,
+    :ref:`decoding <decoding>`,
     :ref:`predictive modelling <Supervised_learning>`,
     :ref:`functional connectivity <functional_connectomes>`,
     :ref:`brain parcellations <parcellating_brain>`, 
     :ref:`connectomes <functional_connectomes>`.
 
-    Nilearn can readily be used on :ref:`task fMRI <fmri_decoding>`,
+    Nilearn can readily be used on :ref:`task fMRI <decoding_tutorial>`,
     :ref:`resting-state <functional_connectomes>`, or 
     :ref:`VBM <example_decoding_plot_oasis_vbm.py>` data.
 
@@ -291,7 +291,7 @@ ____
 Now, if you want readily-made methods to process neuroimaging data, jump
 directly to the section you need:
 
-* :ref:`Decoding <fmri_decoding>`
+* :ref:`Decoding <decoding>`
 
 * :ref:`Functional connectivity <functional_connectomes>`
 

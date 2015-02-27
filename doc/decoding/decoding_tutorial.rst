@@ -8,21 +8,18 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
-.. _fmri_decoding:
+.. _decoding_tutorial:
 
-================================================================================
-Decoding: predicting behavior or phenotype from brain images
-================================================================================
+=====================
+A decoding tutorial
+=====================
 
-Decoding consists in predicting external variables such as behavioral or
-phenotypic variables from brain image. This page is a tutorial articulated on
-the analysis of the Haxby 2001 dataset. It shows how to:
+This page is a decoding tutorial articulated on the analysis of the Haxby
+2001 dataset. It shows how to predict from brain activity images the
+stimuli that the subject is viewing.
 
-1. Load fMRI volumes in Python.
-2. Perform a state-of-the-art decoding analysis of fMRI data.
-3. Perform even more sophisticated analyses of fMRI data.
 
-.. contents:: **Chapters contents**
+.. contents:: **Contents**
     :local:
     :depth: 1
 
