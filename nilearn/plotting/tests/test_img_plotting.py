@@ -89,7 +89,8 @@ def test_plot_functions():
                      partial(plot_stat_map, symmetric_cbar=False),
                      partial(plot_stat_map, symmetric_cbar=False, vmax=10),
                      partial(plot_stat_map, symmetric_cbar=True, vmax=10),
-                     partial(plot_stat_map, colorbar=False)]:
+                     partial(plot_stat_map, colorbar=False)
+                     partial(plot_glass_brain, colorbar=True)]:
             ax = pl.subplot(111, rasterized=True)
             ortho_slicer = func(img, cut_coords=(80, -120, -60), axes=ax)
             # Saving forces a draw, and thus smoke-tests the axes locators
