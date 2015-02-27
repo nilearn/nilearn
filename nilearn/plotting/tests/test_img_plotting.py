@@ -63,9 +63,10 @@ def test_plot_functions():
     import pylab as pl
     pl.switch_backend('template')
     data_positive = np.zeros((7, 7, 3))
-    data_positive[1:-1, 2:-1, 1:] = 1
-    data_negative = -data_positive
     rng = np.random.RandomState(42)
+    data_rng = rng.rand(7, 7, 3)
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    data_negative = -data_positive
     data_heterogeneous = data_positive * rng.randn(*data_positive.shape)
     img_positive = nibabel.Nifti1Image(data_positive, mni_affine)
     img_negative = nibabel.Nifti1Image(data_negative, mni_affine)
@@ -89,7 +90,7 @@ def test_plot_functions():
                      partial(plot_stat_map, symmetric_cbar=False),
                      partial(plot_stat_map, symmetric_cbar=False, vmax=10),
                      partial(plot_stat_map, symmetric_cbar=True, vmax=10),
-                     partial(plot_stat_map, colorbar=False)
+                     partial(plot_stat_map, colorbar=False),
                      partial(plot_glass_brain, colorbar=True)]:
             ax = pl.subplot(111, rasterized=True)
             ortho_slicer = func(img, cut_coords=(80, -120, -60), axes=ax)
