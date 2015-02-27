@@ -202,6 +202,8 @@ https://github.com/nilearn/nilearn/archive/master.zip
 To make sure that the installation went smoothly, you can follow the
 same steps as in :ref:`testing_installation`.
 
+.. _quick_start:
+
 Python for NeuroImaging, a quick start
 ==========================================
 
