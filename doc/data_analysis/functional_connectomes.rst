@@ -60,7 +60,7 @@ covariance estimates:
   inverse covariance, ie to work on single-subject data or concatenate
   multi-subject data.
 
-* The `group-sparse covariance [Varoquaux et al, NIPS 2010] <http://hal.inria.fr/inria-00512451>`_ estimates multiple connectomes from a multi-subject dataset, 
+* The `group-sparse covariance [Varoquaux et al, NIPS 2010] <https://hal.inria.fr/inria-00512451>`_ estimates multiple connectomes from a multi-subject dataset, 
   with a similar structure, but differing connection values across
   subjects.
 

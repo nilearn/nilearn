@@ -167,7 +167,7 @@ can be displayed as follows::
 .. seealso::
 
    the `scikit-learn documentation on SVMs
-   <http://scikit-learn.org/modules/svm.html>`_
+   <http://scikit-learn.org/stable/modules/svm.html>`_
 
 
 Applying it to data: fit (train) and predict (test)
@@ -498,8 +498,6 @@ But, be aware that this can take A WHILE...
 |
 
 .. seealso::
-
-  * The :ref:`supervised_learning` section of the nilearn documentation.
 
   * The `scikit-learn documentation <http://scikit-learn.org>`_
     has very detailed explanations on a large variety of estimators and

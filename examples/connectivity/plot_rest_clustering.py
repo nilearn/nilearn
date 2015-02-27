@@ -9,7 +9,7 @@ images by mean on the parcellation.
 
 This parcellation may be useful in a supervised learning, see for
 instance: `A supervised clustering approach for fMRI-based inference of
-brain states <http://hal.inria.fr/inria-00589201>`_, Michel et al,
+brain states <https://hal.inria.fr/inria-00589201>`_, Michel et al,
 Pattern Recognition 2011.
 
 """

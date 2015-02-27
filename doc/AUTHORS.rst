@@ -4,7 +4,7 @@ People
 ------
 
 This work is made available by a community of people, amongst which
-the `INRIA Parietal Project Team <https://parietal.saclay.inria.fr/>`_
+the `INRIA Parietal Project Team <https://team.inria.fr/parietal/>`_
 and the `scikit-learn <http://scikit-learn.org/>`_ folks, in
 particular:
 
@@ -12,14 +12,14 @@ particular:
 * `Alexandre Gramfort <http://alexandre.gramfort.net>`_
 * Vincent Michel
 * Bertrand Thirion
-* `Fabian Pedregosa <http://fseoane.net>`_
-* `Gael Varoquaux <http://gael-varoquaux.info/blog/>`_
+* `Fabian Pedregosa <http://fa.bianp.net/>`_
+* `Gael Varoquaux <http://gael-varoquaux.info/>`_
 * Philippe Gervais
 * Michael Eickenberg
-* Chris Filo Gorgolewski
+* `Chris Filo Gorgolewski <http://multiplecomparisons.blogspot.fr/`_
 * Danilo Bzdok
 * Loïc Estève
-* Ben Cippolini
+* `Ben Cippolini <http://cseweb.ucsd.edu/~bcipolli/>`_
 
 Thanks to M. Hanke and Y. Halchenko for data and packaging.
 

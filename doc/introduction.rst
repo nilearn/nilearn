@@ -17,7 +17,7 @@ What is nilearn: MVPA, decoding, predictive models, functional connectivity
     neuroimaging data for applications such as **MVPA** (Mutli-Voxel
     Pattern Analysis),
     :ref:`decoding <decoding>`,
-    :ref:`predictive modelling <Supervised_learning>`,
+    :ref:`predictive modelling <decoding>`,
     :ref:`functional connectivity <functional_connectomes>`,
     :ref:`brain parcellations <parcellating_brain>`, 
     :ref:`connectomes <functional_connectomes>`.
@@ -38,7 +38,7 @@ Why is machine learning relevant to NeuroImaging: a few examples
 :Diagnosis and prognosis:
 
     Predicting a clinical score from brain imaging with :ref:`supervised
-    learning <Supervised_learning>` e.g. `[Mourao-Miranda 2012]
+    learning <decoding>` e.g. `[Mourao-Miranda 2012]
     <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
 
 :Measuring generalization scores:
@@ -80,12 +80,12 @@ Glossary: machine learning vocabulary
 
 :Supervised learning:
 
-    :ref:`supervised_learning` is interested in predicting an **output
-    variable**, or **target**, `y`, from **data** `X`. Typically, we start
-    from labeled data (the **training set**) for which we know the `y`
-    for each instance of `X` and train a model; this model is then
-    applied to new unlabeled data (the **test set**) to predict the
-    labels. It may be:
+    :ref:`supervised learning <decoding>` is interested in predicting an
+    **output variable**, or **target**, `y`, from **data** `X`.
+    Typically, we start from labeled data (the **training set**) for
+    which we know the `y` for each instance of `X` and train a model;
+    this model is then applied to new unlabeled data (the **test set**)
+    to predict the labels. It may be:
     
     * a **regression** problem: predicting a continuous quantity such 
       as age
@@ -327,7 +327,7 @@ Basic numerics
     array([ 1.        ,  1.00450225,  1.0090045 ])
 
   `More documentation ...
-  <http://scipy-lectures.github.com/intro/numpy/index.html>`__
+  <http://scipy-lectures.github.io/intro/numpy/index.html>`__
 
 :Plotting and figures:
 
@@ -344,7 +344,7 @@ Basic numerics
 
 
  `More documentation ...
- <http://scipy-lectures.github.com/intro/matplotlib/matplotlib.html>`__
+ <http://scipy-lectures.github.io/intro/matplotlib/matplotlib.html>`__
 
 :Image processing:
 
@@ -354,7 +354,7 @@ Basic numerics
     >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
 
  `More documentation ...
- <http://scipy-lectures.github.com/advanced/image_processing/index.html>`__
+ <http://scipy-lectures.github.io/advanced/image_processing/index.html>`__
 
 :Signal processing:
 
@@ -362,7 +362,7 @@ Basic numerics
     >>> t_detrended = signal.detrend(t)
 
  `More documentation ...
- <http://scipy-lectures.github.com/intro/scipy.html#signal-processing-scipy-signal>`__
+ <http://scipy-lectures.github.io/intro/scipy.html#signal-processing-scipy-signal>`__
 
 :Much more:
 
@@ -377,7 +377,7 @@ Basic numerics
         >>> from scipy import linalg
 
   `More documentation...
-  <http://scipy-lectures.github.com/intro/scipy.html>`__
+  <http://scipy-lectures.github.io/intro/scipy.html>`__
 
 
 Scikit-learn: machine learning in Python
@@ -447,7 +447,7 @@ Finding help
 
     * A quick and gentle introduction to scientific computing with Python can
       be found in the 
-      `scipy lecture notes <http://scipy-lectures.github.com/>`_.
+      `scipy lecture notes <http://scipy-lectures.github.io/>`_.
 
     * The documentation of scikit-learn explains each method with tips on
       practical use and examples: 
