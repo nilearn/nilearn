@@ -27,7 +27,7 @@ from nilearn.image.resampling import coord_transform
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome)
-from nilearn._utils.testing import assert_raises_regexp
+from nilearn._utils.testing import assert_raises_regex
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                        [   0.,    2.,    0., -126.],
@@ -281,7 +281,7 @@ def test_plot_connectome():
 
     # node_coords not an array but a list of tuples
     plot_connectome(adjacency_matrix,
-                    map(tuple, node_coords.tolist()),
+                    [tuple(each) for each in node_coords],
                     **kwargs)
     # saving to file
     with tempfile.NamedTemporaryFile(suffix='.png') as fp:
@@ -322,10 +322,10 @@ def test_plot_connectome_exceptions():
     # adjacency_matrix is not symmetric
     non_symmetric_adjacency_matrix = np.array([[1., 2],
                                                [0.4, 1.]])
-    assert_raises_regexp(ValueError,
-                         'should be symmetric',
-                         plot_connectome,
-                         non_symmetric_adjacency_matrix, node_coords)
+    assert_raises_regex(ValueError,
+                        'should be symmetric',
+                        plot_connectome,
+                        non_symmetric_adjacency_matrix, node_coords)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
@@ -333,51 +333,51 @@ def test_plot_connectome_exceptions():
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency_matrix, [[False, True], [False, False]])
 
-    assert_raises_regexp(ValueError,
-                         'non symmetric mask',
-                         plot_connectome,
-                         masked_adjacency_matrix, node_coords)
+    assert_raises_regex(ValueError,
+                        'non symmetric mask',
+                        plot_connectome,
+                        masked_adjacency_matrix, node_coords)
 
     # edges threshold is neither a number nor a string
-    assert_raises_regexp(TypeError,
-                         'should be either a number or a string',
-                         plot_connectome,
-                         adjacency_matrix, node_coords,
-                         edge_threshold=object())
+    assert_raises_regex(TypeError,
+                        'should be either a number or a string',
+                        plot_connectome,
+                        adjacency_matrix, node_coords,
+                        edge_threshold=object())
 
     # wrong shapes for node_coords or adjacency_matrix
-    assert_raises_regexp(ValueError,
-                         r'supposed to have shape \(n, n\).+\(1, 2\)',
-                         plot_connectome, adjacency_matrix[:1, :],
-                         node_coords)
+    assert_raises_regex(ValueError,
+                        r'supposed to have shape \(n, n\).+\(1, 2\)',
+                        plot_connectome, adjacency_matrix[:1, :],
+                        node_coords)
 
-    assert_raises_regexp(ValueError, r'shape \(2, 3\).+\(2,\)',
-                         plot_connectome, adjacency_matrix, node_coords[:, 2])
+    assert_raises_regex(ValueError, r'shape \(2, 3\).+\(2,\)',
+                        plot_connectome, adjacency_matrix, node_coords[:, 2])
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regexp(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
-                         plot_connectome,
-                         wrong_adjacency_matrix, node_coords)
+    assert_raises_regex(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
+                        plot_connectome,
+                        wrong_adjacency_matrix, node_coords)
 
     # a few not correctly formatted strings for 'edge_threshold'
     wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
     for wrong_edge_threshold in wrong_edge_thresholds:
-        assert_raises_regexp(ValueError,
-                             'should be a number followed by the percent sign',
-                             plot_connectome,
-                             adjacency_matrix, node_coords,
-                             edge_threshold=wrong_edge_threshold)
+        assert_raises_regex(ValueError,
+                            'should be a number followed by the percent sign',
+                            plot_connectome,
+                            adjacency_matrix, node_coords,
+                            edge_threshold=wrong_edge_threshold)
 
     # specifying node sizes via node_kwargs
-    assert_raises_regexp(ValueError,
-                         "Please use 'node_size' and not 'node_kwargs'",
-                         plot_connectome,
-                         adjacency_matrix, node_coords,
-                         node_kwargs={'s': 50})
+    assert_raises_regex(ValueError,
+                        "Please use 'node_size' and not 'node_kwargs'",
+                        plot_connectome,
+                        adjacency_matrix, node_coords,
+                        node_kwargs={'s': 50})
 
     # specifying node colors via node_kwargs
-    assert_raises_regexp(ValueError,
-                         "Please use 'node_color' and not 'node_kwargs'",
-                         plot_connectome,
-                         adjacency_matrix, node_coords,
-                         node_kwargs={'c': 'blue'})
+    assert_raises_regex(ValueError,
+                        "Please use 'node_color' and not 'node_kwargs'",
+                        plot_connectome,
+                        adjacency_matrix, node_coords,
+                        node_kwargs={'c': 'blue'})

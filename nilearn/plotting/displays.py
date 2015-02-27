@@ -5,13 +5,14 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import operator
-import itertools
 import collections
 import numbers
 
 import numpy as np
 from scipy import sparse, stats
+
+from six import string_types
+from six.moves import zip as six_zip
 
 import nibabel
 from .._utils.testing import skip_if_running_nose
@@ -276,7 +277,7 @@ class GlassBrainAxes(BaseAxes):
                                     vmax=abs_line_values_max)
         value_to_color = pl.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
-        for start_end_point_3d, line_value in itertools.izip(
+        for start_end_point_3d, line_value in six_zip(
                 line_coords, line_values):
             start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
                                                   self.direction)
@@ -1112,7 +1113,7 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            if isinstance(edge_threshold, basestring):
+            if isinstance(edge_threshold, string_types):
                 message = ("If 'edge_threshold' is given as a string it "
                            'should be a number followed by the percent sign, '
                            'e.g. "25.3%"')
@@ -1147,7 +1148,7 @@ class OrthoProjector(OrthoSlicer):
         non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
 
         line_coords = [node_coords[list(index)]
-                       for index in itertools.izip(*non_zero_indices)]
+                       for index in six_zip(*non_zero_indices)]
 
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():

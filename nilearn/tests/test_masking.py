@@ -231,15 +231,15 @@ def test_unmask():
     assert_raises(TypeError, unmask, [vec_2D], mask_img)
 
     # Error test: mask type
-    assert_raises_regexp(TypeError, 'mask must be a boolean array',
-                         _unmask_3d, vec_1D, mask.astype(np.int))
-    assert_raises_regexp(TypeError, 'mask must be a boolean array',
-                         _unmask_4d, vec_2D, mask.astype(np.float64))
+    assert_raises_regex(TypeError, 'mask must be a boolean array',
+                        _unmask_3d, vec_1D, mask.astype(np.int))
+    assert_raises_regex(TypeError, 'mask must be a boolean array',
+                        _unmask_4d, vec_2D, mask.astype(np.float64))
 
     # Transposed vector
     transposed_vector = np.ones((np.sum(mask), 1), dtype=np.bool)
-    assert_raises_regexp(TypeError, 'X must be of shape',
-                         unmask, transposed_vector, mask_img)
+    assert_raises_regex(TypeError, 'X must be of shape',
+                        unmask, transposed_vector, mask_img)
 
 
 def test_intersect_masks():
