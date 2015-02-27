@@ -699,6 +699,12 @@ def plot_glass_brain(stat_map_img,
             figure is used.
         title : string, optional
             The title displayed on the figure.
+        threshold : a number, None, or 'auto'
+            If None is given, the image is not thresholded.
+            If a number is given, it is used to threshold the image:
+            values below the threshold (in absolute value) are plotted
+            as transparent. If auto is given, the threshold is determined
+            magically by analysis of the image.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
