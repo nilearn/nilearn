@@ -1,5 +1,6 @@
 """Test CanICA"""
 
+import warnings
 from nose.tools import assert_equal, assert_raises
 
 import nibabel
@@ -47,9 +48,12 @@ def test_canica_square_img():
     mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
 
     # We do a large number of inits to be sure to find the good match
-    canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
-                    smoothing_fwhm=0., n_init=50)
-    canica.fit(data)
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', 'FastICA did not converge.',
+                                UserWarning)  # OK even if not converging.
+        canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
+                        smoothing_fwhm=0., n_init=50)
+        canica.fit(data)
     maps = canica.masker_.inverse_transform(canica.components_).get_data()
     maps = np.rollaxis(maps, 3, 0)
 
