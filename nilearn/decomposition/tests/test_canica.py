@@ -1,8 +1,11 @@
 """Test CanICA"""
-import nibabel
+
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_raises
+
+import nibabel
+
 from nilearn.decomposition.canica import CanICA
 
 
@@ -60,6 +63,9 @@ def test_canica_square_img():
     assert_true(np.sum(K_abs > .9) == 4)
     K_abs[K_abs > .9] -= 1
     assert_array_almost_equal(K_abs, 0, 1)
+
+    # Smoke test to make sure an error is raised when no data is passed.
+    assert_raises(TypeError, canica.fit)
 
 if __name__ == "__main__":
     test_canica_square_img()

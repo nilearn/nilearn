@@ -189,7 +189,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.target_shape = target_shape
         self.standardize = standardize
 
-    def fit(self, imgs=None, y=None, confounds=None):
+    def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components
 
         Parameters
@@ -255,7 +255,14 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
                 setattr(self.masker_, param_name, our_param)
-        self.masker_.fit(imgs)
+
+        # Masker warns if it has a mask_img and is passed
+        # imgs to fit().  Avoid the warning by being careful
+        # when calling fit.
+        if self.masker_.mask_img is None:
+            self.masker_.fit(imgs)
+        else:
+            self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(MultiNiftiMasker, self)
