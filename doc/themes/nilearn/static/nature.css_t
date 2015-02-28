@@ -679,9 +679,9 @@ div.admonition, div.warning, div.topic {
 }
 
 div.seealso {
-    background-color: #B67300;
+    background-color: rgb(255, 251, 232);
     border: 1px solid rgb(251, 238, 213);
-    color: rgb(175, 138, 75);
+    color: #735013;
 }
 
 
