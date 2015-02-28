@@ -118,6 +118,7 @@ regions, regressing out noise sources is indeed very important
 
    * The example above has the solution
 
+|
 
 Time-series from a probabilistic atlas
 ========================================
@@ -158,6 +159,31 @@ The `fit_transform` method turns filenames or `NiftiImage objects
 <http://nipy.org/nibabel/nibabel_images.html>`_ to time series::
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)
+
+The procedure is the same as with `brain parcellations
+<parcellation_time_series>`_ but using the :class:`NiftiMapsMasker`, and
+the same considerations on using confounds regressors apply.
+
+.. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_1.png
+   :target: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction.html
+   :scale: 40
+
+
+.. topic:: **Full example**
+
+    A full example of extracting signals on a probabilistic:
+    :ref:`example_connectivity_plot_probabilistic_atlas_extraction.py`
+
+
+.. topic:: **Exercise: correlation matrix of rest fmri on probabilistic atlas**
+   :class: green
+
+   Try to compute the correlation matrix of the first subject of the ADHD
+   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   with the MSDL atlas downloaded via
+   :func:`nilearn.datasets.fetch_msdl_atlas`
+
+   **Hint:** The example above has the solution
 
 
 Highlighting functional interaction: the connectome
