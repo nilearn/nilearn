@@ -60,6 +60,8 @@ def test_nifti_maps_masker():
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
+    NiftiMapsMasker(labels11_img).fit_transform(fmri11_img)
+
     # Test all kinds of mismatches between shapes and between affines
     for create_files in (True, False):
         with testing.write_tmp_imgs(labels11_img, mask12_img,

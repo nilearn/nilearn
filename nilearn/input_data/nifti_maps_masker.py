@@ -239,7 +239,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=_utils._get_shape(imgs)[:3],
                         target_affine=imgs.get_affine(),
                     )
-            if not _check_same_fov(imgs, mask_img):
+            if mask_img is not None and not _check_same_fov(imgs, mask_img):
                 mask_img = self._cache(image.resample_img,
                     func_memory_level=1)(
                         mask_img, interpolation="nearest",
