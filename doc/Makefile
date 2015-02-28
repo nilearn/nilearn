@@ -133,9 +133,9 @@ install:
 	make html
 	rm -rf _build/nilearn.github.io
 	cd _build/ && \
-        git clone git@github.com:nilearn/nilearn.github.io.git && \
-	cp -r html/* nilearn.github.io && \
-	cd nilearn.github.io && \
+        git clone git@github.com:GaelVaroquaux/gaelvaroquaux.github.io.git && \
+	cp -r html/* gaelvaroquaux.github.io && \
+	cd gaelvaroquaux.github.io && \
 	git add * && \
 	git commit -a -m 'Make install' && \
 	git push

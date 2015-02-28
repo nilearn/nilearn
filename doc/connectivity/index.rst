@@ -20,7 +20,7 @@ and networks, via resting-state networks or parcellations.
 .. toctree::
 
    functional_connectomes.rst
-   interaction_learning.rst
+   connectome_extraction.rst
    resting_state_networks.rst
    parcellating.rst
 

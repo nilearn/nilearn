@@ -291,9 +291,9 @@ ____
 Now, if you want readily-made methods to process neuroimaging data, jump
 directly to the section you need:
 
-* :ref:`Decoding <decoding>`
+* :ref:`decoding`
 
-* :ref:`Functional connectivity <functional_connectomes>`
+* :ref:`functional_connectivity`
 
 |
 
