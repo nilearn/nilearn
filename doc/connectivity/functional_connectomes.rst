@@ -21,6 +21,7 @@ Extracting times series to build a functional connectome
      connectomes across subjects, NeuroImage 2013
      <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_ 
 
+.. _parcellation_time_series:
 
 Time-series from a brain parcellation or "MaxProb" atlas
 ===========================================================
@@ -65,7 +66,7 @@ Extracting signals on a parcellation
 
 To extract signal on the parcellation, the easiest option is to use the
 :class:`nilearn.input_data.NiftiLabelsMasker`. As any ''maskers'' in
-nilearn, it is an processing object that is created by specicifying all
+nilearn, it is a processing object that is created by specifying all
 the important parameters, but not the data::
 
     from nilearn.input_data import NiftiLabelsMasker
@@ -98,10 +99,66 @@ regions, regressing out noise sources is indeed very important
     :ref:`example_connectivity_plot_signal_extraction.py`
 
 
+.. topic:: **Exercise: computing the correlation matrix of rest fmri**
+   :class: green
+
+   Try using the information above to compute the correlation matrix of
+   the first subject of the ADHD dataset downloaded with
+   :func:`nilearn.datasets.fetch_adhd`
+
+   **Hints:**
+
+   * Inspect the '.keys()' of the object returned by
+     :func:`nilearn.datasets.fetch_adhd`
+
+   * :func:`numpy.corrcoef` can be used to compute a correlation matrix
+     (check the shape of your matrices)
+
+   * :func:`matplotlib.pyplot.imshow` can show a correlation matrix
+
+   * The example above has the solution
+
+
 Time-series from a probabilistic atlas
 ========================================
 
-* The MSDL atlas
+Probabilistic atlases
+----------------------
+
+The definition of regions as by a continuous probability map captures
+better our imperfect knowledge of boundaries in brain images (notably
+because of inter-subject registration errors). One example of such an
+atlas well suited to resting-state data analysis is the `MSDL atlas
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_ (:func:`nilearn.datasets.fetch_msdl_atlas`).
+
+Probabilistic atlases are represented as a set of continuous maps, in a
+4D nifti image. Visualization the atlas thus requires to visualize each
+of these maps, which requires accessing them with
+:func:`nilearn.image.index_img` (see the :ref:`corresponding example <example_manipulating_visualizing_plot_probabilistic_atlas.py>`).
+
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_probabilistic_atlas_1.png
+   :target: ../auto_examples/manipulating_visualizing/plot_probabilistic_atlas.html
+   :scale: 60
+
+
+Extracting signals from a probabilistic atlas
+----------------------------------------------
+
+.. currentmodule:: nilearn.input_data
+
+As with extraction of signals on a parcellation, extracting signals from
+a probabilistic atlas can be done with a "masker" object:  the
+:class:`nilearn.input_data.NiftiMapsMasker`. It is created by
+specifying the important parameters, in particular the atlas::
+
+    from nilearn.input_data import NiftiMapsMasker
+    masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
+
+The `fit_transform` method turns filenames or `NiftiImage objects
+<http://nipy.org/nibabel/nibabel_images.html>`_ to time series::
+
+    time_series = masker.fit_transform(frmi_files, confounds=csv_file)
+
 
 Highlighting functional interaction: the connectome
 ====================================================
