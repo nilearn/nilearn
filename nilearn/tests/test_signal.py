@@ -5,11 +5,11 @@ Test the signals module
 # License: simplified BSD
 
 import os.path
+import warnings
 
 import numpy as np
-from nose.tools import assert_true, assert_false, assert_raises
-
 import scipy.signal
+from nose.tools import assert_true, assert_false, assert_raises
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
@@ -242,10 +242,14 @@ def test_clean_frequencies():
     sx = np.vstack((sx1, sx2)).T
     assert_true(clean(sx, standardize=False, high_pass=0.002, low_pass=None)
                 .max() > 0.1)
-    assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None)
-                .max() < 0.01)
     assert_true(clean(sx, standardize=False, low_pass=0.01).max() > 0.9)
+
+    # Error cases
     assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", scipy.signal.filter_design.BadCoefficients)
+        assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None)
+                    .max() < 0.01)
 
 
 def test_clean_confounds():
