@@ -100,12 +100,14 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   crop_img
+   index_img
+   iter_img
    high_variance_confounds
-   smooth_img
+   mean_img
    resample_img
    reorder_img
-   crop_img
-   mean_img
+   smooth_img
    swap_img_hemispheres
 
 
