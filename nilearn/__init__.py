@@ -8,10 +8,11 @@ visualization tools.
 
 See http://nilearn.github.io for complete documentation.
 """
-
 import gzip
+from distutils.version import LooseVersion
 
-from .version import _check_module_dependencies, __version__
+from .version import _check_module_dependencies, get_min_version, __version__
+
 
 _check_module_dependencies()
 
@@ -25,3 +26,9 @@ if hasattr(gzip.GzipFile, 'max_read_chunk'):
 # structures
 # This  is used in nilearn._utils.cache_mixin
 check_cache_version = True
+
+# WardAgglomeration cannot be migrated to AgglomerativeClustering until
+#   our scikit-learn minv_version is 0.15.
+if LooseVersion(get_min_version('sklearn')) < LooseVersion('0.15'):
+    import warnings
+    warnings.filterwarnings('once', 'The Ward class is deprecated since 0.14 and will be removed in 0.17.')

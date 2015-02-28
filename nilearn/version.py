@@ -50,6 +50,13 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': False}))
 
 
+def get_min_version(module_name):
+    for name, metadata in REQUIRED_MODULE_METADATA:
+        if name == module_name:
+            return metadata['min_version']
+    return None
+
+
 def _import_module_with_version_check(
         module_name,
         minimum_version,
