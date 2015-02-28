@@ -166,7 +166,7 @@ the same considerations on using confounds regressors apply.
 
 .. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_1.png
    :target: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction.html
-   :scale: 40
+   :scale: 30
 
 
 .. topic:: **Full example**
@@ -186,7 +186,7 @@ the same considerations on using confounds regressors apply.
    **Hint:** The example above has the solution
 
 
-Highlighting functional interaction: the connectome
+Highlighting functional interactions: the connectome
 ====================================================
 
 * Show the impact of confounds
