@@ -1,5 +1,5 @@
 =====================================
-Introduction: nilearn in two words
+Introduction: nilearn in a nutshell
 =====================================
 
 .. contents:: **Contents**
