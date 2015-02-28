@@ -6,10 +6,11 @@ Connectome extraction: inverse covariance for direct connections
 
 .. topic:: **Page summary**
 
-   Given a set of time-series (eg as extracted in the previous section
+   Given a set of time-series (eg as extracted in the previous section)
    A *functional connectome* is a set of connections representing brain
    interactions between regions. Here we show the use of sparse-inverse
-   covariance estimators to extract functional connectomes.
+   covariance to extract functional connectomes focussing only on direct
+   interactions between regions.
 
 .. contents:: **Contents**
     :local:
@@ -32,8 +33,6 @@ covariance matrix **C** for signals from different brain regions. Each
 element of **C** gives the covariance between two brain regions. The same
 information can be represented as a weighted graph, vertices being brain
 regions, weights on edges being covariances (gaussian graphical model).
-In turn, this graph can be interpreted as a connection graph between
-brain regions, with weights giving the strength of the connection.
 However, coefficients in a covariance matrix reflects direct as well as
 indirect connections. Covariance matrices tend to be dense, and it is
 rather difficult to extract from them only the direct connections between
@@ -44,22 +43,18 @@ This can be achieved using the inverse of the covariance matrix, ie the
 covariances between two regions conditioned on all the others. It thus
 gives only direct connections between regions.
 
-.. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_5.png
+.. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_2.png
    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-   :scale: 39
+   :scale: 55
 
-.. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_6.png
+.. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_1.png
    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-   :scale: 39
+   :scale: 55
 
 .. centered:: |covariance| |precision|
 
-Sparsity in the inverse covariance matrix is important to reduce noise in
-the estimated connectome by limiting the number of edges (technicaly,
-this problem arises from multi-colinearity in time series, when the
-number of time points is not very large compared to the number of
-regions). Here we explore 2 different options to estimate sparse inverse
-covariance estimates:
+Here we explore 2 different options to estimate sparse inverse covariance
+estimates:
 
 * The `graph lasso [Friedman et al, Biostatistics 2007] <http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_ is useful to estimate one
   inverse covariance, ie to work on single-subject data or concatenate
