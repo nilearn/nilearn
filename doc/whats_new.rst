@@ -1,5 +1,15 @@
+0.1.2
+=====
+
+Changelog
+---------
+
+The 0.1.2 release is a bugfix release, specifically to fix the
+NiftiMapsMasker.
+
 0.1.1
 =====
+
 Changelog
 ---------
 
