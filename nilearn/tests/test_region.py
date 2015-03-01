@@ -11,6 +11,7 @@ from six.moves import xrange
 import nibabel
 
 from nilearn import region
+from nilearn._utils.testing import assert_warns
 from nilearn._utils.testing import generate_timeseries, generate_regions_ts
 from nilearn._utils.testing import generate_labeled_regions, generate_maps
 from nilearn._utils.testing import generate_fake_fmri
@@ -307,6 +308,7 @@ def test_signal_extraction_with_maps_and_labels():
     mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
     mask_img = nibabel.Nifti1Image(mask_data.astype(np.int8),
                                    labels_img.get_affine())
+
     # Ignore a known warning about divide-by-zero on our dummy data.
     labels_signals, labels_labels = \
         assert_warns(RuntimeWarning,
