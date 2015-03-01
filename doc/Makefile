@@ -138,4 +138,5 @@ install:
 	cd gaelvaroquaux.github.io && \
 	git add * && \
 	git commit -a -m 'Make install' && \
-	git push
+	git push && \
+	cd .. && rm -rf gaelvaroquaux.github.io

@@ -5,12 +5,11 @@ Computation of covariance matrix between brain regions
 This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.
 """
-n_subjects = 10  # subjects to consider for group-sparse covariance (max: 40)
-
 import matplotlib.pyplot as plt
 
 from nilearn import plotting, image
-from nilearn.plotting import cm
+
+n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
 
 def plot_matrices(cov, prec, title):
@@ -26,7 +25,7 @@ def plot_matrices(cov, prec, title):
     # Display covariance matrix
     plt.figure()
     plt.imshow(cov, interpolation="nearest",
-               vmin=-1, vmax=1, cmap=cm.bwr)
+               vmin=-1, vmax=1, cmap=plotting.cm.bwr)
     plt.colorbar()
     plt.title("%s / covariance" % title)
 
@@ -34,7 +33,7 @@ def plot_matrices(cov, prec, title):
     plt.figure()
     plt.imshow(prec, interpolation="nearest",
                vmin=-span, vmax=span,
-               cmap=cm.bwr)
+               cmap=plotting.cm.bwr)
     plt.colorbar()
     plt.title("%s / precision" % title)
 

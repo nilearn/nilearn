@@ -29,19 +29,22 @@ Sparse inverse covariance for functional connectomes
 =====================================================
 
 Resting-state functional connectivity can be obtained by estimating a
-covariance matrix **C** for signals from different brain regions. Each
-element of **C** gives the covariance between two brain regions. The same
-information can be represented as a weighted graph, vertices being brain
-regions, weights on edges being covariances (gaussian graphical model).
-However, coefficients in a covariance matrix reflects direct as well as
-indirect connections. Covariance matrices tend to be dense, and it is
-rather difficult to extract from them only the direct connections between
-two regions.
+covariance (or correlation) matrix for signals from different brain
+regions. The same information can be represented as a weighted graph,
+vertices being brain regions, weights on edges being covariances
+(gaussian graphical model). However, coefficients in a covariance matrix
+reflects direct as well as indirect connections. Covariance matrices form
+very dense brain connectomes, and it is rather difficult to extract from
+them only the direct connections between two regions.
 
-This can be achieved using the inverse of the covariance matrix, ie the
-*precision matrix*. It contains *partial covariances*, which are
-covariances between two regions conditioned on all the others. It thus
-gives only direct connections between regions.
+
+As shown in `[Smith 2011]
+<http://www.sciencedirect.com/science/article/pii/S1053811910011602>`_,
+`[Varoquaux 2010] <https://hal.inria.fr/inria-00512451>`_, it is more
+interesting to use the inverse covariance matrix, ie the *precision
+matrix*. It gives **only direct connections between regions**, as it
+contains *partial covariances*, which are covariances between two regions
+conditioned on all the others. 
 
 .. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_2.png
    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
@@ -53,90 +56,110 @@ gives only direct connections between regions.
 
 .. centered:: |covariance| |precision|
 
-Here we explore 2 different options to estimate sparse inverse covariance
-estimates:
 
-* The `graph lasso [Friedman et al, Biostatistics 2007] <http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_ is useful to estimate one
-  inverse covariance, ie to work on single-subject data or concatenate
-  multi-subject data.
+To recover well the interaction structure, a **sparse inverse covariance
+estimator** is necessary. The GraphLasso, implemented in scikit-learn's
+estimator :class:`sklearn.covariance.GraphLassoCV` is a good, simple
+solution. To use it, you need to create an estimator object::
 
-* The `group-sparse covariance [Varoquaux et al, NIPS 2010] <https://hal.inria.fr/inria-00512451>`_ estimates multiple connectomes from a multi-subject dataset, 
-  with a similar structure, but differing connection values across
-  subjects.
+    >>> from sklearn.covariance import GraphLassoCV
+    >>> estimator = GraphLasso()
+
+And then you can fit it on the activation time series, for instance
+extracted in :ref:`the previous section <functional_connectomes>`::
+
+    >>> estimator.fit(time_series)  # DOCTEST: +skip
+
+The covariance matrix and inverse-covariance matrix (precision matrix)
+can be found respectively in the `covariance_` and `precision_` attribute
+of the estimator::
+
+    >>> estimator.covariance_  # doctest: +SKIP
+    >>> estimator.precision_  # doctest: +SKIP
+
+.. topic:: **Parameter selection**
+
+    The parameter controlling the sparsity is set by `cross-validation
+    <http://scikit-learn.org/stable/modules/cross_validation.html>`_
+    scheme. If you want to specify it manually, use the estimator
+    :class:`sklearn.covariance.GraphLasso`.
+
+.. topic:: **Reference**
+
+ * The `graph lasso [Friedman et al, Biostatistics 2007] <http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_ is useful to estimate one
+   inverse covariance, ie to work on single-subject data or concatenate
+   multi-subject data.
 
 
-Testing the different approaches on simulated data
+Sparse inverse covariance on multiple subjects
+================================================
+
+To work at the level of a group of subject, it can be interesting to
+estimate multiple connectomes for each, with a similar structure but
+differing connection values across subjects.
+
+For this, nilearn provides the
+:class:`nilearn.group_sparse_covariance.GroupSparseCovarianceCV`
+estimator. Its usage is similar to the GraphLassoCV object, but it takes
+a list of time series::
+
+    >>> estimator.fit([time_series_1, time_series_2, ...])  # DOCTEST: +skip
+
+And it provides one estimated covariance and inverse-covariance
+(precision) matrix per time-series: for the first one::
+
+    >>> estimator.covariances_[0]  # doctest: +SKIP
+    >>> estimator.precisions_[0]  # doctest: +SKIP
+
+.. topic:: **Full example**
+
+    See the following example for a full file running the analysis:
+    :ref:`example_connectivity_plot_adhd_covariance.py`
+
+
+.. topic:: **Exercise: computing the correlation matrix of rest fmri**
+   :class: green
+
+   Try using the information above to compute the correlation matrix of
+   the first subject of the ADHD dataset downloaded with
+   :func:`nilearn.datasets.fetch_adhd`
+
+   **Hints:**
+
+   * Inspect the '.keys()' of the object returned by
+     :func:`nilearn.datasets.fetch_adhd`
+
+   * :func:`numpy.corrcoef` can be used to compute a correlation matrix
+     (check the shape of your matrices)
+
+   * :func:`matplotlib.pyplot.imshow` can show a correlation matrix
+
+   * The example above has the solution
+
+
+.. topic:: **Reference**
+ 
+ * The `group-sparse covariance [Varoquaux et al, NIPS 2010] <https://hal.inria.fr/inria-00512451>`_
+
+|
+
+Comparing the different approaches on simulated data
 ===================================================
-
-Synthetic signals
------------------
 
 We simulate several sets of signals, one set representing one subject,
 with different precision matrices, but sharing a common sparsity pattern:
-10 brain regions, for 20 subjects:
+10 brain regions, for 20 subjects.
 
-.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
-   :start-after: # Generate synthetic data
-   :end-before: fig = plt.figure(figsize=(10, 7))
+A single-subject estimation can be performed using the
+:class:`sklearn.covariance.GraphLassoCV` estimator from scikit-learn.
 
-`subjects` and `precisions` are lists containing respectively each
-subject's signals and the corresponding true precision matrices used
-in the generation (ground truth). `topology` is a single array with
-only 0 and 1 giving the common sparsity pattern.
+It is also possible to fit a graph lasso on data from every subject all
+together.
 
-Estimation
-----------
+Finally, we use the
+:class:`nilearn.group_sparse_covariance.GroupSparseCovarianceCV`.
 
-The actual estimation is performed using a `cross-validation
-<http://scikit-learn.org/stable/modules/cross_validation.html>`_
-scheme. This allows for selecting the regularization parameter value
-for which the model generalizes best on unseen data. This is important
-to get models that might be expected to be valid at the population
-level.
-
-A single-subject estimation can be performed using the Graph Lasso
-estimator from the scikit-learn:
-
-.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
-   :start-after: # Fit one graph lasso per subject
-   :end-before:     plt.subplot(n_displayed, 4, 4 * n + 3)
-
-After calling `fit`, the estimated precision matrix can be plotted
-using:
-
-.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
-   :start-after:     plt.subplot(n_displayed, 4, 4 * n + 3)
-   :end-before:     if n == 0:
-
-where `plot_matrix` is a convenience function to avoid repeating the
-same code. It draws the matrix as an image, taking care of using a
-symmetric range, so that zero values are just in the middle of the
-colormap (white in that case):
-
-.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
-   :start-after: import matplotlib.pyplot as pltp
-   :end-before: # Generate synthetic data
-
-
-It is also possible to fit a graph lasso on data from every subject at
-once:
-
-.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
-   :start-after: # Fit one graph lasso for all subjects at once
-   :end-before: pl.subplot(n_displayed, 4, 4)
-
-Running a group-sparse estimation is very similar, the estimator comes
-from nilearn this time:
-
-..
-   gsc
-
-.. literalinclude:: ../../examples/connectivity/plot_connect_comparison.py
-   :start-after: # Run group-sparse covariance on all subjects
-   :end-before: for n in range(n_displayed):
-
-
-The results are shown on the following figure:
+The results are the following:
 
 .. image:: ../auto_examples/connectivity/images/plot_connect_comparison_1.png
     :target: ../auto_examples/connectivity/plot_connect_comparison.html
@@ -150,10 +173,13 @@ applied to all subjects at once gives a sparsity pattern close to that
 obtained with the group-sparse one, but cannot provide per-subject
 information.
 
+
 .. note::
 
    The complete source code for this example can be found here:
    :doc:`plot_connect_comparison.py <../auto_examples/connectivity/plot_connect_comparison>`
+
+
 
 A real-data example
 ====================
