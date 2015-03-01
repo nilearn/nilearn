@@ -140,7 +140,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
     target_var = rng.randn(n_samples, 1)
     tested_var = np.arange(n_samples).reshape((-1, 1))
     tested_var_not_centered = tested_var.copy()
-    tested_var -= tested_var.mean(0)  # centered
+    tested_var = tested_var.astype(np.float64) - tested_var.mean(0)  # centered
     # permuted OLS
     # We check that h0 is close to the theoretical distribution, which is
     # known for this simple design (= t(n_samples - dof)).
