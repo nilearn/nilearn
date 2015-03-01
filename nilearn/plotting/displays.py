@@ -10,12 +10,11 @@ import itertools
 import numbers
 
 import numpy as np
-from scipy import sparse
+from scipy import sparse, stats
 
 import nibabel
 from .._utils.testing import skip_if_running_nose
 from .. import _utils
-from .._utils.extmath import fast_abs_percentile
 
 try:
     import pylab as pl
@@ -1132,7 +1131,7 @@ class OrthoProjector(OrthoSlicer):
                                                               k=-1)
                 lower_diagonal_values = adjacency_matrix[
                     lower_diagonal_indices]
-                edge_threshold = fast_abs_percentile(
+                edge_threshold = stats.scoreatpercentile(
                     lower_diagonal_values, percentile)
 
             elif not isinstance(edge_threshold, numbers.Real):
