@@ -1,14 +1,18 @@
 """
-Sparse inverse covariance for a functional connectome
-======================================================
+Group Sparse inverse covariance for multi-subject connectome
+=============================================================
 
-This example shows how to extract signals from regions defined by an atlas,
-and to estimate a functional connectome using a sparse inverse covariance
-estimator.
+This example shows how to estimate a connectome on a groupe of subjects
+using the group sparse inverse covariance estimate.
+
 """
 import matplotlib.pyplot as plt
+import numpy as np
 
 from nilearn import plotting, image
+
+n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
+
 
 def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
@@ -40,7 +44,7 @@ def plot_matrices(cov, prec, title):
 print("-- Fetching datasets ...")
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_msdl_atlas()
-adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
 
 
 # Extracting region signals ###################################################
@@ -56,21 +60,31 @@ masker = nilearn.input_data.NiftiMapsMasker(
     memory=mem, memory_level=1, verbose=2)
 masker.fit()
 
-fmri_filename = adhd_dataset.func[0]
-confound_filename = adhd_dataset.confounds[0]
+subject_time_series = []
+func_filenames = adhd_dataset.func
+confound_filenames = adhd_dataset.confounds
+for func_filename, confound_filename in zip(func_filenames,
+                                            confound_filenames):
+    print("Processing file %s" % func_filename)
 
-# Computing some confounds
-hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(
-    fmri_filename)
+    # Computing some confounds
+    hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(
+        func_filename)
 
-time_series = masker.transform(fmri_filename,
-                                confounds=[hv_confounds, confound_filename])
+    region_ts = masker.transform(func_filename,
+                                 confounds=[hv_confounds, confound_filename])
+    subject_time_series.append(region_ts)
 
+# Computing group-sparse precision matrices ###################################
+print("-- Computing group-sparse precision matrices ...")
+from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+gsc = GroupSparseCovarianceCV(verbose=2)
+gsc.fit(subject_time_series)
 
-print("-- Computing graph-lasso inverse matrix ...")
+print("-- Computing graph-lasso precision matrices ...")
 from sklearn import covariance
 gl = covariance.GraphLassoCV(verbose=2)
-gl.fit(time_series)
+gl.fit(np.concatenate(subject_time_series))
 
 # Displaying results ##########################################################
 atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
@@ -79,11 +93,17 @@ atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
 title = "GraphLasso"
 plotting.plot_connectome(-gl.precision_, atlas_region_coords,
                          edge_threshold='90%',
-                         title="Sparse inverse covariance")
+                         title="Sparse inverse covariance (GraphLasso)")
 plotting.plot_connectome(gl.covariance_,
                          atlas_region_coords, edge_threshold='90%',
                          title="Covariance")
 plot_matrices(gl.covariance_, gl.precision_, title)
 
+title = "GroupSparseCovariance"
+plotting.plot_connectome(-gsc.precisions_[..., 0],
+                         atlas_region_coords, edge_threshold='90%',
+                         title=title)
+plot_matrices(gsc.covariances_[..., 0],
+              gsc.precisions_[..., 0], title)
 
 plt.show()

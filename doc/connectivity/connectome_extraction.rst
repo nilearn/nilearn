@@ -104,7 +104,7 @@ of the estimator::
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
 
-   Compute the correlation matrix of the first subject of the ADHD
+   Compute and visualize a connectome on the first subject of the ADHD
    dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
 
    **Hints:** The example above has the solution
@@ -128,7 +128,7 @@ For this, nilearn provides the
 estimator. Its usage is similar to the GraphLassoCV object, but it takes
 a list of time series::
 
-    >>> estimator.fit([time_series_1, time_series_2, ...])  # DOCTEST: +skip
+    >>> estimator.fit([time_series_1, time_series_2, ...])  # doctest: +SKIP
 
 And it provides one estimated covariance and inverse-covariance
 (precision) matrix per time-series: for the first one::
@@ -139,27 +139,17 @@ And it provides one estimated covariance and inverse-covariance
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_adhd_covariance.py`
+    :ref:`example_connectivity_multi_subject_connectome.py`
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
    :class: green
 
-   Try using the information above to compute the correlation matrix of
-   the first subject of the ADHD dataset downloaded with
+   Try using the information above to compute a connectome on the
+   first 5 subjects of the ADHD dataset downloaded with
    :func:`nilearn.datasets.fetch_adhd`
 
-   **Hints:**
-
-   * Inspect the '.keys()' of the object returned by
-     :func:`nilearn.datasets.fetch_adhd`
-
-   * :func:`numpy.corrcoef` can be used to compute a correlation matrix
-     (check the shape of your matrices)
-
-   * :func:`matplotlib.pyplot.imshow` can show a correlation matrix
-
-   * The example above has the solution
+   **Hint:** The example above has the solution
 
 
 ..   

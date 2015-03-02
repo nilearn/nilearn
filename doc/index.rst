@@ -18,8 +18,8 @@
 .. |glass_brain| image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_2.png
    :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
 
-.. |connectome| image:: auto_examples/connectivity/images/plot_adhd_covariance_5.png
-     :target: auto_examples/connectivity/plot_adhd_covariance.html
+.. |connectome| image:: auto_examples/connectivity/images/plot_inverse_covariance_connectome_4.png
+     :target: auto_examples/connectivity/plot_inverse_covariance_connectome.html
 
 .. |haxby_weights| image:: auto_examples/images/plot_haxby_simple_1.png
    :target: auto_examples/plot_haxby_simple.html

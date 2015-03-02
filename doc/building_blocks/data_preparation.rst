@@ -291,66 +291,25 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
   number of regions. Handling a large number (thousands) of regions will prove
   difficult with this representation.
 
+.. note::
+
+   These usage are illustrated in :ref:`functional_connectomes`
+
 :class:`NiftiMapsMasker` Usage
 ------------------------------
 
-.. note::
-
-   The full example in this section can be found here:
-   :doc:`plot_adhd_covariance.py <../auto_examples/connectivity/plot_adhd_covariance>`
-
-Usage of :class:`NiftiMapsMasker` is very close to the usage of
-:class:`NiftiMasker`. Only options specific to
-:class:`NiftiMapsMasker` are described in this section.
-
-Nilearn provides several downloaders to get a brain parcellation. Load
-the `MSDL one
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_:
-
-
-.. literalinclude:: ../../examples/connectivity/plot_adhd_covariance.py
-    :start-after: # Fetching datasets #
-    :end-before: # Extracting region signals #
-
-This atlas defines its regions using maps. The path to the corresponding file
-can be found under the "maps" key. Extracting region signals for
+This atlas defines its regions using maps. The path to the corresponding
+file is given in the "maps_img" argument. Extracting region signals for
 several subjects can be performed like this:
-
-.. literalinclude:: ../../examples/connectivity/plot_adhd_covariance.py
-   :start-after: # Extracting region signals #
-   :end-before: # Computing group-sparse precision matrices #
-
-`region_ts` is a `numpy.ndarray
-<http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html>`_,
-containing one signal per column. The `subjects` list contains signals
-for several subjects. In this example, confounds removal is performed,
-by both using a provided list of confounds, and by computing new ones
-using :func:`nilearn.image.high_variance_confounds`.
-
 
 One important thing that happens transparently during the execution of
 :meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
 and the atlas do not have the same shape nor the same affine. Getting
 them to the same format is required for the signals extraction to
 work. The keyword argument `resampling_target` specifies which format
-everything should be resampled to. In the present case, "maps"
-indicates that all images should be resampled to have the same shape
-and affine as the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_.
-See the reference documentation for :class:`NiftiMasker` for every
+everything should be resampled to. 
+See the reference documentation for :class:`NiftiMapsMasker` for every
 possible option.
-
-The :class:`NiftiMapsMasker` output can then be used as input to a
-`scikit-learn <http://scikit-learn.org>`_ transformer. In the present
-case, covariance between region signals can be obtained for each
-subject either using the `graph lasso
-<http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_
-or the `group-sparse covariance <http://arxiv.org/abs/1207.4255>`_
-algorithm:
-
-.. literalinclude:: ../../examples/connectivity/plot_adhd_covariance.py
-   :start-after: # Computing group-sparse precision matrices #
-   :end-before: # Displaying results #
 
 
 :class:`NiftiLabelsMasker` Usage
