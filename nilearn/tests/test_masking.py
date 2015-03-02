@@ -61,7 +61,7 @@ def test_compute_epi_mask():
     mean_image[0, 0, 0] = 1.2
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    with warnings.catch_warnings(True) as w:
+    with warnings.catch_warnings(record=True) as w:
         compute_epi_mask(mean_image, exclude_zeros=True)
     assert_equal(len(w), 1)
     assert_true(isinstance(w[0].message, masking.MaskWarning))
@@ -87,7 +87,7 @@ def test_compute_background_mask():
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    with warnings.catch_warnings(True) as w:
+    with warnings.catch_warnings(record=True) as w:
         compute_background_mask(mean_image)
     assert_equal(len(w), 1)
     assert_true(isinstance(w[0].message, masking.MaskWarning))
