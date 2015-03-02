@@ -165,7 +165,7 @@ The procedure is the same as with `brain parcellations
 the same considerations on using confounds regressors apply.
 
 .. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_1.png
-   :target: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction.html
+   :target: ../auto_examples/connectivity/plot_probabilistic_atlas_extraction.html
    :scale: 30
 
 
@@ -186,7 +186,9 @@ the same considerations on using confounds regressors apply.
    **Hint:** The example above has the solution
 
 
-Highlighting functional interactions: the connectome
+A functional connectome
 ====================================================
 
-* Show the impact of confounds
+.. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_2.png
+   :target: ../auto_examples/connectivity/plot_probabilistic_atlas_extraction.html
+
