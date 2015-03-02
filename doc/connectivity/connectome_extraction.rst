@@ -46,16 +46,6 @@ matrix*. It gives **only direct connections between regions**, as it
 contains *partial covariances*, which are covariances between two regions
 conditioned on all the others. 
 
-.. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_2.png
-   :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-   :scale: 55
-
-.. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_1.png
-   :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-   :scale: 55
-
-.. centered:: |covariance| |precision|
-
 
 To recover well the interaction structure, a **sparse inverse covariance
 estimator** is necessary. The GraphLasso, implemented in scikit-learn's
@@ -68,7 +58,7 @@ solution. To use it, you need to create an estimator object::
 And then you can fit it on the activation time series, for instance
 extracted in :ref:`the previous section <functional_connectomes>`::
 
-    >>> estimator.fit(time_series)  # DOCTEST: +skip
+    >>> estimator.fit(time_series)  # doctest: +SKIP
 
 The covariance matrix and inverse-covariance matrix (precision matrix)
 can be found respectively in the `covariance_` and `precision_` attribute
@@ -77,12 +67,47 @@ of the estimator::
     >>> estimator.covariance_  # doctest: +SKIP
     >>> estimator.precision_  # doctest: +SKIP
 
+
+.. |covariance| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_1.png
+    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+    :scale: 40
+.. |precision| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_3.png
+    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+    :scale: 40
+
+.. |covariance_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_2.png
+    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+    :scale: 55
+
+.. |precision_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_4.png
+    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+    :scale: 55
+
+.. centered:: |covariance| |precision|
+
+.. centered:: |covariance_graph| |precision_graph|
+
+
+
 .. topic:: **Parameter selection**
 
     The parameter controlling the sparsity is set by `cross-validation
     <http://scikit-learn.org/stable/modules/cross_validation.html>`_
     scheme. If you want to specify it manually, use the estimator
     :class:`sklearn.covariance.GraphLasso`.
+
+.. topic:: **Full example**
+
+    See the following example for a full file running the analysis:
+    :ref:`example_connectivity_plot_inverse_covariance_connectome.py`
+
+.. topic:: **Exercise: computing sparse inverse covariance**
+   :class: green
+
+   Compute the correlation matrix of the first subject of the ADHD
+   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+
+   **Hints:** The example above has the solution
 
 .. topic:: **Reference**
 
@@ -137,6 +162,18 @@ And it provides one estimated covariance and inverse-covariance
    * The example above has the solution
 
 
+..   
+    .. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_2.png
+    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
+    :scale: 55
+  
+    .. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_1.png
+    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
+    :scale: 55
+  
+    .. centered:: |covariance| |precision|
+
+
 .. topic:: **Reference**
  
  * The `group-sparse covariance [Varoquaux et al, NIPS 2010] <https://hal.inria.fr/inria-00512451>`_
@@ -177,15 +214,7 @@ information.
 .. note::
 
    The complete source code for this example can be found here:
-   :doc:`plot_connect_comparison.py <../auto_examples/connectivity/plot_connect_comparison>`
-
-
-
-A real-data example
-====================
-
-For a detailed example on real data:
-:doc:`plot_adhd_covariance.py <../auto_examples/connectivity/plot_adhd_covariance>`
+   :ref:`example_connectivity_plot_simulated_connectome.py`
 
 ____
 

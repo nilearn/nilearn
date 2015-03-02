@@ -53,11 +53,11 @@ y_ticks = plt.yticks(range(len(names)), names)
 
 # And now display the corresponding graph
 from nilearn import plotting
-coords = np.vstack((labels['x'], labels['y'], labels['z']))
+coords = np.vstack((labels['x'], labels['y'], labels['z'])).T
 
 # We threshold to keep only the 20% of edges with the highest value
 # because the graph is very dense
-plotting.plot_connectome(correlation_matrix, coords.T,
+plotting.plot_connectome(correlation_matrix, coords,
                          edge_threshold="80%")
 
 plt.show()
