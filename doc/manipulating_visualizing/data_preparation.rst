@@ -1,15 +1,60 @@
 .. _extracting_data:
 
 =========================================================
-Data preparation: input/output and basic transformation
+Data preparation: loading and basic transformation
 =========================================================
 
-Before applying some complex machine learning algorithm, or perform
-sophisticated analysis, the first step is to read data from file and
-do some basic transformation on them. Nilearn offers several ways to do
-this. This part is concerned with only high-level classes (in
-modules :mod:`nilearn.input_data`), the description of
-low-level functions can be found in the reference documentation.
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
+|
+
+.. topic:: **File names as arguments**
+
+   For most functions or objects, it is not necessary to explicitely load
+   the data. Indeed, most of nilearn functions can take file names as
+   arguments::
+
+    >>> from nilearn import image
+    >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii')
+  
+   Nilearn can operate on either filenames, or `NiftiImage objects
+   <http://nipy.org/nibabel/nibabel_images.html>`_, which are
+   in-memory representation of the nifti files. We often use as a
+   shorthand the term 'niimg' to denote either a filename or a 
+   NiftiImage object. In the example above, the function smooth_img
+   returns a NiftiImage object, which can then be readily passed to any
+   other nilearn function that accept niimg arguments.
+
+|
+
+The concept of "masker" objects
+=================================
+
+In any analysis, the first step is to load the data. Often, for
+statistical analysis, it is convenient to apply some basic
+transformations and to turn the data in a 2D (samples x features) matrix,
+where the samples could be different time points, and the features
+different voxels or different ROIs.
+
+
+.. |niimgs| image:: ../images/niimgs.jpg
+    :scale: 50%
+
+.. |arrays| image:: ../images/feature_array.jpg
+    :scale: 35%
+
+.. |arrow| raw:: html
+
+   <span style="padding: .5em; font-size: 400%">&rarr;</span>
+
+.. centered:: |niimgs|  |arrow|  |arrays|
+
+
+
+"masker" objects (found in modules :mod:`nilearn.input_data`) are there
+to make these operations easy.
 
 The philosophy underlying these classes is similar to `scikit-learn
 <http://scikit-learn.org>`_\ 's
@@ -21,12 +66,10 @@ initial computation (e.g. fitting a mask based on the data). Then
 transform() can be called, with the data as argument, to perform some
 computation on data themselves (e.g. extracting timeseries from images).
 
-The following parts explain how to use this API to extract voxel or
-region signals from fMRI data. Advanced usage of these classes
-requires to tweak their parameters. However, high-level objects have
-been designed to perform common operations. Users who want to make
-some specific processing may have to call low-level functions (see
-e.g. :mod:`nilearn.signal`, :mod:`nilearn.masking`.)
+Note that the masker objects may not cover all the image transformations
+for specific tasks. Users who want to make some specific processing may
+have to call low-level functions (see e.g. :mod:`nilearn.signal`,
+:mod:`nilearn.masking`.)
 
 .. currentmodule:: nilearn.input_data
 
