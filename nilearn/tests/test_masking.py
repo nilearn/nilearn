@@ -16,8 +16,7 @@ from nilearn import masking
 from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              compute_background_mask, unmask, _unmask_3d,
                              _unmask_4d, intersect_masks, MaskWarning)
-from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex,
-                                    assert_warns_regex)
+from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)

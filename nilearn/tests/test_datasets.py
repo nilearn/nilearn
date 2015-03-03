@@ -22,8 +22,7 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
-                                    FetchFilesMock, assert_raises_regex,
-                                    assert_warns_regex)
+                                    FetchFilesMock, assert_raises_regex)
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))

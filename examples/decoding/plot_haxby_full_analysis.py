@@ -23,8 +23,7 @@ from nilearn.input_data import NiftiMasker
 
 # load labels
 import numpy as np
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ",
-                       dtype=[('labels', 'U12'), ('chunks', '<i8')])
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 stimuli = labels['labels']
 
 # identify resting state labels in order to be able to remove them
