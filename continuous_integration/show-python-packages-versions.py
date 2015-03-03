@@ -1,4 +1,3 @@
-from __future__ import print_function
 import sys
 
 DEPENDENCIES = ['numpy', 'scipy', 'sklearn', 'matplotlib', 'nibabel']
@@ -17,8 +16,8 @@ def print_package_version(package_name, indent='  '):
 
 if __name__ == '__main__':
     print('=' * 120)
-    print('Python', sys.version)
-    print('from: ', sys.executable, '\n')
+    print('Python %s' % str(sys.version))
+    print('from: %s\n' % sys.executable)
 
     print('Dependencies versions')
     for package_name in DEPENDENCIES:
