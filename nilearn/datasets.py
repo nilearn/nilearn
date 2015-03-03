@@ -2504,8 +2504,9 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # bytes (encode()) needed for python 2/3 compat with numpy
     pheno = '\n'.join(pheno).encode()
     pheno = BytesIO(pheno)
-    # We enforce empty comments because it is 'sharp' by default
-    pheno = np.recfromcsv(pheno, comments='xyzpdq', case_sensitive=True)
+    # We enforce a magic string  forcomments because it is 'sharp' by default,
+    #   and Python 3.4 doesn't like empty
+    pheno = np.recfromcsv(pheno, comments='__magic_string__', case_sensitive=True)
 
     # First, filter subjects with no filename
     pheno = pheno[pheno['FILE_ID'] != b'no_filename']
