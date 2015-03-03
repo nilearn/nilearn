@@ -54,6 +54,8 @@ def is_img(obj):
 
 
 def load_img(img):
+    """Load a niimg and check if it has required methods
+    """
     if isinstance(img, basestring):
         # data is a filename, we load it
         img = nibabel.load(img)
@@ -116,6 +118,8 @@ def _repr_niimgs(niimgs):
 
 
 def short_repr(niimg):
+    """Gives a shorten version on niimg representation
+    """
     this_repr = repr(niimg)
     if len(this_repr) > 20:
         # Shorten the repr to have a useful error message
