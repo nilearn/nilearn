@@ -35,6 +35,14 @@ mni_affine = np.array([[  -2.,    0.,    0.,   90.],
                        [   0.,    0.,    0.,    1.]])
 
 
+def _generate_img():
+    data_positive = np.zeros((7, 7, 3))
+    rng = np.random.RandomState(42)
+    data_rng = rng.rand(7, 7, 3)
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    return nibabel.Nifti1Image(data_positive, mni_affine)
+
+
 def demo_plot_roi(**kwargs):
     """ Demo plotting an ROI
     """
@@ -63,68 +71,136 @@ def test_demo_plot_roi():
     assert_true(out is None)
 
 
+def test_plot_anat():
+    mp.use('template', warn=False)
+    import pylab as pl
+    pl.switch_backend('template')
+    img = _generate_img()
+    # Test saving with empty plot
+    z_slicer = plot_anat(anat_img=False, display_mode='z')
+    with tempfile.TemporaryFile(suffix='.png') as fp:
+        z_slicer.savefig(fp.name)
+
+    z_slicer = plot_anat(display_mode='z')
+    with tempfile.TemporaryFile(suffix='.png') as fp:
+        z_slicer.savefig(fp.name)
+
+    ortho_slicer = plot_anat(img, dim=True)
+    with tempfile.TemporaryFile(suffix='.png') as fp:
+        ortho_slicer.savefig(fp.name)
+
+
 def test_plot_functions():
+    mp.use('template', warn=False)
+    import pylab as pl
+    pl.switch_backend('template')
+    img = _generate_img()
+
+    # smoke-test for each plotting function with default arguments
+    for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
+                      plot_glass_brain]:
+        with tempfile.TemporaryFile(suffix='.png') as fp:
+            plot_func(img, output_file=fp.name)
+
+
+def test_plot_glass_brain():
+    mp.use('template', warn=False)
+    import pylab as pl
+    pl.switch_backend('template')
+    img = _generate_img()
+
+    # test plot_glass_brain with colorbar
+    plot_glass_brain(img, colorbar=True)
+
+
+def test_plot_stat_map():
+    mp.use('template', warn=False)
+    import pylab as pl
+    pl.switch_backend('template')
+    img = _generate_img()
+
+    plot_stat_map(img, cut_coords=(80, -120, -60))
+
+    # Smoke test coordinate finder, with and without mask
+    masked_img = nibabel.Nifti1Image(
+        np.ma.masked_equal(img.get_data(), 0),
+        mni_affine)
+    plot_stat_map(masked_img, display_mode='x')
+    plot_stat_map(img, display_mode='y', cut_coords=2)
+
+    # 'yx' display_mode
+    plot_stat_map(img, display_mode='yx')
+
+
+def test_save_plot():
+    mp.use('template', warn=False)
+    import pylab as pl
+    pl.switch_backend('template')
+    img = _generate_img()
+
+    kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
+
+    for kwargs in kwargs_list:
+        with tempfile.TemporaryFile(suffix='.png') as fp:
+            display = plot_stat_map(img, output_file=fp.name, **kwargs)
+            assert_true(display is None)
+
+        display = plot_stat_map(img, **kwargs)
+        with tempfile.TemporaryFile(suffix='.png') as fp:
+            display.savefig(fp.name)
+
+
+def test_display_methods():
+    mp.use('template', warn=False)
+    import pylab as pl
+    pl.switch_backend('template')
+    img = _generate_img()
+
+    display = plot_img(img)
+    display.add_overlay(img, threshold=0)
+    display.add_edges(img, color='c')
+    display.add_contours(img, contours=2, linewidth=4,
+                         colors=['limegreen', 'yellow'])
+
+
+def test_plot_with_axes_or_figure():
+    mp.use('template', warn=False)
+    import pylab as pl
+    pl.switch_backend('template')
+    img = _generate_img()
+    figure = pl.figure()
+    plot_img(img, figure=figure)
+
+    ax = pl.subplot(111)
+    plot_img(img, axes=ax)
+
+
+def test_plot_stat_map_colorbar_variations():
     # This is only a smoke test
     mp.use('template', warn=False)
     import pylab as pl
     pl.switch_backend('template')
-    data_positive = np.zeros((7, 7, 3))
+
+    img_positive = _generate_img()
+    data_positive = img_positive.get_data()
     rng = np.random.RandomState(42)
-    data_rng = rng.rand(7, 7, 3)
-    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     data_negative = -data_positive
     data_heterogeneous = data_positive * rng.randn(*data_positive.shape)
-    img_positive = nibabel.Nifti1Image(data_positive, mni_affine)
     img_negative = nibabel.Nifti1Image(data_negative, mni_affine)
     img_heterogeneous = nibabel.Nifti1Image(data_heterogeneous, mni_affine)
 
-    # Test saving with empty plot
-    ax = pl.subplot(111, rasterized=True)
-    z_slicer = plot_anat(anat_img=False, display_mode='z', axes=ax)
-    z_slicer = plot_anat(display_mode='z', axes=ax)
-    z_slicer.add_edges(img_positive, color='c')
-    z_slicer.savefig(tempfile.TemporaryFile())
-    pl.close()
     for img in [img_positive, img_negative, img_heterogeneous]:
-        ortho_slicer = plot_anat(img, dim=True)
-        ortho_slicer.savefig(tempfile.TemporaryFile())
-        pl.close()
-
-        for func in [plot_anat, plot_img, plot_stat_map,
-                     plot_epi, plot_glass_brain,
+        for func in [plot_stat_map,
                      partial(plot_stat_map, symmetric_cbar=True),
                      partial(plot_stat_map, symmetric_cbar=False),
                      partial(plot_stat_map, symmetric_cbar=False, vmax=10),
                      partial(plot_stat_map, symmetric_cbar=True, vmax=10),
-                     partial(plot_stat_map, colorbar=False),
-                     partial(plot_glass_brain, colorbar=True)]:
-            ax = pl.subplot(111, rasterized=True)
-            ortho_slicer = func(img, cut_coords=(80, -120, -60), axes=ax)
-            # Saving forces a draw, and thus smoke-tests the axes locators
-            ortho_slicer.savefig(tempfile.TemporaryFile())
-            ortho_slicer.add_edges(img, color='c')
-            pl.close()
-
-            # Smoke test coordinate finder, with and without mask
-            masked_img = nibabel.Nifti1Image(
-                np.ma.masked_equal(img.get_data(), 0),
-                mni_affine)
-            ax = pl.subplot(111, rasterized=True)
-            func(masked_img, display_mode='x', axes=ax)
-            pl.close()
-            ax = pl.subplot(111, rasterized=True)
-            func(img, display_mode='y', axes=ax)
-            pl.close()
-
-            ax = pl.subplot(111, rasterized=True)
-            out = func(img,
-                       output_file=tempfile.TemporaryFile(suffix='.png'),
-                       axes=ax)
-            assert_true(out is None)
+                     partial(plot_stat_map, colorbar=False)]:
+            func(img, cut_coords=(80, -120, -60))
             pl.close()
 
 
-def test_plot_img_empty():
+def test_plot_empty_slice():
     # Test that things don't crash when we give a map with nothing above
     # threshold
     # This is only a smoke test
@@ -133,10 +209,7 @@ def test_plot_img_empty():
     pl.switch_backend('template')
     data = np.zeros((20, 20, 20))
     img = nibabel.Nifti1Image(data, mni_affine)
-    plot_anat(img)
-    slicer = plot_img(img, display_mode='y', threshold=1)
-    slicer.close()
-    pl.close('all')
+    plot_img(img, display_mode='y', threshold=1)
 
 
 def test_plot_img_invalid():
@@ -160,7 +233,7 @@ def test_plot_img_with_auto_cut_coords():
 def test_plot_img_with_resampling():
     import pylab as pl
     pl.switch_backend('template')
-    data = MNI152TEMPLATE.get_data()[:5, :5, :5]
+    data = _generate_img().get_data()
     affine = np.array([[1., -1.,  0.,  0.],
                        [1.,  1.,  0.,  0.],
                        [0.,  0.,  1.,  0.],
