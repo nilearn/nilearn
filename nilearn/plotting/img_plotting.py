@@ -26,7 +26,7 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
-from .._utils.niimage import new_img
+from .._utils import new_img
 from .._utils.extmath import fast_abs_percentile
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)

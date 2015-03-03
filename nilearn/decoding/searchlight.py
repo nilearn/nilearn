@@ -26,8 +26,7 @@ from sklearn.base import BaseEstimator
 from sklearn import neighbors
 
 from .. import masking
-from .._utils import as_ndarray
-from .._utils.niimage import new_img
+from .._utils import as_ndarray, new_img
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 

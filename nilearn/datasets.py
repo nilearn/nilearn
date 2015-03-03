@@ -26,7 +26,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ._utils.niimage import load_img, new_img
+from ._utils import load_img, new_img
 
 
 def _format_time(t):

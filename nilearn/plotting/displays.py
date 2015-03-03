@@ -15,7 +15,7 @@ from six import string_types
 from six.moves import zip as six_zip
 
 from .._utils.testing import skip_if_running_nose
-from .._utils.niimage import new_img
+from .._utils import new_img
 from .. import _utils
 
 try:

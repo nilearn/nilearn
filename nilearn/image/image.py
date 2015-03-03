@@ -15,8 +15,8 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
-from .._utils.niimg_conversions import _safe_get_data, _index_niimgs
-from .._utils.niimage import new_img
+from .._utils.niimg_conversions import _index_niimgs
+from .._utils.niimage import new_img, _safe_get_data
 from .. import masking
 from nilearn.image import reorder_img
 

@@ -13,7 +13,7 @@ from six.moves import xrange
 
 from . import _utils
 from . import masking
-from ._utils.niimage import new_img
+from ._utils import new_img
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
