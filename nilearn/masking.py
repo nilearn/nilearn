@@ -7,10 +7,10 @@ import warnings
 
 import numpy as np
 from scipy import ndimage
-from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
+from ._utils import new_img
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component
 from ._utils.niimg_conversions import _safe_get_data
@@ -176,8 +176,7 @@ def _post_process_mask(mask, affine, opening=2, connected=True, warning_msg=""):
     if opening:
         mask = ndimage.binary_dilation(mask, iterations=2*opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
-    return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
-                       affine)
+    return new_img(_utils.as_ndarray(mask, dtype=np.int8), affine)
 
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
@@ -562,8 +561,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     values would spread accross the image.
     """
     mask, mask_affine = _load_mask_img(mask_img)
-    mask_img = Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
-                           mask_affine)
+    mask_img = new_img(_utils.as_ndarray(mask, dtype=np.int8), mask_affine)
     return _apply_mask_fmri(imgs, mask_img, dtype=dtype,
                             smoothing_fwhm=smoothing_fwhm,
                             ensure_finite=ensure_finite)
@@ -720,4 +718,4 @@ def unmask(X, mask_img, order="F"):
         raise TypeError("Masked data X must be 2D or 1D array; "
                         "got shape: %s" % str(X.shape))
 
-    return Nifti1Image(unmasked, affine)
+    return new_img(unmasked, affine)

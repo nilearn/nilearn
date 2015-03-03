@@ -18,12 +18,10 @@ import scipy.signal
 from sklearn.utils import check_random_state
 import scipy.linalg
 
-from nibabel import Nifti1Image
-import nibabel
-
 from .. import datasets
 from .. import masking
 from . import logger
+from .niimage import save_img, new_img
 
 try:
     from nose.tools import assert_raises_regex
@@ -106,7 +104,7 @@ def write_tmp_imgs(*imgs, **kwargs):
                                                suffix=".nii",
                                                dir=None)
                 filenames.append(filename)
-                nibabel.save(img, filename)
+                save_img(img, filename)
 
         if len(imgs) == 1:
             yield filenames[0]
@@ -286,7 +284,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
                              rand_gen=rand_gen, window=window)
-    mask_img = Nifti1Image(mask, affine)
+    mask_img = new_img(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
 
 
@@ -330,7 +328,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
-    return Nifti1Image(data, affine)
+    return new_img(data, affine)
 
 
 def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
@@ -345,7 +343,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
     data = rand_gen.randint(n_regions + 1, size=shape)
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
-    return Nifti1Image(data, affine)
+    return new_img(data, affine)
 
 
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
@@ -459,9 +457,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
             else target.astype(np.float)
         fmri = np.zeros(fmri.shape)
         fmri[mask.astype(np.bool)] = flat_fmri
-        return Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target
+        return new_img(fmri, affine), new_img(mask, affine), target
 
-    return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
+    return new_img(fmri, affine), new_img(mask, affine)
 
 
 def generate_signals_from_precisions(precisions,

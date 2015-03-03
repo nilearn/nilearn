@@ -88,6 +88,10 @@ def copy_img(img):
                                img.get_affine().copy())
 
 
+def save_img(img, filename):
+    img.to_filename(filename)
+
+
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
