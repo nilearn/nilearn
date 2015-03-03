@@ -212,7 +212,7 @@ the :func:`nilearn.plotting.find_xyz_cut_coords` function
 As you can see, the correlation matrix gives a very "full" graph: every
 node is connected to every other one. This is because is also captures
 indirect connections. In the next section we will see how to focus on
-only direction connectoms.
+only direct connections.
 
 |
 
