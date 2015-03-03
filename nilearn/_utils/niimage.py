@@ -56,13 +56,13 @@ def is_img(obj):
 def load_img(img):
     if isinstance(img, basestring):
         # data is a filename, we load it
-        niimg = nibabel.load(img)
-    elif not is_img(niimg):
+        img = nibabel.load(img)
+    elif not is_img(img):
         raise TypeError("Data given cannot be converted to a nifti"
                         " image: this object -'%s'- does not expose"
                         " get_data or get_affine methods"
-                        % short_repr(niimg))
-    return niimg
+                        % short_repr(img))
+    return img
 
 
 def new_img(data, affine, header=None):
@@ -83,7 +83,7 @@ def copy_img(img):
         copy of input (data and affine)
     """
     if not is_img(img):
-        raise ValueError("input value is not an image")
+        raise ValueError("Input value is not an image")
     return nibabel.Nifti1Image(img.get_data().copy(),
                                img.get_affine().copy())
 

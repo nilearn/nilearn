@@ -309,9 +309,7 @@ def _crop_img_to(img, slices, copy=True):
     new_affine[:3, :3] = linear_part
     new_affine[:3, 3] = new_origin
 
-    new_img = new_img(cropped_data, new_affine)
-
-    return new_img
+    return new_img(cropped_data, new_affine)
 
 
 def crop_img(img, rtol=1e-8, copy=True):
