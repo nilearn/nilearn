@@ -186,9 +186,43 @@ the same considerations on using confounds regressors apply.
    **Hint:** The example above has the solution
 
 
-A functional connectome
+A functional connectome: a graph of interactions
 ====================================================
+
+A square matrix, such as a correlation matrix, can also be seen as a
+`"graph" <http://en.wikipedia.org/wiki/Graph_%28mathematics%29>`_: a set
+of "nodes", connected by "edges". When these nodes are brain regions, and
+the edges capture interactions between them, this graph is a "functional
+connectome".
+
+We can display it with the :func:`nilearn.plotting.plot_connectome`
+function that take the matrix, and coordinates of the nodes in MNI space.
+In the case of the MSDL atlas
+(:func:`nilearn.datasets.fetch_msdl_atlas`), the CSV file readily comes
+with MNI coordinates for each region (see for instance example:
+:ref:`example_connectivity_plot_probabilistic_atlas_extraction.py`).
+
+For another atlas this information can be computed for each region with
+the :func:`nilearn.plotting.find_xyz_cut_coords` function
+(see example: :ref:`example_connectivity_plot_multi_subject_connectome.py`).
 
 .. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_2.png
    :target: ../auto_examples/connectivity/plot_probabilistic_atlas_extraction.html
 
+As you can see, the correlation matrix gives a very "full" graph: every
+node is connected to every other one. This is because is also captures
+indirect connections. In the next section we will see how to focus on
+only direction connectoms.
+
+|
+
+.. topic:: **References**
+
+  * `Zalesky NeuroImage 2012 "On the use of correlation as a measure of 
+    network connectivity" <http://www.sciencedirect.com/science/article/pii/S1053811912001784>`_
+
+  * `Varoquaux NeuroImage 2013, Learning and comparing functional
+    connectomes across subjects,
+    <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_ 
+
+ 
