@@ -4,6 +4,8 @@ virtualenv:
   system_site_packages: true
 
 env:
+  global:
+    - TEST_RUN_FOLDER="/tmp" # folder where the tests are run from
   matrix:
     - DISTRIB="ubuntu" PYTHON_VERSION="2.7"
     - DISTRIB="ubuntu-no-matplotlib" PYTHON_VERSION="2.7"
@@ -20,18 +22,20 @@ before_script:
 
 script:
     - python continuous_integration/show-python-packages-versions.py
-    # Copy setup.cfg to /tmp where we are going to run the tests from
+    # Copy setup.cfg to TEST_RUN_FOLDER where we are going to run the tests from
     # Mainly for nose config settings
-    - cp setup.cfg /tmp
+    - cp setup.cfg "$TEST_RUN_FOLDER"
     # We want to back out of the current working directory to make
     # sure we are using nilearn installed in site-packages rather
     # than the one from the current working directory
     # Parentheses (run in a subshell) are used to leave
     # the current directory unchanged
-    - (cd /tmp && make -f $OLDPWD/Makefile test-code)
+    - (cd "$TEST_RUN_FOLDER" && make -f $OLDPWD/Makefile test-code)
 
 after_success:
     # Ignore coveralls failures as the coveralls server is not very reliable
     # but we don't want travis to report a failure in the github UI just
     # because the coverage report failed to be published.
-    - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
+    # coveralls need to be run from the git checkout
+    # so we need to copy the coverage results from TEST_RUN_FOLDER
+    - if [[ "$COVERAGE" == "true" ]]; then cp "$TEST_RUN_FOLDER/.coverage" .; coveralls || echo "failed"; fi
