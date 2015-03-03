@@ -79,7 +79,11 @@ def _to_4d(data):
     return out
 
 
-def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
+def _iter_concat_niimgs():
+    pass
+
+
+def concat_niimgs(niimgs, dtype=np.float32,
                   auto_resample=False, verbose=0,
                   memory=Memory(cachedir=None), memory_level=0):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
@@ -96,9 +100,6 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
 
     dtype: numpy dtype, optional
         the dtype of the returned image
-
-    accept_4d: boolean, optional
-        Accept 4D images
 
     auto_resample: boolean
         Converts all images to the space of the first one.
@@ -121,11 +122,14 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
         A single image.
     """
 
+    # XXX I kept the magic: it can concatenate either 3D or 4D images. But not
+    # a mix of them anymore.
+
     # get properties from first image
     first_niimg = check_niimg(next(iter(niimgs)))
     target_affine = first_niimg.get_affine()
     first_data = first_niimg.get_data()
-    target_item_shape = first_niimg.shape[:3]  # skip 4th/time dimension
+    target_item_shape = _get_shape(first_niimg)[:3]  # skip 4th/time dimension
 
     # count how many images we have in all (might be list of different 4D's)
     lengths = []
@@ -195,7 +199,16 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     return new_img_like(first_niimg, data, target_affine)
 
 
-def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
+def _iter_check_niimgs(niimgs):
+    for i, niimg in enumerate(niimgs):
+        try:
+            yield check_niimg(niimg)
+        except TypeError as e:
+            raise TypeError("Error while loading image #%d: \n%s"
+                            % (i, e.message))
+
+
+def check_niimgs(niimgs, return_iterator=False):
     """ Check that an object is a list of niimgs and load it if necessary
 
     Parameters
@@ -207,10 +220,6 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
-
-    accept_3d: boolean
-       If True, consider a 3D image as a 4D one with last dimension equals
-       to 1.
 
     return_iterator: boolean
         If False, a single 4D image is returned. When `niimgs` contains 3D
@@ -229,57 +238,38 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
 
     Its application is idempotent.
     """
-    # Initialization:
-    # If given data is a list, we count the number of levels to check
-    # dimensionality and make a consistent error message.
-    depth = 0
-    first_img = niimgs
-    if accept_3d and (isinstance(first_img, _basestring)
-                      or not isinstance(first_img, collections.Iterable)):
-        niimg = check_niimg(niimgs)
-        if len(niimg.shape) == 3:
-            niimg = new_img_like(niimg, niimg.get_data()[..., np.newaxis],
-                            niimg.get_affine())
-        return niimg
+    # Two types of input:
+    # * 4D nifti image
+    # * list of 3D niimgs
 
+    # We get rid of the 4D nifti image case, as it is the simplest case
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
-    while hasattr(first_img, "__iter__") \
-            and not isinstance(first_img, _basestring):
-        if hasattr(first_img, '__len__') and len(first_img) == 0:
-            raise TypeError('An empty object - %r - was passed instead of an '
-                            'image or a list of images' % niimgs)
-        first_img = next(iter(first_img))
-        depth += 1
-
-    # First image is supposed to be a path or a Niimg-like object
-    first_img = check_niimg(first_img)
-
-    # Check dimension and depth
-    shape = first_img.shape
-    dim = len(shape)
-
-    if (dim + depth) != 4:
-        # Detailed error message that tells exactly the user what
-        # was provided and what should have been provided.
-        raise TypeError("Data must be a 4D Niimg-like object. You provided a "
-                        "%s%dD image(s), of shape %s. "
-                        "See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg." % (
-                        'list of ' * depth, dim, shape))
-
-    # Now, we load data as we know its format
-    if dim == 4:
+    if isinstance(niimgs, basestring) or not hasattr(niimgs, "__iter__"):
+        niimgs = load_img(niimgs)
+        shape = _get_shape(niimgs)
+        if len(shape) == 3:
+            raise TypeError("A 4D image is expected, but an image "
+                "with a shape of %s was given." % (shape, ))
         if return_iterator:
-            result = (_index_niimgs(first_img, i)
-                      for i in range(shape[3]))
+            return (_index_niimgs(niimgs, i) for i in shape[3])
         else:
-            result = first_img
-    else:
-        if return_iterator:
-            result = (check_niimg(img) for img in niimgs)
-        else:
-            result = concat_niimgs(niimgs)
-    return result
+            return load_img(niimgs)
+
+    # We now have 3 types of input:
+    # * a true list
+    # * an iterator
+    # * a generator
+
+    # To be iterator/generator friendly, we externalize the verifications in
+    # an iterator.
+
+    niimgs = _iter_check_niimgs(niimgs)
+
+    if return_iterator:
+        return niimgs
+
+    return concat_niimgs(niimgs)
 
 
 def _index_niimgs(niimgs, index):
