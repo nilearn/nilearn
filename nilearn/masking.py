@@ -40,8 +40,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     mask: numpy.ndarray
         boolean version of the mask
     '''
-    # 3D image for mask_img not enforced here on purpose
-    mask_img = _utils.check_niimg(mask_img, ensure_3d=False)
+    mask_img = _utils.check_niimg(mask_img)
     mask = mask_img.get_data()
     values = np.unique(mask)
 
@@ -255,7 +254,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     if verbose > 0:
         print("EPI mask computation")
 
-    epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
+    epi_img = _utils.check_niimgs(epi_img)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -422,7 +421,7 @@ def compute_background_mask(data_imgs, border_size=2,
     if verbose > 0:
         print("Background mask computation")
 
-    data_imgs = _utils.check_niimgs(data_imgs, accept_3d=True)
+    data_imgs = _utils.check_niimgs(data_imgs)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -580,7 +579,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     values (this is checked for in apply_mask, not in this function).
     """
 
-    mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
+    mask_img = _utils.check_niimg(mask_img)
     mask_affine = mask_img.get_affine()
     mask_data = _utils.as_ndarray(mask_img.get_data(),
                                   dtype=np.bool)

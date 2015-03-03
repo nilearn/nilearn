@@ -134,7 +134,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             logger.log("loading data from %s" %
                        _utils._repr_niimgs(self.mask_img)[:200],
                        verbose=self.verbose)
-            self.mask_img_ = _utils.check_niimg(self.mask_img, ensure_3d=True)
+            self.mask_img_ = _utils.check_niimg(self.mask_img)
         else:
             self.mask_img_ = None
 

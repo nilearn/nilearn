@@ -49,11 +49,6 @@ def test_check_niimg():
     assert_raises_regex(TypeError, 'empty object',
                         _utils.check_niimg, [])
 
-    # Test ensure_3d
-    # check error for non-forced but necessary resampling
-    assert_raises_regex(TypeError, '3D',
-                        _utils.check_niimg, ['test.nii', ], ensure_3d=True)
-
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -61,19 +56,6 @@ def test_check_niimg():
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg(filename)
-
-    # Test ensure_3d with a in-memory object
-    assert_raises_regex(TypeError, '3D',
-                        _utils.check_niimg, data, ensure_3d=True)
-
-    # Test ensure_3d with a non 3D image
-    assert_raises_regex(TypeError, '3D',
-                        _utils.check_niimg, data_img, ensure_3d=True)
-
-    # Test ensure_3d with a 4D image with a length 1 4th dim
-    data = np.zeros((40, 40, 40, 1))
-    data_img = Nifti1Image(data, np.eye(4))
-    _utils.check_niimg(data_img, ensure_3d=True)
 
 
 def test_check_niimgs():
@@ -123,7 +105,7 @@ def test_check_niimgs():
     assert_raises_regex(TypeError, 'image',
                         _utils.check_niimgs, img_3d)
     # This shouldn't raise an error
-    _utils.check_niimgs(img_3d, accept_3d=True)
+    _utils.check_niimgs(img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
     phony_img = PhonyNiimage()
@@ -168,7 +150,7 @@ def test_concat_niimgs():
     img1b = Nifti1Image(np.ones(shape2), affine)
 
     shape3 = (11, 22, 33)
-    img1c = Nifti1Image(np.ones(shape2), affine)
+    img1c = Nifti1Image(np.ones(shape3), affine)
 
     # check basic concatenation with equal shape/affine
     concatenated = _utils.concat_niimgs((img1, img3, img1),
