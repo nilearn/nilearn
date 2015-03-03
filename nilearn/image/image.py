@@ -366,7 +366,7 @@ def _compute_mean(imgs, target_affine=None,
     from . import resampling
     input_repr = _repr_niimgs(imgs)
 
-    imgs = check_niimgs(imgs, accept_3d=True)
+    imgs = check_niimgs(imgs)
     mean_img = _safe_get_data(imgs)
     if not mean_img.ndim in (3, 4):
         raise ValueError('Computation expects 3D or 4D '

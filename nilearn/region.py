@@ -65,7 +65,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     nilearn.region.img_to_signals_maps
     """
 
-    labels_img = _utils.check_niimg(labels_img, ensure_3d=True)
+    labels_img = _utils.check_niimg(labels_img)
 
     # TODO: Make a special case for list of strings (load one image at a
     # time).
@@ -80,7 +80,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         raise ValueError("labels_img and imgs affines must be identical")
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
+        mask_img = _utils.check_niimg(mask_img)
         if mask_img.shape != target_shape:
             raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.get_affine() - target_affine).max() > 1e-9:
@@ -151,14 +151,14 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     nilearn.region.signals_to_img_maps
     """
 
-    labels_img = _utils.check_niimg(labels_img, ensure_3d=True)
+    labels_img = _utils.check_niimg(labels_img)
 
     signals = np.asarray(signals)
     target_affine = labels_img.get_affine()
     target_shape = labels_img.shape[:3]
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
+        mask_img = _utils.check_niimg(mask_img)
         if mask_img.shape != target_shape:
             raise ValueError("mask_img and labels_img shapes "
                              "must be identical.")
@@ -236,7 +236,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     nilearn.region.signals_to_img_maps
     """
 
-    maps_img = _utils.check_niimg(maps_img)
+    maps_img = _utils.check_niimgs(maps_img)
     imgs = _utils.check_niimgs(imgs)
     affine = imgs.get_affine()
     shape = imgs.shape[:3]
@@ -250,7 +250,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     maps_data = maps_img.get_data()
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
+        mask_img = _utils.check_niimg(mask_img)
         if mask_img.shape != shape:
             raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.get_affine() - affine).max() > 1e-9:

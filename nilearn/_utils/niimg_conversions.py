@@ -15,13 +15,22 @@ from .niimg import (_safe_get_data, load_img, new_img_like,
 from .compat import _basestring
 
 
+def _check_fov(img, affine, shape):
+    """ Return True if img1 and have the given field of view
+        (shape and affine), False elsewhere.
+    """
+    img = check_niimgs(img)
+    return (_get_shape(img)[:3] == shape and
+            np.allclose(img.get_affine(), affine))
+
+
 def _check_same_fov(img1, img2):
     """ Return True if img1 and img2 have the same field of view
         (shape and affine), False elsewhere.
     """
-    img1 = check_niimgs(img1, accept_3d=True)
-    img2 = check_niimgs(img2, accept_3d=True)
-    return (img1.shape[:3] == img2.shape[:3]
+    img1 = check_niimgs(img1)
+    img2 = check_niimgs(img2)
+    return (_get_shape(img1)[:3] == _get_shape(img2)[:3]
             and np.allclose(img1.get_affine(), img2.get_affine()))
 
 
@@ -83,7 +92,7 @@ def _iter_concat_niimgs():
     pass
 
 
-def concat_niimgs(niimgs, dtype=np.float32,
+def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
                   auto_resample=False, verbose=0,
                   memory=Memory(cachedir=None), memory_level=0):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
@@ -100,6 +109,9 @@ def concat_niimgs(niimgs, dtype=np.float32,
 
     dtype: numpy dtype, optional
         the dtype of the returned image
+
+    accept_4d: boolean, optional
+        Accept 4D images
 
     auto_resample: boolean
         Converts all images to the space of the first one.
@@ -121,9 +133,6 @@ def concat_niimgs(niimgs, dtype=np.float32,
     concatenated: nibabel.Nifti1Image
         A single image.
     """
-
-    # XXX I kept the magic: it can concatenate either 3D or 4D images. But not
-    # a mix of them anymore.
 
     # get properties from first image
     first_niimg = check_niimg(next(iter(niimgs)))
@@ -171,7 +180,7 @@ def concat_niimgs(niimgs, dtype=np.float32,
 
         niimg = check_niimg(iter_niimg)
         if (np.array_equal(niimg.get_affine(), target_affine) and
-            target_item_shape == niimg.shape[:3]):
+                target_item_shape == niimg.shape[:3]):
             this_data = niimg.get_data()
         else:
             if not auto_resample:
@@ -184,13 +193,13 @@ def concat_niimgs(niimgs, dtype=np.float32,
                                     niimg.get_affine()))
             if verbose > 0:
                 print("...resampled to first nifti!")
-            
+
             from .. import image  # we avoid a circular import
             niimg = cache(image.resample_img, memory, func_memory_level=2,
                           memory_level=memory_level)(
-                              niimg,
-                              target_affine=target_affine,
-                              target_shape=target_item_shape)
+                                niimg,
+                                target_affine=target_affine,
+                                target_shape=target_item_shape)
             this_data = niimg.get_data()
 
         data[..., cur_4d_index:cur_4d_index + size] = _to_4d(this_data)
@@ -200,9 +209,23 @@ def concat_niimgs(niimgs, dtype=np.float32,
 
 
 def _iter_check_niimgs(niimgs):
+    affine = None
+    shape = None
     for i, niimg in enumerate(niimgs):
         try:
-            yield check_niimg(niimg)
+            niimg = check_niimg(niimg)
+            if affine is None:
+                affine = niimg.get_affine()
+                shape = _get_shape(niimg)
+            if not _check_fov(niimg, affine, shape):
+                raise ValueError(
+                    "Field of view of image #%d is different from reference "
+                    "FOV.\n"
+                    "Reference affine:\n%r\nImage affine:\n%r\n"
+                    "Reference shape:\n%r\nImage shape:\n%r\n"
+                    % (i, affine, niimg.get_affine(), shape,
+                       _get_shape(niimg)))
+            yield niimg
         except TypeError as e:
             raise TypeError("Error while loading image #%d: \n%s"
                             % (i, e.message))
@@ -264,10 +287,8 @@ def check_niimgs(niimgs, return_iterator=False):
     # To be iterator/generator friendly, we externalize the verifications in
     # an iterator.
 
-    niimgs = _iter_check_niimgs(niimgs)
-
     if return_iterator:
-        return niimgs
+        return _iter_check_niimgs(niimgs)
 
     return concat_niimgs(niimgs)
 
