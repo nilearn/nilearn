@@ -254,7 +254,7 @@ input either a filename, or a `NiftiImage object
 
 For instance, suppose that you have a Tmap file saved in a Nifti file
 "t_map000.nii", in the directory "/home/user", to visualize it, you will
-first import the plotting functionality::
+first import the :ref:`plotting <plotting>` functionality::
 
     from nilearn import plotting
 
@@ -282,7 +282,20 @@ The returned value, `smoothed_img` is a `NiftiImage object
 to other nilearn functions operating on niimgs (neuroimaging images), or
 saved to disk with::
 
-    >>> smoothed_img.to_filename(""/home/user/t_map000_smoothed.nii")
+    >>> smoothed_img.to_filename("/home/user/t_map000_smoothed.nii")
+
+Finally, nilearn deals with Nifti images that come in two flavors: 3D
+images, that represent a brain volume, and 4D images, that represent a
+series of brain volume. To extract the n-th 3D image in a 4D image, use
+:func:`image.index_img` (keep in mind that indexing starts at 0 in
+Python)::
+
+    >>> first_volume = image.index_img("/home/user/fmri_volumes.nii", 0)
+
+To do a loop over each volume of a 4D image, use :func:`image.iter_img`::
+
+   >>> for volume in image.iter_img("/home/user/fmri_volumes.nii"):
+   ...     smoothed_img = image.smooth_img(volume, fwhm=5)
 
 |
 
