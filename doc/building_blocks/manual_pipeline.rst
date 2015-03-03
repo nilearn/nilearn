@@ -1,7 +1,7 @@
-.. _getting_started:
+.. _manual_pipeline:
 
 ============================================================
-Introduction to the neuroimaging machine-learning pipeline
+Building your own neuroimaging machine-learning pipeline
 ============================================================
 
 Nilearn comes with code to simplify the use of scikit-learn when dealing
