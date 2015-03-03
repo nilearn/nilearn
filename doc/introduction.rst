@@ -297,6 +297,27 @@ To do a loop over each volume of a 4D image, use :func:`image.iter_img`::
    >>> for volume in image.iter_img("/home/user/fmri_volumes.nii"):
    ...     smoothed_img = image.smooth_img(volume, fwhm=5)
 
+.. topic:: **Exercise: varying the amount of smoothing**
+   :class: green
+
+   Want to sharpen your skills with nilearn? 
+   Compute the mean EPI for first subject of the ADHD
+   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`, and
+   smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
+
+   **Hints:**
+
+      * Inspect the '.keys()' of the object returned by
+        :func:`nilearn.datasets.fetch_adhd`
+
+      * Look at the "reference" section of the documentation: there is a
+        function to compute the mean of a 4D image
+
+      * You can do a for loop in Python. You can use the "range" function
+
+      * The solution is found :ref:`here
+        <example_manipulating_visualizing_plot_smooth_mean_image.py>`
+
 |
 
 ____
