@@ -12,6 +12,7 @@ import itertools
 
 import numpy as np
 import scipy.linalg
+from six.moves import xrange
 
 import sklearn.cross_validation
 import sklearn.covariance

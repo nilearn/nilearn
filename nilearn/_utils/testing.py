@@ -246,7 +246,7 @@ def generate_regions_ts(n_features, n_regions,
     regions = np.zeros((n_regions, n_features), order="C")
     overlap_end = int((overlap + 1) / 2.)
     overlap_start = int(overlap / 2.)
-    for n in xrange(len(boundaries) - 1):
+    for n in range(len(boundaries) - 1):
         start = int(max(0, boundaries[n] - overlap_start))
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
@@ -316,7 +316,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
-        labels = xrange(0, n_regions + 1)
+        labels = range(0, n_regions + 1)
         n_regions += 1
     else:
         n_regions = len(labels)

@@ -6,6 +6,7 @@ Test for "region" module.
 
 import numpy as np
 from nose.tools import assert_raises, assert_true
+from six.moves import xrange
 
 import nibabel
 
