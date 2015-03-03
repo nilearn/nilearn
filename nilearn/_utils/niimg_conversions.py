@@ -25,8 +25,8 @@ def _check_same_fov(img1, img2):
             and np.allclose(img1.get_affine(), img2.get_affine()))
 
 
-def check_niimg(niimg, ensure_3d=False):
-    """Check that niimg is a proper niimg. Turn filenames into objects.
+def check_niimg(niimg):
+    """Check that niimg is a proper 3D niimg. Turn filenames into objects.
 
     Parameters
     ----------
@@ -36,13 +36,9 @@ def check_niimg(niimg, ensure_3d=False):
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
 
-    ensure_3d: boolean, optional
-        If ensure_3d is true, the code checks that the image passed is a
-        3D image and raises an error if not
-
     Returns
     -------
-    result: Niimg-like object
+    result: 3D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
         that the returned object has get_data() and get_affine() methods.
 
@@ -55,29 +51,20 @@ def check_niimg(niimg, ensure_3d=False):
 
     Its application is idempotent.
     """
-    if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
-        if ensure_3d:
-            raise TypeError("A 3D image is expected, but an iterable was"
-                " given: %s" % short_repr(niimg))
-        if hasattr(niimg, "__len__") and len(niimg) == 0:
-            raise TypeError('An empty object - %r - was passed instead of an '
-                            'image or a list of images' % niimg)
-        return concat_niimgs(niimg)
-
     niimg = load_img(niimg)
 
-    if ensure_3d:
-        shape = niimg.shape
-        if len(shape) == 3:
-            pass
-        elif (len(shape) == 4 and shape[3] == 1):
-            # "squeeze" the image.
-            data = _safe_get_data(niimg)
-            affine = niimg.get_affine()
-            niimg = new_img_like(niimg, data[:, :, :, 0], affine)
-        else:
-            raise TypeError("A 3D image is expected, but an image "
-                "with a shape of %s was given." % (shape, ))
+    shape = niimg.shape
+    if len(shape) == 3:
+        pass
+    elif (len(shape) == 4 and shape[3] == 1):
+        # "squeeze" the image.
+        data = _safe_get_data(niimg)
+        affine = niimg.get_affine()
+        niimg = new_img_like(niimg, data[:, :, :, 0], affine)
+    else:
+        raise TypeError("A 3D image is expected, but an image "
+            "with a shape of %s was given." % (shape, ))
+
     return niimg
 
 
