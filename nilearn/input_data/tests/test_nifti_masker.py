@@ -192,3 +192,52 @@ def test_joblib_cache():
     finally:
         shutil.rmtree(cachedir, ignore_errors=True)
 
+
+def test_mask_init_errors():
+    # Errors that are caught in init
+    mask = NiftiMasker(mask_strategy='oops')
+    testing.assert_raises_regexp(ValueError, "Unknown value of mask_strategy 'oops'",
+                                 mask.fit)
+
+
+def test_compute_epi_mask():
+    # Taken from test_masking.py, but used to test that the masker class
+    #   is passing parameters appropriately.
+    mean_image = np.ones((9, 9, 3))
+    mean_image[3:-2, 3:-2, :] = 10
+    mean_image[5, 5, :] = 11
+    mean_image = Nifti1Image(mean_image.astype(float), np.eye(4))
+
+    masker = NiftiMasker(mask_strategy='epi',
+                         mask_args=dict(opening=False))
+    masker.fit(mean_image)
+    mask1 = masker.mask_img_
+
+    masker2 = NiftiMasker(mask_strategy='epi',
+                          mask_args=dict(opening=False, exclude_zeros=True))
+    masker2.fit(mean_image)
+    mask2 = masker2.mask_img_
+
+    # With an array with no zeros, exclude_zeros should not make
+    # any difference
+    np.testing.assert_array_equal(mask1.get_data(), mask2.get_data())
+
+    # Check that padding with zeros does not change the extracted mask
+    mean_image2 = np.zeros((30, 30, 3))
+    mean_image2[3:12, 3:12, :] = mean_image.get_data()
+    mean_image2 = Nifti1Image(mean_image2, np.eye(4))
+
+    masker3 = NiftiMasker(mask_strategy='epi',
+                          mask_args=dict(opening=False, exclude_zeros=True))
+    masker3.fit(mean_image2)
+    mask3 = masker3.mask_img_
+    np.testing.assert_array_equal(mask1.get_data(),
+                                  mask3.get_data()[3:12, 3:12])
+
+    # However, without exclude_zeros, it does
+    masker4 = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=False))
+    masker4.fit(mean_image2)
+    mask4 = masker4.mask_img_
+
+    assert_false(np.allclose(mask1.get_data(),
+                             mask4.get_data()[3:12, 3:12]))

@@ -170,7 +170,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 compute_mask = masking.compute_epi_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                    "Acceptable values are 'background' and 'epi'.")
+                    "Acceptable values are 'background' and 'epi'." % self.mask_strategy)
             if self.verbose > 0:
                 print "[%s.fit] Computing the mask" % self.__class__.__name__
             imgs = _utils.check_niimgs(imgs, accept_3d=True)
