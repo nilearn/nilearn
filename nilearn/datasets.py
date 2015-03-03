@@ -26,7 +26,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-import nibabel
+from ._utils.niimage import load_img, new_img
 
 
 def _format_time(t):
@@ -1647,7 +1647,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
 
-    atlas_img = nibabel.load(atlas_img)
+    atlas_img = load_img(atlas_img)
     atlas = atlas_img.get_data()
 
     labels = np.unique(atlas)
@@ -1676,7 +1676,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     for n in names[1:]:
         new_names.append(n + ', left part')
 
-    return nibabel.Nifti1Image(atlas, atlas_img.get_affine()), new_names
+    return new_img(atlas, atlas_img.get_affine()), new_names
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
@@ -2414,7 +2414,8 @@ def load_mni152_template():
     package_directory = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(package_directory, "data", "avg152T1_brain.nii.gz")
 
-    return nibabel.load(path)
+    # XXX Should we load the image here?
+    return load_img(path)
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',

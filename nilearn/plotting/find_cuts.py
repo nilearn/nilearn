@@ -8,10 +8,9 @@ Tools to find activations and cut on maps
 import numpy as np
 from scipy import ndimage
 
-import nibabel
-
 # Local imports
 from .._utils.ndimage import largest_connected_component
+from .._utils.niimage import new_img
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
@@ -122,7 +121,7 @@ def _get_auto_mask_bounds(img):
     # Nifti1Image cannot contain bools
     mask = mask.astype(np.int)
     xmin, xmax, ymin, ymax, zmin, zmax = \
-            get_mask_bounds(nibabel.Nifti1Image(mask, affine))
+            get_mask_bounds(new_img(mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 

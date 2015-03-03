@@ -11,10 +11,9 @@ import numpy as np
 from scipy import linalg, ndimage
 from six.moves import xrange
 
-import nibabel
-
 from . import _utils
 from . import masking
+from ._utils.niimage import new_img
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
@@ -194,7 +193,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                 if num is not None:
                     data[i, j, k, :] = signals[:, num]
 
-    return nibabel.Nifti1Image(data, target_affine)
+    return new_img(data, target_affine)
 
 
 def img_to_signals_maps(imgs, maps_img, mask_img=None):
@@ -324,7 +323,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     assert(maps_mask.shape == maps_data.shape[:3])
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
-    return masking.unmask(data, nibabel.Nifti1Image(
+    return masking.unmask(data, new_img(
         _utils.as_ndarray(maps_mask, dtype=np.int8), affine)
                           )
 

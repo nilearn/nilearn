@@ -53,6 +53,18 @@ def is_img(obj):
         return False
 
 
+def load_img(img):
+    if isinstance(img, basestring):
+        # data is a filename, we load it
+        niimg = nibabel.load(img)
+    elif not is_img(niimg):
+        raise TypeError("Data given cannot be converted to a nifti"
+                        " image: this object -'%s'- does not expose"
+                        " get_data or get_affine methods"
+                        % short_repr(niimg))
+    return niimg
+
+
 def new_img(data, affine, header=None):
     return nibabel.Nifti1Image(data, affine, header=header)
 

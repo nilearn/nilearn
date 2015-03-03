@@ -7,11 +7,10 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
-import nibabel
-
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
+from .._utils.niimage import new_img
 from .._utils.niimg_conversions import _check_same_fov
 from .._utils import _compose_err_msg
 from .. import signal
@@ -168,7 +167,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                           copy=True, order="C")
             maps_affine = _utils.as_ndarray(
                                             self.maps_img_.get_affine())
-            self.maps_img_ = nibabel.Nifti1Image(maps_data, maps_affine)
+            self.maps_img_ = new_img(maps_data, maps_affine)
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
             logger.log("resampling regions", verbose=self.verbose)

@@ -11,15 +11,15 @@ from six import string_types
 
 import numpy as np
 from scipy import ndimage
-import nibabel
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
-from .._utils.niimg_conversions import (_safe_get_data, check_niimgs,
-                                        _index_niimgs)
+from .._utils.niimg_conversions import _safe_get_data, _index_niimgs
+from .._utils.niimage import new_img
 from .. import masking
 from nilearn.image import reorder_img
+
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
@@ -253,7 +253,7 @@ def smooth_img(imgs, fwhm):
         affine = img.get_affine()
         filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
                                  ensure_finite=True, copy=True)
-        ret.append(nibabel.Nifti1Image(filtered, affine))
+        ret.append(new_img(filtered, affine))
 
     if single_img:
         return ret[0]
@@ -309,7 +309,7 @@ def _crop_img_to(img, slices, copy=True):
     new_affine[:3, :3] = linear_part
     new_affine[:3, 3] = new_origin
 
-    new_img = nibabel.Nifti1Image(cropped_data, new_affine)
+    new_img = new_img(cropped_data, new_affine)
 
     return new_img
 
@@ -377,7 +377,7 @@ def _compute_mean(imgs, target_affine=None,
     if mean_img.ndim == 4:
         mean_img = mean_img.mean(axis=-1)
     mean_img = resampling.resample_img(
-        nibabel.Nifti1Image(mean_img, imgs.get_affine()),
+        new_img(mean_img, imgs.get_affine()),
         target_affine=target_affine, target_shape=target_shape)
     affine = mean_img.get_affine()
     mean_img = mean_img.get_data()
@@ -466,7 +466,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
                 running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
-    return nibabel.Nifti1Image(running_mean, target_affine)
+    return new_img(running_mean, target_affine)
 
 
 def swap_img_hemispheres(img):
@@ -502,7 +502,7 @@ def swap_img_hemispheres(img):
     img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = nibabel.Nifti1Image(img.get_data()[::-1], img.get_affine(),
+    out_img = new_img(img.get_data()[::-1], img.get_affine(),
                                   header=img.get_header())
 
     return out_img

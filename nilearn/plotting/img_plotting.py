@@ -17,8 +17,6 @@ import numbers
 import numpy as np
 from scipy import ndimage
 
-import nibabel
-
 from .._utils.testing import skip_if_running_nose
 from .._utils.numpy_conversions import as_ndarray
 
@@ -28,6 +26,7 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
+from .._utils.niimage import new_img
 from .._utils.extmath import fast_abs_percentile
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
@@ -76,7 +75,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             # voxels pass the threshold
             threshold = fast_abs_percentile(data) - 1e-5
 
-        img = nibabel.Nifti1Image(as_ndarray(data), affine)
+        img = new_img(as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
         img,
@@ -93,7 +92,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                            cmap=pl.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
-        display.add_overlay(nibabel.Nifti1Image(data, affine), 
+        display.add_overlay(new_img(data, affine),
                             threshold=threshold, interpolation=interpolation,
                             colorbar=colorbar, **kwargs)
 

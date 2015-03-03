@@ -8,12 +8,11 @@ import collections
 import numpy as np
 from six import string_types
 
-import nibabel
 from sklearn.externals.joblib import Memory
 from .cache_mixin import cache
 
 
-from .niimage import _get_shape, _safe_get_data, is_img, short_repr
+from .niimage import _get_shape, _safe_get_data, load_img, new_img, short_repr
 
 
 def _check_same_fov(img1, img2):
@@ -65,14 +64,8 @@ def check_niimg(niimg, ensure_3d=False):
                             'image or a list of images' % niimg)
         return concat_niimgs(niimg)
 
-    if isinstance(niimg, string_types):
-        # data is a filename, we load it
-        niimg = nibabel.load(niimg)
-    elif not is_img(niimg):
-        raise TypeError("Data given cannot be converted to a nifti"
-                        " image: this object -'%s'- does not expose"
-                        " get_data or get_affine methods"
-                        % short_repr(niimg))
+    niimg = load_img(niimg)
+
     if ensure_3d:
         shape = _get_shape(niimg)
         if len(shape) == 3:
@@ -81,7 +74,7 @@ def check_niimg(niimg, ensure_3d=False):
             # "squeeze" the image.
             data = _safe_get_data(niimg)
             affine = niimg.get_affine()
-            niimg = nibabel.Nifti1Image(data[:, :, :, 0], affine)
+            niimg = new_img(data[:, :, :, 0], affine)
         else:
             raise TypeError("A 3D image is expected, but an image "
                 "with a shape of %s was given." % (shape, ))
@@ -212,7 +205,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
         data[..., cur_4d_index:cur_4d_index + size] = _to_4d(this_data)
         cur_4d_index += size
 
-    return nibabel.Nifti1Image(data, target_affine)
+    return new_img(data, target_affine)
 
 
 def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
@@ -258,8 +251,8 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
                       or not isinstance(first_img, collections.Iterable)):
         niimg = check_niimg(niimgs)
         if len(_get_shape(niimg)) == 3:
-            niimg = nibabel.Nifti1Image(niimg.get_data()[..., np.newaxis],
-                                        niimg.get_affine())
+            niimg = new_img(niimg.get_data()[..., np.newaxis],
+                            niimg.get_affine())
         return niimg
 
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
@@ -304,6 +297,6 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
 
 def _index_niimgs(niimgs, index):
     """Helper function for check_niimgs."""
-    return nibabel.Nifti1Image(niimgs.get_data()[:, :, :, index],
-                               niimgs.get_affine(),
-                               header=niimgs.get_header())
+    return new_img(niimgs.get_data()[:, :, :, index],
+                   niimgs.get_affine(),
+                   header=niimgs.get_header())

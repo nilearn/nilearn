@@ -7,8 +7,6 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
-import nibabel
-
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
