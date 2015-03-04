@@ -69,7 +69,7 @@ source_affine = np.eye(4)
 source_affine[:2, 3] = np.array([96, 64])
 
 # Rotate it slightly
-angle = np.pi / 180. * 15
+angle = np.pi / 180 * 15
 rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
                             [np.sin(angle), np.cos(angle)]])
 source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size

@@ -3,7 +3,6 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
-from six import string_types
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
