@@ -106,7 +106,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
         current_download_size = bytes_so_far - initial_size
         bytes_remaining = total_size - bytes_so_far
         dt = time.time() - t0
-        download_rate = current_download_size / float(dt)
+        download_rate = current_download_size / max(1e-8, float(dt))
         # Minimum rate of 0.01 bytes/s, to avoid dividing by zero.
         time_remaining = bytes_remaining / max(0.01, download_rate)
 
