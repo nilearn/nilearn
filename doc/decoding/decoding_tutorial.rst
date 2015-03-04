@@ -353,14 +353,13 @@ We can visualize the weights of the decoder:
 - we then create a figure and plot as a background the first EPI image
 - finally we plot the SVC's weights after masking the zero values
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
-   :target: ../auto_examples/plot_haxby_simple.html
-   :align: right
-   :scale: 65
-
 .. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualize the mask ########################################################
+
+.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
+   :target: ../auto_examples/plot_haxby_simple.html
+   :scale: 65
 
 
 .. seealso::
