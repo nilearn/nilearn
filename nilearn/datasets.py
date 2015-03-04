@@ -635,11 +635,11 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
-                move_dir = os.path.dirname(os.path.join(temp_dir, move))
+                move_dir = os.path.dirname(move)
                 if not os.path.exists(move_dir):
                     os.makedirs(move_dir)
-                shutil.move(os.path.join(temp_dir, dl_file), move)
-                dl_file = os.path.join(temp_dir, opts['move'])
+                shutil.move(dl_file, move)
+                dl_file = move
             if 'uncompress' in opts:
                 try:
                     if not mock or os.path.getsize(dl_file) != 0:
