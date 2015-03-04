@@ -6,7 +6,7 @@ import inspect
 import textwrap
 import re
 import pydoc
-from six.moves import StringIO
+from StringIO import StringIO
 from warnings import warn
 
 
@@ -376,7 +376,7 @@ class NumpyDocString(object):
         idx = self['index']
         out = []
         out += ['.. index:: %s' % idx.get('default', '')]
-        for section, references in idx.items():
+        for section, references in idx.iteritems():
             if section == 'default':
                 continue
             out += ['   :%s: %s' % (section, ', '.join(references))]
@@ -435,7 +435,7 @@ class FunctionDoc(NumpyDocString):
                 argspec = inspect.formatargspec(*argspec)
                 argspec = argspec.replace('*', '\*')
                 signature = '%s%s' % (func_name, argspec)
-            except TypeError as e:
+            except TypeError, e:
                 signature = '%s()' % func_name
             self['Signature'] = signature
 
@@ -458,7 +458,7 @@ class FunctionDoc(NumpyDocString):
 
         if self._role:
             if not roles.has_key(self._role):
-                print("Warning: invalid role %s" % self._role)
+                print "Warning: invalid role %s" % self._role
             out += '.. %s:: %s\n    \n\n' % (roles.get(self._role, ''),
                                              func_name)
 
