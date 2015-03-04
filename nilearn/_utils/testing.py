@@ -34,7 +34,7 @@ except ImportError:
     except ImportError:
         # for Py 2.6
         def assert_raises_regex(expected_exception, expected_regexp,
-                                 callable_obj=None, *args, **kwargs):
+                                callable_obj=None, *args, **kwargs):
             """Helper function to check for message patterns in exceptions"""
 
             not_raised = False
@@ -102,9 +102,9 @@ def write_tmp_imgs(*imgs, **kwargs):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for img in imgs:
-                (_, filename) = tempfile.mkstemp(prefix="nilearn_",
-                                                 suffix=".nii",
-                                                 dir=None)
+                _, filename = tempfile.mkstemp(prefix="nilearn_",
+                                               suffix=".nii",
+                                               dir=None)
                 filenames.append(filename)
                 nibabel.save(img, filename)
 
