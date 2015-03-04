@@ -136,6 +136,24 @@ And it provides one estimated covariance and inverse-covariance
     >>> estimator.covariances_[0]  # doctest: +SKIP
     >>> estimator.precisions_[0]  # doctest: +SKIP
 
+|
+
+.. currentmodule:: nilearn.group_sparse_covariance
+
+One specific case where this may be interesting is for group analysis
+across multiple subjects. Indeed, one challenge when doing statistics on
+the coefficients of a connectivity matrix is that the number of
+coefficients to compare grows quickly with the number of regions, and as
+a result correcting for multiple comparisions takes a heavy toll on
+statistical power.
+
+In such a situation, you can use the :class:`GroupSparseCovariance` and
+set an `alpha` value a bit higher than the alpha value selected by
+cross-validation in the :class:`GroupSparseCovarianceCV`. Such a choice
+will enforce a stronger sparsity on the precision matrices for each
+subject. As the sparsity is common to each subject, you can then do the
+group analysis only on the non zero coefficients.
+
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
