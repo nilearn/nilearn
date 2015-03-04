@@ -180,7 +180,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, env_vars=None,
+def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
@@ -217,11 +217,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=None,
     paths = []
 
     # Search given environment variables
-    if env_vars is not None:
-        for env_var in env_vars:
-            env_data = os.getenv(env_var)
-            if env_data is not None:
-                paths.extend(env_data.split(':'))
+    for env_var in env_vars:
+        env_data = os.getenv(env_var, '')
+        paths.extend(env_data.split(':'))
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
@@ -774,7 +772,8 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
             ("random_all.nii.gz", url, opts)
     ]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
