@@ -217,20 +217,20 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     b, a = signal.butter(order, wn, btype=btype)
     if signals.ndim == 1:
         # 1D case
-        output = signal.lfilter(b, a, signals)
-        if copy:  # lfilter does a copy in all cases.
+        output = signal.filtfilt(b, a, signals)
+        if copy:  # filtfilt does a copy in all cases.
             signals = output
         else:
             signals[...] = output
     else:
         if copy:
             # No way to save memory when a copy has been requested,
-            # because lfilter does out-of-place processing
-            signals = signal.lfilter(b, a, signals, axis=0)
+            # because filtfilt does out-of-place processing
+            signals = signal.filtfilt(b, a, signals, axis=0)
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
-                timeseries[:] = signal.lfilter(b, a, timeseries)
+                timeseries[:] = signal.filtfilt(b, a, timeseries)
     return signals
 
 
