@@ -1,5 +1,5 @@
 """
-PCA dimension reduction on multiple subjects
+PCA dimension reduction on multiple subjects (i.e., group model)
 """
 import warnings
 import itertools
@@ -9,7 +9,7 @@ import numpy as np
 
 import nibabel
 
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
@@ -29,8 +29,8 @@ def session_pca(imgs, mask_img, parameters,
                 copy=True):
     """Filter, mask and compute PCA on Niimg-like objects
 
-    This is an helper function whose first call `base_masker.filter_and_mask`
-    and then apply a PCA to reduce the number of time series.
+    This is an helper function that first calls `base_masker.filter_and_mask`
+    and then applies a PCA to reduce the number of time series.
 
     Parameters
     ----------
@@ -103,9 +103,11 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
     mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+        its precomputed mask image (but not other variables) will be used.
+        If None, it will be computed automatically by a MultiNiftiMasker.
+        In any case, specified parameters (standardize, target_affine, etc.)
+        will be passed on to MultiPCA's internal masker and take effect in fit()
+        for mask creation and in transform() for mask application.
 
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
@@ -216,52 +218,28 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             confounds = itertools.repeat(None, len(imgs))
 
         # First, learn the mask
-        if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
-            self.masker_ = MultiNiftiMasker(mask_img=self.mask,
-                                            smoothing_fwhm=self.smoothing_fwhm,
-                                            target_affine=self.target_affine,
-                                            target_shape=self.target_shape,
-                                            standardize=self.standardize,
-                                            low_pass=self.low_pass,
-                                            high_pass=self.high_pass,
-                                            mask_strategy='epi',
-                                            t_r=self.t_r,
-                                            memory=self.memory,
-                                            memory_level=self.memory_level,
-                                            n_jobs=self.n_jobs,
-                                            verbose=max(0, self.verbose - 1))
-        else:
-            try:
-                self.masker_ = clone(self.mask)
-            except TypeError as e:
-                # Workaround for a joblib bug: in joblib 0.6, a Memory object
-                # with cachedir = None cannot be cloned.
-                masker_memory = self.mask.memory
-                if masker_memory.cachedir is None:
-                    self.mask.memory = None
-                    self.masker_ = clone(self.mask)
-                    self.mask.memory = masker_memory
-                    self.masker_.memory = Memory(cachedir=None)
-                else:
-                    # The error was raised for another reason
-                    raise e
-
-            for param_name in ['target_affine', 'target_shape',
-                               'smoothing_fwhm', 'low_pass', 'high_pass',
-                               't_r', 'memory', 'memory_level']:
-                our_param = getattr(self, param_name)
-                if our_param is None:
-                    # Default value
-                    continue
-                if getattr(self.masker_, param_name) is not None:
-                    warnings.warn('Parameter %s of the masker overriden'
-                                  % param_name)
-                setattr(self.masker_, param_name, our_param)
+        # note that we systematically ignore previous masker params
+        preset_mask_img = self.mask  # Niimg-like object or None or...
+        if isinstance(preset_mask_img, (NiftiMasker, MultiNiftiMasker)):
+            preset_mask_img = self.mask.mask_img_
+        self.masker_ = MultiNiftiMasker(mask_img=preset_mask_img,
+                                        smoothing_fwhm=self.smoothing_fwhm,
+                                        target_affine=self.target_affine,
+                                        target_shape=self.target_shape,
+                                        standardize=self.standardize,
+                                        low_pass=self.low_pass,
+                                        high_pass=self.high_pass,
+                                        mask_strategy='epi',
+                                        t_r=self.t_r,
+                                        memory=self.memory,
+                                        memory_level=self.memory_level,
+                                        n_jobs=self.n_jobs,
+                                        verbose=max(0, self.verbose - 1))
         self.masker_.fit(imgs)
         self.mask_img_ = self.masker_.mask_img_
 
-        parameters = get_params(MultiNiftiMasker, self)
-        # Remove non specific and redudent parameters
+        parameters = get_params(MultiNiftiMasker, self)  # only for session_pca()
+        # Remove non specific and redundant parameters
         for param_name in ['memory', 'memory_level', 'confounds',
                            'verbose', 'n_jobs']:
             parameters.pop(param_name, None)
