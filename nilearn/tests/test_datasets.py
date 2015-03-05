@@ -88,10 +88,29 @@ def test_get_dataset_dir():
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    # Verify exception is raised on read-only directories
+    expected_base_dir = os.path.join(tmpdir, 'env_data')
+    os.environ['MY_DATA'] = expected_base_dir
+    data_dir = datasets._get_dataset_dir('test', env_vars=['MY_DATA'],
+                                         verbose=0)
+    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+    
     no_write = os.path.join(tmpdir, 'no_write')
     os.makedirs(no_write)
     os.chmod(no_write, 0400)
+    
+    # Verify that default is used if non writeable dir
+    os.environ['MY_DATA'] = no_write
+    expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
+    os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
+    data_dir = datasets._get_dataset_dir('test', env_vars=['MY_DATA'],
+                                         verbose=0)
+    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    # Verify exception is raised on read-only directories
     assert_raises_regexp(OSError, 'Permission denied',
                          datasets._get_dataset_dir, 'test', no_write,
                          verbose=0)

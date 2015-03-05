@@ -180,7 +180,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False,
+def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
@@ -193,9 +193,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False,
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    lookup_defaults: boolean, optional
-        If data_dir is not None, indicates if defaults directory should still
-        be searched.
+    env_vars: list of string, optional
+        Add environment variables searched even if data_dir is not None.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -217,10 +216,15 @@ def _get_dataset_dir(dataset_name, data_dir=None, lookup_defaults=False,
     # We build an array of successive paths by priority
     paths = []
 
+    # Search given environment variables
+    for env_var in env_vars:
+        env_data = os.getenv(env_var, '')
+        paths.extend(env_data.split(':'))
+
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
         paths = data_dir.split(':')
-    if lookup_defaults or data_dir is None:
+    else:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
             paths.extend(global_data.split(':'))
@@ -768,7 +772,8 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
             ("random_all.nii.gz", url, opts)
     ]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
@@ -1564,20 +1569,11 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
 
-    # Add FSL_DIR as a non-readable data_dir
-    data_dirs = []
-    fsl_dir = os.getenv('FSL_DIR', os.getenv('FSLDIR'))
-    if fsl_dir is not None:
-        data_dirs.append(fsl_dir)
-    if data_dir is not None:
-        data_dirs.append(data_dir)
-    data_dir = ':'.join(data_dirs) if len(data_dirs) > 0 else None
-
     # grab data from internet first
     url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
     dataset_name = 'harvard_oxford'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                lookup_defaults=(data_dir is None),
+                                env_vars=['FSL_DIR', 'FSLDIR'],
                                 verbose=verbose)
     opts = {'uncompress': True}
     atlas_file = os.path.join('HarvardOxford',
