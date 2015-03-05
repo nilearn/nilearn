@@ -45,15 +45,10 @@ except:
 extensions = ['gen_rst',
               'sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
+              'numpy_ext.numpydoc',
               ]
-try:
-    import numpy_ext.numpydoc
-    extensions.append('numpy_ext.numpydoc')
-    # With older versions of sphinx, this causes a crash
-    autosummary_generate = True
-except:
-    # Older version of sphinx
-    extensions.append('numpy_ext_old.numpydoc')
+
+autosummary_generate = True
 
 autodoc_default_flags = ['members', 'inherited-members']
 
