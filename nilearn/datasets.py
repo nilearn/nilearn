@@ -983,7 +983,7 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
     For more information about this dataset's structure:
     http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/
     """
-
+    module_path = os.path.dirname(__file__)
     if url is None:
         url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
 
@@ -1002,8 +1002,14 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    return Bunch(rsn20=files_[0], rsn10=files_[1], rsn70=files_[2],
-            bm20=files_[3], bm10=files_[4], bm70=files_[5])
+    with open(os.path.join(module_path, 'description', 'smith.rst'))\
+            as rst_file:
+        fdescr = rst_file.read()
+
+    keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
+    params = dict([('description', fdescr)] + zip(keys, files_))
+
+    return Bunch(**params)
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -1647,7 +1653,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         'label': string list
             Paths to text file containing session and target data
         'mask': string
-            Path to nifti general mask file
+            Path to nifti mask file to define target volume in visual
+            cortex
 
     References
     ----------
@@ -1667,6 +1674,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     <http://www.cns.atr.jp/dni/en/downloads/
     fmri-data-set-for-visual-image-reconstruction/>`_
     """
+    module_path = os.path.dirname(__file__)
 
     url = 'https://www.nitrc.org/frs/download.php' \
           '/5899/miyawaki2008.tgz?i_agree=1&download_now=1'
@@ -1749,12 +1757,17 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
                                 verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
+    with open(os.path.join(module_path, 'description', 'miyawaki.rst'))\
+            as rst_file:
+        fdescr = rst_file.read()
+
     # Return the data
     return Bunch(
         func=files[:32],
         label=files[32:64],
         mask=files[64],
-        mask_roi=files[65:])
+        mask_roi=files[65:],
+        description=fdescr)
 
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
