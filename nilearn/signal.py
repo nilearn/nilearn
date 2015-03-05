@@ -10,8 +10,10 @@ features
 import distutils.version
 
 import numpy as np
+import scipy
 from scipy import signal, stats, linalg
 from sklearn.utils import gen_even_slices
+from distutils.version import LooseVersion
 
 np_version = distutils.version.LooseVersion(np.version.short_version).version
 
@@ -224,9 +226,15 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             signals[...] = output
     else:
         if copy:
-            # No way to save memory when a copy has been requested,
-            # because filtfilt does out-of-place processing
-            signals = signal.filtfilt(b, a, signals, axis=0)
+            if (LooseVersion(scipy.__version__) < LooseVersion('0.10.0')):
+                # filtfilt is 1D only in scipy 0.9.0
+                signals = signals.copy()
+                for timeseries in signals.T:
+                    timeseries[:] = signal.filtfilt(b, a, timeseries)
+            else:
+                # No way to save memory when a copy has been requested,
+                # because filtfilt does out-of-place processing
+                signals = signal.filtfilt(b, a, signals, axis=0)
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
