@@ -99,7 +99,7 @@ def new_img_like(ref_img, data, affine, copy_header=False):
     """
     # XXX If the niimg is a list of 3D images, we don't need to load them all
     # But this is a bit ugly
-    if hasattr(ref_img, "__iter__"):
+    if hasattr(ref_img, "__iter__") and not isinstance(ref_img, string_types):
         ref_img = next(ref_img)
     ref_img = load_img(ref_img)
     header = ref_img.get_header() if copy_header else None
