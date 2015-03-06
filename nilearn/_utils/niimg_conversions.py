@@ -12,7 +12,7 @@ from sklearn.externals.joblib import Memory
 from .cache_mixin import cache
 
 
-from .niimage import _get_shape, _safe_get_data, load_img, new_img, short_repr
+from .niimg import _get_shape, _safe_get_data, load_img, new_img, short_repr
 
 
 def _check_same_fov(img1, img2):

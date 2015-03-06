@@ -21,7 +21,7 @@ import scipy.linalg
 from .. import datasets
 from .. import masking
 from . import logger
-from .niimage import save_img, new_img
+from .niimg import save_img, new_img
 
 try:
     from nose.tools import assert_raises_regex
