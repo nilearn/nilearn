@@ -51,29 +51,6 @@ def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
     return signals
 
 
-def _compose_err_msg(msg, **kwargs):
-    """Append key-value pairs to msg, for display.
-
-    Parameters
-    ==========
-    msg: string
-        arbitrary message
-    kwargs: dict
-        arbitrary dictionary
-
-    Returns
-    =======
-    updated_msg: string
-        msg, with "key: value" appended. Only string values are appended.
-    """
-    updated_msg = msg
-    for k, v in kwargs.iteritems():
-        if isinstance(v, basestring):
-            updated_msg += "\n" + k + ": " + v
-
-    return updated_msg
-
-
 class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Class for masking of Niimg-like objects using seeds.
 
