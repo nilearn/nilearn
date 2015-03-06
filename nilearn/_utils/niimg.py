@@ -1,6 +1,7 @@
 import copy
 import gc
 import collections
+from six import string_types
 
 import numpy as np
 
@@ -61,7 +62,7 @@ def is_img(obj):
 def load_img(img):
     """Load a niimg and check if it has required methods
     """
-    if isinstance(img, basestring):
+    if isinstance(img, string_types):
         # data is a filename, we load it
         img = nibabel.load(img)
     elif not is_img(img):
@@ -131,7 +132,7 @@ def copy_img(img):
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
-    if isinstance(niimgs, basestring):
+    if isinstance(niimgs, string_types):
         return niimgs
     if isinstance(niimgs, collections.Iterable):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
