@@ -17,6 +17,7 @@ import hashlib
 import fnmatch
 import warnings
 import re
+import base64
 from io import BytesIO
 from six import string_types
 from six.moves import cPickle, urllib
@@ -409,7 +410,7 @@ def _filter_columns(array, filters, combination='and'):
 
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, verbose=1):
+                md5sum=None, username=None, password=None, verbose=1):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -465,8 +466,14 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     t0 = time.time()
     local_file = None
     initial_size = 0
+
     try:
         # Download data
+        request = urllib.request.Request(url)
+        if username is not None and password is not None:
+            request.add_header(
+                'Authorization',
+                b'Basic ' + base64.b64encode(username + b':' + password))
         if verbose > 0:
             displayed_url = urllib.parse.splitquery(url)[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
@@ -477,7 +484,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # If the file exists, then only download the remainder
             url_opener.addheader("Range", "bytes=%s-" % (local_file_size))
             try:
-                data = url_opener.open(url)
+                data = url_opener.open(request)
             except urllib.error.HTTPError:
                 # There is a problem that may be due to resuming. Switch back
                 # to complete download method
@@ -486,7 +493,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
-            data = urllib.request.urlopen(url)
+            data = urllib.request.urlopen(request)
             local_file = open(temp_full_name, "wb")
         _chunk_read_(data, local_file, report_hook=(verbose > 0),
                      initial_size=initial_size, verbose=verbose)
@@ -634,8 +641,11 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
             md5sum = opts.get('md5sum', None)
+
             dl_file = _fetch_file(url, temp_dir, resume=resume,
-                                  verbose=verbose, md5sum=md5sum)
+                                  verbose=verbose, md5sum=md5sum,
+                                  username=opts.get('username', None),
+                                  password=opts.get('password', None))
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
