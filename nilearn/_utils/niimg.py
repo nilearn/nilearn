@@ -1,3 +1,9 @@
+"""
+Neuroimaging file input and output.
+"""
+# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
+# License: simplified BSD
+
 import copy
 import gc
 import collections
@@ -125,8 +131,8 @@ def copy_img(img):
     """
     if not is_img(img):
         raise ValueError("Input value is not an image")
-    return nibabel.Nifti1Image(img.get_data().copy(),
-                               img.get_affine().copy())
+    return new_img_like(img, img.get_data().copy(), img.get_affine().copy(),
+                        copy_header=True)
 
 
 def _repr_niimgs(niimgs):
