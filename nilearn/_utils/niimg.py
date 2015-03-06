@@ -2,7 +2,11 @@ import copy
 import gc
 import collections
 
+import numpy as np
+
 import nibabel
+
+from .numpy_conversions import as_ndarray
 
 
 def _get_shape(img):
@@ -53,6 +57,7 @@ def is_img(obj):
         return False
 
 
+# XXX add dtype option for masks
 def load_img(img):
     """Load a niimg and check if it has required methods
     """
@@ -67,8 +72,41 @@ def load_img(img):
     return img
 
 
-def new_img(data, affine, header=None):
-    return nibabel.Nifti1Image(data, affine, header=header)
+def new_img_like(ref_img, data, affine, copy_header=False):
+    """Create a new image of the same class as the reference image
+
+    Parameters
+    ----------
+    ref_img: Niimg-like image
+        Reference image. The new image will be of the same type.
+
+    data: numpy array
+        Data to be stored in the image
+
+    affine: 4x4 numpy array
+        Transformation matrix
+
+    copy_header: boolean, optional
+        Indicated if the header of the reference image should be used to
+        create the new image
+
+    Returns
+    -------
+
+    new_img: nibabel.SpatialImage
+        An image which has the same type as the reference image.
+    """
+    # XXX If the niimg is a list of 3D images, we don't need to load them all
+    # But this is a bit ugly
+    if hasattr(ref_img, "__iter__"):
+        ref_img = next(ref_img)
+    ref_img = load_img(ref_img)
+    header = ref_img.get_header() if copy_header else None
+    # XXX Nifti can't handle boolean, is this the case of other types?
+    data = np.asarray(data)
+    if data.dtype == bool:
+        data = as_ndarray(data, dtype=np.int8)
+    return ref_img.__class__(data, affine, header=header)
 
 
 def copy_img(img):
@@ -88,10 +126,6 @@ def copy_img(img):
         raise ValueError("Input value is not an image")
     return nibabel.Nifti1Image(img.get_data().copy(),
                                img.get_affine().copy())
-
-
-def save_img(img, filename):
-    img.to_filename(filename)
 
 
 def _repr_niimgs(niimgs):

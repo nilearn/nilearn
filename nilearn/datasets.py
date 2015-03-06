@@ -26,7 +26,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ._utils import load_img, new_img
+from ._utils import load_img, new_img_like
 
 
 def _format_time(t):
@@ -1676,7 +1676,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     for n in names[1:]:
         new_names.append(n + ', left part')
 
-    return new_img(atlas, atlas_img.get_affine()), new_names
+    return new_img_like(atlas_img, atlas, atlas_img.get_affine()), new_names
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):

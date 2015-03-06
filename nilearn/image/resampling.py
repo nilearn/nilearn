@@ -14,7 +14,7 @@ import scipy
 from scipy import ndimage, linalg
 
 from .. import _utils
-from .._utils import new_img
+from .._utils import new_img_like
 
 
 ###############################################################################
@@ -186,7 +186,7 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg(img)
-    mask = img.get_data()
+    mask = (img.get_data() != 0.)
     affine = img.get_affine()
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
@@ -476,7 +476,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                           out=resampled_data,
                           copy=not input_img_is_string)
 
-    return new_img(resampled_data, target_affine)
+    return new_img_like(img, resampled_data, target_affine)
 
 
 def reorder_img(img, resample=None):
@@ -556,4 +556,4 @@ def reorder_img(img, resample=None):
     data = data[slice1, slice2, slice3]
     affine = from_matrix_vector(np.diag(pixdim), b)
 
-    return new_img(data, affine)
+    return new_img_like(img, data, affine)

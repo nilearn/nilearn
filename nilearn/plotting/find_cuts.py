@@ -10,7 +10,7 @@ from scipy import ndimage
 
 # Local imports
 from .._utils.ndimage import largest_connected_component
-from .._utils import new_img
+from .._utils import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
@@ -118,10 +118,8 @@ def _get_auto_mask_bounds(img):
                         )
         edge_value /= 6
         mask = np.abs(data - edge_value) > .005*data.ptp()
-    # Nifti1Image cannot contain bools
-    mask = mask.astype(np.int)
     xmin, xmax, ymin, ymax, zmin, zmax = \
-            get_mask_bounds(new_img(mask, affine))
+            get_mask_bounds(new_img_like(img, mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 

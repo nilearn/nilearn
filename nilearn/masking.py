@@ -10,10 +10,10 @@ from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
-from ._utils import new_img
+from ._utils import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component
-from ._utils.niimg_conversions import _safe_get_data
+from ._utils.niimg import _safe_get_data
 
 
 class MaskWarning(UserWarning):
@@ -160,10 +160,11 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if np.any(grp_mask > 0) and connected:
         grp_mask = largest_connected_component(grp_mask)
     grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
-    return new_img(grp_mask, ref_affine)
+    return new_img_like(mask_imgs[0], grp_mask, ref_affine)
 
 
-def _post_process_mask(mask, affine, opening=2, connected=True, warning_msg=""):
+def _post_process_mask(mask, affine, opening=2, connected=True,
+                       warning_msg=""):
     if opening:
         opening = int(opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
@@ -174,9 +175,9 @@ def _post_process_mask(mask, affine, opening=2, connected=True, warning_msg=""):
     if connected and mask_any:
         mask = largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask, iterations=2*opening)
+        mask = ndimage.binary_dilation(mask, iterations=2 * opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
-    return new_img(_utils.as_ndarray(mask, dtype=np.int8), affine)
+    return mask, affine
 
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
@@ -283,9 +284,10 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
 
     mask = mean_epi >= threshold
 
-    return _post_process_mask(mask, affine, opening=opening,
+    mask, affine = _post_process_mask(mask, affine, opening=opening,
         connected=connected, warning_msg="Are you sure that input "
             "data are EPI images not detrended. ")
+    return new_img_like(epi_img, mask, affine)
 
 
 def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
@@ -441,9 +443,10 @@ def compute_background_mask(data_imgs, border_size=2,
     else:
         mask = data != background
 
-    return _post_process_mask(mask, affine, opening=opening,
+    mask, affine = _post_process_mask(mask, affine, opening=opening,
         connected=connected, warning_msg="Are you sure that input "
             "images have a homogeneous background.")
+    return new_img_like(data_imgs, mask, affine)
 
 
 def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
@@ -561,7 +564,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     values would spread accross the image.
     """
     mask, mask_affine = _load_mask_img(mask_img)
-    mask_img = new_img(_utils.as_ndarray(mask, dtype=np.int8), mask_affine)
+    mask_img = new_img_like(mask_img, mask, mask_affine)
     return _apply_mask_fmri(imgs, mask_img, dtype=dtype,
                             smoothing_fwhm=smoothing_fwhm,
                             ensure_finite=ensure_finite)
@@ -718,4 +721,4 @@ def unmask(X, mask_img, order="F"):
         raise TypeError("Masked data X must be 2D or 1D array; "
                         "got shape: %s" % str(X.shape))
 
-    return new_img(unmasked, affine)
+    return new_img_like(mask_img, unmasked, affine)

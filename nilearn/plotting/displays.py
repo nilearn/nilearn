@@ -15,7 +15,7 @@ from six import string_types
 from six.moves import zip as six_zip
 
 from .._utils.testing import skip_if_running_nose
-from .._utils import new_img
+from .._utils import new_img_like
 from .. import _utils
 
 try:
@@ -477,7 +477,7 @@ class BaseSlicer(object):
             else:
                 data = np.ma.masked_inside(data, -threshold, threshold,
                                            copy=False)
-            img = new_img(data, img.get_affine())
+            img = new_img_like(img, data, img.get_affine())
 
         # To make sure that add_overlay has a consistant default behavior
         # with plot_stat_map
@@ -522,7 +522,7 @@ class BaseSlicer(object):
         if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                    get_mask_bounds(new_img(not_mask.astype(np.int), affine))
+                    get_mask_bounds(new_img_like(img, not_mask, affine))
 
         data_2d_list = []
         for display_ax in self.axes.values():

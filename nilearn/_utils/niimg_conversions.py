@@ -9,10 +9,10 @@ import numpy as np
 from six import string_types
 
 from sklearn.externals.joblib import Memory
-from .cache_mixin import cache
+from cache_mixin import cache
 
-
-from .niimg import _get_shape, _safe_get_data, load_img, new_img, short_repr
+from .niimg import (_get_shape, _safe_get_data, load_img, new_img_like,
+                    short_repr)
 
 
 def _check_same_fov(img1, img2):
@@ -74,7 +74,7 @@ def check_niimg(niimg, ensure_3d=False):
             # "squeeze" the image.
             data = _safe_get_data(niimg)
             affine = niimg.get_affine()
-            niimg = new_img(data[:, :, :, 0], affine)
+            niimg = new_img_like(niimg, data[:, :, :, 0], affine)
         else:
             raise TypeError("A 3D image is expected, but an image "
                 "with a shape of %s was given." % (shape, ))
@@ -205,7 +205,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
         data[..., cur_4d_index:cur_4d_index + size] = _to_4d(this_data)
         cur_4d_index += size
 
-    return new_img(data, target_affine)
+    return new_img_like(first_niimg, data, target_affine)
 
 
 def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
@@ -251,7 +251,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
                       or not isinstance(first_img, collections.Iterable)):
         niimg = check_niimg(niimgs)
         if len(_get_shape(niimg)) == 3:
-            niimg = new_img(niimg.get_data()[..., np.newaxis],
+            niimg = new_img_like(niimg, niimg.get_data()[..., np.newaxis],
                             niimg.get_affine())
         return niimg
 
@@ -297,6 +297,8 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
 
 def _index_niimgs(niimgs, index):
     """Helper function for check_niimgs."""
-    return new_img(niimgs.get_data()[:, :, :, index],
-                   niimgs.get_affine(),
-                   header=niimgs.get_header())
+    return new_img_like(
+        niimgs,
+        niimgs.get_data()[:, :, :, index],
+        niimgs.get_affine(),
+        copy_header=True)

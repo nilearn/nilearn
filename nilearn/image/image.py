@@ -16,7 +16,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from .. import signal
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
 from .._utils.niimg_conversions import _index_niimgs
-from .._utils.niimg import new_img, _safe_get_data
+from .._utils.niimg import new_img_like, _safe_get_data
 from .. import masking
 from nilearn.image import reorder_img
 
@@ -253,7 +253,7 @@ def smooth_img(imgs, fwhm):
         affine = img.get_affine()
         filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
                                  ensure_finite=True, copy=True)
-        ret.append(new_img(filtered, affine))
+        ret.append(new_img_like(img, filtered, affine, copy_header=True))
 
     if single_img:
         return ret[0]
@@ -309,7 +309,7 @@ def _crop_img_to(img, slices, copy=True):
     new_affine[:3, :3] = linear_part
     new_affine[:3, 3] = new_origin
 
-    return new_img(cropped_data, new_affine)
+    return new_img_like(img, cropped_data, new_affine)
 
 
 def crop_img(img, rtol=1e-8, copy=True):
@@ -375,7 +375,7 @@ def _compute_mean(imgs, target_affine=None,
     if mean_img.ndim == 4:
         mean_img = mean_img.mean(axis=-1)
     mean_img = resampling.resample_img(
-        new_img(mean_img, imgs.get_affine()),
+        new_img_like(imgs, mean_img, imgs.get_affine()),
         target_affine=target_affine, target_shape=target_shape)
     affine = mean_img.get_affine()
     mean_img = mean_img.get_data()
@@ -427,44 +427,36 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     """
     if (isinstance(imgs, string_types) or
-        not isinstance(imgs, collections.Iterable)):
+            not isinstance(imgs, collections.Iterable)):
         imgs = [imgs, ]
-        total_n_imgs = 1
-    else:
-        try:
-            total_n_imgs = len(imgs)
-        except:
-            total_n_imgs = None
 
     imgs_iter = iter(imgs)
+    first_img = next(imgs_iter)
 
+    # Compute the first mean to retrieve the reference
+    # target_affine and target_shape if_needed
+    n_imgs = 1
+    running_mean, first_affine = _compute_mean(first_img,
+                target_affine=target_affine,
+                target_shape=target_shape)
     if target_affine is None or target_shape is None:
-        # Compute the first mean to retrieve the reference
-        # target_affine and target_shape
-        n_imgs = 1
-        running_mean, target_affine = _compute_mean(next(imgs_iter),
-                    target_affine=target_affine,
-                    target_shape=target_shape)
+        target_affine = first_affine
         target_shape = running_mean.shape[:3]
-    else:
-        running_mean = None
-        n_imgs = 0
 
-    if not (total_n_imgs == 1 and n_imgs == 1):
-        for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
-                delayed(_compute_mean)(n, target_affine=target_affine,
-                                       target_shape=target_shape)
-                for n in imgs_iter):
-            n_imgs += 1
-            # _compute_mean returns (mean_img, affine)
-            this_mean = this_mean[0]
-            if running_mean is None:
-                running_mean = this_mean
-            else:
-                running_mean += this_mean
+    for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
+            delayed(_compute_mean)(n, target_affine=target_affine,
+                                   target_shape=target_shape)
+            for n in imgs_iter):
+        n_imgs += 1
+        # _compute_mean returns (mean_img, affine)
+        this_mean = this_mean[0]
+        if running_mean is None:
+            running_mean = this_mean
+        else:
+            running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
-    return new_img(running_mean, target_affine)
+    return new_img_like(first_img, running_mean, target_affine)
 
 
 def swap_img_hemispheres(img):
@@ -500,8 +492,8 @@ def swap_img_hemispheres(img):
     img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = new_img(img.get_data()[::-1], img.get_affine(),
-                                  header=img.get_header())
+    out_img = new_img_like(img, img.get_data()[::-1], img.get_affine(),
+                           copy_header=True)
 
     return out_img
 
