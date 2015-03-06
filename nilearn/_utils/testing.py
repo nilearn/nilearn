@@ -144,6 +144,9 @@ class mock_request(object):
     def reset(self):
         self.urls = set()
 
+    def Request(self, url):
+        return url
+
 
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
