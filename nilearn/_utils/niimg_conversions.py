@@ -9,7 +9,7 @@ import numpy as np
 from six import string_types
 
 from sklearn.externals.joblib import Memory
-from cache_mixin import cache
+from .cache_mixin import cache
 
 from .niimg import (_get_shape, _safe_get_data, load_img, new_img_like,
                     short_repr)
