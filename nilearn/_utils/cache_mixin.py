@@ -4,11 +4,12 @@ Mixin for cache with joblib
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
+import json
 import warnings
 import os
 import shutil
 from distutils.version import LooseVersion
-import json
+from six import string_types
 
 import nibabel
 from sklearn.externals.joblib import Memory
@@ -135,7 +136,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
             or memory_level < func_memory_level):
         memory = Memory(cachedir=None, verbose=verbose)
     else:
-        if isinstance(memory, basestring):
+        if isinstance(memory, string_types):
             memory = Memory(cachedir=memory, verbose=verbose)
         if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
@@ -146,7 +147,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
                           "but no Memory object or path has been provided"
                           " (parameter memory). Caching deactivated for "
                           "function %s." %
-                          (memory_level, func.func_name),
+                          (memory_level, func.__name__),
                           stacklevel=2)
     return _safe_cache(memory, func, **kwargs)
 
@@ -198,13 +199,13 @@ class CacheMixin(object):
             self.memory_level = 0
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None, verbose=verbose)
-        if isinstance(self.memory, basestring):
+        if isinstance(self.memory, string_types):
             self.memory = Memory(cachedir=self.memory, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
         if self.memory_level == 0:
-            if (isinstance(self.memory, basestring)
+            if (isinstance(self.memory, string_types)
                     or self.memory.cachedir is not None):
                 warnings.warn("memory_level is currently set to 0 but "
                               "a Memory object has been provided. "

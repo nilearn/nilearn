@@ -5,13 +5,14 @@ Matplotlib colormaps useful for neuroimaging.
 """
 import numpy as _np
 
-from nilearn._utils.testing import skip_if_running_nose
+from .._utils.testing import skip_if_running_nose
 
 try:
     from matplotlib import cm as _cm
     from matplotlib import colors as _colors
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
+
 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -157,7 +158,7 @@ _cmaps_data['bwr'] = _colors.LinearSegmentedColormap.from_list(
 # Build colormaps and their reverse.
 _cmap_d = dict()
 
-for _cmapname in _cmaps_data.keys():
+for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
     _cmapname_r = _cmapname + '_r'
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _cm.revcmap(_cmapspec)

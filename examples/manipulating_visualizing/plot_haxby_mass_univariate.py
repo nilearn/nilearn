@@ -49,7 +49,7 @@ fmri_masked = nifti_masker.fit_transform(func_filename)
 conditions_encoded, sessions = np.loadtxt(
     haxby_dataset.session_target).astype("int").T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
-condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
 
@@ -64,9 +64,9 @@ grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
 for s in range(n_sessions):
     session_mask = sessions[condition_mask] == s
     session_house_mask = np.logical_and(session_mask,
-                                        conditions[condition_mask] == 'house')
+                                        conditions[condition_mask] == b'house')
     session_face_mask = np.logical_and(session_mask,
-                                       conditions[condition_mask] == 'face')
+                                       conditions[condition_mask] == b'face')
     grouped_fmri_masked[2 * s] = fmri_masked[session_house_mask].mean(0)
     grouped_fmri_masked[2 * s + 1] = fmri_masked[session_face_mask].mean(0)
     grouped_conditions_encoded[2 * s] = conditions_encoded[
@@ -113,7 +113,7 @@ from nilearn.image.resampling import coord_transform
 affine = signed_neg_log_pvals_unmasked.get_affine()
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = round(k_slice)
+k_slice = np.round(k_slice)
 
 threshold = -np.log10(0.1)  # 10% corrected
 

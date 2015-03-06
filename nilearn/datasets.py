@@ -5,9 +5,9 @@ Utilities to download NeuroImaging datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
+import contextlib
+import collections
 import os
-import urllib
-import urllib2
 import tarfile
 import zipfile
 import sys
@@ -16,10 +16,10 @@ import time
 import hashlib
 import fnmatch
 import warnings
-import cPickle as pickle
-import cStringIO as StringIO
 import re
-import collections
+from io import BytesIO
+from six import string_types
+from six.moves import cPickle, urllib
 
 import numpy as np
 from scipy import ndimage
@@ -38,31 +38,31 @@ def _format_time(t):
 def _md5_sum_file(path):
     """ Calculates the MD5 sum of a file.
     """
-    f = open(path, 'rb')
-    m = hashlib.md5()
-    while True:
-        data = f.read(8192)
-        if not data:
-            break
-        m.update(data)
+    with open(path, 'rb') as f:
+        m = hashlib.md5()
+        while True:
+            data = f.read(8192)
+            if not data:
+                break
+            m.update(data)
     return m.hexdigest()
 
 
 def _read_md5_sum_file(path):
     """ Reads a MD5 checksum file and returns hashes as a dictionary.
     """
-    f = open(path, "r")
-    hashes = {}
-    while True:
-        line = f.readline()
-        if not line:
-            break
-        h, name = line.rstrip().split('  ', 1)
-        hashes[name] = h
+    with open(path, "r") as f:
+        hashes = {}
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            h, name = line.rstrip().split('  ', 1)
+            hashes[name] = h
     return hashes
 
 
-class ResumeURLOpener(urllib.FancyURLopener):
+class ResumeURLOpener(urllib.request.FancyURLopener):
     """Create sub-class in order to overide error 206.  This error means a
        partial file is being sent, which is fine in this case.
        Do nothing with this error.
@@ -124,7 +124,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     Parameters
     ----------
-    response: urllib.addinfourl
+    response: urllib.response.addinfourl
         Response to the download request in order to get file size
 
     local_file: file
@@ -152,14 +152,14 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     """
     if total_size is None:
-        total_size = response.info().getheader('Content-Length').strip()
+        total_size = response.info().get('Content-Length').strip()
     try:
         total_size = int(total_size) + initial_size
-    except Exception, e:
+    except Exception as e:
         if verbose > 1:
-            print "Warning: total size could not be determined."
+            print("Warning: total size could not be determined.")
             if verbose > 2:
-                print "Full stack trace: %s" % e
+                print("Full stack trace: %s" % e)
         total_size = None
     bytes_so_far = initial_size
 
@@ -236,7 +236,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
         paths.append(os.path.expanduser('~/nilearn_data'))
 
     if verbose > 2:
-        print 'Dataset search paths:', paths
+        print('Dataset search paths: %s' % paths)
 
     # Check if the dataset exists somewhere
     for path in paths:
@@ -285,21 +285,20 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     This handles zip, tar, gzip and bzip files only.
     """
     if verbose > 0:
-        print 'extracting data from %s...' % file_
+        print('Extracting data from %s...' % file_)
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
         filename, ext = os.path.splitext(file_)
-        fd = open(file_, "rb")
-        header = fd.read(4)
-        fd.close()
+        with open(file_, "rb") as fd:
+            header = fd.read(4)
         processed = False
         if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
             z.extractall(data_dir)
             z.close()
             processed = True
-        elif ext == '.gz' or header.startswith('\x1f\x8b'):
+        elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
             gz = gzip.open(file_)
             if ext == '.tgz':
@@ -315,9 +314,8 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             filename, ext = os.path.splitext(file_)
             processed = True
         if tarfile.is_tarfile(file_):
-            tar = tarfile.open(file_, "r")
-            tar.extractall(path=data_dir)
-            tar.close()
+            with contextlib.closing(tarfile.open(file_, "r")) as tar:
+                tar.extractall(path=data_dir)
             processed = True
         if not processed:
             raise IOError(
@@ -325,10 +323,10 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         if delete_archive:
             os.remove(file_)
         if verbose > 0:
-            print '   ...done.'
+            print('   ...done.')
     except Exception as e:
         if verbose > 0:
-            print 'Error uncompressing file: %s' % e
+            print('Error uncompressing file: %s' % e)
         raise
 
 
@@ -356,13 +354,15 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if not isinstance(criteria, basestring) and \
-            not isinstance(criteria, tuple) and \
-            isinstance(criteria, collections.Iterable):
+    if (not isinstance(criteria, string_types) and
+        not isinstance(criteria, bytes) and
+        not isinstance(criteria, tuple) and
+            isinstance(criteria, collections.Iterable)):
+
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
-                        _filter_column(array, col, criterion))
+                                   _filter_column(array, col, criterion))
         return filter
 
     if isinstance(criteria, tuple):
@@ -448,7 +448,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         os.makedirs(data_dir)
 
     # Determine filename using URL
-    parse = urllib2.urlparse.urlparse(url)
+    parse = urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
 
     temp_file_name = file_name + ".part"
@@ -468,8 +468,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     try:
         # Download data
         if verbose > 0:
-            displayed_url = urllib.splitquery(url)[0] if verbose == 1 else url
-            print 'Dowloading data from %s ...' % displayed_url
+            displayed_url = urllib.parse.splitquery(url)[0] if verbose == 1 else url
+            print('Downloading data from %s ...' % displayed_url)
         if resume and os.path.exists(temp_full_name):
             url_opener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
@@ -478,7 +478,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             url_opener.addheader("Range", "bytes=%s-" % (local_file_size))
             try:
                 data = url_opener.open(url)
-            except urllib2.HTTPError:
+            except urllib.error.HTTPError:
                 # There is a problem that may be due to resuming. Switch back
                 # to complete download method
                 return _fetch_file(url, data_dir, resume=False,
@@ -486,7 +486,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
-            data = urllib2.urlopen(url)
+            data = urllib.request.urlopen(url)
             local_file = open(temp_full_name, "wb")
         _chunk_read_(data, local_file, report_hook=(verbose > 0),
                      initial_size=initial_size, verbose=verbose)
@@ -496,20 +496,20 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
-            print '...done. (%i seconds, %i min)' % (dt, dt / 60)
-    except urllib2.HTTPError, e:
+            print('...done. (%i seconds, %i min)' % (dt, dt // 60))
+    except urllib.error.HTTPError as e:
         if verbose > 0:
-            print 'Error while fetching file %s.' \
-                ' Dataset fetching aborted.' % file_name
+            print('Error while fetching file %s. Dataset fetching aborted.' %
+                   (file_name))
         if verbose > 1:
-            print "HTTP Error:", e, url
+            print("HTTP Error: %s, %s" % (e, url))
         raise
-    except urllib2.URLError, e:
+    except urllib.error.URLError as e:
         if verbose > 0:
-            print 'Error while fetching file %s.' \
-                ' Dataset fetching aborted.' % file_name
+            print('Error while fetching file %s. Dataset fetching aborted.' %
+                   (file_name))
         if verbose > 1:
-            print "URL Error:", e, url
+            print("URL Error: %s, %s" % (e, url))
         raise
     finally:
         if local_file is not None:
@@ -598,7 +598,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   files that must be downloaded will be in this directory. If a corrupted
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
-    files_pickle = pickle.dumps(files)
+    files_pickle = cPickle.dumps(files)
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
@@ -858,7 +858,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
             as rst_file:
         fdescr = rst_file.read()
 
-    params = dict([('description', fdescr)] + zip(keys, sub_files))
+    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
 
 
@@ -1608,9 +1608,9 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
 
     labels = np.unique(atlas)
     slices = ndimage.find_objects(atlas)
-    middle_ind = (atlas.shape[0] - 1) / 2
+    middle_ind = (atlas.shape[0] - 1) // 2
     crosses_middle = [s.start < middle_ind and s.stop > middle_ind
-             for s, _, _ in slices]
+                      for s, _, _ in slices]
 
     # Split every zone crossing the median plane into two parts.
     # Assumes that the background label is zero.
@@ -1896,9 +1896,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         BMC neuroscience 8.1 (2007): 91.
 
     """
-    if isinstance(contrasts, basestring):
-        raise ValueError('Constrasts should be a list of string, a single '
-                         'string was given: "%s"' % contrasts)
+    if isinstance(contrasts, string_types):
+        raise ValueError('Constrasts should be a list of strings, but'
+                         'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (n_subjects > 94) or (n_subjects < 1):
@@ -1962,7 +1962,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "visual click vs visual sentences",
         "button press vs calculation and sentence listening/reading":
             "auditory&visual motor vs cognitive processing"}
-    allowed_contrasts = contrast_name_wrapper.values()
+    allowed_contrasts = list(contrast_name_wrapper.values())
     # convert contrast names
     contrasts_wrapped = []
     # get a unique ID for each contrast. It is used to give a unique name to
@@ -2001,7 +2001,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
             % (root_url, i,
-               urllib.quote(base_query % {"types": rql_types,
+               urllib.parse.quote(base_query % {"types": rql_types,
                                           "label": c},
                             safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
@@ -2019,7 +2019,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_masks:
         urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.quote(base_query % {"types": '"boolean mask"',
+                       urllib.parse.quote(base_query % {"types": '"boolean mask"',
                                                   "label": "mask"},
                                     safe=',()')))
         for subject_id in subject_ids:
@@ -2031,7 +2031,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_anats:
         urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.quote(base_query % {"types": '"normalized T1"',
+                       urllib.parse.quote(base_query % {"types": '"normalized T1"',
                                                   "label": "anatomy"},
                                     safe=',()')))
         for subject_id in subject_ids:
@@ -2043,10 +2043,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # Fetch subject characteristics (separated in two files)
     if url is None:
         url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
-                   % (root_url, urllib.quote("Any X WHERE X is Subject")))
+                   % (root_url, urllib.parse.quote("Any X WHERE X is Subject")))
         url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
                     % (root_url,
-                       urllib.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
+                       urllib.parse.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
                                     "X identifier XI, X datetime "
                                     "XD", safe=',')
                        ))
@@ -2323,13 +2323,13 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     # Keep CSV information only for selected subjects
     csv_data = np.recfromcsv(ext_vars_file)
-    actual_subjects_ids = ["OAS1"
-                           + str.split(os.path.basename(x), "OAS1")[1][:9]
+    # Comparisons to recfromcsv data must be bytes.
+    actual_subjects_ids = [("OAS1" +
+                            str.split(os.path.basename(x),
+                                      "OAS1")[1][:9]).encode()
                            for x in gm_maps]
-    subject_mask = np.zeros(csv_data.size, dtype=bool)
-    for i, subject_id in enumerate(csv_data['id']):
-        if subject_id in actual_subjects_ids:
-            subject_mask[i] = True
+    subject_mask = np.asarray([subject_id in actual_subjects_ids
+                               for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
 
     return Bunch(
@@ -2453,7 +2453,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Parameter check
     for derivative in derivatives:
-        if not derivative in ['alff', 'degree_binarize', 'degree_weighted',
+        if derivative not in [
+                'alff', 'degree_binarize', 'degree_weighted',
                 'dual_regression', 'eigenvector_binarize',
                 'eigenvector_weighted', 'falff', 'func_mask', 'func_mean',
                 'func_preproc', 'lfcd', 'reho', 'rois_aal', 'rois_cc200',
@@ -2493,22 +2494,25 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
-    pheno_f = open(path_csv, 'r')
-    pheno = ['i' + pheno_f.readline()]
-    # This regexp replaces commas between double quotes
-    for line in pheno_f:
-        pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
-    pheno_f.close()
-    pheno = '\n'.join(pheno)
-    pheno = StringIO.StringIO(pheno)
-    # We enforce empty comments because it is 'sharp' by default
-    pheno = np.recfromcsv(pheno, comments=[], case_sensitive=True)
+    with open(path_csv, 'r') as pheno_f:
+        pheno = ['i' + pheno_f.readline()]
+
+        # This regexp replaces commas between double quotes
+        for line in pheno_f:
+            pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
+
+    # bytes (encode()) needed for python 2/3 compat with numpy
+    pheno = '\n'.join(pheno).encode()
+    pheno = BytesIO(pheno)
+    # We enforce a magic string  forcomments because it is 'sharp' by default,
+    #   and Python 3.4 doesn't like empty
+    pheno = np.recfromcsv(pheno, comments='__magic_string__', case_sensitive=True)
 
     # First, filter subjects with no filename
-    pheno = pheno[pheno['FILE_ID'] != 'no_filename']
+    pheno = pheno[pheno['FILE_ID'] != b'no_filename']
     # Apply user defined filters
-    filter = _filter_columns(pheno, kwargs)
-    pheno = pheno[filter]
+    user_filter = _filter_columns(pheno, kwargs)
+    pheno = pheno[user_filter]
 
     # Go into specific data folder and url
     data_dir = os.path.join(data_dir, pipeline, strategy)
@@ -2516,7 +2520,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Get the files
     results = {}
-    file_ids = pheno['FILE_ID']
+    file_ids = [file_id.decode() for file_id in pheno['FILE_ID']]
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
@@ -2533,5 +2537,4 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         if ext == '.1D':
             files = [np.loadtxt(f) for f in files]
         results[derivative] = files
-
     return Bunch(**results)

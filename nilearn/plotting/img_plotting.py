@@ -9,8 +9,8 @@ Only matplotlib is required.
 # License: BSD
 
 # Standard library imports
-import operator
 import functools
+import numbers
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -287,11 +287,11 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
             vmean = .5 * (vmin + vmax)
             ptp = .5 * (vmax - vmin)
             if black_bg:
-                if not operator.isNumberType(dim):
+                if not isinstance(dim, numbers.Number):
                     dim = .8
                 vmax = vmean + (1 + dim) * ptp
             else:
-                if not operator.isNumberType(dim):
+                if not isinstance(dim, numbers.Number):
                     dim = .6
                 vmin = vmean - (1 + dim) * ptp
     if black_bg == 'auto':

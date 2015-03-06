@@ -23,8 +23,8 @@ labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 _, target = np.unique(labels['labels'], return_inverse=True)
 
 ### Keep only data corresponding to faces or cats #############################
-condition_mask = np.logical_or(labels['labels'] == 'face',
-                               labels['labels'] == 'cat')
+condition_mask = np.logical_or(labels['labels'] == b'face',
+                               labels['labels'] == b'cat')
 target = target[condition_mask]
 
 
@@ -66,7 +66,7 @@ for train, test in cv:
     cv_scores.append(np.sum(prediction == target[test])
                      / float(np.size(target[test])))
 
-print cv_scores
+print(cv_scores)
 
 ### Unmasking #################################################################
 

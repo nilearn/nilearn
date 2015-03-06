@@ -91,7 +91,7 @@ models, a `coef_` attribute that stores the coefficients **w** estimated.
 
 .. literalinclude:: ../../examples/decoding/plot_simulated_data.py
     :start-after: # Run the estimators
-    :end-before:     print title
+    :end-before:     print(title)
 
 .. |estimator1| image:: ../auto_examples/decoding/images/plot_simulated_data_2.png
     :target: ../auto_examples/decoding/plot_simulated_data.html

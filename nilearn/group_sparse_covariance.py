@@ -12,6 +12,7 @@ import itertools
 
 import numpy as np
 import scipy.linalg
+from six.moves import xrange
 
 import sklearn.cross_validation
 import sklearn.covariance
@@ -994,10 +995,10 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             train_test_subjs = []
             for train_test in zip(*cv):
                 assert(len(train_test) == n_subjects)
-                train_test_subjs.append(zip(*[(subject[train, :],
-                                               subject[test, :])
-                                            for subject, (train, test)
-                                            in zip(subjects, train_test)]))
+                train_test_subjs.append(list(zip(*[(subject[train, :],
+                                                    subject[test, :])
+                                             for subject, (train, test)
+                                             in zip(subjects, train_test)])))
             if self.early_stopping:
                 probes = [EarlyStopProbe(test_subjs, verbose=self.verbose)
                           for _, test_subjs in train_test_subjs]
@@ -1020,14 +1021,14 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             #   of alpha.
             # - precisions_list: corresponding precisions matrices, for each
             #   value of alpha.
-            precisions_list, scores = zip(*this_path)
+            precisions_list, scores = list(zip(*this_path))
             # now scores[i][j] is the score for the i-th folding, j-th value of
             # alpha (analoguous for precisions_list)
-            precisions_list = zip(*precisions_list)
+            precisions_list = list(zip(*precisions_list))
             scores = [np.mean(sc) for sc in zip(*scores)]
             # scores[i] is the mean score obtained for the i-th value of alpha.
 
-            path.extend(zip(alphas, scores, precisions_list))
+            path.extend(list(zip(alphas, scores, precisions_list)))
             path = sorted(path, key=operator.itemgetter(0), reverse=True)
 
             # Find the maximum score (avoid using the built-in 'max' function

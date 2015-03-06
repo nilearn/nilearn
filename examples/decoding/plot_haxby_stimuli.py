@@ -16,7 +16,7 @@ haxby_dataset = datasets.fetch_haxby(n_subjects=0, fetch_stimuli=True)
 stimulus_information = haxby_dataset.stimuli
 
 for stim_type in sorted(stimulus_information.keys()):
-    if stim_type == "controls":
+    if stim_type == b'controls':
         # skip control images, there are too many
         continue
 

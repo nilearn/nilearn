@@ -12,7 +12,7 @@ from nilearn import data
 # This is just a Nifti file that is shipped with nilearn
 anat_filename = os.path.join(os.path.dirname(data.__file__),
                              'avg152T1_brain.nii.gz')
-print 'anat_filename: ', anat_filename
+print('anat_filename: %s' % anat_filename)
 
 # Using nibabel.load to load existing Nifti image #############################
 import nibabel
@@ -20,9 +20,9 @@ anat_img = nibabel.load(anat_filename)
 
 # Accessing image data and affine #############################################
 anat_data = anat_img.get_data()
-print 'anat_data has shape:', anat_data.shape
+print('anat_data has shape: %s' % str(anat_data.shape))
 anat_affine = anat_img.get_affine()
-print 'anat_affine:\n', anat_affine
+print('anat_affine:\n%s' % anat_affine)
 
 # Using image in nilearn functions ############################################
 from nilearn import image

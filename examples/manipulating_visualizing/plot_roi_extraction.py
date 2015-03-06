@@ -23,8 +23,8 @@ haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 # Second, load the labels
 import numpy as np
 
-haxby_labels = np.genfromtxt(haxby_dataset.session_target[0], skip_header=1,
-                             usecols=[0], dtype=basestring)
+session_target = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+haxby_labels = session_target['labels']
 
 ### Visualization function ####################################################
 
@@ -46,8 +46,8 @@ plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=cut_coords)
 # Run a T-test for face and houses
 from scipy import stats
 fmri_data = fmri_img.get_data()
-_, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == 'face'],
-                              fmri_data[..., haxby_labels == 'house'],
+_, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == b'face'],
+                              fmri_data[..., haxby_labels == b'house'],
                               axis=-1)
 
 # Use a log scale for p-values
@@ -110,7 +110,7 @@ masker = NiftiLabelsMasker(
     detrend=False)
 masker.fit()
 condition_names = list(set(haxby_labels))
-n_cond_img = fmri_data[..., haxby_labels == 'house'].shape[-1]
+n_cond_img = fmri_data[..., haxby_labels == b'house'].shape[-1]
 n_conds = len(condition_names)
 X1, X2 = np.zeros((n_cond_img, n_conds)), np.zeros((n_cond_img, n_conds))
 for i, cond in enumerate(condition_names):
@@ -119,7 +119,7 @@ for i, cond in enumerate(condition_names):
         fmri_img.get_affine())
     mask_data = masker.transform(cond_maps)
     X1[:, i], X2[:, i] = mask_data[:, 0], mask_data[:, 1]
-condition_names[condition_names.index('scrambledpix')] = 'scrambled'
+condition_names[condition_names.index(b'scrambledpix')] = b'scrambled'
 
 plt.figure(figsize=(15, 7))
 for i in np.arange(2):

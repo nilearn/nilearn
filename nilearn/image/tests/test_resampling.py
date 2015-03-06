@@ -45,7 +45,7 @@ def pad(array, *args):
                          len(args))
 
     all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
-    all_paddings[:len(args) / 2] = np.array(args).reshape(-1, 2)
+    all_paddings[:len(args) // 2] = np.array(args).reshape(-1, 2)
 
     lower_paddings, upper_paddings = all_paddings.T
     new_shape = np.array(array.shape) + upper_paddings + lower_paddings
@@ -107,7 +107,7 @@ def test_resampling_with_affine():
     """
     prng = np.random.RandomState(10)
     data = prng.randint(4, size=(1, 4, 4))
-    for angle in (0, np.pi, np.pi / 2, np.pi / 4, np.pi / 3):
+    for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
         rot = rotation(0, angle)
         rot_img = resample_img(Nifti1Image(data, np.eye(4)),
                                target_affine=rot,
@@ -140,10 +140,10 @@ def test_resampling_error_checks():
     # Invalid interpolation
     interpolation = 'an_invalid_interpolation'
     pattern = "interpolation must be either.+{0}".format(interpolation)
-    testing.assert_raises_regexp(ValueError, pattern,
-                                 resample_img, img, target_shape=target_shape,
-                                 target_affine=affine,
-                                 interpolation="an_invalid_interpolation")
+    testing.assert_raises_regex(ValueError, pattern,
+                                resample_img, img, target_shape=target_shape,
+                                target_affine=affine,
+                                interpolation="an_invalid_interpolation")
 
     # Noop
     target_shape = shape[:3]
@@ -227,7 +227,7 @@ def test_raises_upon_3x3_affine_and_no_shape():
     message = ("Given target shape without anchor "
                "vector: Affine shape should be \(4, 4\) and "
                "not \(3, 3\)")
-    testing.assert_raises_regexp(
+    testing.assert_raises_regex(
         exception, message,
         resample_img, img, target_affine=np.eye(3) * 2,
         target_shape=(10, 10, 10))
@@ -245,13 +245,13 @@ def test_raises_bbox_error_if_data_outside_box():
     img = Nifti1Image(data, affine)
 
     # some axis flipping affines
-    axis_flips = np.array(map(np.diag,
+    axis_flips = np.array(list(map(np.diag,
                               [[-1, 1, 1, 1],
                                [1, -1, 1, 1],
                                [1, 1, -1, 1],
                                [-1, -1, 1, 1],
                                [-1, 1, -1, 1],
-                               [1, -1, -1, 1]]))
+                               [1, -1, -1, 1]])))
 
     # some in plane 90 degree rotations base on these
     # (by permuting two lines)
@@ -274,7 +274,7 @@ def test_raises_bbox_error_if_data_outside_box():
                    "by the target affine does "
                    "not contain any of the data")
 
-        testing.assert_raises_regexp(
+        testing.assert_raises_regex(
             exception, message,
             resample_img, img, target_affine=new_affine)
 
@@ -418,8 +418,8 @@ def test_reorder_img():
     # exception
     affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, affine)
-    testing.assert_raises_regexp(ValueError, 'Cannot reorder the axes',
-                                 reorder_img, ref_img)
+    testing.assert_raises_regex(ValueError, 'Cannot reorder the axes',
+                                reorder_img, ref_img)
 
     # Test that no exception is raised when resample='continuous'
     reorder_img(ref_img, resample='continuous')
@@ -436,9 +436,9 @@ def test_reorder_img():
     # Make sure invalid resample argument is included in the error message
     interpolation = 'an_invalid_interpolation'
     pattern = "interpolation must be either.+{0}".format(interpolation)
-    testing.assert_raises_regexp(ValueError, pattern,
-                                 reorder_img, ref_img,
-                                 resample=interpolation)
+    testing.assert_raises_regex(ValueError, pattern,
+                                reorder_img, ref_img,
+                                resample=interpolation)
 
     # Test flipping an axis
     data = rng.rand(*shape)
@@ -472,7 +472,7 @@ def test_reorder_img_non_native_endianness():
 
         affine = np.eye(4)
 
-        theta = math.pi / 6
+        theta = math.pi / 6.
         c = math.cos(theta)
         s = math.sin(theta)
 

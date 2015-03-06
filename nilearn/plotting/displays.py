@@ -5,12 +5,14 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import operator
-import itertools
+import collections
 import numbers
 
 import numpy as np
 from scipy import sparse, stats
+
+from six import string_types
+from six.moves import zip as six_zip
 
 import nibabel
 from .._utils.testing import skip_if_running_nose
@@ -27,12 +29,12 @@ except ImportError:
 
 
 # Local imports
+from . import glass_brain, cm
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 
-from . import glass_brain, cm
 
 ################################################################################
 # class BaseAxes
@@ -275,7 +277,7 @@ class GlassBrainAxes(BaseAxes):
                                     vmax=abs_line_values_max)
         value_to_color = pl.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
-        for start_end_point_3d, line_value in itertools.izip(
+        for start_end_point_3d, line_value in six_zip(
                 line_coords, line_values):
             start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
                                                   self.direction)
@@ -384,7 +386,7 @@ class BaseSlicer(object):
             axes = [0., 0., 1., 1.]
             if leave_space:
                 axes = [0.3, 0, .7, 1.]
-        if operator.isSequenceType(axes):
+        if isinstance(axes, collections.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
@@ -522,7 +524,7 @@ class BaseSlicer(object):
                                     affine))
 
         data_2d_list = []
-        for display_ax in self.axes.itervalues():
+        for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
             except IndexError:
@@ -621,7 +623,7 @@ class BaseSlicer(object):
         data_bounds = get_bounds(data.shape, img.get_affine())
 
         # For each ax, cut the data and plot it
-        for display_ax in self.axes.itervalues():
+        for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
                 edge_mask = _edge_map(data_2d)
@@ -777,7 +779,7 @@ class OrthoSlicer(BaseSlicer):
             ticks_margin = adjusted_width * self._colorbar_labels_margin
             x1 = x1 - (adjusted_width + ticks_margin)
 
-        for display_ax in display_ax_dict.itervalues():
+        for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
@@ -788,7 +790,7 @@ class OrthoSlicer(BaseSlicer):
             xmin, xmax, ymin, ymax = bounds
             width_dict[display_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
-        for ax, width in width_dict.iteritems():
+        for ax, width in width_dict.items():
             width_dict[ax] = width/total_width*(x1 -x0)
         x_ax = display_ax_dict.get('x', dummy_ax)
         y_ax = display_ax_dict.get('y', dummy_ax)
@@ -883,8 +885,8 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
         else:
-            if (not operator.isSequenceType(cut_coords) and
-                    operator.isNumberType(cut_coords)):
+            if (not isinstance(cut_coords, collections.Sequence) and
+                    isinstance(cut_coords, numbers.Number)):
                 cut_coords = find_cut_slices(img,
                                              direction=cls._direction,
                                              n_cuts=cut_coords)
@@ -934,7 +936,7 @@ class BaseStackedSlicer(BaseSlicer):
             ticks_margin = adjusted_width*self._colorbar_labels_margin
             x1 = x1 - (adjusted_width+ticks_margin)
 
-        for display_ax in display_ax_dict.itervalues():
+        for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
@@ -945,7 +947,7 @@ class BaseStackedSlicer(BaseSlicer):
             xmin, xmax, ymin, ymax = bounds
             width_dict[display_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
-        for ax, width in width_dict.iteritems():
+        for ax, width in width_dict.items():
             width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
         left = float(x0)
@@ -1111,7 +1113,7 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            if isinstance(edge_threshold, basestring):
+            if isinstance(edge_threshold, string_types):
                 message = ("If 'edge_threshold' is given as a string it "
                            'should be a number followed by the percent sign, '
                            'e.g. "25.3%"')
@@ -1146,7 +1148,7 @@ class OrthoProjector(OrthoSlicer):
         non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
 
         line_coords = [node_coords[list(index)]
-                       for index in itertools.izip(*non_zero_indices)]
+                       for index in six_zip(*non_zero_indices)]
 
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():

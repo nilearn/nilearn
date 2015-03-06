@@ -25,8 +25,9 @@ from nilearn.input_data import NiftiMasker
 import numpy as np
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 stimuli = labels['labels']
+
 # identify resting state labels in order to be able to remove them
-resting_state = stimuli == "rest"
+resting_state = stimuli == b"rest"
 
 # find names of remaining active labels
 categories = np.unique(stimuli[np.logical_not(resting_state)])
@@ -53,7 +54,7 @@ mask_scores = {}
 mask_chance_scores = {}
 
 for mask_name in mask_names:
-    print "Working on mask %s" % mask_name
+    print("Working on mask %s" % mask_name)
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
@@ -64,7 +65,7 @@ for mask_name in mask_names:
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
-        print "Processing %s %s" % (mask_name, category)
+        print("Processing %s %s" % (mask_name, category))
         classification_target = stimuli[np.logical_not(resting_state)] == category
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
@@ -78,9 +79,9 @@ for mask_name in mask_names:
             classification_target,
             cv=cv, scoring="f1")
 
-        print "Scores: %1.2f +- %1.2f" % (
+        print("Scores: %1.2f +- %1.2f" % (
             mask_scores[mask_name][category].mean(),
-            mask_scores[mask_name][category].std())
+            mask_scores[mask_name][category].std()))
 
 # make a rudimentary diagram
 import matplotlib.pyplot as plt

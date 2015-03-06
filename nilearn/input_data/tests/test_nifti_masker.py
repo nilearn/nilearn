@@ -196,8 +196,8 @@ def test_joblib_cache():
 def test_mask_init_errors():
     # Errors that are caught in init
     mask = NiftiMasker(mask_strategy='oops')
-    testing.assert_raises_regexp(ValueError, "Unknown value of mask_strategy 'oops'",
-                                 mask.fit)
+    testing.assert_raises_regex(ValueError, "Unknown value of mask_strategy 'oops'",
+                                mask.fit)
 
 
 def test_compute_epi_mask():

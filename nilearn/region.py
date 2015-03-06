@@ -9,6 +9,7 @@ or as weights in one image per region (maps).
 
 import numpy as np
 from scipy import linalg, ndimage
+from six.moves import xrange
 
 import nibabel
 

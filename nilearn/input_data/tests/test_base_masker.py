@@ -8,7 +8,7 @@ import nibabel
 
 from nilearn.input_data.base_masker import filter_and_mask
 from nilearn import image
-from nilearn._utils.testing import assert_raises_regexp
+from nilearn._utils.testing import assert_raises_regex
 
 
 def test_cropping_code_paths():
@@ -55,5 +55,5 @@ def test_filter_and_mask():
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
 
-    assert_raises_regexp(TypeError, "A 3D image is expected", filter_and_mask,
-                         data, mask, {})
+    assert_raises_regex(TypeError, "A 3D image is expected", filter_and_mask,
+                        data, mask, {})

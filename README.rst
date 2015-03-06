@@ -40,6 +40,7 @@ The required dependencies to use the software are:
 * SciPy >= 0.7
 * Scikit-learn >= 0.12.1
 * Nibabel >= 1.1.0.
+* Six
 
 This configuration almost matches the Ubuntu 10.04 LTS release from
 April 2010, except for scikit-learn, which must be installed separately.

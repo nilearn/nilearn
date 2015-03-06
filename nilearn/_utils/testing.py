@@ -2,14 +2,16 @@
 """
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
-import functools
-import os
-import sys
-import urllib2
 import contextlib
-import warnings
+import functools
 import inspect
+import os
 import re
+import sys
+import tempfile
+import warnings
+from six import string_types
+from six.moves import urllib
 
 import numpy as np
 import scipy.signal
@@ -24,26 +26,30 @@ from .. import masking
 from . import logger
 
 try:
-    from nose.tools import assert_raises_regexp
+    from nose.tools import assert_raises_regex
 except ImportError:
-    # for Py 2.6
-    def assert_raises_regexp(expected_exception, expected_regexp,
-                            callable_obj=None, *args, **kwargs):
-        """Helper function to check for message patterns in exceptions"""
+    # For Py 2.7
+    try:
+        from nose.tools import assert_raises_regexp as assert_raises_regex
+    except ImportError:
+        # for Py 2.6
+        def assert_raises_regex(expected_exception, expected_regexp,
+                                callable_obj=None, *args, **kwargs):
+            """Helper function to check for message patterns in exceptions"""
 
-        not_raised = False
-        try:
-            callable_obj(*args, **kwargs)
-            not_raised = True
-        except Exception as e:
-            error_message = str(e)
-            if not re.compile(expected_regexp).search(error_message):
-                raise AssertionError("Error message should match pattern "
-                                     "%r. %r does not." %
-                                     (expected_regexp, error_message))
-        if not_raised:
-            raise AssertionError("Should have raised %r" %
-                                 expected_exception(expected_regexp))
+            not_raised = False
+            try:
+                callable_obj(*args, **kwargs)
+                not_raised = True
+            except Exception as e:
+                error_message = str(e)
+                if not re.compile(expected_regexp).search(error_message):
+                    raise AssertionError("Error message should match pattern "
+                                         "%r. %r does not." %
+                                         (expected_regexp, error_message))
+            if not_raised:
+                raise AssertionError("Should have raised %r" %
+                                     expected_exception(expected_regexp))
 
 try:
     from sklearn.utils.testing import assert_warns
@@ -88,7 +94,7 @@ def write_tmp_imgs(*imgs, **kwargs):
     if len(invalid_keys) > 0:
         raise TypeError("%s: unexpected keyword argument(s): %s" %
                         (sys._getframe().f_code.co_name,
-                        " ".join(invalid_keys)))
+                         " ".join(invalid_keys)))
     create_files = kwargs.get("create_files", True)
 
     if create_files:
@@ -96,7 +102,9 @@ def write_tmp_imgs(*imgs, **kwargs):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for img in imgs:
-                filename = os.tempnam(None, "nilearn_") + ".nii"
+                _, filename = tempfile.mkstemp(prefix="nilearn_",
+                                               suffix=".nii",
+                                               dir=None)
                 filenames.append(filename)
                 nibabel.save(img, filename)
 
@@ -114,30 +122,21 @@ def write_tmp_imgs(*imgs, **kwargs):
             yield imgs
 
 
-class mock_urllib2(object):
-
-    urlparse = urllib2.urlparse
-
+class mock_request(object):
     def __init__(self):
-        """Object that mocks the urllib2 module to store downloaded filenames.
+        """Object that mocks the urllib (future) module to store downloaded filenames.
 
         `urls` is the list of the files whose download has been
         requested.
         """
         self.urls = set()
 
-    class HTTPError(urllib2.URLError):
-        code = 404
-
-    class URLError(urllib2.URLError):
-        pass
-
     def urlopen(self, url):
         self.urls.add(url)
         # If the file is local, we try to open it
         if url.startswith('file://'):
             try:
-                return urllib2.urlopen(url)
+                return urllib.request.urlopen(url)
             except:
                 pass
         return url
@@ -149,10 +148,11 @@ class mock_urllib2(object):
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
                          report_hook=None, verbose=0):
-        if not isinstance(response, basestring):
+        if not isinstance(response, string_types):
             return _chunk_read_(response, local_file,
-                    initial_size=initial_size, chunk_size=chunk_size,
-                    report_hook=report_hook, verbose=verbose)
+                                initial_size=initial_size,
+                                chunk_size=chunk_size,
+                                report_hook=report_hook, verbose=verbose)
         return response
     return mock_chunk_read_
 
@@ -160,7 +160,7 @@ def wrap_chunk_read_(_chunk_read_):
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
                                  chunk_size=8192, report_hook=None,
                                  verbose=0):
-    raise urllib2.HTTPError("url", 418, "I'm a teapot", None, None)
+    raise urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
 class FetchFilesMock (object):
@@ -186,14 +186,15 @@ class FetchFilesMock (object):
             basename = os.path.basename(fname)
             if basename in self.csv_files:
                 array = self.csv_files[basename]
+
                 # np.savetxt does not have a header argument for numpy 1.6
                 # np.savetxt(fname, array, delimiter=',', fmt="%s",
                 #            header=','.join(array.dtype.names))
                 # We need to add the header ourselves
-                with open(fname, 'w') as f:
+                with open(fname, 'wb') as f:
                     header = '# {0}\n'.format(','.join(array.dtype.names))
-                    f.write(header)
-                    np.savetxt(f, array, delimiter=',', fmt="%s")
+                    f.write(header.encode())
+                    np.savetxt(f, array, delimiter=',', fmt='%s')
 
         return filenames
 
@@ -238,14 +239,14 @@ def generate_regions_ts(n_features, n_regions,
     # Start at 1 to avoid getting an empty region
     boundaries = np.zeros(n_regions + 1)
     boundaries[-1] = n_features
-    boundaries[1:-1] = rand_gen.permutation(range(1, n_features)
+    boundaries[1:-1] = rand_gen.permutation(np.arange(1, n_features)
                                             )[:n_regions - 1]
     boundaries.sort()
 
     regions = np.zeros((n_regions, n_features), order="C")
-    overlap_end = int((overlap + 1) / 2)
-    overlap_start = int(overlap / 2)
-    for n in xrange(len(boundaries) - 1):
+    overlap_end = int((overlap + 1) / 2.)
+    overlap_start = int(overlap / 2.)
+    for n in range(len(boundaries) - 1):
         start = int(max(0, boundaries[n] - overlap_start))
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
@@ -315,7 +316,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
-        labels = xrange(0, n_regions + 1)
+        labels = range(0, n_regions + 1)
         n_regions += 1
     else:
         n_regions = len(labels)
@@ -399,14 +400,14 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     full_shape = shape + (length, )
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
-    width = [s / 2 for s in shape]
-    shift = [s / 4 for s in shape]
+    width = [s // 2 for s in shape]
+    shift = [s // 4 for s in shape]
 
     if kind == "noise":
         signals = rand_gen.randint(256, size=(width + [length]))
     elif kind == "step":
         signals = np.ones(width + [length])
-        signals[..., :length / 2] = 0.5
+        signals[..., :length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
 
@@ -545,7 +546,7 @@ def generate_group_sparse_gaussian_graphs(
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu((
         random_state.randint(0, high=int(1. / density),
-                         size=n_features * n_features)
+                             size=n_features * n_features)
     ).reshape(n_features, n_features) == 0, k=1)
 
     # Generate edges weights on topology
@@ -593,7 +594,7 @@ def skip_if_running_nose(msg=None):
     msg: string, optional
         The message issued when SkipTest is raised
     """
-    if not 'nose' in sys.modules:
+    if 'nose' not in sys.modules:
         return
     try:
         import nose
@@ -611,4 +612,3 @@ def skip_if_running_nose(msg=None):
                 raise nose.SkipTest(msg)
             else:
                 raise nose.SkipTest
-

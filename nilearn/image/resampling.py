@@ -7,6 +7,7 @@ See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
 import warnings
 from distutils.version import LooseVersion
+from six import string_types
 
 import numpy as np
 import scipy
@@ -155,7 +156,7 @@ def get_bounds(shape, affine):
                     [0,    bdim, cdim, 1],
                     [adim, bdim, cdim, 1]]).T
     box = np.dot(affine, box)[:3]
-    return zip(box.min(axis=-1), box.max(axis=-1))
+    return list(zip(box.min(axis=-1), box.max(axis=-1)))
 
 
 def get_mask_bounds(img):
@@ -363,7 +364,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
-    if isinstance(img, basestring):
+    if isinstance(img, string_types):
         # Avoid a useless copy
         input_img_is_string = True
     else:
