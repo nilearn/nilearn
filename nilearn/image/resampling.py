@@ -186,7 +186,7 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg(img)
-    mask = (img.get_data() != 0.)
+    mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
     affine = img.get_affine()
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
