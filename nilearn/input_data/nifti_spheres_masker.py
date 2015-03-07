@@ -1,9 +1,9 @@
 """
 Transformer for computing seeds signals.
 """
+import warnings
 
 import numpy as np
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
@@ -16,7 +16,7 @@ from .. import masking
 
 
 def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
-    """ Note: this function is sub-optimal for small radius
+    """ Note: this function is sub-optimal for voxel size radius
     """
     n_seeds = len(seeds)
     niimg = check_niimg(niimg)
@@ -35,6 +35,9 @@ def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
                         np.ones((1,) + shape[:3])))
     # Transform the indices into native space
     coords = np.tensordot(affine, coords, axes=[[1], [0]])[:3]
+    # Matrix where we stor each sphere to check overlaps
+    mark_map = - np.ones(shape[:3])
+
     for i, seed in enumerate(seeds):
         seed = np.asarray(seed)
         # Compute square distance to the seed
@@ -47,6 +50,11 @@ def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
             dist_mask = np.logical_and(mask, dist_mask)
         if not dist_mask.any():
             raise ValueError('Seed #%i is out of the mask' % i)
+        # Check if there is overlapping with previous seeds
+        markers = np.unique(mark_map[dist_mask])
+        if len(markers) != 1:
+            warnings.warn('Sphere #%i overlaps with sphere #%i'
+                          % (i, markers[1]))
         signals[:, i] = np.mean(niimg.get_data()[dist_mask], axis=0)
     return signals
 
