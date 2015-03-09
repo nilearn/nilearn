@@ -1017,7 +1017,7 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
         fdescr = rst_file.read()
 
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
-    params = dict([('description', fdescr)] + zip(keys, files_))
+    params = dict([('description', fdescr)] + list(zip(keys, files_)))
 
     return Bunch(**params)
 
