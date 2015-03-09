@@ -1,13 +1,14 @@
 """
 Test the multi-PCA module
 """
-import nibabel
+
 import numpy as np
+from nose.tools import assert_raises
 
-import nose
+import nibabel
 
-from nilearn.input_data import MultiNiftiMasker
 from nilearn.decomposition.multi_pca import MultiPCA
+from nilearn.input_data import MultiNiftiMasker
 
 
 def test_multi_pca():
@@ -42,7 +43,7 @@ def test_multi_pca():
 
     # Check that asking for too little components raises a ValueError
     multi_pca = MultiPCA()
-    nose.tools.assert_raises(ValueError, multi_pca.fit, data[:2])
+    assert_raises(ValueError, multi_pca.fit, data[:2])
 
     # Smoke test the use of a masker and without CCA
     multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
@@ -51,3 +52,6 @@ def test_multi_pca():
 
     # Smoke test the transform and inverse_transform
     multi_pca.inverse_transform(multi_pca.transform(data[-2:]))
+
+    # Smoke test to fit with no img
+    assert_raises(TypeError, multi_pca.fit)
