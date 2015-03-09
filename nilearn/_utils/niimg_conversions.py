@@ -405,3 +405,54 @@ def _index_niimgs(niimgs, index):
     return nibabel.Nifti1Image(niimgs.get_data()[:, :, :, index],
                                niimgs.get_affine(),
                                header=niimgs.get_header())
+
+
+def is_hdr_equal(niimg1, niimg2, skip_affine=True, skip_datatype=False):
+    """Compare two Niimg-like objects regarding their Nifti headers.
+
+    Parameters
+    ----------
+    niimg1/niimg2: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Specifies the two images whose headers will be compared. These can have
+        3D or 4D shape.
+
+    skip_affine: boolean
+       If True, the header fields related to the affine matrix (srow_x/y/z)
+       will be ignored. Use case: compare resampled images.
+
+    skip_datatype: boolean
+       If True, the header fields related to datatype of the image values
+       will be ignored. Use case: type conversion occurred.
+
+    Returns
+    -------
+    is_hdr_equal: boolean
+        True if niimg1 and niimg2 have identical header fields.
+    """
+    img1 = check_niimgs(niimg1, accept_3d=True)
+    img2 = check_niimgs(niimg2, accept_3d=True)
+
+    # create list of header fields to verify
+    from nibabel.nifti1 import header_dtd
+    hdr_items_to_check = [item[0] for item in header_dtd]
+    if skip_affine:
+        hdr_items_to_check.remove('srow_x')
+        hdr_items_to_check.remove('srow_y')
+        hdr_items_to_check.remove('srow_z')
+        hdr_items_to_check.remove('pixdim')
+    if skip_datatype:
+        hdr_items_to_check.remove('datatype')
+        hdr_items_to_check.remove('bitpix')
+
+    # compare the two headers field-by-field
+    hdr1 = img1.get_header()
+    hdr2 = img2.get_header()
+    for key in hdr_items_to_check:
+        if isinstance(hdr1[key], np.ndarray):  # dim field is an array
+            if not np.array_equal(hdr1[key], hdr2[key]):
+                return False
+        elif hdr1[key] != hdr2[key]:
+            return False
+
+    return True
