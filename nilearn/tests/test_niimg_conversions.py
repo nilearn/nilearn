@@ -35,6 +35,10 @@ class PhonyNiimage(object):
     def get_affine(self):
         return self.affine
 
+    @property
+    def shape(self):
+        return self.data.shape
+
 
 def test_check_niimg():
     # check error for non-forced but necessary resampling

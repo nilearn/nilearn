@@ -149,8 +149,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         # Check shapes and affines or resample.
         if self.resampling_target is None and self.mask_img_ is not None:
-            if _utils._get_shape(self.mask_img_) \
-                    != _utils._get_shape(self.maps_img_)[:3]:
+            if self.mask_img_.shape != self.maps_img_.shape[:3]:
                 raise ValueError(
                     _compose_err_msg(
                         "Regions and mask do not have the same shape",
@@ -175,7 +174,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             self.maps_img_ = image.resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.get_affine(),
-                target_shape=_utils._get_shape(self.mask_img_),
+                target_shape=self.mask_img_.shape,
                 interpolation="continuous",
                 copy=True)
 
@@ -184,7 +183,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             self.mask_img_ = image.resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.get_affine(),
-                target_shape=_utils._get_shape(self.maps_img_)[:3],
+                target_shape=self.maps_img_.shape[:3],
                 interpolation="nearest",
                 copy=True)
 
@@ -236,14 +235,14 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 self._resampled_maps_img_ = self._cache(image.resample_img,
                     func_memory_level=1)(
                         self.maps_img_, interpolation="continuous",
-                        target_shape=_utils._get_shape(imgs)[:3],
+                        target_shape=imgs.shape[:3],
                         target_affine=imgs.get_affine(),
                     )
             if mask_img is not None and not _check_same_fov(imgs, mask_img):
                 mask_img = self._cache(image.resample_img,
                     func_memory_level=1)(
                         mask_img, interpolation="nearest",
-                        target_shape=_utils._get_shape(imgs)[:3],
+                        target_shape=imgs.shape[:3],
                         target_affine=imgs.get_affine(),
                     )
 
@@ -253,13 +252,13 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 self._resampled_maps_img_ = self._cache(image.resample_img,
                     func_memory_level=1)(
                         self.labels_img_, interpolation="continuous",
-                        target_shape=_utils._get_shape(self.mask_img_)[:3],
+                        target_shape=self.mask_img_.shape[:3],
                         target_affine=self.mask_img_.get_affine(),
                     )
             logger.log("resampling images to fit mask", verbose=self.verbose)
             imgs = self._cache(image.resample_img, func_memory_level=1)(
                 imgs, interpolation="continuous",
-                target_shape=_utils._get_shape(self.mask_img_),
+                target_shape=self.mask_img_.shape,
                 target_affine=self.mask_img_.get_affine())
 
         if self.resampling_target == "maps":
@@ -267,7 +266,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             logger.log("resampling images to fit maps", verbose=self.verbose)
             imgs = self._cache(image.resample_img, func_memory_level=1)(
                 imgs, interpolation="continuous",
-                target_shape=_utils._get_shape(self.maps_img_)[:3],
+                target_shape=self.maps_img_.shape[:3],
                 target_affine=self.maps_img_.get_affine())
 
         if self.smoothing_fwhm is not None:

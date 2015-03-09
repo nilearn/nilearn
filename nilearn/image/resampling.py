@@ -381,7 +381,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
-    shape = _utils._get_shape(img)
+    shape = img.shape
     affine = img.get_affine()
 
     if (np.all(np.array(target_shape) == shape[:3]) and

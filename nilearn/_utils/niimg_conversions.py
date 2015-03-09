@@ -11,7 +11,7 @@ from six import string_types
 from sklearn.externals.joblib import Memory
 from .cache_mixin import cache
 
-from .niimg import (_get_shape, _safe_get_data, load_img, new_img_like,
+from .niimg import (_safe_get_data, load_img, new_img_like,
                     short_repr)
 
 
@@ -21,7 +21,7 @@ def _check_same_fov(img1, img2):
     """
     img1 = check_niimgs(img1, accept_3d=True)
     img2 = check_niimgs(img2, accept_3d=True)
-    return (_get_shape(img1)[:3] == _get_shape(img2)[:3]
+    return (img1.shape[:3] == img2.shape[:3]
             and np.allclose(img1.get_affine(), img2.get_affine()))
 
 
@@ -67,7 +67,7 @@ def check_niimg(niimg, ensure_3d=False):
     niimg = load_img(niimg)
 
     if ensure_3d:
-        shape = _get_shape(niimg)
+        shape = niimg.shape
         if len(shape) == 3:
             pass
         elif (len(shape) == 4 and shape[3] == 1):
@@ -143,7 +143,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     # count how many images we have in all (might be list of different 4D's)
     lengths = []
     for index, niimg in enumerate(niimgs):
-        this_shape = _get_shape(check_niimg(niimg))
+        this_shape = check_niimg(niimg).shape
         if len(this_shape) == 3:
             lengths.append(1)
         else:
@@ -250,7 +250,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     if accept_3d and (isinstance(first_img, string_types)
                       or not isinstance(first_img, collections.Iterable)):
         niimg = check_niimg(niimgs)
-        if len(_get_shape(niimg)) == 3:
+        if len(niimg.shape) == 3:
             niimg = new_img_like(niimg, niimg.get_data()[..., np.newaxis],
                             niimg.get_affine())
         return niimg
@@ -269,7 +269,7 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
     first_img = check_niimg(first_img)
 
     # Check dimension and depth
-    shape = _get_shape(first_img)
+    shape = first_img.shape
     dim = len(shape)
 
     if (dim + depth) != 4:

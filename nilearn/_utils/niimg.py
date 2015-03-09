@@ -10,20 +10,9 @@ import collections
 from six import string_types
 
 import numpy as np
-
 import nibabel
 
 from .numpy_conversions import as_ndarray
-
-
-def _get_shape(img):
-    # Use the fact that Nifti1Image has a shape attribute that is
-    # faster than loading the data from disk
-    if hasattr(img, 'shape'):
-        shape = img.shape
-    else:
-        shape = img.get_data().shape
-    return shape
 
 
 def _safe_get_data(img):
@@ -151,7 +140,7 @@ def _repr_niimgs(niimgs):
         else:
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,
-                    repr(_get_shape(niimgs)),
+                    repr(niimgs.shape),
                     repr(niimgs.get_affine()))
     except:
         pass
