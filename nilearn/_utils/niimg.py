@@ -48,10 +48,9 @@ def load_img(img, dtype=None):
         # data is a filename, we load it
         img = nibabel.load(img)
     elif not isinstance(img, nibabel.spatialimages.SpatialImage):
-        raise TypeError("Data given cannot be converted to a nifti"
-                        " image: this object -'%s'- does not expose"
-                        " get_data or get_affine methods"
-                        % short_repr(img))
+        raise TypeError("Data given cannot be loaded because it is"
+                        " not compatible with nibabel format:\n"
+                        + short_repr(img))
     return img
 
 

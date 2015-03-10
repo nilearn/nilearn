@@ -23,17 +23,17 @@ from nilearn._utils import testing
 from nilearn._utils.testing import assert_raises_regex
 
 
-class PhonyNiimage(object):
+class PhonyNiimage(nibabel.spatialimages.SpatialImage):
 
     def __init__(self):
         self.data = np.ones((9, 9, 9, 9))
-        self.affine = np.ones((4, 4))
+        self.my_affine = np.ones((4, 4))
 
     def get_data(self):
         return self.data
 
     def get_affine(self):
-        return self.affine
+        return self.my_affine
 
     @property
     def shape(self):
@@ -42,11 +42,11 @@ class PhonyNiimage(object):
 
 def test_check_niimg():
     # check error for non-forced but necessary resampling
-    assert_raises_regex(TypeError, 'image',
+    assert_raises_regex(TypeError, 'nibabel format',
                         _utils.check_niimg, 0)
 
     # check error for non-forced but necessary resampling
-    assert_raises_regex(TypeError, 'image',
+    assert_raises_regex(TypeError, 'empty object',
                         _utils.check_niimg, [])
 
     # Test ensure_3d
@@ -77,10 +77,10 @@ def test_check_niimg():
 
 
 def test_check_niimgs():
-    assert_raises_regex(TypeError, 'image',
+    assert_raises_regex(TypeError, 'nibabel format',
                         _utils.check_niimgs, 0)
 
-    assert_raises_regex(TypeError, 'image',
+    assert_raises_regex(TypeError, 'empty object',
                         _utils.check_niimgs, [])
 
     affine = np.eye(4)
