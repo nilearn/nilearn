@@ -29,30 +29,6 @@ def _safe_get_data(img):
     return img.get_data()
 
 
-def is_img(obj):
-    """ Check for get_data and get_affine method in an object
-
-    Parameters
-    ----------
-    obj: any object
-        Tested object
-
-    Returns
-    -------
-    is_img: boolean
-        True if get_data and get_affine methods are present and callable,
-        False otherwise.
-    """
-
-    # We use a try/except here because this is the way hasattr works
-    try:
-        get_data = getattr(obj, "get_data")
-        get_affine = getattr(obj, "get_affine")
-        return callable(get_data) and callable(get_affine)
-    except AttributeError:
-        return False
-
-
 # XXX add dtype option for masks
 def load_img(img):
     """Load a niimg and check if it has required methods
@@ -60,7 +36,7 @@ def load_img(img):
     if isinstance(img, string_types):
         # data is a filename, we load it
         img = nibabel.load(img)
-    elif not is_img(img):
+    elif not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise TypeError("Data given cannot be converted to a nifti"
                         " image: this object -'%s'- does not expose"
                         " get_data or get_affine methods"
@@ -119,7 +95,7 @@ def copy_img(img):
     img_copy: nibabel.Nifti1Image
         copy of input (data and affine)
     """
-    if not is_img(img):
+    if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
     return new_img_like(img, img.get_data().copy(), img.get_affine().copy(),
                         copy_header=True)
