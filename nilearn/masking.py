@@ -563,6 +563,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     When using smoothing, ensure_finite is set to True, as non-finite
     values would spread accross the image.
     """
+    mask_img = _utils.check_niimg(mask_img, ensure_3d=False)
     mask, mask_affine = _load_mask_img(mask_img)
     mask_img = new_img_like(mask_img, mask, mask_affine)
     return _apply_mask_fmri(imgs, mask_img, dtype=dtype,
@@ -711,6 +712,7 @@ def unmask(X, mask_img, order="F"):
             ret.append(unmask(x, mask_img, order=order))  # 1-level recursion
         return ret
 
+    mask_img = _utils.check_niimg(mask_img, ensure_3d=False)
     mask, affine = _load_mask_img(mask_img)
 
     if X.ndim == 2:

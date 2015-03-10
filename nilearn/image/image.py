@@ -431,7 +431,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         imgs = [imgs, ]
 
     imgs_iter = iter(imgs)
-    first_img = next(imgs_iter)
+    first_img = check_niimg(next(imgs_iter))
 
     # Compute the first mean to retrieve the reference
     # target_affine and target_shape if_needed

@@ -98,11 +98,11 @@ def new_img_like(ref_img, data, affine, copy_header=False):
     header = None
     if copy_header:
         header = copy.copy(ref_img.get_header())
-        header['scl_slope'] = None
-        header['scl_inter'] = None
-        header['glmax'] = None
-        header['cal_max'] = max(data)
-        header['cal_max'] = min(data)
+        header['scl_slope'] = 0.
+        header['scl_inter'] = 0.
+        header['glmax'] = 0.
+        header['cal_max'] = np.max(data) if data.size > 0 else 0.
+        header['cal_max'] = np.min(data) if data.size > 0 else 0.
     return ref_img.__class__(data, affine, header=header)
 
 
