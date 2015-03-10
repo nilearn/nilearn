@@ -29,9 +29,20 @@ def _safe_get_data(img):
     return img.get_data()
 
 
-# XXX add dtype option for masks
-def load_img(img):
-    """Load a niimg and check if it has required methods
+def load_img(img, dtype=None):
+    """Load a niimg, check if it is a nibabel SpatialImage and cast if needed
+
+    Parameters:
+    -----------
+
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Image to load.
+
+    Returns:
+    --------
+    img: image
+        A loaded image object.
     """
     if isinstance(img, string_types):
         # data is a filename, we load it
@@ -49,7 +60,7 @@ def new_img_like(ref_img, data, affine, copy_header=False):
 
     Parameters
     ----------
-    ref_img: img-like object 
+    ref_img: image
         Reference image. The new image will be of the same type.
 
     data: numpy array
@@ -65,7 +76,7 @@ def new_img_like(ref_img, data, affine, copy_header=False):
     Returns
     -------
 
-    new_img: nibabel.SpatialImage
+    new_img: image
         An image which has the same type as the reference image.
     """
     data = np.asarray(data)
@@ -88,12 +99,12 @@ def copy_img(img):
     Parameters
     ==========
     img: image
-        nibabel.Nifti1Image object to copy.
+        nibabel SpatialImage object to copy.
 
     Returns
     =======
-    img_copy: nibabel.Nifti1Image
-        copy of input (data and affine)
+    img_copy: image
+        copy of input (data, affine and header)
     """
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
@@ -127,7 +138,7 @@ def _repr_niimgs(niimgs):
 def short_repr(niimg):
     """Gives a shorten version on niimg representation
     """
-    this_repr = repr(niimg)
+    this_repr = _repr_niimgs(niimg)
     if len(this_repr) > 20:
         # Shorten the repr to have a useful error message
         this_repr = this_repr[:18] + '...'
