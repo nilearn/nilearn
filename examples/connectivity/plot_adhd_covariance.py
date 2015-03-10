@@ -12,7 +12,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from nilearn import plotting, image
+from nilearn import plotting
 from nilearn.plotting import cm
 
 
@@ -57,13 +57,13 @@ msdl_atlas_dataset = datasets.fetch_msdl_atlas()
 adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
 
 # Extracting region signals ###################################################
-import nilearn.image
-import nilearn.input_data
+from nilearn import image
+from nilearn import input_data
 
 from sklearn.externals.joblib import Memory
 mem = Memory('nilearn_cache')
 
-masker = nilearn.input_data.NiftiMapsMasker(
+masker = input_data.NiftiMapsMasker(
     msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
     low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
     memory=mem, memory_level=1, verbose=2)
@@ -77,8 +77,7 @@ for func_filename, confound_filename in zip(func_filenames,
     print("Processing file %s" % func_filename)
 
     print("-- Computing confounds ...")
-    hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(
-        func_filename)
+    hv_confounds = mem.cache(image.high_variance_confounds)(func_filename)
 
     print("-- Computing region signals ...")
     region_ts = masker.transform(func_filename,
