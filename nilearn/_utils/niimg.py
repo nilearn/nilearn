@@ -20,8 +20,8 @@ def _safe_get_data(img):
         Nifti1Image object
     """
     if hasattr(img, '_data_cache') and img._data_cache is None:
-        # Copy locally the Nift1Image object to avoid the side effect of data
-        # loading
+        # By loading directly dataobj, we prevent caching if the data is
+        # memmaped. Preventing this side-effect can save memory in some cases.
         img = copy.deepcopy(img)
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
@@ -73,7 +73,7 @@ def new_img_like(ref_img, data, affine, copy_header=False):
 
     Parameters
     ----------
-    ref_img: Niimg-like image
+    ref_img: img-like object 
         Reference image. The new image will be of the same type.
 
     data: numpy array
@@ -92,16 +92,17 @@ def new_img_like(ref_img, data, affine, copy_header=False):
     new_img: nibabel.SpatialImage
         An image which has the same type as the reference image.
     """
-    # XXX If the niimg is a list of 3D images, we don't need to load them all
-    # But this is a bit ugly
-    if hasattr(ref_img, "__iter__") and not isinstance(ref_img, string_types):
-        ref_img = next(ref_img)
-    ref_img = load_img(ref_img)
-    header = ref_img.get_header() if copy_header else None
-    # XXX Nifti can't handle boolean, is this the case of other types?
     data = np.asarray(data)
     if data.dtype == bool:
         data = as_ndarray(data, dtype=np.int8)
+    header = None
+    if copy_header:
+        header = copy.copy(ref_img.get_header())
+        header['scl_slope'] = None
+        header['scl_inter'] = None
+        header['glmax'] = None
+        header['cal_max'] = max(data)
+        header['cal_max'] = min(data)
     return ref_img.__class__(data, affine, header=header)
 
 
