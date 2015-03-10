@@ -647,17 +647,17 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         cbar_vmin, cbar_vmax = None, None
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
-                               cut_coords=cut_coords,
-                               output_file=output_file,
-                               display_mode=display_mode,
-                               figure=figure, axes=axes, title=title,
-                               annotate=annotate, draw_cross=draw_cross,
-                               black_bg=black_bg, threshold=threshold,
-                               bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
-                               vmin=vmin, vmax=vmax, colorbar=colorbar,
-                               cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-			       resampling_interpolation='continuous',
-                               **kwargs)
+                                cut_coords=cut_coords,
+                                output_file=output_file,
+                                display_mode=display_mode,
+                                figure=figure, axes=axes, title=title,
+                                annotate=annotate, draw_cross=draw_cross,
+                                black_bg=black_bg, threshold=threshold,
+                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
+                                vmin=vmin, vmax=vmax, colorbar=colorbar,
+                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+                                resampling_interpolation='continuous',
+                                **kwargs)
 
     return display
 
