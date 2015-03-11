@@ -36,8 +36,8 @@ The required dependencies to use the software are:
 
 * Python >= 2.6,
 * setuptools
-* Numpy >= 1.3
-* SciPy >= 0.7
+* Numpy >= 1.6
+* SciPy >= 0.9
 * Scikit-learn >= 0.12.1
 * Nibabel >= 1.1.0.
 * Six
