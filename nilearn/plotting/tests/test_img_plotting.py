@@ -279,6 +279,9 @@ def test_plot_connectome():
                   node_size=10, node_color=node_color)
     plot_connectome(*args, **kwargs)
 
+    # used to speed-up tests for the next plots
+    kwargs['display_mode'] = 'x'
+
     # node_coords not an array but a list of tuples
     plot_connectome(adjacency_matrix,
                     [tuple(each) for each in node_coords],
@@ -319,13 +322,18 @@ def test_plot_connectome_exceptions():
     pl.switch_backend('template')
     node_coords = np.arange(2 * 3).reshape((2, 3))
 
+    # Used to speed-up tests because the glass brain is always plotted
+    # before any error occurs
+    kwargs = {'display_mode': 'x'}
+
     # adjacency_matrix is not symmetric
     non_symmetric_adjacency_matrix = np.array([[1., 2],
                                                [0.4, 1.]])
     assert_raises_regex(ValueError,
                         'should be symmetric',
                         plot_connectome,
-                        non_symmetric_adjacency_matrix, node_coords)
+                        non_symmetric_adjacency_matrix, node_coords,
+                        **kwargs)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
@@ -336,28 +344,32 @@ def test_plot_connectome_exceptions():
     assert_raises_regex(ValueError,
                         'non symmetric mask',
                         plot_connectome,
-                        masked_adjacency_matrix, node_coords)
+                        masked_adjacency_matrix, node_coords,
+                        **kwargs)
 
     # edges threshold is neither a number nor a string
     assert_raises_regex(TypeError,
                         'should be either a number or a string',
                         plot_connectome,
                         adjacency_matrix, node_coords,
-                        edge_threshold=object())
+                        edge_threshold=object(),
+                        **kwargs)
 
     # wrong shapes for node_coords or adjacency_matrix
     assert_raises_regex(ValueError,
                         r'supposed to have shape \(n, n\).+\(1, 2\)',
                         plot_connectome, adjacency_matrix[:1, :],
-                        node_coords)
+                        node_coords,
+                        **kwargs)
 
     assert_raises_regex(ValueError, r'shape \(2, 3\).+\(2,\)',
-                        plot_connectome, adjacency_matrix, node_coords[:, 2])
+                        plot_connectome, adjacency_matrix, node_coords[:, 2],
+                        **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
     assert_raises_regex(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
                         plot_connectome,
-                        wrong_adjacency_matrix, node_coords)
+                        wrong_adjacency_matrix, node_coords, **kwargs)
 
     # a few not correctly formatted strings for 'edge_threshold'
     wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
@@ -366,18 +378,20 @@ def test_plot_connectome_exceptions():
                             'should be a number followed by the percent sign',
                             plot_connectome,
                             adjacency_matrix, node_coords,
-                            edge_threshold=wrong_edge_threshold)
+                            edge_threshold=wrong_edge_threshold, **kwargs)
 
     # specifying node sizes via node_kwargs
     assert_raises_regex(ValueError,
                         "Please use 'node_size' and not 'node_kwargs'",
                         plot_connectome,
                         adjacency_matrix, node_coords,
-                        node_kwargs={'s': 50})
+                        node_kwargs={'s': 50},
+                        **kwargs)
 
     # specifying node colors via node_kwargs
     assert_raises_regex(ValueError,
                         "Please use 'node_color' and not 'node_kwargs'",
                         plot_connectome,
                         adjacency_matrix, node_coords,
-                        node_kwargs={'c': 'blue'})
+                        node_kwargs={'c': 'blue'},
+                        **kwargs)
