@@ -40,9 +40,9 @@ create_new_conda_env() {
 
     # Configure the conda environment and put it in the path using the
     # provided versions
-    conda create -n testenv --yes python=$PYTHON_VERSION pip nose \
-        numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION \
-        matplotlib=$MATPLOTLIB_VERSION scikit-learn=$SKLEARN_VERSION
+    conda create -n testenv --yes python="$PYTHON_VERSION" pip nose \
+        numpy="$NUMPY_VERSION" scipy="$SCIPY_VERSION" \
+        matplotlib="$MATPLOTLIB_VERSION" scikit-learn="$SKLEARN_VERSION"
     source activate testenv
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
