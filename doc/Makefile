@@ -138,5 +138,4 @@ install:
 	cd nilearn.github.io && \
 	git add * && \
 	git commit -a -m 'Make install' && \
-	git push && \
-	cd ..
+	git push
