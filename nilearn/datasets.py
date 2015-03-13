@@ -734,8 +734,8 @@ def _tree(path, pattern=None, dictionary=False):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Craddock 2011 parcellation
+def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    """Download and return file names for the Craddock 2012 parcellation
 
     The provided images are in MNI152 space.
 
@@ -779,7 +779,7 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
               "/Parcellations/craddock_2011_parcellations.tar.gz"
     opts = {'uncompress': True}
 
-    dataset_name = "craddock_2011"
+    dataset_name = "craddock_2012"
     keys = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
             "random")

@@ -31,7 +31,7 @@ uses.
 
    fetch_abide_pcp
    fetch_adhd
-   fetch_craddock_2011_atlas
+   fetch_craddock_2012_atlas
    fetch_harvard_oxford
    fetch_haxby
    fetch_haxby_simple
