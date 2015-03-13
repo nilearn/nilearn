@@ -76,6 +76,9 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
                                                    80)
     mask = np.abs(my_map) > activation_threshold - 1.e-15
+    # mask may be zero everywhere in rare cases
+    if (mask.max() == 0) and (mask.min() == 0):
+        return .5 * np.array(data.shape)
     mask = largest_connected_component(mask)
     slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
     my_map = my_map[slice_x, slice_y, slice_z]
