@@ -15,12 +15,14 @@ from distutils.version import LooseVersion
 from nose.tools import assert_true, assert_false, assert_raises
 from nose import SkipTest
 import numpy as np
+from numpy.testing import assert_array_equal
 
 from nibabel import Nifti1Image
 import nibabel
 
-from ..nifti_masker import NiftiMasker
-from ..._utils import testing
+from nilearn.input_data.nifti_masker import NiftiMasker
+from nilearn._utils import testing
+from nilearn.image import index_img
 
 
 def test_auto_mask():
@@ -35,9 +37,9 @@ def test_auto_mask():
     # Smoke test the fit
     masker.fit(img)
     # Smoke test the transform
-    # With a 4D niimg
+    # With a 4D img
     masker.transform([img, ])
-    # With a 3D niimg
+    # With a 3D img
     masker.transform(img)
 
 
@@ -110,6 +112,55 @@ def test_mask_3d():
         assert_raises(TypeError, masker.fit)
 
 
+def test_mask_4d():
+    # Dummy mask
+    mask = np.zeros((10, 10, 10))
+    mask[3:7, 3:7, 3:7] = 1
+    mask_bool = mask.astype(bool)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    n_mask_vox = mask_bool.sum()
+
+    # Dummy data
+    data = np.zeros((10, 10, 10, 3))
+    data[..., 0] = 1
+    data[..., 1] = 2
+    data[..., 2] = 3
+    data_img_4d = Nifti1Image(data, np.eye(4))
+    data_imgs = [index_img(data_img_4d, 0), index_img(data_img_4d, 1),
+                 index_img(data_img_4d, 2)]
+
+    # check whether transform is indeed selecting niimgs subset
+    sample_mask = np.array([0, 2])
+    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker.fit()
+    data_trans = masker.transform(data_imgs)
+    data_trans_img = index_img(data_img_4d, sample_mask)
+    data_trans_direct = data_trans_img.get_data()[mask_bool, :]
+    data_trans_direct = np.swapaxes(data_trans_direct, 0, 1)
+    assert_array_equal(data_trans, data_trans_direct)
+
+    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker.fit()
+    data_trans2 = masker.transform(data_img_4d)
+    assert_array_equal(data_trans2, data_trans_direct)
+
+
+def test_sessions():
+    # Test the sessions vector
+    data = np.ones((40, 40, 40, 4))
+    # Create a border, so that the masking work well
+    data[0] = 0
+    data[-1] = 0
+    data[:, -1] = 0
+    data[:, 0] = 0
+    data[..., -1] = 0
+    data[..., 0] = 0
+    data[20, 20, 20] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+    masker = NiftiMasker(sessions=np.ones(3, dtype=np.int))
+    assert_raises(ValueError, masker.fit_transform, data_img)
+
+
 def test_joblib_cache():
     if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
         # Old nibabel do not pickle
@@ -128,7 +179,7 @@ def test_joblib_cache():
         assert_true(mask_hash == hash(masker.mask_img_))
 
     # Test a tricky issue with memmapped joblib.memory that makes
-    # niimgs return by inverse_transform impossible to save
+    # imgs return by inverse_transform impossible to save
     cachedir = mkdtemp()
     try:
         masker.memory = Memory(cachedir=cachedir, mmap_mode='r',

@@ -88,13 +88,6 @@ Why is machine learning relevant to NeuroImaging: a few examples
 Installation
 =============
 
-.. warning::
-
-   nilearn is an un-released package. It lacks functionality and
-   documentation, may have bugs, and will change in the future.
-   Nonetheless, we strive to ensure its quality and hope that it may be
-   useful in its current state, for technically-savvy users.
-
 Installing the environment
 ---------------------------
 
@@ -104,10 +97,10 @@ Python scientific stack
 We recommend that you **install a complete scientific Python
 distribution**, and not download the bare Python. Indeed, the scientific
 Python tool stack is rich. Installing the different packages needed one
-after is time-comsuming and error prone. error prone.
+after another is time-consuming and error prone.
 
 :Windows and MacOSX:
-  We suggest that you install Anaconda_. [1]
+  We suggest that you install Anaconda_. [1]_
 
 :Linux:
   While Anaconda_ is available for Linux, most recent linux
@@ -120,7 +113,7 @@ after is time-comsuming and error prone. error prone.
     - ipython
     - nibabel (sometimes called `python-nibabel`)
 
-.. _EPD: http://www.enthought.com/products/epd.php
+.. _Enthought Canopy: https://store.enthought.com/
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda/
 
@@ -128,37 +121,43 @@ after is time-comsuming and error prone. error prone.
 
 .. [1]
 
-  EPD_,  `PythonXY <http://code.google.com/p/pythonxy/>`_ are other
-  options, do make sure to install the full, non-free, EPD and not
-  EPD-free.
+  `Enthought Canopy`_, `PythonXY
+  <http://code.google.com/p/pythonxy/>`_ are other options. Enthought
+  Canopy Express, i.e. the free version, should cover all the needed
+  packages as far as the standard python scientific stack is
+  concerned.
 
-Nibabel: reading neuroimaging files
-....................................
+Installing nilearn
+-------------------
 
-`Nibabel <http://nipy.sourceforge.net/nibabel/>`_ is an easy to use
-reader of NeuroImaging data files. It is not included in scientific
-Python distributions, but is required for all parts of this tutorial.
-You can install it with the following command::
+The simplest way to install nilearn is to run the following command in
+a command prompt::
 
-  $ pip install -U --user nibabel
-
-If you are under linux, your package manager might have nibabel, for
-instance called `python-nibabel`.
+    pip install -U --user nilearn
 
 .. warning::
 
    Note that this is a "shell" command, that you need to type in a
    command prompt, and not a Python command.
 
-Installing nilearn
--------------------
+.. _testing_installation:
+
+Testing your installation
+.........................
+
+To test if you have done everything right, open IPython and try the
+following, in the Python prompt::
+
+    In [1]: import nilearn
+
+If you do not get any errors, you have installed nilearn correctly.
 
 Downloading the development version
 ....................................
 
-Nilearn is unreleased. We advise that you track it's development using
-git.
-  
+As an alternative to using pip, and only in the case if you
+want the latest nilearn version you can do so by using git.
+
 * **Under Windows or Max OSX**, you can easily to that by going to
   https://github.com/nilearn/nilearn and clicking the 'Clone in Desktop'
   button on the lower right of the page. This will install a software
@@ -168,9 +167,9 @@ git.
 * **Under Linux**, run the following command (as a shell command, not a
   Python command)::
 
-    $ git clone https://github.com/nilearn/nilearn.git
+    git clone https://github.com/nilearn/nilearn.git
 
-As time goes, you can update you copy of nilearn by doing "git pull" in
+As time goes, you can update your copy of nilearn by doing "git pull" in
 this directory.
 
 If you really don't want to use git, you download the latest development
@@ -178,20 +177,16 @@ snapshot from the following link and unziping it:
 https://github.com/nilearn/nilearn/archive/master.zip
 
 
-Setting up
-..........
+Setting up the development version
+..................................
 
 In the ``nilearn`` directory created by the previous steps, run (as a
 shell command, once again)::
 
-    $ python setup.py install --user    
+    python setup.py install --user
 
-To test if you have done everything right, open IPython and try the
-following, in the Python prompt::
-
-    In [1]: import nilearn
-
-If you do not get any errors, you have installed nilearn correctly.
+To make sure that the installation went smoothly, you can follow the
+same steps as in :ref:`testing_installation`.
 
 Python for NeuroImaging: a quick-start
 ==========================================
@@ -202,24 +197,31 @@ using Python for science, see the `scipy lecture notes
 <http://scipy-lectures.github.io/>`_.
 
 
-We will be using `IPython <http://ipython.org>`_, in pylab mode, which
-provides an interactive scientific environment. Start it with::
+We will be using `IPython <http://ipython.org>`_, which provides an
+interactive scientific environment. Start it with::
 
-    $ ipython --pylab
+    ipython --matplotlib
 
-(depending on your ipython version, you may need to use the ``-pylab``
-flag instead).
+which will open an interactive prompt::
 
-It's interactive::
+    IPython ?.?.? -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
 
-    Welcome to pylab, a matplotlib-based Python environment
-    For more information, type 'help(pylab)'.
-
-    In [1]: 1 + 2*3
+    In [1]: 1 + 2 * 3
     Out[1]: 7
 
-.. topic:: **`>>>` Prompt**
-   
+.. note::
+
+   The ``--matplotlib`` flag, which configures matplotlib for
+   interactive use inside IPython, is available for IPython versions
+   from 1.0 onwards. If you are using versions older than this,
+   e.g. 0.13, you can use the ``--pylab`` flag instead.
+
+.. topic:: `>>>` **Prompt**
+
    Below we'll be using `>>>` to indicate input lines. If you wish to copy
    these input lines directly into *IPython*, click on the `>>>` located
    at the top right of the code block
@@ -376,7 +378,7 @@ Finding help
 
     * The documentation of scikit-learn explains each method with tips on
       practical use and examples: 
-      `http://scikit-learn.org/ <http://scikit-learn.org/>`_
+      `http://scikit-learn.org/ <http://scikit-learn.org/>`_.
       While not specific to neuroimaging, it is often a recommended read.
       Be careful to consult the documentation relative to the version of
       scikit-learn that you are using.

@@ -12,9 +12,10 @@ import nibabel
 
 # Local imports
 from .._utils.ndimage import largest_connected_component
-from .._utils.fast_maths import fast_abs_percentile
+from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
+from ..image.image import _smooth_array
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -48,6 +49,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
     offset = np.zeros(3)
+
     # Deal with masked arrays:
     if hasattr(data, 'mask'):
         not_mask = np.logical_not(data.mask)
@@ -56,6 +58,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         else:
             mask *= not_mask
         data = np.asarray(data)
+
     # Get rid of potential memmapping
     data = as_ndarray(data)
     my_map = data.copy()
@@ -65,11 +68,12 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
         offset += [slice_x.start, slice_y.start, slice_z.start]
+
     # Testing min and max is faster than np.all(my_map == 0)
     if (my_map.max() == 0) and (my_map.min() == 0):
         return .5 * np.array(data.shape)
     if activation_threshold is None:
-        activation_threshold = fast_abs_percentile(my_map[my_map !=0].ravel(),
+        activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
                                                    80)
     mask = np.abs(my_map) > activation_threshold - 1.e-15
     mask = largest_connected_component(mask)
@@ -78,21 +82,20 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
     offset += [slice_x.start, slice_y.start, slice_z.start]
+
     # For the second threshold, we use a mean, as it is much faster,
     # althought it is less robust
     second_threshold = np.abs(np.mean(my_map[mask]))
-    second_mask = (np.abs(my_map)>second_threshold)
+    second_mask = (np.abs(my_map) > second_threshold)
     if second_mask.sum() > 50:
         my_map *= largest_connected_component(second_mask)
     cut_coords = ndimage.center_of_mass(np.abs(my_map))
     x_map, y_map, z_map = cut_coords + offset
 
-    return coord_transform(x_map, y_map, z_map,
-                           img.get_affine())
+    # Return as a list of scalars
+    return np.asarray(coord_transform(x_map, y_map, z_map,
+                                      img.get_affine())).tolist()
 
-
-
-################################################################################
 
 def _get_auto_mask_bounds(img):
     """ Compute the bounds of the data with an automaticaly computed mask
@@ -152,7 +155,6 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
 
     axis = 'xyz'.index(direction)
 
-
     affine = img.get_affine()
     orig_data = np.abs(img.get_data())
     this_shape = orig_data.shape[axis]
@@ -163,9 +165,8 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     data = orig_data.copy()
     if data.dtype.kind == 'i':
         data = data.astype(np.float)
-        # We have discreete values: we smooth them in order to have
-        # maxima located at the center of peaks
-        data = ndimage.gaussian_filter(data, 3)
+
+    data = _smooth_array(data, affine, fwhm='fast')
 
     if spacing == 'auto':
         spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)

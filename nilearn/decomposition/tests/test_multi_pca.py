@@ -33,6 +33,10 @@ def test_multi_pca():
     components2 = multi_pca.fit(2 * data).components_
     np.testing.assert_array_almost_equal(components1, components2)
 
+    # Smoke test fit with 'confounds' argument
+    confounds = [np.arange(10).reshape(5, 2)] * 8
+    multi_pca.fit(data, confounds=confounds)
+
     # Smoke test that multi_pca also works with single subject data
     multi_pca.fit(data[0])
 

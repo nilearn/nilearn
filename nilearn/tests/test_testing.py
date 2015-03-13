@@ -4,7 +4,7 @@ import numpy as np
 
 from nose.tools import assert_equals, assert_raises
 
-from .._utils.testing import generate_fake_fmri
+from nilearn._utils.testing import generate_fake_fmri
 
 
 def test_generate_fake_fmri():

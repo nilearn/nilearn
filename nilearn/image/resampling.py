@@ -1,12 +1,15 @@
 """
-Utilities to resample a Nifti Image
+Utilities to resample a Niimg-like object
+See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
 
 import warnings
+from distutils.version import LooseVersion
 
 import numpy as np
+import scipy
 from scipy import ndimage, linalg
 from nibabel import Nifti1Image
 
@@ -160,7 +163,8 @@ def get_mask_bounds(img):
 
         Parameters
         ----------
-        img: nifti-image like or path to file
+        img: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The image to inspect. Zero values are considered as
             background.
 
@@ -232,15 +236,28 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
         #data[not_finite] = 0
         from ..masking import _extrapolate_out_mask
         data = _extrapolate_out_mask(data, np.logical_not(not_finite),
-                                        iterations=2)[0]
+                                     iterations=2)[0]
+
+    # See https://github.com/nilearn/nilearn/issues/346 Copying the
+    # array makes it C continuous and as such the int32 index in the C
+    # code is a lot less likely to overflow
+    if (LooseVersion(scipy.__version__) < LooseVersion('0.14.1')):
+        data = data.copy()
 
     # The resampling itself
-
     ndimage.affine_transform(data, A,
                              offset=np.dot(A_inv, b),
                              output_shape=target_shape,
                              output=out,
                              order=interpolation_order)
+
+    # Bug in ndimage.affine_transform when out does not have native endianness
+    # see https://github.com/nilearn/nilearn/issues/275
+    # Bug was fixed in scipy 0.15
+    if (LooseVersion(scipy.__version__) < LooseVersion('0.15') and
+        not out.dtype.isnative):
+        out.byteswap(True)
+
     if has_not_finite:
         # We need to resample the mask of not_finite values
         not_finite = ndimage.affine_transform(not_finite, A,
@@ -251,14 +268,15 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
     return out
 
 
-def resample_img(niimg, target_affine=None, target_shape=None,
+def resample_img(img, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F"):
-    """Resample a Nifti image
+    """Resample a Niimg-like object
 
     Parameters
     ----------
-    niimg: nilearn nifti image
-        Path to a nifti file or nifti-like object
+    img: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Image(s) to resample.
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -341,38 +359,39 @@ def resample_img(niimg, target_affine=None, target_shape=None,
     elif interpolation == 'nearest':
         interpolation_order = 0
     else:
-        raise ValueError("interpolation must be either 'continuous' "
-                         "or 'nearest'")
+        message = ("interpolation must be either 'continuous' "
+                   "or 'nearest' but it was set to '{0}'").format(interpolation)
+        raise ValueError(message)
 
-    if isinstance(niimg, basestring):
+    if isinstance(img, basestring):
         # Avoid a useless copy
-        input_niimg_is_string = True
+        input_img_is_string = True
     else:
-        input_niimg_is_string = False
+        input_img_is_string = False
 
     # noop cases
-    niimg = _utils.check_niimg(niimg)
+    img = _utils.check_niimg(img)
 
     if target_affine is None and target_shape is None:
-        if copy and not input_niimg_is_string:
-            niimg = _utils.copy_niimg(niimg)
-        return niimg
+        if copy and not input_img_is_string:
+            img = _utils.copy_img(img)
+        return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
-    shape = _utils._get_shape(niimg)
-    affine = niimg.get_affine()
+    shape = _utils._get_shape(img)
+    affine = img.get_affine()
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
-        if copy and not input_niimg_is_string:
-            niimg = _utils.copy_niimg(niimg)
-        return niimg
+        if copy and not input_img_is_string:
+            img = _utils.copy_img(img)
+        return img
 
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance: output is always a separate
     # array.
-    data = niimg.get_data()
+    data = img.get_data()
 
     # Get a bounding box for the transformed data
     # Embed target_affine in 4x4 shape if necessary
@@ -447,54 +466,59 @@ def resample_img(niimg, target_affine=None, target_shape=None,
             _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
                       interpolation_order,
                       out=resampled_data[all_img + ind],
-                      copy=not input_niimg_is_string)
+                      copy=not input_img_is_string)
     else:
         resampled_data = np.empty(target_shape, data.dtype)
         _resample_one_img(data, A, A_inv, b, target_shape,
                           interpolation_order,
                           out=resampled_data,
-                          copy=not input_niimg_is_string)
+                          copy=not input_img_is_string)
 
     return Nifti1Image(resampled_data, target_affine)
 
 
-def reorder_img(niimg, resample=False):
-    """ Returns an image with the affine diagonal (by permuting axes). 
+def reorder_img(img, resample=None):
+    """Returns an image with the affine diagonal (by permuting axes).
     The orientation of the new image will be RAS (Right, Anterior, Superior).
-    If it is impossible to get xyz ordering by permuting the axis, a
-    'CompositionError' is raised.
+    If it is impossible to get xyz ordering by permuting the axes, a
+    'ValueError' is raised.
 
         Parameters
         -----------
-        niimg: nilearn nifti image
-            Path to a nifti file or nifti-like object
-        
-        resample: boolean, optional
-            If resample is False (default), no resampling is performed, the
-            axis are only permuted. 
+        img: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            Image to reorder.
+
+        resample: None or string in {'continuous', 'nearest'}, optional
+            If resample is None (default), no resampling is performed, the
+            axes are only permuted.
+            Otherwise resampling is performed and 'resample' will
+            be passed as the 'interpolation' argument into
+            resample_img.
+
     """
-    
-    niimg = _utils.check_niimg(niimg)
-    
-    affine = niimg.get_affine()
+    img = _utils.check_niimg(img)
+    # The copy is needed in order not to modify the input img affine
+    # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
+    affine = img.get_affine().copy()
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
         # The affine is not nearly diagonal
-        if not resample:
-            raise ValueError(
-            'Cannot reorder the axis: the image affine contains rotations'
-                )
+        if resample is None:
+            raise ValueError('Cannot reorder the axes: '
+                             'the image affine contains rotations')
         else:
             # Identify the voxel size using a QR decomposition of the
             # affine
             R, Q = np.linalg.qr(affine[:3, :3])
             target_affine = np.diag(np.abs(np.diag(Q))[
                                                 np.abs(R).argmax(axis=1)])
-            return resample_img(niimg, target_affine=target_affine)
+            return resample_img(img, target_affine=target_affine,
+                                interpolation=resample)
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
-    data = niimg.get_data()
+    data = img.get_data()
     while not np.all(np.sort(axis_numbers) == axis_numbers):
         first_inversion = np.argmax(np.diff(axis_numbers)<0)
         axis1 = first_inversion + 1
@@ -533,5 +557,6 @@ def reorder_img(niimg, resample=False):
     niimg = Nifti1Image(data, affine)
 
     return niimg
+
 
 

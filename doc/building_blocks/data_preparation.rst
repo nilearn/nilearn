@@ -62,7 +62,7 @@ is possible, there is no need to save your data in a file to pass it to a
 in memory:
 
 
-.. literalinclude:: ../../plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: Load NYU resting-state dataset
     :end-before: # To display the background
 
@@ -74,21 +74,15 @@ automatically, and it has done a good job. But, on some datasets, the
 default algorithm performs poorly. This is why it is very important to
 **always look at how your data look like**.
 
-Mask Visualization
-...................
-
-Before exploring the subject, we define a helper function to display
-masks. This function will display a background (we can use the mean of
-the input images) and a mask as a red layer over this background.
-
-
-.. literalinclude:: ../../plot_mask_computation.py
-    :start-after: # Simple visualization helper
-    :end-before: ###############################################################################
-
-
 Computing the mask
 ...................
+
+.. note::
+   
+    The full example described in this section can be found here:
+    :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
+    This one can be relevant too:
+    :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
 If a mask is not given, :class:`NiftiMasker` will try to compute
 one. It is *very important* to take a look at the generated mask, to see if it
@@ -100,34 +94,32 @@ As an example, we will now try to build a mask based on a dataset from
 scratch. The Haxby dataset will be used since it provides a mask that we
 can use as a reference.
 
-.. figure:: ../auto_examples/images/plot_mask_computation_2.png
-    :target: auto_examples/plot_mask_computation.html
-    :align: right
-    :scale: 50%
-
 The first step is to generate a mask with default parameters and take
 a look at it.
 
-.. literalinclude:: ../../plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: # Simple mask extraction from EPI images
     :end-before: # Generate mask with strong opening
 
-____
 
-.. figure:: ../auto_examples/images/plot_mask_computation_3.png
-    :target: auto_examples/plot_mask_computation.html
-    :align: right
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_2.png
+    :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
+
 
 We can make the outline of the mask more by increasing the number of
 opening steps (*opening=10*) using the `mask_args` argument of the
 :class:`NiftiMasker`.
 
-.. literalinclude:: ../../plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: # Generate mask with strong opening
     :end-before: # Generate mask with a high lower cutoff
 
-____
+
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_3.png
+    :target: ../auto_examples/plot_mask_computation.html
+    :scale: 50%
+
 
 Looking at the :func:`nilearn.masking.compute_epi_mask` called by the
 :class:`NiftiMasker` object, we see two interesting parameters:
@@ -137,23 +129,17 @@ which the masking algorithm is going to try to find it's threshold (where
 the lower cutoff, and thus force the masking algorithm to select only
 voxels that are very light on the EPI image.
 
-.. figure:: ../auto_examples/images/plot_mask_computation_4.png
-    :target: ../auto_examples/plot_mask_computation.html
-    :align: right
-    :scale: 50%
 
-
-.. literalinclude:: ../../plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: # Generate mask with a high lower cutoff
     :end-before: ################################################################################
 
 
-.. note::
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_4.png
+    :target: ../auto_examples/plot_mask_computation.html
+    :scale: 50%
 
-    The full example described in this section can be found here:
-    :doc:`plot_mask_computation.py <../auto_examples/plot_mask_computation>`.
-    This one can be relevant too:
-    :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
+
 
 
 Common data preparation steps: resampling, smoothing, filtering
@@ -182,18 +168,18 @@ Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
 resampled to display overlays.
 
-Automatic compution of offset and bounding box can be performed by
+Automatic computation of offset and bounding box can be performed by
 specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
 computes automatically the translation part of the affine.
 
-.. image:: ../auto_examples/images/plot_affine_transformation_2.png
-    :target: auto_examples/plot_affine_transformation.html
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_2.png
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/images/plot_affine_transformation_4.png
-    :target: auto_examples/plot_affine_transformation.html
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_4.png
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/images/plot_affine_transformation_3.png
-    :target: auto_examples/plot_affine_transformation.html
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_3.png
+    :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 
 
@@ -250,8 +236,7 @@ All previous filters operate on images, before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :ref:`plot_haxby_simple.py
-   <auto_examples/plot_haxby_simple>`. Try to enable detrending
+   the parameters in :ref:`example_plot_haxby_simple.py`. Try to enable detrending
    and run the script: does it have a big impact on the result?
 
 
@@ -266,13 +251,13 @@ Inverse transform: unmasking data
 Once voxel signals have been processed, the result can be visualized as
 images after unmasking (turning voxel signals into a series of images,
 using the same mask as for masking). This step is present in almost all
-the :ref:`examples <examples-index>` provided in Nilearn. Below is
+the :ref:`examples <examples-index>` provided in nilearn. Below is
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
-<example_plot_haxby_anova_svm.py>`):
+<example_decoding_plot_haxby_anova_svm.py>`):
 
-.. literalinclude:: ../../plot_haxby_anova_svm.py
+.. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
     :start-after: ### Look at the SVC's discriminating weights
-    :end-before: # We use a masked array so that the voxels at '-1' are displayed
+    :end-before: ### Create the figure
 
 
 .. _region:
@@ -312,29 +297,28 @@ labels and maps, handled respectively by :class:`NiftiLabelsMasker` and
 .. note::
 
    The full example in this section can be found here:
-   :doc:`plot_adhd_covariance.py <../auto_examples/plot_adhd_covariance>`
+   :doc:`plot_adhd_covariance.py <../auto_examples/connectivity/plot_adhd_covariance>`
 
-Usage of :class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` is very close,
-and very close to the usage of :class:`NiftiMasker`. Only options specific to
-:class:`NiftiMapsMasker` and :class:`NiftiLabelsMasker` are described
-in this section.
+Usage of :class:`NiftiMapsMasker` is very close to the usage of
+:class:`NiftiMasker`. Only options specific to
+:class:`NiftiMapsMasker` are described in this section.
 
 Nilearn provides several downloaders to get a brain parcellation. Load
 the `MSDL one
 <https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_:
 
 
-.. literalinclude:: ../../plot_adhd_covariance.py
-    :start-after: print("-- Fetching datasets ...")
-    :end-before: dataset = nilearn.datasets.fetch_adhd()
+.. literalinclude:: ../../examples/connectivity/plot_adhd_covariance.py
+    :start-after: # Fetching datasets #
+    :end-before: # Extracting region signals #
 
 This atlas defines its regions using maps. The path to the corresponding file
 can be found under the "maps" key. Extracting region signals for
 several subjects can be performed like this:
 
-.. literalinclude:: ../../plot_adhd_covariance.py
-   :start-after: atlas = nilearn.datasets.fetch_msdl_atlas()
-   :end-before: print("-- Computing group-sparse precision matrices ...")
+.. literalinclude:: ../../examples/connectivity/plot_adhd_covariance.py
+   :start-after: # Extracting region signals #
+   :end-before: # Computing group-sparse precision matrices #
 
 `region_ts` is a `numpy.ndarray
 <http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html>`_,
@@ -364,9 +348,9 @@ subject either using the `graph lasso
 or the `group-sparse covariance <http://arxiv.org/abs/1207.4255>`_
 algorithm:
 
-.. literalinclude:: ../../plot_adhd_covariance.py
-   :start-after: subjects.append(region_ts)
-   :end-before: print("-- Displaying results")
+.. literalinclude:: ../../examples/connectivity/plot_adhd_covariance.py
+   :start-after: # Computing group-sparse precision matrices #
+   :end-before: # Displaying results #
 
 
 :class:`NiftiLabelsMasker` Usage
@@ -381,7 +365,7 @@ some explanation. The voxels that correspond to the brain or a region
 of interest in an fMRI image do not fill the entire
 image. Consequently, in the labels image, there must be a label
 corresponding to "outside" the brain, for which no signal should be
-extracted.  By default, this label is set to zero in Nilearn, and is
+extracted.  By default, this label is set to zero in nilearn, and is
 referred to as "background". Should some non-zero value occur, it is
 possible to change the background value with the `background_label`
 keyword.

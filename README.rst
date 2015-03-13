@@ -1,47 +1,64 @@
 .. -*- mode: rst -*-
 
+.. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
+   :target: https://travis-ci.org/nilearn/nilearn
+   :alt: Build Status
+
+.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
+   :target: https://coveralls.io/r/nilearn/nilearn
+
 nilearn
 =======
 
-This projects contains a tutorial on how to process functional Magnetic Resonance Imaging (fMRI) data with the scikit-learn.
+Nilearn is a Python module for fast and easy statistical learning on
+NeuroImaging data.
 
-This work is made available by the INRIA Parietal Project Team and the
-scikit-learn folks, among which P. Gervais, A. Abraham, V. Michel, A.
-Gramfort, G. Varoquaux, F. Pedregosa and B. Thirion.
+It leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate
+statistics with applications such as predictive modelling,
+classification, decoding, or connectivity analysis.
+
+This work is made available by a community of people, amongst which
+the INRIA Parietal Project Team and the scikit-learn folks, in particular
+P. Gervais, A. Abraham, V. Michel, A.
+Gramfort, G. Varoquaux, F. Pedregosa, B. Thirion, M. Eickenberg, C. F. Gorgolewski,
+D. Bzdok, L. Estève and B. Cippolini.
 
 Important links
 ===============
 
 - Official source code repo: https://github.com/nilearn/nilearn/
-- HTML documentation (stable release): http://nilearn.github.com/
+- HTML documentation (stable release): http://nilearn.github.io/
 
 Dependencies
 ============
 
-The required dependencies to sue the software are Python >= 2.6,
-setuptools, Numpy >= 1.3, SciPy >= 0.7, Scikit-learn >= 0.12.1
+The required dependencies to use the software are:
+
+* Python >= 2.6,
+* setuptools
+* Numpy >= 1.3
+* SciPy >= 0.7
+* Scikit-learn >= 0.12.1
+* Nibabel >= 1.1.0.
 This configuration almost matches the Ubuntu 10.04 LTS release from
 April 2010, except for scikit-learn, which must be installed separately.
 
 Running the examples requires matplotlib >= 0.99.1
 
-If you want to run the tests, you need recent python-coverage and python-nose.
-(resp. 3.6 and 1.2.1).
+If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
 
 
 Install
 =======
 
-This package uses distutils, which is the default way of installing
-python modules. To install in your home directory, use::
+First make sure you have installed all the dependencies listed above.
+Then you can install nilearn by running the following command in
+a command prompt::
 
-  python setup.py install --user
+    pip install -U --user nilearn
 
-To install for all users on Unix/Linux::
-
-  python setup.py build
-  sudo python setup.py install
-
+More detailed instructions are available at
+http://nilearn.github.io/introduction.html#installation.
 
 Development
 ===========
