@@ -32,6 +32,16 @@ def test_find_cut_coords():
                                # pass. x, y, z = [24.75, 3.17, 9.875]
                                rtol=6e-2)
 
+    # regression test (cf. #473)
+    # test case: no data exceeds the activation threshold
+    data = np.ones((36, 43, 36))
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(data, affine)
+    x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
+    np.testing.assert_array_equal(
+        np.array([x, y, z]),
+        0.5 * np.array(data.shape).astype(np.float))
+
 
 def test_find_cut_slices():
     data = np.zeros((50, 50, 50))
