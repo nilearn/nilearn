@@ -530,13 +530,35 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
 
 def _get_dataset_descr(ds_name):
-    module_path = os.path.dirname(__file__)
+    module_path = os.path.dirname(os.path.abspath(__file__))
+    if ds_name == 'yeo_2011':
+        fname = 'yeo'
+    elif ds_name == 'craddock_2012':
+        fname = 'craddock'
+    elif ds_name == 'icbm152_2009':
+        fname = 'icbm'
+    elif ds_name == 'smith_2009':
+        fname = 'smith'
+    elif ds_name == 'haxby2001_simple' or ds_name == 'haxby2001':
+        fname = 'haxby'
+    elif ds_name == 'nyu_rest':
+        fname = 'nyu'
+    elif ds_name == 'miyawaki2008':
+        fname = 'miyawaki'
+    else:
+        descr = ''
+
     try:
-        with open(os.path.join(module_path, 'description', ds_name + '.rst'))\
+        with open(os.path.join(module_path, 'description', fname + '.rst'))\
                 as rst_file:
-            return rst_file.read()
-    except:
-        return ''
+            descr = rst_file.read()
+    except Exception as e:
+        descr = ''
+
+    if descr == '':
+        print("Warning: Could not find dataset description!")
+
+    return descr
 
 
 def movetree(src, dst):
@@ -796,7 +818,7 @@ def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    fdescr = _get_dataset_descr('craddock')
+    fdescr = _get_dataset_descr(dataset_name)
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
 
@@ -875,7 +897,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    fdescr = _get_dataset_descr('yeo')
+    fdescr = _get_dataset_descr(dataset_name)
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -946,12 +968,13 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
                               "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
-    data_dir = _get_dataset_dir('icbm152_2009', data_dir=data_dir,
+    dataset_name = 'icbm152_2009'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    fdescr = _get_dataset_descr('icbm')
+    fdescr = _get_dataset_descr(dataset_name)
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -1016,12 +1039,13 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
              ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
              ]
 
-    data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir,
+    dataset_name = 'smith_2009'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    fdescr = _get_dataset_descr('smith')
+    fdescr = _get_dataset_descr(dataset_name)
 
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
     params = dict(zip(keys, files_))
@@ -1081,11 +1105,12 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
              url, opts),
     ]
 
-    data_dir = _get_dataset_dir('haxby2001_simple', data_dir=data_dir,
+    dataset_name = 'haxby2001_simple'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    fdescr = _get_dataset_descr('haxby')
+    fdescr = _get_dataset_descr(dataset_name)
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -1150,7 +1175,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         warnings.warn('Warning: there are only 6 subjects')
         n_subjects = 6
 
-    data_dir = _get_dataset_dir('haxby2001', data_dir=data_dir,
+    dataset_name = 'haxby2001'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
     # Dataset files
@@ -1192,7 +1218,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
-    fdescr = _get_dataset_descr('haxby')
+    fdescr = _get_dataset_descr(dataset_name)
 
     # return the data
     return Bunch(
@@ -1380,7 +1406,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         func += func_files[i - 1][:n_subjects]
         session += [i] * n_subjects
 
-    data_dir = _get_dataset_dir('nyu_rest', data_dir=data_dir, verbose=verbose)
+    dataset_name = 'nyu_rest'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
                              verbose=verbose)
     anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
@@ -1388,7 +1415,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     func = _fetch_files(data_dir, func, resume=resume,
                         verbose=verbose)
 
-    fdescr = _get_dataset_descr('nyu')
+    fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                  session=session, description=fdescr)
@@ -1775,11 +1802,12 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
                  label_figure + label_random + \
                  file_mask
 
-    data_dir = _get_dataset_dir('miyawaki2008', data_dir=data_dir,
+    dataset_name = 'miyawaki2008'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
-    fdescr = _get_dataset_descr('miyawaki')
+    fdescr = _get_dataset_descr(dataset_name)
 
     # Return the data
     return Bunch(

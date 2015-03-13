@@ -315,7 +315,7 @@ def test_fetch_craddock_2012_atlas():
     ]
     assert_equal(len(url_request.urls), 1)
     for key, fn in zip(keys, filenames):
-        assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
+        assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2012', fn))
 
 
 @with_setup(setup_mock)
