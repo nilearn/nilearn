@@ -203,6 +203,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
             print("[%s.fit] Finished fit" % self.__class__.__name__)
         return self
 
+    def _check_fitted(self):
+        if not hasattr(self, "mask_img_"):
+            raise ValueError('It seems that %s has not been fitted. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
+
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
 
@@ -216,5 +222,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
+        self._check_fitted()
+
         return self.transform_single_imgs(
             imgs, confounds, sample_mask=self.sample_mask)

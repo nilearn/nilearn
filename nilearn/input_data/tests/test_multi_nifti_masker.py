@@ -44,6 +44,12 @@ def test_auto_mask():
     # It should also work with a 3D image
     masker.transform(img)
 
+    # check exception when transform() called without prior fit()
+    masker2 = MultiNiftiMasker(mask_img=img)
+    assert_raises_regex(
+        ValueError,
+        'has not been fitted. ', masker2.transform, img2)
+
 
 def test_nan():
     data = np.ones((9, 9, 9))

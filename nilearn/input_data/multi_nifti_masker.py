@@ -219,6 +219,12 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         self.mask_img_.get_data()
         return self
 
+    def _check_fitted(self):
+        if not hasattr(self, "mask_img_"):
+            raise ValueError('It seems that %s has not been fitted. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
+
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
 
@@ -237,6 +243,8 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         data: {list of numpy arrays}
             preprocessed images
         """
+        self._check_fitted()
+
         if not hasattr(imgs, '__iter__')\
                     or isinstance(imgs, string_types):
                 return self.transform_single_imgs(imgs)
