@@ -15,11 +15,11 @@
 
 .. Here we are building the carrousel
 
-.. |glass_brain| image:: auto_examples/manipulating_visualizing/images/plot_demo_plotting_glass_brain_2.png
-   :target: auto_examples/manipulating_visualizing/plot_demo_plotting_glass_brain.html
+.. |glass_brain| image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_2.png
+   :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
 
-.. |connectome| image:: auto_examples/connectivity/images/plot_adhd_covariance_5.png
-     :target: auto_examples/connectivity/plot_adhd_covariance.html
+.. |connectome| image:: auto_examples/connectivity/images/plot_inverse_covariance_connectome_4.png
+     :target: auto_examples/connectivity/plot_inverse_covariance_connectome.html
 
 .. |haxby_weights| image:: auto_examples/images/plot_haxby_simple_1.png
    :target: auto_examples/plot_haxby_simple.html
@@ -40,7 +40,8 @@
 
    <div id="index-grid" class="section group">
     <div class="col span_1_of_3">
-        <h3><a href="introduction.html">First Steps</a></h3>
+        <h3><a
+        href="introduction.html#python-for-neuroimaging-a-quick-start">First Steps</a></h3>
         <p>Get started with nilearn</p>
 
         <h3><a href="auto_examples/index.html"> Examples</a></h3>

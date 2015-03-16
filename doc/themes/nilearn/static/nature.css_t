@@ -681,7 +681,7 @@ div.admonition, div.warning, div.topic {
 div.seealso {
     background-color: rgb(255, 251, 232);
     border: 1px solid rgb(251, 238, 213);
-    color: rgb(175, 138, 75);
+    color: #735013;
 }
 
 
@@ -854,9 +854,9 @@ ul.keywordmatches li.goodmatch a {
 
 div.green {
     margin-top: 2em;
-    color: #468847;
+    color: #006801;
     background-color: #dff0d8;
-    border: 0.3em solid rgba(79, 173, 117, 0.35);
+    border: 0.2em solid rgba(79, 173, 117, 0.35);
 }
 
 div.align-right {

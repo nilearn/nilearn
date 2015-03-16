@@ -1,14 +1,3 @@
-.. for doctests to run, we need to define variables that are define in
-   the literal includes
-    >>> import numpy as np
-    >>> from sklearn import datasets
-    >>> iris = datasets.load_iris()
-    >>> X = iris.data
-    >>> y = iris.target
-    >>> y += 1
-    >>> session = np.ones_like(y)
-    >>> n_samples = len(y)
-
 .. _decoding_simulated:
 
 ==========================
@@ -47,11 +36,7 @@ a linear model with a random design matrix **X**:
 * **e** is random normal noise.
 
 We provide a black-box function to create the data in the 
-:ref:`example script <example_decoding_plot_simulated_data.py>`:
-
-.. literalinclude:: ../../examples/decoding/plot_simulated_data.py
-    :start-after: # Create data
-    :end-before: # Compute the results and estimated coef maps for different estimators
+:ref:`example script <example_decoding_plot_simulated_data.py>`.
 
 
 Running various estimators
@@ -71,13 +56,6 @@ as well as the feature maps that they recover. Namely, we will use
 
 * A ridge estimator that set its parameter by cross-validation
 
-We can create a list with all the estimators readily created with the
-parameters of our choice:
-
-.. literalinclude:: ../../examples/decoding/plot_simulated_data.py
-    :start-after: # Compute the results and estimated coef maps for different estimators
-    :end-before: # Run the estimators
-
 Note that the `RidgeCV` and the `ElasticNetCV` have names ending in `CV`
 that stands for `cross-validation`: in the list of possible `alpha`
 values that they are given, they choose the best by cross-validation.
@@ -85,13 +63,11 @@ values that they are given, they choose the best by cross-validation.
 As the estimators expose a fairly consistent API, we can all fit them in
 a for loop: they all have a `fit` method for fitting the data, a `score`
 method to retrieve the prediction score, and because they are all linear
-models, a `coef_` attribute that stores the coefficients **w** estimated.
+models, a `coef_` attribute that stores the coefficients **w** estimated
+(see the :ref:`code of the simulation
+<example_decoding_plot_simulated_data.py>`).
 
 .. note:: All parameters estimated from the data end with an underscore
-
-.. literalinclude:: ../../examples/decoding/plot_simulated_data.py
-    :start-after: # Run the estimators
-    :end-before:     print(title)
 
 .. |estimator1| image:: ../auto_examples/decoding/images/plot_simulated_data_2.png
     :target: ../auto_examples/decoding/plot_simulated_data.html
@@ -123,5 +99,10 @@ models, a `coef_` attribute that stores the coefficients **w** estimated.
    **Performance tip**: increase the `step` parameter, or it will be very
    slow.
 
+
+.. topic:: **Source code to run the simulation**
+
+   The full file to run the simulation can be found in
+   :ref:`example_decoding_plot_simulated_data.py`
 
 

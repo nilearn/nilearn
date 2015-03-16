@@ -2,14 +2,20 @@
 .. _estimator_choice:
 
 ============================================
-Considerations on the choice of an estimator
+Choosing the right predictive model
 ============================================
 
 This page gives a few simple considerations on the choice of an estimator.
 It is slightly oriented towards a *decoding* application, that is the
 prediction of external variables such as behavior or clinical traits from
 brain images. For a didactic introduction to decoding with nilearn, see
-the :ref:`dedicated section of the nilearn documentation <fmri_decoding>`.
+the :ref:`dedicated section of the nilearn documentation
+<decoding_tutorial>`.
+
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
 
 Predictions: regression, classification and multi-class
 ========================================================

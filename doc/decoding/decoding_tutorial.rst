@@ -8,21 +8,18 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
-.. _fmri_decoding:
+.. _decoding_tutorial:
 
-================================================================================
-Decoding: predicting behavior or phenotype from brain images
-================================================================================
+=====================
+A decoding tutorial
+=====================
 
-Decoding consists in predicting external variables such as behavioral or
-phenotypic variables from brain image. This page is a tutorial articulated on
-the analysis of the Haxby 2001 dataset. It shows how to:
+This page is a decoding tutorial articulated on the analysis of the Haxby
+2001 dataset. It shows how to predict from brain activity images the
+stimuli that the subject is viewing.
 
-1. Load fMRI volumes in Python.
-2. Perform a state-of-the-art decoding analysis of fMRI data.
-3. Perform even more sophisticated analyses of fMRI data.
 
-.. contents:: **Chapters contents**
+.. contents:: **Contents**
     :local:
     :depth: 1
 
@@ -170,7 +167,7 @@ can be displayed as follows::
 .. seealso::
 
    the `scikit-learn documentation on SVMs
-   <http://scikit-learn.org/modules/svm.html>`_
+   <http://scikit-learn.org/stable/modules/svm.html>`_
 
 
 Applying it to data: fit (train) and predict (test)
@@ -356,14 +353,13 @@ We can visualize the weights of the decoder:
 - we then create a figure and plot as a background the first EPI image
 - finally we plot the SVC's weights after masking the zero values
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
-   :target: ../auto_examples/plot_haxby_simple.html
-   :align: right
-   :scale: 65
-
 .. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualize the mask ########################################################
+
+.. figure:: ../auto_examples/images/plot_haxby_simple_1.png
+   :target: ../auto_examples/plot_haxby_simple.html
+   :scale: 65
 
 
 .. seealso::
@@ -501,8 +497,6 @@ But, be aware that this can take A WHILE...
 |
 
 .. seealso::
-
-  * The :ref:`supervised_learning` section of the nilearn documentation.
 
   * The `scikit-learn documentation <http://scikit-learn.org>`_
     has very detailed explanations on a large variety of estimators and

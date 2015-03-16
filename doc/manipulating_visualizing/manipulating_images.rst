@@ -1,8 +1,8 @@
 .. _data_manipulation:
 
-=================================================================
-MRI data manipulation: input/output, masking, ROIs, smoothing...
-=================================================================
+=====================================================================
+Manipulating brain volume: input/output, masking, ROIs, smoothing...
+=====================================================================
 
 This chapter presents the structure of brain image data and tools to
 manipulation them.

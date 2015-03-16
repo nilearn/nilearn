@@ -1,9 +1,10 @@
 """
-Sparse inverse covariance estimation
-=====================================
+Connectivity structure estimation on simulated data
+===================================================
 
 This example shows a comparison of graph lasso and group-sparse covariance
-estimates for a synthetic dataset.
+estimation of connectivity structre for a synthetic dataset.
+
 """
 
 import matplotlib.pyplot as plt
