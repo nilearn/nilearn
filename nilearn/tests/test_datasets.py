@@ -300,8 +300,8 @@ def test_fail_fetch_harvard_oxford():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_craddock_2011_atlas():
-    bunch = datasets.fetch_craddock_2011_atlas(data_dir=tmpdir, verbose=0)
+def test_fetch_craddock_2012_atlas():
+    bunch = datasets.fetch_craddock_2012_atlas(data_dir=tmpdir, verbose=0)
 
     keys = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
@@ -315,7 +315,7 @@ def test_fetch_craddock_2011_atlas():
     ]
     assert_equal(len(url_request.urls), 1)
     for key, fn in zip(keys, filenames):
-        assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2011', fn))
+        assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2012', fn))
 
 
 @with_setup(setup_mock)

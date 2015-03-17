@@ -529,6 +529,26 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     return full_name
 
 
+def _get_dataset_descr(ds_name):
+    module_path = os.path.dirname(os.path.abspath(__file__))
+
+    fname = ds_name
+    if ds_name == 'haxby2001_simple':
+        ds_name = 'haxby2001'
+
+    try:
+        with open(os.path.join(module_path, 'description', fname + '.rst'))\
+                as rst_file:
+            descr = rst_file.read()
+    except IOError:
+        descr = ''
+
+    if descr == '':
+        print("Warning: Could not find dataset description.")
+
+    return descr
+
+
 def movetree(src, dst):
     """Move an entire tree to another directory. Any existing file is
     overwritten"""
@@ -724,8 +744,8 @@ def _tree(path, pattern=None, dictionary=False):
 ###############################################################################
 # Dataset downloading functions
 
-def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Craddock 2011 parcellation
+def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    """Download and return file names for the Craddock 2012 parcellation
 
     The provided images are in MNI152 space.
 
@@ -770,7 +790,7 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
               "/Parcellations/craddock_2011_parcellations.tar.gz"
     opts = {'uncompress': True}
 
-    dataset_name = "craddock_2011"
+    dataset_name = "craddock_2012"
     keys = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
             "random")
@@ -787,7 +807,10 @@ def fetch_craddock_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    params = dict(zip(keys, sub_files))
+    fdescr = _get_dataset_descr(dataset_name)
+
+    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+
     return Bunch(**params)
 
 
@@ -837,7 +860,6 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
 
     Licence: unknown.
     """
-    module_path = os.path.dirname(__file__)
     if url is None:
         url = "ftp://surfer.nmr.mgh.harvard.edu/" \
               "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
@@ -864,9 +886,7 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    with open(os.path.join(module_path, 'description', 'yeo.rst'))\
-            as rst_file:
-        fdescr = rst_file.read()
+    fdescr = _get_dataset_descr(dataset_name)
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -915,7 +935,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     For more information about this dataset's structure:
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
     """
-
     if url is None:
         url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
               "mni_icbm152_nlin_sym_09a_nifti.zip"
@@ -938,12 +957,15 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
                               "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
-    data_dir = _get_dataset_dir('icbm152_2009', data_dir=data_dir,
+    dataset_name = 'icbm152_2009'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    params = dict(zip(keys, sub_files))
+    fdescr = _get_dataset_descr(dataset_name)
+
+    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
 
 
@@ -993,7 +1015,6 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
     For more information about this dataset's structure:
     http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/
     """
-    module_path = os.path.dirname(__file__)
     if url is None:
         url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
 
@@ -1007,14 +1028,13 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True,
              ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
              ]
 
-    data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir,
+    dataset_name = 'smith_2009'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    with open(os.path.join(module_path, 'description', 'smith.rst'))\
-            as rst_file:
-        fdescr = rst_file.read()
+    fdescr = _get_dataset_descr(dataset_name)
 
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
     params = dict(zip(keys, files_))
@@ -1060,7 +1080,6 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     See `additional information
     <http://www.sciencemag.org/content/293/5539/2425>`_
     """
-
     # URL of the dataset. It is optional because a test uses it to test dataset
     # downloading
     if url is None:
@@ -1075,13 +1094,16 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
              url, opts),
     ]
 
-    data_dir = _get_dataset_dir('haxby2001_simple', data_dir=data_dir,
+    dataset_name = 'haxby2001_simple'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
+    fdescr = _get_dataset_descr(dataset_name)
+
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
-                 conditions_target=files[3])
+                 conditions_target=files[3], description=fdescr)
 
 
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
@@ -1142,7 +1164,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         warnings.warn('Warning: there are only 6 subjects')
         n_subjects = 6
 
-    data_dir = _get_dataset_dir('haxby2001', data_dir=data_dir,
+    dataset_name = 'haxby2001'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
     # Dataset files
@@ -1184,6 +1207,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
+    fdescr = _get_dataset_descr(dataset_name)
+
     # return the data
     return Bunch(
             anat=files[7::n_files],
@@ -1194,6 +1219,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             mask_house=files[4::n_files],
             mask_face_little=files[5::n_files],
             mask_house_little=files[6::n_files],
+            description=fdescr,
             **kwargs)
 
 
@@ -1276,7 +1302,6 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
           F.X. Castellanos, M.P. Milham
 
     """
-
     fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
     fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
     fa2 = 'http://www.nitrc.org/frs/download.php/1073/NYU_TRT_session2a.tar.gz'
@@ -1370,7 +1395,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         func += func_files[i - 1][:n_subjects]
         session += [i] * n_subjects
 
-    data_dir = _get_dataset_dir('nyu_rest', data_dir=data_dir, verbose=verbose)
+    dataset_name = 'nyu_rest'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
                              verbose=verbose)
     anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
@@ -1378,8 +1404,10 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     func = _fetch_files(data_dir, func, resume=resume,
                         verbose=verbose)
 
+    fdescr = _get_dataset_descr(dataset_name)
+
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
-                 session=session)
+                 session=session, description=fdescr)
 
 
 def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
@@ -1685,7 +1713,6 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     <http://www.cns.atr.jp/dni/en/downloads/
     fmri-data-set-for-visual-image-reconstruction/>`_
     """
-    module_path = os.path.dirname(__file__)
 
     url = 'https://www.nitrc.org/frs/download.php' \
           '/5899/miyawaki2008.tgz?i_agree=1&download_now=1'
@@ -1764,13 +1791,12 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
                  label_figure + label_random + \
                  file_mask
 
-    data_dir = _get_dataset_dir('miyawaki2008', data_dir=data_dir,
+    dataset_name = 'miyawaki2008'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
-    with open(os.path.join(module_path, 'description', 'miyawaki.rst'))\
-            as rst_file:
-        fdescr = rst_file.read()
+    fdescr = _get_dataset_descr(dataset_name)
 
     # Return the data
     return Bunch(
