@@ -216,5 +216,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
+        self._check_fitted()
+
         return self.transform_single_imgs(
             imgs, confounds, sample_mask=self.sample_mask)

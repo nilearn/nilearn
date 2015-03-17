@@ -42,6 +42,12 @@ def test_auto_mask():
     # With a 3D img
     masker.transform(img)
 
+    # check exception when transform() called without prior fit()
+    masker2 = NiftiMasker(mask_img=img)
+    testing.assert_raises_regex(
+        ValueError,
+        'has not been fitted. ', masker2.transform, img)
+
 
 def test_with_files():
     # Standard masking

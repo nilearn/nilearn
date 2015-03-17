@@ -289,3 +289,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         except:
             pass
         return img
+
+    def _check_fitted(self):
+        if not hasattr(self, "mask_img_"):
+            raise ValueError('It seems that %s has not been fitted. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)

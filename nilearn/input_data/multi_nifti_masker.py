@@ -237,6 +237,8 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         data: {list of numpy arrays}
             preprocessed images
         """
+        self._check_fitted()
+
         if not hasattr(imgs, '__iter__')\
                     or isinstance(imgs, string_types):
                 return self.transform_single_imgs(imgs)
