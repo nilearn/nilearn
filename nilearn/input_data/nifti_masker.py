@@ -203,12 +203,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
             print("[%s.fit] Finished fit" % self.__class__.__name__)
         return self
 
-    def _check_fitted(self):
-        if not hasattr(self, "mask_img_"):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
-
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
 
