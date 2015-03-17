@@ -531,32 +531,20 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
 def _get_dataset_descr(ds_name):
     module_path = os.path.dirname(os.path.abspath(__file__))
-    if ds_name == 'yeo_2011':
-        fname = 'yeo'
-    elif ds_name == 'craddock_2012':
-        fname = 'craddock'
-    elif ds_name == 'icbm152_2009':
-        fname = 'icbm'
-    elif ds_name == 'smith_2009':
-        fname = 'smith'
-    elif ds_name == 'haxby2001_simple' or ds_name == 'haxby2001':
-        fname = 'haxby'
-    elif ds_name == 'nyu_rest':
-        fname = 'nyu'
-    elif ds_name == 'miyawaki2008':
-        fname = 'miyawaki'
-    else:
-        descr = ''
+
+    fname = ds_name
+    if ds_name == 'haxby2001_simple':
+        ds_name = 'haxby2001'
 
     try:
         with open(os.path.join(module_path, 'description', fname + '.rst'))\
                 as rst_file:
             descr = rst_file.read()
-    except Exception as e:
+    except IOError:
         descr = ''
 
     if descr == '':
-        print("Warning: Could not find dataset description!")
+        print("Warning: Could not find dataset description.")
 
     return descr
 
@@ -796,6 +784,7 @@ def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
     See http://www.nitrc.org/projects/cluster_roi/ for more information
     on this parcellation.
     """
+
     if url is None:
         url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
               "/Parcellations/craddock_2011_parcellations.tar.gz"
