@@ -1431,8 +1431,9 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-         - 'func': string list. Paths to functional images
-         - 'parameters': string list. Parameters of preprocessing steps
+         - 'func': Paths to functional resting-state images
+         - 'phenotypic': Explanations of preprocessing steps
+         - 'confounds': CSV files containing the nuisance variables
 
     References
     ----------
@@ -1493,7 +1494,8 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subjects_funcs = subjects_funcs[:n_subjects]
     subjects_confounds = subjects_confounds[:n_subjects]
 
-    data_dir = _get_dataset_dir('adhd', data_dir=data_dir, verbose=verbose)
+    ds_name = 'adhd'
+    data_dir = _get_dataset_dir(ds_name, data_dir=data_dir, verbose=verbose)
     subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume,
                                   verbose=verbose)
     subjects_confounds = _fetch_files(data_dir, subjects_confounds,
