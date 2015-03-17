@@ -1,8 +1,8 @@
 .. _extracting_rsn:
 
-=========================================
-Extracting resting-state networks
-=========================================
+===========================================
+Extracting resting-state networks with ICA
+===========================================
 
 .. topic:: **Page summary**
 

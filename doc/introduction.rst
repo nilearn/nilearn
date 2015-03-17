@@ -1,24 +1,91 @@
-============
-Introduction
-============
+=====================================
+Introduction: nilearn in a nutshell
+=====================================
 
-Machine Learning in NeuroImaging: what and why
-===============================================
+.. contents:: **Contents**
+    :local:
+    :depth: 1
 
-Machine learning problems and vocabulary
------------------------------------------
 
-Machine learning is interested in learning empirical rules from data to
-make **predictions**. Two kinds of problems appear:
+What is nilearn: MVPA, decoding, predictive models, functional connectivity
+===========================================================================
+
+.. topic:: **Why use nilearn?**
+
+    Nilearn makes it easy to use many advanced **machine learning**,
+    **pattern recognition** and **multivariate statistical** technics on
+    neuroimaging data for applications such as **MVPA** (Mutli-Voxel
+    Pattern Analysis),
+    :ref:`decoding <decoding>`,
+    :ref:`predictive modelling <decoding>`,
+    :ref:`functional connectivity <functional_connectomes>`,
+    :ref:`brain parcellations <parcellating_brain>`, 
+    :ref:`connectomes <functional_connectomes>`.
+
+    Nilearn can readily be used on :ref:`task fMRI <decoding_tutorial>`,
+    :ref:`resting-state <functional_connectomes>`, or 
+    :ref:`VBM <example_decoding_plot_oasis_vbm.py>` data.
+
+    For a machine-learning expert, the value of nilearn can be seen as
+    domain-specific **feature engineering** construction, to go from
+    neuroimaging data to a feature-matrix well suited to statistical
+    learning, or vice versa.
+
+
+Why is machine learning relevant to NeuroImaging: a few examples
+-----------------------------------------------------------------
+
+:Diagnosis and prognosis:
+
+    Predicting a clinical score from brain imaging with :ref:`supervised
+    learning <decoding>` e.g. `[Mourao-Miranda 2012]
+    <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
+
+:Measuring generalization scores:
+
+    * **Information mapping**: using the prediction accuracy of a classifier
+      to test links between brain images and stimuli. (e.g.
+      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2005]
+      <http://www.pnas.org/content/103/10/3863.short>`_
+
+    * **Transfer learning**: measuring how much an estimator trained on a
+      task generalizes to another task (e.g. discriminating left from
+      right eye movements also discriminates additions from subtractions
+      `[Knops 2009]
+      <http://www.sciencemag.org/content/324/5934/1583.short>`_)
+
+:High-dimensional multivariate statistics:
+
+    From a statistical point of view, machine learning implements
+    statistical estimation of models with a large number of parameters.
+    Tricks pulled in machine learning (e.g. regularization) can
+    make this estimation possible with a small number of observations
+    `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
+    usage of machine learning requires some understanding of the models.
+
+:Data mining / exploration:
+
+    Data-driven exploration of brain images. :ref:`unsupervised_learning`
+    extracts structure from the data, such as `clusters
+    <http://scikit-learn.org/stable/modules/clustering.html>`_ or
+    `multivariate decompositions
+    <http://scikit-learn.org/stable/modules/decomposition.html>`_
+    (*latent factors* such as ICA). This may be useful for implementing
+    some form of *density estimation*: learning a probabilistic model of
+    the data (e.g. in `[Thirion 2009]
+    <http://www.springerlink.com/content/7377x70p5515v778/>`_).
+
+Glossary: machine learning vocabulary
+--------------------------------------
 
 :Supervised learning:
 
-    :ref:`supervised_learning` is interested in predicting an **output
-    variable**, or **target**, `y`, from **data** `X`. Typically, we start
-    from labeled data (the **training set**) for which we know the `y`
-    for each instance of `X` and train a model; this model is then
-    applied to new unlabeled data (the **test set**) to predict the
-    labels. It may be:
+    :ref:`supervised learning <decoding>` is interested in predicting an
+    **output variable**, or **target**, `y`, from **data** `X`.
+    Typically, we start from labeled data (the **training set**) for
+    which we know the `y` for each instance of `X` and train a model;
+    this model is then applied to new unlabeled data (the **test set**)
+    to predict the labels. It may be:
     
     * a **regression** problem: predicting a continuous quantity such 
       as age
@@ -33,78 +100,38 @@ make **predictions**. Two kinds of problems appear:
 
     :ref:`unsupervised_learning` is concerned with data `X` without any
     labels. It analyzes the structure of a dataset, for instance
-    **clustering** or extracting latent factors such as independent
-    components.
+    **clustering** or extracting latent factors such as with **independent
+    components analysis (ICA)**.
 
     In neuroimaging, it is typically used to study resting state, or to
     find sub-populations in diseases.
 
-
-Why is machine learning relevant to NeuroImaging: a few examples
------------------------------------------------------------------
-
-:Diagnosis and prognosis:
-
-    Predicting a clinical score from brain imaging with :ref:`supervised
-    learning <Supervised_learning>` e.g. `[Mourao-Miranda 2012]
-    <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
-
-:Generalization scores:
-
-    * Information mapping: using the prediction accuracy of a classifier
-      to test links between brain images and stimuli. (e.g.
-      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2005]
-      <http://www.pnas.org/content/103/10/3863.short>`_
-
-    * Transfer learning: measuring how much an estimator trained on a
-      task generalizes to another task (e.g. discriminating left from
-      right eye movements also discriminates additions from subtractions
-      `[Knops 2009]
-      <http://www.sciencemag.org/content/324/5934/1583.short>`_)
-
-:Statistical estimation:
-
-    From a statistical point of view, machine learning implements
-    statistical estimation of models with a large number of parameters.
-    The tricks pulled in machine learning (e.g. regularization) can
-    make this estimation possible with a small number of observations
-    `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
-    usage of machine learning requires some understanding of the models.
-
-:Data mining:
-
-    Data-driven exploration of brain images. :ref:`unsupervised_learning`
-    extracts structure from the data, such as `clusters
-    <http://scikit-learn.org/stable/modules/clustering.html>`_ or
-    `multivariate decompositions
-    <http://scikit-learn.org/stable/modules/decomposition.html>`_
-    (*latent factors* such as ICA). This may be useful for implementing
-    some form of *density estimation*: learning a probabilistic model of
-    the data (e.g. in `[Thirion 2009]
-    <http://www.springerlink.com/content/7377x70p5515v778/>`_).
+|
 
 .. _installation:
 
-Installation
-=============
+Installing nilearn
+====================
 
-Installing the environment
----------------------------
+Installing the Python scientific environment
+----------------------------------------------
 
-Python scientific stack
-........................
-
-We recommend that you **install a complete scientific Python
-distribution**, and not download the bare Python. Indeed, the scientific
-Python tool stack is rich. Installing the different packages needed one
-after another is time-consuming and error prone.
+We recommend that you **install a complete scientific Python distribution**,
+and not download the bare Python. Indeed, the scientific Python tool stack is
+rich. Installing the different packages needed is time-consuming and error
+prone.
 
 :Windows and MacOSX:
-  We suggest that you install Anaconda_. [1]_
+  We suggest that you install Anaconda_.
+
+  `Enthought Canopy`_, `PythonXY <http://code.google.com/p/pythonxy/>`_ are
+  other options. Enthought Canopy Express, the free version, should cover all
+  the required packages.
+
 
 :Linux:
   While Anaconda_ is available for Linux, most recent linux
-  distributions come with the packages that are needed for this tutorial.
+  distributions come with the packages that are needed for nilearn.
   Ask your system administrator to install, using the distribution
   package manager, the following packages:
 
@@ -116,16 +143,6 @@ after another is time-consuming and error prone.
 .. _Enthought Canopy: https://store.enthought.com/
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda/
-
-|
-
-.. [1]
-
-  `Enthought Canopy`_, `PythonXY
-  <http://code.google.com/p/pythonxy/>`_ are other options. Enthought
-  Canopy Express, i.e. the free version, should cover all the needed
-  packages as far as the standard python scientific stack is
-  concerned.
 
 Installing nilearn
 -------------------
@@ -140,6 +157,8 @@ a command prompt::
    Note that this is a "shell" command, that you need to type in a
    command prompt, and not a Python command.
 
+|
+
 .. _testing_installation:
 
 Testing your installation
@@ -152,17 +171,16 @@ following, in the Python prompt::
 
 If you do not get any errors, you have installed nilearn correctly.
 
-Downloading the development version
+Installing the development version
 ....................................
 
-As an alternative to using pip, and only in the case if you
+**Downloading** As an alternative to using pip, and only in the case if you
 want the latest nilearn version you can do so by using git.
 
 * **Under Windows or Max OSX**, you can easily to that by going to
   https://github.com/nilearn/nilearn and clicking the 'Clone in Desktop'
   button on the lower right of the page. This will install a software
-  that will download nilearn and that you can use to update nilearn as we
-  move forward.
+  that will download nilearn and that you can use to update nilearn.
   
 * **Under Linux**, run the following command (as a shell command, not a
   Python command)::
@@ -176,19 +194,17 @@ If you really don't want to use git, you download the latest development
 snapshot from the following link and unziping it:
 https://github.com/nilearn/nilearn/archive/master.zip
 
-
-Setting up the development version
-..................................
-
-In the ``nilearn`` directory created by the previous steps, run (as a
-shell command, once again)::
+**Installing** In the ``nilearn`` directory created by the previous steps, run
+(as a shell command, once again)::
 
     python setup.py install --user
 
 To make sure that the installation went smoothly, you can follow the
 same steps as in :ref:`testing_installation`.
 
-Python for NeuroImaging: a quick-start
+.. _quick_start:
+
+Python for NeuroImaging, a quick start
 ==========================================
 
 If you don't know Python, **Don't panic. Python is easy**. Here, we give
@@ -226,16 +242,107 @@ which will open an interactive prompt::
    these input lines directly into *IPython*, click on the `>>>` located
    at the top right of the code block
 
+
+Your first steps with nilearn
+------------------------------
+
+nilearn does not have a graphical user interface, it is used via Python
+code. Most important function to process neuroimaging data take as an
+input either a filename, or a `NiftiImage object
+<http://nipy.org/nibabel/nibabel_images.html>`_, which we call a
+"niimg-like".
+
+For instance, suppose that you have a Tmap file saved in a Nifti file
+"t_map000.nii", in the directory "/home/user", to visualize it, you will
+first import the :ref:`plotting <plotting>` functionality::
+
+    from nilearn import plotting
+
+then you can call the function that creates a "glass brain" by giving it
+the file name::
+
+    plotting.plot_glass_brain("/home/user/t_map000.nii")
+
+.. image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_1.png
+    :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
+    :align: center
+    :scale: 60
+
+.. currentmodule:: nilearn
+
+For simple operations on images, there exists many functions, such as in
+the :mod:`nilearn.image` module for image manipulation, eg
+:func:`image.smooth_img` for smoothing::
+
+    >>> from nilearn import image
+    >>> smoothed_img = image.smooth_img("/home/user/t_map000.nii", fwhm=5)
+
+The returned value, `smoothed_img` is a `NiftiImage object
+<http://nipy.org/nibabel/nibabel_images.html>`_, and can be either passed
+to other nilearn functions operating on niimgs (neuroimaging images), or
+saved to disk with::
+
+    >>> smoothed_img.to_filename("/home/user/t_map000_smoothed.nii")
+
+Finally, nilearn deals with Nifti images that come in two flavors: 3D
+images, that represent a brain volume, and 4D images, that represent a
+series of brain volume. To extract the n-th 3D image in a 4D image, use
+:func:`image.index_img` (keep in mind that indexing starts at 0 in
+Python)::
+
+    >>> first_volume = image.index_img("/home/user/fmri_volumes.nii", 0)
+
+To do a loop over each volume of a 4D image, use :func:`image.iter_img`::
+
+   >>> for volume in image.iter_img("/home/user/fmri_volumes.nii"):
+   ...     smoothed_img = image.smooth_img(volume, fwhm=5)
+
+.. topic:: **Exercise: varying the amount of smoothing**
+   :class: green
+
+   Want to sharpen your skills with nilearn? 
+   Compute the mean EPI for first subject of the ADHD
+   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`, and
+   smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
+
+   **Hints:**
+
+      * Inspect the '.keys()' of the object returned by
+        :func:`nilearn.datasets.fetch_adhd`
+
+      * Look at the "reference" section of the documentation: there is a
+        function to compute the mean of a 4D image
+
+      * You can do a for loop in Python. You can use the "range" function
+
+      * The solution is found :ref:`here
+        <example_manipulating_visualizing_plot_smooth_mean_image.py>`
+
+|
+
+____
+
+Now, if you want readily-made methods to process neuroimaging data, jump
+directly to the section you need:
+
+* :ref:`decoding`
+
+* :ref:`functional_connectivity`
+
+|
+
 Scientific computing with Python
 ---------------------------------
+
+If you are interesting in a casual use of nilearn, you will not need
+numerics in Python. To go further, here are a few pointers.
 
 Basic numerics
 ...............
 
-In Python, to get scientific features, you need to import the relevant
-libraries:
-
 :Numerical arrays:
+
+  The numerical data (eg matrices) are stored in numpy arrays:
 
   ::
 
@@ -254,9 +361,9 @@ libraries:
     array([ 1.        ,  1.00450225,  1.0090045 ])
 
   `More documentation ...
-  <http://scipy-lectures.github.com/intro/numpy/index.html>`__
+  <http://scipy-lectures.github.io/intro/numpy/index.html>`__
 
-:Plotting:
+:Plotting and figures:
 
  .. figure:: auto_examples/images/plot_python_101_1.png
    :target: auto_examples/plot_python_101.html
@@ -271,7 +378,7 @@ libraries:
 
 
  `More documentation ...
- <http://scipy-lectures.github.com/intro/matplotlib/matplotlib.html>`__
+ <http://scipy-lectures.github.io/intro/matplotlib/matplotlib.html>`__
 
 :Image processing:
 
@@ -281,7 +388,7 @@ libraries:
     >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
 
  `More documentation ...
- <http://scipy-lectures.github.com/advanced/image_processing/index.html>`__
+ <http://scipy-lectures.github.io/advanced/image_processing/index.html>`__
 
 :Signal processing:
 
@@ -289,7 +396,7 @@ libraries:
     >>> t_detrended = signal.detrend(t)
 
  `More documentation ...
- <http://scipy-lectures.github.com/intro/scipy.html#signal-processing-scipy-signal>`__
+ <http://scipy-lectures.github.io/intro/scipy.html#signal-processing-scipy-signal>`__
 
 :Much more:
 
@@ -304,13 +411,13 @@ libraries:
         >>> from scipy import linalg
 
   `More documentation...
-  <http://scipy-lectures.github.com/intro/scipy.html>`__
+  <http://scipy-lectures.github.io/intro/scipy.html>`__
 
 
 Scikit-learn: machine learning in Python
 .........................................
 
-.. topic:: What is scikit-learn?
+.. topic:: **What is scikit-learn?**
 
     `Scikit-learn <http://scikit-learn.org>`_ is a Python library for machine
     learning. Its strong points are:
@@ -374,7 +481,7 @@ Finding help
 
     * A quick and gentle introduction to scientific computing with Python can
       be found in the 
-      `scipy lecture notes <http://scipy-lectures.github.com/>`_.
+      `scipy lecture notes <http://scipy-lectures.github.io/>`_.
 
     * The documentation of scikit-learn explains each method with tips on
       practical use and examples: 
@@ -383,7 +490,10 @@ Finding help
       Be careful to consult the documentation relative to the version of
       scikit-learn that you are using.
 
-:Mailing lists:
+:Mailing lists and forums:
+
+    * Don't hesitate to ask questions about nilearn on `neurostars
+      <https://neurostars.org/t/nilearn/>`_.
 
     * You can find help with neuroimaging in Python (file I/O,
       neuroimaging-specific questions) via the nipy user group:

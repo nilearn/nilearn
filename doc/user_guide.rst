@@ -15,7 +15,9 @@ User guide: table of contents
    :numbered:
 
    introduction.rst
-   data_analysis/index.rst
+   decoding/index.rst
+   connectivity/index.rst
+   manipulating_visualizing/index.rst
    building_blocks/index.rst
    modules/reference.rst
 
