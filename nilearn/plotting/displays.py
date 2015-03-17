@@ -1068,6 +1068,13 @@ class OrthoProjector(OrthoSlicer):
 
         node_coords = np.asarray(node_coords)
 
+        # decompress input matrix if sparse
+        if sparse.issparse(adjacency_matrix):
+            adjacency_matrix = adjacency_matrix.toarray()
+
+        # make the lines below well-behaved
+        adjacency_matrix = np.nan_to_num(adjacency_matrix)
+
         # safety checks
         if 's' in node_kwargs:
             raise ValueError("Please use 'node_size' and not 'node_kwargs' "
@@ -1100,9 +1107,6 @@ class OrthoProjector(OrthoSlicer):
                 "and 'node_coords'"
                 "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
                 .format(adjacency_matrix_shape, node_coords_shape))
-
-        if sparse.issparse(adjacency_matrix):
-            adjacency_matrix = adjacency_matrix.toarray()
 
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             raise ValueError("'adjacency_matrix' should be symmetric")

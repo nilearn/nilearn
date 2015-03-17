@@ -316,6 +316,13 @@ def test_plot_connectome():
     plot_connectome(sparse_adjacency_matrix, node_coords,
                     **kwargs)
 
+    # NaN matrix support
+    nan_adjacency_matrix = np.array([[1., np.nan, np.nan],
+                                     [np.nan, 1., 2.],
+                                     [np.nan, 2., 1.]])
+    nan_node_coords = np.arange(3 * 3).reshape(3, 3)
+    plot_connectome(nan_adjacency_matrix, nan_node_coords, **kwargs)
+
 
 def test_plot_connectome_exceptions():
     import pylab as pl
