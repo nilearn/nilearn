@@ -1494,14 +1494,17 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subjects_funcs = subjects_funcs[:n_subjects]
     subjects_confounds = subjects_confounds[:n_subjects]
 
-    ds_name = 'adhd'
-    data_dir = _get_dataset_dir(ds_name, data_dir=data_dir, verbose=verbose)
+    dataset_name = 'adhd'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
     subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume,
                                   verbose=verbose)
     subjects_confounds = _fetch_files(data_dir, subjects_confounds,
             resume=resume, verbose=verbose)
     phenotypic = _fetch_files(data_dir, phenotypic, resume=resume,
                               verbose=verbose)[0]
+
+    fdescr = _get_dataset_descr(dataset_name)
 
     # Load phenotypic data
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -1512,7 +1515,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
                              for i in isubs]]
 
     return Bunch(func=subjects_funcs, confounds=subjects_confounds,
-                 phenotypic=phenotypic)
+                 phenotypic=phenotypic, description=fdescr)
 
 
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
@@ -1563,8 +1566,9 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(labels=files[0], maps=files[1])
+    return Bunch(labels=files[0], maps=files[1], description=fdescr)
 
 
 def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
@@ -1948,7 +1952,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     """
     if isinstance(contrasts, string_types):
-        raise ValueError('Constrasts should be a list of strings, but'
+        raise ValueError('Constrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
@@ -2108,8 +2112,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                   ("cubicwebexport2.csv", url_csv2, {})]
 
     # Actual data fetching
-    data_dir = _get_dataset_dir('brainomics_localizer', data_dir=data_dir,
+    dataset_name = 'brainomics_localizer'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
+    fdescr = _get_dataset_descr(dataset_name)
     files = _fetch_files(data_dir, filenames, verbose=verbose)
     anats = None
     masks = None
@@ -2135,7 +2141,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         tmaps = files[1::2]
         files = files[::2]
     return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
-                 ext_vars=csv_data)
+                 ext_vars=csv_data, description=fdescr)
 
 
 def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
