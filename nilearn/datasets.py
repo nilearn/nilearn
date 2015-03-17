@@ -533,8 +533,6 @@ def _get_dataset_descr(ds_name):
     module_path = os.path.dirname(os.path.abspath(__file__))
 
     fname = ds_name
-    if ds_name == 'haxby2001_simple':
-        ds_name = 'haxby2001'
 
     try:
         with open(os.path.join(module_path, 'description', fname + '.rst'))\
@@ -1099,7 +1097,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    # There is a common file for the two versions of Haxby
+    fdescr = _get_dataset_descr('haxby_2001')
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
