@@ -1,10 +1,15 @@
+# -*- coding: utf-8 -*-
+# Author: Óscar Nájera
+# License: 3-clause BSD
 ###############################################################################
 # Documentation link resolver objects
-import joblib
+from __future__ import print_function
 import gzip
 import os
 import posixpath
 import re
+import shelve
+import sys
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -42,12 +47,26 @@ def _get_data(url):
     else:
         with open(url, 'r') as fid:
             data = fid.read()
-        fid.close()
 
     return data
 
-mem = joblib.Memory(cachedir='_build')
-get_data = mem.cache(_get_data)
+
+def get_data(url, cached_file='_build/searchindex'):
+    """Persistent dictionary usage to retrieve the search indexes"""
+
+    # shelve keys need to be str in python 2
+    if sys.version_info[0] == 2 and isinstance(url, unicode):
+        url = url.encode('utf-8')
+
+    search_index = shelve.open(cached_file)
+    if url in search_index:
+        data = search_index[url]
+    else:
+        data = _get_data(url)
+        search_index[url] = data
+    search_index.close()
+
+    return data
 
 
 def parse_sphinx_searchindex(searchindex):
@@ -385,4 +404,3 @@ def embed_code_links(app, exception):
                             line = expr.sub(substitute_link, line)
                             fid.write(line.encode('utf-8'))
     print('[done]')
-
