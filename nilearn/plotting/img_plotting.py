@@ -208,7 +208,7 @@ class _MNI152Template(SpatialImage):
     vmax   = None
     _shape  = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, data=None, affine=None, header=None):
         # This looks like a hack but we want a constant image compatible with
         # all interfaces
         pass
