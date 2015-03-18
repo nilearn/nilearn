@@ -43,7 +43,7 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
-        'min_version': '1.3.0',
+        'min_version': '1.1.0',
         'required_at_installation': False}),
     ('six', {
         'min_version': '0.0.0',
