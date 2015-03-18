@@ -214,8 +214,7 @@ def test_plot_empty_slice():
     img = nibabel.Nifti1Image(data, mni_affine)
 
     plot_anat(img)
-    slicer = assert_warns_regex(UserWarning, 'empty mask',
-                                plot_img, img, display_mode='y', threshold=1)
+    slicer = plot_img(img, display_mode='y', threshold=1)
     slicer.close()
     pl.close('all')
 
