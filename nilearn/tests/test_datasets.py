@@ -18,7 +18,8 @@ import nibabel
 from six import string_types
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
+from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
+                        assert_greater)
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
@@ -293,6 +294,7 @@ def test_fail_fetch_harvard_oxford():
 
     assert_true(isinstance(nibabel.load(out_nii), nibabel.Nifti1Image))
     assert_true(isinstance(arr, np.ndarray))
+    assert_greater(len(arr), 0)
 
 
 # Smoke tests for the rest of the fetchers
