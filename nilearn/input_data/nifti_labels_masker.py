@@ -7,8 +7,6 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
-import nibabel
-
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
@@ -146,8 +144,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 # resampling will be done at transform time
                 pass
             elif self.resampling_target is None:
-                if _utils._get_shape(self.mask_img_) \
-                        != _utils._get_shape(self.labels_img_)[:3]:
+                if self.mask_img_.shape != self.labels_img_.shape[:3]:
                     raise ValueError(
                         _compose_err_msg(
                             "Regions and mask do not have the same shape",
@@ -164,8 +161,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 self.mask_img_ = image.resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.get_affine(),
-                    target_shape=_utils._get_shape(
-                                                self.labels_img_)[:3],
+                    target_shape=self.labels_img_.shape[:3],
                     interpolation="nearest",
                     copy=True)
             else:
@@ -221,7 +217,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 self._resampled_labels_img_ = self._cache(image.resample_img,
                     func_memory_level=1)(
                         self.labels_img_, interpolation="nearest",
-                        target_shape=_utils._get_shape(imgs)[:3],
+                        target_shape=imgs.shape[:3],
                         target_affine=imgs.get_affine(),
                     )
         elif self.resampling_target == "labels":
@@ -229,7 +225,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             logger.log("resampling images", verbose=self.verbose)
             imgs = self._cache(image.resample_img, func_memory_level=1)(
                 imgs, interpolation="continuous",
-                target_shape=_utils._get_shape(self.labels_img_),
+                target_shape=self.labels_img_.shape,
                 target_affine=self.labels_img_.get_affine())
         else:
             self._resampled_labels_img_ = self.labels_img_

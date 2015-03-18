@@ -12,9 +12,10 @@ from six import string_types
 import numpy as np
 import scipy
 from scipy import ndimage, linalg
-from nibabel import Nifti1Image
 
 from .. import _utils
+from .._utils import new_img_like
+
 
 ###############################################################################
 # Affine utils
@@ -185,7 +186,7 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg(img)
-    mask = img.get_data()
+    mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
     affine = img.get_affine()
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
@@ -380,7 +381,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
-    shape = _utils._get_shape(img)
+    shape = img.shape
     affine = img.get_affine()
 
     if (np.all(np.array(target_shape) == shape[:3]) and
@@ -475,7 +476,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                           out=resampled_data,
                           copy=not input_img_is_string)
 
-    return Nifti1Image(resampled_data, target_affine)
+    return new_img_like(img, resampled_data, target_affine)
 
 
 def reorder_img(img, resample=None):
@@ -555,9 +556,4 @@ def reorder_img(img, resample=None):
     data = data[slice1, slice2, slice3]
     affine = from_matrix_vector(np.diag(pixdim), b)
 
-    niimg = Nifti1Image(data, affine)
-
-    return niimg
-
-
-
+    return new_img_like(img, data, affine)

@@ -1,6 +1,7 @@
 
-from .niimg_conversions import is_img, _get_shape, _repr_niimgs, \
-        copy_img, check_niimg, concat_niimgs, check_niimgs
+from .niimg_conversions import check_niimg, concat_niimgs, check_niimgs
+
+from .niimg import new_img_like, load_img, _repr_niimgs, copy_img
 
 from .numpy_conversions import as_ndarray
 

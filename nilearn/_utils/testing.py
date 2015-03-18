@@ -17,13 +17,12 @@ import numpy as np
 import scipy.signal
 from sklearn.utils import check_random_state
 import scipy.linalg
-
-from nibabel import Nifti1Image
 import nibabel
 
 from .. import datasets
 from .. import masking
 from . import logger
+
 
 try:
     from nose.tools import assert_raises_regex
@@ -106,7 +105,7 @@ def write_tmp_imgs(*imgs, **kwargs):
                                                suffix=".nii",
                                                dir=None)
                 filenames.append(filename)
-                nibabel.save(img, filename)
+                img.to_filename(filename)
 
         if len(imgs) == 1:
             yield filenames[0]
@@ -286,7 +285,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
                              rand_gen=rand_gen, window=window)
-    mask_img = Nifti1Image(mask, affine)
+    mask_img = nibabel.Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
 
 
@@ -330,7 +329,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
-    return Nifti1Image(data, affine)
+    return nibabel.Nifti1Image(data, affine)
 
 
 def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
@@ -345,7 +344,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
     data = rand_gen.randint(n_regions + 1, size=shape)
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
-    return Nifti1Image(data, affine)
+    return nibabel.Nifti1Image(data, affine)
 
 
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
@@ -424,44 +423,46 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
          shift[1]:shift[1] + width[1],
          shift[2]:shift[2] + width[2]] = 1
 
-    if n_blocks is not None:
-        block_size = 3 if block_size is None else block_size
-        flat_fmri = fmri[mask.astype(np.bool)]
-        flat_fmri /= np.abs(flat_fmri).max()
-        target = np.zeros(length, dtype=np.int)
-        rest_max_size = (length - (n_blocks * block_size)) // n_blocks
-        if rest_max_size < 0:
-            raise ValueError(
-                '%s is too small '
-                'to put %s blocks of size %s' % (
-                    length, n_blocks, block_size))
-        t_start = 0
-        if rest_max_size > 0:
-            t_start = rand_gen.random_integers(0, rest_max_size, 1)[0]
-        for block in range(n_blocks):
-            if block_type == 'classification':
-                # Select a random voxel and add some signal to the background
-                voxel_idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
-                trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
-            else:
-                # Select the voxel in the image center and add some signal
-                # that increases with each block
-                voxel_idx = flat_fmri.shape[0] // 2
-                trials_effect = (
-                    rand_gen.random_sample(block_size) + 1) * block
-            t_rest = 0
-            if rest_max_size > 0:
-                t_rest = rand_gen.random_integers(0, rest_max_size, 1)[0]
-            flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
-            target[t_start:t_start + block_size] = block + 1
-            t_start += t_rest + block_size
-        target = target if block_type == 'classification' \
-            else target.astype(np.float)
-        fmri = np.zeros(fmri.shape)
-        fmri[mask.astype(np.bool)] = flat_fmri
-        return Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target
+    if n_blocks is None:
+        return (nibabel.Nifti1Image(fmri, affine),
+                nibabel.Nifti1Image(mask, affine))
 
-    return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
+    block_size = 3 if block_size is None else block_size
+    flat_fmri = fmri[mask.astype(np.bool)]
+    flat_fmri /= np.abs(flat_fmri).max()
+    target = np.zeros(length, dtype=np.int)
+    rest_max_size = (length - (n_blocks * block_size)) // n_blocks
+    if rest_max_size < 0:
+        raise ValueError(
+            '%s is too small '
+            'to put %s blocks of size %s' % (
+                length, n_blocks, block_size))
+    t_start = 0
+    if rest_max_size > 0:
+        t_start = rand_gen.random_integers(0, rest_max_size, 1)[0]
+    for block in range(n_blocks):
+        if block_type == 'classification':
+            # Select a random voxel and add some signal to the background
+            voxel_idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
+            trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
+        else:
+            # Select the voxel in the image center and add some signal
+            # that increases with each block
+            voxel_idx = flat_fmri.shape[0] // 2
+            trials_effect = (
+                rand_gen.random_sample(block_size) + 1) * block
+        t_rest = 0
+        if rest_max_size > 0:
+            t_rest = rand_gen.random_integers(0, rest_max_size, 1)[0]
+        flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
+        target[t_start:t_start + block_size] = block + 1
+        t_start += t_rest + block_size
+    target = target if block_type == 'classification' \
+        else target.astype(np.float)
+    fmri = np.zeros(fmri.shape)
+    fmri[mask.astype(np.bool)] = flat_fmri
+    return (nibabel.Nifti1Image(fmri, affine),
+            nibabel.Nifti1Image(mask, affine), target)
 
 
 def generate_signals_from_precisions(precisions,

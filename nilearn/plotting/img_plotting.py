@@ -16,8 +16,7 @@ import numbers
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
-
-import nibabel
+from nibabel.spatialimages import SpatialImage
 
 from .._utils.testing import skip_if_running_nose
 from .._utils.numpy_conversions import as_ndarray
@@ -28,6 +27,7 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .. import _utils
+from .._utils import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
@@ -76,7 +76,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             # voxels pass the threshold
             threshold = fast_abs_percentile(data) - 1e-5
 
-        img = nibabel.Nifti1Image(as_ndarray(data), affine)
+        img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
         img,
@@ -93,7 +93,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                            cmap=pl.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
-        display.add_overlay(nibabel.Nifti1Image(data, affine), 
+        display.add_overlay(new_img_like(img, data, affine),
                             threshold=threshold, interpolation=interpolation,
                             colorbar=colorbar, **kwargs)
 
@@ -198,7 +198,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
 # Anatomy image for background
 
 # A constant class to serve as a sentinel for the default MNI template
-class _MNI152Template(object):
+class _MNI152Template(SpatialImage):
     """ This class is a constant pointing to the MNI152 Template
         provided by nilearn
     """
@@ -207,6 +207,10 @@ class _MNI152Template(object):
     affine = None
     vmax   = None
     _shape  = None
+
+    def __init__(self, data=None, affine=None, header=None):
+        # Comply with spatial image requirements while allowing empty init
+        pass
 
     def load(self):
         if self.data is None:
