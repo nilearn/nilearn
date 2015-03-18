@@ -88,10 +88,6 @@ def _to_4d(data):
     return out
 
 
-def _iter_concat_niimgs():
-    pass
-
-
 def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
                   auto_resample=False, verbose=0,
                   memory=Memory(cachedir=None), memory_level=0):
