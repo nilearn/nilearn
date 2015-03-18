@@ -4,9 +4,12 @@ Test the searchlight module
 # Author: Alexandre Abraham
 # License: simplified BSD
 
-from nose.tools import assert_equal
 import numpy as np
+import warnings
+from nose.tools import assert_equal
+
 import nibabel
+
 from nilearn.decoding import searchlight
 
 

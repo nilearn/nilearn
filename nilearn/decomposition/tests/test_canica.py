@@ -1,10 +1,11 @@
 """Test CanICA"""
 
-import numpy as np
-from numpy.testing import assert_array_almost_equal
-from nose.tools import assert_true, assert_raises
+import warnings
+from nose.tools import assert_equal, assert_raises
 
 import nibabel
+import numpy as np
+from numpy.testing import assert_array_almost_equal
 
 from nilearn.decomposition.canica import CanICA
 
@@ -47,9 +48,12 @@ def test_canica_square_img():
     mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
 
     # We do a large number of inits to be sure to find the good match
-    canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
-                    smoothing_fwhm=0., n_init=50)
-    canica.fit(data)
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', 'FastICA did not converge.',
+                                UserWarning)  # OK even if not converging.
+        canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
+                        smoothing_fwhm=0., n_init=50)
+        canica.fit(data)
     maps = canica.masker_.inverse_transform(canica.components_).get_data()
     maps = np.rollaxis(maps, 3, 0)
 
@@ -60,7 +64,7 @@ def test_canica_square_img():
     # K should be a permutation matrix, hence its coefficients 
     # should all be close to 0 1 or -1
     K_abs = np.abs(K)
-    assert_true(np.sum(K_abs > .9) == 4)
+    assert_equal(np.sum(K_abs > .9), 4)
     K_abs[K_abs > .9] -= 1
     assert_array_almost_equal(K_abs, 0, 1)
 

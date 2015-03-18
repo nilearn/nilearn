@@ -5,6 +5,7 @@ Tests for the permuted_ols function.
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 import nose
 import numpy as np
+import warnings
 from scipy import stats
 from sklearn.utils import check_random_state
 
@@ -139,7 +140,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
     target_var = rng.randn(n_samples, 1)
     tested_var = np.arange(n_samples).reshape((-1, 1))
     tested_var_not_centered = tested_var.copy()
-    tested_var -= tested_var.mean(0)  # centered
+    tested_var = tested_var.astype(np.float64) - tested_var.mean(0)  # centered
     # permuted OLS
     # We check that h0 is close to the theoretical distribution, which is
     # known for this simple design (= t(n_samples - dof)).
@@ -517,9 +518,13 @@ def test_sided_test2(random_state=0):
     tested_var = np.arange(0, 20, 2)
     # permuted OLS
     # one-sided
-    neg_log_pvals_onesided, _, _ = permuted_ols(
-        tested_var, target_var, model_intercept=False,
-        two_sided_test=False, n_perm=100, random_state=random_state)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', RuntimeWarning)
+        neg_log_pvals_onesided, _, _ = permuted_ols(
+            tested_var, target_var, model_intercept=False,
+            two_sided_test=False, n_perm=100,
+            random_state=random_state)
+
     # one-sided (other side)
     neg_log_pvals_onesided2, _, _ = permuted_ols(
         tested_var, -target_var, model_intercept=False,

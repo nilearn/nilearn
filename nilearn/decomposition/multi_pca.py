@@ -14,9 +14,10 @@ from sklearn.utils.extmath import randomized_svd
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
-from .._utils.class_inspect import get_params
-from .._utils.cache_mixin import cache
 from .._utils import as_ndarray
+from .._utils.cache_mixin import cache
+from .._utils.class_inspect import get_params
+
 
 def session_pca(imgs, mask_img, parameters,
                 n_components=20,
@@ -251,9 +252,22 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                 if our_param is None:
                     # Default value
                     continue
-                if getattr(self.masker_, param_name) is not None:
-                    warnings.warn('Parameter %s of the masker overriden'
-                                  % param_name)
+                their_param = getattr(self.masker_, param_name)
+                if their_param is not None and their_param != our_param:
+                    # Special case of memory, which must be compared
+                    #   by cachedir.
+                    emit_warning = True
+                    if param_name == 'memory':
+                        if our_param.cachedir is None:
+                            continue
+                        else:
+                            emit_warning = (their_param.cachedir !=
+                                            our_param.cache_dir)
+                    if emit_warning:
+                        warnings.warn("Parameter %s of the masker overriden "
+                                      "(%s != %s)" % (param_name,
+                                                      str(their_param)[:20],
+                                                      str(our_param)[:20]))
                 setattr(self.masker_, param_name, our_param)
 
         # Masker warns if it has a mask_img and is passed

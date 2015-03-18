@@ -10,6 +10,7 @@ import re
 import sys
 import tempfile
 import warnings
+from nose.tools import assert_equal, assert_true
 from six import string_types
 from six.moves import urllib
 
@@ -50,15 +51,42 @@ except ImportError:
                 raise AssertionError("Should have raised %r" %
                                      expected_exception(expected_regexp))
 
+
 try:
     from sklearn.utils.testing import assert_warns
 except ImportError:
     # sklearn.utils.testing.assert_warns new in scikit-learn 0.14
-    def assert_warns(warning_class, func, *args, **kw):
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("ignore", warning_class)
-            output = func(*args, **kw)
-        return output
+    def assert_warns(warning_class, func, *args, **kwargs):
+        return assert_warns_regex(warning_class, None,
+                                  func, *args, **kwargs)
+
+
+def assert_warns_regex(warning_class, warning_regex,
+                       callable_obj, *args, **kwargs):
+    """
+    This function expects a warning of type <warning_class>
+    to be raised when calling callable_obj with the provided
+    arguments, with the warning message text matching warning_regex.
+
+    The function returns the value of calling callable_obj
+    with the supplied parameters.
+    """
+    with warnings.catch_warnings(record=True) as ws:
+        warnings.simplefilter('always', warning_class)
+        output = callable_obj(*args, **kwargs)
+        warning_found = False
+        for w in ws:
+            if isinstance(w.message, warning_class) and \
+                (warning_regex is None or
+                    re.compile(warning_regex).search(w.message.args[-1])):
+                warning_found = True
+
+        if not warning_found:
+            assert_true(len(ws) > 0,
+                        "No warning detected; should have raised %r" %
+                        warning_class(warning_regex))
+            assert_true(False, "Failed.")
+    return output
 
 
 @contextlib.contextmanager
