@@ -967,8 +967,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def fetch_smith_2009(data_dir=None, url=None, resume=True,
-        verbose=1):
+def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009)
 
     Parameters
@@ -2223,7 +2222,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
         'gray_matter_maps': string list
             Paths to nifti gray matter density probability maps
         'white_matter_maps' string list
-            Paths to nifti gray matter density probability maps
+            Paths to nifti white matter density probability maps
         'ext_vars': np.recarray
             Data from the .csv file with information about selected subjects
         'data_usage_agreement': string
@@ -2368,7 +2367,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     file_names = (file_names_gm + file_names_wm
                   + file_names_extvars + file_names_dua)
-    data_dir = _get_dataset_dir('oasis1', data_dir=data_dir, verbose=verbose)
+    dataset_name = 'oasis1'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume,
                          verbose=verbose)
 
@@ -2389,11 +2389,14 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
                                for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
 
+    fdescr = _get_dataset_descr(dataset_name)
+
     return Bunch(
         gray_matter_maps=gm_maps,
         white_matter_maps=wm_maps,
         ext_vars=csv_data,
-        data_usage_agreement=data_usage_agreement)
+        data_usage_agreement=data_usage_agreement,
+        description=fdescr)
 
 
 def load_mni152_template():
@@ -2528,7 +2531,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     strategy += 'global'
 
     # General file: phenotypic information
-    data_dir = _get_dataset_dir('ABIDE_pcp', data_dir=data_dir,
+    dataset_name = 'ABIDE_pcp'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     if url is None:
         url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
@@ -2582,6 +2586,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
 
+    results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'

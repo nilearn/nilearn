@@ -44,6 +44,11 @@ They return a structure that contains the different file names::
 
 |
 
+An explanations and further resources about the dataset at hand can be
+retrieved as follows:
+
+    >>> print haxby_dataset['description']
+
 For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref`.
 
 The data are downloaded only once and stored locally, in one of the
