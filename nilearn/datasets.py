@@ -475,7 +475,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 'Authorization',
                 b'Basic ' + base64.b64encode(username + b':' + password))
         if verbose > 0:
-            displayed_url = urllib.parse.splitquery(url)[0] if verbose == 1 else url
+            displayed_url = url.split('?')[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
         if resume and os.path.exists(temp_full_name):
             url_opener = ResumeURLOpener()
