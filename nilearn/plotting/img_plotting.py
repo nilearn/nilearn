@@ -209,8 +209,7 @@ class _MNI152Template(SpatialImage):
     _shape  = None
 
     def __init__(self, data=None, affine=None, header=None):
-        # This looks like a hack but we want a constant image compatible with
-        # all interfaces
+        # Comply with spatial image requirements while allowing empty init
         pass
 
     def load(self):
