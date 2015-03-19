@@ -9,7 +9,6 @@ or as weights in one image per region (maps).
 
 import numpy as np
 from scipy import linalg, ndimage
-from six.moves import xrange
 
 from . import _utils
 from . import masking
@@ -185,9 +184,9 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                     dtype=signals.dtype, order=order)
     labels_dict = dict([(label, n) for n, label in enumerate(labels)])
     # optimized for "data" in F order.
-    for k in xrange(labels_data.shape[2]):
-        for j in xrange(labels_data.shape[1]):
-            for i in xrange(labels_data.shape[0]):
+    for k in range(labels_data.shape[2]):
+        for j in range(labels_data.shape[1]):
+            for i in range(labels_data.shape[0]):
                 label = labels_data[i, j, k]
                 num = labels_dict.get(label, None)
                 if num is not None:

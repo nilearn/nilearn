@@ -6,7 +6,6 @@ Test for "region" module.
 
 import numpy as np
 from nose.tools import assert_raises, assert_true
-from six.moves import xrange
 
 import nibabel
 
@@ -117,7 +116,7 @@ def test_signals_extraction_with_labels():
     assert_true(abs(data).max() > 1e-9)
 
     # Check that signals in each region are identical in each voxel
-    for n in xrange(1, n_regions + 1):
+    for n in range(1, n_regions + 1):
         sigs = data[labels_data == n, :]
         np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
         assert_true(abs(sigs - sigs[0, :]).max() < eps)
@@ -169,7 +168,7 @@ def test_signals_extraction_with_labels():
     # mask labels before checking
     masked_labels_data = labels_data.copy()
     masked_labels_data[np.logical_not(mask_img.get_data())] = 0
-    for n in xrange(1, n_regions + 1):
+    for n in range(1, n_regions + 1):
         sigs = data[masked_labels_data == n, :]
         np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
         assert_true(abs(sigs - sigs[0, :]).max() < eps)
@@ -219,7 +218,7 @@ def test_signal_extraction_with_maps():
     mask_4d_img = np.ones((shape + (2, )))
 
     signals = np.zeros((n_instants, maps_data.shape[-1]))
-    for n in xrange(maps_data.shape[-1]):
+    for n in range(maps_data.shape[-1]):
         signals[:, n] = rand_gen.randn(n_instants)
         data[maps_data[..., n] > 0, :] = signals[:, n]
     img = nibabel.Nifti1Image(data, np.eye(4))
