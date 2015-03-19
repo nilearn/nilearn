@@ -14,7 +14,8 @@ from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .resampling import reorder_img
-from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
+from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
+                      _repr_niimgs)
 from .._utils.niimg_conversions import _index_niimgs
 from .._utils.niimg import new_img_like, _safe_get_data
 from .._utils.compat import _basestring
@@ -75,7 +76,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         sigs = masking.apply_mask(imgs, mask_img)
     else:
         # Load the data only if it doesn't need to be masked
-        imgs = check_niimgs(imgs)
+        imgs = check_niimg_4d(imgs)
         sigs = as_ndarray(imgs.get_data())
         # Not using apply_mask here saves memory in most cases.
         del imgs  # help reduce memory consumption
@@ -291,7 +292,7 @@ def _crop_img_to(img, slices, copy=True):
         Cropped version of the input image
     """
 
-    img = check_niimg(img)
+    img = check_niimg_3d(img)
 
     data = img.get_data()
     affine = img.get_affine()
@@ -340,7 +341,7 @@ def crop_img(img, rtol=1e-8, copy=True):
         Cropped version of the input image
     """
 
-    img = check_niimg(img)
+    img = check_niimg_3d(img)
     data = img.get_data()
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(data < -rtol * infinity_norm,
@@ -366,7 +367,7 @@ def _compute_mean(imgs, target_affine=None,
     from . import resampling
     input_repr = _repr_niimgs(imgs)
 
-    imgs = check_niimgs(imgs)
+    imgs = check_niimg(imgs)
     mean_img = _safe_get_data(imgs)
     if not mean_img.ndim in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
@@ -486,7 +487,7 @@ def swap_img_hemispheres(img):
     """
 
     # Check input is really a path to a nifti file or a nifti object
-    img = check_niimg(img)
+    img = check_niimg_3d(img)
 
     # get nifti in x-y-z order
     img = reorder_img(img)
@@ -517,7 +518,7 @@ def index_img(imgs, index):
     output: nibabel.Nifti1Image
 
     """
-    imgs = check_niimgs(imgs)
+    imgs = check_niimg_4d(imgs)
     return _index_niimgs(imgs, index)
 
 
@@ -533,4 +534,4 @@ def iter_img(imgs):
     -------
     output: iterator of 3D nibabel.Nifti1Image
     """
-    return check_niimgs(imgs, return_iterator=True)
+    return check_niimg_4d(imgs, return_iterator=True)

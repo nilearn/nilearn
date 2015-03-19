@@ -40,7 +40,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     mask: numpy.ndarray
         boolean version of the mask
     '''
-    mask_img = _utils.check_niimg(mask_img)
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask = mask_img.get_data()
     values = np.unique(mask)
 
@@ -254,7 +254,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     if verbose > 0:
         print("EPI mask computation")
 
-    epi_img = _utils.check_niimgs(epi_img)
+    epi_img = _utils.check_niimg(epi_img)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -421,7 +421,7 @@ def compute_background_mask(data_imgs, border_size=2,
     if verbose > 0:
         print("Background mask computation")
 
-    data_imgs = _utils.check_niimgs(data_imgs)
+    data_imgs = _utils.check_niimg(data_imgs)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -562,7 +562,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     When using smoothing, ensure_finite is set to True, as non-finite
     values would spread accross the image.
     """
-    mask_img = _utils.check_niimg(mask_img, ensure_3d=False)
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask, mask_affine = _load_mask_img(mask_img)
     mask_img = new_img_like(mask_img, mask, mask_affine)
     return _apply_mask_fmri(imgs, mask_img, dtype=dtype,
@@ -579,7 +579,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     values (this is checked for in apply_mask, not in this function).
     """
 
-    mask_img = _utils.check_niimg(mask_img)
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask_affine = mask_img.get_affine()
     mask_data = _utils.as_ndarray(mask_img.get_data(),
                                   dtype=np.bool)
@@ -587,7 +587,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     if smoothing_fwhm is not None:
         ensure_finite = True
 
-    imgs_img = _utils.check_niimgs(imgs)
+    imgs_img = _utils.check_niimg_4d(imgs)
     affine = imgs_img.get_affine()[:3, :3]
 
     if not np.allclose(mask_affine, imgs_img.get_affine()):
@@ -711,7 +711,7 @@ def unmask(X, mask_img, order="F"):
             ret.append(unmask(x, mask_img, order=order))  # 1-level recursion
         return ret
 
-    mask_img = _utils.check_niimg(mask_img, ensure_3d=False)
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask, affine = _load_mask_img(mask_img)
 
     if X.ndim == 2:

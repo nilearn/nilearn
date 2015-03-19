@@ -40,7 +40,7 @@ class PhonyNiimage(nibabel.spatialimages.SpatialImage):
         return self.data.shape
 
 
-def test_check_niimg():
+def test_check_niimg_3d():
     # check error for non-forced but necessary resampling
     assert_raises_regex(TypeError, 'nibabel format',
                         _utils.check_niimg, 0)
@@ -50,51 +50,51 @@ def test_check_niimg():
                         _utils.check_niimg, [])
 
     # Check that a filename does not raise an error
-    data = np.zeros((40, 40, 40, 2))
+    data = np.zeros((40, 40, 40, 1))
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, np.eye(4))
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
-        _utils.check_niimg(filename)
+        _utils.check_niimg_3d(filename)
 
 
-def test_check_niimgs():
+def test_check_niimg_4d():
     assert_raises_regex(TypeError, 'nibabel format',
-                        _utils.check_niimgs, 0)
+                        _utils.check_niimg_4d, 0)
 
     assert_raises_regex(TypeError, 'empty object',
-                        _utils.check_niimgs, [])
+                        _utils.check_niimg_4d, [])
 
     affine = np.eye(4)
     img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
 
     # Tests with return_iterator=False
-    img_4d_1 = _utils.check_niimgs([img_3d, img_3d])
+    img_4d_1 = _utils.check_niimg_4d([img_3d, img_3d])
     assert_true(img_4d_1.get_data().shape == (10, 10, 10, 2))
     assert_array_equal(img_4d_1.get_affine(), affine)
 
-    img_4d_2 = _utils.check_niimgs(img_4d_1)
+    img_4d_2 = _utils.check_niimg_4d(img_4d_1)
     assert_array_equal(img_4d_2.get_data(), img_4d_2.get_data())
     assert_array_equal(img_4d_2.get_affine(), img_4d_2.get_affine())
 
     # Tests with return_iterator=True
-    img_3d_iterator = _utils.check_niimgs([img_3d, img_3d],
+    img_3d_iterator = _utils.check_niimg_4d([img_3d, img_3d],
                                           return_iterator=True)
     img_3d_iterator_length = sum(1 for _ in img_3d_iterator)
     assert_true(img_3d_iterator_length == 2)
 
-    img_3d_iterator_1 = _utils.check_niimgs([img_3d, img_3d],
+    img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
                                             return_iterator=True)
-    img_3d_iterator_2 = _utils.check_niimgs(img_3d_iterator_1,
+    img_3d_iterator_2 = _utils.check_niimg_4d(img_3d_iterator_1,
                                             return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
         assert_array_equal(img_1.get_data(), img_2.get_data())
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
 
-    img_3d_iterator_1 = _utils.check_niimgs([img_3d, img_3d],
+    img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
                                             return_iterator=True)
-    img_3d_iterator_2 = _utils.check_niimgs(img_4d_1,
+    img_3d_iterator_2 = _utils.check_niimg_4d(img_4d_1,
                                             return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
@@ -103,13 +103,11 @@ def test_check_niimgs():
 
     # This should raise an error: a 3D img is given and we want a 4D
     assert_raises_regex(TypeError, 'image',
-                        _utils.check_niimgs, img_3d)
-    # This shouldn't raise an error
-    _utils.check_niimgs(img_3d)
+                        _utils.check_niimg_4d, img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
     phony_img = PhonyNiimage()
-    _utils.check_niimgs(phony_img)
+    _utils.check_niimg_4d(phony_img)
 
 
 def test_repr_niimgs():

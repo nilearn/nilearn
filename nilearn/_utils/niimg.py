@@ -29,7 +29,7 @@ def _safe_get_data(img):
     return img.get_data()
 
 
-def load_img(img, dtype=None):
+def load_niimg(img, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed
 
     Parameters:

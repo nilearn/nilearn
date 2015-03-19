@@ -215,7 +215,7 @@ def test_signal_extraction_with_maps():
     maps_data = maps_img.get_data()
     data = np.zeros(shape + (n_instants,), dtype=np.float32)
 
-    mask_4d_img = np.ones((shape + (2, )))
+    mask_4d_img = nibabel.Nifti1Image(np.ones((shape + (2, ))), np.eye(4))
 
     signals = np.zeros((n_instants, maps_data.shape[-1]))
     for n in range(maps_data.shape[-1]):

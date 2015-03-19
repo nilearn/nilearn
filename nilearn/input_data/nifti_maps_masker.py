@@ -137,13 +137,13 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         logger.log("loading regions from %s" %
                    _utils._repr_niimgs(self.maps_img)[:200],
                    verbose=self.verbose)
-        self.maps_img_ = _utils.check_niimgs(self.maps_img)
+        self.maps_img_ = _utils.check_niimg_4d(self.maps_img)
 
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
                        _utils._repr_niimgs(self.mask_img)[:200],
                        verbose=self.verbose)
-            self.mask_img_ = _utils.check_niimg(self.mask_img)
+            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
             self.mask_img_ = None
 
@@ -223,7 +223,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         logger.log("loading images from %s" %
                    _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
-        imgs = _utils.check_niimgs(imgs)
+        imgs = _utils.check_niimg_4d(imgs)
 
 
         if not hasattr(self, '_resampled_maps_img_'):
