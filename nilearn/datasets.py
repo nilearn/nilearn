@@ -23,7 +23,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ._utils import load_img, new_img_like
+from ._utils import check_niimg, new_img_like
 from ._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 
 
@@ -1406,7 +1406,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         session += [i] * n_subjects
 
     dataset_name = 'nyu_rest'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
     anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
                              verbose=verbose)
     anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
@@ -1664,7 +1665,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
 
-    atlas_img = load_img(atlas_img)
+    atlas_img = check_niimg(atlas_img)
     atlas = atlas_img.get_data()
 
     labels = np.unique(atlas)
@@ -2380,7 +2381,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
     file_names = (file_names_gm + file_names_wm
                   + file_names_extvars + file_names_dua)
     dataset_name = 'oasis1'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume,
                          verbose=verbose)
 
@@ -2438,7 +2440,7 @@ def load_mni152_template():
     path = os.path.join(package_directory, "data", "avg152T1_brain.nii.gz")
 
     # XXX Should we load the image here?
-    return load_img(path)
+    return check_niimg(path)
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
