@@ -967,8 +967,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def fetch_smith_2009(data_dir=None, url=None, resume=True,
-        verbose=1):
+def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009)
 
     Parameters
@@ -1431,8 +1430,9 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-         - 'func': string list. Paths to functional images
-         - 'parameters': string list. Parameters of preprocessing steps
+         - 'func': Paths to functional resting-state images
+         - 'phenotypic': Explanations of preprocessing steps
+         - 'confounds': CSV files containing the nuisance variables
 
     References
     ----------
@@ -1493,13 +1493,17 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subjects_funcs = subjects_funcs[:n_subjects]
     subjects_confounds = subjects_confounds[:n_subjects]
 
-    data_dir = _get_dataset_dir('adhd', data_dir=data_dir, verbose=verbose)
+    dataset_name = 'adhd'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
     subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume,
                                   verbose=verbose)
     subjects_confounds = _fetch_files(data_dir, subjects_confounds,
             resume=resume, verbose=verbose)
     phenotypic = _fetch_files(data_dir, phenotypic, resume=resume,
                               verbose=verbose)[0]
+
+    fdescr = _get_dataset_descr(dataset_name)
 
     # Load phenotypic data
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -1510,7 +1514,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
                              for i in isubs]]
 
     return Bunch(func=subjects_funcs, confounds=subjects_confounds,
-                 phenotypic=phenotypic)
+                 phenotypic=phenotypic, description=fdescr)
 
 
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
@@ -1561,8 +1565,9 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(labels=files[0], maps=files[1])
+    return Bunch(labels=files[0], maps=files[1], description=fdescr)
 
 
 def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
@@ -1946,7 +1951,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     """
     if isinstance(contrasts, string_types):
-        raise ValueError('Constrasts should be a list of strings, but'
+        raise ValueError('Constrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
@@ -2106,8 +2111,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                   ("cubicwebexport2.csv", url_csv2, {})]
 
     # Actual data fetching
-    data_dir = _get_dataset_dir('brainomics_localizer', data_dir=data_dir,
+    dataset_name = 'brainomics_localizer'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
+    fdescr = _get_dataset_descr(dataset_name)
     files = _fetch_files(data_dir, filenames, verbose=verbose)
     anats = None
     masks = None
@@ -2133,7 +2140,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         tmaps = files[1::2]
         files = files[::2]
     return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
-                 ext_vars=csv_data)
+                 ext_vars=csv_data, description=fdescr)
 
 
 def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
@@ -2215,7 +2222,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
         'gray_matter_maps': string list
             Paths to nifti gray matter density probability maps
         'white_matter_maps' string list
-            Paths to nifti gray matter density probability maps
+            Paths to nifti white matter density probability maps
         'ext_vars': np.recarray
             Data from the .csv file with information about selected subjects
         'data_usage_agreement': string
@@ -2360,7 +2367,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     file_names = (file_names_gm + file_names_wm
                   + file_names_extvars + file_names_dua)
-    data_dir = _get_dataset_dir('oasis1', data_dir=data_dir, verbose=verbose)
+    dataset_name = 'oasis1'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume,
                          verbose=verbose)
 
@@ -2381,11 +2389,14 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
                                for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
 
+    fdescr = _get_dataset_descr(dataset_name)
+
     return Bunch(
         gray_matter_maps=gm_maps,
         white_matter_maps=wm_maps,
         ext_vars=csv_data,
-        data_usage_agreement=data_usage_agreement)
+        data_usage_agreement=data_usage_agreement,
+        description=fdescr)
 
 
 def load_mni152_template():
@@ -2521,7 +2532,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     strategy += 'global'
 
     # General file: phenotypic information
-    data_dir = _get_dataset_dir('ABIDE_pcp', data_dir=data_dir,
+    dataset_name = 'ABIDE_pcp'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     if url is None:
         url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
@@ -2575,6 +2587,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
 
+    results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
