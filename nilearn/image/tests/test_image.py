@@ -279,7 +279,7 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, 'A 4D image is expected',
+    testing.assert_raises_regex(TypeError, '4D Niimg-like',
                                 image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
@@ -311,7 +311,7 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, 'A 4D image is expected',
+    testing.assert_raises_regex(TypeError, '4D Niimg-like',
                                 image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],

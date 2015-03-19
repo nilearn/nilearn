@@ -15,8 +15,8 @@ from .compat import _basestring
 
 
 def _check_fov(img, affine, shape):
-    """ Return True if img1 and have the given field of view
-        (shape and affine), False elsewhere.
+    """ Return True if img's field of view correspond to given
+        shape and affine, False elsewhere.
     """
     img = check_niimg(img)
     return (img.shape[:3] == shape and
@@ -78,8 +78,7 @@ def check_niimg(niimg, atleast_4d=False):
 
 
 def check_niimg_3d(niimg):
-    """Check that niimg is a proper 3D niimg. Turn filenames into objects.
-
+    """Check that niimg is a proper 3D niimg-like object and load it.
     Parameters
     ----------
     niimg: Niimg-like object
@@ -257,13 +256,13 @@ def _iter_check_niimg_4d(niimgs):
                     % (i, affine, niimg.get_affine(), shape,
                        niimg.shape))
             yield niimg
-        except TypeError as e:
-            raise TypeError("Error while loading image #%d: \n%s"
-                            % (i, e.message))
+        except TypeError as exc:
+            exc.args += ('Error encoutered while loading image #%d: \n%s'
+                         % (i, exc.message))
 
 
 def check_niimg_4d(niimgs, return_iterator=False):
-    """ Check that an object is a list of niimgs and load it if necessary
+    """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters
     ----------
@@ -276,10 +275,10 @@ def check_niimg_4d(niimgs, return_iterator=False):
         and get_affine methods are present, raise an Exception otherwise.
 
     return_iterator: boolean
-        If False, a single 4D image is returned. When `niimgs` contains 3D
-        images they are concatenated together.
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
+        If False, a single 4D image is returned. When `niimgs` contains 3D
+        images they are concatenated together.
 
     Returns
     -------
@@ -303,8 +302,12 @@ def check_niimg_4d(niimgs, return_iterator=False):
         niimgs = load_niimg(niimgs)
         shape = niimgs.shape
         if len(shape) == 3:
-            raise TypeError("A 4D image is expected, but an image "
-                "with a shape of %s was given." % (shape, ))
+
+            raise TypeError(
+                "Data must be a 4D Niimg-like object but you provided an "
+                "image of shape %s. See "
+                "http://nilearn.github.io/building_blocks/"
+                "manipulating_mr_images.html#niimg." % (shape, ))
         if return_iterator:
             return (_index_niimgs(niimgs, i) for i in range(shape[3]))
         else:
