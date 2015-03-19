@@ -162,11 +162,11 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
         A single image.
     """
 
-    if len(niimgs) == 0:
-        raise TypeError('Cannot concatenate empty objects')
-
     # get properties from first image
-    first_niimg = check_niimg(next(iter(niimgs)), atleast_4d=True)
+    try:
+        first_niimg = check_niimg(next(iter(niimgs)), atleast_4d=True)
+    except StopIteration:
+        raise TypeError('Cannot concatenate empty objects')
     target_affine = first_niimg.get_affine()
     first_data = first_niimg.get_data()
     target_item_shape = first_niimg.shape[:3]  # skip 4th/time dimension
