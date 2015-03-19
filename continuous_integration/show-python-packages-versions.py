@@ -23,4 +23,3 @@ if __name__ == '__main__':
     for package_name in DEPENDENCIES:
         print_package_version(package_name)
     print('=' * 120)
-
