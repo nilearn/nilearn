@@ -299,7 +299,7 @@ def check_niimg_4d(niimgs, return_iterator=False):
     # We get rid of the 4D nifti image case, as it is the simplest case
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
-    if isinstance(niimgs, basestring) or not hasattr(niimgs, "__iter__"):
+    if isinstance(niimgs, string_types) or not hasattr(niimgs, "__iter__"):
         niimgs = load_niimg(niimgs)
         shape = niimgs.shape
         if len(shape) == 3:
