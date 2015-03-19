@@ -29,7 +29,7 @@ def _safe_get_data(img):
     return img.get_data()
 
 
-def load_niimg(img, dtype=None):
+def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed
 
     Parameters:
@@ -44,14 +44,14 @@ def load_niimg(img, dtype=None):
     img: image
         A loaded image object.
     """
-    if isinstance(img, _basestring):
+    if isinstance(niimg, _basestring):
         # data is a filename, we load it
-        img = nibabel.load(img)
-    elif not isinstance(img, nibabel.spatialimages.SpatialImage):
+        niimg = nibabel.load(niimg)
+    elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
         raise TypeError("Data given cannot be loaded because it is"
                         " not compatible with nibabel format:\n"
-                        + short_repr(img))
-    return img
+                        + short_repr(niimg))
+    return niimg
 
 
 def new_img_like(ref_img, data, affine, copy_header=False):
