@@ -6,7 +6,6 @@ Transformer used to apply basic transformations on multi subject MRI data.
 
 import warnings
 import collections
-from six import string_types
 
 from sklearn.externals.joblib import Memory
 
@@ -15,6 +14,7 @@ from .. import image
 from .. import _utils
 from .._utils import CacheMixin
 from .base_masker import BaseMasker
+from .._utils.compat import _basestring
 
 
 class MultiNiftiMasker(BaseMasker, CacheMixin):
@@ -161,7 +161,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                 print("[%s.fit] Computing mask" % self.__class__.__name__)
             data = []
             if not isinstance(imgs, collections.Iterable) \
-                    or isinstance(imgs, string_types):
+                    or isinstance(imgs, _basestring):
                 raise ValueError("[%s.fit] For multiple processing, you should"
                                  " provide a list of data "
                                  "(e.g. Nifti1Image objects or filenames)."
@@ -240,6 +240,6 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         self._check_fitted()
 
         if not hasattr(imgs, '__iter__')\
-                    or isinstance(imgs, string_types):
+                    or isinstance(imgs, _basestring):
                 return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

@@ -7,18 +7,18 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
-from six import string_types
 
 import numpy as np
 from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
+from .resampling import reorder_img
 from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
 from .._utils.niimg_conversions import _index_niimgs
 from .._utils.niimg import new_img_like, _safe_get_data
+from .._utils.compat import _basestring
 from .. import masking
-from nilearn.image import reorder_img
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -241,7 +241,7 @@ def smooth_img(imgs, fwhm):
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     if hasattr(imgs, "__iter__") \
-       and not isinstance(imgs, string_types):
+       and not isinstance(imgs, _basestring):
         single_img = False
     else:
         single_img = True
@@ -426,7 +426,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         mean image
 
     """
-    if (isinstance(imgs, string_types) or
+    if (isinstance(imgs, _basestring) or
             not isinstance(imgs, collections.Iterable)):
         imgs = [imgs, ]
 

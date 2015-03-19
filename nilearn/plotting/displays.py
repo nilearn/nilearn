@@ -11,11 +11,11 @@ import numbers
 import numpy as np
 from scipy import sparse, stats
 
-from six import string_types
 from six.moves import zip as six_zip
 
 from .._utils.testing import skip_if_running_nose
 from .._utils import new_img_like
+from .._utils.compat import _basestring
 from .. import _utils
 
 try:
@@ -1124,7 +1124,7 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            if isinstance(edge_threshold, string_types):
+            if isinstance(edge_threshold, _basestring):
                 message = ("If 'edge_threshold' is given as a string it "
                            'should be a number followed by the percent sign, '
                            'e.g. "25.3%"')

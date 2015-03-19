@@ -9,8 +9,6 @@ import warnings
 import numpy as np
 import itertools
 
-from six import string_types
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory, Parallel, delayed
 
@@ -20,6 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
+from .._utils.compat import _basestring
 
 
 def filter_and_mask(imgs, mask_img_,
@@ -33,7 +32,7 @@ def filter_and_mask(imgs, mask_img_,
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
 
-    if isinstance(imgs, string_types):
+    if isinstance(imgs, _basestring):
         copy = False
 
     if verbose > 0:

@@ -8,13 +8,14 @@ features
 # License: simplified BSD
 
 import distutils.version
-from six import string_types
 
 import numpy as np
 import scipy
 from scipy import signal, stats, linalg
 from sklearn.utils import gen_even_slices
 from distutils.version import LooseVersion
+
+from ._utils.compat import _basestring
 
 np_version = distutils.version.LooseVersion(np.version.short_version).version
 
@@ -379,7 +380,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
     """
 
     if not isinstance(confounds,
-                      (list, tuple, string_types, np.ndarray, type(None))):
+                      (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
     # Standardize / detrend
@@ -399,7 +400,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         # Read confounds
         all_confounds = []
         for confound in confounds:
-            if isinstance(confound, string_types):
+            if isinstance(confound, _basestring):
                 filename = confound
                 confound = np.genfromtxt(filename)
                 if np.isnan(confound.flat[0]):
