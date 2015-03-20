@@ -11,8 +11,6 @@ import numbers
 import numpy as np
 from scipy import sparse, stats
 
-from six.moves import zip as six_zip
-
 from .._utils.testing import skip_if_running_nose
 from .._utils import new_img_like
 from .._utils.compat import _basestring
@@ -277,7 +275,7 @@ class GlassBrainAxes(BaseAxes):
                                     vmax=abs_line_values_max)
         value_to_color = pl.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
-        for start_end_point_3d, line_value in six_zip(
+        for start_end_point_3d, line_value in zip(
                 line_coords, line_values):
             start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
                                                   self.direction)
@@ -1159,7 +1157,7 @@ class OrthoProjector(OrthoSlicer):
         non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
 
         line_coords = [node_coords[list(index)]
-                       for index in six_zip(*non_zero_indices)]
+                       for index in zip(*non_zero_indices)]
 
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():
