@@ -5,8 +5,8 @@
 
 import inspect
 
-from six import string_types
 from sklearn.base import BaseEstimator
+from .compat import _basestring
 
 
 # The technique used in the log() function only applies to CPython, because
@@ -98,7 +98,7 @@ def _compose_err_msg(msg, **kwargs):
     """
     updated_msg = msg
     for k, v in sorted(kwargs.items()):
-        if isinstance(v, string_types):  # print only str-like arguments
+        if isinstance(v, _basestring):  # print only str-like arguments
             updated_msg += "\n" + k + ": " + v
 
     return updated_msg

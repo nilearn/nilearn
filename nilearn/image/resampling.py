@@ -7,7 +7,6 @@ See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
 import warnings
 from distutils.version import LooseVersion
-from six import string_types
 
 import numpy as np
 import scipy
@@ -15,7 +14,7 @@ from scipy import ndimage, linalg
 
 from .. import _utils
 from .._utils import new_img_like
-
+from .._utils.compat import _basestring
 
 ###############################################################################
 # Affine utils
@@ -365,7 +364,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
-    if isinstance(img, string_types):
+    if isinstance(img, _basestring):
         # Avoid a useless copy
         input_img_is_string = True
     else:

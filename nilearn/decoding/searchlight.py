@@ -14,7 +14,6 @@ import time
 import sys
 import warnings
 from distutils.version import LooseVersion
-from six import string_types
 
 import numpy as np
 
@@ -26,6 +25,7 @@ from sklearn.base import BaseEstimator
 from sklearn import neighbors
 
 from .. import masking
+from .._utils.compat import _basestring
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
@@ -311,7 +311,7 @@ class SearchLight(BaseEstimator):
         X = masking._apply_mask_fmri(imgs, self.mask_img)
 
         estimator = self.estimator
-        if isinstance(estimator, string_types):
+        if isinstance(estimator, _basestring):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(X, y, estimator, A,

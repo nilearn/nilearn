@@ -9,7 +9,6 @@ import warnings
 import os
 import shutil
 from distutils.version import LooseVersion
-from six import string_types
 
 import nibabel
 from sklearn.externals.joblib import Memory
@@ -23,6 +22,8 @@ except ImportError:
     pass
 
 import nilearn
+
+from .compat import _basestring
 
 __cache_checked = dict()
 
@@ -136,7 +137,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
             or memory_level < func_memory_level):
         memory = Memory(cachedir=None, verbose=verbose)
     else:
-        if isinstance(memory, string_types):
+        if isinstance(memory, _basestring):
             memory = Memory(cachedir=memory, verbose=verbose)
         if not isinstance(memory, memory_classes):
             raise TypeError("'memory' argument must be a string or a "
@@ -199,13 +200,13 @@ class CacheMixin(object):
             self.memory_level = 0
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None, verbose=verbose)
-        if isinstance(self.memory, string_types):
+        if isinstance(self.memory, _basestring):
             self.memory = Memory(cachedir=self.memory, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
         if self.memory_level == 0:
-            if (isinstance(self.memory, string_types)
+            if (isinstance(self.memory, _basestring)
                     or self.memory.cachedir is not None):
                 warnings.warn("memory_level is currently set to 0 but "
                               "a Memory object has been provided. "

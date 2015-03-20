@@ -19,7 +19,6 @@ import warnings
 import re
 import base64
 from io import BytesIO
-from six import string_types
 from six.moves import cPickle, urllib
 
 import numpy as np
@@ -27,6 +26,7 @@ from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ._utils import load_img, new_img_like
+from ._utils.compat import _basestring
 
 
 def _format_time(t):
@@ -355,7 +355,7 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if (not isinstance(criteria, string_types) and
+    if (not isinstance(criteria, _basestring) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
             isinstance(criteria, collections.Iterable)):
@@ -1950,7 +1950,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         BMC neuroscience 8.1 (2007): 91.
 
     """
-    if isinstance(contrasts, string_types):
+    if isinstance(contrasts, _basestring):
         raise ValueError('Constrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
     if n_subjects is None:

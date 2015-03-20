@@ -10,7 +10,6 @@ import re
 import sys
 import tempfile
 import warnings
-from six import string_types
 from six.moves import urllib
 
 import numpy as np
@@ -22,6 +21,7 @@ import nibabel
 from .. import datasets
 from .. import masking
 from . import logger
+from .compat import _basestring
 
 
 try:
@@ -150,7 +150,7 @@ class mock_request(object):
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
                          report_hook=None, verbose=0):
-        if not isinstance(response, string_types):
+        if not isinstance(response, _basestring):
             return _chunk_read_(response, local_file,
                                 initial_size=initial_size,
                                 chunk_size=chunk_size,
