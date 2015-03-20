@@ -42,7 +42,7 @@ def setup_tmpdata():
 def setup_mock():
     global url_request
     url_request = mock_request()
-    datasets.urllib.request = url_request
+    datasets._urllib.request = url_request
     datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
     global file_mock
     file_mock = FetchFilesMock()

@@ -10,7 +10,6 @@ import re
 import sys
 import tempfile
 import warnings
-from six.moves import urllib
 
 import numpy as np
 import scipy.signal
@@ -21,7 +20,7 @@ import nibabel
 from .. import datasets
 from .. import masking
 from . import logger
-from .compat import _basestring
+from .compat import _basestring, _urllib
 
 
 try:
@@ -135,7 +134,7 @@ class mock_request(object):
         # If the file is local, we try to open it
         if url.startswith('file://'):
             try:
-                return urllib.request.urlopen(url)
+                return _urllib.request.urlopen(url)
             except:
                 pass
         return url
@@ -162,7 +161,7 @@ def wrap_chunk_read_(_chunk_read_):
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
                                  chunk_size=8192, report_hook=None,
                                  verbose=0):
-    raise urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
+    raise _urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
 class FetchFilesMock (object):

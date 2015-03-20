@@ -18,15 +18,13 @@ import fnmatch
 import warnings
 import re
 import base64
-from io import BytesIO
-from six.moves import cPickle, urllib
 
 import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ._utils import load_img, new_img_like
-from ._utils.compat import _basestring
+from ._utils.compat import _basestring, BytesIO, cPickle, _urllib
 
 
 def _format_time(t):
@@ -63,7 +61,7 @@ def _read_md5_sum_file(path):
     return hashes
 
 
-class ResumeURLOpener(urllib.request.FancyURLopener):
+class ResumeURLOpener(_urllib.request.FancyURLopener):
     """Create sub-class in order to overide error 206.  This error means a
        partial file is being sent, which is fine in this case.
        Do nothing with this error.
@@ -125,7 +123,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     Parameters
     ----------
-    response: urllib.response.addinfourl
+    response: _urllib.response.addinfourl
         Response to the download request in order to get file size
 
     local_file: file
@@ -449,7 +447,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         os.makedirs(data_dir)
 
     # Determine filename using URL
-    parse = urllib.parse.urlparse(url)
+    parse = _urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
 
     temp_file_name = file_name + ".part"
@@ -469,7 +467,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     try:
         # Download data
-        request = urllib.request.Request(url)
+        request = _urllib.request.Request(url)
         if username is not None and password is not None:
             request.add_header(
                 'Authorization',
@@ -485,7 +483,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             url_opener.addheader("Range", "bytes=%s-" % (local_file_size))
             try:
                 data = url_opener.open(request)
-            except urllib.error.HTTPError:
+            except _urllib.error.HTTPError:
                 # There is a problem that may be due to resuming. Switch back
                 # to complete download method
                 return _fetch_file(url, data_dir, resume=False,
@@ -493,7 +491,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
-            data = urllib.request.urlopen(request)
+            data = _urllib.request.urlopen(request)
             local_file = open(temp_full_name, "wb")
         _chunk_read_(data, local_file, report_hook=(verbose > 0),
                      initial_size=initial_size, verbose=verbose)
@@ -504,14 +502,14 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         dt = time.time() - t0
         if verbose > 0:
             print('...done. (%i seconds, %i min)' % (dt, dt // 60))
-    except urllib.error.HTTPError as e:
+    except _urllib.error.HTTPError as e:
         if verbose > 0:
             print('Error while fetching file %s. Dataset fetching aborted.' %
                    (file_name))
         if verbose > 1:
             print("HTTP Error: %s, %s" % (e, url))
         raise
-    except urllib.error.URLError as e:
+    except _urllib.error.URLError as e:
         if verbose > 0:
             print('Error while fetching file %s. Dataset fetching aborted.' %
                    (file_name))
@@ -2055,7 +2053,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
             % (root_url, i,
-               urllib.parse.quote(base_query % {"types": rql_types,
+               _urllib.parse.quote(base_query % {"types": rql_types,
                                           "label": c},
                             safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
@@ -2073,7 +2071,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_masks:
         urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.parse.quote(base_query % {"types": '"boolean mask"',
+                       _urllib.parse.quote(base_query % {"types": '"boolean mask"',
                                                   "label": "mask"},
                                     safe=',()')))
         for subject_id in subject_ids:
@@ -2085,7 +2083,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_anats:
         urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       urllib.parse.quote(base_query % {"types": '"normalized T1"',
+                       _urllib.parse.quote(base_query % {"types": '"normalized T1"',
                                                   "label": "anatomy"},
                                     safe=',()')))
         for subject_id in subject_ids:
@@ -2097,10 +2095,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # Fetch subject characteristics (separated in two files)
     if url is None:
         url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
-                   % (root_url, urllib.parse.quote("Any X WHERE X is Subject")))
+                   % (root_url, _urllib.parse.quote("Any X WHERE X is Subject")))
         url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
                     % (root_url,
-                       urllib.parse.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
+                       _urllib.parse.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
                                     "X identifier XI, X datetime "
                                     "XD", safe=',')
                        ))
