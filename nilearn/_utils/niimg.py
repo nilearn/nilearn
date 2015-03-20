@@ -78,7 +78,6 @@ def new_img_like(ref_img, data, affine, copy_header=False):
     new_img: image
         An image which has the same type as the reference image.
     """
-    data = np.asarray(data)
     if data.dtype == bool:
         data = as_ndarray(data, dtype=np.int8)
     header = None
