@@ -131,6 +131,14 @@ def test_plot_stat_map():
 
     # 'yx' display_mode
     plot_stat_map(img, display_mode='yx')
+    
+    # regression test
+    rng = np.random.RandomState(42)
+    data = rng.randn(91, 109, 91)
+    # data = np.zeros((91, 109, 91))
+    aff = np.eye(4)
+    new_img = nibabel.Nifti1Image(data, aff)
+    plot_stat_map(new_img, threshold=1000, colorbar=True)
 
 
 def test_save_plot():
