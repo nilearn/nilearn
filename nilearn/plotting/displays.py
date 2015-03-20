@@ -587,7 +587,15 @@ class BaseSlicer(object):
         istop = int(im.norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-        our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+        if im.norm.vmin == im.norm.vmax:  # len(np.unique(data)) == 1 ?
+            # cmaplist[:] = (0.5, 0.5, 0.5, 1.)  # cf. #510
+            # ticks = np.linspace(im.norm.vmin - 2, im.norm.vmin + 2, 5)
+            # bounds = np.linspace(im.norm.vmin - 2, im.norm.vmin + 2,
+            #                      our_cmap.N)
+            # our_cmap =  mpl_cm.gray
+            return
+        else:
+            our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=im.norm,
