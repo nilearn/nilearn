@@ -2,8 +2,8 @@
 Spectral clustering to segment brain from resting state fMRI
 ============================================================
 
-We build an affinity matrix between voxels using Pearson correlation
-coefficient and then use it to segment the brain into functional regions.
+We build an affinity matrix between voxels using Pearson's correlation
+and then use it to segment the brain into functional regions.
 
 Refernce :
     Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
@@ -18,35 +18,41 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.image import grid_to_graph
 
 ### Fetch and mask data #######################################################
-print("Loading dataset and masking subject data...")
+print("Loading resting-state data and masking subject data...")
 
 from nilearn import datasets, input_data
 
-dataset = datasets.fetch_adhd(n_subjects=1)
+dataset = datasets.fetch_adhd(n_subjects=1)  # only data from first subject
 
-# Do only one hemisphere, to speed up computation.
+# We restrict ourselves to one hemisphere to speed up computation
 from nilearn.input_data.hemisphere_masker import HemisphereMasker
 hemi_masker = HemisphereMasker(hemisphere='L',
-                               memory='nilearn_cache', memory_level=100, verbose=10)
+                               memory='nilearn_cache',
+                               memory_level=100, verbose=10)
+# transform rest fMRI data from 1st subject into voxel arrays
 lh_X = hemi_masker.fit_transform(dataset.func[0])
-#lh_img = dataset.func[0]
+# transform voxel arrays (from left hemisphere) back to whole-brain
+# space (i.e., omit right hemisphere in original brain space)
 lh_img = hemi_masker.inverse_transform(lh_X)
 
-nifti_masker = input_data.NiftiMasker(smoothing_fwhm=0., standardize=False, detrend=True,
-                                      memory='nilearn_cache', memory_level=100, verbose=10)
-X = nifti_masker.fit_transform(lh_img)
-mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+nifti_masker = input_data.NiftiMasker(
+    smoothing_fwhm=0., standardize=False,
+    detrend=True,  # remove linear trends in the time/4th dimension
+    memory='nilearn_cache', memory_level=100, verbose=10)
+X = nifti_masker.fit_transform(lh_img)  # get only fMRI signals from left side
+mask = nifti_masker.mask_img_.get_data().astype(np.bool)  # convert to 0/1
 
 from nilearn.image import index_img
 from nilearn.plotting import plot_roi, plot_stat_map
-plot_stat_map(index_img(nifti_masker.inverse_transform(X), -1))  # nifti_masker.mask_img_)
+plot_stat_map(index_img(nifti_masker.inverse_transform(X), -1),
+              title='Examplary volume (restricted to left hemipshere)')
 
-### Affinity Matrix #######################################################
+### Affinity Matrix ##########################################################
 print("Computing affinity matrix...")
 
-# Set up a caching function.  Using 'partial' allows us to make the
-#   cache function be called with the same memory and verbose parameters
-#   every time, making for more consistent, and shorter, calls.
+# Set up persistence framework.  Using 'partial' allows us to make the
+# cache function be called with the same memory and verbose parameters
+# every time, making for more consistent, and shorter, calls.
 import functools
 from nilearn._utils.cache_mixin import cache
 my_cache_fn = functools.partial(cache, memory='nilearn_cache', verbose=10)
@@ -85,8 +91,8 @@ print("Running spectral clustering...")
 
 from sklearn.cluster import spectral_clustering
 clustering = my_cache_fn(spectral_clustering)(affinity, n_clusters=5)
-import pdb; pdb.set_trace()
-### Plot results #######################################################
+
+### Plot results ##############################################################
 print("Plotting the results...")
 cluster_img = hemi_masker.inverse_transform(clustering)
 plot_roi(cluster_img)
