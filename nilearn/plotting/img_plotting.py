@@ -64,7 +64,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     """
     if ('vmax' in kwargs and np.isnan(kwargs['vmax'])) or
        ('vmin' in kwargs and np.isnan(kwargs['vmin'])):
-        print('Warning: NaN is not permitted for the vmax/vmin arguments.')
+        print('Warning: NaN is not permitted for the vmax/vmin arguments. \n'
+              'Tip: Use np.nan_max() instead of np.max().')
         kwargs.pop('vmax')
         kwargs.pop('vmin')
 
