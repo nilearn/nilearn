@@ -61,20 +61,6 @@ def _read_md5_sum_file(path):
     return hashes
 
 
-class ResumeURLOpener(_urllib.request.FancyURLopener):
-    """Create sub-class in order to overide error 206.  This error means a
-       partial file is being sent, which is fine in this case.
-       Do nothing with this error.
-
-       Note
-       ----
-       This was adapted from:
-       http://code.activestate.com/recipes/83208-resuming-download-of-a-file/
-    """
-    def http_error_206(self, url, fp, errcode, errmsg, headers, data=None):
-        pass
-
-
 def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
@@ -408,7 +394,8 @@ def _filter_columns(array, filters, combination='and'):
 
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, username=None, password=None, verbose=1):
+                md5sum=None, username=None, password=None, handlers=[],
+                verbose=1):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -428,6 +415,15 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     md5sum: string, optional
         MD5 sum of the file. Checked if download of the file is required
+
+    username: string, optional
+        Username used for basic HTTP authentication
+
+    password: string, optional
+        Password used for basic HTTP authentication
+
+    handlers: list of BaseHandler, optional
+        urllib handlers that can be used for special behaviors.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -467,8 +463,12 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     try:
         # Download data
+        url_opener = _urllib.request.build_opener(*handlers)
         request = _urllib.request.Request(url)
         if username is not None and password is not None:
+            # Note: we don't use the regular HTTPBasicAuthHandler because it
+            # relies on the fact that server send back a 401 error with proper
+            # headers which is not always the case...
             request.add_header(
                 'Authorization',
                 b'Basic ' + base64.b64encode(username + b':' + password))
@@ -476,22 +476,28 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             displayed_url = url.split('?')[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
         if resume and os.path.exists(temp_full_name):
-            url_opener = ResumeURLOpener()
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            url_opener.addheader("Range", "bytes=%s-" % (local_file_size))
+            request.add_header("Range", "bytes=%s-" % (local_file_size))
             try:
                 data = url_opener.open(request)
-            except _urllib.error.HTTPError:
-                # There is a problem that may be due to resuming. Switch back
-                # to complete download method
+                content_range = data.info().get('Content-Range')
+                if (content_range is None or not content_range.startswith(
+                        'bytes %s-' % local_file_size)):
+                    raise IOError('Server does not support resuming')
+            except Exception:
+                # A wide number of errors can be raised here. HTTPError,
+                # URLError... I prefer to catch them all and rerun without
+                # resuming.
+                if verbose > 0:
+                    print('Resuming failed, try to download the whole file.')
                 return _fetch_file(url, data_dir, resume=False,
                                    overwrite=False, verbose=verbose)
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
-            data = _urllib.request.urlopen(request)
+            data = url_opener.open(request)
             local_file = open(temp_full_name, "wb")
         _chunk_read_(data, local_file, report_hook=(verbose > 0),
                      initial_size=initial_size, verbose=verbose)
@@ -661,7 +667,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
             dl_file = _fetch_file(url, temp_dir, resume=resume,
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
-                                  password=opts.get('password', None))
+                                  password=opts.get('password', None),
+                                  handlers=opts.get('handlers', []))
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
