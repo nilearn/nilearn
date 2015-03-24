@@ -62,8 +62,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display_factory: function
             takes a display_mode argument and return a display class
     """
-    if ('vmax' in kwargs and np.isnan(kwargs['vmax'])) or
-       ('vmin' in kwargs and np.isnan(kwargs['vmin'])):
+    if (('vmax' in kwargs and np.isnan(kwargs['vmax'])) or
+        ('vmin' in kwargs and np.isnan(kwargs['vmin']))):
         print('Warning: NaN is not permitted for the vmax/vmin arguments. \n'
               'Tip: Use np.nan_max() instead of np.max().')
         kwargs.pop('vmax')
