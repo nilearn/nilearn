@@ -10,6 +10,7 @@ import re
 import sys
 import tempfile
 import warnings
+import copy
 
 import numpy as np
 import scipy.signal
@@ -58,6 +59,9 @@ except ImportError:
             warnings.simplefilter("ignore", warning_class)
             output = func(*args, **kw)
         return output
+
+
+opener = _urllib.request.FancyURLOpener()
 
 
 @contextlib.contextmanager
@@ -144,6 +148,9 @@ class mock_request(object):
 
     def Request(self, url):
         return url
+
+    def build_opener(self, *args, **kwargs):
+        return copy.copy(opener)
 
 
 def wrap_chunk_read_(_chunk_read_):
