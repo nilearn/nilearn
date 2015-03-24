@@ -24,7 +24,7 @@ from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ._utils import load_img, new_img_like
-from ._utils.compat import _basestring, BytesIO, cPickle, _urllib
+from ._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 
 
 def _format_time(t):
@@ -40,7 +40,7 @@ def _md5_sum_file(path):
     with open(path, 'rb') as f:
         m = hashlib.md5()
         while True:
-            data = f.read(8192)
+            data = f.read(8192 * 4)
             if not data:
                 break
             m.update(data)
@@ -445,6 +445,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     # Determine filename using URL
     parse = _urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
+    if file_name == '':
+        file_name = md5_hash(parse.path)
 
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
@@ -465,6 +467,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         # Download data
         url_opener = _urllib.request.build_opener(*handlers)
         request = _urllib.request.Request(url)
+        request.add_header('Connection', 'Keep-Alive')
         if username is not None and password is not None:
             # Note: we don't use the regular HTTPBasicAuthHandler because it
             # relies on the fact that server send back a 401 error with proper
@@ -492,8 +495,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 # resuming.
                 if verbose > 0:
                     print('Resuming failed, try to download the whole file.')
-                return _fetch_file(url, data_dir, resume=False,
-                                   overwrite=False, verbose=verbose)
+                return _fetch_file(
+                    url, data_dir, resume=False, overwrite=overwrite,
+                    md5sum=md5sum, username=username, password=password,
+                    handlers=handlers, verbose=verbose)
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
@@ -627,7 +632,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   files that must be downloaded will be in this directory. If a corrupted
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
-    files_pickle = cPickle.dumps(files)
+    files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
