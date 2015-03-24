@@ -423,7 +423,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         Password used for basic HTTP authentication
 
     handlers: list of BaseHandler, optional
-        urllib handlers that can be used for special behaviors.
+        urllib handlers passed to urllib.request.build_opener. Used by
+        advanced users to customize request handling.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -469,9 +470,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         request = _urllib.request.Request(url)
         request.add_header('Connection', 'Keep-Alive')
         if username is not None and password is not None:
-            # Note: we don't use the regular HTTPBasicAuthHandler because it
-            # relies on the fact that server send back a 401 error with proper
-            # headers which is not always the case...
+            # Note: HTTPBasicAuthHandler is not fitted here because it relies
+            # on the fact that the server will return a 401 error with proper
+            # www-authentication header, which is not the case of most
+            # servers.
             request.add_header(
                 'Authorization',
                 b'Basic ' + base64.b64encode(username + b':' + password))
