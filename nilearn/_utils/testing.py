@@ -61,7 +61,20 @@ except ImportError:
         return output
 
 
-opener = _urllib.request.FancyURLOpener()
+class MockRequest(object):
+    def __init__(self, url):
+        self.url = url
+
+    def add_header(*args):
+        pass
+
+
+class MockOpener(object):
+    def __init__(self):
+        pass
+
+    def open(self, request):
+        return request.url
 
 
 @contextlib.contextmanager
@@ -133,24 +146,15 @@ class mock_request(object):
         """
         self.urls = set()
 
-    def urlopen(self, url):
-        self.urls.add(url)
-        # If the file is local, we try to open it
-        if url.startswith('file://'):
-            try:
-                return _urllib.request.urlopen(url)
-            except:
-                pass
-        return url
-
     def reset(self):
         self.urls = set()
 
     def Request(self, url):
-        return url
+        self.urls.add(url)
+        return MockRequest(url)
 
     def build_opener(self, *args, **kwargs):
-        return copy.copy(opener)
+        return MockOpener()
 
 
 def wrap_chunk_read_(_chunk_read_):
