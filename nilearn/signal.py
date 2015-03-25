@@ -150,7 +150,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 
 
 def _check_wn(btype, freq, nyq):
-    wn = freq / nyq
+    wn = freq / float(nyq)
     if wn > 1.:
         warnings.warn('The frequency specified for the %s pass filter is '
                 'too high to be handled by a digital filter (superior to '
