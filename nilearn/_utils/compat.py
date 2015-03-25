@@ -2,6 +2,7 @@
 Compatibility layer for Python 3/Python 2 single codebase
 """
 import sys
+import hashlib
 
 
 if sys.version_info[0] == 3:
@@ -14,6 +15,11 @@ if sys.version_info[0] == 3:
     StringIO = io.StringIO
     BytesIO = io.BytesIO
     _urllib = urllib
+
+    def md5_hash(string):
+        m = hashlib.md5()
+        m.update(string.encode('utf-8'))
+        return m.hexdigest()
 else:
     import cPickle
     import StringIO
@@ -43,3 +49,8 @@ else:
         request = module_lookup
         error = module_lookup
         parse = module_lookup
+
+    def md5_hash(string):
+        m = hashlib.md5()
+        m.update(string)
+        return m.hexdigest()
