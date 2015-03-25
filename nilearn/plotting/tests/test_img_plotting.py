@@ -77,11 +77,8 @@ def test_plot_anat():
     import pylab as pl
     pl.switch_backend('template')
     img = _generate_img()
-    # Test saving with empty plot
-    # z_slicer = plot_anat(anat_img=False, display_mode='z')
-    # with tempfile.TemporaryFile(suffix='.png') as fp:
-    #     z_slicer.savefig(fp.name)
 
+    # Test saving with empty plot
     z_slicer = plot_anat(display_mode='z')
     with tempfile.TemporaryFile(suffix='.png') as fp:
         z_slicer.savefig(fp.name)
