@@ -8,6 +8,7 @@ features
 # License: simplified BSD
 
 import distutils.version
+import warnings
 
 import numpy as np
 import scipy
@@ -148,6 +149,17 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     return signals
 
 
+def _check_wn(btype, freq, nyq):
+    wn = freq / nyq
+    if wn > 1.:
+        warnings.warn('The frequency specified for the %s pass filter is '
+                'too high to be handled by a digital filter (superior to '
+                'nyquist frequency). It has been lowered to %.2f (nyquist '
+                'frequency).' % (btype, nyq))
+        wn = 1.
+    return wn
+
+
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
                 order=5, copy=False, save_memory=False):
     """ Apply a low-pass, high-pass or band-pass Butterworth filter
@@ -205,13 +217,13 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 
     wn = None
     if low_pass is not None:
-        lf = low_pass / nyq
         btype = 'low'
+        lf = _check_wn(btype, low_pass, nyq)
         wn = lf
 
     if high_pass is not None:
-        hf = high_pass / nyq
         btype = 'high'
+        hf = _check_wn(btype, high_pass, nyq)
         wn = hf
 
     if low_pass is not None and high_pass is not None:
