@@ -257,8 +257,8 @@ def _iter_check_niimg_4d(niimgs):
                        niimg.shape))
             yield niimg
         except TypeError as exc:
-            exc.args += ('Error encoutered while loading image #%d: \n%s'
-                         % (i, exc.message))
+            exc.args += ('Error encoutered while loading image #%d' % i)
+            raise
 
 
 def check_niimg_4d(niimgs, return_iterator=False):
@@ -301,8 +301,7 @@ def check_niimg_4d(niimgs, return_iterator=False):
     if isinstance(niimgs, _basestring) or not hasattr(niimgs, "__iter__"):
         niimgs = load_niimg(niimgs)
         shape = niimgs.shape
-        if len(shape) == 3:
-
+        if len(shape) != 4:
             raise TypeError(
                 "Data must be a 4D Niimg-like object but you provided an "
                 "image of shape %s. See "
@@ -311,7 +310,7 @@ def check_niimg_4d(niimgs, return_iterator=False):
         if return_iterator:
             return (_index_niimgs(niimgs, i) for i in range(shape[3]))
         else:
-            return check_niimg(niimgs)
+            return niimgs
 
     # We now have 3 types of input:
     # * a true list
