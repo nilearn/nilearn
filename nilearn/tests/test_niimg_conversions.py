@@ -109,6 +109,19 @@ def test_check_niimg_4d():
     phony_img = PhonyNiimage()
     _utils.check_niimg_4d(phony_img)
 
+    a = nibabel.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+    b = np.zeros((10, 10, 10))
+    c = _utils.check_niimg_4d([a, b], return_iterator=True)
+    assert_raises_regex(TypeError, 'Error encountered while loading image #1',
+                        list, c)
+
+    b = nibabel.Nifti1Image(np.zeros((10, 20, 10)), np.eye(4))
+    c = _utils.check_niimg_4d([a, b], return_iterator=True)
+    assert_raises_regex(
+        ValueError,
+        'Field of view of image #1 is different from reference FOV',
+        list, c)
+
 
 def test_repr_niimgs():
     # Test with file path
