@@ -35,7 +35,7 @@ def load_niimg(niimg, dtype=None):
     Parameters:
     -----------
 
-    img: Niimg-like object
+    niimg: Niimg-like object or filepath
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Image to load.
 
