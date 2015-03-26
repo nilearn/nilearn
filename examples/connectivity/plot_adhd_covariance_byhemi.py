@@ -13,7 +13,6 @@ from sklearn.externals.joblib import Memory
 
 import nilearn
 from nilearn import plotting, image
-from nilearn.input_data.hemisphere_masker import split_bilateral_rois
 from nilearn.plotting import cm
 
 n_subjects = 3  # Number of subjects to consider for group-sparse covariance
@@ -82,7 +81,6 @@ import nilearn.input_data
 mem = Memory('nilearn_cache')  # setup persistence framework
 
 maps_img = nibabel.load(msdl_atlas_dataset.maps)
-maps_img = split_bilateral_rois(maps_img)
 
 masker = nilearn.input_data.NiftiMapsMasker(
     maps_img, resampling_target="maps", detrend=True,
