@@ -257,7 +257,8 @@ def _iter_check_niimg_4d(niimgs):
                        niimg.shape))
             yield niimg
         except TypeError as exc:
-            exc.args += ('Error encoutered while loading image #%d' % i)
+            exc.args = (('Error encountered while loading image #%d' % i,) + 
+                        exc.args)
             raise
 
 
