@@ -105,10 +105,11 @@ def test_plot_functions():
 
     # test for bad input arguments (cf. #510)
     ax = pl.subplot(111, rasterized=True)
-    out = plot_stat_map(
-        img, symmetric_cbar=True,
-        output_file=tempfile.TemporaryFile(suffix='.png'),
-        axes=ax, vmax=np.nan)
+    with tempfile.TemporaryFile(suffix='.png') as fp:
+        plot_stat_map(
+            img, symmetric_cbar=True,
+            output_file=fp.name,
+            axes=ax, vmax=np.nan)
     pl.close()
 
 
