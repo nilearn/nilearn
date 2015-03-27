@@ -64,10 +64,12 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             takes a display_mode argument and return a display class
     """
     show_nan_msg = False
-    if ('vmax' in kwargs and np.isnan(kwargs['vmax'])):
+    if ('vmax' in kwargs and kwargs['vmax'] is not None and
+        np.isnan(kwargs['vmax'])):
         kwargs.pop('vmax')
         show_nan_msg = True
-    if ('vmin' in kwargs and np.isnan(kwargs['vmin'])):
+    if ('vmin' in kwargs and kwargs['vmin'] is not None and
+        np.isnan(kwargs['vmin'])):
         kwargs.pop('vmin')
         show_nan_msg = True
     if show_nan_msg:
