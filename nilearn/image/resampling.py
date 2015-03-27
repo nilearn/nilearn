@@ -184,7 +184,7 @@ def get_mask_bounds(img):
         reorder_img to ensure that it is the case.
 
     """
-    img = _utils.check_niimg(img)
+    img = _utils.check_niimg_3d(img)
     mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
     affine = img.get_affine()
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
@@ -370,9 +370,9 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         input_img_is_string = False
 
-    # noop cases
     img = _utils.check_niimg(img)
 
+    # noop cases
     if target_affine is None and target_shape is None:
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)

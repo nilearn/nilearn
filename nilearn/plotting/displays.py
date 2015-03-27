@@ -354,7 +354,7 @@ class BaseSlicer(object):
                          **kwargs):
         # deal with "fake" 4D images
         if img is not None and img is not False:
-            img = _utils.check_niimg(img, ensure_3d=True)
+            img = _utils.check_niimg_3d(img)
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
@@ -466,7 +466,7 @@ class BaseSlicer(object):
         else:
             self._colorbar = colorbar
 
-        img = _utils.check_niimg(img, ensure_3d=True)
+        img = _utils.check_niimg_3d(img)
 
         if threshold is not None:
             data = img.get_data()

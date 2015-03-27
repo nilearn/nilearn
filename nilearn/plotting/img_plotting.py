@@ -63,7 +63,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             takes a display_mode argument and return a display class
     """
     if img is not False and img is not None:
-        img = _utils.check_niimg(img, ensure_3d=True)
+        img = _utils.check_niimg_3d(img)
         data = img.get_data()
         affine = img.get_affine()
 
@@ -87,7 +87,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         colorbar=colorbar)
 
     if bg_img is not None:
-        bg_img = _utils.check_niimg(bg_img, ensure_3d=True)
+        bg_img = _utils.check_niimg_3d(bg_img)
         display.add_overlay(bg_img,
                            vmin=bg_vmin, vmax=bg_vmax,
                            cmap=pl.cm.gray, interpolation=interpolation)
@@ -264,7 +264,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
             if black_bg == 'auto':
                 black_bg = False
         else:
-            anat_img = _utils.check_niimg(anat_img, ensure_3d=True)
+            anat_img = _utils.check_niimg_3d(anat_img)
             if dim or black_bg == 'auto':
                 # We need to inspect the values of the image
                 data = anat_img.get_data()
@@ -611,7 +611,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     # make sure that the color range is symmetrical
     if ('vmax' not in kwargs) or (symmetric_cbar in ['auto', False]):
-        stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
+        stat_map_img = _utils.check_niimg_3d(stat_map_img)
         stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):

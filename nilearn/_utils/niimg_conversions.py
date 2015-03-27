@@ -4,29 +4,37 @@ Conversion utilities.
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import collections
 import numpy as np
 
 from sklearn.externals.joblib import Memory
 from .cache_mixin import cache
 
-from .niimg import (_safe_get_data, load_img, new_img_like,
+from .niimg import (_safe_get_data, load_niimg, new_img_like,
                     short_repr)
 from .compat import _basestring
+
+
+def _check_fov(img, affine, shape):
+    """ Return True if img's field of view correspond to given
+        shape and affine, False elsewhere.
+    """
+    img = check_niimg(img)
+    return (img.shape[:3] == shape and
+            np.allclose(img.get_affine(), affine))
 
 
 def _check_same_fov(img1, img2):
     """ Return True if img1 and img2 have the same field of view
         (shape and affine), False elsewhere.
     """
-    img1 = check_niimgs(img1, accept_3d=True)
-    img2 = check_niimgs(img2, accept_3d=True)
+    img1 = check_niimg(img1)
+    img2 = check_niimg(img2)
     return (img1.shape[:3] == img2.shape[:3]
             and np.allclose(img1.get_affine(), img2.get_affine()))
 
 
-def check_niimg(niimg, ensure_3d=False):
-    """Check that niimg is a proper niimg. Turn filenames into objects.
+def check_niimg(niimg, atleast_4d=False):
+    """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
 
     Parameters
     ----------
@@ -36,13 +44,12 @@ def check_niimg(niimg, ensure_3d=False):
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
 
-    ensure_3d: boolean, optional
-        If ensure_3d is true, the code checks that the image passed is a
-        3D image and raises an error if not
+    atleast_4d: boolean, optional
+        Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
     Returns
     -------
-    result: Niimg-like object
+    result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
         that the returned object has get_data() and get_affine() methods.
 
@@ -55,41 +62,61 @@ def check_niimg(niimg, ensure_3d=False):
 
     Its application is idempotent.
     """
+    # If it's an iterator, it's a 4d image
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
-        if ensure_3d:
-            raise TypeError("A 3D image is expected, but an iterable was"
-                " given: %s" % short_repr(niimg))
-        if hasattr(niimg, "__len__") and len(niimg) == 0:
-            raise TypeError('An empty object - %r - was passed instead of an '
-                            'image or a list of images' % niimg)
-        return concat_niimgs(niimg)
+        return check_niimg_4d(niimg)
 
-    niimg = load_img(niimg)
+    # Otherwise, it should be a filename or a SpatialImage, we load it
+    niimg = load_niimg(niimg)
 
-    if ensure_3d:
-        shape = niimg.shape
-        if len(shape) == 3:
-            pass
-        elif (len(shape) == 4 and shape[3] == 1):
-            # "squeeze" the image.
-            data = _safe_get_data(niimg)
-            affine = niimg.get_affine()
-            niimg = new_img_like(niimg, data[:, :, :, 0], affine)
-        else:
-            raise TypeError("A 3D image is expected, but an image "
-                "with a shape of %s was given." % (shape, ))
+    if atleast_4d and len(niimg.shape) == 3:
+        data = niimg.get_data().view()
+        data.shape = data.shape + (1, )
+        niimg = new_img_like(niimg, data, niimg.get_affine())
+
     return niimg
 
 
-def _to_4d(data):
-    """ Internal function to cast a 3D ndarray to a 4D one by adding a
-        new axis at the end
+def check_niimg_3d(niimg):
+    """Check that niimg is a proper 3D niimg-like object and load it.
+    Parameters
+    ----------
+    niimg: Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        If niimg is a string, consider it as a path to Nifti image and
+        call nibabel.load on it. If it is an object, check if get_data()
+        and get_affine() methods are present, raise TypeError otherwise.
+
+    Returns
+    -------
+    result: 3D Niimg-like object
+        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+        that the returned object has get_data() and get_affine() methods.
+
+    Notes
+    -----
+    In nilearn, special care has been taken to make image manipulation easy.
+    This method is a kind of pre-requisite for any data processing method in
+    nilearn because it checks if data have a correct format and loads them if
+    necessary.
+
+    Its application is idempotent.
     """
-    if len(data.shape) == 4:
-        return data
-    out = data.view()
-    out.shape = data.shape + (1, )
-    return out
+    niimg = load_niimg(niimg)
+
+    shape = niimg.shape
+    if len(shape) == 3:
+        pass
+    elif (len(shape) == 4 and shape[3] == 1):
+        # "squeeze" the image.
+        data = _safe_get_data(niimg)
+        affine = niimg.get_affine()
+        niimg = new_img_like(niimg, data[:, :, :, 0], affine)
+    else:
+        raise TypeError("A 3D image is expected, but an image "
+            "with a shape of %s was given." % (shape, ))
+
+    return niimg
 
 
 def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
@@ -135,7 +162,10 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     """
 
     # get properties from first image
-    first_niimg = check_niimg(next(iter(niimgs)))
+    try:
+        first_niimg = check_niimg(next(iter(niimgs)), atleast_4d=True)
+    except StopIteration:
+        raise TypeError('Cannot concatenate empty objects')
     target_affine = first_niimg.get_affine()
     first_data = first_niimg.get_data()
     target_item_shape = first_niimg.shape[:3]  # skip 4th/time dimension
@@ -162,7 +192,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     data = np.ndarray(target_item_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
 
-    data[..., :lengths[0]] = _to_4d(first_data)
+    data[..., :lengths[0]] = first_data
     cur_4d_index = 0
     for index, (iter_niimg, size) in enumerate(zip(niimgs, lengths)):
         # talk to user
@@ -178,9 +208,9 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
             cur_4d_index += size
             continue
 
-        niimg = check_niimg(iter_niimg)
+        niimg = check_niimg(iter_niimg, atleast_4d=True)
         if (np.array_equal(niimg.get_affine(), target_affine) and
-            target_item_shape == niimg.shape[:3]):
+                target_item_shape == niimg.shape[:3]):
             this_data = niimg.get_data()
         else:
             if not auto_resample:
@@ -193,23 +223,47 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
                                     niimg.get_affine()))
             if verbose > 0:
                 print("...resampled to first nifti!")
-            
+
             from .. import image  # we avoid a circular import
             niimg = cache(image.resample_img, memory, func_memory_level=2,
                           memory_level=memory_level)(
-                              niimg,
-                              target_affine=target_affine,
-                              target_shape=target_item_shape)
+                                niimg,
+                                target_affine=target_affine,
+                                target_shape=target_item_shape)
             this_data = niimg.get_data()
 
-        data[..., cur_4d_index:cur_4d_index + size] = _to_4d(this_data)
+        data[..., cur_4d_index:cur_4d_index + size] = this_data
         cur_4d_index += size
 
     return new_img_like(first_niimg, data, target_affine)
 
 
-def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
-    """ Check that an object is a list of niimgs and load it if necessary
+def _iter_check_niimg_4d(niimgs):
+    affine = None
+    shape = None
+    for i, niimg in enumerate(niimgs):
+        try:
+            niimg = check_niimg_3d(niimg)
+            if affine is None:
+                affine = niimg.get_affine()
+                shape = niimg.shape
+            if not _check_fov(niimg, affine, shape):
+                raise ValueError(
+                    "Field of view of image #%d is different from reference "
+                    "FOV.\n"
+                    "Reference affine:\n%r\nImage affine:\n%r\n"
+                    "Reference shape:\n%r\nImage shape:\n%r\n"
+                    % (i, affine, niimg.get_affine(), shape,
+                       niimg.shape))
+            yield niimg
+        except TypeError as exc:
+            exc.args = (('Error encountered while loading image #%d' % i,) + 
+                        exc.args)
+            raise
+
+
+def check_niimg_4d(niimgs, return_iterator=False):
+    """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters
     ----------
@@ -221,15 +275,11 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
-    accept_3d: boolean
-       If True, consider a 3D image as a 4D one with last dimension equals
-       to 1.
-
     return_iterator: boolean
-        If False, a single 4D image is returned. When `niimgs` contains 3D
-        images they are concatenated together.
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
+        If False, a single 4D image is returned. When `niimgs` contains 3D
+        images they are concatenated together.
 
     Returns
     -------
@@ -237,66 +287,48 @@ def check_niimgs(niimgs, accept_3d=False, return_iterator=False):
 
     Notes
     -----
-    This function is the equivalent to check_niimg() for Niimg-like objects
+    This function is the equivalent to check_niimg_3d() for Niimg-like objects
     with a session level.
 
     Its application is idempotent.
     """
-    # Initialization:
-    # If given data is a list, we count the number of levels to check
-    # dimensionality and make a consistent error message.
-    depth = 0
-    first_img = niimgs
-    if accept_3d and (isinstance(first_img, _basestring)
-                      or not isinstance(first_img, collections.Iterable)):
-        niimg = check_niimg(niimgs)
-        if len(niimg.shape) == 3:
-            niimg = new_img_like(niimg, niimg.get_data()[..., np.newaxis],
-                            niimg.get_affine())
-        return niimg
+    # Two types of input:
+    # * 4D nifti image
+    # * list of 3D niimgs
 
+    # We get rid of the 4D nifti image case, as it is the simplest case
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
-    while hasattr(first_img, "__iter__") \
-            and not isinstance(first_img, _basestring):
-        if hasattr(first_img, '__len__') and len(first_img) == 0:
-            raise TypeError('An empty object - %r - was passed instead of an '
-                            'image or a list of images' % niimgs)
-        first_img = next(iter(first_img))
-        depth += 1
-
-    # First image is supposed to be a path or a Niimg-like object
-    first_img = check_niimg(first_img)
-
-    # Check dimension and depth
-    shape = first_img.shape
-    dim = len(shape)
-
-    if (dim + depth) != 4:
-        # Detailed error message that tells exactly the user what
-        # was provided and what should have been provided.
-        raise TypeError("Data must be a 4D Niimg-like object. You provided a "
-                        "%s%dD image(s), of shape %s. "
-                        "See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg." % (
-                        'list of ' * depth, dim, shape))
-
-    # Now, we load data as we know its format
-    if dim == 4:
+    if isinstance(niimgs, _basestring) or not hasattr(niimgs, "__iter__"):
+        niimgs = load_niimg(niimgs)
+        shape = niimgs.shape
+        if len(shape) != 4:
+            raise TypeError(
+                "Data must be a 4D Niimg-like object but you provided an "
+                "image of shape %s. See "
+                "http://nilearn.github.io/building_blocks/"
+                "manipulating_mr_images.html#niimg." % (shape, ))
         if return_iterator:
-            result = (_index_niimgs(first_img, i)
-                      for i in range(shape[3]))
+            return (_index_niimgs(niimgs, i) for i in range(shape[3]))
         else:
-            result = first_img
-    else:
-        if return_iterator:
-            result = (check_niimg(img) for img in niimgs)
-        else:
-            result = concat_niimgs(niimgs)
-    return result
+            return niimgs
+
+    # We now have 3 types of input:
+    # * a true list
+    # * an iterator
+    # * a generator
+
+    # To be iterator/generator friendly, we externalize the verifications in
+    # an iterator.
+
+    if return_iterator:
+        return _iter_check_niimg_4d(niimgs)
+
+    return concat_niimgs(niimgs)
 
 
 def _index_niimgs(niimgs, index):
-    """Helper function for check_niimgs."""
+    """Helper function for check_niimg_4d."""
     return new_img_like(
         niimgs,
         niimgs.get_data()[:, :, :, index],
