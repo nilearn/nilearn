@@ -11,6 +11,7 @@ Only matplotlib is required.
 # Standard library imports
 import functools
 import numbers
+import warnings
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -62,6 +63,20 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display_factory: function
             takes a display_mode argument and return a display class
     """
+    show_nan_msg = False
+    if ('vmax' in kwargs and kwargs['vmax'] is not None and
+        np.isnan(kwargs['vmax'])):
+        kwargs.pop('vmax')
+        show_nan_msg = True
+    if ('vmin' in kwargs and kwargs['vmin'] is not None and
+        np.isnan(kwargs['vmin'])):
+        kwargs.pop('vmin')
+        show_nan_msg = True
+    if show_nan_msg:
+        nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
+                   'Tip: Use np.nan_max() instead of np.max().')
+        warnings.warn(nan_msg)
+
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img)
         data = img.get_data()

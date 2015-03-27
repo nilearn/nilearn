@@ -77,11 +77,11 @@ def test_plot_anat():
     import pylab as pl
     pl.switch_backend('template')
     img = _generate_img()
+
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
     with tempfile.TemporaryFile(suffix='.png') as fp:
         z_slicer.savefig(fp.name)
-
     z_slicer = plot_anat(display_mode='z')
     with tempfile.TemporaryFile(suffix='.png') as fp:
         z_slicer.savefig(fp.name)
@@ -102,6 +102,15 @@ def test_plot_functions():
                       plot_glass_brain]:
         with tempfile.TemporaryFile(suffix='.png') as fp:
             plot_func(img, output_file=fp.name)
+
+    # test for bad input arguments (cf. #510)
+    ax = pl.subplot(111, rasterized=True)
+    with tempfile.TemporaryFile(suffix='.png') as fp:
+        plot_stat_map(
+            img, symmetric_cbar=True,
+            output_file=fp.name,
+            axes=ax, vmax=np.nan)
+    pl.close()
 
 
 def test_plot_glass_brain():
