@@ -208,7 +208,9 @@ Python for NeuroImaging, a quick start
 ==========================================
 
 If you don't know Python, **Don't panic. Python is easy**. Here, we give
-the basics to help you get started. For a full blown introduction to
+the basics to help you get started. For a very quick start to the
+language, you can `learn it online <http://www.learnpython.org/>`_.
+For a full blown introduction to
 using Python for science, see the `scipy lecture notes
 <http://scipy-lectures.github.io/>`_.
 
