@@ -15,8 +15,8 @@ try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
 except ImportError:
     raise SkipTest('Could not import matplotlib')
 
@@ -61,8 +61,8 @@ def demo_plot_roi(**kwargs):
 def test_demo_plot_roi():
     # This is only a smoke test
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     demo_plot_roi()
     # Test the black background code path
     demo_plot_roi(black_bg=True)
@@ -74,8 +74,8 @@ def test_demo_plot_roi():
 
 def test_plot_anat():
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     img = _generate_img()
 
     # Test saving with empty plot
@@ -93,8 +93,8 @@ def test_plot_anat():
 
 def test_plot_functions():
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     img = _generate_img()
 
     # smoke-test for each plotting function with default arguments
@@ -104,19 +104,19 @@ def test_plot_functions():
             plot_func(img, output_file=fp.name)
 
     # test for bad input arguments (cf. #510)
-    ax = pl.subplot(111, rasterized=True)
+    ax = plt.subplot(111, rasterized=True)
     with tempfile.TemporaryFile(suffix='.png') as fp:
         plot_stat_map(
             img, symmetric_cbar=True,
             output_file=fp.name,
             axes=ax, vmax=np.nan)
-    pl.close()
+    plt.close()
 
 
 def test_plot_glass_brain():
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     img = _generate_img()
 
     # test plot_glass_brain with colorbar
@@ -125,8 +125,8 @@ def test_plot_glass_brain():
 
 def test_plot_stat_map():
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     img = _generate_img()
 
     plot_stat_map(img, cut_coords=(80, -120, -60))
@@ -140,13 +140,13 @@ def test_plot_stat_map():
 
     # 'yx' display_mode
     plot_stat_map(img, display_mode='yx')
-    
+
     # regression test #510
     data = np.zeros((91, 109, 91))
     aff = np.eye(4)
     new_img = nibabel.Nifti1Image(data, aff)
     plot_stat_map(new_img, threshold=1000, colorbar=True)
-    
+
     rng = np.random.RandomState(42)
     data = rng.randn(91, 109, 91)
     new_img = nibabel.Nifti1Image(data, aff)
@@ -155,8 +155,8 @@ def test_plot_stat_map():
 
 def test_save_plot():
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     img = _generate_img()
 
     kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
@@ -173,8 +173,8 @@ def test_save_plot():
 
 def test_display_methods():
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     img = _generate_img()
 
     display = plot_img(img)
@@ -186,21 +186,21 @@ def test_display_methods():
 
 def test_plot_with_axes_or_figure():
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     img = _generate_img()
-    figure = pl.figure()
+    figure = plt.figure()
     plot_img(img, figure=figure)
 
-    ax = pl.subplot(111)
+    ax = plt.subplot(111)
     plot_img(img, axes=ax)
 
 
 def test_plot_stat_map_colorbar_variations():
     # This is only a smoke test
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
 
     img_positive = _generate_img()
     data_positive = img_positive.get_data()
@@ -218,7 +218,7 @@ def test_plot_stat_map_colorbar_variations():
                      partial(plot_stat_map, symmetric_cbar=True, vmax=10),
                      partial(plot_stat_map, colorbar=False)]:
             func(img, cut_coords=(80, -120, -60))
-            pl.close()
+            plt.close()
 
 
 def test_plot_empty_slice():
@@ -226,8 +226,8 @@ def test_plot_empty_slice():
     # threshold
     # This is only a smoke test
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     data = np.zeros((20, 20, 20))
     img = nibabel.Nifti1Image(data, mni_affine)
     plot_img(img, display_mode='y', threshold=1)
@@ -240,8 +240,8 @@ def test_plot_img_invalid():
 
 
 def test_plot_img_with_auto_cut_coords():
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -252,8 +252,8 @@ def test_plot_img_with_auto_cut_coords():
 
 
 def test_plot_img_with_resampling():
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     data = _generate_img().get_data()
     affine = np.array([[1., -1.,  0.,  0.],
                        [1.,  1.,  0.,  0.],
@@ -268,11 +268,11 @@ def test_plot_noncurrent_axes():
     """Regression test for Issue #450"""
 
     maps_img = nibabel.Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
-    fh1 = pl.figure()
-    fh2 = pl.figure()
+    fh1 = plt.figure()
+    fh2 = plt.figure()
     ax1 = fh1.add_subplot(1, 1, 1)
 
-    assert_equal(pl.gcf(), fh2, "fh2  was the last plot created.")
+    assert_equal(plt.gcf(), fh2, "fh2  was the last plot created.")
 
     # Since we gave ax1, the figure should be plotted in fh1.
     # Before #451, it was plotted in fh2.
@@ -283,8 +283,8 @@ def test_plot_noncurrent_axes():
 
 
 def test_plot_connectome():
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     node_color = ['green', 'blue', 'k', 'cyan']
     # symmetric up to 1e-3 relative tolerance
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
@@ -345,8 +345,8 @@ def test_plot_connectome():
 
 
 def test_plot_connectome_exceptions():
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
     node_coords = np.arange(2 * 3).reshape((2, 3))
 
     # Used to speed-up tests because the glass brain is always plotted

@@ -17,13 +17,14 @@ from .._utils.compat import _basestring
 from .. import _utils
 
 try:
-    import pylab as pl
+    import matplotlib.pyplot as plt
     from matplotlib import transforms, colors
     from matplotlib.colorbar import ColorbarBase
     from matplotlib import cm as mpl_cm
     from matplotlib import lines
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
+    raise
 
 
 # Local imports
@@ -273,7 +274,7 @@ class GlassBrainAxes(BaseAxes):
                                 vmax=abs_line_values_max)
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=abs_line_values_max)
-        value_to_color = pl.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+        value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
         for start_end_point_3d, line_value in zip(
                 line_coords, line_values):
@@ -326,7 +327,7 @@ class BaseSlicer(object):
         """
         self.cut_coords = cut_coords
         if axes is None:
-            axes = pl.axes((0., 0., 1., 1.))
+            axes = plt.axes((0., 0., 1., 1.))
             axes.axis('off')
         self.frame_axes = axes
         axes.set_zorder(1)
@@ -358,10 +359,10 @@ class BaseSlicer(object):
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
-        if isinstance(axes, pl.Axes) and figure is None:
+        if isinstance(axes, plt.Axes) and figure is None:
             figure = axes.figure
 
-        if not isinstance(figure, pl.Figure):
+        if not isinstance(figure, plt.Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
             
@@ -376,9 +377,9 @@ class BaseSlicer(object):
 
             if leave_space:
                 figsize[0] += 3.4
-            figure = pl.figure(figure, figsize=figsize,
+            figure = plt.figure(figure, figsize=figsize,
                             facecolor=facecolor)
-        if isinstance(axes, pl.Axes):
+        if isinstance(axes, plt.Axes):
             assert axes.figure is figure, ("The axes passed are not "
                     "in the figure")
 
@@ -485,7 +486,7 @@ class BaseSlicer(object):
         if colorbar:
             self._colorbar_show(ims[0], threshold)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def add_contours(self, img, **kwargs):
         """ Contour a 3D map in all the views.
@@ -504,7 +505,7 @@ class BaseSlicer(object):
                 these contours.
         """
         self._map_show(img, type='contour', **kwargs)
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def _map_show(self, img, type='imshow', resampling_interpolation='continuous', **kwargs):
         img = reorder_img(img, resample=resampling_interpolation)
@@ -635,7 +636,7 @@ class BaseSlicer(object):
             display_ax.draw_2d(edge_mask, data_bounds, data_bounds,
                                type='imshow', cmap=single_color_cmap)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
@@ -675,7 +676,7 @@ class BaseSlicer(object):
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
         """
-        pl.close(self.frame_axes.figure.number)
+        plt.close(self.frame_axes.figure.number)
 
     def savefig(self, filename, dpi=None):
         """ Save the figure to a file
@@ -1168,7 +1169,7 @@ class OrthoProjector(OrthoSlicer):
             ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                           **edge_kwargs)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
 
 class XProjector(OrthoProjector):

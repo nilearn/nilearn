@@ -80,7 +80,7 @@ coef_img = nifti_masker.inverse_transform(coef_)
 coef_img.to_filename('haxby_svc_weights.nii')
 
 ### Visualization #############################################################
-import pylab as plt
+import matplotlib.pyplot as plt
 from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi, plot_stat_map
 
@@ -90,4 +90,3 @@ plot_stat_map(coef_img, mean_epi, title="SVM weights", display_mode="yx")
 plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask", display_mode="yx")
 
 plt.show()
-

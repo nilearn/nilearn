@@ -23,9 +23,10 @@ from .._utils.testing import skip_if_running_nose
 from .._utils.numpy_conversions import as_ndarray
 
 try:
-    import pylab as pl
+    import matplotlib.pyplot as plt
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
+    raise
 
 from .. import _utils
 from .._utils import new_img_like
@@ -105,7 +106,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         bg_img = _utils.check_niimg_3d(bg_img)
         display.add_overlay(bg_img,
                            vmin=bg_vmin, vmax=bg_vmax,
-                           cmap=pl.cm.gray, interpolation=interpolation)
+                           cmap=plt.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
         display.add_overlay(new_img_like(img, data, affine),
@@ -326,7 +327,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, draw_cross=True,
-              black_bg='auto', dim=False, cmap=pl.cm.gray, **kwargs):
+              black_bg='auto', dim=False, cmap=plt.cm.gray, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -403,7 +404,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
-             cmap=pl.cm.spectral, **kwargs):
+             cmap=plt.cm.spectral, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -473,7 +474,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=pl.cm.gist_ncar, dim=True, **kwargs):
+             alpha=0.7, cmap=plt.cm.gist_ncar, dim=True, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -744,7 +745,7 @@ def plot_glass_brain(stat_map_img,
 
     """
     if cmap is None:
-        cmap = pl.cm.hot if black_bg else pl.cm.hot_r
+        cmap = plt.cm.hot if black_bg else plt.cm.hot_r
 
     def display_factory(display_mode):
         return functools.partial(get_projector(display_mode), alpha=alpha)
