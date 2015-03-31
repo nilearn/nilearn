@@ -61,6 +61,17 @@ def _read_md5_sum_file(path):
     return hashes
 
 
+def readlinkabs(link):
+    """
+    Return an absolute path for the destination
+    of a symlink
+    """
+    path = os.readlink(link)
+    if os.path.isabs(path):
+        return path
+    return os.path.join(os.path.dirname(link), path)
+
+
 def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
@@ -226,6 +237,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
     # Check if the dataset exists somewhere
     for path in paths:
         path = os.path.join(path, dataset_name)
+        if os.path.islink(path):
+            # Resolve path
+            path = readlinkabs(path)
         if os.path.exists(path) and os.path.isdir(path):
             if verbose > 1:
                 print('\nDataset found in %s\n' % path)
