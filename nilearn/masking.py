@@ -587,7 +587,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     if smoothing_fwhm is not None:
         ensure_finite = True
 
-    imgs_img = _utils.check_niimg_4d(imgs)
+    imgs_img = _utils.check_niimg(imgs)
     affine = imgs_img.get_affine()[:3, :3]
 
     if not np.allclose(mask_affine, imgs_img.get_affine()):

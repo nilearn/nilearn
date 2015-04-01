@@ -135,6 +135,15 @@ def test_apply_mask():
     assert_raises_regex(TypeError, "A 3D image is expected",
                         masking.apply_mask, data_img, mask_img_4d)
 
+    # Check that 3D data is accepted
+    data_3d = Nifti1Image(np.arange(27).reshape((3, 3, 3)), np.eye(4))
+    mask_data_3d = np.zeros((3, 3, 3))
+    mask_data_3d[1, 1, 0] = True
+    mask_data_3d[0, 1, 0] = True
+    mask_data_3d[0, 1, 1] = True
+    data_3d = masking.apply_mask(data_3d, Nifti1Image(mask_data_3d, np.eye(4)))
+    assert_equal(sorted(data_3d.tolist()), [3., 4., 12.])
+
     # Check data shape and affine
     assert_raises_regex(TypeError, "A 3D image is expected",
                         masking.apply_mask, data_img,
