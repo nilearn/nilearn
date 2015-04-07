@@ -1123,7 +1123,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     # There is a common file for the two versions of Haxby
-    fdescr = _get_dataset_descr('haxby_2001')
+    fdescr = _get_dataset_descr('haxby2001')
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
