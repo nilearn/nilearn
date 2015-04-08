@@ -1978,7 +1978,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     """
     if isinstance(contrasts, _basestring):
-        raise ValueError('Constrasts should be a list of strings, but '
+        raise ValueError('Contrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
