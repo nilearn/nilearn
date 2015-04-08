@@ -16,6 +16,10 @@ from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby_simple()
 
+# print basic information on the dataset
+print('Anatomical nifti images are located at: ' % haxby_dataset.anat[0])
+print('Functional nifti images are located at: ' % haxby_dataset.func[0])
+
 fmri_filename = haxby_dataset.func
 fmri_img = nibabel.load(fmri_filename)
 y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T

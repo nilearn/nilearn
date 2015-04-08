@@ -12,6 +12,10 @@ stream.
 from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
+# print basic information on the dataset
+print('Anatomical nifti image is at: %s' % haxby_dataset.anat[0])
+print('Functional nifti images are at: %s' % haxby_dataset.func[0])  # 4D data
+
 ### Load Target labels ########################################################
 
 import numpy as np

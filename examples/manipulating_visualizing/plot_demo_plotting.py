@@ -14,6 +14,11 @@ from nilearn import plotting, image
 # localizer dataset to have contrast maps
 
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+
+# print basic information on the dataset
+print('Anatomical nifti image is at: %s' % haxby_dataset.anat[0])
+print('Functional nifti images are at: %s' % haxby_dataset.func[0])  # 4D data
+
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]

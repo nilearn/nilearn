@@ -13,6 +13,10 @@ from nilearn.plotting.img_plotting import plot_epi, plot_roi
 
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
+# print basic information on the dataset
+print('Anatomical nifti image is at: %s' % haxby_dataset.anat[0])
+print('Functional nifti images are at: %s' % haxby_dataset.func[0])  # 4D data
+
 ### Visualization #############################################################
 
 import matplotlib.pyplot as plt

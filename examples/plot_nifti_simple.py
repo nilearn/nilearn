@@ -12,6 +12,10 @@ from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
+# print basic information on the dataset
+print('Anatomical nifti image is at: %s' % nyu_dataset.anat_anon[0])
+print('Functional nifti images are at: %s' % nyu_dataset.func[0])  # 4D data
+
 ### Compute the mask ##########################################################
 
 # As this is raw resting-state EPI, the background is noisy and we cannot
