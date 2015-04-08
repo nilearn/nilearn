@@ -104,7 +104,7 @@ def test_3d_images():
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                               affine=np.diag((4, 4, 4, 1)))
     masker2 = MultiNiftiMasker(mask_img=mask_img_4d)
-    assert_raises_regex(TypeError, "A 3D image is expected",
+    assert_raises_regex(TypeError, "Data must be a 3D",
                         masker2.fit)
 
 
