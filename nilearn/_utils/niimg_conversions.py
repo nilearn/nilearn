@@ -150,8 +150,37 @@ def check_niimg_3d(niimg):
     return check_niimg(niimg, ndim=3)
 
 
-def _niimg_iter():
-    pass
+def check_niimg_4d(niimg, return_iterator=False):
+    """Check that niimg is a proper 4D niimg-like object and load it.
+
+    Parameters
+    ----------
+    niimg: 4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        If niimgs is an iterable, checks if data is really 4D. Then,
+        considering that it is a list of niimg and load them one by one.
+        If niimg is a string, consider it as a path to Nifti image and
+        call nibabel.load on it. If it is an object, check if get_data
+        and get_affine methods are present, raise an Exception otherwise.
+
+    return_iterator: boolean
+        If True, an iterator of 3D images is returned. This reduces the memory
+        usage when `niimgs` contains 3D images.
+        If False, a single 4D image is returned. When `niimgs` contains 3D
+        images they are concatenated together.
+
+    Returns
+    -------
+    niimg: 4D nibabel.Nifti1Image or iterator of 3D nibabel.Nifti1Image
+
+    Notes
+    -----
+    This function is the equivalent to check_niimg_3d() for Niimg-like objects
+    with a session level.
+
+    Its application is idempotent.
+    """
+    return check_niimg(niimg, ndim=4, return_iterator=return_iterator)
 
 
 class NiimgIter(collections.Iterable):
@@ -462,39 +491,6 @@ def _iter_check_niimg_4d(niimgs):
             exc.args = (('Error encountered while loading image #%d' % i,) + 
                         exc.args)
             raise
-
-
-def check_niimg_4d(niimg, return_iterator=False):
-    """Check that niimg is a proper 4D niimg-like object and load it.
-
-    Parameters
-    ----------
-    niimg: 4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        If niimgs is an iterable, checks if data is really 4D. Then,
-        considering that it is a list of niimg and load them one by one.
-        If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. If it is an object, check if get_data
-        and get_affine methods are present, raise an Exception otherwise.
-
-    return_iterator: boolean
-        If True, an iterator of 3D images is returned. This reduces the memory
-        usage when `niimgs` contains 3D images.
-        If False, a single 4D image is returned. When `niimgs` contains 3D
-        images they are concatenated together.
-
-    Returns
-    -------
-    niimg: 4D nibabel.Nifti1Image or iterator of 3D nibabel.Nifti1Image
-
-    Notes
-    -----
-    This function is the equivalent to check_niimg_3d() for Niimg-like objects
-    with a session level.
-
-    Its application is idempotent.
-    """
-    return check_niimg(niimg, ndim=4, return_iterator=return_iterator)
 
 
 def _index_niimgs(niimgs, index):
