@@ -114,7 +114,7 @@ plot_rst_template = """
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
 HLIST_HEADER = """
-.. rst-class:: horizontal
+.. rst-class:: sphx-glr-horizontal
 
 """
 
@@ -229,7 +229,7 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     out = """
 .. raw:: html
 
-    <div class="thumbnailContainer" tooltip="{}">
+    <div class="sphx-glr-thumbContainer" tooltip="{}">
 
 .. figure:: {}
     :target: {}
@@ -244,15 +244,15 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     return out
 
 
-def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, plot_gallery, seen_backrefs):
+def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory.
     """
     if not directory == '.':
-        src_dir = os.path.join(root_dir, directory)
-        target_dir = os.path.join(example_dir, directory)
+        src_dir = os.path.join(examples_dir, directory)
+        target_dir = os.path.join(gallery_dir, directory)
     else:
-        src_dir = root_dir
-        target_dir = example_dir
+        src_dir = examples_dir
+        target_dir = gallery_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
         print( 80 * '_')
         print ('Example directory %s does not have a README.txt file' %
@@ -274,7 +274,7 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, pl
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
-            backrefs = generate_file_rst(fname, target_dir, src_dir, example_dir, gallery_conf, plot_gallery)
+            backrefs = generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
             fhindex.write(_thumbnail_div(directory, directory, fname, snippet))
@@ -287,7 +287,7 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, pl
 
 """ % (directory, fname[:-3]))
             for backref in backrefs:
-                include_path = os.path.join(gallery_conf['mod_generated'], '%s.examples' % backref)
+                include_path = os.path.join(gallery_conf['mod_example_dir'], '%s.examples' % backref)
                 seen = backref in seen_backrefs
                 with open(include_path, 'a' if seen else 'w') as ex_file:
                     if not seen:
@@ -297,7 +297,7 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, pl
                         print('-----------------%s--' % ('-' * len(backref)),
                               file=ex_file)
                         print(file=ex_file)
-                    rel_dir = os.path.join(gallery_conf['examples_gallery'], directory)
+                    rel_dir = os.path.join(gallery_conf['gallery_dir'], directory)
                     ex_file.write(_thumbnail_div(directory, rel_dir, fname, snippet))
                     seen_backrefs.add(backref)
 
@@ -439,10 +439,10 @@ def identify_names(code):
     return example_code_obj
 
 
-def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_gallery):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
     """ Generate the rst file for a given example.
 
-    Returns the set of sklearn functions/classes imported in the example.
+    Returns the set of functions/classes imported in the example.
     """
     base_image_name = os.path.splitext(fname)[0]
     image_fname = '%s_%%03d.png' % base_image_name
@@ -519,7 +519,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
                 my_stdout = my_stdout.strip().expandtabs()
                 if my_stdout:
                     stdout = """**Script output**:\n
-.. rst-class:: max_height
+.. rst-class:: sphx-glr-script-out
 
   ::
 

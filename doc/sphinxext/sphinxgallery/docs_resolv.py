@@ -324,12 +324,16 @@ def embed_code_links(app, exception):
     gallery_conf = app.config.sphinxgallery_conf
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
-    doc_resolvers[gallery_conf['doc_module']] = SphinxDocLinkResolver(app.builder.outdir,
-                                                     relative=True)
 
-    for this_module, url in gallery_conf['resolver_urls'].items():
+    for this_module, url in gallery_conf['reference_url'].items():
         try:
-            doc_resolvers[this_module] = SphinxDocLinkResolver(url)
+            if url is None:
+                doc_resolvers[this_module] = SphinxDocLinkResolver(
+                                                            app.builder.outdir,
+                                                            relative=True)
+            else:
+                doc_resolvers[this_module] = SphinxDocLinkResolver(url)
+
         except HTTPError as e:
             print("The following HTTP Error has occurred:\n")
             print(e.code)
@@ -341,21 +345,21 @@ def embed_code_links(app, exception):
                   "Error:\n".format(this_module))
             print(e.args)
 
-    example_dir = os.path.join(app.builder.srcdir, 'auto_examples')
-    html_example_dir = os.path.abspath(os.path.join(app.builder.outdir,
-                                                    'auto_examples'))
+    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
+    html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
+                                                    gallery_conf['gallery_dir']))
 
     # patterns for replacement
     link_pattern = '<a href="%s">%s</a>'
     orig_pattern = '<span class="n">%s</span>'
     period = '<span class="o">.</span>'
 
-    for dirpath, _, filenames in os.walk(html_example_dir):
+    for dirpath, _, filenames in os.walk(html_gallery_dir):
         for fname in filenames:
             print('\tprocessing: %s' % fname)
-            full_fname = os.path.join(html_example_dir, dirpath, fname)
-            subpath = dirpath[len(html_example_dir) + 1:]
-            pickle_fname = os.path.join(example_dir, subpath,
+            full_fname = os.path.join(html_gallery_dir, dirpath, fname)
+            subpath = dirpath[len(html_gallery_dir) + 1:]
+            pickle_fname = os.path.join(gallery_dir, subpath,
                                         fname[:-5] + '_codeobj.pickle')
 
             if os.path.exists(pickle_fname):
