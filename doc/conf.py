@@ -283,7 +283,8 @@ extlinks = {
 
 sphinxgallery_conf = {
     'doc_module'        : 'nilearn',
-    'resolver_urls'     : {
+    'reference_url'     : {
+        'nilearn': None,
         'matplotlib': 'http://matplotlib.org',
         'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
         'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
