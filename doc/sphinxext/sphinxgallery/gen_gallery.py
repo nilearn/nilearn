@@ -8,8 +8,8 @@ from sphinxgallery.docs_resolv import embed_code_links
 
 
 def generate_gallery_rst(app):
-    """ Generate the list of examples, as well as the contents of
-        examples.
+    """Starts the gallery configuration and recursively scans the examples
+    directory in order to populate the examples gallery
     """
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
@@ -24,11 +24,11 @@ def generate_gallery_rst(app):
     # this assures I can call the config in other places
     app.config.sphinxgallery_conf = gallery_conf
 
-    root_dir = os.path.join(app.builder.srcdir, gallery_conf['root_dir'])
-    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_gallery'])
-    generated_dir = os.path.join(app.builder.srcdir, gallery_conf['mod_generated'])
+    examples_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_dir'])
+    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
+    mod_examples_dir = os.path.join(app.builder.srcdir, gallery_conf['mod_example_dir'])
 
-    for workdir in [root_dir, gallery_dir, generated_dir]:
+    for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
         if not os.path.exists(workdir):
             os.makedirs(workdir)
 
@@ -38,30 +38,27 @@ def generate_gallery_rst(app):
 
 .. _examples-index:
 
-Examples
-========
+Gallery of Examples
+===================
 
 """)
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
-    generate_dir_rst('.', fhindex, root_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
-    for directory in sorted(os.listdir(root_dir)):
-        if os.path.isdir(os.path.join(root_dir, directory)):
-            generate_dir_rst(directory, fhindex, root_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
+    generate_dir_rst('.', fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
+    for directory in sorted(os.listdir(examples_dir)):
+        if os.path.isdir(os.path.join(examples_dir, directory)):
+            generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
     fhindex.flush()
 
 
 gallery_conf = {
-    'root_dir'          : '../examples',
-    'examples_gallery'  : 'auto_examples',
-    'mod_generated'     : 'modules/generated',
-    'doc_module'        : 'sphinxgallery',
-    'resolver_urls'     : {
-        'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.15.1/reference'}
-    }
+    'examples_dir'   : '../examples',
+    'gallery_dir'    : 'auto_examples',
+    'mod_example_dir': 'modules/generated',
+    'doc_module'     : (),
+    'reference_url'  : {},
+}
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
