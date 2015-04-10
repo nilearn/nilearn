@@ -170,7 +170,7 @@ def test_concat_niimgs():
 
     # Smoke-test the accept_4d
     assert_raises_regex(ValueError, 'image',
-                        _utils.concat_niimgs, [img1, img4d])
+                        _utils.concat_niimgs, [img1, img4d], accept_4d=False)
     concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
     np.testing.assert_equal(concatenated.get_data(), concatenate_true,
                             verbose=0)
@@ -181,9 +181,9 @@ def test_concat_niimgs():
     assert_true(concatenated.shape == img1.shape + (3, ))
 
     # check error for non-forced but necessary resampling
-    assert_raises_regex(ValueError, 'different from reference affine',
+    assert_raises_regex(ValueError, 'Field of view of image',
                         _utils.concat_niimgs, [img1, img2],
-                        accept_4d=False)
+                        accept_4d=False, auto_resample=False)
 
     # Smoke-test the 4d parsing
     concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
