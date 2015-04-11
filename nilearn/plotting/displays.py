@@ -11,21 +11,20 @@ import numbers
 import numpy as np
 from scipy import sparse, stats
 
-from six import string_types
-from six.moves import zip as six_zip
-
-import nibabel
 from .._utils.testing import skip_if_running_nose
+from .._utils import new_img_like
+from .._utils.compat import _basestring
 from .. import _utils
 
 try:
-    import pylab as pl
+    import matplotlib.pyplot as plt
     from matplotlib import transforms, colors
     from matplotlib.colorbar import ColorbarBase
     from matplotlib import cm as mpl_cm
     from matplotlib import lines
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
+    raise
 
 
 # Local imports
@@ -275,9 +274,9 @@ class GlassBrainAxes(BaseAxes):
                                 vmax=abs_line_values_max)
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=abs_line_values_max)
-        value_to_color = pl.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+        value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
-        for start_end_point_3d, line_value in six_zip(
+        for start_end_point_3d, line_value in zip(
                 line_coords, line_values):
             start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
                                                   self.direction)
@@ -328,7 +327,7 @@ class BaseSlicer(object):
         """
         self.cut_coords = cut_coords
         if axes is None:
-            axes = pl.axes((0., 0., 1., 1.))
+            axes = plt.axes((0., 0., 1., 1.))
             axes.axis('off')
         self.frame_axes = axes
         axes.set_zorder(1)
@@ -356,14 +355,14 @@ class BaseSlicer(object):
                          **kwargs):
         # deal with "fake" 4D images
         if img is not None and img is not False:
-            img = _utils.check_niimg(img, ensure_3d=True)
+            img = _utils.check_niimg_3d(img)
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
-        if isinstance(axes, pl.Axes) and figure is None:
+        if isinstance(axes, plt.Axes) and figure is None:
             figure = axes.figure
 
-        if not isinstance(figure, pl.Figure):
+        if not isinstance(figure, plt.Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
             
@@ -378,9 +377,9 @@ class BaseSlicer(object):
 
             if leave_space:
                 figsize[0] += 3.4
-            figure = pl.figure(figure, figsize=figsize,
+            figure = plt.figure(figure, figsize=figsize,
                             facecolor=facecolor)
-        if isinstance(axes, pl.Axes):
+        if isinstance(axes, plt.Axes):
             assert axes.figure is figure, ("The axes passed are not "
                     "in the figure")
 
@@ -468,7 +467,7 @@ class BaseSlicer(object):
         else:
             self._colorbar = colorbar
 
-        img = _utils.check_niimg(img, ensure_3d=True)
+        img = _utils.check_niimg_3d(img)
 
         if threshold is not None:
             data = img.get_data()
@@ -477,7 +476,7 @@ class BaseSlicer(object):
             else:
                 data = np.ma.masked_inside(data, -threshold, threshold,
                                            copy=False)
-            img = nibabel.Nifti1Image(data, img.get_affine())
+            img = new_img_like(img, data, img.get_affine())
 
         # To make sure that add_overlay has a consistant default behavior
         # with plot_stat_map
@@ -487,7 +486,7 @@ class BaseSlicer(object):
         if colorbar:
             self._colorbar_show(ims[0], threshold)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def add_contours(self, img, **kwargs):
         """ Contour a 3D map in all the views.
@@ -506,7 +505,7 @@ class BaseSlicer(object):
                 these contours.
         """
         self._map_show(img, type='contour', **kwargs)
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def _map_show(self, img, type='imshow', resampling_interpolation='continuous', **kwargs):
         img = reorder_img(img, resample=resampling_interpolation)
@@ -522,8 +521,7 @@ class BaseSlicer(object):
         if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                    get_mask_bounds(nibabel.Nifti1Image(not_mask.astype(np.int),
-                                    affine))
+                    get_mask_bounds(new_img_like(img, not_mask, affine))
 
         data_2d_list = []
         for display_ax in self.axes.values():
@@ -588,7 +586,10 @@ class BaseSlicer(object):
         istop = int(im.norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-        our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+        if im.norm.vmin == im.norm.vmax:  # len(np.unique(data)) == 1 ?
+            return
+        else:
+            our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=im.norm,
@@ -635,7 +636,7 @@ class BaseSlicer(object):
             display_ax.draw_2d(edge_mask, data_bounds, data_bounds,
                                type='imshow', cmap=single_color_cmap)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
@@ -675,7 +676,7 @@ class BaseSlicer(object):
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
         """
-        pl.close(self.frame_axes.figure.number)
+        plt.close(self.frame_axes.figure.number)
 
     def savefig(self, filename, dpi=None):
         """ Save the figure to a file
@@ -1125,7 +1126,7 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            if isinstance(edge_threshold, string_types):
+            if isinstance(edge_threshold, _basestring):
                 message = ("If 'edge_threshold' is given as a string it "
                            'should be a number followed by the percent sign, '
                            'e.g. "25.3%"')
@@ -1160,7 +1161,7 @@ class OrthoProjector(OrthoSlicer):
         non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
 
         line_coords = [node_coords[list(index)]
-                       for index in six_zip(*non_zero_indices)]
+                       for index in zip(*non_zero_indices)]
 
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():
@@ -1168,7 +1169,7 @@ class OrthoProjector(OrthoSlicer):
             ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                           **edge_kwargs)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
 
 class XProjector(OrthoProjector):

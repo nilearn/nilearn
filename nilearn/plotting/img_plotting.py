@@ -11,23 +11,25 @@ Only matplotlib is required.
 # Standard library imports
 import functools
 import numbers
+import warnings
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
-
-import nibabel
+from nibabel.spatialimages import SpatialImage
 
 from .._utils.testing import skip_if_running_nose
 from .._utils.numpy_conversions import as_ndarray
 
 try:
-    import pylab as pl
+    import matplotlib.pyplot as plt
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
+    raise
 
 from .. import _utils
+from .._utils import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
@@ -62,8 +64,22 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display_factory: function
             takes a display_mode argument and return a display class
     """
+    show_nan_msg = False
+    if ('vmax' in kwargs and kwargs['vmax'] is not None and
+        np.isnan(kwargs['vmax'])):
+        kwargs.pop('vmax')
+        show_nan_msg = True
+    if ('vmin' in kwargs and kwargs['vmin'] is not None and
+        np.isnan(kwargs['vmin'])):
+        kwargs.pop('vmin')
+        show_nan_msg = True
+    if show_nan_msg:
+        nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
+                   'Tip: Use np.nan_max() instead of np.max().')
+        warnings.warn(nan_msg)
+
     if img is not False and img is not None:
-        img = _utils.check_niimg(img, ensure_3d=True)
+        img = _utils.check_niimg_3d(img)
         data = img.get_data()
         affine = img.get_affine()
 
@@ -76,7 +92,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             # voxels pass the threshold
             threshold = fast_abs_percentile(data) - 1e-5
 
-        img = nibabel.Nifti1Image(as_ndarray(data), affine)
+        img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
         img,
@@ -87,13 +103,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         colorbar=colorbar)
 
     if bg_img is not None:
-        bg_img = _utils.check_niimg(bg_img, ensure_3d=True)
+        bg_img = _utils.check_niimg_3d(bg_img)
         display.add_overlay(bg_img,
                            vmin=bg_vmin, vmax=bg_vmax,
-                           cmap=pl.cm.gray, interpolation=interpolation)
+                           cmap=plt.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
-        display.add_overlay(nibabel.Nifti1Image(data, affine), 
+        display.add_overlay(new_img_like(img, data, affine),
                             threshold=threshold, interpolation=interpolation,
                             colorbar=colorbar, **kwargs)
 
@@ -198,7 +214,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
 # Anatomy image for background
 
 # A constant class to serve as a sentinel for the default MNI template
-class _MNI152Template(object):
+class _MNI152Template(SpatialImage):
     """ This class is a constant pointing to the MNI152 Template
         provided by nilearn
     """
@@ -207,6 +223,10 @@ class _MNI152Template(object):
     affine = None
     vmax   = None
     _shape  = None
+
+    def __init__(self, data=None, affine=None, header=None):
+        # Comply with spatial image requirements while allowing empty init
+        pass
 
     def load(self):
         if self.data is None:
@@ -260,7 +280,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
             if black_bg == 'auto':
                 black_bg = False
         else:
-            anat_img = _utils.check_niimg(anat_img, ensure_3d=True)
+            anat_img = _utils.check_niimg_3d(anat_img)
             if dim or black_bg == 'auto':
                 # We need to inspect the values of the image
                 data = anat_img.get_data()
@@ -307,7 +327,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, draw_cross=True,
-              black_bg='auto', dim=False, cmap=pl.cm.gray, **kwargs):
+              black_bg='auto', dim=False, cmap=plt.cm.gray, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -384,7 +404,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
-             cmap=pl.cm.spectral, **kwargs):
+             cmap=plt.cm.spectral, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -454,7 +474,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=pl.cm.gist_ncar, dim=True, **kwargs):
+             alpha=0.7, cmap=plt.cm.gist_ncar, dim=True, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -607,7 +627,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     # make sure that the color range is symmetrical
     if ('vmax' not in kwargs) or (symmetric_cbar in ['auto', False]):
-        stat_map_img = _utils.check_niimg(stat_map_img, ensure_3d=True)
+        stat_map_img = _utils.check_niimg_3d(stat_map_img)
         stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):
@@ -725,7 +745,7 @@ def plot_glass_brain(stat_map_img,
 
     """
     if cmap is None:
-        cmap = pl.cm.hot if black_bg else pl.cm.hot_r
+        cmap = plt.cm.hot if black_bg else plt.cm.hot_r
 
     def display_factory(display_mode):
         return functools.partial(get_projector(display_mode), alpha=alpha)

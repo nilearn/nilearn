@@ -7,8 +7,8 @@ try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
@@ -22,24 +22,24 @@ from nilearn.datasets import load_mni152_template
 def test_demo_ortho_slicer():
     # This is only a smoke test
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
-    pl.clf()
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
+    plt.clf()
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     img = load_mni152_template()
-    oslicer.add_overlay(img, cmap=pl.cm.gray)
+    oslicer.add_overlay(img, cmap=plt.cm.gray)
     oslicer.close()
 
 
 def test_stacked_slicer():
     # Test stacked slicers, like the XSlicer
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
-    pl.clf()
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
+    plt.clf()
     img = load_mni152_template()
     slicer = XSlicer.init_with_figure(img=img, cut_coords=3)
-    slicer.add_overlay(img, cmap=pl.cm.gray)
+    slicer.add_overlay(img, cmap=plt.cm.gray)
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:
         slicer.savefig(fp)
@@ -49,12 +49,12 @@ def test_stacked_slicer():
 def test_demo_ortho_projector():
     # This is only a smoke test
     mp.use('template', warn=False)
-    import pylab as pl
-    pl.switch_backend('template')
-    pl.clf()
+    import matplotlib.pyplot as plt
+    plt.switch_backend('template')
+    plt.clf()
     img = load_mni152_template()
     oprojector = OrthoProjector.init_with_figure(img=img)
-    oprojector.add_overlay(img, cmap=pl.cm.gray)
+    oprojector.add_overlay(img, cmap=plt.cm.gray)
     with tempfile.TemporaryFile() as fp:
         oprojector.savefig(fp)
     oprojector.close()

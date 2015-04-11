@@ -7,14 +7,14 @@ See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
 
 import warnings
 from distutils.version import LooseVersion
-from six import string_types
 
 import numpy as np
 import scipy
 from scipy import ndimage, linalg
-from nibabel import Nifti1Image
 
 from .. import _utils
+from .._utils import new_img_like
+from .._utils.compat import _basestring
 
 ###############################################################################
 # Affine utils
@@ -184,8 +184,8 @@ def get_mask_bounds(img):
         reorder_img to ensure that it is the case.
 
     """
-    img = _utils.check_niimg(img)
-    mask = img.get_data()
+    img = _utils.check_niimg_3d(img)
+    mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
     affine = img.get_affine()
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
@@ -364,15 +364,15 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
-    if isinstance(img, string_types):
+    if isinstance(img, _basestring):
         # Avoid a useless copy
         input_img_is_string = True
     else:
         input_img_is_string = False
 
-    # noop cases
     img = _utils.check_niimg(img)
 
+    # noop cases
     if target_affine is None and target_shape is None:
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
@@ -380,7 +380,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
-    shape = _utils._get_shape(img)
+    shape = img.shape
     affine = img.get_affine()
 
     if (np.all(np.array(target_shape) == shape[:3]) and
@@ -475,7 +475,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                           out=resampled_data,
                           copy=not input_img_is_string)
 
-    return Nifti1Image(resampled_data, target_affine)
+    return new_img_like(img, resampled_data, target_affine)
 
 
 def reorder_img(img, resample=None):
@@ -512,9 +512,9 @@ def reorder_img(img, resample=None):
         else:
             # Identify the voxel size using a QR decomposition of the
             # affine
-            R, Q = np.linalg.qr(affine[:3, :3])
-            target_affine = np.diag(np.abs(np.diag(Q))[
-                                                np.abs(R).argmax(axis=1)])
+            Q, R = np.linalg.qr(affine[:3, :3])
+            target_affine = np.diag(np.abs(np.diag(R))[
+                                                np.abs(Q).argmax(axis=1)])
             return resample_img(img, target_affine=target_affine,
                                 interpolation=resample)
 
@@ -555,9 +555,4 @@ def reorder_img(img, resample=None):
     data = data[slice1, slice2, slice3]
     affine = from_matrix_vector(np.diag(pixdim), b)
 
-    niimg = Nifti1Image(data, affine)
-
-    return niimg
-
-
-
+    return new_img_like(img, data, affine)

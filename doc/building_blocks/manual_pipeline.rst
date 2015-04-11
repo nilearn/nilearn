@@ -44,6 +44,10 @@ example, we can download the data from the
   >>> dataset.func # doctest: +ELLIPSIS
   ['.../haxby2001/subj1/bold.nii.gz']
 
+Access supplementary information on the dataset:
+
+  >>> print haxby_dataset['description']
+
 The complete list of the data-downloading functions can be found in the
 :ref:`reference documentation for the datasets <datasets_ref>`.
 

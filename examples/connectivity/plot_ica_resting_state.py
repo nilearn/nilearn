@@ -47,7 +47,7 @@ component_img = masker.inverse_transform(components_masked)
 
 ### Visualize the results #####################################################
 # Show some interesting components
-import pylab as plt
+import matplotlib.pyplot as plt
 from nilearn import image
 from nilearn.plotting import plot_stat_map
 

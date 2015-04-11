@@ -279,7 +279,7 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, 'Niimg-like object',
+    testing.assert_raises_regex(TypeError, '4D Niimg-like',
                                 image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
@@ -288,7 +288,7 @@ def test_index_img():
                        [0., 0., 0., 1.]])
     img_4d, _ = testing.generate_fake_fmri(affine=affine)
 
-    fourth_dim_size = niimg_conversions._get_shape(img_4d)[3]
+    fourth_dim_size = img_4d.shape[3]
     tested_indices = (list(range(fourth_dim_size)) +
                       [slice(2, 8, 2), [1, 2, 3, 2], [],
                        (np.arange(fourth_dim_size) % 3) == 1])
@@ -311,7 +311,7 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, 'Niimg-like object',
+    testing.assert_raises_regex(TypeError, '4D Niimg-like',
                                 image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],

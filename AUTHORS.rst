@@ -16,7 +16,7 @@ particular:
 * `Gael Varoquaux <http://gael-varoquaux.info/>`_
 * Philippe Gervais
 * Michael Eickenberg
-* `Chris Filo Gorgolewski <http://multiplecomparisons.blogspot.fr/`_
+* `Chris Filo Gorgolewski <http://multiplecomparisons.blogspot.fr/>`_
 * Danilo Bzdok
 * Loïc Estève
 * `Ben Cippolini <http://cseweb.ucsd.edu/~bcipolli/>`_

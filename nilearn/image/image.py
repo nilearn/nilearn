@@ -7,19 +7,20 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
-from six import string_types
 
 import numpy as np
 from scipy import ndimage
-import nibabel
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
-from .._utils import check_niimgs, check_niimg, as_ndarray, _repr_niimgs
-from .._utils.niimg_conversions import (_safe_get_data, check_niimgs,
-                                        _index_niimgs)
+from .resampling import reorder_img
+from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
+                      _repr_niimgs)
+from .._utils.niimg_conversions import _index_niimgs
+from .._utils.niimg import new_img_like, _safe_get_data
+from .._utils.compat import _basestring
 from .. import masking
-from nilearn.image import reorder_img
+
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
@@ -75,7 +76,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         sigs = masking.apply_mask(imgs, mask_img)
     else:
         # Load the data only if it doesn't need to be masked
-        imgs = check_niimgs(imgs)
+        imgs = check_niimg_4d(imgs)
         sigs = as_ndarray(imgs.get_data())
         # Not using apply_mask here saves memory in most cases.
         del imgs  # help reduce memory consumption
@@ -241,7 +242,7 @@ def smooth_img(imgs, fwhm):
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     if hasattr(imgs, "__iter__") \
-       and not isinstance(imgs, string_types):
+       and not isinstance(imgs, _basestring):
         single_img = False
     else:
         single_img = True
@@ -253,7 +254,7 @@ def smooth_img(imgs, fwhm):
         affine = img.get_affine()
         filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
                                  ensure_finite=True, copy=True)
-        ret.append(nibabel.Nifti1Image(filtered, affine))
+        ret.append(new_img_like(img, filtered, affine, copy_header=True))
 
     if single_img:
         return ret[0]
@@ -291,7 +292,7 @@ def _crop_img_to(img, slices, copy=True):
         Cropped version of the input image
     """
 
-    img = check_niimg(img)
+    img = check_niimg_3d(img)
 
     data = img.get_data()
     affine = img.get_affine()
@@ -309,9 +310,7 @@ def _crop_img_to(img, slices, copy=True):
     new_affine[:3, :3] = linear_part
     new_affine[:3, 3] = new_origin
 
-    new_img = nibabel.Nifti1Image(cropped_data, new_affine)
-
-    return new_img
+    return new_img_like(img, cropped_data, new_affine)
 
 
 def crop_img(img, rtol=1e-8, copy=True):
@@ -342,7 +341,7 @@ def crop_img(img, rtol=1e-8, copy=True):
         Cropped version of the input image
     """
 
-    img = check_niimg(img)
+    img = check_niimg_3d(img)
     data = img.get_data()
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(data < -rtol * infinity_norm,
@@ -368,7 +367,7 @@ def _compute_mean(imgs, target_affine=None,
     from . import resampling
     input_repr = _repr_niimgs(imgs)
 
-    imgs = check_niimgs(imgs, accept_3d=True)
+    imgs = check_niimg(imgs)
     mean_img = _safe_get_data(imgs)
     if not mean_img.ndim in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
@@ -377,7 +376,7 @@ def _compute_mean(imgs, target_affine=None,
     if mean_img.ndim == 4:
         mean_img = mean_img.mean(axis=-1)
     mean_img = resampling.resample_img(
-        nibabel.Nifti1Image(mean_img, imgs.get_affine()),
+        new_img_like(imgs, mean_img, imgs.get_affine()),
         target_affine=target_affine, target_shape=target_shape)
     affine = mean_img.get_affine()
     mean_img = mean_img.get_data()
@@ -428,45 +427,37 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         mean image
 
     """
-    if (isinstance(imgs, string_types) or
-        not isinstance(imgs, collections.Iterable)):
+    if (isinstance(imgs, _basestring) or
+            not isinstance(imgs, collections.Iterable)):
         imgs = [imgs, ]
-        total_n_imgs = 1
-    else:
-        try:
-            total_n_imgs = len(imgs)
-        except:
-            total_n_imgs = None
 
     imgs_iter = iter(imgs)
+    first_img = check_niimg(next(imgs_iter))
 
+    # Compute the first mean to retrieve the reference
+    # target_affine and target_shape if_needed
+    n_imgs = 1
+    running_mean, first_affine = _compute_mean(first_img,
+                target_affine=target_affine,
+                target_shape=target_shape)
     if target_affine is None or target_shape is None:
-        # Compute the first mean to retrieve the reference
-        # target_affine and target_shape
-        n_imgs = 1
-        running_mean, target_affine = _compute_mean(next(imgs_iter),
-                    target_affine=target_affine,
-                    target_shape=target_shape)
+        target_affine = first_affine
         target_shape = running_mean.shape[:3]
-    else:
-        running_mean = None
-        n_imgs = 0
 
-    if not (total_n_imgs == 1 and n_imgs == 1):
-        for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
-                delayed(_compute_mean)(n, target_affine=target_affine,
-                                       target_shape=target_shape)
-                for n in imgs_iter):
-            n_imgs += 1
-            # _compute_mean returns (mean_img, affine)
-            this_mean = this_mean[0]
-            if running_mean is None:
-                running_mean = this_mean
-            else:
-                running_mean += this_mean
+    for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
+            delayed(_compute_mean)(n, target_affine=target_affine,
+                                   target_shape=target_shape)
+            for n in imgs_iter):
+        n_imgs += 1
+        # _compute_mean returns (mean_img, affine)
+        this_mean = this_mean[0]
+        if running_mean is None:
+            running_mean = this_mean
+        else:
+            running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
-    return nibabel.Nifti1Image(running_mean, target_affine)
+    return new_img_like(first_img, running_mean, target_affine)
 
 
 def swap_img_hemispheres(img):
@@ -496,14 +487,14 @@ def swap_img_hemispheres(img):
     """
 
     # Check input is really a path to a nifti file or a nifti object
-    img = check_niimg(img)
+    img = check_niimg_3d(img)
 
     # get nifti in x-y-z order
     img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = nibabel.Nifti1Image(img.get_data()[::-1], img.get_affine(),
-                                  header=img.get_header())
+    out_img = new_img_like(img, img.get_data()[::-1], img.get_affine(),
+                           copy_header=True)
 
     return out_img
 
@@ -527,7 +518,7 @@ def index_img(imgs, index):
     output: nibabel.Nifti1Image
 
     """
-    imgs = check_niimgs(imgs)
+    imgs = check_niimg_4d(imgs)
     return _index_niimgs(imgs, index)
 
 
@@ -543,4 +534,4 @@ def iter_img(imgs):
     -------
     output: iterator of 3D nibabel.Nifti1Image
     """
-    return check_niimgs(imgs, return_iterator=True)
+    return check_niimg_4d(imgs, return_iterator=True)

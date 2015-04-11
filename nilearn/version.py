@@ -5,7 +5,23 @@ nilearn version, required package versions, and utilities for checking
 # Author: Loïc Estève, Ben Cipollini
 # License: simplified BSD
 
-__version__ = '0.1.2'
+# PEP0440 compatible formatted version, see:
+# https://www.python.org/dev/peps/pep-0440/
+#
+# Generic release markers:
+# X.Y
+# X.Y.Z # For bugfix releases
+#
+# Admissible pre-release markers:
+# X.YaN # Alpha release
+# X.YbN # Beta release
+# X.YrcN # Release Candidate
+# X.Y # Final release
+#
+# Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
+# 'X.Y.dev0' is the canonical version of 'X.Y.dev'
+#
+__version__ = '0.1.3.dev0'
 
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
@@ -15,7 +31,7 @@ _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
 #   collections.OrderedDict to preserve Python 2.6 compatibility.
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.6.0',
+        'min_version': '1.6.1',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
@@ -23,15 +39,14 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('sklearn', {
-        'min_version': '0.10',
+        'min_version': '0.12.1',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '1.1.0',
-        'required_at_installation': False}),
-    ('six', {
-        'min_version': '0.0.0',
         'required_at_installation': False}))
+
+OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.1.1'
 
 
 def _import_module_with_version_check(

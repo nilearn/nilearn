@@ -55,5 +55,8 @@ def test_filter_and_mask():
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
 
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+
     assert_raises_regex(TypeError, "A 3D image is expected", filter_and_mask,
-                        data, mask, {})
+                         data_img, mask_img, {})

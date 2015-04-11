@@ -12,7 +12,6 @@ import itertools
 
 import numpy as np
 import scipy.linalg
-from six.moves import xrange
 
 import sklearn.cross_validation
 import sklearn.covariance
@@ -291,7 +290,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     # Used in the innermost loop. Computed here to save some computation.
     alpha2 = alpha ** 2
 
-    for n in xrange(max_iter):
+    for n in range(max_iter):
         if max_norm is not None:
             suffix = (" variation (max norm): {max_norm:.3e} ".format(
                 max_norm=max_norm))
@@ -303,13 +302,13 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                                   suffix=suffix), verbose=verbose)
 
         omega_old[...] = omega
-        for p in xrange(n_features):
+        for p in range(n_features):
 
             if p == 0:
                 # Initial state: remove first col/row
                 W = omega[1:, 1:, :].copy()   # stack of W(k)
                 W_inv = np.ndarray(shape=W.shape, dtype=np.float)
-                for k in xrange(W.shape[2]):
+                for k in range(W.shape[2]):
                     # stack of W^-1(k)
                     W_inv[..., k] = scipy.linalg.inv(W[..., k])
                     if debug:
@@ -345,7 +344,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             u[:, :p] = emp_covs[:p, p, :].T
             u[:, p:] = emp_covs[p + 1:, p, :].T
 
-            for m in xrange(n_features - 1):
+            for m in range(n_features - 1):
                 # Coordinate descent on y
 
                 # T(k) -> n_samples[k]
@@ -416,7 +415,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             omega[p, :p, :] = y[:, :p].T
             omega[p, p + 1:, :] = y[:, p:].T
 
-            for k in xrange(n_subjects):
+            for k in range(n_subjects):
                 omega[p, p, k] = 1. / emp_covs[p, p, k] + np.dot(
                     np.dot(y[k, :], W_inv[..., k]), y[k, :])
 

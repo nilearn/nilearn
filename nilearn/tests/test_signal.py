@@ -138,6 +138,16 @@ def test_butterworth():
                           copy=False)
     np.testing.assert_almost_equal(out1, data)
 
+    # Test nyquist frequency clipping, issue #482
+    out1 = nisignal.butterworth(data, sampling,
+                                 low_pass=50.,
+                                 copy=True)
+    out2 = nisignal.butterworth(data, sampling,
+                                 low_pass=80.,  # Greater than nyq frequency
+                                 copy=True)
+    np.testing.assert_almost_equal(out1, out2)
+
+
 
 def test_standardize():
     rand_gen = np.random.RandomState(0)

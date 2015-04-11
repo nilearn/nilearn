@@ -5,7 +5,6 @@ import itertools
 import numpy as np
 import warnings
 from scipy import linalg
-from six import string_types
 
 import nibabel
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -17,6 +16,7 @@ from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
 from .._utils import as_ndarray
+from .._utils.compat import _basestring
 
 def session_pca(imgs, mask_img, parameters,
                 n_components=20,
@@ -201,7 +201,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         """
 
         # Hack to support single-subject data:
-        if isinstance(imgs, (string_types, nibabel.Nifti1Image)):
+        if isinstance(imgs, (_basestring, nibabel.Nifti1Image)):
             imgs = [imgs]
             # This is a very incomplete hack, as it won't work right for
             # single-subject list of 3D filenames

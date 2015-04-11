@@ -173,7 +173,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
                     "Acceptable values are 'background' and 'epi'." % self.mask_strategy)
             if self.verbose > 0:
                 print("[%s.fit] Computing the mask" % self.__class__.__name__)
-            imgs = _utils.check_niimgs(imgs, accept_3d=True)
             self.mask_img_ = self._cache(compute_mask,
                               func_memory_level=1,
                               ignore=['verbose'])(
@@ -181,8 +180,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 verbose=max(0, self.verbose - 1),
                 **mask_args)
         else:
-            self.mask_img_ = _utils.check_niimg(self.mask_img,
-                                                ensure_3d=True)
+            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both

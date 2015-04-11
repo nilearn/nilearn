@@ -9,8 +9,6 @@ import warnings
 import numpy as np
 import itertools
 
-from six import string_types
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory, Parallel, delayed
 
@@ -20,6 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
+from .._utils.compat import _basestring
 
 
 def filter_and_mask(imgs, mask_img_,
@@ -33,15 +32,15 @@ def filter_and_mask(imgs, mask_img_,
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
 
-    if isinstance(imgs, string_types):
+    if isinstance(imgs, _basestring):
         copy = False
 
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=2)
 
-    mask_img_ = _utils.check_niimg(mask_img_, ensure_3d=True)
+    mask_img_ = _utils.check_niimg_3d(mask_img_)
 
-    imgs = _utils.check_niimgs(imgs, accept_3d=True)
+    imgs = _utils.check_niimg(imgs, atleast_4d=True)
     if sample_mask is not None:
         imgs = image.index_img(imgs, sample_mask)
 
@@ -141,7 +140,7 @@ def _safe_filter_and_mask(imgs, mask_img_,
                          confounds=None,
                          reference_affine=None,
                          copy=True):
-    imgs = _utils.check_niimgs(imgs, accept_3d=True)
+    imgs = _utils.check_niimg(imgs)
 
     # If there is a reference affine, we may have to force resampling
     target_affine = parameters['target_affine']
@@ -218,8 +217,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.target_affine is None:
             # Load the first image and use it as a reference for all other
             # subjects
-            reference_affine = _utils.check_niimgs(imgs_list[0],
-                                                   accept_3d=True).get_affine()
+            reference_affine = _utils.check_niimg(imgs_list[0]).get_affine()
 
         func = self._cache(_safe_filter_and_mask, func_memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
