@@ -478,7 +478,7 @@ class BaseSlicer(object):
                                            copy=False)
             img = new_img_like(img, data, img.get_affine())
 
-        # To make sure that add_overlay has a consistant default behavior
+        # Make sure that add_overlay shows consistent default behavior
         # with plot_stat_map
         kwargs.setdefault('interpolation', 'nearest')
         ims = self._map_show(img, type='imshow', **kwargs)
