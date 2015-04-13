@@ -145,7 +145,7 @@ a look at it.
     :end-before: # Generate mask with strong opening
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_2.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_002.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -159,7 +159,7 @@ opening steps (*opening=10*) using the `mask_args` argument of the
     :end-before: # Generate mask with a high lower cutoff
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_3.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_003.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -178,7 +178,7 @@ voxels that are very light on the EPI image.
     :end-before: ################################################################################
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_4.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_004.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -215,13 +215,13 @@ Automatic computation of offset and bounding box can be performed by
 specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
 computes automatically the translation part of the affine.
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_2.png
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_002.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_4.png
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_004.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_3.png
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_003.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 

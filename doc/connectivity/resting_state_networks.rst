@@ -61,11 +61,11 @@ We can visualize the components as in the previous examples.
 .. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
     :start-after: ### Visualize the results #####################################################
 
-.. |left_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_2.png
+.. |left_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_002.png
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
    :width: 48%
 
-.. |right_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_3.png
+.. |right_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_003.png
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
    :width: 48%
 

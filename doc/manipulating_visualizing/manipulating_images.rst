@@ -203,7 +203,7 @@ can be easily extracted from the fMRI data using the
 
    compute_epi_mask
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_2.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: right
     :scale: 50%
@@ -232,7 +232,7 @@ array to a 2D array, `voxel` **x** `time`, as depicted below:
      :start-after: ### Applying the mask #########################################################
      :end-before: ### Find voxels of interest ###################################################
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_3.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: center
     :scale: 50
@@ -295,7 +295,7 @@ use file names as input parameters.
     :start-after: # Smooth the data
     :end-before: # Run a T-test for face and houses
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_1.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_001.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -322,7 +322,7 @@ more discriminative is the voxel.
     :start-after: # Run a T-test for face and houses
     :end-before: ### Build a mask ##############################################################
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_2.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -341,7 +341,7 @@ is easy thanks to numpy indexing a la Matlab.
     :start-after: # Thresholding
     :end-before: # Binarization and intersection with VT mask
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_3.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -360,7 +360,7 @@ that are selected in both masks.
     :start-after: # Binarization and intersection with VT mask
     :end-before: # Dilation
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_4.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_004.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -376,7 +376,7 @@ not to forget voxels located on the edge of a ROI.
     :start-after: # Dilation
     :end-before: # Identification of connected components
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_5.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_005.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -392,7 +392,7 @@ one of them.
     :start-after: # Identification of connected components
     :end-before: # use the new ROIs to extract data maps in both ROIs
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_6.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_006.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
