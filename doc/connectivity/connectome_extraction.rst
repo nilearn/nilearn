@@ -1,7 +1,7 @@
 .. _connectome_extraction:
 
 ============================================================================
-Connectome extraction: inverse covariance for direct connections 
+Connectome extraction: inverse covariance for direct connections
 ============================================================================
 
 .. topic:: **Page summary**
@@ -23,7 +23,7 @@ Connectome extraction: inverse covariance for direct connections
 
    * `Varoquaux and Craddock, Learning and comparing functional
      connectomes across subjects, NeuroImage 2013
-     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_ 
+     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
 
 Sparse inverse covariance for functional connectomes
 =====================================================
@@ -44,7 +44,7 @@ As shown in `[Smith 2011]
 interesting to use the inverse covariance matrix, ie the *precision
 matrix*. It gives **only direct connections between regions**, as it
 contains *partial covariances*, which are covariances between two regions
-conditioned on all the others. 
+conditioned on all the others.
 
 
 To recover well the interaction structure, a **sparse inverse covariance
@@ -157,7 +157,7 @@ group analysis only on the non zero coefficients.
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_multi_subject_connectome.py`
+    :ref:`example_connectivity_plot_multi_subject_connectome.py`
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
@@ -170,26 +170,26 @@ group analysis only on the non zero coefficients.
    **Hint:** The example above has the solution
 
 
-..   
+..
     .. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_002.png
     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
     :scale: 55
-  
+
     .. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_001.png
     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
     :scale: 55
-  
+
     .. centered:: |covariance| |precision|
 
 
 .. topic:: **Reference**
- 
+
  * The `group-sparse covariance [Varoquaux et al, NIPS 2010] <https://hal.inria.fr/inria-00512451>`_
 
 |
 
 Comparing the different approaches on simulated data
-===================================================
+====================================================
 
 We simulate several sets of signals, one set representing one subject,
 with different precision matrices, but sharing a common sparsity pattern:
