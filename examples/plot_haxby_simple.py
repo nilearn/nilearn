@@ -55,16 +55,10 @@ prediction = svc.predict(fmri_masked)
 
 ### Cross-validation ##########################################################
 
-from sklearn.cross_validation import KFold
+from sklearn.cross_validation import KFold, cross_val_score
 
 cv = KFold(n=len(fmri_masked), n_folds=5)
-cv_scores = []
-
-for train, test in cv:
-    svc.fit(fmri_masked[train], target[train])
-    prediction = svc.predict(fmri_masked[test])
-    cv_scores.append(np.sum(prediction == target[test])
-                     / float(np.size(target[test])))
+cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
 
 print(cv_scores)
 
