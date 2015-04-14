@@ -16,27 +16,27 @@ Nilearn has a set of plotting functions to plot brain volumes that are
 fined tuned to specific applications. Amongst other things, they use
 different heuristics to find cutting coordinates.
 
-.. |plot_stat_map| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_1.png
+.. |plot_stat_map| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_001.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_2.png
+.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_002.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_connectome| image:: auto_examples/connectivity/images/plot_inverse_covariance_connectome_4.png
+.. |plot_connectome| image:: auto_examples/connectivity/images/plot_inverse_covariance_connectome_004.png
      :target: auto_examples/connectivity/plot_inverse_covariance_connectome.html
      :scale: 50
 
-.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_3.png
+.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_4.png
+.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_004.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_5.png
+.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_005.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
@@ -96,35 +96,35 @@ different heuristics to find cutting coordinates.
 Different display modes
 ========================
 
-.. |plot_ortho| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_1.png
+.. |plot_ortho| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_001.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_2.png
+.. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_002.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_3.png
+.. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_x_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_4.png
+.. |plot_x_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_004.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_5.png
+.. |plot_z_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_005.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_6.png
+.. |plot_xz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_006.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_7.png
+.. |plot_yx| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_007.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_8.png
+.. |plot_yz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_008.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
@@ -183,11 +183,11 @@ plot, and has methods to add overlays, contours or edge maps::
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_9.png
+.. |plot_edges| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_009.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_10.png
+.. |plot_contours| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_010.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
