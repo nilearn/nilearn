@@ -1683,10 +1683,13 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     atlas = atlas_img.get_data()
 
     labels = np.unique(atlas)
-    slices = ndimage.find_objects(atlas)
+    # ndimage.find_objects output contains None elements for labels
+    # that do not exist
+    found_slices = (s for s in ndimage.find_objects(atlas)
+                    if s is not None)
     middle_ind = (atlas.shape[0] - 1) // 2
     crosses_middle = [s.start < middle_ind and s.stop > middle_ind
-                      for s, _, _ in slices]
+                      for s, _, _ in found_slices]
 
     # Split every zone crossing the median plane into two parts.
     # Assumes that the background label is zero.
