@@ -600,20 +600,15 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def skip_if_running_nose(msg=None):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
-
-    Parameters
-    ==========
-    msg: string, optional
-        The message issued when SkipTest is raised
+def is_nose_running():
+    """Returns whether we are running the nose test loader
     """
     if 'nose' not in sys.modules:
         return
     try:
         import nose
     except ImportError:
-        return
+        return False
     # Now check that we have the loader in the call stask
     stack = inspect.stack()
     from nose import loader
@@ -622,7 +617,18 @@ def skip_if_running_nose(msg=None):
         loader_file_name = loader_file_name[:-1]
     for _, file_name, _, _, _, _ in stack:
         if file_name == loader_file_name:
-            if msg is not None:
-                raise nose.SkipTest(msg)
-            else:
-                raise nose.SkipTest
+            return True
+    return False
+
+
+def skip_if_running_nose(msg=''):
+    """ Raise a SkipTest if we appear to be running the nose test loader.
+
+    Parameters
+    ==========
+    msg: string, optional
+        The message issued when SkipTest is raised
+    """
+    if is_nose_running():
+        import nose
+        raise nose.SkipTest(msg)
