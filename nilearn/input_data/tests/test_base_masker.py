@@ -58,5 +58,5 @@ def test_filter_and_mask():
     data_img = nibabel.Nifti1Image(data, np.eye(4))
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    assert_raises_regex(TypeError, "A 3D image is expected", filter_and_mask,
+    assert_raises_regex(TypeError, "Data must be a 3D", filter_and_mask,
                          data_img, mask_img, {})
