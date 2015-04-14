@@ -11,21 +11,15 @@ import numbers
 import numpy as np
 from scipy import sparse, stats
 
-from .._utils.testing import skip_if_running_nose
 from .._utils import new_img_like
 from .._utils.compat import _basestring
 from .. import _utils
 
-try:
-    import matplotlib.pyplot as plt
-    from matplotlib import transforms, colors
-    from matplotlib.colorbar import ColorbarBase
-    from matplotlib import cm as mpl_cm
-    from matplotlib import lines
-except ImportError:
-    skip_if_running_nose('Could not import matplotlib')
-    raise
-
+import matplotlib.pyplot as plt
+from matplotlib import transforms, colors
+from matplotlib.colorbar import ColorbarBase
+from matplotlib import cm as mpl_cm
+from matplotlib import lines
 
 # Local imports
 from . import glass_brain, cm
