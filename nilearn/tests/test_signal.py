@@ -148,7 +148,6 @@ def test_butterworth():
     np.testing.assert_almost_equal(out1, out2)
 
 
-
 def test_standardize():
     rand_gen = np.random.RandomState(0)
     n_features = 10
@@ -169,6 +168,11 @@ def test_standardize():
     a = np.atleast_2d(np.linspace(0, 2., n_features)).T
     b = nisignal._standardize(a, detrend=True, normalize=False)
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
+
+    length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
+    np.testing.assert_array_equal(length_1_signal,
+                                  nisignal._standardize(length_1_signal,
+                                                        normalize=True))
 
 
 def test_detrend():
@@ -206,6 +210,10 @@ def test_detrend():
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
 
+    length_1_signal = x[0]
+    length_1_signal = length_1_signal[np.newaxis, :]
+    np.testing.assert_array_equal(length_1_signal,
+                                  nisignal._detrend(length_1_signal))
 
 def test_mean_of_squares():
     """Test _mean_of_squares."""

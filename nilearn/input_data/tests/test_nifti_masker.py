@@ -46,6 +46,19 @@ def test_auto_mask():
         'has not been fitted. ', masker2.transform, img)
 
 
+def test_detrend():
+    # Check that detrending doesn't do something stupid with 3D images
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = Nifti1Image(data, np.eye(4))
+    mask = data.astype(np.int)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img, detrend=True)
+    # Smoke test the fit
+    X = masker.fit_transform(img)
+    assert_true(np.any(X != 0))
+
+
 def test_with_files():
     # Standard masking
     data = np.zeros((40, 40, 40, 2))
