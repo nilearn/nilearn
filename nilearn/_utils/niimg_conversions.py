@@ -7,6 +7,7 @@ Conversion utilities.
 import types
 
 import numpy as np
+import inspect
 from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
@@ -268,7 +269,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     target_fov = 'first' if auto_resample else None
     lengths = []
     first_niimg = None
-    if not isinstance(niimgs, types.GeneratorType):
+    if not inspect.isgenerator(niimgs):
         from nilearn import image  # we avoid a circular import
         # XXX: we should find a way to get the fov from previous iterator
         try:
