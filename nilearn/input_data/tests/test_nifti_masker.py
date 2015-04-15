@@ -31,9 +31,6 @@ def test_auto_mask():
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker()
-    # Check that if we have not fit the masker we get a intelligible
-    # error
-    assert_raises(ValueError, masker.transform, [img, ])
     # Smoke test the fit
     masker.fit(img)
     # Smoke test the transform
