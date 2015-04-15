@@ -324,7 +324,7 @@ def check_niimg_4d(niimgs, return_iterator=False):
     if return_iterator:
         return _iter_check_niimg_4d(niimgs)
 
-    return concat_niimgs(niimgs)
+    return concat_niimgs(niimgs, accept_4d=True)
 
 
 def _index_niimgs(niimgs, index):

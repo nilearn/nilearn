@@ -151,6 +151,24 @@ def test_mask_4d():
     assert_array_equal(data_trans2, data_trans_direct)
 
 
+def test_4d_single_scan():
+    mask = np.zeros((10, 10, 10))
+    mask[3:7, 3:7, 3:7] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    data_5d = [np.random.random((10, 10, 10, 1)) for i in range(5)]
+    data_4d = [d[..., 0] for d in data_5d]
+    data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
+    data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
+
+    masker = NiftiMasker(mask_img=mask_img)
+    masker.fit()
+    data_trans_5d = masker.transform(data_5d)
+    data_trans_4d = masker.transform(data_4d)
+
+    assert_array_equal(data_trans_4d, data_trans_5d)
+
+
 def test_sessions():
     # Test the sessions vector
     data = np.ones((40, 40, 40, 4))
