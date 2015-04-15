@@ -164,30 +164,20 @@ def test_concat_niimgs():
     img1c = Nifti1Image(np.ones(shape3), affine)
 
     # check basic concatenation with equal shape/affine
-    concatenated = _utils.concat_niimgs((img1, img3, img1),
-                                        accept_4d=False)
-    concatenate_true = np.ones(shape + (3,))
+    concatenated = _utils.concat_niimgs((img1, img3, img1))
 
-    # Smoke-test the accept_4d
-    assert_raises_regex(ValueError, 'image',
-                        _utils.concat_niimgs, [img1, img4d], accept_4d=False)
-    concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
-    np.testing.assert_equal(concatenated.get_data(), concatenate_true,
-                            verbose=0)
+    assert_raises_regex(TypeError, 'image',
+                        _utils.concat_niimgs, [img1, img4d])
 
     # smoke-test auto_resample
-    concatenated = _utils.concat_niimgs((img1, img1b, img1c), accept_4d=False,
+    concatenated = _utils.concat_niimgs((img1, img1b, img1c),
         auto_resample=True)
     assert_true(concatenated.shape == img1.shape + (3, ))
 
     # check error for non-forced but necessary resampling
     assert_raises_regex(ValueError, 'Field of view of image',
                         _utils.concat_niimgs, [img1, img2],
-                        accept_4d=False, auto_resample=False)
-
-    # Smoke-test the 4d parsing
-    concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
-    assert_equal(concatenated.shape[3], 3)
+                        auto_resample=False)
 
     # test list of 4D niimgs as input
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
@@ -195,8 +185,7 @@ def test_concat_niimgs():
     try:
         nibabel.save(img1, tmpimg1)
         nibabel.save(img3, tmpimg2)
-        concatenated = _utils.concat_niimgs([tmpimg1, tmpimg2],
-                                            accept_4d=False)
+        concatenated = _utils.concat_niimgs([tmpimg1, tmpimg2])
         assert_array_equal(
             concatenated.get_data()[..., 0], img1.get_data())
         assert_array_equal(
