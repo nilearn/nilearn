@@ -45,6 +45,8 @@ def _standardize(signals, detrend=False, normalize=True):
         signals = _detrend(signals, inplace=False)
     else:
         signals = signals.copy()
+    if signals.shape[0] == 1:
+        return signals
 
     if normalize:
         # remove mean if not already detrended
@@ -122,9 +124,17 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     =======
     detrended_signals: numpy.ndarray
         Detrended signals. The shape is that of 'signals'.
+
+    Notes
+    =====
+
+    If a signal of lenght 1 is given, it is returned unchanged.
+
     """
     if not inplace:
         signals = signals.copy()
+    if signals.shape[0] == 1:
+        return signals
 
     signals -= np.mean(signals, axis=0)
     if type == "linear":
