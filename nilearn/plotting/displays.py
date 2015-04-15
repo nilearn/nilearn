@@ -594,16 +594,13 @@ class BaseSlicer(object):
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=im.norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
-            spacing='proportional')
-        self._cbar.set_ticklabels(["%.2g" % t for t in ticks])
+            spacing='proportional', format='%.2g')
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
         for tick in self._colorbar_ax.yaxis.get_ticklabels():
             tick.set_color(tick_color)
         self._colorbar_ax.yaxis.set_tick_params(width=0)
-
-        self._cbar.update_ticks()
 
     def add_edges(self, img, color='r'):
         """ Plot the edges of a 3D map in all the views.
