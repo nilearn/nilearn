@@ -275,7 +275,7 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     if not inspect.isgenerator(niimgs):
         iterator = iter(niimgs)
         try:
-            first_niimg = check_niimg(iterator.next())
+            first_niimg = check_niimg(next(iterator))
         except StopIteration:
             raise TypeError('Cannot concatenate empty objects')
 
