@@ -1223,10 +1223,10 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
     kwargs = {}
     if fetch_stimuli:
-        files = [(os.path.join('stimuli', 'README'),
-                  url + 'stimuli-2010.01.14.tar.gz',
-                  {'uncompress': True})]
-        readme = _fetch_files(data_dir, files, resume=resume,
+        stimuli_files = [(os.path.join('stimuli', 'README'),
+                          url + 'stimuli-2010.01.14.tar.gz',
+                          {'uncompress': True})]
+        readme = _fetch_files(data_dir, stimuli_files, resume=resume,
                               verbose=verbose)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
