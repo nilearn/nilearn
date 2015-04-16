@@ -18,7 +18,7 @@ from numpy.testing import assert_array_equal
 import nibabel
 from nibabel import Nifti1Image
 
-from nilearn import _utils
+from nilearn import _utils, image
 from nilearn._utils import testing
 from nilearn._utils.testing import assert_raises_regex
 
@@ -193,3 +193,26 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
+
+
+def niftigen(buffer):
+    for i in range(10):
+        buffer.append(Nifti1Image(np.random.random((10, 10, 10)), np.eye(4)))
+        yield buffer[-1]
+
+
+def test_iterator_generator():
+    # Create a list of random images
+    l = [Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
+         for i in range(10)]
+    _utils.concat_niimgs(l)
+
+    # Same with iteration
+    i = image.iter_img(l)
+    _utils.concat_niimgs(i)
+
+    # Now, a generator
+    b = []
+    g = niftigen(b)
+    _utils.concat_niimgs(g)
+    assert_true(len(b), 10)
