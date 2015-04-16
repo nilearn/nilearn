@@ -19,14 +19,9 @@ import numpy as np
 from scipy import ndimage
 from nibabel.spatialimages import SpatialImage
 
-from .._utils.testing import skip_if_running_nose
 from .._utils.numpy_conversions import as_ndarray
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    skip_if_running_nose('Could not import matplotlib')
-    raise
+import matplotlib.pyplot as plt
 
 from .. import _utils
 from .._utils import new_img_like

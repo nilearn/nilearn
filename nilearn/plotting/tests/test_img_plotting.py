@@ -8,17 +8,9 @@ from functools import partial
 import numpy as np
 from scipy import sparse
 
-from nose import SkipTest
 from nose.tools import assert_raises, assert_true, assert_equal
 
-try:
-    import matplotlib as mp
-    # Make really sure that we don't try to open an Xserver connection.
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
-except ImportError:
-    raise SkipTest('Could not import matplotlib')
+import matplotlib.pyplot as plt
 
 import nibabel
 
@@ -60,52 +52,43 @@ def demo_plot_roi(**kwargs):
 
 def test_demo_plot_roi():
     # This is only a smoke test
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     demo_plot_roi()
     # Test the black background code path
     demo_plot_roi(black_bg=True)
 
-    with tempfile.TemporaryFile(suffix='.png') as fp:
+    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         out = demo_plot_roi(output_file=fp)
     assert_true(out is None)
 
 
 def test_plot_anat():
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     img = _generate_img()
 
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
-    with tempfile.TemporaryFile(suffix='.png') as fp:
+    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         z_slicer.savefig(fp.name)
     z_slicer = plot_anat(display_mode='z')
-    with tempfile.TemporaryFile(suffix='.png') as fp:
+    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         z_slicer.savefig(fp.name)
 
     ortho_slicer = plot_anat(img, dim=True)
-    with tempfile.TemporaryFile(suffix='.png') as fp:
+    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         ortho_slicer.savefig(fp.name)
 
 
 def test_plot_functions():
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     img = _generate_img()
 
     # smoke-test for each plotting function with default arguments
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
                       plot_glass_brain]:
-        with tempfile.TemporaryFile(suffix='.png') as fp:
+        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
             plot_func(img, output_file=fp.name)
 
     # test for bad input arguments (cf. #510)
     ax = plt.subplot(111, rasterized=True)
-    with tempfile.TemporaryFile(suffix='.png') as fp:
+    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         plot_stat_map(
             img, symmetric_cbar=True,
             output_file=fp.name,
@@ -114,9 +97,6 @@ def test_plot_functions():
 
 
 def test_plot_glass_brain():
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     img = _generate_img()
 
     # test plot_glass_brain with colorbar
@@ -124,9 +104,6 @@ def test_plot_glass_brain():
 
 
 def test_plot_stat_map():
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     img = _generate_img()
 
     plot_stat_map(img, cut_coords=(80, -120, -60))
@@ -154,27 +131,21 @@ def test_plot_stat_map():
 
 
 def test_save_plot():
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     img = _generate_img()
 
     kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
 
     for kwargs in kwargs_list:
-        with tempfile.TemporaryFile(suffix='.png') as fp:
+        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
             display = plot_stat_map(img, output_file=fp.name, **kwargs)
             assert_true(display is None)
 
         display = plot_stat_map(img, **kwargs)
-        with tempfile.TemporaryFile(suffix='.png') as fp:
+        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
             display.savefig(fp.name)
 
 
 def test_display_methods():
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     img = _generate_img()
 
     display = plot_img(img)
@@ -185,9 +156,6 @@ def test_display_methods():
 
 
 def test_plot_with_axes_or_figure():
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     img = _generate_img()
     figure = plt.figure()
     plot_img(img, figure=figure)
@@ -198,10 +166,6 @@ def test_plot_with_axes_or_figure():
 
 def test_plot_stat_map_colorbar_variations():
     # This is only a smoke test
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
-
     img_positive = _generate_img()
     data_positive = img_positive.get_data()
     rng = np.random.RandomState(42)
@@ -225,9 +189,6 @@ def test_plot_empty_slice():
     # Test that things don't crash when we give a map with nothing above
     # threshold
     # This is only a smoke test
-    mp.use('template', warn=False)
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     data = np.zeros((20, 20, 20))
     img = nibabel.Nifti1Image(data, mni_affine)
     plot_img(img, display_mode='y', threshold=1)
@@ -240,8 +201,6 @@ def test_plot_img_invalid():
 
 
 def test_plot_img_with_auto_cut_coords():
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -252,8 +211,6 @@ def test_plot_img_with_auto_cut_coords():
 
 
 def test_plot_img_with_resampling():
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     data = _generate_img().get_data()
     affine = np.array([[1., -1.,  0.,  0.],
                        [1.,  1.,  0.,  0.],
@@ -283,8 +240,6 @@ def test_plot_noncurrent_axes():
 
 
 def test_plot_connectome():
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     node_color = ['green', 'blue', 'k', 'cyan']
     # symmetric up to 1e-3 relative tolerance
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
@@ -345,8 +300,6 @@ def test_plot_connectome():
 
 
 def test_plot_connectome_exceptions():
-    import matplotlib.pyplot as plt
-    plt.switch_backend('template')
     node_coords = np.arange(2 * 3).reshape((2, 3))
 
     # Used to speed-up tests because the glass brain is always plotted
