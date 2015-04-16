@@ -205,14 +205,17 @@ def test_iterator_generator():
     # Create a list of random images
     l = [Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
          for i in range(10)]
-    _utils.concat_niimgs(l)
+    cc = _utils.concat_niimgs(l)
+    assert_true(cc.shape[-1] == 10)
 
     # Same with iteration
     i = image.iter_img(l)
-    _utils.concat_niimgs(i)
+    cc = _utils.concat_niimgs(i)
+    assert_true(cc.shape[-1] == 10)
 
     # Now, a generator
     b = []
     g = niftigen(b)
-    _utils.concat_niimgs(g)
-    assert_true(len(b), 10)
+    cc = _utils.concat_niimgs(g)
+    assert_true(cc.shape[-1] == 10)
+    assert_true(len(b) == 10)
