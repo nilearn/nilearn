@@ -32,12 +32,10 @@ def _check_same_fov(img1, img2):
             and np.allclose(img1.get_affine(), img2.get_affine()))
 
 
-def _index_niimgs(niimgs, index):
+def _index_img(img, index):
     """Helper function for check_niimg_4d."""
     return new_img_like(
-        niimgs,
-        niimgs.get_data()[:, :, :, index],
-        niimgs.get_affine(),
+        img, img.get_data()[:, :, :, index], img.get_affine(),
         copy_header=True)
 
 
@@ -46,15 +44,15 @@ def _iter_check_niimg(niimgs, ndim=None, atleast_4d=False,
                       memory=Memory(cachedir=None),
                       memory_level=0, verbose=0):
     ref_fov = None
-    ndim_1 = ndim - 1 if ndim is not None else None
+    ndim_minus_one = ndim - 1 if ndim is not None else None
     if target_fov is not None and target_fov != "first":
         ref_fov = target_fov
     for i, niimg in enumerate(niimgs):
         try:
             niimg = check_niimg(
-                niimg, ndim=ndim_1, atleast_4d=atleast_4d)
+                niimg, ndim=ndim_minus_one, atleast_4d=atleast_4d)
             if i == 0:
-                ndim_1 = len(niimg.shape)
+                ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
                     ref_fov = (niimg.get_affine(), niimg.shape[:3])
 
