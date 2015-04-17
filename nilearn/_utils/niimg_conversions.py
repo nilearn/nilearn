@@ -139,7 +139,7 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
             "manipulating_mr_images.html#niimg." % (ndim, niimg.shape)))
 
     if return_iterator:
-        return (_index_niimgs(niimg, i) for i in range(niimg.shape[3]))
+        return (_index_img(niimg, i) for i in range(niimg.shape[3]))
 
     return niimg
 

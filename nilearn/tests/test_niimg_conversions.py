@@ -102,7 +102,8 @@ def test_check_niimg_4d():
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
 
     # This should raise an error: a 3D img is given and we want a 4D
-    assert_raises_regex(TypeError, 'image',
+    assert_raises_regex(TypeError, 'Data must be a 4D Niimg-like object but '
+                        'you provided an image of shape',
                         _utils.check_niimg_4d, img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
@@ -166,7 +167,8 @@ def test_concat_niimgs():
     # check basic concatenation with equal shape/affine
     concatenated = _utils.concat_niimgs((img1, img3, img1))
 
-    assert_raises_regex(TypeError, 'image',
+    assert_raises_regex(TypeError, 'Data must be a 3D Niimg-like object but '
+                        'you provided an image of shape',
                         _utils.concat_niimgs, [img1, img4d])
 
     # smoke-test auto_resample
