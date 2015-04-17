@@ -112,7 +112,7 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
 
     Its application is idempotent.
     """
-    # in case of an iterator:
+    # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
         if return_iterator:
             return _iter_check_niimg(niimg, ndim)
@@ -246,19 +246,22 @@ def concat_niimgs(niimgs, dtype=np.float32,
 
     # Optimizations
 
-    # Case 1: all niimgs are already loaded
+    # Case 1a: all niimgs are already loaded
     # -------------------------------------
 
     # In that case, we can browse the niimgs and count the lengths of the
     # final sequence to preallocate a numpy array
 
-    # Case 2: all niimgs are filepaths or memory mapped
+    # Case 1b: all niimgs are filepaths or memory mapped
     # -------------------------------------------------
 
     # Same as above, we do a first pass. It is less costly because we will
     # only read file headers.
+    # Note: this remark is theoritically but the actual implementation of
+    # check_niimg forces data loading so it is still less costly in term of
+    # memory but it may be slower than the strategy used in case 2
 
-    # Case 3: niimgs is a generator
+    # Case 2: niimgs is a generator
     # -----------------------------
 
     # This is the only case in which we can't browse it several times: we
