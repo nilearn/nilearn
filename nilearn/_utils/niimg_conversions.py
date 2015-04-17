@@ -90,8 +90,8 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
 
-    ndim: integer, optional
-        Must be 3 or 4. Indicate the dimensionality of the expected niimg. An
+    ndim: integer {3, 4}, optional
+        Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
     atleast_4d: boolean, optional
