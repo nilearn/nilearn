@@ -205,7 +205,8 @@ def check_niimg_4d(niimg, return_iterator=False):
     return check_niimg(niimg, ndim=4, return_iterator=return_iterator)
 
 
-def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
+def concat_niimgs(niimgs, dtype=np.float32,
+                  memory=Memory(cachedir=None), memory_level=0,
                   auto_resample=False, verbose=0):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
 
@@ -221,10 +222,6 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
 
     dtype: numpy dtype, optional
         the dtype of the returned image
-
-    accept_4d: boolean, optional
-        Also parse niimg-like objects in niimgs when one of them reflects
-        more than one image (i.e., has a time dimension)
 
     auto_resample: boolean
         Converts all images to the space of the first one.
@@ -266,7 +263,6 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
 
     # This is the only case in which we can't browse it several times: we
     # accumulate data in a list and concatenate it in the end
-    # Question is, will we ever get one?
 
     target_fov = 'first' if auto_resample else None
     first_niimg = None
@@ -288,10 +284,11 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
                           order="F", dtype=dtype)
         cur_4d_index = 0
         for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
-                niimgs, atleast_4d=True, target_fov=target_fov))):
+                niimgs, atleast_4d=True, target_fov=target_fov,
+                memory=memory, memory_level=memory_level))):
 
             if verbose > 0:
-                if (isinstance(niimg, _basestring)):
+                if isinstance(niimg, _basestring):
                     nii_str = "image " + niimg
                 else:
                     nii_str = "image #" + str(index)
@@ -302,12 +299,13 @@ def concat_niimgs(niimgs, dtype=np.float32, accept_4d=False,
     else:
         data = []  # use a list for dynamic memory allocation
         for index, niimg in enumerate(_iter_check_niimg(
-                niimgs, atleast_4d=True, target_fov=target_fov)):
+                niimgs, atleast_4d=True, target_fov=target_fov,
+                memory=memory, memory_level=memory_level)):
 
             if index == 0:
                 first_niimg = niimg
             if verbose > 0:
-                if (isinstance(niimg, _basestring)):
+                if isinstance(niimg, _basestring):
                     nii_str = "image " + niimg
                 else:
                     nii_str = "image #" + str(index)
