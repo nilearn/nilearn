@@ -121,7 +121,7 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg)
 
-    if (ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1):
+    if ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
         data = _safe_get_data(niimg)
         affine = niimg.get_affine()
@@ -132,11 +132,11 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
         niimg = new_img_like(niimg, data, niimg.get_affine())
 
     if ndim is not None and len(niimg.shape) != ndim:
-        raise(TypeError(
+        raise TypeError(
             "Data must be a %iD Niimg-like object but you provided an "
             "image of shape %s. See "
             "http://nilearn.github.io/building_blocks/"
-            "manipulating_mr_images.html#niimg." % (ndim, niimg.shape)))
+            "manipulating_mr_images.html#niimg." % (ndim, niimg.shape))
 
     if return_iterator:
         return (_index_img(niimg, i) for i in range(niimg.shape[3]))
