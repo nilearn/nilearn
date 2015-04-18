@@ -501,7 +501,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     Models". http://arxiv.org/abs/1207.4255.
     """
 
-    def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=1,
+    def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=0,
                  memory=Memory(cachedir=None), memory_level=0):
         self.alpha = alpha
         self.tol = tol
@@ -781,13 +781,13 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
     for alpha in alphas:
         precisions = _group_sparse_covariance(
             train_covs, train_n_samples, alpha, tol=tol, max_iter=max_iter,
-            precisions_init=precisions_init, verbose=verbose, debug=debug,
-            probe_function=probe_function)
+            precisions_init=precisions_init, verbose=max(0, verbose - 1),
+            debug=debug, probe_function=probe_function)
 
         # Compute log-likelihood
         if test_subjs is not None:
             test_covs, _ = empirical_covariances(
-                            test_subjs, assume_centered=False, standardize=True)
+                test_subjs, assume_centered=False, standardize=True)
             scores.append(group_sparse_scores(precisions, train_n_samples,
                                               test_covs, 0)[0])
         precisions_list.append(precisions)
@@ -806,7 +806,7 @@ class EarlyStopProbe(object):
     An instance of this class is supposed to be passed in the probe_function
     argument of group_sparse_covariance().
     """
-    def __init__(self, test_subjs, verbose=1):
+    def __init__(self, test_subjs, verbose=0):
         self.test_emp_covs, _ = empirical_covariances(test_subjs)
         self.verbose = verbose
 
@@ -912,7 +912,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     """
     def __init__(self, alphas=4, n_refinements=4, cv=None,
                  tol_cv=1e-2, max_iter_cv=50,
-                 tol=1e-3, max_iter=100, verbose=1,
+                 tol=1e-3, max_iter=100, verbose=0,
                  n_jobs=1, debug=False, early_stopping=True):
         self.alphas = alphas
         self.n_refinements = n_refinements
@@ -999,16 +999,18 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                                              for subject, (train, test)
                                              in zip(subjects, train_test)])))
             if self.early_stopping:
-                probes = [EarlyStopProbe(test_subjs, verbose=self.verbose)
+                probes = [EarlyStopProbe(test_subjs,
+                                         verbose=max(0, self.verbose - 1))
                           for _, test_subjs in train_test_subjs]
             else:
                 probes = itertools.repeat(None)
 
-            this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+            this_path = Parallel(n_jobs=self.n_jobs,
+                                 verbose=self.verbose)(
                 delayed(group_sparse_covariance_path)(
                     train_subjs, alphas, test_subjs=test_subjs,
                     max_iter=self.max_iter_cv, tol=self.tol_cv,
-                    verbose=self.verbose, debug=self.debug,
+                    verbose=max(0, self.verbose - 1), debug=self.debug,
                     # Warm restart is useless with early stopping.
                     precisions_init=None if self.early_stopping else prec_init,
                     probe_function=probe)
@@ -1089,5 +1091,5 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         self.precisions_ = _group_sparse_covariance(
             emp_covs, n_samples, self.alpha_, tol=self.tol,
             max_iter=self.max_iter,
-            verbose=self.verbose, debug=self.debug)
+            verbose=max(0, self.verbose - 1), debug=self.debug)
         return self
