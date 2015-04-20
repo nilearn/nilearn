@@ -288,7 +288,7 @@ def concat_niimgs(niimgs, dtype=np.float32,
                           order="F", dtype=dtype)
         cur_4d_index = 0
         for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
-                niimgs, atleast_4d=True, target_fov=target_fov,
+                iterator, atleast_4d=True, target_fov=target_fov,
                 memory=memory, memory_level=memory_level))):
 
             if verbose > 0:
