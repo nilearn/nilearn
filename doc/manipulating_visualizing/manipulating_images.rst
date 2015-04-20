@@ -39,10 +39,16 @@ They return a structure that contains the different file names::
     >>> print(list(haxby_files.keys()))
     ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
     >>> # Path to first functional file
-    >>> print(haxby_files.func[0] # doctest: +ELLIPSIS)
+    >>> print(haxby_files.func[0])  # doctest: +ELLIPSIS
     /.../nilearn_data/haxby2001/subj1/bold.nii.gz
     >>> # Provide information on the dataset
-    >>> print(haxby_files.description)
+    >>> print(haxby_files.description) # doctest: +ELLIPSIS
+    Haxby 2001 results
+
+
+    Notes
+    -----
+    Results from a classical fMRI study that...
 
 |
 
