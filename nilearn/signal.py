@@ -46,6 +46,8 @@ def _standardize(signals, detrend=False, normalize=True):
     else:
         signals = signals.copy()
     if signals.shape[0] == 1:
+        warnings.warn('Standardization of 3D signal has been requested but '
+            'would lead to zero values. Skipping.')
         return signals
 
     if normalize:
@@ -134,6 +136,8 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     if not inplace:
         signals = signals.copy()
     if signals.shape[0] == 1:
+        warnings.warn('Detrending of 3D signal has been requested but '
+            'would lead to zero values. Skipping.')
         return signals
 
     signals -= np.mean(signals, axis=0)
