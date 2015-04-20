@@ -40,7 +40,8 @@ masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
 data = datasets.fetch_adhd(n_subjects=1)
 
 # print basic information on the dataset
-print('Functional nifti images are at: %s' % data.func[0])  # 4D data
+print('First subject functional nifti images (4D) are at: %s' %
+      data.func[0])  # 4D data
 
 time_series = masker.fit_transform(data.func[0],
                                    confounds=data.confounds)

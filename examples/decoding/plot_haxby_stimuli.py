@@ -12,12 +12,14 @@ import matplotlib.pyplot as plt
 
 from nilearn import datasets
 
-haxby_dataset = datasets.fetch_haxby(n_subjects=0, fetch_stimuli=True)
-stimulus_information = haxby_dataset.stimuli
+haxby_dataset = datasets.fetch_haxby(n_subjects=1, fetch_stimuli=True)
+# stimulus_information = haxby_dataset.stimuli
 
 # print basic information on the dataset
-print('Anatomical nifti images are located at: ' % haxby_dataset.anat[0])
-print('Functional nifti images are located at: ' % haxby_dataset.func[0])
+print('First subject anatomical nifti image (3D) located is at: %s' %
+      haxby_dataset.anat[0])
+print('First subject functional nifti image (4D) is located at: %s' %
+      haxby_dataset.func[0])
 
 for stim_type in sorted(stimulus_information.keys()):
     if stim_type == b'controls':

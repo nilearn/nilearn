@@ -30,7 +30,7 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'], n_subjects=n_samples)
 
 # print basic information on the dataset
-print('First functional nifti images are located at: %s' %
+print('First contrast nifti image (3D) is located at: %s' %
       localizer_dataset.cmaps[0])
 
 tested_var = localizer_dataset.ext_vars['pseudo']

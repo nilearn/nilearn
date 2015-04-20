@@ -27,7 +27,8 @@ adhd_dataset = datasets.fetch_adhd()
 func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
-print('Functional nifti images are at: %s' % adhd_dataset.func[0])  # 4D data
+print('First functional nifti image (4D) is at: %s' %
+      adhd_dataset.func[0])  # 4D data
 
 ### Apply CanICA ##############################################################
 from nilearn.decomposition.canica import CanICA

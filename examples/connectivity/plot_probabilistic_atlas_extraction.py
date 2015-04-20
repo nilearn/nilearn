@@ -39,7 +39,8 @@ masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
 data = datasets.fetch_adhd(n_subjects=1)
 
 # print basic dataset information
-print('Resting-state nifti images are located at: %s' % data.func[0])
+print('First subject resting-state nifti image (4D) is located at: %s' %
+      data.func[0])
 
 time_series = masker.fit_transform(data.func[0],
                                    confounds=data.confounds)

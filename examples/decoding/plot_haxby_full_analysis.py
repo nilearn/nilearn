@@ -19,8 +19,10 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
 # print basic information on the dataset
-print('Anatomical nifti image is at: %s' % haxby_dataset.anat[0])
-print('Functional nifti images are at: %s' % haxby_dataset.func[0])  # 4D data
+print('First subject anatomical nifti image (3D) located is at: %s' %
+      haxby_dataset.anat[0])
+print('First subject functional nifti image (4D) is located at: %s' %
+      haxby_dataset.func[0])
 
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
 from nilearn.input_data import NiftiMasker
