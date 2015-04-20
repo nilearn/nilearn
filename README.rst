@@ -40,7 +40,6 @@ The required dependencies to use the software are:
 * SciPy >= 0.9
 * Scikit-learn >= 0.12.1
 * Nibabel >= 1.1.0
-* Six
 
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.1.1 is required.
