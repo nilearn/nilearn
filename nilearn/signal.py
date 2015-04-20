@@ -26,20 +26,24 @@ def _standardize(signals, detrend=False, normalize=True):
 
     Parameters
     ==========
-    signals: numpy.ndarray
+    signals : numpy.ndarray
         Timeseries to standardize
 
-    detrend: bool
+    detrend : bool
         if detrending of timeseries is requested
 
-    normalize: bool
+    normalize : bool
         if True, shift timeseries to zero mean value and scale
         to unit energy (sum of squares).
 
     Returns
     =======
-    std_signals: numpy.ndarray
+    std_signals : numpy.ndarray
         copy of signals, normalized.
+
+    std : numpy.ndarray
+        The standard deviation of the signals: multiply the output
+        signals by this quantity to get the original signals back
     """
     if detrend:
         signals = _detrend(signals, inplace=False)
@@ -408,14 +412,9 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                       (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
-    # Standardize / detrend
-    normalize = False
-    if confounds is not None:
-        # If confounds are to be removed, then force normalization to improve
-        # matrix conditioning.
-        normalize = True
+    # detrend
     signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=normalize, detrend=detrend)
+    signals = _standardize(signals, normalize=False, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
