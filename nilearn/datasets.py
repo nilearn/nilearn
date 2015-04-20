@@ -1647,18 +1647,20 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                              atlas_name, '\n'.join(atlas_items)))
 
     # grab data from internet first
-    url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
+    url = 'https://www.nitrc.org/frs/download.php/7629/HarvardOxford.tgz'
     dataset_name = 'harvard_oxford'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 env_vars=['FSL_DIR', 'FSLDIR'],
                                 verbose=verbose)
     opts = {'uncompress': True}
-    atlas_file = os.path.join('HarvardOxford',
+    root = os.path.join('data', 'atlases')
+    atlas_file = os.path.join(root, 'HarvardOxford',
                               'HarvardOxford-' + atlas_name + '.nii.gz')
     if atlas_name[0] == 'c':
         label_file = 'HarvardOxford-Cortical.xml'
     else:
         label_file = 'HarvardOxford-Subcortical.xml'
+    label_file = os.path.join(root, label_file)
 
     atlas_img, label_file = _fetch_files(
         data_dir,
