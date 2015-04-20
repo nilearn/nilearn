@@ -1157,8 +1157,9 @@ class OrthoProjector(OrthoSlicer):
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():
             ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
-            ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
-                          **edge_kwargs)
+            if line_coords:
+                ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
+                              **edge_kwargs)
 
         plt.draw_if_interactive()
 
