@@ -31,9 +31,6 @@ def test_auto_mask():
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker()
-    # Check that if we have not fit the masker we get a intelligible
-    # error
-    assert_raises(ValueError, masker.transform, [img, ])
     # Smoke test the fit
     masker.fit(img)
     # Smoke test the transform
@@ -47,6 +44,19 @@ def test_auto_mask():
     testing.assert_raises_regex(
         ValueError,
         'has not been fitted. ', masker2.transform, img)
+
+
+def test_detrend():
+    # Check that detrending doesn't do something stupid with 3D images
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = Nifti1Image(data, np.eye(4))
+    mask = data.astype(np.int)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img, detrend=True)
+    # Smoke test the fit
+    X = masker.fit_transform(img)
+    assert_true(np.any(X != 0))
 
 
 def test_with_files():
