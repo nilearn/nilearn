@@ -298,6 +298,10 @@ def test_plot_connectome():
     nan_node_coords = np.arange(3 * 3).reshape(3, 3)
     plot_connectome(nan_adjacency_matrix, nan_node_coords, **kwargs)
 
+    # smoke-test where there is no edge to draw, e.g. when
+    # edge_threshold is too high
+    plot_connectome(*args, edge_threshold=1e12)
+
 
 def test_plot_connectome_exceptions():
     node_coords = np.arange(2 * 3).reshape((2, 3))
