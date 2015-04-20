@@ -214,8 +214,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
 
     # Search given environment variables
     for env_var in env_vars:
-        env_data = os.getenv(env_var, '')
-        paths.extend(env_data.split(':'))
+        env_data = os.getenv(env_var)
+        if env_data is not None:
+            paths.extend(env_data.split(':'))
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
