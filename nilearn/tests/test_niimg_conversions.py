@@ -13,7 +13,7 @@ import tempfile
 from nose.tools import assert_equal, assert_true
 
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 import nibabel
 from nibabel import Nifti1Image
@@ -209,11 +209,13 @@ def test_iterator_generator():
          for i in range(10)]
     cc = _utils.concat_niimgs(l)
     assert_equal(cc.shape[-1], 10)
+    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
 
     # Same with iteration
     i = image.iter_img(l)
     cc = _utils.concat_niimgs(i)
     assert_equal(cc.shape[-1], 10)
+    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
 
     # Now, a generator
     b = []

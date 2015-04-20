@@ -6,6 +6,7 @@ Conversion utilities.
 
 import numpy as np
 import inspect
+import itertools
 from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
@@ -270,15 +271,15 @@ def concat_niimgs(niimgs, dtype=np.float32,
     target_fov = 'first' if auto_resample else None
     first_niimg = None
     if not inspect.isgenerator(niimgs):
-        iterator = iter(niimgs)
+        iterator, literator = itertools.tee(iter(niimgs))
         try:
-            first_niimg = check_niimg(next(iterator))
+            first_niimg = check_niimg(next(literator))
         except StopIteration:
             raise TypeError('Cannot concatenate empty objects')
 
         ndim = len(first_niimg.shape)
         lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
-        for niimg in iterator:
+        for niimg in literator:
             niimg = check_niimg(niimg, ndim=ndim)
             lengths.append(niimg.shape[-1] if ndim == 4 else 1)
 
