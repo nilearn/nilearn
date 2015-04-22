@@ -249,7 +249,7 @@ class GlassBrainAxes(BaseAxes):
         self.ax.scatter(xdata, ydata, s=marker_size,
                         c=marker_color, **kwargs)
 
-    def _add_lines(self, line_coords, line_values, cmap, **kwargs):
+    def _add_lines(self, line_coords, line_values, cmap, norm=None, **kwargs):
         """Plot lines
 
             Parameters
@@ -260,12 +260,16 @@ class GlassBrainAxes(BaseAxes):
                 values of the lines.
             cmap: colormap
                 colormap used to map line_values to a color.
+            norm: matplotlib.colors.Normalize, optional, default: None
+                A matplotlib.colors.Normalize instance is used to scale line
+                luminance to 0, 1.
             kwargs: dict
                 additional arguments to pass to matplotlib Line2D.
         """
         abs_line_values_max = np.abs(line_values).max()
-        norm = colors.Normalize(vmin=-abs_line_values_max,
-                                vmax=abs_line_values_max)
+        if norm is None:
+            norm = colors.Normalize(vmin=-abs_line_values_max,
+                                    vmax=abs_line_values_max)
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=abs_line_values_max)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
@@ -1025,7 +1029,8 @@ class OrthoProjector(OrthoSlicer):
 
     def add_graph(self, adjacency_matrix, node_coords,
                   node_color='auto', node_size=50,
-                  edge_cmap=cm.bwr, edge_threshold=None,
+                  edge_cmap=cm.bwr, edge_norm=None,
+                  edge_threshold=None,
                   edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph on each of the axes
 
@@ -1042,6 +1047,9 @@ class OrthoProjector(OrthoSlicer):
                 size(s) of the nodes in points^2.
             edge_cmap: colormap
                 colormap used for representing the strength of the edges.
+            edge_norm: matplotlib.colors.Normalize, optional, default: None
+                A matplotlib.colors.Normalize instance is used to scale edge
+                luminance to 0, 1.
             edge_threshold: str or number
                 If it is a number only the edges with a value greater than
                 edge_threshold will be shown.
@@ -1159,7 +1167,7 @@ class OrthoProjector(OrthoSlicer):
             ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
             if line_coords:
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
-                              **edge_kwargs)
+                              edge_norm, **edge_kwargs)
 
         plt.draw_if_interactive()
 

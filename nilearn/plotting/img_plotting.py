@@ -761,7 +761,8 @@ def plot_glass_brain(stat_map_img,
 
 def plot_connectome(adjacency_matrix, node_coords,
                     node_color='auto', node_size=50,
-                    edge_cmap=cm.bwr, edge_threshold=None,
+                    edge_cmap=cm.bwr, edge_norm=None,
+                    edge_threshold=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None,
                     annotate=True, black_bg=False,
@@ -782,6 +783,9 @@ def plot_connectome(adjacency_matrix, node_coords,
             size(s) of the nodes in points^2.
         edge_cmap: colormap
             colormap used for representing the strength of the edges.
+        edge_norm: matplotlib.colors.Normalize, optional, default: None
+                A matplotlib.colors.Normalize instance is used to scale edge
+                luminance to 0, 1.
         edge_threshold: str or number
             If it is a number only the edges with a value greater than
             edge_threshold will be shown.
@@ -830,7 +834,8 @@ def plot_connectome(adjacency_matrix, node_coords,
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
-                      edge_cmap=edge_cmap, edge_threshold=edge_threshold,
+                      edge_cmap=edge_cmap, edge_norm=edge_norm,
+                      edge_threshold=edge_threshold,
                       edge_kwargs=edge_kwargs, node_kwargs=node_kwargs)
 
     if output_file is not None:
