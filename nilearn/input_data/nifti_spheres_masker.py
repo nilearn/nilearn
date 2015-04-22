@@ -5,14 +5,58 @@ import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn import neighbors
 from sklearn.externals.joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
-from .._utils.niimg_conversions import check_niimg
+from .._utils.niimg_conversions import check_niimg, check_niimg_3d
 from .. import signal
 from .. import image
 from .. import masking
+
+
+def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
+
+    n_seeds = len(seeds)
+    niimg = check_niimg(niimg)
+    shape = niimg.get_data().shape
+    affine = niimg.get_affine()
+
+    # Compute world coordinates of all in-mask voxels.
+
+    if mask_img is not None:
+        mask_img = check_niimg_3d(mask_img)
+        mask_img = image.resample_img(mask_img, target_affine=affine,
+                                      target_shape=shape[:3],
+                                      interpolation='nearest')
+        mask, _ = masking._load_mask_img(mask_img)
+        mask_coords = np.where(mask != 0)
+    else:
+        mask_coords = np.ndindex(shape[:3])
+    mask_coords = np.asarray(mask_coords + (np.ones(len(mask_coords[0]),
+                                                    dtype=np.int),))
+    mask_coords = np.dot(affine, mask_coords)[:3].T
+
+    clf = neighbors.NearestNeighbors(radius=radius)
+    A = clf.fit(mask_coords).radius_neighbors_graph(mask_coords)
+    del mask_coords
+    A = A.tolil()
+
+    # scores is an 1D array of CV scores with length equals to the number
+    # of voxels in processing mask (columns in process_mask)
+    X = masking._apply_mask_fmri(imgs, self.mask_img)
+
+    estimator = self.estimator
+    if isinstance(estimator, _basestring):
+        estimator = ESTIMATOR_CATALOG[estimator]()
+
+    scores = search_light(X, y, estimator, A,
+                          self.scoring, self.cv, self.n_jobs,
+                          self.verbose)
+    scores_3D = np.zeros(process_mask.shape)
+    scores_3D[process_mask] = scores
+    self.scores_ = scores_3D
 
 
 def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
