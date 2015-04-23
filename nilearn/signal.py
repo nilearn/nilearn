@@ -44,17 +44,16 @@ def _standardize(signals, detrend=False, normalize=True):
     if detrend:
         signals = _detrend(signals, inplace=False)
     else:
+        # remove mean if not already detrended
+        signals -= signals.mean(axis=0)
         signals = signals.copy()
+
     if signals.shape[0] == 1:
         warnings.warn('Standardization of 3D signal has been requested but '
             'would lead to zero values. Skipping.')
         return signals
 
     if normalize:
-        # remove mean if not already detrended
-        if not detrend:
-            signals -= signals.mean(axis=0)
-
         std = np.sqrt((signals ** 2).sum(axis=0))
         std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
         signals /= std
@@ -409,13 +408,8 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
     # Standardize / detrend
-    normalize = False
-    if confounds is not None:
-        # If confounds are to be removed, then force normalization to improve
-        # matrix conditioning.
-        normalize = True
     signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=normalize, detrend=detrend)
+    signals = _standardize(signals, normalize=standardize, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
