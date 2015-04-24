@@ -37,6 +37,10 @@ from nilearn.mass_univariate import permuted_ols
 ### Load Haxby dataset ########################################################
 haxby_dataset = datasets.fetch_haxby_simple()
 
+# print basic information on the dataset
+print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
+print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func)
+
 ### Mask data #################################################################
 mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(

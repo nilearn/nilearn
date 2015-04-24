@@ -25,6 +25,8 @@ from nilearn import datasets
 
 # Retrieve our atlas
 atlas_filename, labels = datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm')
+print('Atlas ROIs are located in nifti image (4D) at: %s' %
+      atlas_filename)  # 4D data
 
 # And one subject of resting-state data
 data = datasets.fetch_adhd(n_subjects=1)

@@ -20,6 +20,12 @@ from nilearn import datasets
 import nibabel
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) located is at: %s' %
+      haxby_dataset.anat[0])
+print('First subject functional nifti image (4D) is located at: %s' %
+      haxby_dataset.func[0])
+
 # Second, load the labels
 import numpy as np
 

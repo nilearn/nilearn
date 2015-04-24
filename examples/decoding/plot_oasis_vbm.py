@@ -52,6 +52,12 @@ oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
 
+# print basic information on the dataset
+print('First gray-matter anatomy image (3D) is located at: %s' %
+      oasis_dataset.gray_matter_maps[0])  # 3D data
+print('First white-matter anatomy image (3D) is located at: %s' %
+      oasis_dataset.white_matter_maps[0])  # 3D data
+
 ### Preprocess data ###########################################################
 nifti_masker = NiftiMasker(
     standardize=False,

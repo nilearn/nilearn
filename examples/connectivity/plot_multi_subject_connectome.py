@@ -47,6 +47,10 @@ from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_msdl_atlas()
 adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
 
+# print basic information on the dataset
+print('First subject functional nifti image (4D) is at: %s' %
+      adhd_dataset.func[0])  # 4D data
+
 
 # Extracting region signals ###################################################
 from nilearn import image

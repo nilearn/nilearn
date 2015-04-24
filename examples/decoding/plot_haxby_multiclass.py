@@ -13,6 +13,11 @@ from matplotlib import pyplot as plt
 from nilearn import datasets
 import numpy as np
 haxby_dataset = datasets.fetch_haxby_simple()
+
+# print basic information on the dataset
+print('Mask nifti images are located at: %s' % haxby_dataset.mask)
+print('Functional nifti images are located at: %s' % haxby_dataset.func)
+
 func_filename = haxby_dataset.func
 mask_filename = haxby_dataset.mask
 

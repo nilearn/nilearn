@@ -14,6 +14,11 @@ are expected.
 from nilearn import datasets, plotting, image
 
 data = datasets.fetch_adhd(n_subjects=1)
+
+# Print basic information on the dataset
+print('First subject functional nifti image (4D) are located at: %s' %
+      data.func[0])
+
 first_epi_file = data.func[0]
 
 # First the compute the mean image, from the 4D series of image

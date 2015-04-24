@@ -26,6 +26,11 @@ sys.stderr.write("Fetching dataset...")
 t0 = time.time()
 
 miyawaki_dataset = datasets.fetch_miyawaki2008()
+
+# print basic information on the dataset
+print('First functional nifti image (4D) is located at: %s' %
+      miyawaki_dataset.func[0])  # 4D data
+
 X_random_filenames = miyawaki_dataset.func[12:]
 X_figure_filenames = miyawaki_dataset.func[:12]
 y_random_filenames = miyawaki_dataset.label[12:]

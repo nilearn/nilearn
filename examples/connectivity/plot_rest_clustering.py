@@ -22,6 +22,12 @@ from nilearn import input_data
 from nilearn.plotting.img_plotting import plot_roi, plot_epi
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) is at: %s' %
+      nyu_dataset.anat_anon[0])
+print('First subject functional nifti image (4D) is at: %s' %
+      nyu_dataset.func[0])  # 4D data
+
 # This is resting-state data: the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the
 # EPI images
