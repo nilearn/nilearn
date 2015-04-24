@@ -16,13 +16,13 @@ def generate_gallery_rst(app):
     except TypeError:
         plot_gallery = bool(app.builder.config.plot_gallery)
 
-    if not plot_gallery:
-        return
-
     gallery_conf.update(app.config.sphinxgallery_conf)
 
     # this assures I can call the config in other places
     app.config.sphinxgallery_conf = gallery_conf
+
+    if not plot_gallery:
+        return
 
     examples_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_dir'])
     gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
