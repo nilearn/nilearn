@@ -75,8 +75,12 @@ def _iter_check_niimg(niimgs, ndim=None, atleast_4d=False,
                            niimg.shape))
             yield niimg
         except TypeError as exc:
-            exc.args = (('Error encountered while loading image #%d' % i,)
-                        + exc.args)
+            img_name = ''
+            if isinstance(niimg, _basestring):
+                img_name = " (%s) " % niimg
+
+            exc.args = (('Error encountered while loading image #%d%s'
+                         % (i, img_name),) + exc.args)
             raise
 
 
@@ -245,77 +249,40 @@ def concat_niimgs(niimgs, dtype=np.float32,
         A single image.
     """
 
-    # Optimizations
-
-    # Case 1a: all niimgs are already loaded
-    # -------------------------------------
-
-    # In that case, we can browse the niimgs and count the lengths of the
-    # final sequence to preallocate a numpy array
-
-    # Case 1b: all niimgs are filepaths or memory mapped
-    # -------------------------------------------------
-
-    # Same as above, we do a first pass. It is less costly because we will
-    # only read file headers.
-    # Note: this remark is theoritically but the actual implementation of
-    # check_niimg forces data loading so it is still less costly in term of
-    # memory but it may be slower than the strategy used in case 2
-
-    # Case 2: niimgs is a generator
-    # -----------------------------
-
-    # This is the only case in which we can't browse it several times: we
-    # accumulate data in a list and concatenate it in the end
-
     target_fov = 'first' if auto_resample else None
+
+    # First niimg is extracted to get information and for new_img_like
     first_niimg = None
-    if not inspect.isgenerator(niimgs):
-        iterator, literator = itertools.tee(iter(niimgs))
-        try:
-            first_niimg = check_niimg(next(literator))
-        except StopIteration:
-            raise TypeError('Cannot concatenate empty objects')
 
-        ndim = len(first_niimg.shape)
-        lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
-        for niimg in literator:
-            niimg = check_niimg(niimg, ndim=ndim)
-            lengths.append(niimg.shape[-1] if ndim == 4 else 1)
+    iterator, literator = itertools.tee(iter(niimgs))
+    try:
+        first_niimg = check_niimg(next(literator))
+    except StopIteration:
+        raise TypeError('Cannot concatenate empty objects')
 
-        target_shape = first_niimg.shape[:3]
-        data = np.ndarray(target_shape + (sum(lengths), ),
-                          order="F", dtype=dtype)
-        cur_4d_index = 0
-        for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
-                iterator, atleast_4d=True, target_fov=target_fov,
-                memory=memory, memory_level=memory_level))):
+    ndim = len(first_niimg.shape)
+    lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
+    for niimg in literator:
+        # We check the dimensionality of the niimg
+        niimg = check_niimg(niimg, ndim=ndim)
+        lengths.append(niimg.shape[-1] if ndim == 4 else 1)
 
-            if verbose > 0:
-                if isinstance(niimg, _basestring):
-                    nii_str = "image " + niimg
-                else:
-                    nii_str = "image #" + str(index)
-                print("Concatenating {0}: {1}".format(index + 1, nii_str))
+    target_shape = first_niimg.shape[:3]
+    data = np.ndarray(target_shape + (sum(lengths), ),
+                      order="F", dtype=dtype)
+    cur_4d_index = 0
+    for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
+            iterator, atleast_4d=True, target_fov=target_fov,
+            memory=memory, memory_level=memory_level))):
 
-            data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
-            cur_4d_index += size
-    else:
-        data = []  # use a list for dynamic memory allocation
-        for index, niimg in enumerate(_iter_check_niimg(
-                niimgs, atleast_4d=True, target_fov=target_fov,
-                memory=memory, memory_level=memory_level)):
+        if verbose > 0:
+            if isinstance(niimg, _basestring):
+                nii_str = "image " + niimg
+            else:
+                nii_str = "image #" + str(index)
+            print("Concatenating {0}: {1}".format(index + 1, nii_str))
 
-            if index == 0:
-                first_niimg = niimg
-            if verbose > 0:
-                if isinstance(niimg, _basestring):
-                    nii_str = "image " + niimg
-                else:
-                    nii_str = "image #" + str(index)
-                print("Concatenating {0}: {1}".format(index + 1, nii_str))
-
-            data.append(niimg.get_data())
-        data = np.concatenate(data, axis=-1)
+        data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
+        cur_4d_index += size
 
     return new_img_like(first_niimg, data, first_niimg.get_affine())
