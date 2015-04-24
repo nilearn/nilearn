@@ -26,24 +26,20 @@ def _standardize(signals, detrend=False, normalize=True):
 
     Parameters
     ==========
-    signals : numpy.ndarray
+    signals: numpy.ndarray
         Timeseries to standardize
 
-    detrend : bool
+    detrend: bool
         if detrending of timeseries is requested
 
-    normalize : bool
+    normalize: bool
         if True, shift timeseries to zero mean value and scale
         to unit energy (sum of squares).
 
     Returns
     =======
-    std_signals : numpy.ndarray
+    std_signals: numpy.ndarray
         copy of signals, normalized.
-
-    std : numpy.ndarray
-        The standard deviation of the signals: multiply the output
-        signals by this quantity to get the original signals back
     """
     if detrend:
         signals = _detrend(signals, inplace=False)
