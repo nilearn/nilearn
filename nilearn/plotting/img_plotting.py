@@ -599,7 +599,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         cmap: matplotlib colormap, optional
-            The colormap for specified image
+            The colormap for specified image. The ccolormap *must* be
+            symmetrical.
         symmetric_cbar: boolean or 'auto', optional, default 'auto'
             Specifies whether the colorbar should range from -vmax to vmax
             or from 0 to vmax. Setting to 'auto' will select the latter if
