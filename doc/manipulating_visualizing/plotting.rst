@@ -207,10 +207,16 @@ plot, and has methods to add overlays, contours or edge maps::
                    are computed for constant values, specified in
                    'levels'. This is typically useful to outline a mask,
                    or ROI on top of another map.
+                    |hack|
+                    **Example:** :ref:`example_manipulating_visualizing_plot_haxby_masks.py`
+
 
 **add_overlay**   `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
+                  |hack|
+                  Add a new overlay on the existing figure
                    |hack|
-                   Add a new overlay on the existing figure
+                   **Example:** :ref:`example_manipulating_visualizing_plot_probabilistic_atlas.py`
+
 
 ================= =========================================================
 
