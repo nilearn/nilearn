@@ -5,7 +5,6 @@ Conversion utilities.
 # License: simplified BSD
 
 import numpy as np
-import inspect
 import itertools
 from sklearn.externals.joblib import Memory
 
