@@ -39,18 +39,36 @@ def _index_img(img, index):
         copy_header=True)
 
 
-def _iter_check_niimg(niimgs, ndim=None, atleast_4d=False,
+def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                       target_fov=None,
                       memory=Memory(cachedir=None),
                       memory_level=0, verbose=0):
+    """Iterate over a list of niimgs and do sanity checks and resampling
+
+    Parameters
+    ----------
+
+    niimgs: list of niimg
+        Image to iterate over
+
+    ensure_ndim: integer, optional
+        If specified, an error is raised if the data does not have the
+        required dimension.
+
+    atleast_4d: boolean, optional
+        If True, any 3D image is converted to a 4D single scan.
+
+    target_fov: tuple of affine and shape
+       If specified, images are resampled to this field of view
+    """
     ref_fov = None
-    ndim_minus_one = ndim - 1 if ndim is not None else None
+    ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
     if target_fov is not None and target_fov != "first":
         ref_fov = target_fov
     for i, niimg in enumerate(niimgs):
         try:
             niimg = check_niimg(
-                niimg, ndim=ndim_minus_one, atleast_4d=atleast_4d)
+                niimg, ensure_ndim=ndim_minus_one, atleast_4d=atleast_4d)
             if i == 0:
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
@@ -83,7 +101,8 @@ def _iter_check_niimg(niimgs, ndim=None, atleast_4d=False,
             raise
 
 
-def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
+def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
+                return_iterator=False):
     """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
 
     Parameters
@@ -94,7 +113,7 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
 
-    ndim: integer {3, 4}, optional
+    ensure_ndim: integer {3, 4}, optional
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
@@ -119,13 +138,13 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
         if return_iterator:
-            return _iter_check_niimg(niimg, ndim)
+            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim)
         return concat_niimgs(niimg)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg)
 
-    if ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
+    if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
         data = _safe_get_data(niimg)
         affine = niimg.get_affine()
@@ -135,12 +154,12 @@ def check_niimg(niimg, ndim=None, atleast_4d=False, return_iterator=False):
         data.shape = data.shape + (1, )
         niimg = new_img_like(niimg, data, niimg.get_affine())
 
-    if ndim is not None and len(niimg.shape) != ndim:
+    if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
         raise TypeError(
             "Data must be a %iD Niimg-like object but you provided an "
             "image of shape %s. See "
             "http://nilearn.github.io/building_blocks/"
-            "manipulating_mr_images.html#niimg." % (ndim, niimg.shape))
+            "manipulating_mr_images.html#niimg." % (ensure_ndim, niimg.shape))
 
     if return_iterator:
         return (_index_img(niimg, i) for i in range(niimg.shape[3]))
@@ -173,7 +192,7 @@ def check_niimg_3d(niimg):
 
     Its application is idempotent.
     """
-    return check_niimg(niimg, ndim=3)
+    return check_niimg(niimg, ensure_ndim=3)
 
 
 def check_niimg_4d(niimg, return_iterator=False):
@@ -206,7 +225,7 @@ def check_niimg_4d(niimg, return_iterator=False):
 
     Its application is idempotent.
     """
-    return check_niimg(niimg, ndim=4, return_iterator=return_iterator)
+    return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator)
 
 
 def concat_niimgs(niimgs, dtype=np.float32,
@@ -263,7 +282,7 @@ def concat_niimgs(niimgs, dtype=np.float32,
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:
         # We check the dimensionality of the niimg
-        niimg = check_niimg(niimg, ndim=ndim)
+        niimg = check_niimg(niimg, ensure_ndim=ndim)
         lengths.append(niimg.shape[-1] if ndim == 4 else 1)
 
     target_shape = first_niimg.shape[:3]
