@@ -41,6 +41,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       colorbar=False, figure=None, axes=None, title=None,
                       threshold=None, annotate=True,
                       draw_cross=True, black_bg=False,
+                      vmin=None, vmax=None,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
@@ -60,13 +61,11 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             takes a display_mode argument and return a display class
     """
     show_nan_msg = False
-    if ('vmax' in kwargs and kwargs['vmax'] is not None and
-        np.isnan(kwargs['vmax'])):
-        kwargs.pop('vmax')
+    if vmax is not None and np.isnan(vmax):
+        vmax = None
         show_nan_msg = True
-    if ('vmin' in kwargs and kwargs['vmin'] is not None and
-        np.isnan(kwargs['vmin'])):
-        kwargs.pop('vmin')
+    if vmin is not None and np.isnan(vmin):
+        vmin = None
         show_nan_msg = True
     if show_nan_msg:
         nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
@@ -106,7 +105,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     if img is not None and img is not False:
         display.add_overlay(new_img_like(img, data, affine),
                             threshold=threshold, interpolation=interpolation,
-                            colorbar=colorbar, **kwargs)
+                            colorbar=colorbar, vmin=vmin, vmax=vmax,
+                            **kwargs)
 
     if annotate:
         display.annotate()
@@ -188,12 +188,11 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
+            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
         colorbar: boolean, optional
             If True, display a colorbar on the right of the plots.
         kwargs: extra keyword arguments, optional
-            Extra keyword arguments passed to pylab.imshow
+            Extra keyword arguments passed to plt.imshow
     """
     display = _plot_img_with_bg(img, cut_coords=cut_coords,
                     output_file=output_file, display_mode=display_mode,
@@ -322,7 +321,8 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, draw_cross=True,
-              black_bg='auto', dim=False, cmap=plt.cm.gray, **kwargs):
+              black_bg='auto', dim=False, cmap=plt.cm.gray,
+              vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -366,34 +366,39 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
+            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
         cmap: matplotlib colormap, optional
             The colormap for the anat
+        vmin: float
+            vmin passed to plt.imshow
+        vmax: float
+            vmax passed to plt.imshow
 
         Notes
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
-                                                dim=dim, black_bg=black_bg)
-    # vmin and/or vmax could have been provided in the kwargs
-    vmin = kwargs.pop('vmin', vmin)
-    vmax = kwargs.pop('vmax', vmax)
+    anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
+        anat_img,
+        dim=dim, black_bg=black_bg)
+
+    vmin = vmin or anat_vmin
+    vmax = vmax or anat_vmax
+
     display = plot_img(anat_img, cut_coords=cut_coords,
-                      output_file=output_file, display_mode=display_mode,
-                      figure=figure, axes=axes, title=title,
-                      threshold=None, annotate=annotate,
-                      draw_cross=draw_cross, black_bg=black_bg,
-                      vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
+                       output_file=output_file, display_mode=display_mode,
+                       figure=figure, axes=axes, title=title,
+                       threshold=None, annotate=annotate,
+                       draw_cross=draw_cross, black_bg=black_bg,
+                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
     return display
 
 
 def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
-             cmap=plt.cm.spectral, **kwargs):
+             cmap=plt.cm.spectral, vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -435,8 +440,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
+            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
         cmap: matplotlib colormap, optional
             The colormap for specified image
         threshold : a number, None, or 'auto'
@@ -445,6 +449,10 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
+        vmin: float
+            vmin passed to plt.imshow
+        vmax: float
+            vmax passed to plt.imshow
 
         Notes
         -----
@@ -456,14 +464,15 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                       figure=figure, axes=axes, title=title,
                       threshold=None, annotate=annotate,
                       draw_cross=draw_cross, black_bg=black_bg,
-                      cmap=cmap, **kwargs)
+                      cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
     return display
 
 
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=plt.cm.gist_ncar, dim=True, **kwargs):
+             alpha=0.7, cmap=plt.cm.gist_ncar, dim=True, vmin=None, vmax=None,
+             **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -510,29 +519,34 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
+            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
         threshold : a number, None, or 'auto'
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
+        vmin: float
+            vmin passed to plt.imshow
+        vmax: float
+            vmax passed to plt.imshow
 
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
     display = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
-                               cut_coords=cut_coords,
-                               output_file=output_file,
-                               display_mode=display_mode,
-                               figure=figure, axes=axes, title=title,
-                               annotate=annotate, draw_cross=draw_cross,
-                               black_bg=black_bg, threshold=0.5,
-                               bg_vmin=bg_vmin, bg_vmax=bg_vmax,
-                               resampling_interpolation='nearest',
-                               alpha=alpha, cmap=cmap, **kwargs)
+                                cut_coords=cut_coords,
+                                output_file=output_file,
+                                display_mode=display_mode,
+                                figure=figure, axes=axes, title=title,
+                                annotate=annotate,
+                                draw_cross=draw_cross,
+                                black_bg=black_bg, threshold=0.5,
+                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
+                                resampling_interpolation='nearest',
+                                alpha=alpha, cmap=cmap,
+                                vmin=vmin, vmax=vmax, **kwargs)
     return display
 
 
@@ -541,7 +555,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   figure=None, axes=None, title=None, threshold=1e-6,
                   annotate=True, draw_cross=True, black_bg='auto',
                   cmap=cm.cold_hot, symmetric_cbar="auto",
-                  dim=True, **kwargs):
+                  dim=True, vmax=None, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -596,8 +610,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
+            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
         cmap: matplotlib colormap, optional
             The colormap for specified image. The ccolormap *must* be
             symmetrical.
@@ -605,6 +618,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             Specifies whether the colorbar should range from -vmax to vmax
             or from 0 to vmax. Setting to 'auto' will select the latter if
             the whole image is non-negative.
+        vmax: float
+            vmax passed to plt.imshow
 
         Notes
         -----
@@ -616,7 +631,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                                     black_bg=black_bg)
 
     # make sure that the color range is symmetrical
-    if ('vmax' not in kwargs) or (symmetric_cbar in ['auto', False]):
+    if vmax is None or symmetric_cbar in ['auto', False]:
         stat_map_img = _utils.check_niimg_3d(stat_map_img)
         stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
@@ -629,9 +644,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     if symmetric_cbar == 'auto':
         symmetric_cbar = (stat_map_min < 0) and (stat_map_max > 0)
 
-    if 'vmax' in kwargs:
-        vmax = kwargs.pop('vmax')
-    else:
+    if vmax is None:
         vmax = max(-stat_map_min, stat_map_max)
 
     if 'vmin' in kwargs:
@@ -679,6 +692,7 @@ def plot_glass_brain(stat_map_img,
                      black_bg=False,
                      cmap=None,
                      alpha=0.7,
+                     vmin=None, vmax=None,
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
         Frontal, Axial, and Lateral). The brain glass schematics
@@ -721,12 +735,15 @@ def plot_glass_brain(stat_map_img,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
+            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
         cmap: matplotlib colormap, optional
             The colormap for specified image
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics
+        vmin: float
+            vmin passed to plt.imshow
+        vmax: float
+            vmax passed to plt.imshow
 
         Notes
         -----
@@ -749,6 +766,7 @@ def plot_glass_brain(stat_map_img,
                                 cmap=cmap, colorbar=colorbar,
                                 display_factory=display_factory,
                                 resampling_interpolation='continuous',
+                                vmin=vmin, vmax=vmax,
                                 **kwargs)
 
     return display
@@ -815,8 +833,7 @@ def plot_connectome(adjacency_matrix, node_coords,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
+            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics.
         edge_kwargs: dict
