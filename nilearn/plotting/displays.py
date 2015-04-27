@@ -554,12 +554,12 @@ class BaseSlicer(object):
 
             data_2d_list.append(data_2d)
 
-        if 'vmin' not in kwargs:
+        if kwargs.get('vmin') is None:
             kwargs['vmin'] = np.ma.min([d.min() for d in data_2d_list
-                                 if d is not None])
-        if 'vmax' not in kwargs:
+                                        if d is not None])
+        if kwargs.get('vmax') is None:
             kwargs['vmax'] = np.ma.max([d.max() for d in data_2d_list
-                                 if d is not None])
+                                        if d is not None])
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
 
