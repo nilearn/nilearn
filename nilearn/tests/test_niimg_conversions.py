@@ -49,6 +49,11 @@ def test_check_niimg_3d():
     assert_raises_regex(TypeError, 'empty object',
                         _utils.check_niimg, [])
 
+    # Test dimensionality error
+    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+    assert_raises_regex(TypeError, 'Data must be a 2D',
+                        _utils.check_niimg_3d, [img, img])
+
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 1))
     data[20, 20, 20] = 1

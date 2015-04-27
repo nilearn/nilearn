@@ -139,7 +139,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
         if return_iterator:
             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim)
-        return concat_niimgs(niimg)
+        return concat_niimgs(niimg, ensure_ndim=ensure_ndim)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg)
@@ -228,7 +228,7 @@ def check_niimg_4d(niimg, return_iterator=False):
     return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator)
 
 
-def concat_niimgs(niimgs, dtype=np.float32,
+def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
                   memory=Memory(cachedir=None), memory_level=0,
                   auto_resample=False, verbose=0):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
@@ -245,6 +245,10 @@ def concat_niimgs(niimgs, dtype=np.float32,
 
     dtype: numpy dtype, optional
         the dtype of the returned image
+
+    ensure_ndim: integer, optional
+        Indicate the dimensionality of the expected niimg. An
+        error is raised if the niimg is of another dimensionality.
 
     auto_resample: boolean
         Converts all images to the space of the first one.
@@ -278,7 +282,11 @@ def concat_niimgs(niimgs, dtype=np.float32,
     except StopIteration:
         raise TypeError('Cannot concatenate empty objects')
 
-    ndim = len(first_niimg.shape)
+    if ensure_ndim is None:
+        ndim = len(first_niimg.shape)
+    else:
+        ndim = ensure_ndim - 1
+
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:
         # We check the dimensionality of the niimg
