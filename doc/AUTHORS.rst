@@ -19,7 +19,7 @@ particular:
 * `Chris Filo Gorgolewski <http://multiplecomparisons.blogspot.fr/>`_
 * Danilo Bzdok
 * Loïc Estève
-* `Ben Cippolini <http://cseweb.ucsd.edu/~bcipolli/>`_
+* `Ben Cipollini <http://cseweb.ucsd.edu/~bcipolli/>`_
 
 Thanks to M. Hanke and Y. Halchenko for data and packaging.
 
