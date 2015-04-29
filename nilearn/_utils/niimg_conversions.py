@@ -137,7 +137,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     """
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
-        if ensure_ndim is not None and ensure_ndim == 3:
+        if ensure_ndim == 3:
             raise TypeError(
                 "Data must be a 3D Niimg-like object but you provided a list."
                 " See http://nilearn.github.io/building_blocks/"
