@@ -7,6 +7,7 @@ Transformer used to apply basic transformations on MRI data.
 import warnings
 
 import numpy as np
+import nibabel
 import itertools
 
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -277,15 +278,22 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                               ' will be used.' % self.__class__.__name__)
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
-    def inverse_transform(self, X):
-        img = self._cache(masking.unmask, func_memory_level=1,
+    def inverse_transform(self, X, squeeze=False):
+        # Select squeeze as True if needed to return an image of squeezing with 
+        # last dimension "1" from a 4D format to 3D image format
+        if squeeze:
+            img = self._cache(masking.unmask, func_memory_level=1,
+            )(X, self.mask_img_)
+            img = nibabel.funcs.squeeze_image(img)
+        else:            
+            img = self._cache(masking.unmask, func_memory_level=1,
             )(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
-        # internal structures of the header: remove the memmaped array
+        # internal structures of the header: remove the memmaped array                      
         try:
-            img._header._structarr = np.array(img._header._structarr).copy()
+              img._header._structarr = np.array(img._header._structarr).copy()
         except:
-            pass
+              pass
         return img
 
     def _check_fitted(self):

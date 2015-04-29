@@ -12,7 +12,7 @@ import shutil
 import os
 from distutils.version import LooseVersion
 
-from nose.tools import assert_true, assert_false, assert_raises
+from nose.tools import assert_true, assert_false, assert_raises, assert_equal
 from nose import SkipTest
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -161,7 +161,7 @@ def test_mask_4d():
     assert_array_equal(data_trans2, data_trans_direct)
 
 
-def test_4d_single_scan():
+def test_5d():
     mask = np.zeros((10, 10, 10))
     mask[3:7, 3:7, 3:7] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
@@ -275,3 +275,21 @@ def test_compute_epi_mask():
 
     assert_false(np.allclose(mask1.get_data(),
                              mask4.get_data()[3:12, 3:12]))
+
+
+def test_squeeze():
+    mask = np.ones((10, 10, 10))
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    data = Nifti1Image(np.random.random((10, 10, 10, 1)), np.eye(4))\
+
+    masker = NiftiMasker(mask_img=mask_img)
+    masker.fit()
+    data_trans = masker.transform(data)
+    data_inv_trans = masker.inverse_transform(data_trans)
+
+    np.testing.assert_array_equal(data.get_data(), data_inv_trans.get_data())
+    assert_equal(len(data_inv_trans.shape), 4)    
+    
+    data_inv_trans = masker.inverse_transform(data_trans, squeeze=3)
+    assert_equal(len(data_inv_trans.shape), 3)    
