@@ -51,7 +51,7 @@ def test_check_niimg_3d():
 
     # Test dimensionality error
     img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
-    assert_raises_regex(TypeError, 'Data must be a 2D',
+    assert_raises_regex(TypeError, 'Data must be a 3D',
                         _utils.check_niimg_3d, [img, img])
 
     # Check that a filename does not raise an error
