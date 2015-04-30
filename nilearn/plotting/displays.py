@@ -271,11 +271,26 @@ class GlassBrainAxes(BaseAxes):
             kwargs: dict
                 additional arguments to pass to matplotlib Line2D.
         """
-        abs_line_values_max = np.abs(line_values).max()
-        if vmin is None:
+        if vmin is None and vmax is None:
+            abs_line_values_max = np.abs(line_values).max()
             vmin = -abs_line_values_max
-        if vmax is None:
             vmax = abs_line_values_max
+        elif vmin is None:
+            if vmax > 0:
+                vmin = -vmax
+            else:
+                raise ValueError(
+                    "If vmax is set to a non-positive number "
+                    "then vmin needs to be specified"
+                )
+        elif vmax is None:
+            if vmin < 0:
+                vmin = -vmax
+            else:
+                raise ValueError(
+                    "If vmin is set to a non-negative number "
+                    "then vmax needs to be specified"
+                )
         norm = colors.Normalize(vmin=vmin,
                                 vmax=vmax)
         abs_norm = colors.Normalize(vmin=0,
