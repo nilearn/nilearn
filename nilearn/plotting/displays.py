@@ -249,7 +249,8 @@ class GlassBrainAxes(BaseAxes):
         self.ax.scatter(xdata, ydata, s=marker_size,
                         c=marker_color, **kwargs)
 
-    def _add_lines(self, line_coords, line_values, cmap, **kwargs):
+    def _add_lines(self, line_coords, line_values, cmap,
+                   vmin=None, vmax=None, **kwargs):
         """Plot lines
 
             Parameters
@@ -260,14 +261,40 @@ class GlassBrainAxes(BaseAxes):
                 values of the lines.
             cmap: colormap
                 colormap used to map line_values to a color.
+            vmin: float, optional, default: None
+            vmax: float, optional, default: None
+                If not None, either or both of these values will be used to
+                as the minimum and maximum values to color lines. If None are
+                supplied the maximum absolute value within the given threshold
+                will be used as minimum (multiplied by -1) and maximum
+                coloring levels.
             kwargs: dict
                 additional arguments to pass to matplotlib Line2D.
         """
-        abs_line_values_max = np.abs(line_values).max()
-        norm = colors.Normalize(vmin=-abs_line_values_max,
-                                vmax=abs_line_values_max)
+        if vmin is None and vmax is None:
+            abs_line_values_max = np.abs(line_values).max()
+            vmin = -abs_line_values_max
+            vmax = abs_line_values_max
+        elif vmin is None:
+            if vmax > 0:
+                vmin = -vmax
+            else:
+                raise ValueError(
+                    "If vmax is set to a non-positive number "
+                    "then vmin needs to be specified"
+                )
+        elif vmax is None:
+            if vmin < 0:
+                vmin = -vmax
+            else:
+                raise ValueError(
+                    "If vmin is set to a non-negative number "
+                    "then vmax needs to be specified"
+                )
+        norm = colors.Normalize(vmin=vmin,
+                                vmax=vmax)
         abs_norm = colors.Normalize(vmin=0,
-                                    vmax=abs_line_values_max)
+                                    vmax=vmax)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
         for start_end_point_3d, line_value in zip(
@@ -1025,7 +1052,9 @@ class OrthoProjector(OrthoSlicer):
 
     def add_graph(self, adjacency_matrix, node_coords,
                   node_color='auto', node_size=50,
-                  edge_cmap=cm.bwr, edge_threshold=None,
+                  edge_cmap=cm.bwr,
+                  edge_vmin=None, edge_vmax=None,
+                  edge_threshold=None,
                   edge_kwargs=None, node_kwargs=None):
         """Plot undirected graph on each of the axes
 
@@ -1042,6 +1071,13 @@ class OrthoProjector(OrthoSlicer):
                 size(s) of the nodes in points^2.
             edge_cmap: colormap
                 colormap used for representing the strength of the edges.
+            edge_vmin: float, optional, default: None
+            edge_vmax: float, optional, default: None
+                If not None, either or both of these values will be used to
+                as the minimum and maximum values to color edges. If None are
+                supplied the maximum absolute value within the given threshold
+                will be used as minimum (multiplied by -1) and maximum
+                coloring levels.
             edge_threshold: str or number
                 If it is a number only the edges with a value greater than
                 edge_threshold will be shown.
@@ -1159,6 +1195,7 @@ class OrthoProjector(OrthoSlicer):
             ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
             if line_coords:
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
+                              vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
 
         plt.draw_if_interactive()
