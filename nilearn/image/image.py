@@ -16,7 +16,7 @@ from .. import signal
 from .resampling import reorder_img
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
-from .._utils.niimg_conversions import _index_niimgs
+from .._utils.niimg_conversions import _index_img
 from .._utils.niimg import new_img_like, _safe_get_data
 from .._utils.compat import _basestring
 from .. import masking
@@ -519,7 +519,7 @@ def index_img(imgs, index):
 
     """
     imgs = check_niimg_4d(imgs)
-    return _index_niimgs(imgs, index)
+    return _index_img(imgs, index)
 
 
 def iter_img(imgs):

@@ -132,7 +132,7 @@ def test_apply_mask():
 
     # veriy that 4D masks are rejected
     mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), np.eye(4))
-    assert_raises_regex(TypeError, "A 3D image is expected",
+    assert_raises_regex(TypeError, "Data must be a 3D",
                         masking.apply_mask, data_img, mask_img_4d)
 
     # Check that 3D data is accepted
@@ -145,7 +145,7 @@ def test_apply_mask():
     assert_equal(sorted(data_3d.tolist()), [3., 4., 12.])
 
     # Check data shape and affine
-    assert_raises_regex(TypeError, "A 3D image is expected",
+    assert_raises_regex(TypeError, "Data must be a 3D",
                         masking.apply_mask, data_img,
                         Nifti1Image(mask[20, ...], affine))
     assert_raises(ValueError, masking.apply_mask,

@@ -141,7 +141,7 @@ def test_nifti_maps_masker_2():
 
     # verify that 4D mask arguments are refused
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
-    testing.assert_raises_regex(TypeError, "A 3D image is expected",
+    testing.assert_raises_regex(TypeError, "Data must be a 3D",
                                 masker.fit)
 
     # Test error checking

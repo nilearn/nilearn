@@ -13,12 +13,12 @@ import tempfile
 from nose.tools import assert_equal, assert_true
 
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 import nibabel
 from nibabel import Nifti1Image
 
-from nilearn import _utils
+from nilearn import _utils, image
 from nilearn._utils import testing
 from nilearn._utils.testing import assert_raises_regex
 
@@ -48,6 +48,11 @@ def test_check_niimg_3d():
     # check error for non-forced but necessary resampling
     assert_raises_regex(TypeError, 'empty object',
                         _utils.check_niimg, [])
+
+    # Test dimensionality error
+    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+    assert_raises_regex(TypeError, 'Data must be a 3D',
+                        _utils.check_niimg_3d, [img, img])
 
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 1))
@@ -102,7 +107,8 @@ def test_check_niimg_4d():
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
 
     # This should raise an error: a 3D img is given and we want a 4D
-    assert_raises_regex(TypeError, 'image',
+    assert_raises_regex(TypeError, 'Data must be a 4D Niimg-like object but '
+                        'you provided an image of shape',
                         _utils.check_niimg_4d, img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
@@ -164,30 +170,21 @@ def test_concat_niimgs():
     img1c = Nifti1Image(np.ones(shape3), affine)
 
     # check basic concatenation with equal shape/affine
-    concatenated = _utils.concat_niimgs((img1, img3, img1),
-                                        accept_4d=False)
-    concatenate_true = np.ones(shape + (3,))
+    concatenated = _utils.concat_niimgs((img1, img3, img1))
 
-    # Smoke-test the accept_4d
-    assert_raises_regex(ValueError, 'image',
+    assert_raises_regex(TypeError, 'Data must be a 3D Niimg-like object but '
+                        'you provided an image of shape',
                         _utils.concat_niimgs, [img1, img4d])
-    concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
-    np.testing.assert_equal(concatenated.get_data(), concatenate_true,
-                            verbose=0)
 
     # smoke-test auto_resample
-    concatenated = _utils.concat_niimgs((img1, img1b, img1c), accept_4d=False,
+    concatenated = _utils.concat_niimgs((img1, img1b, img1c),
         auto_resample=True)
     assert_true(concatenated.shape == img1.shape + (3, ))
 
     # check error for non-forced but necessary resampling
-    assert_raises_regex(ValueError, 'different from reference affine',
+    assert_raises_regex(ValueError, 'Field of view of image',
                         _utils.concat_niimgs, [img1, img2],
-                        accept_4d=False)
-
-    # Smoke-test the 4d parsing
-    concatenated = _utils.concat_niimgs([img1, img4d], accept_4d=True)
-    assert_equal(concatenated.shape[3], 3)
+                        auto_resample=False)
 
     # test list of 4D niimgs as input
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
@@ -195,8 +192,7 @@ def test_concat_niimgs():
     try:
         nibabel.save(img1, tmpimg1)
         nibabel.save(img3, tmpimg2)
-        concatenated = _utils.concat_niimgs([tmpimg1, tmpimg2],
-                                            accept_4d=False)
+        concatenated = _utils.concat_niimgs([tmpimg1, tmpimg2])
         assert_array_equal(
             concatenated.get_data()[..., 0], img1.get_data())
         assert_array_equal(
@@ -204,3 +200,31 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
+
+
+def niftigen(buffer):
+    for i in range(10):
+        buffer.append(Nifti1Image(np.random.random((10, 10, 10)), np.eye(4)))
+        yield buffer[-1]
+
+
+def test_iterator_generator():
+    # Create a list of random images
+    l = [Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
+         for i in range(10)]
+    cc = _utils.concat_niimgs(l)
+    assert_equal(cc.shape[-1], 10)
+    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
+
+    # Same with iteration
+    i = image.iter_img(l)
+    cc = _utils.concat_niimgs(i)
+    assert_equal(cc.shape[-1], 10)
+    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
+
+    # Now, a generator
+    b = []
+    g = niftigen(b)
+    cc = _utils.concat_niimgs(g)
+    assert_equal(cc.shape[-1], 10)
+    assert_equal(len(b), 10)
