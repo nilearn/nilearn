@@ -202,7 +202,7 @@ def test_concat_niimgs():
         _remove_if_exists(tmpimg2)
 
 
-def niftigen(buffer):
+def nifti_generator(buffer):
     for i in range(10):
         buffer.append(Nifti1Image(np.random.random((10, 10, 10)), np.eye(4)))
         yield buffer[-1]
@@ -224,7 +224,7 @@ def test_iterator_generator():
 
     # Now, a generator
     b = []
-    g = niftigen(b)
+    g = nifti_generator(b)
     cc = _utils.concat_niimgs(g)
     assert_equal(cc.shape[-1], 10)
     assert_equal(len(b), 10)
