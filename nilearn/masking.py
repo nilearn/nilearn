@@ -231,11 +231,11 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
         resliced with a large padding of zeros.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     memory: instance of joblib.Memory or string
@@ -331,11 +331,11 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
         resliced with a large padding of zeros.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     memory: instance of joblib.Memory or string
@@ -401,11 +401,11 @@ def compute_background_mask(data_imgs, border_size=2,
         of order `n`.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     memory: instance of joblib.Memory or string
@@ -483,11 +483,11 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
         if connected is True, only the largest connect component is kept.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     memory: instance of joblib.Memory or string

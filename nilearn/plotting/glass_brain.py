@@ -147,7 +147,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
             direction: {'x', 'y', 'z'}
                 The directions of the view
             **kwargs:
-                Passed to the matplotlib patches constructor
+                passed on to the matplotlib patches constructor
 
        Returns
        -------

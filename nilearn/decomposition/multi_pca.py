@@ -41,11 +41,11 @@ def session_pca(imgs, mask_img, parameters,
         Mask to apply on the data
 
     parameters: dictionary
-        Dictionary of parameters passed to `filter_and_mask`. Please see the
+        Dictionary of parameters passed on to `filter_and_mask`. Please see the
         documentation of the `NiftiMasker` for more informations.
 
     confounds: CSV file path or 2D matrix
-        This parameter is passed to signal.clean. Please see the
+        This parameter is passed on to signal.clean. Please see the
         corresponding documentation for details.
 
     n_components: integer, optional
@@ -114,23 +114,23 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         their variance is put to 1 in the time dimension.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     low_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     high_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     memory: instance of joblib.Memory or string
@@ -330,7 +330,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             Data to be projected
 
         confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
+            This parameter is passed on to nilearn.signal.clean. Please see the
             related documentation for details
         """
         components_img_ = self.masker_.inverse_transform(self.components_)

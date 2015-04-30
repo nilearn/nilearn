@@ -48,19 +48,19 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     low_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     high_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     resampling_target: {"data", "labels", None}, optional.
@@ -192,7 +192,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             number as last dimension.
 
         confounds: array-like, optional
-            This parameter is passed to signal.clean. Please see the related
+            This parameter is passed on to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 

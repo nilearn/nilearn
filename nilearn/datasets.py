@@ -437,7 +437,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         Password used for basic HTTP authentication
 
     handlers: list of BaseHandler, optional
-        urllib handlers passed to urllib.request.build_opener. Used by
+        urllib handlers passed on to urllib.request.build_opener. Used by
         advanced users to customize request handling.
 
     verbose: int, optional

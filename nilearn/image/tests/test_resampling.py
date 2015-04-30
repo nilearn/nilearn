@@ -424,7 +424,7 @@ def test_reorder_img():
     # Test that no exception is raised when resample='continuous'
     reorder_img(ref_img, resample='continuous')
 
-    # Test that resample args gets passed to resample_img
+    # Test that resample args gets passed on to resample_img
     interpolation = 'nearest'
     reordered_img = reorder_img(ref_img, resample=interpolation)
     resampled_img = resample_img(ref_img,

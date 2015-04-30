@@ -227,7 +227,7 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
         has_not_finite = np.any(not_finite)
     if has_not_finite:
         warnings.warn("NaNs or infinite values are present in the data "
-                        "passed to resample. This is a bad thing as they "
+                        "passed on to resample. This is a bad thing as they "
                         "make resampling ill-defined and much slower.",
                         RuntimeWarning, stacklevel=2)
         if copy:

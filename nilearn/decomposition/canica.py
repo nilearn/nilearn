@@ -64,23 +64,23 @@ class CanICA(MultiPCA, CacheMixin):
         Pseudo number generator state used for random sampling.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     memory: instance of joblib.Memory or string
@@ -143,7 +143,7 @@ class CanICA(MultiPCA, CacheMixin):
             the affine is considered the same for all.
 
         confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
+            This parameter is passed on to nilearn.signal.clean. Please see the
             related documentation for details
         """
         MultiPCA.fit(self, imgs, y=y, confounds=confounds)

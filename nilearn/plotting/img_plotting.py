@@ -55,7 +55,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         bg_vmax: float
             vmax for bg_img
         interpolation: string
-            passed to the add_overlay calls
+            passed on to the add_overlay calls
         display_factory: function
             takes a display_mode argument and return a display class
     """
@@ -193,7 +193,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         colorbar: boolean, optional
             If True, display a colorbar on the right of the plots.
         kwargs: extra keyword arguments, optional
-            Extra keyword arguments passed to pylab.imshow
+            Extra keyword arguments passed on to pylab.imshow
     """
     display = _plot_img_with_bg(img, cut_coords=cut_coords,
                     output_file=output_file, display_mode=display_mode,

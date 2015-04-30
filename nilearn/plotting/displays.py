@@ -261,7 +261,7 @@ class GlassBrainAxes(BaseAxes):
             cmap: colormap
                 colormap used to map line_values to a color.
             kwargs: dict
-                additional arguments to pass to matplotlib Line2D.
+                additional arguments to pass on to matplotlib Line2D.
         """
         abs_line_values_max = np.abs(line_values).max()
         norm = colors.Normalize(vmin=-abs_line_values_max,
@@ -412,7 +412,7 @@ class BaseSlicer(object):
             alpha: float, optional
                 The alpha value for the background.
             kwargs:
-                Extra keyword arguments are passed to matplotlib's text
+                Extra keyword arguments are passed on to matplotlib's text
                 function.
         """
         if color is None:
@@ -453,7 +453,7 @@ class BaseSlicer(object):
             colorbar: boolean, optional
                 If True, display a colorbar on the right of the plots.
             kwargs:
-                Extra keyword arguments are passed to imshow.
+                Extra keyword arguments are passed on to imshow.
         """
         if colorbar and self._colorbar:
             raise ValueError("This figure already has an overlay with a "
@@ -491,7 +491,7 @@ class BaseSlicer(object):
                 See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
                 Provides image to plot.
             kwargs:
-                Extra keyword arguments are passed to contour, see the
+                Extra keyword arguments are passed on to contour, see the
                 documentation of pylab.contour
                 Useful, arguments are typical "levels", which is a
                 list of values to use for plotting a contour, and
@@ -643,7 +643,7 @@ class BaseSlicer(object):
             size: integer, optional
                 The size of the text used.
             kwargs:
-                Extra keyword arguments are passed to matplotlib's text
+                Extra keyword arguments are passed on to matplotlib's text
                 function.
         """
         kwargs = kwargs.copy()
@@ -809,7 +809,7 @@ class OrthoSlicer(BaseSlicer):
                 The position of the cross to draw. If none is passed, the
                 ortho_slicer's cut coordinates are used.
             kwargs:
-                Extra keyword arguments are passed to axhline
+                Extra keyword arguments are passed on to axhline
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
@@ -967,7 +967,7 @@ class BaseStackedSlicer(BaseSlicer):
                 The position of the cross to draw. If none is passed, the
                 ortho_slicer's cut coordinates are used.
             kwargs:
-                Extra keyword arguments are passed to axhline
+                Extra keyword arguments are passed on to axhline
         """
         return
 

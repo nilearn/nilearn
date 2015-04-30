@@ -745,7 +745,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         verbosity level
 
     tol, max_iter, debug, precisions_init :
-        Passed to group_sparse_covariance(). See the corresponding docstring
+        Passed on to group_sparse_covariance(). See the corresponding docstring
         for details.
 
     probe_function : callable

@@ -118,7 +118,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         func_memory_level the function is cached)
 
     kwargs: keyword arguments
-        The keyword arguments passed to memory.cache
+        The keyword arguments passed on to memory.cache
 
     Returns
     -------

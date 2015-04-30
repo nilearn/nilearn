@@ -41,27 +41,27 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     low_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     high_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
+        This parameter is passed on to signal.clean. Please see the related
         documentation for details
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed on to image.resample_img. Please see the
         related documentation for details.
 
     mask_strategy: {'background' or 'epi'}, optional
@@ -72,7 +72,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         masking.compute_epi_mask. Default is 'background'.
 
     mask_args : dict, optional
-        If mask is None, these are additional parameters passed to
+        If mask is None, these are additional parameters passed on to
         masking.compute_background_mask or masking.compute_epi_mask
         to fine-tune mask computation. Please see the related documentation
         for details.
@@ -225,7 +225,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
             Data to be preprocessed
 
         confounds: CSV file path or 2D matrix
-            This parameter is passed to signal.clean. Please see the
+            This parameter is passed on to signal.clean. Please see the
             corresponding documentation for details.
 
         Returns
