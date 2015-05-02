@@ -19,6 +19,7 @@ from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
 from .._utils.compat import _basestring
+from nilearn._utils.niimg_conversions import _iter_check_niimg
 
 
 def filter_and_mask(imgs, mask_img_,
@@ -132,30 +133,6 @@ def filter_and_mask(imgs, mask_img_,
     return data, imgs.get_affine()
 
 
-def _safe_filter_and_mask(imgs, mask_img_,
-                         parameters,
-                         memory_level=0,
-                         memory=Memory(cachedir=None),
-                         verbose=0,
-                         confounds=None,
-                         reference_affine=None,
-                         copy=True):
-    imgs = _utils.check_niimg(imgs)
-
-    # If there is a reference affine, we may have to force resampling
-    target_affine = parameters['target_affine']
-    if (target_affine is None and reference_affine is not None
-                and reference_affine.shape == imgs.get_affine().shape
-                and not np.allclose(imgs.get_affine(), reference_affine)):
-        warnings.warn('Affine is different across subjects.'
-                      ' Realignement on first subject affine forced')
-        parameters = parameters.copy()
-        parameters['target_affine'] = reference_affine
-
-    return filter_and_mask(imgs, mask_img_, parameters, memory_level,
-            memory, verbose, confounds, copy)
-
-
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
@@ -219,20 +196,26 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # subjects
             reference_affine = _utils.check_niimg(imgs_list[0]).get_affine()
 
-        func = self._cache(_safe_filter_and_mask, func_memory_level=1,
+        fov = (self.mask_img_.get_affine(), self.mask_img_.shape)
+        my_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
+                                    atleast_4d=False,
+                                    target_fov=fov, memory=self.memory,
+                                    memory_level=self.memory_level,
+                                    verbose=self.verbose)
+
+        func = self._cache(filter_and_mask, func_memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
         data = Parallel(n_jobs=n_jobs)(delayed(func)(
                                 imgs, self.mask_img_,
-                                params,
+                                parameters=params,
                                 memory_level=self.memory_level,
                                 memory=self.memory,
                                 verbose=self.verbose,
                                 confounds=confounds,
-                                reference_affine=reference_affine,
                                 copy=copy)
-                          for imgs, confounds in zip(imgs_list, confounds))
+                          for imgs, confounds in zip(my_iter, confounds))
         return list(zip(*data))[0]
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
