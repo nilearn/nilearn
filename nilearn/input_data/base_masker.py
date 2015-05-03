@@ -197,11 +197,11 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             reference_affine = _utils.check_niimg(imgs_list[0]).get_affine()
 
         fov = (self.mask_img_.get_affine(), self.mask_img_.shape)
-        my_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
-                                    atleast_4d=False,
-                                    target_fov=fov, memory=self.memory,
-                                    memory_level=self.memory_level,
-                                    verbose=self.verbose)
+        niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
+                                       atleast_4d=False,
+                                       target_fov=fov, memory=self.memory,
+                                       memory_level=self.memory_level,
+                                       verbose=self.verbose)
 
         func = self._cache(filter_and_mask, func_memory_level=1,
                            ignore=['verbose', 'memory', 'copy'])
@@ -215,7 +215,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                 verbose=self.verbose,
                                 confounds=confounds,
                                 copy=copy)
-                          for imgs, confounds in zip(my_iter, confounds))
+                          for imgs, confounds in zip(niimg_iter, confounds))
         return list(zip(*data))[0]
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
