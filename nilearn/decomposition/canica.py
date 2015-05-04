@@ -185,7 +185,8 @@ class CanICA(MultiPCA, CacheMixin):
             ica_maps[abs_ica_maps < threshold] = 0.
         self.components_ = ica_maps
 
-        # BF for issue #570: flip signs of components to have more +ve than -ve
+        # BF for issue #570: flip signs in each component to have more +ve than
+        # -ve voxels
         for component in self.components_:
             if (component > 0).sum() < (component < 0).sum():
                 component *= -1
