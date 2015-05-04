@@ -97,8 +97,7 @@ def test_component_sign():
         maps = canica.masker_.inverse_transform(canica.components_).get_data()
         maps = np.rollaxis(maps, 3, 0)
         for mp in maps:
-            plus, minus = (mp > 0).sum(), (mp < 0).sum()
-            assert_less_equal(minus, plus)
+            assert_less_equal((mp < 0).sum(), (mp > 0).sum())
 
 if __name__ == "__main__":
     test_canica_square_img()
