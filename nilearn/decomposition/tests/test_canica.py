@@ -88,8 +88,7 @@ def test_component_sign():
     # than +1's
     for mp in components:
         mp[rng.randn(*mp.shape) > .8] *= -1
-        plus, minus = (mp > 0).sum(), (mp < 0).sum()
-        assert_less_equal(plus, minus)
+        assert_less_equal((mp > 0).sum(), (mp < 0).sum())
 
     # fit run CanICA at different times of the day
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
