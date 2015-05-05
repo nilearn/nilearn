@@ -98,7 +98,7 @@ def test_component_sign():
 
     # fit run CanICA at different times of the day
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
-    for _ in xrange(3):
+    for _ in range(3):
         canica.fit(data)
         maps = canica.masker_.inverse_transform(canica.components_).get_data()
         maps = np.rollaxis(maps, 3, 0)
