@@ -2,11 +2,17 @@
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from nose.tools import assert_true, assert_raises, assert_less_equal
-
+from nose.tools import assert_true, assert_raises
 import nibabel
-
 from nilearn.decomposition.canica import CanICA
+
+
+try:
+    from nose.tools import assert_less_than
+except ImportError:
+    def assert_less_than(a, b):
+        if a > b:
+            raise AssertionError("%f is not less than %f" % (a, b))
 
 
 def _make_canica_test_data(rng=None, n_subjects=8):
@@ -79,7 +85,7 @@ def test_component_sign():
     # BF for issue #570
 
     # make data
-    data, mask_img, components, rng = _make_canica_test_data(n_subjects=3)
+    data, mask_img, components, rng = _make_canica_test_data(n_subjects=2)
 
     # fill with -1's
     components[:] = -1
@@ -87,8 +93,8 @@ def test_component_sign():
     # have some +1's (so things are not degenerate), but still have more -1's
     # than +1's
     for mp in components:
-        mp[rng.randn(*mp.shape) > .8] *= -1
-        assert_less_equal((mp > 0).sum(), (mp < 0).sum())
+        mp[rng.randn(*mp.shape) > .8] *= -.5
+        assert_less_than(mp.max(), -mp.min())
 
     # fit run CanICA at different times of the day
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
@@ -97,7 +103,7 @@ def test_component_sign():
         maps = canica.masker_.inverse_transform(canica.components_).get_data()
         maps = np.rollaxis(maps, 3, 0)
         for mp in maps:
-            assert_less_equal((mp < 0).sum(), (mp > 0).sum())
+            assert_less_than(-mp.min(), mp.max())
 
 if __name__ == "__main__":
     test_canica_square_img()

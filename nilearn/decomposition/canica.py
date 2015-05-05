@@ -188,7 +188,7 @@ class CanICA(MultiPCA, CacheMixin):
         # BF for issue #570: flip signs in each component to have more +ve than
         # -ve voxels
         for component in self.components_:
-            if (component > 0).sum() < (component < 0).sum():
+            if component.max() < -component.min():
                 component *= -1
 
         return self
