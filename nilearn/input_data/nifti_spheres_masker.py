@@ -1,8 +1,6 @@
 """
 Transformer for computing seeds signals.
 """
-import warnings
-
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn import neighbors
@@ -16,12 +14,9 @@ from .. import image
 from .. import masking
 
 
-def _signals_from_spheres(seeds, niimg, radius, mask_img=None):
-
+def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
     seeds = list(seeds)
-    n_seeds = len(seeds)
     niimg = check_niimg(niimg)
-    shape = niimg.get_data().shape
     affine = niimg.get_affine()
 
     # Compute world coordinates of all in-mask voxels.
@@ -29,29 +24,46 @@ def _signals_from_spheres(seeds, niimg, radius, mask_img=None):
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
         mask_img = image.resample_img(mask_img, target_affine=affine,
-                                      target_shape=shape[:3],
+                                      target_shape=niimg.shape[:3],
                                       interpolation='nearest')
         mask, _ = masking._load_mask_img(mask_img)
-        mask_coords = np.where(mask != 0)
+        mask_coords = list(np.where(mask != 0))
+
+        X = masking._apply_mask_fmri(niimg, mask_img)
     else:
-        mask_coords = np.ndindex(shape[:3])
-    mask_coords = np.asarray(mask_coords + (np.ones(len(mask_coords[0]),
-                                                    dtype=np.int),))
+        mask_coords = zip(*np.ndindex(niimg.shape[:3]))
+        X = niimg.get_data().reshape([-1, niimg.shape[3]]).T
+    mask_coords.append(np.ones(len(mask_coords[0]), dtype=np.int))
+    mask_coords = np.asarray(mask_coords)
     mask_coords = np.dot(affine, mask_coords)[:3].T
 
     clf = neighbors.NearestNeighbors(radius=radius)
     A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
-    del mask_coords
     A = A.tolil()
-
-    # scores is an 1D array of CV scores with length equals to the number
-    # of voxels in processing mask (columns in process_mask)
-    X = masking._apply_mask_fmri(niimg, mask_img)
-
-    signals = np.empty((shape[3], n_seeds))
+    # Include selfs
+    mask_coords = mask_coords.astype(int).tolist()
+    for i, seed in enumerate(seeds):
+        try:
+            A[i, mask_coords.index(list(seeds[i]))] = True
+        except ValueError:
+            # seed is not in the mask
+            pass
+    del mask_coords
 
     for i, row in enumerate(A.rows):
-        signals[:, i] = np.mean(X[:, row])
+        if len(row) == 0:
+            raise ValueError('Sphere around seed #%i is empty' % i)
+        yield X[:, row]
+
+
+def _signals_from_spheres(seeds, niimg, radius, mask_img=None):
+    seeds = list(seeds)
+    n_seeds = len(seeds)
+
+    signals = np.empty((niimg.shape[3], n_seeds))
+    for i, sphere in enumerate(_iter_signals_from_spheres(
+            seeds, niimg, radius, mask_img=mask_img)):
+        signals[:, i] = np.mean(sphere, axis=1)
 
     return signals
 
@@ -192,7 +204,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         logger.log("loading images: %s" %
                    _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
-        imgs = _utils.check_niimgs(imgs)
+        imgs = _utils.check_niimg(imgs)
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
