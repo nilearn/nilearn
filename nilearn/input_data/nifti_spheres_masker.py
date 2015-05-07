@@ -16,8 +16,9 @@ from .. import image
 from .. import masking
 
 
-def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
+def _signals_from_spheres(seeds, niimg, radius, mask_img=None):
 
+    seeds = list(seeds)
     n_seeds = len(seeds)
     niimg = check_niimg(niimg)
     shape = niimg.get_data().shape
@@ -39,67 +40,19 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
     mask_coords = np.dot(affine, mask_coords)[:3].T
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    A = clf.fit(mask_coords).radius_neighbors_graph(mask_coords)
+    A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
     del mask_coords
     A = A.tolil()
 
     # scores is an 1D array of CV scores with length equals to the number
     # of voxels in processing mask (columns in process_mask)
-    X = masking._apply_mask_fmri(imgs, self.mask_img)
+    X = masking._apply_mask_fmri(niimg, mask_img)
 
-    estimator = self.estimator
-    if isinstance(estimator, _basestring):
-        estimator = ESTIMATOR_CATALOG[estimator]()
-
-    scores = search_light(X, y, estimator, A,
-                          self.scoring, self.cv, self.n_jobs,
-                          self.verbose)
-    scores_3D = np.zeros(process_mask.shape)
-    scores_3D[process_mask] = scores
-    self.scores_ = scores_3D
-
-
-def _signals_from_seeds(seeds, niimg, radius=None, mask_img=None):
-    """ Note: this function is sub-optimal for voxel size radius
-    """
-    n_seeds = len(seeds)
-    niimg = check_niimg(niimg)
-    shape = niimg.get_data().shape
-    affine = niimg.get_affine()
-    if mask_img is not None:
-        mask_img = check_niimg(mask_img, ensure_3d=True)
-        mask_img = image.resample_img(mask_img, target_affine=affine,
-                                      target_shape=shape[:3],
-                                      interpolation='nearest')
-        mask, _ = masking._load_mask_img(mask_img)
     signals = np.empty((shape[3], n_seeds))
-    # Create an array of shape (3, array.shape) containing the i, j, k indices
-    # in voxel space
-    coords = np.vstack((np.indices(shape[:3]),
-                        np.ones((1,) + shape[:3])))
-    # Transform the indices into native space
-    coords = np.tensordot(affine, coords, axes=[[1], [0]])[:3]
-    # Matrix where we stor each sphere to check overlaps
-    mark_map = - np.ones(shape[:3])
 
-    for i, seed in enumerate(seeds):
-        seed = np.asarray(seed)
-        # Compute square distance to the seed
-        dist = ((coords - seed[:, None, None, None]) ** 2).sum(axis=0)
-        if radius is None or radius ** 2 < np.min(dist):
-            dist_mask = (dist == np.min(dist))
-        else:
-            dist_mask = (dist <= radius ** 2)
-        if mask_img is not None:
-            dist_mask = np.logical_and(mask, dist_mask)
-        if not dist_mask.any():
-            raise ValueError('Seed #%i is out of the mask' % i)
-        # Check if there is overlapping with previous seeds
-        markers = np.unique(mark_map[dist_mask])
-        if len(markers) != 1:
-            warnings.warn('Sphere #%i overlaps with sphere #%i'
-                          % (i, markers[1]))
-        signals[:, i] = np.mean(niimg.get_data()[dist_mask], axis=0)
+    for i, row in enumerate(A.rows):
+        signals[:, i] = np.mean(X[:, row])
+
     return signals
 
 
@@ -248,7 +201,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         logger.log("extracting region signals", verbose=self.verbose)
         signals = self._cache(
-            _signals_from_seeds, func_memory_level=1)(
+            _signals_from_spheres, func_memory_level=1)(
                 self.seeds_, imgs, radius=self.radius, mask_img=self.mask_img)
 
         logger.log("cleaning extracted signals", verbose=self.verbose)
