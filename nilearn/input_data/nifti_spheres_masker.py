@@ -37,6 +37,10 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
     mask_coords = np.asarray(mask_coords)
     mask_coords = np.dot(affine, mask_coords)[:3].T
 
+    if radius is not None:
+        # Fix for early version of sklearn (not sure)
+        radius += 1e-6
+
     clf = neighbors.NearestNeighbors(radius=radius)
     A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
     A = A.tolil()
