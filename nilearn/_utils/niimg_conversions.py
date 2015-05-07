@@ -3,6 +3,7 @@ Conversion utilities.
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
+import warnings
 
 import numpy as np
 import itertools
@@ -62,6 +63,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
        If specified, images are resampled to this field of view
     """
     ref_fov = None
+    resample_to_first_img = False
     ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
     if target_fov is not None and target_fov != "first":
         ref_fov = target_fov
@@ -73,10 +75,15 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
                     ref_fov = (niimg.get_affine(), niimg.shape[:3])
+                    resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
                 if target_fov is not None:
                     from nilearn import image  # we avoid a circular import
+                    if resample_to_first_img:
+                        warnings.warn('Affine is different across subjects.'
+                                      ' Realignement on first subject '
+                                      'affine forced')
                     niimg = cache(
                         image.resample_img, memory, func_memory_level=2,
                         memory_level=memory_level)(
