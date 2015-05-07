@@ -176,7 +176,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
+def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
@@ -189,8 +189,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    env_vars: list of string, optional
-        Add environment variables searched even if data_dir is not None.
+    pre_dirs: list of string, optional
+        Paths to explore before anything else. Typically used for system paths.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -213,10 +213,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
     paths = []
 
     # Search given environment variables
-    for env_var in env_vars:
-        env_data = os.getenv(env_var)
-        if env_data is not None:
-            paths.extend(env_data.split(':'))
+    for pre_dir in pre_dirs:
+        paths.extend(pre_dir.split(':'))
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
@@ -1647,11 +1645,16 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                              atlas_name, '\n'.join(atlas_items)))
 
     # grab data from internet first
-    url = 'https://www.nitrc.org/frs/download.php/7629/HarvardOxford.tgz'
+    url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
     dataset_name = 'harvard_oxford'
+    # Environment variables
+    pre_dirs = []
+    for env_var in ['FSL_DIR', 'FSLDIR']:
+        path = os.getenv(env_var)
+        if path is not None:
+            pre_dirs.extend(path.split(':'))
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                env_vars=['FSL_DIR', 'FSLDIR'],
-                                verbose=verbose)
+                                pre_dirs=pre_dirs, verbose=verbose)
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
     atlas_file = os.path.join(root, 'HarvardOxford',
