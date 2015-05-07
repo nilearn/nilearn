@@ -8,6 +8,8 @@ import warnings
 import numpy as np
 import itertools
 from sklearn.externals.joblib import Memory
+from sklearn import neighbors
+import nibabel as nib
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg, new_img_like
@@ -106,6 +108,89 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             exc.args = (('Error encountered while loading image #%d%s'
                          % (i, img_name),) + exc.args)
             raise
+
+
+def _iter_niimg_spheres(mask_img, process_mask_img=None, radius=2.):
+    """Iterator to move in nifti images in sphere units
+
+    Parameters
+    -----------
+    mask_img : Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Boolean image giving location of voxels containing usable signals.
+    process_mask_img : Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Boolean image giving voxels on which searchlight should be
+        computed.
+    radius : float, optional
+        Radius of the searchlight ball, in millimeters. Defaults to 2.
+
+    Returns
+    -------
+    Returns 1D-array coordinates of iterations over mask_img in spheres
+    (i.e., relative to _apply_mask_fmri on target nifti images).
+    """
+    from nilearn._utils import check_niimg  # we avoid a circular import
+
+    # compute world coordinates of all in-mask voxels
+    mask_nii = check_niimg(mask_img)
+    mask = mask_nii.get_data()
+    mask_affine = mask_nii.get_affine()
+    mask_coords = np.where(mask != 0)
+    mask_coords = np.asarray(mask_coords + (np.ones(len(mask_coords[0]),
+                                                    dtype=np.int),))
+    mask_coords = np.dot(mask_affine, mask_coords)[:3].T
+
+    # compute world coordinates of all in-process mask voxels
+    if process_mask_img is None:
+        process_mask = mask
+        process_mask_coords = mask_coords
+    else:
+        process_mask_nii = check_niimg(process_mask_img)
+        process_mask = process_mask_nii.get_data()
+        process_mask_affine = process_mask_nii.get_affine()
+        process_mask_coords = np.where(process_mask != 0)
+        process_mask_coords = \
+            np.asarray(process_mask_coords +
+                       (np.ones(len(process_mask_coords[0]),
+                        dtype=np.int),))
+        process_mask_coords = np.dot(process_mask_affine,
+                                     process_mask_coords)[:3].T
+
+    clf = neighbors.NearestNeighbors(radius=radius)
+    A = clf.fit(mask_coords).radius_neighbors_graph(process_mask_coords)
+    del process_mask_coords, mask_coords
+    A = A.tolil()
+
+    # provide sphere indices relative to 1D array of mask_img space
+    for cur_sphere_indices in A.rows:
+        yield np.asarray(cur_sphere_indices)
+
+
+def test_iter_niimg_sphere():
+    # import nilearn; from nilearn._utils.niimg_conversions import test_iter_niimg_sphere; test_iter_niimg_sphere()
+    from nilearn.datasets import fetch_icbm152_2009
+    from nilearn.masking import _apply_mask_fmri
+
+    gm_nii = nib.load(fetch_icbm152_2009()['gm'])
+    data_nii = gm_nii.get_data()
+    mask_nii = nib.Nifti1Image((data_nii > 0).astype(np.int),
+                               gm_nii.get_affine())
+    process_grid = np.zeros((data_nii.shape))
+    process_grid[99:101, 99:101, 99:101] = 1  # 8 target voxels
+    mask_nii_process = nib.Nifti1Image(process_grid, gm_nii.get_affine())
+
+    it = _iter_niimg_spheres(mask_nii, process_mask_img=mask_nii_process,
+                             radius=.5)  # single-voxel spheres
+    masked_data = _apply_mask_fmri(mask_nii_process, mask_nii)
+    n_iters = 0
+    for i in it:
+        # check whether indices of the process mask were returned
+        assert(masked_data[i] == 1)
+        n_iters += 1
+    # check whether the iterations were complete
+    assert(n_iters == process_grid.sum())
+    return
 
 
 def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
