@@ -31,7 +31,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
 
         X = masking._apply_mask_fmri(niimg, mask_img)
     else:
-        mask_coords = zip(*np.ndindex(niimg.shape[:3]))
+        mask_coords = list(zip(*np.ndindex(niimg.shape[:3])))
         X = niimg.get_data().reshape([-1, niimg.shape[3]]).T
     mask_coords.append(np.ones(len(mask_coords[0]), dtype=np.int))
     mask_coords = np.asarray(mask_coords)
