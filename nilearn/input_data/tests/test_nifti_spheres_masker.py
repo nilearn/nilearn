@@ -2,7 +2,7 @@ import nibabel
 import numpy as np
 from numpy.testing import assert_array_equal
 from nilearn.input_data import NiftiSpheresMasker
-from nilearn._utils.testing import assert_raises_regexp
+from nilearn._utils.testing import assert_raises_regex
 
 
 def test_seed_extraction():
@@ -69,4 +69,4 @@ def test_anisotropic_sphere_extraction():
 
 def test_errors():
     masker = NiftiSpheresMasker(([1, 2]), radius=.2)
-    assert_raises_regexp(ValueError, 'Seeds must be a list .+', masker.fit)
+    assert_raises_regex(ValueError, 'Seeds must be a list .+', masker.fit)
