@@ -170,7 +170,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         kwargs[direction] = cut_coords
         kwargs['affine'] = affine
 
-        # We need to atleast_1d to make sure that when n_cuts is 1 we do
+        # We need atleast_1d to make sure that when n_cuts is 1 we do
         # get an iterable
         cut_coords = coord_transform(**kwargs)[axis]
         return np.atleast_1d(cut_coords)
