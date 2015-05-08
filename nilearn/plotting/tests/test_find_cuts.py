@@ -72,3 +72,11 @@ def test_find_cut_slices():
         # Only a smoke test
         cuts = find_cut_slices(img, direction=direction,
                                n_cuts=n_cuts, spacing=2)
+
+
+def test_singleton_ax_dim():
+    for axis, direction in enumerate("xyz"):
+        shape = [5, 6, 7]
+        shape[axis] = 1
+        img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
+        find_cut_slices(img, direction=direction)
