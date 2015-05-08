@@ -152,10 +152,12 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     less than 'spacing' will be returned.
     """
 
-    assert direction in 'xyz'
-
+    # misc
+    if not direction in 'xyz':
+        raise ValueError(
+            "'direction' must be one of 'x', 'y', or 'z'. Got '%s'" % (
+                direction))
     axis = 'xyz'.index(direction)
-
     affine = img.get_affine()
     orig_data = np.abs(img.get_data())
     this_shape = orig_data.shape[axis]
