@@ -104,8 +104,6 @@ def test_component_sign():
     for mp in components:
         mp[rng.randn(*mp.shape) > .8] *= -5.
         assert_less_equal(mp.max(), -mp.min())  # goal met ?
-    data = _make_data_from_components(components, affine, shape,
-                                      rng=rng, n_subjects=2)
 
     # synthesize data with given components
     data = _make_data_from_components(components, affine, shape, rng=rng,
