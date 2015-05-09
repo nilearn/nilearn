@@ -455,7 +455,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
 
         # Deal with non-full rank confounds
-        Q_full = Q[:, np.abs(R.diagonal()) > np.finfo(np.float).eps * 100]
+        Q_full = Q[:, np.abs(R.diagonal()) > np.finfo(np.float).eps * 100.]
         signals -= np.dot(Q_full, np.dot(Q_full.T, signals))
 
     if low_pass is not None or high_pass is not None:
