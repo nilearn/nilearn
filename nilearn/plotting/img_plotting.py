@@ -370,9 +370,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         cmap: matplotlib colormap, optional
             The colormap for the anat
         vmin: float
-            vmin passed to plt.imshow
+            Lower bound for plotting, passed to plt.imshow
         vmax: float
-            vmax passed to plt.imshow
+            Upper bound for plotting, passed to plt.imshow
 
         Notes
         -----
@@ -450,9 +450,9 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
         vmin: float
-            vmin passed to plt.imshow
+            Lower bound for plotting, passed to plt.imshow
         vmax: float
-            vmax passed to plt.imshow
+            Upper bound for plotting, passed to plt.imshow
 
         Notes
         -----
@@ -527,9 +527,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
         vmin: float
-            vmin passed to plt.imshow
+            Lower bound for plotting, passed to plt.imshow
         vmax: float
-            vmax passed to plt.imshow
+            Upper bound for plotting, passed to plt.imshow
 
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
@@ -619,7 +619,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             or from 0 to vmax. Setting to 'auto' will select the latter if
             the whole image is non-negative.
         vmax: float
-            vmax passed to plt.imshow
+            Upper bound for plotting, passed to plt.imshow
 
         Notes
         -----
@@ -741,9 +741,9 @@ def plot_glass_brain(stat_map_img,
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics
         vmin: float
-            vmin passed to plt.imshow
+            Lower bound for plotting, passed to plt.imshow
         vmax: float
-            vmax passed to plt.imshow
+            Upper bound for plotting, passed to plt.imshow
 
         Notes
         -----
