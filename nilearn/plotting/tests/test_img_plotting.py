@@ -379,11 +379,3 @@ def test_plot_connectome_exceptions():
                         adjacency_matrix, node_coords,
                         node_kwargs={'c': 'blue'},
                         **kwargs)
-
-
-def test_singleton_ax_dim():
-    for axis, direction in enumerate("xyz"):
-        shape = [5, 6, 7]
-        shape[axis] = 1
-        img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
-        plot_stat_map(img, None, display_mode=direction)
