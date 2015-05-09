@@ -8,9 +8,9 @@ from nilearn.decomposition.canica import CanICA
 
 
 try:
-    from nose.tools import assert_less_than
+    from nose.tools import assert_less_equal
 except ImportError:
-    def assert_less_than(a, b):
+    def assert_less_equal(a, b):
         if a > b:
             raise AssertionError("%f is not less than %f" % (a, b))
 
@@ -102,8 +102,8 @@ def test_component_sign():
 
     # make more de-activations than activations
     for mp in components:
-        mp[rng.randn(*mp.shape) > .8] *= -1.
-        assert_less_than(mp.max(), -mp.min())  # goal met ?
+        mp[rng.randn(*mp.shape) > .8] *= -5.
+        assert_less_equal(mp.max(), -mp.min())  # goal met ?
     data = _make_data_from_components(components, affine, shape,
                                       rng=rng, n_subjects=2)
 
@@ -119,7 +119,7 @@ def test_component_sign():
         maps = canica.masker_.inverse_transform(canica.components_).get_data()
         maps = np.rollaxis(maps, 3, 0)
         for mp in maps:
-            assert_less_than(-mp.min(), mp.max())
+            assert_less_equal(-mp.min(), mp.max())
 
 if __name__ == "__main__":
     test_canica_square_img()
