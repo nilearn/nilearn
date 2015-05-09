@@ -5,7 +5,7 @@ from numpy.testing import assert_array_almost_equal
 from nose.tools import assert_true, assert_raises
 import nibabel
 from nilearn.decomposition.canica import CanICA
-
+from nilearn.image import iter_img
 
 try:
     from nose.tools import assert_less_equal
@@ -116,9 +116,9 @@ def test_component_sign():
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
     for _ in range(3):
         canica.fit(data)
-        maps = canica.masker_.inverse_transform(canica.components_).get_data()
-        maps = np.rollaxis(maps, 3, 0)
-        for mp in maps:
+        for mp in iter_img(canica.masker_.inverse_transform(
+                canica.components_)):
+            mp = mp.get_data()
             assert_less_equal(-mp.min(), mp.max())
 
 if __name__ == "__main__":
