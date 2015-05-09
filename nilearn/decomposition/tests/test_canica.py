@@ -100,7 +100,7 @@ def test_component_sign():
     affine = np.eye(4)
     components = _make_canica_components(shape)
 
-    # make more de-activations than activations
+    # make +ve
     for mp in components:
         mp[rng.randn(*mp.shape) > .8] *= -5.
         assert_less_equal(mp.max(), -mp.min())  # goal met ?
