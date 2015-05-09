@@ -110,7 +110,7 @@ def test_component_sign():
                                       n_subjects=2)
     mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
 
-    # fit run CanICA at different times of the day
+    # run CanICA many times (this is known to produce different results)
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
     for _ in range(3):
         canica.fit(data)
