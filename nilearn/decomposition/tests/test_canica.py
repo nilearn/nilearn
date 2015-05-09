@@ -92,7 +92,9 @@ def test_canica_square_img():
 
 
 def test_component_sign():
-    # BF for issue #570
+    # We should have a heuristic that flips the sign of components in
+    # CanICA to have more positive values than negative values, for
+    # instance by making sure that the largest value is positive.
 
     # make data (SVD)
     rng = np.random.RandomState(0)

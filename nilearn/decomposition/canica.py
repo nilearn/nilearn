@@ -185,7 +185,7 @@ class CanICA(MultiPCA, CacheMixin):
             ica_maps[abs_ica_maps < threshold] = 0.
         self.components_ = ica_maps
 
-        # BF for issue #570: flip signs in each component so that peak is +ve
+        # flip signs in each component so that peak is +ve
         for component in self.components_:
             if component.max() < -component.min():
                 component *= -1
