@@ -4,15 +4,9 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 from nose.tools import assert_true, assert_raises
 import nibabel
+from nilearn._utils.testing import assert_less_equal
 from nilearn.decomposition.canica import CanICA
 from nilearn.image import iter_img
-
-try:
-    from nose.tools import assert_less_equal
-except ImportError:
-    def assert_less_equal(a, b):
-        if a > b:
-            raise AssertionError("%f is not less than %f" % (a, b))
 
 
 def _make_data_from_components(components, affine, shape, rng=None,
