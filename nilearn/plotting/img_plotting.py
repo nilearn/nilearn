@@ -385,8 +385,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         anat_img,
         dim=dim, black_bg=black_bg)
 
-    vmin = vmin or anat_vmin
-    vmax = vmax or anat_vmax
+    if vmin is None:
+        vmin = anat_vmin
+    if vmax is None:
+        vmax = anat_vmax
 
     display = plot_img(anat_img, cut_coords=cut_coords,
                        output_file=output_file, display_mode=display_mode,
