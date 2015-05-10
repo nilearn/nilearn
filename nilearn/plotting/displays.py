@@ -342,8 +342,8 @@ class BaseSlicer(object):
             black_bg: boolean, optional
                 If True, the background of the figure will be put to
                 black. If you wish to save figures with a black background,
-                you will need to pass "facecolor='k', edgecolor='k'" to 
-                pylab's savefig.
+                you will need to pass "facecolor='k', edgecolor='k'"
+                to matplotlib.pyplot.savefig.
 
         """
         self.cut_coords = cut_coords
