@@ -13,7 +13,7 @@ datadir = os.path.join(currdir, 'data')
 
 def test_copy_img():
     assert_raises_regex(ValueError, "Input value is not an image",
-        niimg.copy_img, 3)
+                        niimg.copy_img, 3)
 
 
 def test_new_img_like_mgz():
