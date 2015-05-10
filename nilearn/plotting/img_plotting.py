@@ -188,11 +188,12 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
+            will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
         colorbar: boolean, optional
             If True, display a colorbar on the right of the plots.
         kwargs: extra keyword arguments, optional
-            Extra keyword arguments passed to plt.imshow
+            Extra keyword arguments passed to matplotlib.pyplot.imshow
     """
     display = _plot_img_with_bg(img, cut_coords=cut_coords,
                     output_file=output_file, display_mode=display_mode,
@@ -366,13 +367,14 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
+            will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
         cmap: matplotlib colormap, optional
             The colormap for the anat
         vmin: float
-            Lower bound for plotting, passed to plt.imshow
+            Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
-            Upper bound for plotting, passed to plt.imshow
+            Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
         Notes
         -----
@@ -440,7 +442,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
+            will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
         cmap: matplotlib colormap, optional
             The colormap for specified image
         threshold : a number, None, or 'auto'
@@ -450,9 +453,9 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
         vmin: float
-            Lower bound for plotting, passed to plt.imshow
+            Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
-            Upper bound for plotting, passed to plt.imshow
+            Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
         Notes
         -----
@@ -519,7 +522,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
+            will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
         threshold : a number, None, or 'auto'
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
@@ -527,9 +531,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
         vmin: float
-            Lower bound for plotting, passed to plt.imshow
+            Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
-            Upper bound for plotting, passed to plt.imshow
+            Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
@@ -610,7 +614,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
+            will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
         cmap: matplotlib colormap, optional
             The colormap for specified image. The ccolormap *must* be
             symmetrical.
@@ -619,7 +624,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             or from 0 to vmax. Setting to 'auto' will select the latter if
             the whole image is non-negative.
         vmax: float
-            Upper bound for plotting, passed to plt.imshow
+            Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
         Notes
         -----
@@ -735,15 +740,16 @@ def plot_glass_brain(stat_map_img,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
+            will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
         cmap: matplotlib colormap, optional
             The colormap for specified image
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics
         vmin: float
-            Lower bound for plotting, passed to plt.imshow
+            Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
-            Upper bound for plotting, passed to plt.imshow
+            Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
         Notes
         -----
@@ -833,7 +839,8 @@ def plot_connectome(adjacency_matrix, node_coords,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to plt.savefig.
+            will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics.
         edge_kwargs: dict
