@@ -38,3 +38,12 @@ def largest_connected_component(volume):
     return labels == label_count.argmax()
 
 
+def get_border_data(data, border_size):
+    return np.concatenate([
+        data[:border_size, :, :].ravel(),
+        data[-border_size:, :, :].ravel(),
+        data[:, :border_size, :].ravel(),
+        data[:, -border_size:, :].ravel(),
+        data[:, :, :border_size].ravel(),
+        data[:, :, -border_size:].ravel(),
+    ])
