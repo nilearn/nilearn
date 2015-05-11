@@ -41,18 +41,21 @@ def _standardize(signals, detrend=False, normalize=True):
     std_signals: numpy.ndarray
         copy of signals, normalized.
     """
+
+    if detrend:
+        signals = _detrend(signals, inplace=False)
+    else:
+        signals = signals.copy()
     if signals.shape[0] == 1:
         warnings.warn('Standardization of 3D signal has been requested but '
             'would lead to zero values. Skipping.')
         return signals.copy()
 
-    if detrend:
-        signals = _detrend(signals, inplace=False)
-    else:
-        # remove mean if not already detrended
-        signals = signals - signals.mean(axis=0)
-
     if normalize:
+        if not detrend:
+            # remove mean if not already detrended
+            signals = signals - signals.mean(axis=0)
+
         std = np.sqrt((signals ** 2).sum(axis=0))
         std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
         signals /= std
