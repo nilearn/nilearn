@@ -411,7 +411,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                         % confounds.__class__)
     # detrend
     signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=standardize, detrend=detrend)
+    signals = _standardize(signals, normalize=False, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
