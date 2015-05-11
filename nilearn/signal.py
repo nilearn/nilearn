@@ -408,14 +408,9 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                       (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
-    # Standardize / detrend
-    normalize = False
-    if confounds is not None:
-        # If confounds are to be removed, then force normalization to improve
-        # matrix conditioning.
-        normalize = True
+    # detrend
     signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=normalize, detrend=detrend)
+    signals = _standardize(signals, normalize=False, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
