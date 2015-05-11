@@ -44,17 +44,16 @@ def _standardize(signals, detrend=False, normalize=True):
     if detrend:
         signals = _detrend(signals, inplace=False)
     else:
+        # remove mean if not already detrended
+        signals -= signals.mean(axis=0)
         signals = signals.copy()
+
     if signals.shape[0] == 1:
         warnings.warn('Standardization of 3D signal has been requested but '
             'would lead to zero values. Skipping.')
         return signals
 
     if normalize:
-        # remove mean if not already detrended
-        if not detrend:
-            signals -= signals.mean(axis=0)
-
         std = np.sqrt((signals ** 2).sum(axis=0))
         std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
         signals /= std
@@ -410,7 +409,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                         % confounds.__class__)
     # detrend
     signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=False, detrend=detrend)
+    signals = _standardize(signals, normalize=standardize, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
@@ -452,11 +451,22 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
 
         confounds = _ensure_float(confounds)
         confounds = _standardize(confounds, normalize=True, detrend=detrend)
-        Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
 
-        # Deal with non-full rank confounds
-        Q_full = Q[:, np.abs(R.diagonal()) > np.finfo(np.float).eps * 100.]
-        signals -= np.dot(Q_full, np.dot(Q_full.T, signals))
+        if (LooseVersion(scipy.__version__) > LooseVersion('0.9.0')):
+            # Pivoting in qr decomposition was added in scipy 0.10
+            Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
+            Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
+            signals -= Q.dot(Q.T).dot(signals)
+        else:
+            Q, R = linalg.qr(confounds, mode='economic')
+            non_null_diag = np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.
+            if np.all(non_null_diag):
+                signals -= Q.dot(Q.T).dot(signals)
+            elif np.any(non_null_diag):
+                R = R[:, non_null_diag]
+                confounds = confounds[:, non_null_diag]
+                inv = scipy.linalg.inv(np.dot(R.T, R))
+                signals -= confounds.dot(inv).dot(confounds.T).dot(signals)
 
     if low_pass is not None or high_pass is not None:
         signals = butterworth(signals, sampling_rate=1. / t_r,
