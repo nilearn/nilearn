@@ -321,7 +321,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
-              axes=None, title=None, annotate=True, draw_cross=True,
+              axes=None, title=None, annotate=True, threshold=None, draw_cross=True,
               black_bg='auto', dim=False, cmap=plt.cm.gray,
               vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
@@ -361,6 +361,12 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
+        threshold : a number, None, or 'auto', optional
+            If None is given, the image is not thresholded.
+            If a number is given, it is used to threshold the image:
+            values below the threshold (in absolute value) are plotted
+            as transparent. If auto is given, the threshold is determined
+            magically by analysis of the image.
         draw_cross: boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
@@ -393,7 +399,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     display = plot_img(anat_img, cut_coords=cut_coords,
                        output_file=output_file, display_mode=display_mode,
                        figure=figure, axes=axes, title=title,
-                       threshold=None, annotate=annotate,
+                       threshold=threshold, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
     return display
