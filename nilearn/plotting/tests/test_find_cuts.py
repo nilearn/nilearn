@@ -1,10 +1,8 @@
 import numpy as np
-
-from nose.tools import assert_equal
-
+from nose.tools import assert_equal, assert_true
 import nibabel
-
-from nilearn.plotting.find_cuts import find_xyz_cut_coords, find_cut_slices
+from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
+                                        _transform_cut_coords)
 
 
 def test_find_cut_coords():
@@ -72,3 +70,27 @@ def test_find_cut_slices():
         # Only a smoke test
         cuts = find_cut_slices(img, direction=direction,
                                n_cuts=n_cuts, spacing=2)
+
+
+def test_singleton_ax_dim():
+    for axis, direction in enumerate("xyz"):
+        shape = [5, 6, 7]
+        shape[axis] = 1
+        img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
+        find_cut_slices(img, direction=direction)
+
+
+def test_tranform_cut_coords():
+    affine = np.eye(4)
+
+    # test that when n_cuts is 1 we do get an iterable
+    for direction in 'xyz':
+        assert_true(hasattr(_transform_cut_coords([4], direction, affine),
+                            "__iter__"))
+
+    # test that n_cuts after as before function call
+    n_cuts = 5
+    cut_coords = np.arange(n_cuts)
+    for direction in 'xyz':
+        assert_equal(len(_transform_cut_coords(cut_coords, direction, affine)),
+                     n_cuts)

@@ -5,6 +5,7 @@ Tools to find activations and cut on maps
 # Author: Gael Varoquaux
 # License: BSD
 
+import warnings
 import numpy as np
 from scipy import ndimage
 
@@ -123,6 +124,39 @@ def _get_auto_mask_bounds(img):
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 
+def _transform_cut_coords(cut_coords, direction, affine):
+    """Transforms cut_coords back in image space
+
+    Parameters
+    ----------
+    cut_coords: 1D array of length n_cuts
+        The coordinates to be transformed.
+
+    direction: string, optional (default "z")
+        sectional direction; possible values are "x", "y", or "z"
+
+    affine: 2D array of shape (4, 4)
+        The affine for the image.
+
+    Returns
+    -------
+    cut_coords: 1D array of length n_cuts
+       The original cut_coords transformed image space.
+    """
+    # make kwargs
+    axis = 'xyz'.index(direction)
+    kwargs = {}
+    for name in 'xyz':
+        kwargs[name] = np.zeros(len(cut_coords))
+    kwargs[direction] = cut_coords
+    kwargs['affine'] = affine
+
+    # We need atleast_1d to make sure that when n_cuts is 1 we do
+    # get an iterable
+    cut_coords = coord_transform(**kwargs)[axis]
+    return np.atleast_1d(cut_coords)
+
+
 def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
 
@@ -151,16 +185,23 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     less than 'spacing' will be returned.
     """
 
-    assert direction in 'xyz'
-
+    # misc
+    if not direction in 'xyz':
+        raise ValueError(
+            "'direction' must be one of 'x', 'y', or 'z'. Got '%s'" % (
+                direction))
     axis = 'xyz'.index(direction)
-
     affine = img.get_affine()
     orig_data = np.abs(img.get_data())
     this_shape = orig_data.shape[axis]
+
+    # BF issue #575: Return all the slices along and axis if this axis
+    # is the display mode and there are at least as many requested
+    # n_slices as there are slices.
     if n_cuts > this_shape:
-        raise ValueError('Too many cuts requested for the data: '
-                         'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+        warnings.warn('Too many cuts requested for the data: '
+                      'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+        return _transform_cut_coords(np.arange(this_shape), direction, affine)
 
     data = orig_data.copy()
     if data.dtype.kind == 'i':
@@ -227,14 +268,4 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     cut_coords = np.array(cut_coords)
     cut_coords.sort()
 
-    # Transform this back in image space
-    kwargs = dict()
-    for name in 'xyz':
-        kwargs[name] = np.zeros(len(cut_coords))
-    kwargs[direction] = cut_coords
-    kwargs['affine'] = affine
-
-    cut_coords = coord_transform(**kwargs)[axis]
-    # We need to atleast_1d to make sure that when n_cuts is 1 we do
-    # get an iterable
-    return np.atleast_1d(cut_coords)
+    return _transform_cut_coords(cut_coords, direction, affine)
