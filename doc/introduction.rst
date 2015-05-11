@@ -122,7 +122,7 @@ rich. Installing the different packages needed is time-consuming and error
 prone.
 
 :Windows and MacOSX:
-  We suggest that you install Anaconda_.
+  We suggest you to install 64 bit Anaconda_.
 
   `Enthought Canopy`_, `PythonXY <http://code.google.com/p/pythonxy/>`_ are
   other options. Enthought Canopy Express, the free version, should cover all
