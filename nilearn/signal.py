@@ -49,7 +49,7 @@ def _standardize(signals, detrend=False, normalize=True):
     if signals.shape[0] == 1:
         warnings.warn('Standardization of 3D signal has been requested but '
             'would lead to zero values. Skipping.')
-        return signals.copy()
+        return signals
 
     if normalize:
         if not detrend:
