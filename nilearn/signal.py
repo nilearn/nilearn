@@ -452,7 +452,7 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
 
         confounds = _ensure_float(confounds)
         confounds = _standardize(confounds, normalize=True, detrend=detrend)
-        if (LooseVersion(scipy.__version__) < LooseVersion('0.9.0')):
+        if (LooseVersion(scipy.__version__) > LooseVersion('0.9.0')):
             # Pivoting in qr decomposition was added in scipy 0.10
             Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
             Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
