@@ -106,14 +106,14 @@ To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
 
 .. literalinclude:: ../../examples/connectivity/plot_rest_clustering.py
-    :start-after: # Display the labels 
+    :start-after: ### Show result ###############################################################
     :end-before: # Display the original data
 
 
 .. figure:: ../auto_examples/connectivity/images/plot_rest_clustering_001.png
    :target: ../auto_examples/connectivity/plot_rest_clustering.html
    :align: center
-   :scale: 60
+   :scale: 80
 
 Compressed picture
 ------------------
