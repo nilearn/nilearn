@@ -206,8 +206,8 @@ Finally, we use the
 
 The results are the following:
 
-.. image:: ../auto_examples/connectivity/images/plot_connect_comparison_001.png
-    :target: ../auto_examples/connectivity/plot_connect_comparison.html
+.. image:: ../auto_examples/connectivity/images/plot_simulated_connectome_001.png
+    :target: ../auto_examples/connectivity/plot_simulated_connectome.html
     :scale: 60
 
 The group-sparse estimation outputs matrices with
