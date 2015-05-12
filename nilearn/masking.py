@@ -12,7 +12,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from . import _utils
 from ._utils import new_img_like
 from ._utils.cache_mixin import cache
-from ._utils.ndimage import largest_connected_component
+from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data
 
 
@@ -429,12 +429,7 @@ def compute_background_mask(data_imgs, border_size=2,
                 target_affine=target_affine, target_shape=target_shape,
                 smooth=False)
 
-    border_data = np.concatenate([
-            data[:border_size, :, :].ravel(), data[-border_size:, :, :].ravel(),
-            data[:, :border_size, :].ravel(), data[:, -border_size:, :].ravel(),
-            data[:, :, :border_size].ravel(), data[:, :, -border_size:].ravel(),
-        ])
-    background = np.median(border_data)
+    background = np.median(get_border_data(data, border_size))
     if np.isnan(background):
         # We absolutely need to catter for NaNs as a background:
         # SPM does that by default

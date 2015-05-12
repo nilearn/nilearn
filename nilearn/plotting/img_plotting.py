@@ -28,6 +28,7 @@ from .._utils import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
+from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from .displays import get_slicer, get_projector
 from . import cm
@@ -247,7 +248,7 @@ class _MNI152Template(SpatialImage):
     def shape(self):
         self.load()
         return self._shape
-    
+
     def get_shape(self):
         self.load()
         return self._shape
@@ -265,53 +266,46 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
     """
     vmin = None
     vmax = None
-    if anat_img is not False and anat_img is not None:
-        if anat_img is MNI152TEMPLATE:
-            anat_img.load()
-            # We special-case the 'canonical anat', as we don't need
-            # to do a few transforms to it.
-            vmin = 0
-            vmax = anat_img.vmax
-            if black_bg == 'auto':
+    if anat_img is False or anat_img is None:
+        if black_bg == 'auto':
+            # No anatomy given: no need to turn black_bg on
+            black_bg = False
+        return anat_img, black_bg, vmin, vmax
+
+    if anat_img is MNI152TEMPLATE:
+        anat_img.load()
+        # We special-case the 'canonical anat', as we don't need
+        # to do a few transforms to it.
+        vmin = 0
+        vmax = anat_img.vmax
+        if black_bg == 'auto':
+            black_bg = False
+    else:
+        anat_img = _utils.check_niimg_3d(anat_img)
+        if dim or black_bg == 'auto':
+            # We need to inspect the values of the image
+            data = anat_img.get_data()
+            vmin = data.min()
+            vmax = data.max()
+        if black_bg == 'auto':
+            # Guess if the background is rather black or light based on
+            # the values of voxels near the border
+            background = np.median(get_border_data(data, 2))
+            if background > .5 * (vmin + vmax):
                 black_bg = False
-        else:
-            anat_img = _utils.check_niimg_3d(anat_img)
-            if dim or black_bg == 'auto':
-                # We need to inspect the values of the image
-                data = anat_img.get_data()
-                vmin = data.min()
-                vmax = data.max()
-            if black_bg == 'auto':
-                # Guess if the background is rather black or light based on
-                # the values of voxels near the border
-                border_size = 2
-                border_data = np.concatenate([
-                        data[:border_size, :, :].ravel(),
-                        data[-border_size:, :, :].ravel(),
-                        data[:, :border_size, :].ravel(),
-                        data[:, -border_size:, :].ravel(),
-                        data[:, :, :border_size].ravel(),
-                        data[:, :, -border_size:].ravel(),
-                    ])
-                background = np.median(border_data)
-                if background > .5 * (vmin + vmax):
-                    black_bg = False
-                else:
-                    black_bg = True
-        if dim:
-            vmean = .5 * (vmin + vmax)
-            ptp = .5 * (vmax - vmin)
-            if black_bg:
-                if not isinstance(dim, numbers.Number):
-                    dim = .8
-                vmax = vmean + (1 + dim) * ptp
             else:
-                if not isinstance(dim, numbers.Number):
-                    dim = .6
-                vmin = vmean - (1 + dim) * ptp
-    if black_bg == 'auto':
-        # No anatomy given: no need to turn black_bg on
-        black_bg = False
+                black_bg = True
+    if dim:
+        vmean = .5 * (vmin + vmax)
+        ptp = .5 * (vmax - vmin)
+        if black_bg:
+            if not isinstance(dim, numbers.Number):
+                dim = .8
+            vmax = vmean + (1 + dim) * ptp
+        else:
+            if not isinstance(dim, numbers.Number):
+                dim = .6
+            vmin = vmean - (1 + dim) * ptp
     return anat_img, black_bg, vmin, vmax
 
 
@@ -321,8 +315,8 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
-              axes=None, title=None, annotate=True, threshold=None, draw_cross=True,
-              black_bg='auto', dim=False, cmap=plt.cm.gray,
+              axes=None, title=None, annotate=True, threshold=None,
+              draw_cross=True, black_bg='auto', dim=False, cmap=plt.cm.gray,
               vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
