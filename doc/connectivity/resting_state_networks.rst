@@ -19,11 +19,8 @@ Extracting resting-state networks with ICA
 
 .. currentmodule:: nilearn.decomposition
 
-Data preparation
-==================
-
-Retrieving example data
-------------------------
+Data preparation: retrieving example data
+==========================================
 
 We will use sample data from the `ADHD 200 resting-state dataset
 <http://fcon_1000.projects.nitrc.org/indi/adhd200/>`_ has been
