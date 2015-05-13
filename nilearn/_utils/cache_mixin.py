@@ -134,7 +134,8 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
             memory_level is None and func_memory_level is not None):
         raise ValueError('Two memory levels must be specified')
 
-    if func_memory_level is None or memory_level >= func_memory_level:
+    if memory is not None and (func_memory_level is None or
+                               memory_level >= func_memory_level):
         if isinstance(memory, _basestring):
             memory = Memory(cachedir=memory, verbose=verbose)
         if not isinstance(memory, memory_classes):
