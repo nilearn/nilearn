@@ -315,8 +315,8 @@ class Contrast(object):
                 self.effect = self.effect[np.newaxis]
             if self.variance.ndim == 1:
                 self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = (multiple_mahalanobis(self.effect - baseline, 
-                                          self.variance) / self.dim)
+            stat = (multiple_mahalanobis(
+                    self.effect - baseline, self.variance) / self.dim)
         # Case: tmin (conjunctions)
         elif self.contrast_type == 'tmin-conjunction':
             vdiag = self.variance.reshape([self.dim ** 2] + list(
