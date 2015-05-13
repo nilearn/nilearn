@@ -85,9 +85,9 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         warnings.warn('Affine is different across subjects.'
                                       ' Realignement on first subject '
                                       'affine forced')
-                    niimg = cache(
-                        image.resample_img, memory, func_memory_level=2,
-                        memory_level=memory_level)(
+                    niimg = cache(image.resample_img, memory,
+                                  func_memory_level=2,
+                                  memory_level=memory_level)(
                             niimg, target_affine=ref_fov[0],
                             target_shape=ref_fov[1])
                 else:

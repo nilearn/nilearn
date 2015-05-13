@@ -232,31 +232,27 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.resampling_target == "data":
             if not _check_same_fov(imgs, self._resampled_maps_img_):
                 logger.log("resampling labels", verbose=self.verbose)
-                self._resampled_maps_img_ = self._cache(image.resample_img,
-                    func_memory_level=1)(
+                self._resampled_maps_img_ = self._cache(image.resample_img, 2)(
                         self.maps_img_, interpolation="continuous",
                         target_shape=imgs.shape[:3],
-                        target_affine=imgs.get_affine(),
-                    )
+                        target_affine=imgs.get_affine())
+
             if mask_img is not None and not _check_same_fov(imgs, mask_img):
-                mask_img = self._cache(image.resample_img,
-                    func_memory_level=1)(
+                mask_img = self._cache(image.resample_img, 2)(
                         mask_img, interpolation="nearest",
                         target_shape=imgs.shape[:3],
-                        target_affine=imgs.get_affine(),
-                    )
+                        target_affine=imgs.get_affine())
 
         elif self.resampling_target == "mask":
             if not _check_same_fov(self.mask_img_, self._resampled_maps_img_):
                 logger.log("resampling labels", verbose=self.verbose)
-                self._resampled_maps_img_ = self._cache(image.resample_img,
-                    func_memory_level=1)(
+                self._resampled_maps_img_ = self._cache(image.resample_img, 2)(
                         self.labels_img_, interpolation="continuous",
                         target_shape=self.mask_img_.shape[:3],
-                        target_affine=self.mask_img_.get_affine(),
-                    )
+                        target_affine=self.mask_img_.get_affine())
+
             logger.log("resampling images to fit mask", verbose=self.verbose)
-            imgs = self._cache(image.resample_img, func_memory_level=1)(
+            imgs = self._cache(image.resample_img, 2)(
                 imgs, interpolation="continuous",
                 target_shape=self.mask_img_.shape,
                 target_affine=self.mask_img_.get_affine())
@@ -264,32 +260,27 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.resampling_target == "maps":
             self._resampled_maps_img_ = self.maps_img_
             logger.log("resampling images to fit maps", verbose=self.verbose)
-            imgs = self._cache(image.resample_img, func_memory_level=1)(
+            imgs = self._cache(image.resample_img, 2)(
                 imgs, interpolation="continuous",
                 target_shape=self.maps_img_.shape[:3],
                 target_affine=self.maps_img_.get_affine())
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
-            imgs = self._cache(image.smooth_img, func_memory_level=1)(
+            imgs = self._cache(image.smooth_img, 2)(
                 imgs, fwhm=self.smoothing_fwhm)
 
         logger.log("extracting region signals", verbose=self.verbose)
         region_signals, self.labels_ = self._cache(
-            region.img_to_signals_maps, func_memory_level=1)(
-                imgs,
-                self._resampled_maps_img_,
-                mask_img=mask_img)
+            region.img_to_signals_maps, 2)(
+                imgs, self._resampled_maps_img_, mask_img=mask_img)
 
         logger.log("cleaning extracted signals", verbose=self.verbose)
-        region_signals = self._cache(signal.clean, func_memory_level=1
-                                     )(region_signals,
-                                       detrend=self.detrend,
-                                       standardize=self.standardize,
-                                       t_r=self.t_r,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       confounds=confounds)
+        region_signals = self._cache(signal.clean, 2)(
+            region_signals,
+            detrend=self.detrend, standardize=self.standardize,
+            t_r=self.t_r, low_pass=self.low_pass, high_pass=self.high_pass,
+            confounds=confounds)
         return region_signals
 
     def inverse_transform(self, region_signals):

@@ -60,8 +60,8 @@ def filter_and_mask(imgs, mask_img_,
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
 
-        imgs = cache(image.resample_img, memory, memory_level=memory_level,
-                     func_memory_level=2, ignore=['copy'])(
+        imgs = cache(image.resample_img, memory, func_memory_level=2,
+                     memory_level=memory_level, ignore=['copy'])(
                         imgs,
                         target_affine=mask_img_.get_affine(),
                         target_shape=mask_img_.shape,
@@ -113,8 +113,7 @@ def filter_and_mask(imgs, mask_img_,
             if confounds is not None:
                 confounds = confounds[sessions == s]
             data[sessions == s, :] = \
-                cache(signal.clean, memory, func_memory_level=2,
-                      memory_level=memory_level)(
+                cache(signal.clean, memory, 2, memory_level)(
                         data[sessions == s, :],
                         confounds=confounds,
                         low_pass=parameters['low_pass'],
@@ -148,7 +147,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # just invalid the cache for no good reason
         for name in ('mask_img', 'mask_args'):
             params.pop(name, None)
-        data, _ = self._cache(filter_and_mask, func_memory_level=1,
+        data, _ = self._cache(filter_and_mask, 1,
                               ignore=['verbose', 'memory', 'copy'])(
                                   imgs, self.mask_img_,
                                   params,
@@ -202,7 +201,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                        memory_level=self.memory_level,
                                        verbose=self.verbose)
 
-        func = self._cache(filter_and_mask, func_memory_level=1,
+        func = self._cache(filter_and_mask, 1,
                            ignore=['verbose', 'memory', 'copy'])
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
@@ -260,8 +259,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
-        img = self._cache(masking.unmask, func_memory_level=1,
-            )(X, self.mask_img_)
+        img = self._cache(masking.unmask, 1)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
         try:
