@@ -72,23 +72,6 @@ class LikelihoodModelResults(object):
         """
         return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)
 
-    @setattr_on_read
-    def AIC(self):
-        """
-        Akaike Information Criterion
-        """
-        p = self.theta.shape[0]
-        return -2 * self.logL + 2 * p
-
-    @setattr_on_read
-    def BIC(self):
-        """
-        Schwarz's Bayesian Information Criterion
-        """
-        n = self.Y.shape[0]
-        p = self.theta.shape[0]
-        return - 2 * self.logL + np.log(n) * p
-
     def t(self, column=None):
         """
         Return the (Wald) t-statistic for a given parameter estimate.
