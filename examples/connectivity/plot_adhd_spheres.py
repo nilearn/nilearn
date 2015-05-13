@@ -1,9 +1,9 @@
 """
-Multi-subject connectome for ADHD
-=================================
+Extracting brain signal from spheres
+====================================
 
-This example estimates a connectome from spheres in the brain. The coordinates
-of the spheres have been taken from a meta-analysis on neurosynth website.
+This example estimates a connectivity between Default Mode Network components
+using spheres as ROIs.
 
 """
 import matplotlib.pyplot as plt
@@ -55,13 +55,14 @@ hv_confounds = mem.cache(image.high_variance_confounds)(func_filename)
 time_series = masker.transform(func_filename,
                              confounds=[hv_confounds, confound_filename])
 
-for time_serie, label, color in zip(time_series, labels, colors):
+for time_serie, label, color in zip(time_series.T, labels, colors):
     plt.plot(time_serie, label=label, color=color)
 
 plt.title('Default Mode Network Time Series')
+plt.xlabel('Time')
+plt.ylabel('Normalized signal')
 plt.legend()
 plt.tight_layout()
-plt.ylim(-2., 2.5)
 
 # Computing group-sparse precision matrices ###################################
 print("-- Computing group-sparse precision matrices ...")
@@ -72,5 +73,6 @@ cve.fit(time_series)
 # Displaying results ##########################################################
 from nilearn import plotting
 title = "Default Mode Network Connectivity"
-plotting.plot_connectome(cve.covariance_, dmn_coords, title=title)
+plotting.plot_connectome(cve.precision_, dmn_coords, title=title,
+                         node_color=colors)
 plt.show()
