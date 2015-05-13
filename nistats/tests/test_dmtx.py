@@ -21,8 +21,14 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal, dec, assert_array_equal
 
+# Set the backend to avoid having DISPLAY problems
+from nilearn.plotting import _set_mpl_backend
+# Avoid making pyflakes unhappy
+_set_mpl_backend
 try:
     import matplotlib.pyplot
+    # Avoid making pyflakes unhappy
+    matplotlib.pyplot
 except ImportError:
     have_mpl = False
 else:
