@@ -2,8 +2,10 @@
 Extracting brain signal from spheres
 ====================================
 
-This example estimates a connectivity between Default Mode Network components
-using spheres as ROIs.
+This example extract brain signals from spheres described by the coordinates
+of their center in MNI space and a given radius in millimeters. In particular,
+this example extracts signals from Default Mode Network regions and compute a
+connectome from them.
 
 """
 
@@ -17,7 +19,6 @@ print('First subject functional nifti image (4D) is at: %s' %
 
 
 # Extracting region signals ###################################################
-from nilearn import image
 from nilearn import input_data
 
 from sklearn.externals.joblib import Memory
@@ -54,12 +55,9 @@ cve.fit(time_series)
 import matplotlib.pyplot as plt
 from nilearn import plotting
 
-# Define colors to harmonize them among plots
-colors = ['b', 'g', 'r', 'm']
-
 # Display time series
-for time_serie, label, color in zip(time_series.T, labels, colors):
-    plt.plot(time_serie, label=label, color=color)
+for time_serie, label in zip(time_series.T, labels):
+    plt.plot(time_serie, label=label)
 
 plt.title('Default Mode Network Time Series')
 plt.xlabel('Time')
@@ -69,6 +67,5 @@ plt.tight_layout()
 
 # Display connectome
 title = "Default Mode Network Connectivity"
-plotting.plot_connectome(cve.precision_, dmn_coords, title=title,
-                         node_color=colors)
+plotting.plot_connectome(cve.precision_, dmn_coords, title=title)
 plt.show()
