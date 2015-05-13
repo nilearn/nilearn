@@ -156,41 +156,6 @@ class OLSModel(LikelihoodModel):
         loglf = - n / 2. * np.log(2 * np.pi * sigmasq) - SSE / (2 * sigmasq)
         return loglf
 
-    def score(self, beta, Y, nuisance=None):
-        ''' Gradient of the loglikelihood function at (beta, Y, nuisance).
-
-        The graient of the loglikelihood function at (beta, Y, nuisance) is the
-        score function.
-
-        See :meth:`logL` for details.
-
-        Parameters
-        ----------
-        beta : ndarray
-            The parameter estimates.  Must be of length df_model.
-        Y : ndarray
-            The dependent variable.
-        nuisance : dict, optional
-            A dict with key 'sigma', which is an optional estimate of sigma. If
-            None, defaults to its maximum likelihood estimate (with beta fixed)
-            as ``sum((Y - X*beta)**2) / n``, where n=Y.shape[0], X=self.design.
-
-        Returns
-        -------
-        The gradient of the loglikelihood function.
-        '''
-        # This is overwriting an abstract method of LikelihoodModel
-        X = self.wdesign
-        wY = self.whiten(Y)
-        r = wY - np.dot(X, beta)
-        n = self.df_total
-        if nuisance is None:
-            SSE = (r ** 2).sum(0)
-            sigmasq = SSE / n
-        else:
-            sigmasq = nuisance['sigma']
-        return np.dot(X, r) / sigmasq
-
     def information(self, beta, nuisance=None):
         ''' Returns the information matrix at (beta, Y, nuisance).
 
@@ -213,7 +178,7 @@ class OLSModel(LikelihoodModel):
             nuisance).
         '''
         # This is overwriting an abstract method of LikelihoodModel
-        # The subclasses WLSModel, ARModel and GLSModel all overwrite this
+        # The subclasses WLSModel and ARModel all overwrite this
         # method. The point of these subclasses is such that not much of
         # OLSModel has to be changed.
         X = self.design
@@ -577,41 +542,6 @@ class AREstimator(object):
         return ar_bias_correct(results, self.p, self.invM)
 
 
-class WLSModel(OLSModel):
-    """ A regression model with diagonal but non-identity covariance structure.
-
-    The weights are presumed to be (proportional to the) inverse
-    of the variance of the observations.
-    """
-
-    def __init__(self, design, weights=1):
-        weights = np.array(weights)
-        if weights.shape == (): # scalar
-            self.weights = weights
-        else:
-            design_rows = design.shape[0]
-            if not(weights.shape[0] == design_rows and
-                   weights.size == design_rows):
-                raise ValueError(
-                    'Weights must be scalar or same length as design')
-            self.weights = weights.reshape(design_rows)
-        super(WLSModel, self).__init__(design)
-
-    def whiten(self, X):
-        """ Whitener for WLS model, multiplies by sqrt(self.weights)
-        """
-        X = np.asarray(X, np.float64)
-
-        if X.ndim == 1:
-            return X * np.sqrt(self.weights)
-        elif X.ndim == 2:
-            c = np.sqrt(self.weights)
-            v = np.zeros(X.shape, np.float64)
-            for i in range(X.shape[1]):
-                v[:, i] = X[:, i] * c
-            return v
-
-
 class RegressionResults(LikelihoodModelResults):
     """
     This class summarizes the fit of a linear regression model.
@@ -668,132 +598,12 @@ class RegressionResults(LikelihoodModelResults):
         return np.dot(X, beta)
 
     @setattr_on_read
-    def R2_adj(self):
-        """Return the R^2 value for each row of the response Y.
-
-        Notes
-        -----
-        Changed to the textbook definition of R^2.
-
-        See: Davidson and MacKinnon p 74
-        """
-        if not self.model.has_intercept:
-            warnings.warn("model does not have intercept term, " +\
-                          "SST inappropriate")
-        d = 1. - self.R2
-        d *= ((self.df_total - 1.) / self.df_resid)
-        return 1 - d
-
-    @setattr_on_read
-    def R2(self):
-        """
-        Return the adjusted R^2 value for each row of the response Y.
-
-        Notes
-        -----
-        Changed to the textbook definition of R^2.
-
-        See: Davidson and MacKinnon p 74
-        """
-        d = self.SSE / self.SST
-        return 1 - d
-
-    @setattr_on_read
-    def SST(self):
-        """Total sum of squares. If not from an OLS model this is "pseudo"-SST.
-        """
-        if not self.model.has_intercept:
-            warnings.warn("model does not have intercept term, " +\
-                          "SST inappropriate")
-        return ((self.wY - self.wY.mean(0)) ** 2).sum(0)
-
-    @setattr_on_read
     def SSE(self):
         """Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
         """
         return (self.wresid ** 2).sum(0)
 
     @setattr_on_read
-    def SSR(self):
-        """ Regression sum of squares """
-        return self.SST - self.SSE
-
-    @setattr_on_read
-    def MSR(self):
-        """ Mean square (regression)"""
-        return self.SSR / (self.df_model - 1)
-
-    @setattr_on_read
     def MSE(self):
         """ Mean square (error) """
         return self.SSE / self.df_resid
-
-    @setattr_on_read
-    def MST(self):
-        """ Mean square (total)
-        """
-        return self.SST / (self.df_total - 1)
-
-    @setattr_on_read
-    def F_overall(self):
-        """ Overall goodness of fit F test,
-        comparing model to a model with just an intercept.
-        If not an OLS model this is a pseudo-F.
-        """
-        F = self.MSR / self.MSE
-        Fp = stats.f.sf(F, self.df_model - 1, self.df_resid)
-        return {'F': F, 'p_value': Fp, 'df_num': self.df_model-1,
-                'df_den': self.df_resid}
-
-
-class GLSModel(OLSModel):
-    """Generalized least squares model with a general covariance structure
-    """
-
-    def __init__(self, design, sigma):
-        self.cholsigmainv = spl.linalg.cholesky(spl.linalg.pinv(sigma)).T
-        super(GLSModel, self).__init__(design)
-
-    def whiten(self, Y):
-        return np.dot(self.cholsigmainv, Y)
-
-
-def isestimable(C, D):
-    """ True if (Q, P) contrast `C` is estimable for (N, P) design `D`
-
-    From an Q x P contrast matrix `C` and an N x P design matrix `D`, checks if
-    the contrast `C` is estimable by looking at the rank of ``vstack([C,D])``
-    and verifying it is the same as the rank of `D`.
-
-    Parameters
-    ----------
-    C : (Q, P) array-like
-        contrast matrix. If `C` has is 1 dimensional assume shape (1, P)
-    D: (N, P) array-like
-        design matrix
-
-    Returns
-    -------
-    tf : bool
-        True if the contrast `C` is estimable on design `D`
-
-    Examples
-    --------
-    >>> D = np.array([[1, 1, 1, 0, 0, 0],
-    ...               [0, 0, 0, 1, 1, 1],
-    ...               [1, 1, 1, 1, 1, 1]]).T
-    >>> isestimable([1, 0, 0], D)
-    False
-    >>> isestimable([1, -1, 0], D)
-    True
-    """
-    C = np.asarray(C)
-    D = np.asarray(D)
-    if C.ndim == 1:
-        C = C[None, :]
-    if C.shape[1] != D.shape[1]:
-        raise ValueError('Contrast should have %d columns' % D.shape[1])
-    new = np.vstack([C, D])
-    if matrix_rank(new) != matrix_rank(D):
-        return False
-    return True
