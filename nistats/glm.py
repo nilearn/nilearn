@@ -281,7 +281,7 @@ class Contrast(object):
         self.dof = float(dof)
         self.dim = effect.shape[0]
         if self.dim > 1 and contrast_type is 't':
-            print 'Automatically converted multi-dimensional t to F contrast'
+            print('Automatically converted multi-dimensional t to F contrast')
             contrast_type = 'F'
         self.contrast_type = contrast_type
         self.stat_ = None
