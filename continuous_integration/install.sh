@@ -104,4 +104,6 @@ if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
 fi
 
+pip install nilearn
+
 python setup.py install
