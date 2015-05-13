@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module presents an interface to use the glm implemented in
-nipy.algorithms.statistics.models.regression.
+nistats.regression.
 
 It contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
@@ -39,7 +39,7 @@ import scipy.stats as sps
 from nibabel import load, Nifti1Image
 
 from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
-from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
+from nistats.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
 
 from nipy.testing.decorators import skip_doctest_if
