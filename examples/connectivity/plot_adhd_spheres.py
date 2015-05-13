@@ -21,8 +21,6 @@ print('First subject functional nifti image (4D) is at: %s' %
 # Extracting region signals ###################################################
 from nilearn import input_data
 
-from sklearn.externals.joblib import Memory
-mem = Memory('nilearn_cache')
 
 # Coordinates of Default Mode Network
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
@@ -36,8 +34,8 @@ labels = [
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
     detrend=True, standardize=True,
-    low_pass=None, high_pass=0.01, t_r=2.5,
-    memory=mem, memory_level=1, verbose=2)
+    low_pass=0.1, high_pass=0.01, t_r=2.5,
+    memory='nilearn_cache', memory_level=1, verbose=2)
 
 func_filename = adhd_dataset.func[0]
 confound_filename = adhd_dataset.confounds[0]
@@ -67,5 +65,5 @@ plt.tight_layout()
 
 # Display connectome
 title = "Default Mode Network Connectivity"
-plotting.plot_connectome(cve.precision_, dmn_coords, title=title)
+plotting.plot_connectome(cve.covariance_, dmn_coords, title=title)
 plt.show()
