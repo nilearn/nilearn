@@ -35,8 +35,6 @@ from .utils  import open4csv
 ######################################################################
 
 
-
-
 def _poly_drift(order, frametimes):
     """Create a polynomial drift matrix
 

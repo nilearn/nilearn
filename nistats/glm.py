@@ -481,7 +481,6 @@ class FMRILinearModel(object):
         steps : int, optional
             in case of an ar1, discretization of the ar1 parameter
         """
-        from nibabel import Nifti1Image
         # get the mask as an array
         mask = self.mask.get_data().astype(np.bool)
 
