@@ -31,12 +31,12 @@ from nibabel.onetime import setattr_on_read
 
 from .utils import matrix_rank, pos_recipr
 
-from .model import Model, LikelihoodModelResults
+from .model import LikelihoodModelResults
 
 
 
 
-class OLSModel(Model):
+class OLSModel(object):
     """ A simple ordinary least squares model.
 
     Parameters
@@ -375,41 +375,6 @@ def ar_bias_correct(results, order, invM=None):
     cov = np.dot(invM, cov)
     output = cov[1:] * pos_recipr(cov[0])
     return np.squeeze(output.reshape((order,) + in_shape[1:]))
-
-
-class AREstimator(object):
-    """
-    A class to estimate AR(p) coefficients from residuals
-    """
-
-    def __init__(self, model, p=1):
-        """ Bias-correcting AR estimation class
-
-        Parameters
-        ----------
-        model : ``OSLModel`` instance
-            A models.regression.OLSmodel instance,
-            where `model` has attribute ``design``
-        p : int, optional
-            Order of AR(p) noise
-        """
-        self.p = p
-        self.invM = ar_bias_corrector(model.design, model.calc_beta, p)
-
-    def __call__(self, results):
-        """ Calculate AR(p) coefficients from `results`.``residuals``
-
-        Parameters
-        ----------
-        results : Results instance
-            A models.model.LikelihoodModelResults instance
-
-        Returns
-        -------
-        ar_p : array
-            AR(p) coefficients
-        """
-        return ar_bias_correct(results, self.p, self.invM)
 
 
 class RegressionResults(LikelihoodModelResults):

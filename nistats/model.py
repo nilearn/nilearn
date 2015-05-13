@@ -12,39 +12,6 @@ from .utils import pos_recipr
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
 
-
-class Model(object):
-    """ A (predictive) statistical model.
-
-    The class Model itself does nothing but lays out the methods expected of any
-    subclass.
-    """
-
-    def __init__(self):
-        pass
-
-    def initialize(self):
-        """ Initialize (possibly re-initialize) a Model instance.
-
-        For instance, the design matrix of a linear model may change and some
-        things must be recomputed.
-        """
-        raise NotImplementedError
-
-    def fit(self):
-        """ Fit a model to data.
-        """
-        raise NotImplementedError
-
-    def predict(self, design=None):
-        """
-        After a model has been fit, results are (assumed to be) stored
-        in self.results, which itself should have a predict method.
-        """
-        # XXX method is from an earlier API and needs to be rethought
-        self.results.predict(design)
-
-
 class LikelihoodModelResults(object):
     ''' Class to contain results from likelihood models '''
 
