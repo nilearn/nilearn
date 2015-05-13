@@ -6,9 +6,10 @@ from scipy.stats import norm
 from ..utils import multiple_mahalanobis, z_score, multiple_fast_inv
 from nose.tools import assert_true
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from ..utils import (matrix_rank, full_rank, pos_recipr)
+from ..utils import (matrix_rank, full_rank, pos_recipr, open4csv)
 from nose.tools import (assert_true, assert_equal, assert_false,
                         assert_raises)
+from nibabel.tmpdirs import InTemporaryDirectory
 
 
 def test_z_score():
@@ -81,6 +82,24 @@ def test_pos_recipr():
     yield assert_equal, pos_recipr(0), 0
     yield assert_equal, pos_recipr(2), 0.5
 
+def test_open4csv():
+    # Test opening of csv files
+    import csv
+    contents = [['oh', 'my', 'G'],
+                ['L', 'O', 'L'],
+                ['when', 'cleaning', 'windas']]
+    with InTemporaryDirectory():
+        with open4csv('my.csv', 'w') as fobj:
+            writer = csv.writer(fobj)
+            writer.writerows(contents)
+        with open4csv('my.csv', 'r') as fobj:
+            dialect = csv.Sniffer().sniff(fobj.read())
+            fobj.seek(0)
+            reader = csv.reader(fobj, dialect)
+            back = list(reader)
+    assert_equal(contents, back)
+    assert_raises(ValueError, open4csv, 'my.csv', 'rb')
+    assert_raises(ValueError, open4csv, 'my.csv', 'wt')
 
 
 if __name__ == "__main__":
