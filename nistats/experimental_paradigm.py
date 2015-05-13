@@ -21,7 +21,7 @@ Author: Bertrand Thirion, 2009-2011
 
 import numpy as np
 
-from ...utils.compat3 import open4csv
+from .utils import open4csv
 
 ##########################################################
 # Paradigm handling

@@ -24,17 +24,17 @@ Design matrices contain three different types of regressors:
 Author: Bertrand Thirion, 2009-2011
 """
 import numpy as np
-
 from warnings import warn
 
-from ...utils.compat3 import open4csv
-
 from .hemodynamic_models import compute_regressor, _orthogonalize
+from .utils  import open4csv
 
 
 ######################################################################
 # Ancillary functions
 ######################################################################
+
+
 
 
 def _poly_drift(order, frametimes):
