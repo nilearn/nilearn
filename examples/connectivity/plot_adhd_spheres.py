@@ -41,7 +41,6 @@ masker = input_data.NiftiSpheresMasker(
     detrend=True, standardize=True,
     low_pass=None, high_pass=0.01, t_r=2.5,
     memory=mem, memory_level=1, verbose=2)
-masker.fit()
 
 func_filename = adhd_dataset.func[0]
 confound_filename = adhd_dataset.confounds[0]
@@ -49,7 +48,7 @@ confound_filename = adhd_dataset.confounds[0]
 # Computing some confounds
 hv_confounds = mem.cache(image.high_variance_confounds)(func_filename)
 
-time_series = masker.transform(func_filename,
+time_series = masker.fit_transform(func_filename,
                              confounds=[hv_confounds, confound_filename])
 
 
