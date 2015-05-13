@@ -5,6 +5,8 @@ Test the glm utilities.
 """
 from __future__ import with_statement
 
+import os
+
 import numpy as np
 
 from nibabel import load, Nifti1Image, save
@@ -16,7 +18,11 @@ from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
                            assert_array_equal)
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from nipy.testing import funcfile
+
+# This directory path
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
+
 
 
 def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
@@ -301,20 +307,20 @@ def test_scaling():
 
 def test_fmri_inputs():
     # Test processing of FMRI inputs
-    func_img = load(funcfile)
+    func_img = load(FUNCFILE)
     T = func_img.shape[-1]
     des = np.ones((T, 1))
     des_fname = 'design.npz'
     with InTemporaryDirectory():
         np.savez(des_fname, des)
-        for fi in func_img, funcfile:
+        for fi in func_img, FUNCFILE:
             for d in des, des_fname:
-                fmodel = FMRILinearModel(fi, d, mask='compute')
-                fmodel = FMRILinearModel([fi], d, mask=None)
-                fmodel = FMRILinearModel(fi, [d], mask=None)
-                fmodel = FMRILinearModel([fi], [d], mask=None)
-                fmodel = FMRILinearModel([fi, fi], [d, d], mask=None)
-                fmodel = FMRILinearModel((fi, fi), (d, d), mask=None)
+                FMRILinearModel(fi, d, mask='compute')
+                FMRILinearModel([fi], d, mask=None)
+                FMRILinearModel(fi, [d], mask=None)
+                FMRILinearModel([fi], [d], mask=None)
+                FMRILinearModel([fi, fi], [d, d], mask=None)
+                FMRILinearModel((fi, fi), (d, d), mask=None)
                 assert_raises(ValueError, FMRILinearModel, [fi, fi], d,
                               mask=None)
                 assert_raises(ValueError, FMRILinearModel, fi, [d, d],
