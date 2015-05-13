@@ -42,9 +42,6 @@ from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
 
-from nipy.testing.decorators import skip_doctest_if
-from nipy.utils import HAVE_EXAMPLE_DATA
-
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
@@ -408,7 +405,6 @@ class FMRILinearModel(object):
     i.e. by taking images as input and output
     """
 
-    @skip_doctest_if(not HAVE_EXAMPLE_DATA)
     def __init__(self, fmri_data, design_matrices, mask='compute',
                  m=0.2, M=0.9, threshold=.5):
         """Load the data
@@ -431,25 +427,6 @@ class FMRILinearModel(object):
         -----
         The only computation done here is mask computation (if required)
 
-        Examples
-        --------
-        We need the example data package for this example
-
-        >>> from nipy.utils import example_data
-        >>> from nistats.glm import FMRILinearModel
-        >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
-        ...     for run in ['run1.nii.gz', 'run2.nii.gz']]
-        >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)
-        ...     for run in ['run1_design.npz', 'run2_design.npz']]
-        >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
-        >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
-        >>> multi_session_model.fit()
-        >>> z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
-
-        The number of voxels with p < 0.001
-
-        >>> np.sum(z_image.get_data() > 3.09)
-        671
         """
         # manipulate the arguments
         if isinstance(fmri_data, basestring) or hasattr(fmri_data, 'get_data'):
