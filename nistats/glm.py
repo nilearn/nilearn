@@ -47,7 +47,7 @@ DEF_DOFMAX = 1e10
 
 
 def data_scaling(Y):
-    """Scaling of the data to have pourcent of baseline change columnwise
+    """Scaling of the data to have percent of baseline change columnwise
 
     Parameters
     ----------
