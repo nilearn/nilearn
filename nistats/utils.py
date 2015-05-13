@@ -262,3 +262,7 @@ def open4csv(fname, mode):
     if not py3: # Files for csv reading and writing should be binary mode
         return open(fname, mode + 'b')
     return open(fname, mode, newline='')
+
+
+_basestring = str if py3 else basestring
+

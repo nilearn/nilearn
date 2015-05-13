@@ -40,7 +40,7 @@ from nibabel import load, Nifti1Image
 
 from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
 from .regression import OLSModel, ARModel
-from .utils import multiple_mahalanobis, z_score
+from .utils import multiple_mahalanobis, z_score, _basestring
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -428,9 +428,9 @@ class FMRILinearModel(object):
 
         """
         # manipulate the arguments
-        if isinstance(fmri_data, basestring) or hasattr(fmri_data, 'get_data'):
+        if isinstance(fmri_data, _basestring) or hasattr(fmri_data, 'get_data'):
             fmri_data = [fmri_data]
-        if isinstance(design_matrices, (basestring, np.ndarray)):
+        if isinstance(design_matrices, (_basestring, np.ndarray)):
             design_matrices = [design_matrices]
         if len(fmri_data) != len(design_matrices):
             raise ValueError('Incompatible number of fmri runs and '
@@ -440,7 +440,7 @@ class FMRILinearModel(object):
 
         # load the fmri data
         for fmri_run in fmri_data:
-            if isinstance(fmri_run, basestring):
+            if isinstance(fmri_run, _basestring):
                 self.fmri_data.append(load(fmri_run))
             else:
                 self.fmri_data.append(fmri_run)
@@ -449,7 +449,7 @@ class FMRILinearModel(object):
 
         # load the designs
         for design_matrix in design_matrices:
-            if isinstance(design_matrix, basestring):
+            if isinstance(design_matrix, _basestring):
                 loaded = np.load(design_matrix)
                 self.design_matrices.append(loaded[loaded.files[0]])
             else:
@@ -464,7 +464,7 @@ class FMRILinearModel(object):
             mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)
             self.mask = Nifti1Image(mask, self.affine)
         else:
-            if isinstance(mask, basestring):
+            if isinstance(mask, _basestring):
                 self.mask = load(mask)
             else:
                 self.mask = mask
