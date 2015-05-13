@@ -81,7 +81,7 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 2.7',
           ],
           packages=find_packages(),
-          package_data={'nistats.data': ['*.nii.gz'],
-                        'nistats.tests.data': ['*'],
-                        'nistats.description': ['*.rst']},
+          package_data={'nistats.tests': ['*.nii.gz'],
+                        #'nistats.description': ['*.rst'],
+                        },
           install_requires=install_requires,)
