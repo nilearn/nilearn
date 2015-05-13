@@ -227,7 +227,17 @@ class GlassBrainAxes(BaseAxes):
 
         """
         max_axis = 'xyz'.index(self.direction)
-        maximum_intensity_data = np.abs(data).max(axis=max_axis)
+        # maximum_intensity_data = np.abs(data).max(axis=max_axis)
+        # argmax_ = np.argmax(np.abs(data), axis=max_axis)
+
+        new_shape = list(data.shape)
+        del new_shape[max_axis]
+        a1, a2 = np.indices(new_shape)
+        inds = [a1, a2]
+        inds.insert(max_axis, np.abs(data).argmax(axis=max_axis))
+        maximum_intensity_data = np.abs(data)[inds] * data[inds[0], inds[1], inds[2]]
+
+        maximum_intensity_data = np.abs(data)[inds] * np.sign(data[inds])
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
