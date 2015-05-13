@@ -66,9 +66,19 @@ ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 plt.savefig(path.join(write_dir, 'design_matrix.png'))
 
+########################################
+# Perform a GLM analysis
+########################################
+
+fmri_glm = FMRILinearModel(epi_img,
+                           design_matrix.matrix, mask='compute')
+fmri_glm.fit(do_scaling=True, model='ar1')
+
 #########################################
+# Estimate contrasts
+#########################################
+
 # Specify the contrasts
-#########################################
 
 # simplest ones
 contrasts = {}
@@ -94,17 +104,6 @@ contrasts["computation-sentences"] = contrasts["computation"] -  \
 contrasts["reading-visual"] = contrasts["sentences"] * 2 - \
                               contrasts["damier_H"] - contrasts["damier_V"]
 
-########################################
-# Perform a GLM analysis
-########################################
-
-fmri_glm = FMRILinearModel(epi_img,
-                           design_matrix.matrix, mask='compute')
-fmri_glm.fit(do_scaling=True, model='ar1')
-
-#########################################
-# Estimate the contrasts
-#########################################
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
