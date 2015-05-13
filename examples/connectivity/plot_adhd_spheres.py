@@ -7,9 +7,7 @@ using spheres as ROIs.
 
 """
 
-
 # Fetching datasets ###########################################################
-print("-- Fetching datasets ...")
 from nilearn import datasets
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
@@ -24,8 +22,6 @@ from nilearn import input_data
 
 from sklearn.externals.joblib import Memory
 mem = Memory('nilearn_cache')
-
-print("... Extracting time series ...")
 
 # Coordinates of Default Mode Network
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
@@ -45,15 +41,11 @@ masker = input_data.NiftiSpheresMasker(
 func_filename = adhd_dataset.func[0]
 confound_filename = adhd_dataset.confounds[0]
 
-# Computing some confounds
-hv_confounds = mem.cache(image.high_variance_confounds)(func_filename)
-
 time_series = masker.fit_transform(func_filename,
-                             confounds=[hv_confounds, confound_filename])
+                             confounds=[confound_filename])
 
 
 # Computing group-sparse precision matrices ###################################
-print("-- Computing group-sparse precision matrices ...")
 from sklearn.covariance import LedoitWolf
 cve = LedoitWolf()
 cve.fit(time_series)
