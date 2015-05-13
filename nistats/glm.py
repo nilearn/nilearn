@@ -39,8 +39,8 @@ import scipy.stats as sps
 from nibabel import load, Nifti1Image
 
 from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
-from nistats.regression import OLSModel, ARModel
-from utils import multiple_mahalanobis, z_score
+from .regression import OLSModel, ARModel
+from .utils import multiple_mahalanobis, z_score
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
