@@ -40,7 +40,7 @@ from nibabel import load, Nifti1Image
 
 from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
 from nistats.regression import OLSModel, ARModel
-from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
+from utils import multiple_mahalanobis, z_score
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -74,8 +74,7 @@ class GeneralLinearModel(object):
     contrast() returns a contrast instance, yileding statistics and p-values.
     The link between fit() and constrast is done vis the two class members:
 
-    glm_results : dictionary of nipy.algorithms.statistics.models.
-                 regression.RegressionResults instances,
+    glm_results : dictionary of nistats.regression.RegressionResults instances,
                  describing results of a GLM fit
 
     labels : array of shape(n_voxels),
