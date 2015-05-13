@@ -76,9 +76,13 @@ def test__safe_cache_flush():
 
 def test_cache_memory_level():
     temp_dir = tempfile.mkdtemp()
-    job_glob = os.path.join(temp_dir, 'joblib', '*')
+    job_glob = os.path.join(temp_dir, 'joblib', '*', 'f', '*')
     mem = Memory(cachedir=temp_dir, verbose=0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
     assert_true(len(glob.glob(job_glob)) == 0)
+    cache_mixin.cache(f, Memory(cachedir=None))(2)
+    assert_true(len(glob.glob(job_glob)) == 0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
     assert_true(len(glob.glob(job_glob)) == 2)
+    cache_mixin.cache(f, mem)(3)
+    assert_true(len(glob.glob(job_glob)) == 3)
