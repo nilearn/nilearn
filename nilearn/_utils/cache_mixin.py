@@ -108,11 +108,11 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     memory: instance of joblib.Memory or string
         Used to cache the function call.
 
-    func_memory_level: int, optional
+    func_memory_level: int
         The memory_level from which caching must be enabled for the wrapped
         function.
 
-    memory_level: int, optional
+    memory_level: int
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of grater than
         func_memory_level the function is cached)
@@ -128,15 +128,13 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         to _cache()). For consistency, a joblib.Memory object is always
         returned.
     """
-
     verbose = kwargs.get('verbose', 0)
 
-    if (func_memory_level is None
-            or memory_level is None
-            or memory is None
-            or memory_level < func_memory_level):
-        memory = Memory(cachedir=None, verbose=verbose)
-    else:
+    if (func_memory_level is None and memory_level is not None or
+            memory_level is None and func_memory_level is not None):
+        raise ValueError('Two memory levels must be specified')
+
+    if func_memory_level is None or memory_level >= func_memory_level:
         if isinstance(memory, _basestring):
             memory = Memory(cachedir=memory, verbose=verbose)
         if not isinstance(memory, memory_classes):
@@ -150,6 +148,8 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
                           "function %s." %
                           (memory_level, func.__name__),
                           stacklevel=2)
+    else:
+        memory = Memory(cachedir=None, verbose=verbose)
     return _safe_cache(memory, func, **kwargs)
 
 
@@ -165,7 +165,7 @@ class CacheMixin(object):
     parameter to self._cache(). See _cache() documentation for details.
     """
 
-    def _cache(self, func, func_memory_level=1, **kwargs):
+    def _cache(self, func, func_memory_level, **kwargs):
         """ Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -213,5 +213,5 @@ class CacheMixin(object):
                               "Setting memory_level to 1.")
                 self.memory_level = 1
 
-        return cache(func, self.memory, func_memory_level=func_memory_level,
-                     memory_level=self.memory_level, **kwargs)
+        return cache(func, self.memory, func_memory_level,
+                     self.memory_level, **kwargs)

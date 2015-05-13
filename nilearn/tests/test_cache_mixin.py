@@ -78,8 +78,6 @@ def test_cache_memory_level():
     temp_dir = tempfile.mkdtemp()
     job_glob = os.path.join(temp_dir, 'joblib', '*')
     mem = Memory(cachedir=temp_dir, verbose=0)
-    cache_mixin.cache(f, mem)(2)
-    assert_true(len(glob.glob(job_glob)) == 0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
     assert_true(len(glob.glob(job_glob)) == 0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
