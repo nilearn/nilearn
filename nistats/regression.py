@@ -34,8 +34,6 @@ from .utils import matrix_rank, pos_recipr
 from .model import LikelihoodModelResults
 
 
-
-
 class OLSModel(object):
     """ A simple ordinary least squares model.
 
@@ -258,123 +256,6 @@ class ARModel(OLSModel):
         for i in range(self.order):
             _X[(i + 1):] = _X[(i + 1):] - self.rho[i] * X[0: - (i + 1)]
         return _X
-
-
-def ar_bias_corrector(design, calc_beta, order=1):
-    """ Return bias correcting matrix for `design` and AR order `order`
-
-    There is a slight bias in the rho estimates on residuals due to the
-    correlations induced in the residuals by fitting a linear model.  See
-    [Worsley2002]_.
-
-    This routine implements the bias correction described in appendix A.1 of
-    [Worsley2002]_.
-
-    Parameters
-    ----------
-    design : array
-        Design matrix
-    calc_beta : array
-        Moore-Penrose pseudoinverse of the (maybe) whitened design matrix.
-        This is the matrix that, when applied to the (maybe whitened) data,
-        produces the betas.
-    order : int, optional
-        Order p of AR(p) process
-
-    Returns
-    -------
-    invM : array
-        Matrix to bias correct estimated covariance matrix
-        in calculating the AR coefficients
-
-    References
-    ----------
-    .. [Worsley2002] K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan,
-       F. Morales, A.C. Evans (2002) A General Statistical Analysis for fMRI
-       Data.  Neuroimage 15:1:15
-    """
-    R = np.eye(design.shape[0]) - np.dot(design, calc_beta)
-    M = np.zeros((order + 1,) * 2)
-    I = np.eye(R.shape[0])
-    for i in range(order + 1):
-        Di = np.dot(R, spl.toeplitz(I[i]))
-        for j in range(order + 1):
-            Dj = np.dot(R, spl.toeplitz(I[j]))
-            M[i, j] = np.diag((np.dot(Di, Dj)) / (1. + (i > 0))).sum()
-    return spl.inv(M)
-
-
-def ar_bias_correct(results, order, invM=None):
-    """ Apply bias correction in calculating AR(p) coefficients from `results`
-
-    There is a slight bias in the rho estimates on residuals due to the
-    correlations induced in the residuals by fitting a linear model.  See
-    [Worsley2002]_.
-
-    This routine implements the bias correction described in appendix A.1 of
-    [Worsley2002]_.
-
-    Parameters
-    ----------
-    results : ndarray or results object
-        If ndarray, assume these are residuals, from a simple model.  If a
-        results object, with attribute ``resid``, then use these for the
-        residuals. See Notes for more detail
-    order : int
-        Order ``p`` of AR(p) model
-    invM : None or array
-        Known bias correcting matrix for covariance.  If None, calculate from
-        ``results.model``
-
-    Returns
-    -------
-    rho : array
-        Bias-corrected AR(p) coefficients
-
-    Notes
-    -----
-    If `results` has attributes ``resid`` and ``scale``, then assume ``scale``
-    has come from a fit of a potentially customized model, and we use that for
-    the sum of squared residuals.  In this case we also need
-    ``results.df_resid``.  Otherwise we assume this is a simple Gaussian model,
-    like OLS, and take the simple sum of squares of the residuals.
-
-    References
-    ----------
-    .. [Worsley2002] K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan,
-       F. Morales, A.C. Evans (2002) A General Statistical Analysis for fMRI
-       Data.  Neuroimage 15:1:15
-    """
-    if invM is None:
-        # We need a model from ``results`` if invM is not specified
-        model = results.model
-        invM = ar_bias_corrector(model.design, model.calc_beta, order)
-    if hasattr(results, 'resid'):
-        resid = results.resid
-    else:
-        resid = results
-    in_shape = resid.shape
-    n_features = in_shape[0]
-    # Allows results residuals to have shapes other than 2D.  This allows us to
-    # use this routine for image data as well as more standard 2D model data
-    resid = resid.reshape((n_features, - 1))
-    # glm.Model fit methods fill in a ``scale`` estimate. For simpler
-    # models, there is no scale estimate written into the results.
-    # However, the same calculation resolves (with Gaussian family)
-    # to ``np.sum(resid**2) / results.df_resid``.
-    # See ``estimate_scale`` from glm.Model
-    if hasattr(results, 'scale'):
-        sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid
-    else: # No scale in results
-        sum_sq = np.sum(resid ** 2, axis=0)
-    cov = np.zeros((order + 1,) + sum_sq.shape)
-    cov[0] = sum_sq
-    for i in range(1, order + 1):
-        cov[i] = np.sum(resid[i:] * resid[0:- i], axis=0)
-    # cov is shape (order + 1, V) where V = np.product(in_shape[1:])
-    cov = np.dot(invM, cov)
-    output = cov[1:] * pos_recipr(cov[0])
-    return np.squeeze(output.reshape((order,) + in_shape[1:]))
 
 
 class RegressionResults(LikelihoodModelResults):
