@@ -45,28 +45,6 @@ class Model(object):
         self.results.predict(design)
 
 
-class LikelihoodModel(Model):
-
-    def logL(self, theta, Y, nuisance=None):
-        """ Log-likelihood of model.
-        """
-        raise NotImplementedError
-
-    def score(self, theta, Y, nuisance=None):
-        """ Gradient of logL with respect to theta.
-
-        This is the score function of the model
-        """
-        raise NotImplementedError
-
-    def information(self, theta, nuisance=None):
-        """ Fisher information matrix
-
-        The inverse of the expected value of ``- d^2 logL / dtheta^2.``
-        """
-        raise NotImplementedError
-
-
 class LikelihoodModelResults(object):
     ''' Class to contain results from likelihood models '''
 
@@ -412,7 +390,6 @@ class FContrastResults(object):
         self.F = F
         self.df_den = df_den
         self.df_num = df_num
-
     def __array__(self):
         return np.asarray(self.F)
 

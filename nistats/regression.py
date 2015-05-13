@@ -31,12 +31,12 @@ from nibabel.onetime import setattr_on_read
 
 from .utils import matrix_rank, pos_recipr
 
-from .model import LikelihoodModel, LikelihoodModelResults
+from .model import Model, LikelihoodModelResults
 
 
 
 
-class OLSModel(LikelihoodModel):
+class OLSModel(Model):
     """ A simple ordinary least squares model.
 
     Parameters
