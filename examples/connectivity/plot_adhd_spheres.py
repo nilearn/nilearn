@@ -8,16 +8,11 @@ of the spheres have been taken from a meta-analysis on neurosynth website.
 """
 import matplotlib.pyplot as plt
 
-from nilearn import plotting
-
-
-n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
 # Fetching datasets ###########################################################
 print("-- Fetching datasets ...")
 from nilearn import datasets
-msdl_atlas_dataset = datasets.fetch_msdl_atlas()
-adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
+adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
@@ -31,42 +26,51 @@ from nilearn import input_data
 from sklearn.externals.joblib import Memory
 mem = Memory('nilearn_cache')
 
-adhd_coords = [(-36, 22, -4), (42, 22, -4), (14, 10, 2), (-10, 16, -4)]
+print("... Extracting time series ...")
+
+# Coordinates of Default Mode Network
+dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
+labels = [
+    'Posterior Cingulate Cortex',
+    'Left Temporoparietal junction',
+    'Right Temporoparietal junction',
+    'Medial prefrontal cortex'
+]
+# colors = plt.cm.gist_rainbow(np.linspace(0, 1, len(dmn_coords)))
+colors = ['b', 'g', 'r', 'm']
 
 masker = input_data.NiftiSpheresMasker(
-    adhd_coords, radius=8,
+    dmn_coords, radius=8,
     detrend=True, standardize=True,
     low_pass=None, high_pass=0.01, t_r=2.5,
     memory=mem, memory_level=1, verbose=2)
 masker.fit()
 
-subject_time_series = []
-func_filenames = adhd_dataset.func
-confound_filenames = adhd_dataset.confounds
-for func_filename, confound_filename in zip(func_filenames,
-                                            confound_filenames):
-    print("Processing file %s" % func_filename)
+func_filename = adhd_dataset.func[0]
+confound_filename = adhd_dataset.confounds[0]
 
-    # Computing some confounds
-    hv_confounds = mem.cache(image.high_variance_confounds)(
-        func_filename)
+# Computing some confounds
+hv_confounds = mem.cache(image.high_variance_confounds)(func_filename)
 
-    region_ts = masker.transform(func_filename,
-                                 confounds=[hv_confounds, confound_filename])
-    subject_time_series.append(region_ts)
+time_series = masker.transform(func_filename,
+                             confounds=[hv_confounds, confound_filename])
+
+for time_serie, label, color in zip(time_series, labels, colors):
+    plt.plot(time_serie, label=label, color=color)
+
+plt.title('Default Mode Network Time Series')
+plt.legend()
+plt.tight_layout()
+plt.ylim(-2., 2.5)
 
 # Computing group-sparse precision matrices ###################################
 print("-- Computing group-sparse precision matrices ...")
-from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
-gsc = GroupSparseCovarianceCV(verbose=2)
-gsc.fit(subject_time_series)
+from sklearn.covariance import LedoitWolf
+cve = LedoitWolf()
+cve.fit(time_series)
 
 # Displaying results ##########################################################
-atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
-atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
-
-title = "GroupSparseCovariance"
-plotting.plot_connectome(-gsc.precisions_[..., 0],
-                         adhd_coords, edge_threshold='90%',
-                         title=title)
+from nilearn import plotting
+title = "Default Mode Network Connectivity"
+plotting.plot_connectome(cve.covariance_, dmn_coords, title=title)
 plt.show()
