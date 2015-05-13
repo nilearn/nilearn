@@ -79,9 +79,9 @@ def test_cosine_drift():
     spm_drifts = DMTX['cosbf_dt_1_nt_20_hcut_0p1'] # np.loadtxt('dctmtx_N_20_order_4.txt')
     tim = np.arange(20)
     P = 10 # period is half the time, gives us an order 4
-    nipy_drifts = _cosine_drift(P, tim) #
-    assert_almost_equal(spm_drifts[:,1:], nipy_drifts[:,:-1])
-        # nipy_drifts is placing the constant at the end [:,:-1]
+    nistats_drifts = _cosine_drift(P, tim) #
+    assert_almost_equal(spm_drifts[:,1:], nistats_drifts[:,:-1])
+        # nistats_drifts is placing the constant at the end [:,:-1]
 
 def test_dmtx0():
     # Test design matrix creation when no paradigm is provided
@@ -430,7 +430,7 @@ def test_csv_io():
 
 
 def test_spm_1():
-    # Check that the nipy design matrix is close enough to the SPM one
+    # Check that the nistats design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     frametimes = np.linspace(0, 99, 100)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -443,7 +443,7 @@ def test_spm_1():
 
 
 def test_spm_2():
-    # Check that the nipy design matrix is close enough to the SPM one
+    # Check that the nistats design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     frametimes = np.linspace(0, 99, 100)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']

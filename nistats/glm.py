@@ -15,7 +15,7 @@ Examples
 --------
 
 >>> import numpy as np
->>> from nipy.modalities.fmri.glm import GeneralLinearModel
+>>> from nistats.glm import GeneralLinearModel
 >>> n, p, q = 100, 80, 10
 >>> X, Y = np.random.randn(p, q), np.random.randn(p, n)
 >>> cval = np.hstack((1, np.zeros(9)))
@@ -38,10 +38,9 @@ import scipy.stats as sps
 
 from nibabel import load, Nifti1Image
 
-from nipy.labs.mask import compute_mask_sessions
+from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
-from nipy.core.api import is_image
 
 from nipy.testing.decorators import skip_doctest_if
 from nipy.utils import HAVE_EXAMPLE_DATA
@@ -437,7 +436,7 @@ class FMRILinearModel(object):
         We need the example data package for this example
 
         >>> from nipy.utils import example_data
-        >>> from nipy.modalities.fmri.glm import FMRILinearModel
+        >>> from nistats.glm import FMRILinearModel
         >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
         ...     for run in ['run1.nii.gz', 'run2.nii.gz']]
         >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)
