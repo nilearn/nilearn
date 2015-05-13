@@ -297,6 +297,11 @@ class DesignMatrix():
         -------
         ax: axis handle
         """
+        # We import _set_mpl_backend because just the fact that we are
+        # importing it sets the backend
+        from nilearn.plotting import _set_mpl_backend
+        # avoid unhappy pyflackes
+        _set_mpl_backend
         import matplotlib.pyplot as plt
 
         # normalize the values per column for better visualization
