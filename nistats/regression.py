@@ -156,36 +156,6 @@ class OLSModel(LikelihoodModel):
         loglf = - n / 2. * np.log(2 * np.pi * sigmasq) - SSE / (2 * sigmasq)
         return loglf
 
-    def information(self, beta, nuisance=None):
-        ''' Returns the information matrix at (beta, Y, nuisance).
-
-        See logL for details.
-
-        Parameters
-        ----------
-        beta : ndarray
-            The parameter estimates.  Must be of length df_model.
-        nuisance : dict
-            A dict with key 'sigma', which is an estimate of sigma. If None,
-            defaults to its maximum likelihood estimate (with beta fixed) as
-            ``sum((Y - X*beta)**2) / n`` where n=Y.shape[0], X=self.design.
-
-        Returns
-        -------
-        info : array
-            The information matrix, the negative of the inverse of the Hessian
-            of the of the log-likelihood function evaluated at (theta, Y,
-            nuisance).
-        '''
-        # This is overwriting an abstract method of LikelihoodModel
-        # The subclasses WLSModel and ARModel all overwrite this
-        # method. The point of these subclasses is such that not much of
-        # OLSModel has to be changed.
-        X = self.design
-        sigmasq = nuisance['sigma']
-        C = sigmasq * np.dot(X.T, X)
-        return C
-
     def whiten(self, X):
         """ Whiten design matrix
 
@@ -203,24 +173,6 @@ class OLSModel(LikelihoodModel):
             a square root of the covariance matrix to X.
         """
         return X
-
-    @setattr_on_read
-    def has_intercept(self):
-        """
-        Check if column of 1s is in column space of design
-        """
-        o = np.ones(self.design.shape[0])
-        obeta = np.dot(self.calc_beta, o)
-        ohat = np.dot(self.wdesign, obeta)
-        if np.allclose(ohat, o):
-            return True
-        return False
-
-    @setattr_on_read
-    def rank(self):
-        """ Compute rank of design matrix
-        """
-        return matrix_rank(self.wdesign)
 
     def fit(self, Y):
         """ Fit model to data `Y`
@@ -287,27 +239,6 @@ class ARModel(OLSModel):
             self.order = self.rho.shape[0]
         super(ARModel, self).__init__(design)
 
-    def iterative_fit(self, Y, niter=3):
-        """
-        Perform an iterative two-stage procedure to estimate AR(p)
-        parameters and regression coefficients simultaneously.
-
-        Parameters
-        ----------
-        Y : ndarray
-            data to which to fit model
-        niter : optional, int
-            the number of iterations (default 3)
-
-        Returns
-        -------
-        None
-        """
-        for i in range(niter):
-            self.initialize(self.design)
-            results = self.fit(Y)
-            self.rho, _ = yule_walker(Y - results.predicted,
-                                      order=self.order, df=self.df_resid)
 
     def whiten(self, X):
         """ Whiten a series of columns according to AR(p) covariance structure
@@ -327,67 +258,6 @@ class ARModel(OLSModel):
         for i in range(self.order):
             _X[(i + 1):] = _X[(i + 1):] - self.rho[i] * X[0: - (i + 1)]
         return _X
-
-
-def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
-    """ Estimate AR(p) parameters from a sequence X using Yule-Walker equation.
-
-    unbiased or maximum-likelihood estimator (mle)
-
-    See, for example:
-
-    http://en.wikipedia.org/wiki/Autoregressive_moving_average_model
-
-    Parameters
-    ----------
-    X :  ndarray of shape(n)
-    order : int, optional
-        Order of AR process.
-    method : str, optional
-        Method can be "unbiased" or "mle" and this determines denominator in
-        estimate of autocorrelation function (ACF) at lag k. If "mle", the
-        denominator is n=X.shape[0], if "unbiased" the denominator is n-k.
-    df : int, optional
-        Specifies the degrees of freedom. If df is supplied, then it is assumed
-        the X has df degrees of freedom rather than n.
-    inv : bool, optional
-        Whether to return the inverse of the R matrix (see code)
-
-    Returns
-    -------
-    rho : (`order`,) ndarray
-    sigma : int
-        standard deviation of the residuals after fit
-    R_inv : ndarray
-        If `inv` is True, also return the inverse of the R matrix
-
-    Notes
-    -----
-    See also
-    http://en.wikipedia.org/wiki/AR_model#Calculation_of_the_AR_parameters
-    """
-    method = str(method).lower()
-    if method not in ["unbiased", "mle"]:
-        raise ValueError("ACF estimation method must be 'unbiased or 'MLE'")
-    X = np.asarray(X, np.float64)
-    if X.ndim != 1:
-        raise ValueError("Expecting a vector to estimate AR parameters")
-    X -= X.mean(0)
-    n = df or X.shape[0]
-    if method == "unbiased":
-        den = lambda k: n - k
-    else:
-        den = lambda k: n
-    r = np.zeros(order + 1, np.float64)
-    r[0] = (X ** 2).sum() / den(0)
-    for k in range(1, order + 1):
-        r[k] = (X[0: - k] * X[k:]).sum() / den(k)
-    R = spl.toeplitz(r[: - 1])
-    rho = spl.solve(R, r[1:])
-    sigmasq = r[0] - (r[1:] * rho).sum()
-    if inv == True:
-        return rho, np.sqrt(sigmasq), spl.inv(R)
-    return rho, np.sqrt(sigmasq)
 
 
 def ar_bias_corrector(design, calc_beta, order=1):
