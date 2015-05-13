@@ -148,7 +148,7 @@ class GeneralLinearModel(object):
             the beta
         """
         # make colum_index a list if it an int
-        if column_index == None:
+        if column_index is None:
             column_index = np.arange(self.X.shape[1])
         if not hasattr(column_index, '__iter__'):
             column_index = [int(column_index)]
@@ -203,7 +203,7 @@ class GeneralLinearModel(object):
         -------
         con: Contrast instance
         """
-        if self.labels_ == None or self.results_ == None:
+        if self.labels_ is None or self.results_ is None:
             raise ValueError('The model has not been estimated yet')
         con_val = np.asarray(con_val)
         if con_val.ndim == 1:
@@ -340,7 +340,7 @@ class Contrast(object):
         baseline: float, optional,
         Baseline value for the test statistic
         """
-        if self.stat_ == None or not self.baseline == baseline:
+        if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type in ['t', 'tmin-conjunction']:
@@ -362,7 +362,7 @@ class Contrast(object):
         baseline: float, optional,
                   Baseline value for the test statistic
         """
-        if self.p_value_ == None or not self.baseline == baseline:
+        if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
