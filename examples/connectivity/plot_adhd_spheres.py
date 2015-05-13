@@ -6,7 +6,6 @@ This example estimates a connectivity between Default Mode Network components
 using spheres as ROIs.
 
 """
-import matplotlib.pyplot as plt
 
 
 # Fetching datasets ###########################################################
@@ -36,8 +35,6 @@ labels = [
     'Right Temporoparietal junction',
     'Medial prefrontal cortex'
 ]
-# colors = plt.cm.gist_rainbow(np.linspace(0, 1, len(dmn_coords)))
-colors = ['b', 'g', 'r', 'm']
 
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
@@ -55,6 +52,21 @@ hv_confounds = mem.cache(image.high_variance_confounds)(func_filename)
 time_series = masker.transform(func_filename,
                              confounds=[hv_confounds, confound_filename])
 
+
+# Computing group-sparse precision matrices ###################################
+print("-- Computing group-sparse precision matrices ...")
+from sklearn.covariance import LedoitWolf
+cve = LedoitWolf()
+cve.fit(time_series)
+
+# Displaying results ##########################################################
+import matplotlib.pyplot as plt
+from nilearn import plotting
+
+# Define colors to harmonize them among plots
+colors = ['b', 'g', 'r', 'm']
+
+# Display time series
 for time_serie, label, color in zip(time_series.T, labels, colors):
     plt.plot(time_serie, label=label, color=color)
 
@@ -64,14 +76,7 @@ plt.ylabel('Normalized signal')
 plt.legend()
 plt.tight_layout()
 
-# Computing group-sparse precision matrices ###################################
-print("-- Computing group-sparse precision matrices ...")
-from sklearn.covariance import LedoitWolf
-cve = LedoitWolf()
-cve.fit(time_series)
-
-# Displaying results ##########################################################
-from nilearn import plotting
+# Display connectome
 title = "Default Mode Network Connectivity"
 plotting.plot_connectome(cve.precision_, dmn_coords, title=title,
                          node_color=colors)
