@@ -42,14 +42,6 @@ Install
 =======
 
 Not available at the moment
-#First make sure you have installed all the dependencies listed above.
-#Then you can install nistats by running the following command in
-#a command prompt::
-#
-#    pip install -U --user nistats
-#
-#More detailed instructions are available at
-#http://nistats.github.io/introduction.html#installation.
 
 Development
 ===========
