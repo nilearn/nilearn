@@ -760,7 +760,7 @@ def plot_glass_brain(stat_map_img,
 
     """
     if cmap is None:
-        cmap = plt.cm.hot if black_bg else plt.cm.hot_r
+        cmap = cm.cold_hot
 
     def display_factory(display_mode):
         return functools.partial(get_projector(display_mode), alpha=alpha)
