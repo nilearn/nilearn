@@ -518,7 +518,7 @@ class BaseSlicer(object):
 
         plt.draw_if_interactive()
 
-    def add_contours(self, img, **kwargs):
+    def add_contours(self, img, filled=False, **kwargs):
         """ Contour a 3D map in all the views.
 
             Parameters
@@ -526,6 +526,8 @@ class BaseSlicer(object):
             img: Niimg-like object
                 See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
                 Provides image to plot.
+            filled: boolean, optional
+                If filled=True, contours are displayed with color fillings.
             kwargs:
                 Extra keyword arguments are passed to contour, see the
                 documentation of pylab.contour
@@ -534,7 +536,13 @@ class BaseSlicer(object):
                 "colors", which is one color or a list of colors for
                 these contours.
         """
-        self._map_show(img, type='contour', **kwargs)
+        if filled:
+            # Switches into contour fillings by overriding type as 'contourf'
+            filled_type = 'contour' + 'f'
+        else:
+            filled_type = 'contour'
+
+        self._map_show(img, type=filled_type, **kwargs)
         plt.draw_if_interactive()
 
     def _map_show(self, img, type='imshow',
