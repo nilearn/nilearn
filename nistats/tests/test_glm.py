@@ -144,7 +144,7 @@ def ar1_glm(n=100, p=80, q=10):
 def test_glm_ols():
     mulm, n, p, q = ols_glm()
     assert_array_equal(mulm.labels_, np.zeros(n))
-    assert_equal(mulm.results_.keys(), [0.0])
+    assert_equal(list(mulm.results_.keys()), [0.0])
     assert_equal(mulm.results_[0.0].theta.shape, (q, n))
     assert_almost_equal(mulm.results_[0.0].theta.mean(), 0, 1)
     assert_almost_equal(mulm.results_[0.0].theta.var(), 1. / p, 1)
@@ -269,7 +269,7 @@ def test_t_contrast_values():
     mulm, n, p, q = ar1_glm(n=1)
     cval = np.eye(q)[0]
     con = mulm.contrast(cval)
-    t_ref = mulm.results_.values()[0].Tcontrast(cval).t
+    t_ref = list(mulm.results_.values())[0].Tcontrast(cval).t
     assert_almost_equal(np.ravel(con.stat()), t_ref)
 
 
@@ -277,7 +277,7 @@ def test_F_contrast_calues():
     mulm, n, p, q = ar1_glm(n=1)
     cval = np.eye(q)[:3]
     con = mulm.contrast(cval)
-    F_ref = mulm.results_.values()[0].Fcontrast(cval).F
+    F_ref = list(mulm.results_.values())[0].Fcontrast(cval).F
     # Note that the values are not strictly equal,
     # this seems to be related to a bug in Mahalanobis
     assert_almost_equal(np.ravel(con.stat()), F_ref, 3)

@@ -299,7 +299,7 @@ class LikelihoodModelResults(object):
                 upper.append(
                     self.theta[i] + inv_t_cdf(1 - alpha / 2, self.df_resid) *
                     np.sqrt(self.vcov(column=i, dispersion=dispersion)))
-        return np.asarray(zip(lower, upper))
+        return np.asarray(list(zip(lower, upper)))
 
 
 class TContrastResults(object):
