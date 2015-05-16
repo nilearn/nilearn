@@ -29,9 +29,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
-        scorr_mean, tcorr_mean,
-        scorr_2level, tcorr_2level,
-        random
+        epi_img: the input 4D image
+        paradigm: a csv file describing the paardigm
     """
     url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
 
@@ -143,6 +142,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
 
     return _glob_spm_auditory_data()
 
+
 def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
                               subject_id="sub001", verbose=1):
     """Fetcher for Multi-modal Face Dataset.
@@ -237,8 +237,47 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
             _uncompress_file(archive_path)
         except:
             print("Archive corrupted, trying to download it again.")
-            return fetch_spm_multimodal_fmri_data(data_dir=data_dir,
-                                                  data_name="",
-                                                  subject_id=subject_id)
+            return fetch_spm_multimodal_fmri(data_dir=data_dir,
+                                             data_name="",
+                                             subject_id=subject_id)
 
     return _glob_spm_multimodal_fmri_data()
+
+
+def fetch_fiac_first_level(data_dir=None, verbose=1):
+    """ Download a first-level fiac fMRI dataset (2 sessions)
+    Parameters
+    ----------
+    data_dir: string
+        directory where data should be downloaded and unpacked.
+        dictionary-like object, keys are:
+        epi_img: the input 4D image
+        paradigm: a csv file describing the paardigm
+    """
+    import tarfile
+    url = 'ftp://ftp.cea.fr/pub/dsv/madic/FIAC/fiac0'
+
+    dataset_name = "fiac_first_level"
+    files = dict(run_1="fiac0_fonc1.tar",
+                 run_2="fiac0_fonc2.tar")
+    """
+    files = dict(run_1="run1.nii.gz",
+                 run_2="run2.nii.gz",
+                 run_1_design="run1_design.npz",
+                 run_2_design="run1_design.npz")
+    """
+    # The options needed for _fetch_files
+    options = [(filename, os.path.join(url, filename), {})
+               for _, filename in sorted(files.items())]
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    sub_files = _fetch_files(data_dir, options, resume=True,
+                             verbose=verbose)
+    for sub_file in sub_files:
+        tar = tarfile.open(sub_file)
+        plop = tar.extractall(data_dir)
+        tar.close()
+    params = dict(zip(sorted(files.keys()), sub_files))
+
+    return Bunch(**params)
