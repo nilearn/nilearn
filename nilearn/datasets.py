@@ -176,7 +176,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
+def _get_dataset_dir(dataset_name, data_dir=None,
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
@@ -188,9 +188,6 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
-    env_vars: list of string, optional
-        Add environment variables searched even if data_dir is not None.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -211,12 +208,6 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
     """
     # We build an array of successive paths by priority
     paths = []
-
-    # Search given environment variables
-    for env_var in env_vars:
-        env_data = os.getenv(env_var, '')
-        paths.extend(env_data.split(':'))
-
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
         paths = data_dir.split(':')
@@ -1649,7 +1640,6 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
     dataset_name = 'harvard_oxford'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                env_vars=['FSL_DIR', 'FSLDIR'],
                                 verbose=verbose)
     opts = {'uncompress': True}
     atlas_file = os.path.join('HarvardOxford',
@@ -1672,7 +1662,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     names = np.asarray(list(names.values()))
 
     if not symmetric_split:
-        return atlas_img, names
+        return Bunch(maps=atlas_img, labels=names)
 
     if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm"):
@@ -1711,8 +1701,10 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     for n in names[1:]:
         new_names.append(n + ', left part')
 
-    return new_img_like(atlas_img, atlas, atlas_img.get_affine()), new_names
-
+    atlas_data = new_img_like(atlas_img, atlas, atlas_img.get_affine())
+    return Bunch(
+        maps=atlas_data, 
+        labels=new_names)
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB)
