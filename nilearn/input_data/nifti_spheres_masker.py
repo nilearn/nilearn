@@ -1,5 +1,5 @@
 """
-Transformer for computing seeds signals.
+Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -81,11 +81,11 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ==========
-    seeds: List of triplet of coordinates in native space
+    seeds: List of coordinate triplets in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius: float, optional.
+    radius: float, optional
         Indicates, in millimeters, the radius for the sphere around the seed.
         Default is None (signal is extracted on a single voxel).
 
@@ -99,19 +99,19 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     low_pass: False or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     high_pass: False or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
