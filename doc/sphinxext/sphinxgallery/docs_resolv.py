@@ -51,13 +51,14 @@ def _get_data(url):
     return data
 
 
-def get_data(url, cached_file='_build/searchindex'):
+def get_data(url, gallery_dir):
     """Persistent dictionary usage to retrieve the search indexes"""
 
     # shelve keys need to be str in python 2
     if sys.version_info[0] == 2 and isinstance(url, unicode):
         url = url.encode('utf-8')
 
+    cached_file = os.path.join(gallery_dir, 'searchindex')
     search_index = shelve.open(cached_file)
     if url in search_index:
         data = search_index[url]
@@ -181,9 +182,10 @@ class SphinxDocLinkResolver(object):
         package).
     """
 
-    def __init__(self, doc_url, searchindex='searchindex.js',
+    def __init__(self, doc_url, gallery_dir, searchindex='searchindex.js',
                  extra_modules_test=None, relative=False):
         self.doc_url = doc_url
+        self.gallery_dir = gallery_dir
         self.relative = relative
         self._link_cache = {}
 
@@ -207,7 +209,7 @@ class SphinxDocLinkResolver(object):
             self._is_windows = False
 
         # download and initialize the search index
-        sindex = get_data(searchindex_url)
+        sindex = get_data(searchindex_url, gallery_dir)
         filenames, objects = parse_sphinx_searchindex(sindex)
 
         self._searchindex = dict(filenames=filenames, objects=objects)
@@ -242,7 +244,7 @@ class SphinxDocLinkResolver(object):
             if link in self._page_cache:
                 html = self._page_cache[link]
             else:
-                html = get_data(link)
+                html = get_data(link, self.gallery_dir)
                 self._page_cache[link] = html
 
             # test if cobj appears in page
@@ -325,14 +327,17 @@ def embed_code_links(app, exception):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
 
+    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
     for this_module, url in gallery_conf['reference_url'].items():
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                                                             app.builder.outdir,
+                                                            gallery_dir,
                                                             relative=True)
             else:
-                doc_resolvers[this_module] = SphinxDocLinkResolver(url)
+                doc_resolvers[this_module] = SphinxDocLinkResolver(url,
+                                                                   gallery_dir)
 
         except HTTPError as e:
             print("The following HTTP Error has occurred:\n")
@@ -345,7 +350,6 @@ def embed_code_links(app, exception):
                   "Error:\n".format(this_module))
             print(e.args)
 
-    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
     html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
                                                     gallery_conf['gallery_dir']))
 
