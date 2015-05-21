@@ -83,7 +83,7 @@ create_new_conda_env() {
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
@@ -105,5 +105,7 @@ if [[ "$COVERAGE" == "true" ]]; then
 fi
 
 pip install nilearn
+
+pip install pandas
 
 python setup.py install
