@@ -20,8 +20,8 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 from nistats.design_matrix import make_design_matrix
-from nistats.experimental_paradigm import (EventRelatedParadigm,
-                                           BlockParadigm)
+from pandas import DataFrame
+
 
 # frame times
 tr = 1.0
@@ -36,7 +36,7 @@ motion = np.cumsum(np.random.randn(128, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 #event-related design matrix
-paradigm = EventRelatedParadigm(conditions, onsets)
+paradigm = DataFrame({'name': conditions, 'onset': onsets})
 
 X1 = make_design_matrix(
     frame_times, paradigm, drift_model='polynomial', drift_order=3,
@@ -44,13 +44,14 @@ X1 = make_design_matrix(
 
 # block design matrix
 duration = 7 * np.ones(9)
-paradigm = BlockParadigm(con_id=conditions, onset=onsets, duration=duration)
+paradigm = DataFrame({'name': conditions, 'onset': onsets,
+                      'duration': duration})
 
 X2 = make_design_matrix(frame_times, paradigm, drift_model='polynomial',
                drift_order=3)
 
 # FIR model
-paradigm = EventRelatedParadigm(conditions, onsets)
+paradigm = DataFrame({'name': conditions, 'onset': onsets})
 hrf_model = 'FIR'
 X3 = make_design_matrix(frame_times, paradigm, hrf_model='fir',
                drift_model='polynomial', drift_order=3,
