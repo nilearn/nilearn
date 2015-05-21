@@ -9,7 +9,7 @@ connectome from them.
 
 """
 
-# Fetching datasets ###########################################################
+# Fetching dataset ############################################################
 from nilearn import datasets
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
@@ -31,6 +31,7 @@ labels = [
     'Medial prefrontal cortex'
 ]
 
+# Extracting signal from sphere around DMN seeds
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
     detrend=True, standardize=True,
