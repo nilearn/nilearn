@@ -44,7 +44,12 @@ REQUIRED_MODULE_METADATA = (
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '1.1.0',
-        'required_at_installation': False}))
+        'required_at_installation': False}),
+    ('pandas', {
+        'min_version': '0.15.0',
+        'required_at_installation': True,
+        'install_info': _NISTATS_INSTALL_MSG}),
+    )
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.1.1'
 
