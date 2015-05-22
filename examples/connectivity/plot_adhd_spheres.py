@@ -45,7 +45,7 @@ time_series = masker.fit_transform(func_filename,
                              confounds=[confound_filename])
 
 
-# Computing group-sparse precision matrices ###################################
+# Computing precision matrices ################################################
 from sklearn.covariance import LedoitWolf
 cve = LedoitWolf()
 cve.fit(time_series)
@@ -66,5 +66,5 @@ plt.tight_layout()
 
 # Display connectome
 title = "Default Mode Network Connectivity"
-plotting.plot_connectome(cve.covariance_, dmn_coords, title=title)
+plotting.plot_connectome(cve.precision_, dmn_coords, title=title)
 plt.show()
