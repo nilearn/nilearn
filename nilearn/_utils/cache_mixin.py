@@ -130,9 +130,12 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     """
     verbose = kwargs.get('verbose', 0)
 
-    if (func_memory_level is None and memory_level is not None or
-            memory_level is None and func_memory_level is not None):
-        raise ValueError('Two memory levels must be specified')
+    # memory_level and func_memory_level must be both None or both integers.
+    none_params = (memory_level, func_memory_level).count(None)
+
+    if none_params == 1:
+        raise ValueError('Reference and user memory levels must be both None '
+                         'or both integers.')
 
     if memory is not None and (func_memory_level is None or
                                memory_level >= func_memory_level):
