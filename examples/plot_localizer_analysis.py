@@ -52,7 +52,7 @@ epi_img = data.epi_img
 # Design matrix
 ########################################
 
-paradigm = DataFrame().from_csv(paradigm_file)
+paradigm = DataFrame.from_csv(paradigm_file)
 onset = [float(x[0].split(' ')[2]) for x in paradigm.iterrows()]
 name = [x[0].split(' ')[1] for x in paradigm.iterrows()]
 n_conditions = len(np.unique(name))

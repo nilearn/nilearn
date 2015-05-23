@@ -10,7 +10,7 @@ not whether it is exact.
 import numpy as np
 import os
 from pandas import DataFrame
-from ..experimental_paradigm import check_paradigm
+from ..experimental_paradigm import check_paradigm, paradigm_from_csv
 from nose.tools import assert_true
 
 
@@ -71,5 +71,5 @@ def test_read_paradigm():
                      modulated_block_paradigm(),
                      basic_paradigm()):
         csvfile = write_paradigm(paradigm, tmpdir)
-        read_paradigm = DataFrame().from_csv(csvfile)
+        read_paradigm = paradigm_from_csv(csvfile)
         assert_true((read_paradigm['onset'] == paradigm['onset']).all())

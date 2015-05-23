@@ -55,3 +55,21 @@ def check_paradigm(paradigm):
     if 'modulation' in paradigm.keys():
         modulation = np.array(paradigm['modulation']).astype(np.float)
     return name, onset, duration, modulation
+
+
+def paradigm_from_csv(csv_file):
+    """ Utility function to directly read the paradigm from a csv file
+    This is simply meant to explicitly import pandas everywhere
+
+    Parameters
+    ----------
+    csv_file: string,
+              path to a csv file
+
+    Returns
+    -------
+    paradigm: pandas DataFrame,
+              holding the paradigm information
+    """
+    import pandas
+    return pandas.DataFrame().from_csv(csv_file)
