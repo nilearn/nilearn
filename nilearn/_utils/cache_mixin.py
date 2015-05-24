@@ -145,7 +145,8 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
             raise TypeError("'memory' argument must be a string or a "
                             "joblib.Memory object. "
                             "%s %s was given." % (memory, type(memory)))
-        if memory.cachedir is None and memory_level > 1:
+        if (memory.cachedir is None and memory_level is not None
+                and memory_level > 1):
             warnings.warn("Caching has been enabled (memory_level = %d) "
                           "but no Memory object or path has been provided"
                           " (parameter memory). Caching deactivated for "
