@@ -30,6 +30,7 @@ from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
+from ..image import iter_img
 from .displays import get_slicer, get_projector
 from . import cm
 
@@ -312,6 +313,78 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 ################################################################################
 # Usage-specific functions
 
+
+def plot_4d(img, anat_img=MNI152TEMPLATE, cut_coords=None,
+            output_file=None, display_mode='ortho', figure=None,
+            axes=None, title=None, annotate=True, draw_cross=True,
+            black_bg='auto', dim=False, cmap=plt.cm.gray, **kwargs):
+
+    """ Plot the 4D atlas maps onto the anatomical image by default MNI Template
+
+        Parameters
+        ----------
+        img: a nifti like object or the filename of 4D atlas maps object
+        anat_img : Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            The anatomical image to be used as a background. If None is
+            given, nilearn tries to find a T1 template.
+        cut_coords: None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
+        output_file: string, or None, optional
+            The name of an image file to export the plot to. Valid extensions
+            are .png, .pdf, .svg. If output_file is not None, the plot
+            is saved to a file, and the display is closed.
+        display_mode: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            'z' - axial, 'ortho' - three cuts are performed in orthogonal
+            directions.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title displayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you wish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        cmap: matplotlib colormap, optional
+            The colormap for the anat 
+    """
+    anat_img, black_bg, vmin, vmax = _load_anat(anat_img,
+                                                dim=dim, black_bg=black_bg)
+    vmin = kwargs.pop('vmin', vmin)
+    vmax = kwargs.pop('vmax', vmax)
+    img = _utils.check_niimg_4d(img)
+    n_colors = img.shape[3]
+    node_colors = [plt.cm.spectral(i / float(n_colors))
+                       for i in range(n_colors)]
+    display = plot_img(anat_img, cut_coords=cut_coords,
+                       output_file=output_file, display_mode=display_mode,
+                       figure=figure, axes=axes, title=title,
+                       threshold=None, annotate=annotate,
+                       draw_cross=draw_cross, black_bg=black_bg,
+                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
+    for i, cur_img in enumerate(iter_img(img)):
+        display.add_contours(cur_img, levels=[30], linewidths=2, 
+                             colors=[node_colors[i][0:3]])    
+    return display
 
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
