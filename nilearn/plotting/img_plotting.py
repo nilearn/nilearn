@@ -46,7 +46,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
-                      **kwargs):
+                      annotation_kwargs={}, title_kwargs={}, **kwargs):
     """ Internal function, please refer to the docstring of plot_img for parameters
         not listed below.
 
@@ -60,6 +60,12 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
             passed to the add_overlay calls
         display_factory: function
             takes a display_mode argument and return a display class
+        annotation_kwargs : dict
+            additional kwargs for annotation attributes (e.g. size, color,
+            bgcolor, weight).
+        title_kwargs : dict
+            additional kwargs for title attributes (e.g. size, color, bgcolor,
+            weight).
     """
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
@@ -110,11 +116,11 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                             **kwargs)
 
     if annotate:
-        display.annotate()
+        display.annotate(**annotation_kwargs)
     if draw_cross:
         display.draw_cross()
     if title is not None and not title == '':
-        display.title(title)
+        display.title(title, **title_kwargs)
     if (cbar_vmax is not None) or (cbar_vmin is not None):
         if hasattr(display, '_cbar'):
             cbar = display._cbar

@@ -425,10 +425,10 @@ class BaseSlicer(object):
             text: string
                 The text of the title
             x: float, optional
-                The horizontal position of the title on the frame in 
+                The horizontal position of the title on the frame in
                 fraction of the frame width.
             y: float, optional
-                The vertical position of the title on the frame in 
+                The vertical position of the title on the frame in
                 fraction of the frame height.
             size: integer, optional
                 The size of the title text.
@@ -675,21 +675,15 @@ class BaseSlicer(object):
         """
         kwargs = kwargs.copy()
         if not 'color' in kwargs:
-            if self._black_bg:
-                kwargs['color'] = 'w'
-            else:
-                kwargs['color'] = 'k'
-
-        bg_color = ('k' if self._black_bg else 'w')
+            kwargs['color'] = ('w' if self._black_bg else 'k')
+        if not 'bg_color' in kwargs:
+            kwargs['bg_color'] = ('k' if self._black_bg else 'w')
         if left_right:
             for display_ax in self.axes.values():
-                display_ax.draw_left_right(size=size, bg_color=bg_color,
-                                       **kwargs)
-
+                display_ax.draw_left_right(size=size, **kwargs)
         if positions:
             for display_ax in self.axes.values():
-                display_ax.draw_position(size=size, bg_color=bg_color,
-                                       **kwargs)
+                display_ax.draw_position(size=size, **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
