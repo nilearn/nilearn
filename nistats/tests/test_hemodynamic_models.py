@@ -79,15 +79,15 @@ def test_sample_condition_1():
     """ Test that the experimental condition is correctly sampled
     """
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
-    frametimes = np.linspace(0, 49, 50)
-    reg, rf = _sample_condition(condition, frametimes, oversampling=1, 
+    frame_times = np.linspace(0, 49, 50)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=1, 
                                min_onset=0)
     assert_equal(reg.sum(), 3)
     assert_equal(reg[1], 1)
     assert_equal(reg[20], 1)
     assert_equal(reg[37], 1)
 
-    reg, rf = _sample_condition(condition, frametimes, oversampling=1)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=1)
     assert_equal(reg.sum(), 3)
     assert_equal(reg[25], 1)
     assert_equal(reg[44], 1)
@@ -98,8 +98,8 @@ def test_sample_condition_2():
     """ Test the experimental condition sampling -- onset = 0
     """
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
-    frametimes = np.linspace(0, 49, 50)
-    reg, rf = _sample_condition(condition, frametimes, oversampling=1,
+    frame_times = np.linspace(0, 49, 50)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=1,
                                min_onset=- 10)
     assert_equal(reg.sum(), 6)
     assert_equal(reg[10], 1)
@@ -110,8 +110,8 @@ def test_sample_condition_3():
     """ Test the experimental condition sampling -- oversampling=10
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
-    frametimes = np.linspace(0, 49, 50)
-    reg, rf = _sample_condition(condition, frametimes, oversampling=10,
+    frame_times = np.linspace(0, 49, 50)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=10,
                                min_onset=0)
     assert_almost_equal(reg.sum(), 60.)
     assert_equal(reg[10], 1)
@@ -123,8 +123,8 @@ def test_sample_condition_4():
     """ Test the experimental condition sampling -- negative amplitude
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1., -1., 5.])
-    frametimes = np.linspace(0, 49, 50)
-    reg, rf = _sample_condition(condition, frametimes, oversampling=1)
+    frame_times = np.linspace(0, 49, 50)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=1)
     assert_equal(reg.sum(),10)
     assert_equal(reg[25], 1.)
     assert_equal(reg[44], -1.)
@@ -134,8 +134,8 @@ def test_sample_condition_5():
     """ Test the experimental condition sampling -- negative onset
     """
     condition = ([-10, 0, 36.5], [2, 2, 2], [1., -1., 5.])
-    frametimes = np.linspace(0, 49, 50)
-    reg, rf = _sample_condition(condition, frametimes, oversampling=1)
+    frame_times = np.linspace(0, 49, 50)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=1)
     assert_equal(reg.sum(),10)
     assert_equal(reg[14], 1.)
     assert_equal(reg[24], -1.)
@@ -182,9 +182,9 @@ def test_make_regressor_1():
     """ test the generated regressor
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
-    frametimes = np.linspace(0, 69, 70)
+    frame_times = np.linspace(0, 69, 70)
     hrf_model = 'spm'
-    reg, reg_names = compute_regressor(condition, hrf_model, frametimes)
+    reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
     assert_almost_equal(reg.sum(), 6, 1)
     assert_equal(reg_names[0], 'cond')
 
@@ -192,9 +192,9 @@ def test_make_regressor_2():
     """ test the generated regressor
     """
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
-    frametimes = np.linspace(0, 69, 70)
+    frame_times = np.linspace(0, 69, 70)
     hrf_model = 'spm'
-    reg, reg_names = compute_regressor(condition, hrf_model, frametimes)
+    reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
     assert_almost_equal(reg.sum() * 16, 3, 1)
     assert_equal(reg_names[0], 'cond')
 
@@ -203,9 +203,9 @@ def test_make_regressor_3():
     """ test the generated regressor
     """
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
-    frametimes = np.linspace(0, 138, 70)
+    frame_times = np.linspace(0, 138, 70)
     hrf_model = 'fir'
-    reg, reg_names = compute_regressor(condition, hrf_model, frametimes, 
+    reg, reg_names = compute_regressor(condition, hrf_model, frame_times, 
                                        fir_delays=np.arange(4))
     assert_array_equal(np.unique(reg), np.array([0, 1]))
     assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
@@ -215,17 +215,17 @@ def test_design_warnings():
     """ test that warnings are correctly raised upon weird design specification
     """
     condition = ([-25, 20, 36.5], [0, 0, 0], [1, 1, 1])
-    frametimes = np.linspace(0, 69, 70)
+    frame_times = np.linspace(0, 69, 70)
     hrf_model = 'spm'
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
-                     frametimes)
+                     frame_times)
     condition = ([-25, -25, 36.5], [0, 0, 0], [1, 1, 1])
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
-                     frametimes)
+                     frame_times)
 
 if __name__ == "__main__":
     import nose

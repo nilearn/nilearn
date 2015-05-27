@@ -39,7 +39,7 @@ from nilearn import plotting
 n_scans = 128
 tr = 2.4
 # paradigm
-frametimes = np.linspace(0.5 * tr, (n_scans - .5) * tr, n_scans)
+frame_times = np.linspace(0.5 * tr, (n_scans - .5) * tr, n_scans)
 
 # write directory
 write_dir = 'results'
@@ -56,7 +56,7 @@ epi_img = data.epi_img
 
 paradigm = load_paradigm_from_csv_file(paradigm_file)['0']
 
-design_matrix = make_dmtx(frametimes, paradigm,
+design_matrix = make_dmtx(frame_times, paradigm,
                           hrf_model='canonical with derivative',
                           drift_model="cosine", hfcut=128)
 

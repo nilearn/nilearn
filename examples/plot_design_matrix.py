@@ -26,7 +26,7 @@ from nistats.experimental_paradigm import (EventRelatedParadigm,
 # frame times
 tr = 1.0
 n_scans = 128
-frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
+frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
 
 # experimental paradigm
 conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c3', 'c3', 'c3']
@@ -39,20 +39,20 @@ add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 paradigm = EventRelatedParadigm(conditions, onsets)
 
 X1 = make_dmtx(
-    frametimes, paradigm, drift_model='polynomial', drift_order=3,
+    frame_times, paradigm, drift_model='polynomial', drift_order=3,
     add_regs=motion, add_reg_names=add_reg_names)
 
 # block design matrix
 duration = 7 * np.ones(9)
 paradigm = BlockParadigm(con_id=conditions, onset=onsets, duration=duration)
 
-X2 = make_dmtx(frametimes, paradigm, drift_model='polynomial',
+X2 = make_dmtx(frame_times, paradigm, drift_model='polynomial',
                drift_order=3)
 
 # FIR model
 paradigm = EventRelatedParadigm(conditions, onsets)
 hrf_model = 'FIR'
-X3 = make_dmtx(frametimes, paradigm, hrf_model='fir',
+X3 = make_dmtx(frame_times, paradigm, hrf_model='fir',
                drift_model='polynomial', drift_order=3,
                fir_delays=np.arange(1, 6))
 
