@@ -25,8 +25,8 @@ from nistats.experimental_paradigm import (EventRelatedParadigm,
 
 # frame times
 tr = 1.0
-nscans = 128
-frametimes = np.linspace(0, (nscans - 1) * tr, nscans)
+n_scans = 128
+frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
 
 # experimental paradigm
 conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c3', 'c3', 'c3']

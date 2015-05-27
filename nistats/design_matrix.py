@@ -66,7 +66,7 @@ def _cosine_drift(period_cut, frametimes):
     ----------
     period_cut: float 
          Cut period of the low-pass filter (in sec)
-    frametimes: array of shape(nscans)
+    frametimes: array of shape(n_scans)
          The sampling times (in sec)
 
     Returns
