@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from nibabel import save
 
 from nistats.glm import FMRILinearModel
-from nistats.design_matrix import make_dmtx
+from nistats.design_matrix import make_design_matrix
 from nistats.experimental_paradigm import \
     load_paradigm_from_csv_file
 from nistats import datasets
@@ -56,9 +56,9 @@ epi_img = data.epi_img
 
 paradigm = load_paradigm_from_csv_file(paradigm_file)['0']
 
-design_matrix = make_dmtx(frame_times, paradigm,
-                          hrf_model='canonical with derivative',
-                          drift_model="cosine", hfcut=128)
+design_matrix = make_design_matrix(frame_times, paradigm,
+                                   hrf_model='canonical with derivative',
+                                   drift_model="cosine", hfcut=128)
 
 # Plot the design matrix
 ax = design_matrix.show()

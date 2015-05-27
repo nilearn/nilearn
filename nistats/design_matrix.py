@@ -60,7 +60,8 @@ def _poly_drift(order, frame_times):
 
 
 def _cosine_drift(period_cut, frame_times):
-    """Create a cosine drift matrix with periods greater or equals to period_cut
+    """Create a cosine drift matrix with periods greater or equals to
+    period_cut.
 
     Parameters
     ----------
@@ -322,7 +323,7 @@ class DesignMatrix():
         return ax
 
 
-def make_dmtx(frame_times, paradigm=None, hrf_model='canonical',
+def make_design_matrix(frame_times, paradigm=None, hrf_model='canonical',
               drift_model='cosine', hfcut=128, drift_order=1, fir_delays=[0],
               add_regs=None, add_reg_names=None, min_onset=-24):
     """ Generate a design matrix from the input parameters
@@ -408,7 +409,7 @@ def make_dmtx(frame_times, paradigm=None, hrf_model='canonical',
     return DesignMatrix(matrix, names, frame_times)
 
 
-def dmtx_from_csv(path, frame_times=None):
+def design_matrix_from_csv(path, frame_times=None):
     """ Return a DesignMatrix instance from  a csv file
 
     Parameters
@@ -436,26 +437,27 @@ def dmtx_from_csv(path, frame_times=None):
     return(DesignMatrix(x, names, frame_times))
 
 
-def dmtx_light(frame_times, paradigm=None, hrf_model='canonical',
+def design_matrix_light(frame_times, paradigm=None, hrf_model='canonical',
                drift_model='cosine', hfcut=128, drift_order=1, fir_delays=[0],
                add_regs=None, add_reg_names=None, min_onset=-24, path=None):
     """Make a design matrix while avoiding framework
 
     Parameters
     ----------
-    see make_dmtx, plus
+    see make_design_matrix, plus
     path: string, optional: a path to write the output
 
     Returns
     -------
-    dmtx array of shape(nreg, nbframes):
+    design_matrix array of shape(nreg, nbframes):
         the sampled design matrix
     names list of strings of len (nreg)
         the names of the columns of the design matrix
     """
-    dmtx_ = make_dmtx(frame_times, paradigm, hrf_model, drift_model, hfcut,
-                      drift_order, fir_delays, add_regs, add_reg_names,
-                      min_onset)
+    design_matrix_ = make_design_matrix(
+        frame_times, paradigm, hrf_model, drift_model, hfcut,
+        drift_order, fir_delays, add_regs, add_reg_names,
+        min_onset)
     if path is not None:
-        dmtx_.write_csv(path)
-    return dmtx_.matrix, dmtx_.names
+        design_matrix_.write_csv(path)
+    return design_matrix_.matrix, design_matrix_.names
