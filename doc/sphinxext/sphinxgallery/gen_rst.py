@@ -300,6 +300,7 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
     time_path = os.path.join(image_dir,
                              'time_%s.txt' % base_image_name)
     # The following is a list containing all the figure names
+    time_elapsed = 0
     figure_list = []
     first_image_file = image_path % 1
     if os.path.exists(stdout_path):
