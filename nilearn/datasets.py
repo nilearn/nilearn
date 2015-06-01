@@ -250,7 +250,8 @@ def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
     # If not, create a folder in the first writeable directory
     errors = []
     for (path, is_pre_dir) in paths:
-        path = os.path.join(path, dataset_name)
+        if not is_pre_dir:
+            path = os.path.join(path, dataset_name)
         if not os.path.exists(path):
             try:
                 os.makedirs(path)

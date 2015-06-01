@@ -93,9 +93,9 @@ def test_get_dataset_dir():
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'env_data')
-    os.environ['MY_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test', env_vars=['MY_DATA'],
-                                         verbose=0)
+    expected_dataset_dir = os.path.join(expected_base_dir, 'test')
+    data_dir = datasets._get_dataset_dir(
+        'test', pre_dirs=[expected_dataset_dir], verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
@@ -104,20 +104,14 @@ def test_get_dataset_dir():
     os.makedirs(no_write)
     os.chmod(no_write, 0o400)
 
-    # Verify that default is used if non writeable dir
-    os.environ['MY_DATA'] = no_write
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test', env_vars=['MY_DATA'],
+    data_dir = datasets._get_dataset_dir('test', pre_dirs=[no_write],
                                          verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    # Non writeable dir is returned because dataset may be in there.
+    assert_equal(data_dir, no_write)
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
-
-    # Verify exception is raised on read-only directories
-    assert_raises_regex(OSError, 'Permission denied',
-                        datasets._get_dataset_dir, 'test', no_write,
-                        verbose=0)
 
     # Verify exception for a path which exists and is a file
     test_file = os.path.join(tmpdir, 'some_file')
@@ -276,10 +270,10 @@ def test_fail_fetch_harvard_oxford():
     target_atlas = 'cort-maxprob-thr0-1mm'
     target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
 
-    HO_dir = os.path.join(tmpdir, 'harvard_oxford')
-    os.mkdir(HO_dir)
+    HO_dir = os.path.join(tmpdir, 'fsl', 'data', 'atlases')
+    os.makedirs(HO_dir)
     nifti_dir = os.path.join(HO_dir, 'HarvardOxford')
-    os.mkdir(nifti_dir)
+    os.makedirs(nifti_dir)
 
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
     datasets.load_mni152_template().to_filename(target_atlas_nii)
@@ -290,11 +284,11 @@ def test_fail_fetch_harvard_oxford():
                 "</metadata>")
     dummy.close()
 
-    out_nii, arr = datasets.fetch_harvard_oxford(target_atlas, data_dir=tmpdir)
+    ho = datasets.fetch_harvard_oxford(target_atlas, data_dir=tmpdir)
 
-    assert_true(isinstance(nibabel.load(out_nii), nibabel.Nifti1Image))
-    assert_true(isinstance(arr, np.ndarray))
-    assert_true(len(arr) > 0)
+    assert_true(isinstance(nibabel.load(ho.maps), nibabel.Nifti1Image))
+    assert_true(isinstance(ho.labels, np.ndarray))
+    assert_true(len(ho.labels) > 0)
 
 
 # Smoke tests for the rest of the fetchers
