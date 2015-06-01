@@ -1682,7 +1682,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     names = np.asarray(list(names.values()))
 
     if not symmetric_split:
-        return atlas_img, names
+        return Bunch(maps=atlas_img, labels=names)
 
     if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm"):
@@ -1721,7 +1721,8 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     for n in names[1:]:
         new_names.append(n + ', left part')
 
-    return new_img_like(atlas_img, atlas, atlas_img.get_affine()), new_names
+    atlas_img = new_img_like(atlas_img, atlas, atlas_img.get_affine())
+    return Bunch(maps=atlas_img, labels=new_names)
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
