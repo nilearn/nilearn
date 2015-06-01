@@ -210,32 +210,35 @@ def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
     4. nilearn_data in the user home folder
     """
     # We build an array of successive paths by priority
+    # The boolean indicates if it is a pre_dir: in that case, we won't add the
+    # dataset name to the path.
     paths = []
 
     # Search given environment variables
     for pre_dir in pre_dirs:
-        paths.extend(pre_dir.split(':'))
+        paths.extend([(d, True) for d in pre_dir.split(':')])
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
-        paths = data_dir.split(':')
+        paths.extend([(d, False) for d in data_dir.split(':')])
     else:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
-            paths.extend(global_data.split(':'))
+            paths.extend([(d, False) for d in global_data.split(':')])
 
         local_data = os.getenv('NILEARN_DATA')
         if local_data is not None:
-            paths.extend(local_data.split(':'))
+            paths.extend([(d, False) for d in local_data.split(':')])
 
-        paths.append(os.path.expanduser('~/nilearn_data'))
+        paths.append((os.path.expanduser('~/nilearn_data'), False))
 
     if verbose > 2:
         print('Dataset search paths: %s' % paths)
 
     # Check if the dataset exists somewhere
-    for path in paths:
-        path = os.path.join(path, dataset_name)
+    for path, is_pre_dir in paths:
+        if not is_pre_dir:
+            path = os.path.join(path, dataset_name)
         if os.path.islink(path):
             # Resolve path
             path = readlinkabs(path)
@@ -246,7 +249,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
 
     # If not, create a folder in the first writeable directory
     errors = []
-    for path in paths:
+    for (path, is_pre_dir) in paths:
         path = os.path.join(path, dataset_name)
         if not os.path.exists(path):
             try:
@@ -1644,9 +1647,10 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
 
-    # grab data from internet first
-    url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
-    dataset_name = 'harvard_oxford'
+    url = 'https://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
+
+    # For practical reasons, we mimic the FSL data directory here.
+    dataset_name = 'fsl'
     # Environment variables
     pre_dirs = []
     for env_var in ['FSL_DIR', 'FSLDIR']:
