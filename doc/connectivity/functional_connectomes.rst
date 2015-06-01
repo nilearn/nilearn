@@ -41,8 +41,8 @@ For instance to retrieve the Harvard-Owford cortical parcelation, sampled
 at 2mm, and with a threshold of a probability of .25::
 
   from nilearn import datasets
-  atlas_filename, labels = datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm')
-
+  dataset = datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm')
+  atlas_filename, labels = dataset.maps, dataset.labels
 
 Plotting can then be done as::
 
