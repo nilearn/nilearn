@@ -106,14 +106,19 @@ def test_resampling_with_affine():
     """ Test resampling with a given rotation part of the affine.
     """
     prng = np.random.RandomState(10)
-    data = prng.randint(4, size=(1, 4, 4))
-    for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
-        rot = rotation(0, angle)
-        rot_img = resample_img(Nifti1Image(data, np.eye(4)),
-                               target_affine=rot,
-                               interpolation='nearest')
-        np.testing.assert_almost_equal(np.max(data),
-                                       np.max(rot_img.get_data()))
+
+    data_3d = prng.randint(4, size=(1, 4, 4))
+    data_4d = prng.randint(4, size=(1, 4, 4, 3))
+
+    for data in [data_3d, data_4d]:
+        for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
+            rot = rotation(0, angle)
+            rot_img = resample_img(Nifti1Image(data, np.eye(4)),
+                                   target_affine=rot,
+                                   interpolation='nearest')
+            np.testing.assert_almost_equal(np.max(data),
+                                           np.max(rot_img.get_data()))
+            assert_equal(rot_img.get_data().dtype, data.dtype)
 
 
 def test_resampling_error_checks():
