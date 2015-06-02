@@ -1632,8 +1632,14 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
 
     Returns
     =======
-    regions: nibabel.Nifti1Image
-        regions definition, as a label image.
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, keys are:
+
+        - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
+        requested and 3D labels if a maximum probabilistic atlas was
+        requested.
+
+        - "labels": string list, labels of the regions in the altas.
     """
     atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                    "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
