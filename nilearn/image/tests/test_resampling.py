@@ -116,8 +116,8 @@ def test_resampling_with_affine():
             rot_img = resample_img(Nifti1Image(data, np.eye(4)),
                                    target_affine=rot,
                                    interpolation='nearest')
-            np.testing.assert_almost_equal(np.max(data),
-                                           np.max(rot_img.get_data()))
+            assert_equal(np.max(data),
+                         np.max(rot_img.get_data()))
             assert_equal(rot_img.get_data().dtype, data.dtype)
 
 
