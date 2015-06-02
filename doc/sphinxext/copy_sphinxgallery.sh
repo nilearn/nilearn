@@ -6,3 +6,5 @@ mkdir -p tmp/lib/python2.7/site-packages
 easy_install -Zeab tmp sphinx-gallery
 
 cp -vru tmp/sphinx-gallery/sphinxgallery/ .
+
+git add sphinxgallery
