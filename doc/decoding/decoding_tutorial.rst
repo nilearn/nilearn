@@ -73,7 +73,7 @@ Launch IPython::
   ipython --matplotlib
 
 First, load the data using nilearn data downloading function,
-:func:`nilearn.datasets.fetch_haxby_simple`:
+:func:`nilearn.datasets.fetch_haxby`:
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: ### Load haxby dataset ########################################################
