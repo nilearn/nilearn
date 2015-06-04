@@ -7,6 +7,7 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections
+from distutils.version import LooseVersion
 
 import numpy as np
 import nibabel
@@ -79,7 +80,11 @@ def new_img_like(ref_img, data, affine, copy_header=False):
         An image which has the same type as the reference image.
     """
     if data.dtype == bool:
-        data = as_ndarray(data, dtype=np.int8)
+        default_dtype = np.int8
+        if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
+                isinstance(ref_img, nibabel.freesurfer.mghformat.MGHImage)):
+            default_dtype = np.uint8
+        data = as_ndarray(data, dtype=default_dtype)
     header = None
     if copy_header:
         header = copy.copy(ref_img.get_header())

@@ -65,22 +65,15 @@ Why is machine learning relevant to NeuroImaging: a few examples
 
 :Data mining / exploration:
 
-    Data-driven exploration of brain images. :ref:`unsupervised_learning`
-    extracts structure from the data, such as `clusters
-    <http://scikit-learn.org/stable/modules/clustering.html>`_ or
-    `multivariate decompositions
-    <http://scikit-learn.org/stable/modules/decomposition.html>`_
-    (*latent factors* such as ICA). This may be useful for implementing
-    some form of *density estimation*: learning a probabilistic model of
-    the data (e.g. in `[Thirion 2009]
-    <http://www.springerlink.com/content/7377x70p5515v778/>`_).
+    Data-driven exploration of brain images. For example,
+    :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
 
 Glossary: machine learning vocabulary
 --------------------------------------
 
 :Supervised learning:
 
-    :ref:`supervised learning <decoding>` is interested in predicting an
+    :ref:`Supervised learning <decoding>` is interested in predicting an
     **output variable**, or **target**, `y`, from **data** `X`.
     Typically, we start from labeled data (the **training set**) for
     which we know the `y` for each instance of `X` and train a model;
@@ -98,10 +91,11 @@ Glossary: machine learning vocabulary
 
 :Unsupervised learning:
 
-    :ref:`unsupervised_learning` is concerned with data `X` without any
-    labels. It analyzes the structure of a dataset, for instance
-    **clustering** or extracting latent factors such as with **independent
-    components analysis (ICA)**.
+    `Unsupervised learning
+    <http://scikit-learn.org/stable/unsupervised_learning.html>`_ is
+    concerned with data `X` without any labels. It analyzes the structure
+    of a dataset, for instance **clustering** or extracting latent
+    factors such as with **independent components analysis (ICA)**.
 
     In neuroimaging, it is typically used to study resting state, or to
     find sub-populations in diseases.
@@ -122,7 +116,7 @@ rich. Installing the different packages needed is time-consuming and error
 prone.
 
 :Windows and MacOSX:
-  We suggest that you install Anaconda_.
+  We suggest you to install 64 bit Anaconda_.
 
   `Enthought Canopy`_, `PythonXY <http://code.google.com/p/pythonxy/>`_ are
   other options. Enthought Canopy Express, the free version, should cover all

@@ -632,3 +632,12 @@ def skip_if_running_nose(msg=''):
     if is_nose_running():
         import nose
         raise nose.SkipTest(msg)
+
+
+# Backport: On some nose versions, assert_less_equal is not present
+try:
+    from nose.tools import assert_less_equal
+except ImportError:
+    def assert_less_equal(a, b):
+        if a > b:
+            raise AssertionError("%f is not less than %f" % (a, b))

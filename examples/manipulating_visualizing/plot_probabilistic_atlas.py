@@ -33,10 +33,10 @@ display = plotting.plot_stat_map(image.index_img(atlas_filename, 4),
 # Now add as an overlay the maps for the ACC and the left and right
 # parietal nodes
 display.add_overlay(image.index_img(atlas_filename, 5),
-                    cmap=plotting.cm.black_blue, vmax=.5, vmin=0)
+                    cmap=plotting.cm.black_blue)
 display.add_overlay(image.index_img(atlas_filename, 6),
-                    cmap=plotting.cm.black_green, vmax=.5, vmin=0)
+                    cmap=plotting.cm.black_green)
 display.add_overlay(image.index_img(atlas_filename, 3),
-                    cmap=plotting.cm.black_pink, vmax=.5, vmin=0)
+                    cmap=plotting.cm.black_pink)
 
 plt.show()

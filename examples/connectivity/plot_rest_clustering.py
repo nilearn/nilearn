@@ -47,19 +47,21 @@ connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                    n_z=shape[2], mask=mask)
 
 # Computing the ward for the first time, this is long...
-from sklearn.cluster import WardAgglomeration
+from sklearn.cluster import FeatureAgglomeration
+# If you have scikit-learn older than 0.14, you need to import
+# WardAgglomeration instead of FeatureAgglomeration
 import time
 start = time.time()
-ward = WardAgglomeration(n_clusters=1000, connectivity=connectivity,
-                         memory='nilearn_cache')
+ward = FeatureAgglomeration(n_clusters=1000, connectivity=connectivity,
+                            linkage='ward', memory='nilearn_cache')
 ward.fit(fmri_masked)
 print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
 # Compute the ward with more clusters, should be faster as we are using
 # the caching mechanism
 start = time.time()
-ward = WardAgglomeration(n_clusters=2000, connectivity=connectivity,
-                         memory='nilearn_cache')
+ward = FeatureAgglomeration(n_clusters=2000, connectivity=connectivity,
+                            linkage='ward', memory='nilearn_cache')
 ward.fit(fmri_masked)
 print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 

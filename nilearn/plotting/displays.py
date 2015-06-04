@@ -342,8 +342,8 @@ class BaseSlicer(object):
             black_bg: boolean, optional
                 If True, the background of the figure will be put to
                 black. If you wish to save figures with a black background,
-                you will need to pass "facecolor='k', edgecolor='k'" to 
-                pylab's savefig.
+                you will need to pass "facecolor='k', edgecolor='k'"
+                to matplotlib.pyplot.savefig.
 
         """
         self.cut_coords = cut_coords
@@ -554,12 +554,12 @@ class BaseSlicer(object):
 
             data_2d_list.append(data_2d)
 
-        if 'vmin' not in kwargs:
-            kwargs['vmin'] = min(d.min() for d in data_2d_list
-                                 if d is not None)
-        if 'vmax' not in kwargs:
-            kwargs['vmax'] = max(d.max() for d in data_2d_list
-                                 if d is not None)
+        if kwargs.get('vmin') is None:
+            kwargs['vmin'] = np.ma.min([d.min() for d in data_2d_list
+                                        if d is not None])
+        if kwargs.get('vmax') is None:
+            kwargs['vmax'] = np.ma.max([d.max() for d in data_2d_list
+                                        if d is not None])
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
 

@@ -165,7 +165,7 @@ class CanICA(MultiPCA, CacheMixin):
         ica_maps_and_sparsities = ((ica_map,
                                     np.sum(np.abs(ica_map), axis=1).max())
                                    for ica_map in ica_maps_gen_)
-        ica_maps, sparsity = min(ica_maps_and_sparsities, key=itemgetter(-1))
+        ica_maps, _ = min(ica_maps_and_sparsities, key=itemgetter(-1))
 
         # Thresholding
         ratio = None
@@ -184,5 +184,10 @@ class CanICA(MultiPCA, CacheMixin):
                 100. - (100. / len(ica_maps)) * ratio)
             ica_maps[abs_ica_maps < threshold] = 0.
         self.components_ = ica_maps
+
+        # flip signs in each component so that peak is +ve
+        for component in self.components_:
+            if component.max() < -component.min():
+                component *= -1
 
         return self

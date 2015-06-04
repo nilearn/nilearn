@@ -1,5 +1,7 @@
 """
 Transformer for computing seeds signals.
+=======
+Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -31,7 +33,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
 
         X = masking._apply_mask_fmri(niimg, mask_img)
     else:
-        mask_coords = zip(*np.ndindex(niimg.shape[:3]))
+        mask_coords = list(zip(*np.ndindex(niimg.shape[:3])))
         X = niimg.get_data().reshape([-1, niimg.shape[3]]).T
     mask_coords.append(np.ones(len(mask_coords[0]), dtype=np.int))
     mask_coords = np.asarray(mask_coords)
@@ -85,7 +87,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius: float, optional.
+    radius: float, optional
         Indicates, in millimeters, the radius for the sphere around the seed.
         Default is None (signal is extracted on a single voxel).
 
@@ -99,19 +101,19 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     low_pass: False or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     high_pass: False or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
