@@ -130,6 +130,25 @@ def test_plot_stat_map():
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
 
+def test_plot_stat_map_threshold_for_affine_with_rotation():
+    # threshold was not being applied when affine has a rotation
+    # see https://github.com/nilearn/nilearn/issues/599 for more details
+    data = np.random.randn(10, 10, 10)
+    # matrix with rotation
+    affine = np.array([[-3., 1., 0., 1.],
+                       [-1., -3., 0., -2.],
+                       [0., 0., 3., 3.],
+                       [0., 0., 0., 1.]])
+    img = nibabel.Nifti1Image(data, affine)
+    display = plot_stat_map(img, bg_img=None, threshold=1e6,
+                            display_mode='z', cut_coords=1)
+    # Next two lines retrieve the numpy array from the plot
+    ax = list(display.axes.values())[0].ax
+    plotted_array = ax.images[0].get_array()
+    # Given the high threshold the array should be entirely masked
+    assert_true(plotted_array.mask.all())
+
+
 def test_save_plot():
     img = _generate_img()
 

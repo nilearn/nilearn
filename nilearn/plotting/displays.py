@@ -490,19 +490,10 @@ class BaseSlicer(object):
 
         img = _utils.check_niimg_3d(img)
 
-        if threshold is not None:
-            data = img.get_data()
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(data, -threshold, threshold,
-                                           copy=False)
-            img = new_img_like(img, data, img.get_affine())
-
         # Make sure that add_overlay shows consistent default behavior
         # with plot_stat_map
         kwargs.setdefault('interpolation', 'nearest')
-        ims = self._map_show(img, type='imshow', **kwargs)
+        ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
         if colorbar:
             self._colorbar_show(ims[0], threshold)
@@ -528,8 +519,19 @@ class BaseSlicer(object):
         self._map_show(img, type='contour', **kwargs)
         plt.draw_if_interactive()
 
-    def _map_show(self, img, type='imshow', resampling_interpolation='continuous', **kwargs):
+    def _map_show(self, img, type='imshow',
+                  resampling_interpolation='continuous',
+                  threshold=None, **kwargs):
         img = reorder_img(img, resample=resampling_interpolation)
+
+        if threshold is not None:
+            data = img.get_data()
+            if threshold == 0:
+                data = np.ma.masked_equal(data, 0, copy=False)
+            else:
+                data = np.ma.masked_inside(data, -threshold, threshold,
+                                           copy=False)
+            img = new_img_like(img, data, img.get_affine())
 
         affine = img.get_affine()
         data = img.get_data()
