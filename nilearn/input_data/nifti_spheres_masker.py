@@ -2,6 +2,7 @@
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
+import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
@@ -12,6 +13,7 @@ from .._utils.niimg_conversions import check_niimg, check_niimg_3d
 from .. import signal
 from .. import image
 from .. import masking
+from distutils.version import LooseVersion
 
 
 def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
@@ -37,8 +39,10 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
     mask_coords = np.asarray(mask_coords)
     mask_coords = np.dot(affine, mask_coords)[:3].T
 
-    if radius is not None:
-        # Fix for early version of sklearn (not sure)
+    if (radius is not None and
+            LooseVersion(sklearn.__version__) < LooseVersion('0.16')):
+        # Fix for scikit learn versions below 0.16. See
+        # https://github.com/scikit-learn/scikit-learn/commit/4ed425770a8974aa70c6f03814e3156c81262603
         radius += 1e-6
 
     clf = neighbors.NearestNeighbors(radius=radius)
