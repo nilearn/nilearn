@@ -44,7 +44,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
     if (radius is not None and
             LooseVersion(sklearn.__version__) < LooseVersion('0.16')):
         # Fix for scikit learn versions below 0.16. See
-        # https://github.com/scikit-learn/scikit-learn/commit/4ed425770a8974aa70c6f03814e3156c81262603
+        # https://github.com/scikit-learn/scikit-learn/issues/4072
         radius += 1e-6
 
     clf = neighbors.NearestNeighbors(radius=radius)
