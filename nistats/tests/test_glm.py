@@ -326,4 +326,3 @@ def test_fmri_inputs():
                               mask=None)
                 assert_raises(ValueError, FMRILinearModel, fi, [d, d],
                               mask=None)
-

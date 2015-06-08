@@ -16,7 +16,7 @@ from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm,
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm =  EventRelatedParadigm(conditions, onsets)
+    paradigm = EventRelatedParadigm(conditions, onsets)
     return paradigm
 
 
@@ -41,8 +41,9 @@ def block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5 * np.ones(9)
-    paradigm = BlockParadigm (conditions, onsets, duration)
+    paradigm = BlockParadigm(conditions, onsets, duration)
     return paradigm
+
 
 def write_paradigm(paradigm, session):
     """Function to write a paradigm to a file and return the address
@@ -51,6 +52,7 @@ def write_paradigm(paradigm, session):
     csvfile = tempfile.mkdtemp() + '/paradigm.csv'
     paradigm.write_to_csv(csvfile, session)
     return csvfile
+
 
 def test_read_paradigm():
     """ test that a paradigm is correctly read
@@ -75,8 +77,3 @@ def test_read_paradigm():
     csvfile = write_paradigm(paradigm, session)
     read_paradigm = load_paradigm_from_csv_file(csvfile)[session]
     assert (read_paradigm.onset == paradigm.onset).all()
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

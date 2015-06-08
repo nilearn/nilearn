@@ -14,8 +14,8 @@ from numpy.testing import (assert_array_almost_equal,
 
 
 N = 10
-X = np.c_[np.linspace(-1,1,N), np.ones((N,))]
-Y = np.r_[range(5), range(1,6)]
+X = np.c_[np.linspace(- 1, 1, N), np.ones((N,))]
+Y = np.r_[range(5), range(1, 6)]
 MODEL = OLSModel(X)
 RESULTS = MODEL.fit(Y)
 
@@ -64,7 +64,7 @@ def test_model():
     except AttributeError:
         # Numpy <=1.4.1 does not have percentile function
         raise SkipTest('Numpy does not have percentile function')
-    pcts = percentile(RESULTS.resid, [0,25,50,75,100])
+    pcts = percentile(RESULTS.resid, [0, 25, 50, 75, 100])
     assert_array_almost_equal(pcts, [-1.6970, -0.6667, 0, 0.6667, 1.6970], 4)
 
 
@@ -73,13 +73,13 @@ def test_t_contrast():
     assert_array_almost_equal(RESULTS.t(0), 3.25)
     assert_array_almost_equal(RESULTS.t(1), 7.181, 3)
     # And contrast
-    assert_array_almost_equal(RESULTS.Tcontrast([1,0]).t, 3.25)
-    assert_array_almost_equal(RESULTS.Tcontrast([0,1]).t, 7.181, 3)
+    assert_array_almost_equal(RESULTS.Tcontrast([1, 0]).t, 3.25)
+    assert_array_almost_equal(RESULTS.Tcontrast([0, 1]).t, 7.181, 3)
     # Input matrix checked for size
     assert_raises(ValueError, RESULTS.Tcontrast, [1])
     assert_raises(ValueError, RESULTS.Tcontrast, [1, 0, 0])
     # And shape
-    assert_raises(ValueError, RESULTS.Tcontrast, np.array([1, 0])[:,None])
+    assert_raises(ValueError, RESULTS.Tcontrast, np.array([1, 0])[:, None])
 
 
 def test_t_output():
@@ -87,23 +87,23 @@ def test_t_output():
     exp_t = RESULTS.t(0)
     exp_effect = RESULTS.theta[0]
     exp_sd = exp_effect / exp_t
-    res = RESULTS.Tcontrast([1,0])
+    res = RESULTS.Tcontrast([1, 0])
     assert_array_almost_equal(res.t, exp_t)
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1,0], store=('effect',))
+    res = RESULTS.Tcontrast([1, 0], store=('effect',))
     assert_equal(res.t, None)
     assert_array_almost_equal(res.effect, exp_effect)
     assert_equal(res.sd, None)
-    res = RESULTS.Tcontrast([1,0], store=('t',))
+    res = RESULTS.Tcontrast([1, 0], store=('t',))
     assert_array_almost_equal(res.t, exp_t)
     assert_equal(res.effect, None)
     assert_equal(res.sd, None)
-    res = RESULTS.Tcontrast([1,0], store=('sd',))
+    res = RESULTS.Tcontrast([1, 0], store=('sd',))
     assert_equal(res.t, None)
     assert_equal(res.effect, None)
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1,0], store=('effect', 'sd'))
+    res = RESULTS.Tcontrast([1, 0], store=('effect', 'sd'))
     assert_equal(res.t, None)
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
@@ -111,11 +111,11 @@ def test_t_output():
 
 def test_f_output():
     # Test f_output
-    res = RESULTS.Fcontrast([1,0])
+    res = RESULTS.Fcontrast([1, 0])
     exp_f = RESULTS.t(0) ** 2
     assert_array_almost_equal(exp_f, res.F)
     # Test arrays work as well as lists
-    res = RESULTS.Fcontrast(np.array([1,0]))
+    res = RESULTS.Fcontrast(np.array([1, 0]))
     assert_array_almost_equal(exp_f, res.F)
     # Test with matrix against R
     res = RESULTS.Fcontrast(np.eye(2))
@@ -124,12 +124,14 @@ def test_f_output():
     assert_raises(ValueError, RESULTS.Fcontrast, [1])
     assert_raises(ValueError, RESULTS.Fcontrast, [1, 0, 0])
     # And shape
-    assert_raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:,None])
+    assert_raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:, None])
+
 
 def test_f_output_new_api():
     res = RESULTS.Fcontrast([1, 0])
     assert_array_almost_equal(res.effect, RESULTS.theta[0])
     assert_array_almost_equal(res.covariance, RESULTS.vcov()[0][0])
+
 
 def test_conf_int():
     lower_, upper_ = RESULTS.conf_int()
