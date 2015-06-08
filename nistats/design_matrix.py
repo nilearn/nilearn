@@ -35,7 +35,7 @@ from .utils  import open4csv
 ######################################################################
 
 
-def _poly_drift(order, frametimes):
+def _poly_drift(order, frame_times):
     """Create a polynomial drift matrix
 
     Parameters
@@ -50,23 +50,24 @@ def _poly_drift(order, frametimes):
          all the polynomial drift plus a constant regressor
     """
     order = int(order)
-    pol = np.zeros((np.size(frametimes), order + 1))
-    tmax = float(frametimes.max())
+    pol = np.zeros((np.size(frame_times), order + 1))
+    tmax = float(frame_times.max())
     for k in range(order + 1):
-        pol[:, k] = (frametimes / tmax) ** k
+        pol[:, k] = (frame_times / tmax) ** k
     pol = _orthogonalize(pol)
     pol = np.hstack((pol[:, 1:], pol[:, :1]))
     return pol
 
 
-def _cosine_drift(period_cut, frametimes):
-    """Create a cosine drift matrix with periods greater or equals to period_cut
+def _cosine_drift(period_cut, frame_times):
+    """Create a cosine drift matrix with periods greater or equals to
+    period_cut.
 
     Parameters
     ----------
     period_cut: float 
          Cut period of the low-pass filter (in sec)
-    frametimes: array of shape(nscans)
+    frame_times: array of shape(n_scans)
          The sampling times (in sec)
 
     Returns
@@ -76,10 +77,10 @@ def _cosine_drift(period_cut, frametimes):
 
     Ref: http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
     """
-    len_tim = len(frametimes)
+    len_tim = len(frame_times)
     n_times = np.arange(len_tim)
     hfcut = 1. / period_cut  # input parameter is the period
-    dt = frametimes[1] - frametimes[0]
+    dt = frame_times[1] - frame_times[0]
     order = int(np.floor(2 * len_tim * hfcut * dt))
     # s.t. hfcut = 1/(2*dt) yields len_tim
     cdrift = np.zeros((len_tim, order))
@@ -93,17 +94,17 @@ def _cosine_drift(period_cut, frametimes):
     return cdrift
 
 
-def _blank_drift(frametimes):
+def _blank_drift(frame_times):
     """ Create the blank drift matrix
 
     Returns
     -------
-    np.ones_like(frametimes)
+    np.ones_like(frame_times)
     """
-    return np.reshape(np.ones_like(frametimes), (np.size(frametimes), 1))
+    return np.reshape(np.ones_like(frame_times), (np.size(frame_times), 1))
 
 
-def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
+def _make_drift(drift_model, frame_times, order=1, hfcut=128.):
     """Create the drift matrix
 
     Parameters
@@ -111,7 +112,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     drift_model: string,
                 to be chosen among 'polynomial', 'cosine', 'blank'
                 that specifies the desired drift model
-    frametimes: array of shape(n_scans),
+    frame_times: array of shape(n_scans),
                 list of values representing the desired TRs
     order: int, optional,
            order of the drift model (in case it is polynomial)
@@ -125,11 +126,11 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     """
     drift_model = drift_model.lower()   # for robust comparisons
     if drift_model == 'polynomial':
-        drift = _poly_drift(order, frametimes)
+        drift = _poly_drift(order, frame_times)
     elif drift_model == 'cosine':
-        drift = _cosine_drift(hfcut, frametimes)
+        drift = _cosine_drift(hfcut, frame_times)
     elif drift_model == 'blank':
-        drift = _blank_drift(frametimes)
+        drift = _blank_drift(frame_times)
     else:
         raise NotImplementedError("Unknown drift model %r" % (drift_model))
     names = []
@@ -139,7 +140,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     return drift, names
 
 
-def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0],
+def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
                          min_onset=-24):
     """ Creation of  a matrix that comprises
     the convolution of the conditions onset with a certain hrf model
@@ -150,14 +151,14 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0],
     hrf_model: string that can be 'canonical',
                'canonical with derivative' or 'fir'
                that specifies the hemodynamic response function
-    frametimes: array of shape(n_scans)
+    frame_times: array of shape(n_scans)
                 the targeted timing for the design matrix
     fir_delays=[0], optional, array of shape(nb_onsets) or list
                     in case of FIR design, yields the array of delays
                     used in the FIR model
     min_onset: float, optional
-        minimal onset relative to frametimes[0] (in seconds)
-        events that start before frametimes[0] + min_onset are not considered
+        minimal onset relative to frame_times[0] (in seconds)
+        events that start before frame_times[0] + min_onset are not considered
 
     Returns
     -------
@@ -192,7 +193,7 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0],
             duration = paradigm.duration[paradigm.con_id == nc]
         exp_condition = (onsets, duration, values)
         reg, names = compute_regressor(
-            exp_condition, hrf_model, frametimes, con_id=nc,
+            exp_condition, hrf_model, frame_times, con_id=nc,
             fir_delays=fir_delays, oversampling=oversampling,
             min_onset=min_onset)
         hnames += names
@@ -245,24 +246,24 @@ class DesignMatrix():
             the numerical specification of the matrix
     names: list of len (n_regressors);
            the names associated with the columns
-    frametimes: array of shape(n_scans), optional,
+    frame_times: array of shape(n_scans), optional,
                 the occurrence time of the matrix rows
     """
 
-    def __init__(self, matrix, names, frametimes=None):
+    def __init__(self, matrix, names, frame_times=None):
         """
         """
         matrix_ = np.atleast_2d(matrix)
         if matrix_.shape[1] != len(names):
             raise ValueError(
                 'The number of names should equate the number of columns')
-        if frametimes is not None:
-            if frametimes.size != matrix.shape[0]:
+        if frame_times is not None:
+            if frame_times.size != matrix.shape[0]:
                 raise ValueError(
-                    'The number %d of frametimes is different from the' +
-                    'number %d of rows' % (frametimes.size, matrix.shape[0]))
+                    'The number %d of frame_times is different from the' +
+                    'number %d of rows' % (frame_times.size, matrix.shape[0]))
 
-        self.frametimes = frametimes
+        self.frame_times = frame_times
         self.matrix = matrix_
         self.names = names
 
@@ -275,7 +276,7 @@ class DesignMatrix():
 
         Notes
         -----
-        The frametimes are not written
+        The frame_times are not written
         """
         import csv
         with open4csv(path, "w") as fid:
@@ -322,14 +323,14 @@ class DesignMatrix():
         return ax
 
 
-def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
+def make_design_matrix(frame_times, paradigm=None, hrf_model='canonical',
               drift_model='cosine', hfcut=128, drift_order=1, fir_delays=[0],
               add_regs=None, add_reg_names=None, min_onset=-24):
     """ Generate a design matrix from the input parameters
 
     Parameters
     ----------
-    frametimes: array of shape(nbframes), the timing of the scans
+    frame_times: array of shape(nbframes), the timing of the scans
     paradigm: Paradigm instance, optional
               description of the experimental paradigm
     hrf_model: string, optional,
@@ -351,8 +352,8 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
                    if None, while naddreg>0, these will be termed
                    'reg_%i',i=0..naddreg-1
     min_onset: float, optional
-        minimal onset relative to frametimes[0] (in seconds)
-        events that start before frametimes[0] + min_onset are not considered
+        minimal onset relative to frame_times[0] (in seconds)
+        events that start before frame_times[0] + min_onset are not considered
 
     Returns
     -------
@@ -365,10 +366,10 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
         if add_regs.shape[0] == np.size(add_regs):
             add_regs = np.reshape(add_regs, (np.size(add_regs), 1))
         n_add_regs = add_regs.shape[1]
-        assert add_regs.shape[0] == np.size(frametimes), ValueError(
+        assert add_regs.shape[0] == np.size(frame_times), ValueError(
             'incorrect specification of additional regressors: '
             'length of regressors provided: %s, number of ' +
-            'time-frames: %s' % (add_regs.shape[0], np.size(frametimes)))
+            'time-frames: %s' % (add_regs.shape[0], np.size(frame_times)))
 
     # check that additional regressor names are well specified
     if add_reg_names is None:
@@ -381,13 +382,13 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
 
     # computation of the matrix
     names = []
-    matrix = np.zeros((frametimes.size, 0))
+    matrix = np.zeros((frame_times.size, 0))
 
     # step 1: paradigm-related regressors
     if paradigm is not None:
         # create the condition-related regressors
         matrix, names = _convolve_regressors(
-            paradigm, hrf_model.lower(), frametimes, fir_delays, min_onset)
+            paradigm, hrf_model.lower(), frame_times, fir_delays, min_onset)
 
     # step 2: additional regressors
     if add_regs is not None:
@@ -396,7 +397,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
         names += add_reg_names
 
     # setp 3: drifts
-    drift, dnames = _make_drift(drift_model.lower(), frametimes, drift_order,
+    drift, dnames = _make_drift(drift_model.lower(), frame_times, drift_order,
                                 hfcut)
     matrix = np.hstack((matrix, drift))
     names += dnames
@@ -405,10 +406,10 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
     matrix, _ = _full_rank(matrix)
 
     # complete the names with the drift terms
-    return DesignMatrix(matrix, names, frametimes)
+    return DesignMatrix(matrix, names, frame_times)
 
 
-def dmtx_from_csv(path, frametimes=None):
+def design_matrix_from_csv(path, frame_times=None):
     """ Return a DesignMatrix instance from  a csv file
 
     Parameters
@@ -433,29 +434,30 @@ def dmtx_from_csv(path, frametimes=None):
             else:
                 design.append([row[j] for j in range(len(row))])
     x = np.array([[float(t) for t in xr] for xr in design])
-    return(DesignMatrix(x, names, frametimes))
+    return(DesignMatrix(x, names, frame_times))
 
 
-def dmtx_light(frametimes, paradigm=None, hrf_model='canonical',
+def design_matrix_light(frame_times, paradigm=None, hrf_model='canonical',
                drift_model='cosine', hfcut=128, drift_order=1, fir_delays=[0],
                add_regs=None, add_reg_names=None, min_onset=-24, path=None):
     """Make a design matrix while avoiding framework
 
     Parameters
     ----------
-    see make_dmtx, plus
+    see make_design_matrix, plus
     path: string, optional: a path to write the output
 
     Returns
     -------
-    dmtx array of shape(nreg, nbframes):
+    design_matrix array of shape(nreg, nbframes):
         the sampled design matrix
     names list of strings of len (nreg)
         the names of the columns of the design matrix
     """
-    dmtx_ = make_dmtx(frametimes, paradigm, hrf_model, drift_model, hfcut,
-                      drift_order, fir_delays, add_regs, add_reg_names,
-                      min_onset)
+    design_matrix_ = make_design_matrix(
+        frame_times, paradigm, hrf_model, drift_model, hfcut,
+        drift_order, fir_delays, add_regs, add_reg_names,
+        min_onset)
     if path is not None:
-        dmtx_.write_csv(path)
-    return dmtx_.matrix, dmtx_.names
+        design_matrix_.write_csv(path)
+    return design_matrix_.matrix, design_matrix_.names

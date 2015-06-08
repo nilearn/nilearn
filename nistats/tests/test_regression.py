@@ -15,7 +15,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 
 RNG = np.random.RandomState(20110902)
-X = RNG.standard_normal((40,10))
+X = RNG.standard_normal((40, 10))
 Y = RNG.standard_normal((40,))
 
 
@@ -33,7 +33,7 @@ def test_AR():
 
 def test_OLS_degenerate():
     Xd = X.copy()
-    Xd[:,0] = Xd[:,1] + Xd[:,2]
+    Xd[:, 0] = Xd[:, 1] + Xd[:, 2]
     model = OLSModel(design=Xd)
     results = model.fit(Y)
     assert_equal(results.df_resid, 31)
@@ -41,7 +41,7 @@ def test_OLS_degenerate():
 
 def test_AR_degenerate():
     Xd = X.copy()
-    Xd[:,0] = Xd[:,1] + Xd[:,2]
+    Xd[:, 0] = Xd[:, 1] + Xd[:, 2]
     model = ARModel(design=Xd, rho=0.9)
     results = model.fit(Y)
     assert_equal(results.df_resid, 31)
