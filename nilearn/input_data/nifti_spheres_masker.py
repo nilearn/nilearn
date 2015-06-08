@@ -1,4 +1,6 @@
 """
+Transformer for computing seeds signals.
+=======
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
@@ -52,7 +54,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
     mask_coords = mask_coords.astype(int).tolist()
     for i, seed in enumerate(seeds):
         try:
-            A[i, mask_coords.index(list(seeds[i]))] = True
+            A[i, mask_coords.index(seed)] = True
         except ValueError:
             # seed is not in the mask
             pass
@@ -85,7 +87,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ==========
-    seeds: List of coordinate triplets in native space
+    seeds: List of triplet of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
@@ -165,16 +167,38 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         All parameters are unused, they are for scikit-learn compatibility.
         """
-            # This is not elegant but this is the easiest way to test it.
-        try:
-            for seed in self.seeds:
-                assert(len(seed) == 3)
-        except Exception as e:
-            if self.verbose > 0:
-                print('Seeds not valid, error' + str(e))
-            raise ValueError('Seeds must be a list of triplets of '
-                             'coordinates in native space.')
-        self.seeds_ = self.seeds
+        if hasattr(self, 'seeds_'):
+            return self
+
+        error = ("Seeds must be a list of triplets of coordinates in "
+                 "native space.\n")
+
+        if not hasattr(self.seeds, '__iter__'):
+            raise ValueError(error + "Given seed list is of type: " +
+                             type(self.seeds))
+
+        self.seeds_ = []
+        # Check seeds and convert them to lists if needed
+        for i, seed in enumerate(self.seeds):
+            # Check the type first
+            if not hasattr(seed, '__len__'):
+                raise ValueError(error + "Seed #%i is not a valid triplet "
+                                 "of coordinates. It is of type %s."
+                                 % (i, type(seed)))
+            # Convert to list because it is easier to process
+            if isinstance(seed, np.ndarray):
+                seed = seed.to_list()
+            else:
+                # in case of tuple
+                seed = list(seed)
+
+            # Check the length
+            if len(seed) != 3:
+                raise ValueError(error + "Seed #%i is of length %i "
+                                 "instead of 3." % (i, len(seed)))
+
+            self.seeds_.append(seed)
+
         return self
 
     def fit_transform(self, imgs, confounds=None):
