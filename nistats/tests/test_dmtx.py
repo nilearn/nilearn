@@ -159,7 +159,8 @@ def test_convolve_regressors():
     # tests for convolve_regressors helper function
     conditions = ['c0', 'c1']
     onsets = [20, 40]
-    paradigm = EventRelatedParadigm(conditions, onsets)
+    paradigm = DataFrame({'name': conditions,
+                          'onset': onsets})
     # names not passed -> default names
     frame_times = np.arange(100)
     f, names = _convolve_regressors(paradigm, 'canonical', frame_times)
@@ -468,7 +469,8 @@ def test_spm_1():
     frame_times = np.linspace(0, 99, 100)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
-    paradigm = EventRelatedParadigm(conditions, onsets)
+    paradigm = DataFrame({'name': conditions,
+                          'onset': onsets})
     X1 = make_design_matrix(frame_times, paradigm, drift_model='blank')
     spm_design_matrix = DESIGN_MATRIX['arr_0']
     assert_true(((spm_design_matrix - X1.matrix) ** 2).sum() /
