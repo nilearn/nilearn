@@ -114,7 +114,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     memory_level: int
         The memory_level used to determine if function call must
-        be cached or not (if user_memory_level is equal of grater than
+        be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached)
 
     kwargs: keyword arguments
