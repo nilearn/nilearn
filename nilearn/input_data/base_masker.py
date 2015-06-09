@@ -113,7 +113,8 @@ def filter_and_mask(imgs, mask_img_,
             if confounds is not None:
                 confounds = confounds[sessions == s]
             data[sessions == s, :] = \
-                cache(signal.clean, memory, 2, memory_level)(
+                cache(signal.clean, memory, func_memory_level=2,
+                      memory_level=memory_level)(
                         data[sessions == s, :],
                         confounds=confounds,
                         low_pass=parameters['low_pass'],
