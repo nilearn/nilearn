@@ -218,5 +218,5 @@ class CacheMixin(object):
                               "Setting memory_level to 1.")
                 self.memory_level = 1
 
-        return cache(func, self.memory, func_memory_level,
-                     self.memory_level, **kwargs)
+        return cache(func, self.memory, func_memory_level=func_memory_level,
+                     memory_level=self.memory_level, **kwargs)
