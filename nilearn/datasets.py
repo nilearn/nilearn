@@ -190,7 +190,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
         location. Default: None
 
     pre_dirs: list of string, optional
-        Paths to explore before anything else. Typically used for system paths.
+        Paths to explore first. Typically used for system paths.
 
     verbose: int, optional
         verbosity level (0 means no message).
