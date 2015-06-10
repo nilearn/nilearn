@@ -52,11 +52,10 @@ epi_img = data.epi_img
 # Design matrix
 ########################################
 
-paradigm = DataFrame.from_csv(paradigm_file)
-onset = [float(x[0].split(' ')[2]) for x in paradigm.iterrows()]
-name = [x[0].split(' ')[1] for x in paradigm.iterrows()]
-n_conditions = len(np.unique(name))
-paradigm = DataFrame({'onset': onset, 'name': name})
+paradigm = DataFrame.from_csv(paradigm_file, sep=' ', header=None,
+                              index_col=None)
+paradigm.columns = ['session', 'name', 'onset']
+n_conditions = len(paradigm.name.unique())
 design_matrix = make_design_matrix(frame_times, paradigm,
                                    hrf_model='canonical with derivative',
                                    drift_model="cosine", hfcut=128)
