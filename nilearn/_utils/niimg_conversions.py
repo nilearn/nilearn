@@ -285,19 +285,24 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
     target_fov = 'first' if auto_resample else None
 
+    # We remove one to the dimensionality because of the list is one dimension.
+    ndim = None
+    if ensure_ndim is not None:
+        ndim = ensure_ndim - 1
+
     # First niimg is extracted to get information and for new_img_like
     first_niimg = None
 
     iterator, literator = itertools.tee(iter(niimgs))
     try:
-        first_niimg = check_niimg(next(literator))
+        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
     except StopIteration:
         raise TypeError('Cannot concatenate empty objects')
 
-    if ensure_ndim is None:
+    # If no particular dimensionality is asked, we force consistency wrt the
+    # first image
+    if ndim is None:
         ndim = len(first_niimg.shape)
-    else:
-        ndim = ensure_ndim - 1
 
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:
