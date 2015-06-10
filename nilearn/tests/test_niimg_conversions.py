@@ -169,6 +169,12 @@ def test_concat_niimgs():
     shape3 = (11, 22, 33)
     img1c = Nifti1Image(np.ones(shape3), affine)
 
+    # Regression test for #601. Dimensionality of first image was not checked
+    # properly
+    assert_raises_regex(TypeError, 'Data must be a 3D Niimg-like object but '
+                        'you provided an image of shape',
+                        _utils.concat_niimgs, [img4d], ensure_ndim=4)
+
     # check basic concatenation with equal shape/affine
     concatenated = _utils.concat_niimgs((img1, img3, img1))
 
