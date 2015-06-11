@@ -25,13 +25,11 @@ env:
     - DISTRIB="conda" PYTHON_VERSION="2.6"
       NUMPY_VERSION="1.6.2" SCIPY_VERSION="0.11.0"
       SCIKIT_LEARN_VERSION="0.12.1" MATPLOTLIB_VERSION="1.1.1"
-      NIBABEL_VERSION="1.1.0"
-      PANDAS_VERSION="0.13.0"
+      NIBABEL_VERSION="1.1.0" PANDAS_VERSION="0.9.0"
     # Most recent versions
     - DISTRIB="conda" PYTHON_VERSION="3.4"
       NUMPY_VERSION="*" SCIPY_VERSION="*"
       SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-      PANDAS_VERSION="*"
 
 install: 
     - source continuous_integration/install.sh
