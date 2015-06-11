@@ -1042,8 +1042,8 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     mirror: string, optional
-        By default, dataset is downloaded on the original website of the atlas.
-        Specifying "nitrc" will force download on a mirror, with potentially
+        By default, the dataset is downloaded from the original website of the atlas.
+        Specifying "nitrc" will force download from a mirror, with potentially
         higher bandwith.
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
