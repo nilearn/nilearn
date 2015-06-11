@@ -1101,10 +1101,10 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     files = [
             'rsn20.nii.gz',
             'PNAS_Smith09_rsn10.nii.gz',
-            'rsn20.nii.gz',
+            'rsn70.nii.gz',
             'bm20.nii.gz',
             'PNAS_Smith09_bm10.nii.gz',
-            'bm20.nii.gz'
+            'bm70.nii.gz'
     ]
 
     if isinstance(url, _basestring):
