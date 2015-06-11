@@ -105,6 +105,5 @@ if [[ "$COVERAGE" == "true" ]]; then
 fi
 
 pip install nilearn
-pip install pandas
 
 python setup.py install
