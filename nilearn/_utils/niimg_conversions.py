@@ -40,6 +40,37 @@ def _index_img(img, index):
         copy_header=True)
 
 
+class DimensionError(TypeError):
+    def __init__(self, dim_required, dim_file, dim_list):
+        self.dim_required = dim_required
+        self.dim_file = dim_file
+        self.dim_list = dim_list
+
+        super(DimensionError, self).__init__()
+
+    def incr(self):
+        self.dim_required += 1
+        self.dim_list += 1
+
+    def _get_message(self):
+        message = (
+                "Data must be a %iD Niimg-like object but you provided a "
+                "%s%iD image. "
+                "See http://nilearn.github.io/building_blocks/"
+                "manipulating_mr_images.html#niimg." % (
+                    self.dim_required,
+                    "list of " * self.dim_list,
+                    self.dim_file
+                )
+        )
+        return message
+
+    def _set_message(self, message):
+        pass
+
+    message = property(_get_message, _set_message)
+
+
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                       target_fov=None,
                       memory=Memory(cachedir=None),
@@ -106,6 +137,9 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             exc.args = (('Error encountered while loading image #%d%s'
                          % (i, img_name),) + exc.args)
             raise
+        except DimensionError as exc:
+            exc.incr()
+            raise
 
 
 def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
@@ -167,11 +201,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
         niimg = new_img_like(niimg, data, niimg.get_affine())
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
-        raise TypeError(
-            "Data must be a %iD Niimg-like object but you provided an "
-            "image of shape %s. See "
-            "http://nilearn.github.io/building_blocks/"
-            "manipulating_mr_images.html#niimg." % (ensure_ndim, niimg.shape))
+        raise DimensionError(ensure_ndim, len(niimg.shape), 0)
 
     if return_iterator:
         return (_index_img(niimg, i) for i in range(niimg.shape[3]))
@@ -298,6 +328,9 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
     except StopIteration:
         raise TypeError('Cannot concatenate empty objects')
+    except DimensionError as exc:
+        exc.incr()
+        raise
 
     # If no particular dimensionality is asked, we force consistency wrt the
     # first image
@@ -307,7 +340,11 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:
         # We check the dimensionality of the niimg
-        niimg = check_niimg(niimg, ensure_ndim=ndim)
+        try:
+            niimg = check_niimg(niimg, ensure_ndim=ndim)
+        except DimensionError as exc:
+            exc.incr()
+            raise
         lengths.append(niimg.shape[-1] if ndim == 4 else 1)
 
     target_shape = first_niimg.shape[:3]
