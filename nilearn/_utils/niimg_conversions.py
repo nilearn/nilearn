@@ -40,7 +40,7 @@ def _index_img(img, index):
         copy_header=True)
 
 
-class DimensionError(TypeError):
+class DimensionError(Exception):
     def __init__(self, dim_required, dim_file, dim_list):
         self.dim_required = dim_required
         self.dim_file = dim_file
@@ -55,7 +55,7 @@ class DimensionError(TypeError):
     def _get_message(self):
         message = (
                 "Data must be a %iD Niimg-like object but you provided a "
-                "%s%iD image. "
+                "%s%iD images. "
                 "See http://nilearn.github.io/building_blocks/"
                 "manipulating_mr_images.html#niimg." % (
                     self.dim_required,
@@ -67,6 +67,9 @@ class DimensionError(TypeError):
 
     def _set_message(self, message):
         pass
+
+    def __str__(self):
+        return self.message
 
     message = property(_get_message, _set_message)
 
