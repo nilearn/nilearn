@@ -135,6 +135,8 @@ def new_img_like(ref_img, data, affine, copy_header=False):
     new_img: image
         An image which has the same type as the reference image.
     """
+    if affine is None:
+        affine = ref_img.get_affine()
     if data.dtype == bool:
         default_dtype = np.int8
         if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
