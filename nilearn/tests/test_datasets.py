@@ -360,6 +360,33 @@ def test_fetch_haxby():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_destrieux_2009_atlas():
+    datadir = os.path.join(tmpdir, 'destrieux_2009')
+    os.mkdir(datadir)
+    dummy = open(os.path.join(
+        datadir, 'destrieux2009_rois_labels_lateralized.csv'), 'w')
+    dummy.write("name,index")
+    dummy.close()
+    bunch = datasets.fetch_destrieux_2009(data_dir=tmpdir, verbose=0)
+
+    assert_equal(len(url_request.urls), 1)
+    assert_equal(bunch['maps'], os.path.join(
+        tmpdir, 'destrieux_2009', 'destrieux2009_rois_lateralized.nii.gz'))
+
+    dummy = open(os.path.join(
+        datadir, 'destrieux2009_rois_labels.csv'), 'w')
+    dummy.write("name,index")
+    dummy.close()
+    bunch = datasets.fetch_destrieux_2009(lateralized=False, data_dir=tmpdir,
+                                          verbose=0)
+
+    assert_equal(len(url_request.urls), 1)
+    assert_equal(bunch['maps'], os.path.join(
+        tmpdir, 'destrieux_2009', 'destrieux2009_rois.nii.gz'))
+
+
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_nyu_rest():
     # First session, all subjects
     nyu = datasets.fetch_nyu_rest(data_dir=tmpdir, verbose=0)
