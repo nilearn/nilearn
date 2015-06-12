@@ -922,7 +922,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     Parameters
     ----------
     data_dir: string, optional
-        Path of the data directory. Use to forec data storage in a non-
+        Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
@@ -999,7 +999,7 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     Parameters
     ----------
     data_dir: string, optional
-        Path of the data directory. Use to forec data storage in a non-
+        Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
@@ -1067,12 +1067,12 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_power_2011(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load the Power et al. brain atlas compose of 264 ROIs.
+    """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     Parameters
     ----------
     data_dir: string, optional
-        Path of the data directory. Use to forec data storage in a non-
+        Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
