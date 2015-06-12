@@ -108,11 +108,11 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     memory: instance of joblib.Memory or string
         Used to cache the function call.
 
-    func_memory_level: int
+    func_memory_level: int, optional
         The memory_level from which caching must be enabled for the wrapped
         function.
 
-    memory_level: int
+    memory_level: int, optional
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached)
