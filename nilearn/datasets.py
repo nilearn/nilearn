@@ -1099,7 +1099,7 @@ def fetch_atlas_power_2011():
 
 def fetch_destrieux_2009(lateralized=True, data_dir=None, url=None,
                          resume=True, verbose=1):
-    """Download and load the Smith ICA and BrainMap atlas (dated 2009)
+    """Download and load the Destrieux cortical atlas (dated 2009)
 
     Parameters
     ----------
