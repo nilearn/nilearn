@@ -16,6 +16,24 @@ AuthorizedException = (
 
 
 class DimensionError(TypeError):
+    """Custom error type for dimension checking.
+
+    This error is used in recursive calls in check_niimg to keep track of the
+    dimensionality of the data. Its final goal it to generate a user friendly
+    message.
+
+    Parameters
+    ----------
+
+    dim_required: integer
+        Indicates the dimensonality required for the data.
+
+    dim_file: integer
+        Dimensionality of the niimg located at the lowest level of the data.
+
+    dim_list: integer
+        Dimensions added by the imbrication of the data in lists.
+    """
     def __init__(self, dim_required, dim_file, dim_list):
         self.dim_required = dim_required
         self.dim_file = dim_file
@@ -24,6 +42,12 @@ class DimensionError(TypeError):
         super(DimensionError, self).__init__()
 
     def incr(self):
+        """Increments the dimension counters
+
+        Typically called when the error is catched and re-raised to count the
+        number of recursive calls, ie the number of dimensions added by
+        imbrication in lists.
+        """
         self.dim_required += 1
         self.dim_list += 1
 
