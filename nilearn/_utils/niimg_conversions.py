@@ -55,12 +55,13 @@ class DimensionError(Exception):
     def _get_message(self):
         message = (
                 "Data must be a %iD Niimg-like object but you provided a "
-                "%s%iD images. "
+                "%s%iD image%s. "
                 "See http://nilearn.github.io/building_blocks/"
                 "manipulating_mr_images.html#niimg." % (
                     self.dim_required,
                     "list of " * self.dim_list,
-                    self.dim_file
+                    self.dim_file,
+                    "s" * (self.dim_list != 0)
                 )
         )
         return message
