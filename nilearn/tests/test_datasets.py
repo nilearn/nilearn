@@ -343,6 +343,20 @@ def test_fetch_smith_2009_atlas():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_power_2011_atlas():
+    datadir = os.path.join(tmpdir, 'power_2011')
+    os.mkdir(datadir)
+
+    dummy = open(os.path.join(datadir, 'power_2011.csv'), 'w')
+    dummy.write("ROI,x,y,z")
+    dummy.close()
+    bunch = datasets.fetch_power_2011(data_dir=tmpdir, verbose=0)
+
+    assert_equal(len(url_request.urls), 1)
+
+
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby():
     for i in range(1, 6):
         haxby = datasets.fetch_haxby(data_dir=tmpdir, n_subjects=i,

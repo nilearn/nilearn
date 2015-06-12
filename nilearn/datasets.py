@@ -147,9 +147,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         The downloaded file.
 
     """
-    if total_size is None:
-        total_size = response.info().get('Content-Length').strip()
     try:
+        if total_size is None:
+            total_size = response.info().get('Content-Length').strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
         if verbose > 1:
@@ -1090,7 +1090,7 @@ def fetch_power_2011(data_dir=None, url=None, resume=True, verbose=1):
     brain." Neuron 72.4 (2011): 665-678.
     """
     if url is None:
-        url = "http://www.nitrc.org/frs/download.php/7741/"
+        url = "http://www.nitrc.org/frs/download.php/7744/"
 
     url += "power_2011.tgz"
     opts = dict(uncompress=True)
