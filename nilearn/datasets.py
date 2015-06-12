@@ -1066,7 +1066,7 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def fetch_power_2011(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_power_2011(verbose=1):
     """Download and load the Power et al. brain atlas compose of 264 ROIs.
 
     Parameters
@@ -1089,27 +1089,11 @@ def fetch_power_2011(data_dir=None, url=None, resume=True, verbose=1):
     Power, Jonathan D., et al. "Functional network organization of the human
     brain." Neuron 72.4 (2011): 665-678.
     """
-    if url is None:
-        url = "http://www.nitrc.org/frs/download.php/7744/"
-
-    url += "power_2011.tgz"
-    opts = dict(uncompress=True)
-
-    files = [
-        ('power_2011.csv', url, opts),
-        ('power_2011.rst', url, opts)
-    ]
-
     dataset_name = 'power_2011'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    files_ = _fetch_files(data_dir, files, resume=resume,
-                          verbose=verbose)
-
-    params = dict(rois=np.recfromcsv(files_[0]))
-
-    with open(files_[1], 'r') as rst_file:
-        params['description'] = rst_file.read()
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    csv = os.path.join(package_directory, "data", "power_2011.csv")
+    params = dict(rois=np.recfromcsv(csv), description=fdescr)
 
     return Bunch(**params)
 

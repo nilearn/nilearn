@@ -341,18 +341,9 @@ def test_fetch_smith_2009_atlas():
         assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
 
 
-@with_setup(setup_mock)
-@with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_power_2011_atlas():
-    datadir = os.path.join(tmpdir, 'power_2011')
-    os.mkdir(datadir)
-
-    dummy = open(os.path.join(datadir, 'power_2011.csv'), 'w')
-    dummy.write("ROI,x,y,z")
-    dummy.close()
-    bunch = datasets.fetch_power_2011(data_dir=tmpdir, verbose=0)
-
-    assert_equal(len(url_request.urls), 1)
+    bunch = datasets.fetch_power_2011(verbose=0)
+    assert_equal(len(bunch.rois), 264)
 
 
 @with_setup(setup_mock)
