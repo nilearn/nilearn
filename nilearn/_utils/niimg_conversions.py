@@ -40,7 +40,7 @@ def _index_img(img, index):
         copy_header=True)
 
 
-class DimensionError(Exception):
+class DimensionError(TypeError):
     def __init__(self, dim_required, dim_file, dim_list):
         self.dim_required = dim_required
         self.dim_file = dim_file
