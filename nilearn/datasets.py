@@ -1097,8 +1097,8 @@ def fetch_atlas_power_2011():
     return Bunch(**params)
 
 
-def fetch_destrieux_2009(lateralized=True, data_dir=None, url=None,
-                         resume=True, verbose=1):
+def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
+                               resume=True, verbose=1):
     """Download and load the Destrieux cortical atlas (dated 2009)
 
     Parameters
