@@ -34,22 +34,21 @@ class DimensionError(TypeError):
     dim_list: integer
         Dimensions added by the imbrication of the data in lists.
     """
-    def __init__(self, dim_required, dim_file, dim_list):
-        self.dim_required = dim_required
-        self.dim_file = dim_file
-        self.dim_list = dim_list
+    def __init__(self, file_dimension, required_dimension):
+        self.file_dimension = file_dimension
+        self.required_dimension = required_dimension
+        self.stack_counter = 0
 
         super(DimensionError, self).__init__()
 
-    def incr(self):
-        """Increments the dimension counters
+    def increment_stack_counter(self):
+        """Increments the counter of recursive calls.
 
-        Typically called when the error is catched and re-raised to count the
+        Called when the error is catched and re-raised to count the
         number of recursive calls, ie the number of dimensions added by
         imbrication in lists.
         """
-        self.dim_required += 1
-        self.dim_list += 1
+        self.stack_counter += 1
 
     def _get_message(self):
         message = (
@@ -57,10 +56,10 @@ class DimensionError(TypeError):
                 "%s%iD image%s. "
                 "See http://nilearn.github.io/building_blocks/"
                 "manipulating_mr_images.html#niimg." % (
-                    self.dim_required,
-                    "list of " * self.dim_list,
-                    self.dim_file,
-                    "s" * (self.dim_list != 0)
+                    self.dim_required + self.stack_counter,
+                    "list of " * self.stack_counter,
+                    self.file_dimension,
+                    "s" * (self.stack_counter != 0)
                 )
         )
         return message

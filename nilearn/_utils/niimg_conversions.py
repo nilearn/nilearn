@@ -108,7 +108,8 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                          % (i, img_name),) + exc.args)
             raise
         except DimensionError as exc:
-            exc.incr()
+            # Keep track of the additional dimension in the error
+            exc.increment_stack_counter()
             raise
 
 
@@ -299,7 +300,8 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     except StopIteration:
         raise TypeError('Cannot concatenate empty objects')
     except DimensionError as exc:
-        exc.incr()
+        # Keep track of the additional dimension in the error
+        exc.increment_stack_counter()
         raise
 
     # If no particular dimensionality is asked, we force consistency wrt the
@@ -313,7 +315,8 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         try:
             niimg = check_niimg(niimg, ensure_ndim=ndim)
         except DimensionError as exc:
-            exc.incr()
+            # Keep track of the additional dimension in the error
+            exc.increment_stack_counter()
             raise
         lengths.append(niimg.shape[-1] if ndim == 4 else 1)
 
