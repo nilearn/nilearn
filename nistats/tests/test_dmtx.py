@@ -302,7 +302,7 @@ def test_design_matrix10():
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
-    onset = paradigm['onset'][paradigm['name'] == 'c0'].astype(np.int)
+    onset = paradigm.onset[paradigm.name == 'c0'].astype(np.int)
     assert_true(np.all((X[onset + 1, 0] == 1)))
 
 
@@ -315,7 +315,7 @@ def test_design_matrix11():
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
-    onset = paradigm['onset'][paradigm['name'] == 'c0'].astype(np.int)
+    onset = paradigm.onset[paradigm.name == 'c0'].astype(np.int)
     assert_true(np.all(X[onset + 3, 2] == 1))
 
 
@@ -328,7 +328,7 @@ def test_design_matrix12():
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
-    onset = paradigm['onset'][paradigm['name'] == 'c2'].astype(np.int)
+    onset = paradigm.onset[paradigm.name == 'c2'].astype(np.int)
     assert_true(np.all(X[onset + 4, 11] == 1))
 
 
@@ -341,7 +341,7 @@ def test_design_matrix13():
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                           drift_model='polynomial', drift_order=3,
                           fir_delays=range(1, 5))
-    onset = paradigm['onset'][paradigm['name'] == 'c0'].astype(np.int)
+    onset = paradigm.onset[paradigm.name == 'c0'].astype(np.int)
     assert_true(np.all(X[onset + 1, 0] == 1))
 
 
@@ -355,7 +355,7 @@ def test_design_matrix14():
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
-    onset = paradigm['onset'][paradigm['name'] == 'c0'].astype(np.int)
+    onset = paradigm.onset[paradigm.name == 'c0'].astype(np.int)
     assert_true(np.all(X[onset + 1, 0] > .9))
 
 
@@ -392,7 +392,7 @@ def test_design_matrix17():
     hrf_model = 'Canonical'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
-    ct = paradigm['onset'][paradigm['name'] == 'c0'].astype(np.int) + 1
+    ct = paradigm.onset[paradigm.name == 'c0'].astype(np.int) + 1
     assert_true((X[ct, 0] > 0).all())
 
 
@@ -404,7 +404,7 @@ def test_design_matrix18():
     hrf_model = 'Canonical'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
-    ct = paradigm['onset'][paradigm['name'] == 'c0'].astype(np.int) + 3
+    ct = paradigm.onset[paradigm.name == 'c0'].astype(np.int) + 3
     assert_true((X[ct, 0] > 0).all())
 
 
@@ -417,7 +417,7 @@ def test_design_matrix19():
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                             drift_model='polynomial', drift_order=3,
                             fir_delays=range(1, 5))
-    idx = paradigm['onset'][paradigm['name'] == 0].astype(np.int)
+    idx = paradigm.onset[paradigm.name == 0].astype(np.int)
     assert_array_equal(X[idx + 1, 0], X[idx + 2, 1])
 
 
