@@ -1066,7 +1066,7 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def fetch_power_2011(verbose=1):
+def fetch_atlas_power_2011(verbose=1):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     Parameters

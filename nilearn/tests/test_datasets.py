@@ -341,8 +341,8 @@ def test_fetch_smith_2009_atlas():
         assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
 
 
-def test_fetch_power_2011_atlas():
-    bunch = datasets.fetch_power_2011(verbose=0)
+def test_fetch_atlas_power_2011_atlas():
+    bunch = datasets.fetch_atlas_power_2011(verbose=0)
     assert_equal(len(bunch.rois), 264)
 
 
