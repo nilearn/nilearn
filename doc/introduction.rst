@@ -282,17 +282,24 @@ Suppose for instance that you have a Tmap image saved in the Nifti file
 "t_map000.nii" in the directory "/home/user". To visualize that image, you will
 first have to import the :ref:`plotting <plotting>` functionality by::
 
-    from nilearn import plotting
+    >>> from nilearn import plotting
 
 Then you can call the function that creates a "glass brain" by giving it
 the file name::
 
-    plotting.plot_glass_brain("/home/user/t_map000.nii")
+    >>> plotting.plot_glass_brain("/home/user/t_map000.nii")
 
 .. image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_001.png
     :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
     :align: center
     :scale: 60
+
+.. note::
+
+   There are many other plotting functions. Take your time to have a look
+   at the :ref:`different options <plotting>`.
+
+|
 
 .. currentmodule:: nilearn
 
