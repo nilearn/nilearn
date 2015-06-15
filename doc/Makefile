@@ -37,11 +37,15 @@ clean:
 	-rm -rf generated/*
 	-rm -rf modules/generated/*
 
+force_html: force html
+
+force:
+	find . -name \*.rst -exec touch {} \;
+
 html:
 	# These two lines make the build a bit more lengthy, and the
 	# the embedding of images more robust
 	rm -rf $(BUILDDIR)/html/_images
-	#find . -name \*.rst -exec touch {} \;
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll
 	@echo
