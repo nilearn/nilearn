@@ -15,7 +15,7 @@ from distutils.version import LooseVersion
 
 from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
 from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
-from nilearn._utils import DimensionError
+from nilearn._utils.exceptions import DimensionError
 
 
 def test_auto_mask():

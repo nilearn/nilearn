@@ -9,7 +9,7 @@ import nibabel
 from nilearn.input_data.base_masker import filter_and_mask
 from nilearn import image
 from nilearn._utils.testing import assert_raises_regex
-from nilearn._utils import DimensionError
+from nilearn._utils.exceptions import DimensionError
 
 
 def test_cropping_code_paths():

@@ -9,5 +9,3 @@ from .numpy_conversions import as_ndarray
 from .cache_mixin import CacheMixin
 
 from .logger import _compose_err_msg
-
-from .exceptions import DimensionError
