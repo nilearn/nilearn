@@ -35,7 +35,7 @@ print_conda_requirements() {
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
     TO_INSTALL_ALWAYS="pip nose"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn"
+    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
@@ -83,7 +83,7 @@ create_new_conda_env() {
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env

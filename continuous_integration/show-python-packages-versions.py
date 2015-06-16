@@ -1,6 +1,6 @@
 import sys
 
-DEPENDENCIES = ['numpy', 'scipy', 'sklearn', 'matplotlib', 'nibabel']
+DEPENDENCIES = ['numpy', 'scipy', 'sklearn', 'matplotlib', 'nibabel', 'pandas']
 
 
 def print_package_version(package_name, indent='  '):

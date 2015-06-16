@@ -19,13 +19,11 @@ from os import mkdir, path
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from pandas import DataFrame
 from nibabel import save
 
 from nistats.glm import FMRILinearModel
 from nistats.design_matrix import make_design_matrix
-from nistats.experimental_paradigm import \
-    load_paradigm_from_csv_file
 from nistats import datasets
 
 from nilearn import plotting
@@ -54,8 +52,10 @@ epi_img = data.epi_img
 # Design matrix
 ########################################
 
-paradigm = load_paradigm_from_csv_file(paradigm_file)['0']
-
+paradigm = DataFrame.from_csv(paradigm_file, sep=' ', header=None,
+                              index_col=None)
+paradigm.columns = ['session', 'name', 'onset']
+n_conditions = len(paradigm.name.unique())
 design_matrix = make_design_matrix(frame_times, paradigm,
                                    hrf_model='canonical with derivative',
                                    drift_model="cosine", hfcut=128)
@@ -83,7 +83,7 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 # simplest ones
 contrasts = {}
 n_columns = len(design_matrix.names)
-for i in range(paradigm.n_conditions):
+for i in range(n_conditions):
     contrasts['%s' % design_matrix.names[2 * i]] = np.eye(n_columns)[2 * i]
 
 # and more complex/ interesting ones

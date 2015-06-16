@@ -28,6 +28,7 @@ from warnings import warn
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
 from .utils  import open4csv
+from .experimental_paradigm import check_paradigm
 
 
 ######################################################################
@@ -147,7 +148,9 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
 
     Parameters
     ----------
-    paradigm: paradigm instance
+    paradigm: DataFrame instance,
+              see .experimental_paradigm to check the constraints
+              for these to be valid paradigm descriptors
     hrf_model: string that can be 'canonical',
                'canonical with derivative' or 'fir'
                that specifies the hemodynamic response function
@@ -178,22 +181,14 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
     else:
         oversampling = 16
 
-    for nc in np.unique(paradigm.con_id):
-        onsets = paradigm.onset[paradigm.con_id == nc]
-        nos = np.size(onsets)
-        if paradigm.amplitude is not None:
-            values = paradigm.amplitude[paradigm.con_id == nc]
-        else:
-            values = np.ones(nos)
-        if nos < 1:
-            continue
-        if paradigm.type == 'event':
-            duration = np.zeros_like(onsets)
-        else:
-            duration = paradigm.duration[paradigm.con_id == nc]
-        exp_condition = (onsets, duration, values)
+    name, onset, duration, modulation = check_paradigm(paradigm)
+    for condition in np.unique(paradigm.name):
+        condition_mask = (name == condition)
+        exp_condition = (onset[condition_mask],
+                         duration[condition_mask],
+                         modulation[condition_mask])
         reg, names = compute_regressor(
-            exp_condition, hrf_model, frame_times, con_id=nc,
+            exp_condition, hrf_model, frame_times, con_id=condition,
             fir_delays=fir_delays, oversampling=oversampling,
             min_onset=min_onset)
         hnames += names
@@ -330,8 +325,9 @@ def make_design_matrix(frame_times, paradigm=None, hrf_model='canonical',
 
     Parameters
     ----------
-    frame_times: array of shape(nbframes), the timing of the scans
-    paradigm: Paradigm instance, optional
+    frame_times: array of shape(n_frames)
+        the timing of the scans
+    paradigm: DataFrame instance, optional
               description of the experimental paradigm
     hrf_model: string, optional,
                that specifies the hemodynamic response function
@@ -346,11 +342,11 @@ def make_design_matrix(frame_times, paradigm=None, hrf_model='canonical',
     fir_delays: array of shape(nb_onsets) or list, optional,
                 in case of FIR design, yields the array of delays
                 used in the FIR model
-    add_regs: array of shape(nbframes, naddreg), optional
+    add_regs: array of shape(n_frames, n_add_reg), optional
               additional user-supplied regressors
-    add_reg_names: list of (naddreg) regressor names, optional
-                   if None, while naddreg>0, these will be termed
-                   'reg_%i',i=0..naddreg-1
+    add_reg_names: list of (n_addreg) regressor names, optional
+                   if None, while n_add_reg > 0, these will be termed
+                   'reg_%i', i = 0..n_add_reg - 1
     min_onset: float, optional
         minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered
@@ -449,7 +445,7 @@ def design_matrix_light(frame_times, paradigm=None, hrf_model='canonical',
 
     Returns
     -------
-    design_matrix array of shape(nreg, nbframes):
+    design_matrix array of shape(nreg, n_frames):
         the sampled design matrix
     names list of strings of len (nreg)
         the names of the columns of the design matrix
