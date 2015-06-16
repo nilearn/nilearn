@@ -172,7 +172,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
         niimg = new_img_like(niimg, data, niimg.get_affine())
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
-        raise DimensionError(ensure_ndim, len(niimg.shape), 0)
+        raise DimensionError(len(niimg.shape), ensure_ndim)
 
     if return_iterator:
         return (_index_img(niimg, i) for i in range(niimg.shape[3]))
