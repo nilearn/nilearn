@@ -598,14 +598,14 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
 
 def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
-                    threshold=None, linewidths=2.5, filled=False,
-                    cut_coords=None, output_file=None, display_mode='ortho',
+                    threshold=None, linewidths=2.5, cut_coords=None,
+                    output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
                     draw_cross=True, black_bg='auto', dim=False,
                     cmap='gist_rainbow', vmin=None, vmax=None,
                     alpha=0.5, **kwargs):
 
-    """ Plot the multiple atlas or statistical maps onto the anatomical image
+    """ Plot the multiple atlas maps or statistical maps onto the anatomical image
         by default MNI template
 
         Parameters
@@ -616,27 +616,26 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        view_type: {'auto', 'contours', 'continuous'}, optional
-            By default view_type =='auto', which means maps are overlayed as
-            contours if number of maps to display are more or
-            overlayed as continuous colors if number of maps are less.
-            For view_type == 'contours', maps are overlayed as contours
-            For view_type == 'continuous', maps are overlayed as continous
-            colors irrespective of number maps.
+        view_type: string, {'auto', 'contours', 'contours_filled', 'continuous'}, optional
+            By default, view_type == 'auto', which means maps are overlayed as
+            contours if the number of maps are more than 4 or
+            overlayed as continuous colors if the number of maps are less than 4.
+            If view_type == 'contours', maps are overlayed as contours.
+            If view_type == 'contours_filled', maps are overlayed as contours
+            and also with color fillings inside the contours.
+            If view_type == 'continuous', maps are overlayed as continous
+            colors irrespective of the number maps.
         threshold: None, str or a list of strings or number or list of numbers, optional
             If threshold is a string it must finish with a percent sign,
             e.g. "25.3%", or if it is a number it can be real numbers.
             This option is served for two purposes, for contours and
             contour fillings threshold serves to select the level of
-            the maps to display.
+            the maps to display and same threshold is applied for color fillings.
             For continuous overlays this threshold value serves to select
             the maps which are greater than a given value or list of given values.
             If None is given, the maps are thresholded with default value.
         linewidths: a value, optional
             This option can be used to set the boundary thickness of the contours.
-        filled: True or False, optional
-            This option can be used if contours are needed to be displayed
-            with color fillings.
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
@@ -691,6 +690,17 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
 
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
+    _view_type = set(('auto', 'contours', 'contours_filled', 'continuous'))
+    if isinstance(view_type, _basestring):
+        if view_type not in _view_type:
+            raise TypeError('view_type option should be given '
+                            'either as a "contours" or "contours_filled" '
+                            'or "continuous" ')
+    elif not isinstance(view_type, _basestring):
+        raise TypeError('view_type option should be '
+                        'either as a "contours" or "contours_filled" '
+                        'or "continuous" but you have given %s '
+                        %type(view_type))
 
     if isinstance(cmap, _basestring):
         color_map = plt.cm.get_cmap(cmap)
@@ -710,6 +720,11 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     else:
         threshold = [threshold] * n_maps
 
+    if view_type == 'auto':
+        if n_maps > 4:
+            view_type = 'contours'
+        else:
+            view_type = 'continuous'
     for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img), color_list, threshold)):
         # To threshold or choose the level of the contours
         data = map_img.get_data()
@@ -724,27 +739,22 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             except ValueError as exc:
                 exc.args += (message, )
                 raise
-            thr = fast_abs_percentile(data, percentile) + 1e-1
+            thr = fast_abs_percentile(data, percentile)
         elif not isinstance(thr, numbers.Real):
             raise TypeError('Threshold must be a real value and you gave '
                             'a %s.' % type(thr))
-        if view_type == 'auto':
-            if n_maps > 4:
-                view_type = 'contours'
-            else:
-                view_type = 'continuous'
-        elif view_type == 'contours':
+        if view_type.startswith('contours'):
             display.add_contours(map_img, levels=[thr],
                                  linewidths=linewidths,
                                  colors=[color])
-            if filled:
-                # Append the lower boundary value as 0 for contour fillings
-                display.add_contours(map_img, levels=[thr, 0.],
-                                     linewidths=linewidths,
-                                     colors=[color[:3].tolist() + [alpha]],
-                                     linestyles='solid', filled=filled)
+        if view_type == 'contours_filled':
+            # Append the lower boundary value as 0 for contour fillings
+            display.add_contours(map_img, levels=[thr, 0.],
+                                 linewidths=linewidths,
+                                 colors=[color[:3].tolist() + [alpha]],
+                                 linestyles='solid', filled=True)
         elif view_type == 'continuous':
-            display.add_overlay(map_img, threshold=thr,
+            display.add_overlay(map_img, threshold=float(thr),
                                 cmap=cm.alpha_cmap(color))
     return display
 
