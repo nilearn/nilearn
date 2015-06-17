@@ -13,6 +13,8 @@ from pandas import DataFrame
 from nistats.design_matrix import make_design_matrix
 from nistats.glm import FMRILinearModel
 from nistats.datasets import fetch_spm_auditory
+from nilearn.plotting import plot_stat_map
+from nilearn.image import mean_img 
 
 # fetch spm auditory data
 subject_data = fetch_spm_auditory()
@@ -34,18 +36,16 @@ onset = np.linspace(0, (len(conditions) - 1) * epoch_duration,
                     len(conditions))
 paradigm = DataFrame(
     {'onset': onset, 'duration': duration, 'name': conditions})
-hfcut = 2 * 2 * epoch_duration
 
 # construct design matrix
 nscans = len(subject_data.func)
 frametimes = np.linspace(0, (nscans - 1) * tr, nscans)
 drift_model = 'Cosine'
 hrf_model = 'Canonical With Derivative'
-design_matrix = make_design_matrix(frametimes,
-                                   paradigm,
-                                   hrf_model=hrf_model,
-                                   drift_model=drift_model,
-                                   hfcut=hfcut)
+hfcut = 2 * 2 * epoch_duration
+design_matrix = make_design_matrix(
+    frametimes, paradigm, hrf_model=hrf_model, drift_model=drift_model,
+    hfcut=hfcut)
 
 # plot and save design matrix
 ax = design_matrix.show()
@@ -74,7 +74,7 @@ print "Saving mask image %s" % mask_path
 nibabel.save(fmri_glm.mask, mask_path)
 
 # compute bg unto which activation will be projected
-anat_img = nibabel.load(subject_data.anat)
+mean_img = mean_img(subject_data.func)
 
 print "Computing contrasts .."
 for contrast_id, contrast_val in contrasts.iteritems():
@@ -92,5 +92,11 @@ for contrast_id, contrast_val in contrasts.iteritems():
         map_path = os.path.join(map_dir, '%s.nii.gz' % contrast_id)
         nibabel.save(out_map, map_path)
         print "\t\t%s map: %s" % (dtype, map_path)
+    # plot activation map
+    if contrast_id == 'active-rest':
+        display = plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
+                                display_mode='z', cut_coords=3, black_bg=True,
+                                title=contrast_id)
+
 
 plt.show()
