@@ -19,7 +19,8 @@ import nibabel
 from nibabel import Nifti1Image
 
 from nilearn import _utils, image
-from nilearn._utils import testing, DimensionError
+from nilearn._utils import testing
+from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex
 
 
@@ -127,6 +128,24 @@ def test_check_niimg_4d():
         ValueError,
         'Field of view of image #1 is different from reference FOV',
         list, c)
+
+
+def test_check_niimg():
+    affine = np.eye(4)
+    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+    img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
+    img_3_3d = [[[img_3d, img_3d]]]
+    img_2_4d = [[img_4d, img_4d]]
+
+    assert_raises_regex(
+        DimensionError,
+        'Data must be a 2D Niimg-like object but you provided a list of list '
+        'of list of 3D images.', _utils.check_niimg, img_3_3d, ensure_ndim=2)
+
+    assert_raises_regex(
+        DimensionError,
+        'Data must be a 4D Niimg-like object but you provided a list of list '
+        'of 4D images.', _utils.check_niimg, img_2_4d, ensure_ndim=4)
 
 
 def test_repr_niimgs():

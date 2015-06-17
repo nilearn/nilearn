@@ -147,13 +147,9 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
 
     Its application is idempotent.
     """
+
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
-        if ensure_ndim == 3:
-            raise TypeError(
-                "Data must be a 3D Niimg-like object but you provided a %s."
-                " See http://nilearn.github.io/building_blocks/"
-                "manipulating_mr_images.html#niimg." % type(niimg))
         if return_iterator:
             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim)
         return concat_niimgs(niimg, ensure_ndim=ensure_ndim)
