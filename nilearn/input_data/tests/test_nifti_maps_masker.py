@@ -12,7 +12,8 @@ import nibabel
 
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
-from nilearn._utils import testing, as_ndarray, DimensionError
+from nilearn._utils import testing, as_ndarray
+from nilearn._utils.exceptions import DimensionError
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
