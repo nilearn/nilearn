@@ -62,6 +62,8 @@ For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref
 The data are downloaded only once and stored locally, in one of the
 following directories (in order of priority):
 
+  * default system paths used by third party softwares that may already have
+    downloaded of could benefit of this data
   * the folder specified by `data_dir` parameter in the fetching function
     if it is specified
   * the global environment variable `NILEARN_SHARED_DATA` if it exists
