@@ -22,6 +22,7 @@ import base64
 import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
+from sklearn.utils import deprecated
 
 from ._utils import check_niimg, new_img_like
 from ._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
@@ -176,7 +177,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
+def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
@@ -189,8 +190,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    env_vars: list of string, optional
-        Add environment variables searched even if data_dir is not None.
+    default_paths: list of string, optional
+        Default system paths in which the dataset may already have been
+        installed by a third party software. They will be checked first.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -204,39 +206,43 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
     -----
     This function retrieves the datasets directory (or data directory) using
     the following priority :
-    1. the keyword argument data_dir
-    2. the global environment variable NILEARN_SHARED_DATA
-    3. the user environment variable NILEARN_DATA
-    4. nilearn_data in the user home folder
+    1. defaults system paths
+    2. the keyword argument data_dir
+    3. the global environment variable NILEARN_SHARED_DATA
+    4. the user environment variable NILEARN_DATA
+    5. nilearn_data in the user home folder
     """
     # We build an array of successive paths by priority
+    # The boolean indicates if it is a pre_dir: in that case, we won't add the
+    # dataset name to the path.
     paths = []
 
     # Search given environment variables
-    for env_var in env_vars:
-        env_data = os.getenv(env_var, '')
-        paths.extend(env_data.split(':'))
+    if default_paths is not None:
+        for default_path in default_paths:
+            paths.extend([(d, True) for d in default_path.split(':')])
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
-        paths = data_dir.split(':')
+        paths.extend([(d, False) for d in data_dir.split(':')])
     else:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
-            paths.extend(global_data.split(':'))
+            paths.extend([(d, False) for d in global_data.split(':')])
 
         local_data = os.getenv('NILEARN_DATA')
         if local_data is not None:
-            paths.extend(local_data.split(':'))
+            paths.extend([(d, False) for d in local_data.split(':')])
 
-        paths.append(os.path.expanduser('~/nilearn_data'))
+        paths.append((os.path.expanduser('~/nilearn_data'), False))
 
     if verbose > 2:
         print('Dataset search paths: %s' % paths)
 
     # Check if the dataset exists somewhere
-    for path in paths:
-        path = os.path.join(path, dataset_name)
+    for path, is_pre_dir in paths:
+        if not is_pre_dir:
+            path = os.path.join(path, dataset_name)
         if os.path.islink(path):
             # Resolve path
             path = readlinkabs(path)
@@ -247,8 +253,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
 
     # If not, create a folder in the first writeable directory
     errors = []
-    for path in paths:
-        path = os.path.join(path, dataset_name)
+    for (path, is_pre_dir) in paths:
+        if not is_pre_dir:
+            path = os.path.join(path, dataset_name)
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
@@ -1621,8 +1628,21 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(labels=files[0], maps=files[1], description=fdescr)
 
 
+@deprecated('it has been replaced by fetch_atlas_harvard_oxford and '
+            'will be removed in nilearn 0.1.5')
 def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                         resume=True, verbose=1):
+
+    atlas = fetch_atlas_harvard_oxford(atlas_name, data_dir=data_dir,
+                                       symmetric_split=symmetric_split,
+                                       resume=resume, verbose=verbose)
+
+    return atlas.maps, atlas.labels
+
+
+def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
+                               symmetric_split=False,
+                               resume=True, verbose=1):
     """Load Harvard-Oxford parcellation from FSL if installed or download it.
 
     This function looks up for Harvard Oxford atlas in the system and load it
@@ -1653,8 +1673,14 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
 
     Returns
     =======
-    regions: nibabel.Nifti1Image
-        regions definition, as a label image.
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, keys are:
+
+        - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
+        requested and 3D labels if a maximum probabilistic atlas was
+        requested.
+
+        - "labels": string list, labels of the regions in the altas.
     """
     atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                    "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
@@ -1669,19 +1695,27 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
 
-    # grab data from internet first
-    url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
-    dataset_name = 'harvard_oxford'
+    url = 'https://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
+
+    # For practical reasons, we mimic the FSL data directory here.
+    dataset_name = 'fsl'
+    # Environment variables
+    default_paths = []
+    for env_var in ['FSL_DIR', 'FSLDIR']:
+        path = os.getenv(env_var)
+        if path is not None:
+            default_paths.extend(path.split(':'))
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                env_vars=['FSL_DIR', 'FSLDIR'],
-                                verbose=verbose)
+                                default_paths=default_paths, verbose=verbose)
     opts = {'uncompress': True}
-    atlas_file = os.path.join('HarvardOxford',
+    root = os.path.join('data', 'atlases')
+    atlas_file = os.path.join(root, 'HarvardOxford',
                               'HarvardOxford-' + atlas_name + '.nii.gz')
     if atlas_name[0] == 'c':
         label_file = 'HarvardOxford-Cortical.xml'
     else:
         label_file = 'HarvardOxford-Subcortical.xml'
+    label_file = os.path.join(root, label_file)
 
     atlas_img, label_file = _fetch_files(
         data_dir,
@@ -1696,7 +1730,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     names = np.asarray(list(names.values()))
 
     if not symmetric_split:
-        return atlas_img, names
+        return Bunch(maps=atlas_img, labels=names)
 
     if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm"):
@@ -1735,7 +1769,8 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     for n in names[1:]:
         new_names.append(n + ', left part')
 
-    return new_img_like(atlas_img, atlas, atlas_img.get_affine()), new_names
+    atlas_img = new_img_like(atlas_img, atlas, atlas_img.get_affine())
+    return Bunch(maps=atlas_img, labels=new_names)
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):

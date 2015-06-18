@@ -24,7 +24,9 @@ documentation <parcellation_time_series>` for more.
 from nilearn import datasets
 
 # Retrieve our atlas
-atlas_filename, labels = datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm')
+dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+atlas_filename, labels = dataset.maps, dataset.labels
+
 print('Atlas ROIs are located in nifti image (4D) at: %s' %
       atlas_filename)  # 4D data
 
