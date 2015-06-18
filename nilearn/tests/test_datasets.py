@@ -261,10 +261,10 @@ def test_fail_fetch_haxby_simple():
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fail_fetch_harvard_oxford():
+def test_fail_fetch_atlas_harvard_oxford():
     # specify non-existing atlas item
     assert_raises_regex(ValueError, 'Invalid atlas name',
-                        datasets.fetch_harvard_oxford, 'not_inside')
+                        datasets.fetch_atlas_harvard_oxford, 'not_inside')
 
     # specify existing atlas item
     target_atlas = 'cort-maxprob-thr0-1mm'
@@ -284,7 +284,7 @@ def test_fail_fetch_harvard_oxford():
                 "</metadata>")
     dummy.close()
 
-    ho = datasets.fetch_harvard_oxford(target_atlas, data_dir=tmpdir)
+    ho = datasets.fetch_atlas_harvard_oxford(target_atlas, data_dir=tmpdir)
 
     assert_true(isinstance(nibabel.load(ho.maps), nibabel.Nifti1Image))
     assert_true(isinstance(ho.labels, np.ndarray))
