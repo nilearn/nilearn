@@ -176,7 +176,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
+def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
@@ -189,8 +189,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    pre_dirs: list of string, optional
-        Paths to explore first. Typically used for system paths.
+    default_paths: list of string, optional
+        Default system paths in which the dataset may already have been
+        installed by a third party software. They will be checked first.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -204,10 +205,11 @@ def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
     -----
     This function retrieves the datasets directory (or data directory) using
     the following priority :
-    1. the keyword argument data_dir
-    2. the global environment variable NILEARN_SHARED_DATA
-    3. the user environment variable NILEARN_DATA
-    4. nilearn_data in the user home folder
+    1. defaults system paths
+    2. the keyword argument data_dir
+    3. the global environment variable NILEARN_SHARED_DATA
+    4. the user environment variable NILEARN_DATA
+    5. nilearn_data in the user home folder
     """
     # We build an array of successive paths by priority
     # The boolean indicates if it is a pre_dir: in that case, we won't add the
@@ -215,8 +217,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, pre_dirs=[],
     paths = []
 
     # Search given environment variables
-    for pre_dir in pre_dirs:
-        paths.extend([(d, True) for d in pre_dir.split(':')])
+    if default_paths is not None:
+        for default_path in default_paths:
+            paths.extend([(d, True) for d in default_path.split(':')])
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
