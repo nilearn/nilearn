@@ -95,7 +95,7 @@ def test_get_dataset_dir():
     expected_base_dir = os.path.join(tmpdir, 'env_data')
     expected_dataset_dir = os.path.join(expected_base_dir, 'test')
     data_dir = datasets._get_dataset_dir(
-        'test', pre_dirs=[expected_dataset_dir], verbose=0)
+        'test', default_paths=[expected_dataset_dir], verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)

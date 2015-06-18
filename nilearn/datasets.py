@@ -1676,13 +1676,13 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     # For practical reasons, we mimic the FSL data directory here.
     dataset_name = 'fsl'
     # Environment variables
-    pre_dirs = []
+    default_paths = []
     for env_var in ['FSL_DIR', 'FSLDIR']:
         path = os.getenv(env_var)
         if path is not None:
-            pre_dirs.extend(path.split(':'))
+            default_paths.extend(path.split(':'))
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                pre_dirs=pre_dirs, verbose=verbose)
+                                default_paths=default_paths, verbose=verbose)
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
     atlas_file = os.path.join(root, 'HarvardOxford',
