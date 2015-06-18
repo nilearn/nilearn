@@ -536,10 +536,8 @@ class BaseSlicer(object):
                 "colors", which is one color or a list of colors for
                 these contours.
         """
-        filled_type = 'contour'
-        if filled:
-            # Switches into contour fillings function 'contourf'
-            filled_type += 'f'
+        # Switches into contour filling function 'contourf'
+        filled_type = 'contourf' if filled else 'contour'
 
         self._map_show(img, type=filled_type, **kwargs)
         plt.draw_if_interactive()
