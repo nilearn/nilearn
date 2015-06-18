@@ -106,7 +106,7 @@ def test_get_dataset_dir():
 
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test', pre_dirs=[no_write],
+    data_dir = datasets._get_dataset_dir('test', default_paths=[no_write],
                                          verbose=0)
     # Non writeable dir is returned because dataset may be in there.
     assert_equal(data_dir, no_write)
