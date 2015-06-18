@@ -342,7 +342,7 @@ def test_fetch_smith_2009_atlas():
 
 
 def test_fetch_atlas_power_2011_atlas():
-    bunch = datasets.fetch_atlas_power_2011(verbose=0)
+    bunch = datasets.fetch_atlas_power_2011()
     assert_equal(len(bunch.rois), 264)
 
 
