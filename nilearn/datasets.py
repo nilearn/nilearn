@@ -147,9 +147,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         The downloaded file.
 
     """
-    if total_size is None:
-        total_size = response.info().get('Content-Length').strip()
     try:
+        if total_size is None:
+            total_size = response.info().get('Content-Length').strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
         if verbose > 1:
@@ -922,7 +922,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     Parameters
     ----------
     data_dir: string, optional
-        Path of the data directory. Use to forec data storage in a non-
+        Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
@@ -999,7 +999,7 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     Parameters
     ----------
     data_dir: string, optional
-        Path of the data directory. Use to forec data storage in a non-
+        Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
@@ -1062,6 +1062,30 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
     params = dict(zip(keys, files_))
     params['description'] = fdescr
+
+    return Bunch(**params)
+
+
+def fetch_atlas_power_2011():
+    """Download and load the Power et al. brain atlas composed of 264 ROIs.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - "rois": coordinates of 264 ROIs in MNI space
+
+
+    References
+    ----------
+    Power, Jonathan D., et al. "Functional network organization of the human
+    brain." Neuron 72.4 (2011): 665-678.
+    """
+    dataset_name = 'power_2011'
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    csv = os.path.join(package_directory, "data", "power_2011.csv")
+    params = dict(rois=np.recfromcsv(csv), description=fdescr)
 
     return Bunch(**params)
 
