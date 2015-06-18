@@ -81,7 +81,7 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 2.7',
           ],
           packages=find_packages(),
-          package_data={'nilearn.data': ['*.nii.gz'],
+          package_data={'nilearn.data': ['*.nii.gz', '*.csv'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*'],
                         'nilearn.description': ['*.rst']},
