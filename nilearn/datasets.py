@@ -22,6 +22,7 @@ import base64
 import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
+from sklearn.utils import deprecated
 
 from ._utils import check_niimg, new_img_like
 from ._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
@@ -1603,8 +1604,21 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(labels=files[0], maps=files[1], description=fdescr)
 
 
+@deprecated('it has been replaced by fetch_atlas_harvard_oxford and '
+            'will be removed in nilearn 0.1.5')
 def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                         resume=True, verbose=1):
+
+    atlas = fetch_atlas_harvard_oxford(atlas_name, data_dir=data_dir,
+                                       symmetric_split=symmetric_split,
+                                       resume=resume, verbose=verbose)
+
+    return atlas.maps, atlas.labels
+
+
+def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
+                               symmetric_split=False,
+                               resume=True, verbose=1):
     """Load Harvard-Oxford parcellation from FSL if installed or download it.
 
     This function looks up for Harvard Oxford atlas in the system and load it

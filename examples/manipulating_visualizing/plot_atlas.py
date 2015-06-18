@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn import plotting
 
-dataset = datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm')
+dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
 atlas_filename = dataset.maps
 
 print('Atlas ROIs are located at: %s' % atlas_filename)
