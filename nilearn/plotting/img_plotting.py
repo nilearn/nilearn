@@ -12,6 +12,7 @@ Only matplotlib is required.
 import functools
 import numbers
 import warnings
+
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
@@ -76,6 +77,39 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_
     else:
         cbar_vmin, cbar_vmax = None, None
     return cbar_vmin, cbar_vmax, vmin, vmax
+
+
+def check_threshold(thr):
+    """
+    Checks that the given threshold has an accepted string value
+
+    Parameters
+    ----------
+    thr: str or a list of strings or number or list of numbers
+    If threshold is a string itmush finish with a percent sign,
+    e.g. "99.7%", or if it a value it can be a real numbers.
+
+    Returns
+    -------
+    returns threshold value as an output if the value entered is valid
+
+    """
+    if isinstance(thr, _basestring):
+        message = ("If 'threshold' is given as string it "
+                   'should be a number followed by the percent'
+                   'sign, "e.g. 25.3%"')
+        if not thr.endswith('%'):
+            raise ValueError(message)
+        try:
+            thr = float(thr[:-1])
+        except ValueError as exc:
+            exc.args += (message, )
+            raise
+        thr = thr
+    elif not isinstance(thr, numbers.Real):
+        raise TypeError('Threshold must be a real value but you '
+                        'gave a %s.' % type(thr))
+    return thr
 
 
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
@@ -596,13 +630,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                 vmin=vmin, vmax=vmax, **kwargs)
     return display
 
-
 def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                     threshold=None, linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
                     draw_cross=True, black_bg='auto', dim=False,
-                    cmap='gist_rainbow', vmin=None, vmax=None,
+                    cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.5, **kwargs):
 
     """ Plot the multiple atlas maps or statistical maps onto the anatomical image
@@ -616,12 +649,12 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        view_type: string, {'auto', 'contours', 'contours_filled', 'continuous'}, optional
+        view_type: string, {'auto', 'contours', 'filled_contours', 'continuous'}, optional
             By default, view_type == 'auto', which means maps are overlayed as
             contours if the number of maps are more than 4 or
             overlayed as continuous colors if the number of maps are less than 4.
             If view_type == 'contours', maps are overlayed as contours.
-            If view_type == 'contours_filled', maps are overlayed as contours
+            If view_type == 'filled_contours', maps are overlayed as contours
             and also with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
@@ -634,7 +667,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             For continuous overlays this threshold value serves to select
             the maps which are greater than a given value or list of given values.
             If None is given, the maps are thresholded with default value.
-        linewidths: a value, optional
+        linewidths: float, optional
             This option can be used to set the boundary thickness of the contours.
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
@@ -679,32 +712,31 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
         alpha: float between 0 and 1
-            Alpha transparency for the brain schematics.
+            Alpha value sets the transparency of the color fillings inside the
+            contours.
     """
     display = plot_anat(anat_img, cut_coords=cut_coords,
                         output_file=output_file, display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
-                        threshold=None, annotate=annotate,
-                        draw_cross=draw_cross, black_bg=black_bg,
-                        cmap=plt.cm.gray, **kwargs)
+                        annotate=annotate, draw_cross=draw_cross,
+                        black_bg=black_bg, **kwargs)
 
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
-    _view_type = set(('auto', 'contours', 'contours_filled', 'continuous'))
+
+    _view_type = set(('auto', 'contours', 'filled_contours', 'continuous'))
     if isinstance(view_type, _basestring):
         if view_type not in _view_type:
             raise TypeError('view_type option should be given '
-                            'either as a "contours" or "contours_filled" '
+                            'either as a "contours" or "filled_contours" '
                             'or "continuous" ')
-    elif not isinstance(view_type, _basestring):
+    else:
         raise TypeError('view_type option should be '
-                        'either as a "contours" or "contours_filled" '
+                        'either as a "contours" or "filled_contours" '
                         'or "continuous" but you have given %s '
                         %type(view_type))
 
-    if isinstance(cmap, _basestring):
-        color_map = plt.cm.get_cmap(cmap)
-
+    color_map = plt.cm.get_cmap(cmap)
     # Build a custom colormap for displaying contours
     color_list = color_map(np.linspace(0, 1, n_maps))
 
@@ -713,9 +745,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         # for a nicer look avoiding maximum overlaps for visualization
         threshold = "99.7%"
 
-    if hasattr(threshold, '__iter__') and not isinstance(threshold, _basestring):
+    if isinstance(threshold, list):
         if len(threshold) != n_maps:
-            raise TypeError('The list of values to threshold '
+            raise TypeError(' The list of values to threshold '
                             'should be equal to number of maps')
     else:
         threshold = [threshold] * n_maps
@@ -725,36 +757,25 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             view_type = 'contours'
         else:
             view_type = 'continuous'
+
     for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img), color_list, threshold)):
-        # To threshold or choose the level of the contours
         data = map_img.get_data()
-        if isinstance(thr, _basestring):
-            message = ("If 'threshold' is given as a string it "
-                       'should be a number followed by the percent sign, '
-                       'e.g. "25.3%"')
-            if not thr.endswith('%'):
-                raise ValueError(message)
-            try:
-                percentile = float(thr[:-1])
-            except ValueError as exc:
-                exc.args += (message, )
-                raise
-            thr = fast_abs_percentile(data, percentile)
-        elif not isinstance(thr, numbers.Real):
-            raise TypeError('Threshold must be a real value and you gave '
-                            'a %s.' % type(thr))
-        if view_type.startswith('contours'):
+        percentile = check_threshold(thr)
+        # To threshold or choose the level of the contours
+        thr = fast_abs_percentile(data, percentile)
+
+        if view_type.endswith('contours'):
             display.add_contours(map_img, levels=[thr],
                                  linewidths=linewidths,
                                  colors=[color])
-        if view_type == 'contours_filled':
-            # Append the lower boundary value as 0 for contour fillings
-            display.add_contours(map_img, levels=[thr, 0.],
-                                 linewidths=linewidths,
-                                 colors=[color[:3].tolist() + [alpha]],
-                                 linestyles='solid', filled=True)
+            if view_type.startswith('filled'):
+                # Append the lower boundary value as 0 for contour fillings
+                display.add_contours(map_img, levels=[thr, 0.],
+                                     colors=[color[:3].tolist()],
+                                     linestyles='solid', filled=True,
+                                     alpha=alpha)
         elif view_type == 'continuous':
-            display.add_overlay(map_img, threshold=float(thr),
+            display.add_overlay(map_img, threshold=thr,
                                 cmap=cm.alpha_cmap(color))
     return display
 
