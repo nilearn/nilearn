@@ -533,6 +533,3 @@ def test_sided_test2(random_state=0):
                               neg_log_pvals_onesided2[0][::-1])
     assert_array_almost_equal(neg_log_pvals_onesided + neg_log_pvals_onesided2,
                               neg_log_pvals_twosided)
-
-if __name__ == '__main__':
-    nose.run(argv=['', __file__])
