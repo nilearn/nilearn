@@ -1602,7 +1602,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     """Load Harvard-Oxford parcellation from FSL if installed or download it.
 
     This function looks up for Harvard Oxford atlas in the system and load it
-    if present. If not, it downloads it and store it in NILEARN_DATA
+    if present. If not, it downloads it and stores it in NILEARN_DATA
     directory.
 
     Parameters
