@@ -1066,16 +1066,8 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def fetch_atlas_power_2011(verbose=1):
+def fetch_atlas_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
-
-    Parameters
-    ----------
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a non-
-        standard location. Default: None (meaning: default)
-    url: string, optional
-        Download URL of the dataset. Overwrite the default URL.
 
     Returns
     -------
