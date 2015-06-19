@@ -105,7 +105,7 @@ def check_threshold(thr, data):
             raise ValueError(message)
         try:
             percentile = float(thr[:-1])
-            thr = fast_abs_percentile(data, percentile)
+            thr = fast_abs_percentile(data, percentile) + 1e-6
         except ValueError as exc:
             exc.args += (message, )
             raise
