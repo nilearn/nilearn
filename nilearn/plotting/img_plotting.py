@@ -79,19 +79,22 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_
     return cbar_vmin, cbar_vmax, vmin, vmax
 
 
-def check_threshold(thr):
+def check_threshold(thr, data):
     """
     Checks that the given threshold has an accepted string value
 
     Parameters
     ----------
     thr: str or a list of strings or number or list of numbers
-    If threshold is a string itmush finish with a percent sign,
-    e.g. "99.7%", or if it a value it can be a real numbers.
+        If threshold is a string itmush finish with a percent sign,
+        e.g. "99.7%", or if it a value it can be a real numbers.
+    data: a Numpy array of a map to calculate the
+        threshold using a string percentage value.
 
     Returns
     -------
-    returns threshold value as an output if the value entered is valid
+    returns threshold as an output also checks if the value entered
+    is valid
 
     """
     if isinstance(thr, _basestring):
@@ -101,7 +104,8 @@ def check_threshold(thr):
         if not thr.endswith('%'):
             raise ValueError(message)
         try:
-            thr = float(thr[:-1])
+            percentile = float(thr[:-1])
+            thr = fast_abs_percentile(data, percentile)
         except ValueError as exc:
             exc.args += (message, )
             raise
@@ -716,7 +720,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             contours.
     """
     display = plot_anat(anat_img, cut_coords=cut_coords,
-                        output_file=output_file, display_mode=display_mode,
+                        display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
                         annotate=annotate, draw_cross=draw_cross,
                         black_bg=black_bg, **kwargs)
@@ -736,9 +740,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                         'or "continuous" but you have given %s '
                         %type(view_type))
 
-    color_map = plt.cm.get_cmap(cmap)
+    cmap = plt.cm.get_cmap(cmap)
     # Build a custom colormap for displaying contours
-    color_list = color_map(np.linspace(0, 1, n_maps))
+    color_list = cmap(np.linspace(0, 1, n_maps))
 
     if threshold is None:
         # it will use default percentage,
@@ -747,7 +751,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
 
     if isinstance(threshold, list):
         if len(threshold) != n_maps:
-            raise TypeError(' The list of values to threshold '
+            raise TypeError('The list of values to threshold '
                             'should be equal to number of maps')
     else:
         threshold = [threshold] * n_maps
@@ -760,9 +764,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
 
     for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img), color_list, threshold)):
         data = map_img.get_data()
-        percentile = check_threshold(thr)
         # To threshold or choose the level of the contours
-        thr = fast_abs_percentile(data, percentile)
+        thr = check_threshold(thr, data)
 
         if view_type.endswith('contours'):
             display.add_contours(map_img, levels=[thr],
@@ -777,6 +780,10 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         elif view_type == 'continuous':
             display.add_overlay(map_img, threshold=thr,
                                 cmap=cm.alpha_cmap(color))
+    if output_file is not None:
+        display.savefig(output_file)
+        display.close()
+        display = None
     return display
 
 
