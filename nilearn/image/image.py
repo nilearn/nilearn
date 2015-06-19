@@ -292,7 +292,7 @@ def _crop_img_to(img, slices, copy=True):
         Cropped version of the input image
     """
 
-    img = check_niimg_3d(img)
+    img = check_niimg(img)
 
     data = img.get_data()
     affine = img.get_affine()
