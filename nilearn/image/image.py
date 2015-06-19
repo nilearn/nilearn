@@ -341,7 +341,7 @@ def crop_img(img, rtol=1e-8, copy=True):
         Cropped version of the input image
     """
 
-    img = check_niimg_3d(img)
+    img = check_niimg(img)
     data = img.get_data()
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(data < -rtol * infinity_norm,
