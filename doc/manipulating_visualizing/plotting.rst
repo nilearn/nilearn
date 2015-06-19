@@ -40,6 +40,9 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
+.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/plot_prob_atlas_006.png
+     :target: ../auto_examples/manipulating_visualizing/plot_prob_atlas.html
+     :scale: 50
 
 .. A temporary hack to avoid a sphinx bug
 .. |hack| raw:: html
@@ -80,6 +83,11 @@ different heuristics to find cutting coordinates.
 **plot_img**         :func:`plot_img`
                      |hack|
                      General-purpose function, with no specific presets
+
+|plot_prob_atlas|    :func:`plot_prob_atlas`
+                     |hack|
+                     Plotting a 4D probabilistic atlas maps or statistical
+                     maps
 =================== =========================================================
 
 
