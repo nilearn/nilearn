@@ -11,7 +11,7 @@ from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg, new_img_like
-from .compat import _basestring
+from .compat import _basestring, izip
 
 
 def _check_fov(img, affine, shape):
@@ -314,7 +314,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     data = np.ndarray(target_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
     cur_4d_index = 0
-    for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
+    for index, (size, niimg) in enumerate(izip(lengths, _iter_check_niimg(
             iterator, atleast_4d=True, target_fov=target_fov,
             memory=memory, memory_level=memory_level))):
 

@@ -18,7 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
-from .._utils.compat import _basestring
+from .._utils.compat import _basestring, izip
 from nilearn._utils.niimg_conversions import _iter_check_niimg
 
 
@@ -215,7 +215,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                 verbose=self.verbose,
                                 confounds=confounds,
                                 copy=copy)
-                          for imgs, confounds in zip(niimg_iter, confounds))
+                          for imgs, confounds in izip(niimg_iter, confounds))
         return list(zip(*data))[0]
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
