@@ -18,7 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
-from .._utils.compat import _basestring
+from .._utils.compat import _basestring, izip
 from nilearn._utils.niimg_conversions import _iter_check_niimg
 
 
@@ -190,16 +190,15 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              % self.__class__.__name__)
         params = get_params(self.__class__, self)
 
-        reference_affine = None
+        target_fov = None
         if self.target_affine is None:
-            # Load the first image and use it as a reference for all other
-            # subjects
-            reference_affine = _utils.check_niimg(imgs_list[0]).get_affine()
+            # Force resampling on first image
+            target_fov = 'first'
 
-        fov = (self.mask_img_.get_affine(), self.mask_img_.shape)
         niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
                                        atleast_4d=False,
-                                       target_fov=fov, memory=self.memory,
+                                       target_fov=target_fov,
+                                       memory=self.memory,
                                        memory_level=self.memory_level,
                                        verbose=self.verbose)
 
@@ -215,7 +214,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                 verbose=self.verbose,
                                 confounds=confounds,
                                 copy=copy)
-                          for imgs, confounds in zip(niimg_iter, confounds))
+                          for imgs, confounds in izip(niimg_iter, confounds))
         return list(zip(*data))[0]
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
