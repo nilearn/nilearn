@@ -10,7 +10,7 @@ from sklearn.externals.joblib import Memory
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
-from .._utils.CacheMixin import cache
+from .._utils.cache_mixin import cache
 from .._utils import _compose_err_msg
 from .._utils.niimg_conversions import _check_same_fov
 from .. import signal

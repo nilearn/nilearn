@@ -10,12 +10,56 @@ from sklearn.externals.joblib import Memory
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
+from .._utils.cache_mixin import cache
 from .._utils import new_img_like
 from .._utils.niimg_conversions import _check_same_fov
 from .._utils import _compose_err_msg
 from .. import signal
 from .. import region
 from .. import image
+
+
+def _extract_signals(imgs, maps_img, smoothing_fwhm,
+                     t_r, standardize, detrend, low_pass, high_pass,
+                     confounds, memory, memory_level,
+                     resample_on_maps=False, mask_img=None,
+                     verbose=0):
+    if verbose > 0:
+        print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
+    imgs = _utils.check_niimg_4d(imgs)
+
+    if resample_on_maps:
+        if verbose > 0:
+            print("Resampling images")
+        imgs = cache(
+            image.resample_img, memory, func_memory_level=2,
+            memory_level=memory_level)(
+                imgs, interpolation="continuous",
+                target_shape=maps_img.shape,
+                target_affine=maps_img.get_affine())
+
+    if smoothing_fwhm is not None:
+        if verbose > 0:
+            print("Smoothing images")
+        imgs = cache(image.smooth_img, func_memory_level=2,
+                     memory_level=memory_level)(
+            imgs, fwhm=smoothing_fwhm)
+
+    if verbose > 0:
+        print("Extracting maps signals")
+    region_signals, labels_ = cache(
+        region.img_to_signals_maps, func_memory_level=2,
+        memory_level=memory_level)(
+            imgs, maps_img, mask_img=mask_img)
+
+    if verbose > 0:
+        print("Cleaning extracted signals")
+    region_signals = cache(signal.clean, func_memory_level=2,
+                           memory_level=memory_level)(
+        region_signals, detrend=detrend, standardize=standardize,
+        t_r=t_r, low_pass=low_pass, high_pass=high_pass,
+        confounds=confounds)
+    return region_signals, labels_
 
 
 class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -221,66 +265,57 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         self._check_fitted()
 
-        logger.log("loading images from %s" %
-                   _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
-        imgs = _utils.check_niimg_4d(imgs)
-
+        # We handle the resampling of maps and mask separately because the
+        # affine of the maps and mask images should not impact the extraction
+        # of the signal.
 
         if not hasattr(self, '_resampled_maps_img_'):
             self._resampled_maps_img_ = self.maps_img_
-        mask_img = self.mask_img_
+        if not hasattr(self, '_resampled_mask_img_'):
+            self._resampled_mask_img_ = self.mask_img_
+
         if self.resampling_target == "data":
-            if not _check_same_fov(imgs, self._resampled_maps_img_):
-                logger.log("resampling labels", verbose=self.verbose)
-                self._resampled_maps_img_ = self._cache(image.resample_img, 2)(
-                        self.maps_img_, interpolation="continuous",
-                        target_shape=imgs.shape[:3],
-                        target_affine=imgs.get_affine())
-
-            if mask_img is not None and not _check_same_fov(imgs, mask_img):
-                mask_img = self._cache(image.resample_img, 2)(
-                        mask_img, interpolation="nearest",
-                        target_shape=imgs.shape[:3],
-                        target_affine=imgs.get_affine())
-
+            imgs_ = _utils.check_niimg_4d(imgs)
+            ref_img = imgs_
         elif self.resampling_target == "mask":
-            if not _check_same_fov(self.mask_img_, self._resampled_maps_img_):
-                logger.log("resampling labels", verbose=self.verbose)
-                self._resampled_maps_img_ = self._cache(image.resample_img, 2)(
-                        self.labels_img_, interpolation="continuous",
-                        target_shape=self.mask_img_.shape[:3],
-                        target_affine=self.mask_img_.get_affine())
-
-            logger.log("resampling images to fit mask", verbose=self.verbose)
-            imgs = self._cache(image.resample_img, 2)(
-                imgs, interpolation="continuous",
-                target_shape=self.mask_img_.shape,
-                target_affine=self.mask_img_.get_affine())
-
-        if self.resampling_target == "maps":
+            self._resampled_mask_img_ = self.mask_img_
+            ref_img = self.mask_img_
+        elif self.resampling_target == "maps":
             self._resampled_maps_img_ = self.maps_img_
-            logger.log("resampling images to fit maps", verbose=self.verbose)
-            imgs = self._cache(image.resample_img, 2)(
-                imgs, interpolation="continuous",
-                target_shape=self.maps_img_.shape[:3],
-                target_affine=self.maps_img_.get_affine())
+            ref_img = self.maps_img_
 
-        if self.smoothing_fwhm is not None:
-            logger.log("smoothing images", verbose=self.verbose)
-            imgs = self._cache(image.smooth_img, 2)(
-                imgs, fwhm=self.smoothing_fwhm)
+        if not _check_same_fov(ref_img, self._resampled_maps_img_):
+            if self.verbose > 0:
+                print("Resampling maps")
+            self._resampled_maps_img_ = self._cache(image.resample_img, 1)(
+                    self.labels_img_, interpolation="continuous",
+                    target_shape=ref_img.shape[:3],
+                    target_affine=ref_img.get_affine())
 
-        logger.log("extracting region signals", verbose=self.verbose)
-        region_signals, self.labels_ = self._cache(
-            region.img_to_signals_maps, 2)(
-                imgs, self._resampled_maps_img_, mask_img=mask_img)
+        if (self.mask_img_ is not None and
+                not _check_same_fov(ref_img, self.mask_img_)):
+            if self.verbose > 0:
+                print("Resampling mask")
+            self._resampled_mask_img = self._cache(image.resample_img, 1)(
+                    self.mask_img_, interpolation="nearest",
+                    target_shape=ref_img.shape[:3],
+                    target_affine=ref_img.get_affine())
 
-        logger.log("cleaning extracted signals", verbose=self.verbose)
-        region_signals = self._cache(signal.clean, 2)(
-            region_signals,
-            detrend=self.detrend, standardize=self.standardize,
-            t_r=self.t_r, low_pass=self.low_pass, high_pass=self.high_pass,
-            confounds=confounds)
+        region_signals, labels_ = self._cache(
+            _extract_signals, 1, ignore=['verbose'])(
+                # Images
+                imgs, self._resampled_maps_img_,
+                # Pre-treatments
+                self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
+                self.low_pass, self.high_pass, self.confounds,
+                # Caching
+                self.memory, self.memory_level,
+                # kwargs
+                maps_img=self._resampled_mask_img,
+                resample_on_maps=(self.resampling_target != 'data'),
+                verbose=self.verbose)
+        self.labels_ = labels_
+
         return region_signals
 
     def inverse_transform(self, region_signals):
