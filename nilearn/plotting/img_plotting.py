@@ -79,7 +79,7 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_
     return cbar_vmin, cbar_vmax, vmin, vmax
 
 
-def check_threshold(threshold, data, name=None):
+def check_threshold(threshold, data, percentile_calculate, name=None):
     """
     Checks that the given threshold has an accepted string value
     and returns a threshold computed on the data. Use case of data
@@ -87,25 +87,24 @@ def check_threshold(threshold, data, name=None):
 
     Parameters
     ----------
-    threshold: a real value or a percentage expressed in a string or
-        list of real values or list of percentages.
+    threshold: a real value or a percentage in string or list of these.
         For example, if threshold is a percentage expressed in a string
         it must finish with a percent sign like "99.7%".
     data: a numpy array of a map or a numpy array of a symmetric matrix.
-        This can then be utilised to calculate the threshold onto
-        using a string percentage value.
+    percentile_calculate: define the name of a specific percentile
+        function to calculate the score on the data.
 
     Returns
     -------
-    returns the calculated threshold onto the data if the threshold is a
-    string or simply returns threshold as it is if the threshold is a real
-    value. Both cases will first check if the value entered is valid
+    returns the percentile threshold if the threshold is a string or
+    simply returns threshold as it is if the threshold is a real
+    value. In both cases threshold will be first checked if it is valid.
 
     """
     if isinstance(threshold, _basestring):
-        message = ('If %s is given as string it '
-                   'should be a number followed by the percent'
-                   'sign, e.g. "25.3%%"' % (name))
+        message = ('If "{0}" is given as string it '
+                   'should be a number followed by the percent '
+                   'sign, e.g. "25.3%"' ).format(name)
         if not threshold.endswith('%'):
             raise ValueError(message)
 
@@ -115,24 +114,11 @@ def check_threshold(threshold, data, name=None):
             exc.args += (message, )
             raise
 
-        if threshold.endswith('%'):
-            if len(data) == 2:
-                # Keep a percentile of edges with the highest absolute
-                # values, so only need to look at the covariance
-                # coefficients below the diagonal
-                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
-                                                              k=-1)
-                lower_diagonal_values = adjacency_matrix[
-                    lower_diagonal_indices]
-                edge_threshold = stats.scoreatpercentile(
-                    np.abs(lower_diagonal_values), percentile)
-                threshold = edge_threshold
-            else:
-                threshold = fast_abs_percentile(data, percentile)
+        threshold = percentile_calculate(data, percentile)
 
     elif not isinstance(threshold, numbers.Real):
         raise TypeError('%s should be either a number '
-                        'or a string finishing with a percent sign' % (name))
+                        'or a string finishing with a percent sign' % (name, ))
 
     return threshold
 
@@ -786,7 +772,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img), color_list, threshold)):
         data = map_img.get_data()
         # To threshold or choose the level of the contours
-        thr = check_threshold(thr, data, name='threshold')
+        thr = check_threshold(thr, data,
+                percentile_calculate=fast_abs_percentile, name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
         if view_type.endswith('contours'):
