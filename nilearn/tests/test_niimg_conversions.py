@@ -19,8 +19,8 @@ import nibabel
 from nibabel import Nifti1Image
 
 from nilearn import _utils, image
-from nilearn._utils import testing
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils import testing, niimg_conversions
 from nilearn._utils.testing import assert_raises_regex
 
 
@@ -39,6 +39,41 @@ class PhonyNiimage(nibabel.spatialimages.SpatialImage):
     @property
     def shape(self):
         return self.data.shape
+
+
+def test_assert_same_fov():
+
+    affine_a = np.eye(4)
+    affine_b = np.eye(4) * 2
+
+    shape_a = (2, 2, 2)
+    shape_b = (3, 3, 3)
+
+    shape_a_affine_a = nibabel.Nifti1Image(np.empty(shape_a), affine_a)
+    shape_a_affine_a_2 = nibabel.Nifti1Image(np.empty(shape_a), affine_a)
+    shape_a_affine_b = nibabel.Nifti1Image(np.empty(shape_a), affine_b)
+    shape_b_affine_a = nibabel.Nifti1Image(np.empty(shape_b), affine_a)
+    shape_b_affine_b = nibabel.Nifti1Image(np.empty(shape_b), affine_b)
+
+    niimg_conversions._assert_same_fov(a=shape_a_affine_a,
+                                       b=shape_a_affine_a_2)
+
+    assert_raises_regex(ValueError, 'a and c do not have the same affine',
+                        niimg_conversions._assert_same_fov,
+                        a=shape_a_affine_a, b=shape_a_affine_a_2,
+                        c=shape_a_affine_b)
+
+    assert_raises_regex(ValueError, 'a and b do not have the same shape',
+                        niimg_conversions._assert_same_fov,
+                        a=shape_a_affine_a, b=shape_b_affine_a)
+
+    assert_raises_regex(ValueError, 'a and b do not have the same affine',
+                        niimg_conversions._assert_same_fov,
+                        a=shape_b_affine_b, b=shape_a_affine_a)
+
+    assert_raises_regex(ValueError, 'a and b do not have the same shape',
+                        niimg_conversions._assert_same_fov,
+                        a=shape_b_affine_b, b=shape_a_affine_a)
 
 
 def test_check_niimg_3d():
