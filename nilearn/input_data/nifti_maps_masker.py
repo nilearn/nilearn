@@ -11,8 +11,7 @@ from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
 from .._utils.cache_mixin import cache
-from .._utils import new_img_like
-from .._utils.niimg_conversions import _check_same_fov
+from .._utils.niimg_conversions import _check_same_fov, _assert_same_fov
 from .._utils import _compose_err_msg
 from .. import signal
 from .. import region
@@ -181,6 +180,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         logger.log("loading regions from %s" %
                    _utils._repr_niimgs(self.maps_img)[:200],
                    verbose=self.verbose)
+
         self.maps_img_ = _utils.check_niimg_4d(self.maps_img)
 
         if self.mask_img is not None:
@@ -193,28 +193,11 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         # Check shapes and affines or resample.
         if self.resampling_target is None and self.mask_img_ is not None:
-            if self.mask_img_.shape != self.maps_img_.shape[:3]:
-                raise ValueError(
-                    _compose_err_msg(
-                        "Regions and mask do not have the same shape",
-                        mask_img=self.mask_img, maps_img=self.maps_img))
-            if not np.allclose(self.mask_img_.get_affine(),
-                               self.maps_img_.get_affine()):
-                raise ValueError(
-                    _compose_err_msg(
-                        "Regions and mask do not have the same affine.",
-                        mask_img=self.mask_img, maps_img=self.maps_img))
-
-            # Since a copy is required, order can be forced as well.
-            maps_data = _utils.as_ndarray(self.maps_img_.get_data(),
-                                          copy=True, order="C")
-            maps_affine = _utils.as_ndarray(
-                                            self.maps_img_.get_affine())
-            self.maps_img_ = new_img_like(self.maps_img_, maps_data,
-                                          maps_affine)
+            _assert_same_fov(mask=self.mask_img_, maps=self.maps_img_)
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
-            logger.log("resampling regions", verbose=self.verbose)
+            if self.verbose > 0:
+                print("Resampling maps")
             self.maps_img_ = image.resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.get_affine(),
@@ -223,7 +206,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 copy=True)
 
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
-            logger.log("resampling mask", verbose=self.verbose)
+            if self.verbose > 0:
+                print("Resampling mask")
             self.mask_img_ = image.resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.get_affine(),
@@ -274,32 +258,37 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if not hasattr(self, '_resampled_mask_img_'):
             self._resampled_mask_img_ = self.mask_img_
 
-        if self.resampling_target == "data":
+        if self.resampling_target is None:
             imgs_ = _utils.check_niimg_4d(imgs)
-            ref_img = imgs_
-        elif self.resampling_target == "mask":
-            self._resampled_mask_img_ = self.mask_img_
-            ref_img = self.mask_img_
-        elif self.resampling_target == "maps":
-            self._resampled_maps_img_ = self.maps_img_
-            ref_img = self.maps_img_
+            _assert_same_fov(mask=self.mask_img_, maps=self.maps_img_,
+                             data=imgs_)
+        else:
+            if self.resampling_target == "data":
+                imgs_ = _utils.check_niimg_4d(imgs)
+                ref_img = imgs_
+            elif self.resampling_target == "mask":
+                self._resampled_mask_img_ = self.mask_img_
+                ref_img = self.mask_img_
+            elif self.resampling_target == "maps":
+                self._resampled_maps_img_ = self.maps_img_
+                ref_img = self.maps_img_
 
-        if not _check_same_fov(ref_img, self._resampled_maps_img_):
-            if self.verbose > 0:
-                print("Resampling maps")
-            self._resampled_maps_img_ = self._cache(image.resample_img, 1)(
-                    self.labels_img_, interpolation="continuous",
-                    target_shape=ref_img.shape[:3],
-                    target_affine=ref_img.get_affine())
+            if not _check_same_fov(ref_img, self._resampled_maps_img_):
+                if self.verbose > 0:
+                    print("Resampling maps")
+                self._resampled_maps_img_ = self._cache(image.resample_img, 1)(
+                        self.labels_img_, interpolation="continuous",
+                        target_shape=ref_img.shape[:3],
+                        target_affine=ref_img.get_affine())
 
-        if (self.mask_img_ is not None and
-                not _check_same_fov(ref_img, self.mask_img_)):
-            if self.verbose > 0:
-                print("Resampling mask")
-            self._resampled_mask_img = self._cache(image.resample_img, 1)(
-                    self.mask_img_, interpolation="nearest",
-                    target_shape=ref_img.shape[:3],
-                    target_affine=ref_img.get_affine())
+            if (self.mask_img_ is not None and
+                    not _check_same_fov(ref_img, self.mask_img_)):
+                if self.verbose > 0:
+                    print("Resampling mask")
+                self._resampled_mask_img = self._cache(image.resample_img, 1)(
+                        self.mask_img_, interpolation="nearest",
+                        target_shape=ref_img.shape[:3],
+                        target_affine=ref_img.get_affine())
 
         region_signals, labels_ = self._cache(
             _extract_signals, 1, ignore=['verbose'])(
@@ -307,7 +296,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 imgs, self._resampled_maps_img_,
                 # Pre-treatments
                 self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
-                self.low_pass, self.high_pass, self.confounds,
+                self.low_pass, self.high_pass, confounds,
                 # Caching
                 self.memory, self.memory_level,
                 # kwargs

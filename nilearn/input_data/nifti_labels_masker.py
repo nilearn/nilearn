@@ -272,7 +272,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             imgs, self._resampled_labels_img_, self.background_label,
             # Pre-treatments
             self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
-            self.low_pass, self.high_pass, self.confounds,
+            self.low_pass, self.high_pass, confounds,
             # Caching
             self.memory, self.memory_level,
             # kwargs
