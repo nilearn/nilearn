@@ -40,11 +40,11 @@ def _assert_same_fov(**kwargs):
     """
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
-            kwargs.items()):
+            kwargs.items(), 2):
         if not a_img.shape[:3] == b_img.shape[:3]:
-            errors.append(a_name, b_name, 'shape')
+            errors.append((a_name, b_name, 'shape'))
         if not np.allclose(a_img.get_affine(), b_img.get_affine()):
-            errors.append(a_name, b_name, 'affine')
+            errors.append((a_name, b_name, 'affine'))
     if len(errors) > 0:
         raise ValueError('Following field of view errors were detected:\n' +
                          '\n'.join(['- %s and %s do not have the same %s' % e
