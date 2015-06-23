@@ -14,6 +14,7 @@ from nilearn._utils.testing import generate_timeseries, generate_regions_ts
 from nilearn._utils.testing import generate_labeled_regions, generate_maps
 from nilearn._utils.testing import generate_fake_fmri
 from nilearn._utils.testing import write_tmp_imgs, assert_raises_regex
+from nilearn._utils.exceptions import DimensionError
 
 
 def test_generate_regions_ts():
@@ -109,7 +110,7 @@ def test_signals_extraction_with_labels():
     assert_true(np.all(data.std(axis=-1) > 0))
 
     # verify that 4D label images are refused
-    assert_raises_regex(TypeError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, "Data must be a 3D",
                         region.img_to_signals_labels, data_img, labels_4d_img)
 
     # There must be non-zero data (safety net)
@@ -133,10 +134,10 @@ def test_signals_extraction_with_labels():
         assert_true(labels_r == list(range(1, 9)))
 
     ## Same thing, with mask.
-    assert_raises_regex(TypeError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, "Data must be a 3D",
                         region.img_to_signals_labels, data_img, labels_img,
                         mask_img=mask_4d_img)
-    assert_raises_regex(TypeError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, "Data must be a 3D",
                         region.signals_to_img_labels, data_img, labels_img,
                         mask_img=mask_4d_img)
 

@@ -11,8 +11,8 @@ import numpy as np
 import nibabel
 
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
-from nilearn._utils import testing
-from nilearn._utils import as_ndarray
+from nilearn._utils import testing, as_ndarray
+from nilearn._utils.exceptions import DimensionError
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
@@ -48,14 +48,13 @@ def test_nifti_labels_masker():
 
     # verify that 4D mask arguments are refused
     masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    testing.assert_raises_regex(TypeError, "Data must be a 3D",
+    testing.assert_raises_regex(DimensionError, "Data must be a 3D",
                                 masker.fit)
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     testing.assert_raises_regex(
-        ValueError,
-        'has not been fitted. ', masker11.transform, fmri11_img)
+        ValueError, 'has not been fitted. ', masker11.transform, fmri11_img)
 
     # No exception raised here
     signals11 = masker11.fit().transform(fmri11_img)

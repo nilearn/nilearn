@@ -15,6 +15,7 @@ from distutils.version import LooseVersion
 
 from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
 from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
+from nilearn._utils.exceptions import DimensionError
 
 
 def test_auto_mask():
@@ -104,7 +105,7 @@ def test_3d_images():
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                               affine=np.diag((4, 4, 4, 1)))
     masker2 = MultiNiftiMasker(mask_img=mask_img_4d)
-    assert_raises_regex(TypeError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, "Data must be a 3D",
                         masker2.fit)
 
 
