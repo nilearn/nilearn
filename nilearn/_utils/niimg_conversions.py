@@ -34,6 +34,23 @@ def _check_same_fov(img1, img2):
             and np.allclose(img1.get_affine(), img2.get_affine()))
 
 
+def _assert_same_fov(**kwargs):
+    """ Assert the equivalence of all provided images. Parameter names are
+        used to generate user friendly error message.
+    """
+    errors = []
+    for (a_name, a_img), (b_name, b_img) in itertools.combinations(
+            kwargs.items()):
+        if not a_img.shape[:3] == b_img.shape[:3]:
+            errors.append(a_name, b_name, 'shape')
+        if not np.allclose(a_img.get_affine(), b_img.get_affine()):
+            errors.append(a_name, b_name, 'affine')
+    if len(errors) > 0:
+        raise ValueError('Following field of view errors were detected:\n' +
+                         '\n'.join(['- %s and %s do not have the same %s' % e
+                                    for e in errors]))
+
+
 def _index_img(img, index):
     """Helper function for check_niimg_4d."""
     return new_img_like(
