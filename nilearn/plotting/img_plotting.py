@@ -129,8 +129,7 @@ def check_threshold(threshold, data, name=None):
                 threshold = edge_threshold
             else:
                 threshold = fast_abs_percentile(data, percentile)
-                print percentile
-                print threshold
+
     elif not isinstance(threshold, numbers.Real):
         raise TypeError('%s should be either a number '
                         'or a string finishing with a percent sign' % (name))
