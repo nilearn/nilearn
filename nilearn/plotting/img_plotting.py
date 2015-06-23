@@ -16,7 +16,7 @@ import warnings
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import ndimage
+from scipy import ndimage, stats
 from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
@@ -79,41 +79,63 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_
     return cbar_vmin, cbar_vmax, vmin, vmax
 
 
-def check_threshold(thr, data):
+def check_threshold(threshold, data, name=None):
     """
     Checks that the given threshold has an accepted string value
+    and returns a threshold computed on the data. Use case of data
+    is mainly from plot_connectome and plot_prob_atlas.
 
     Parameters
     ----------
-    thr: str or a list of strings or number or list of numbers
-        If threshold is a string itmush finish with a percent sign,
-        e.g. "99.7%", or if it a value it can be a real numbers.
-    data: a Numpy array of a map to calculate the
-        threshold using a string percentage value.
+    threshold: a real value or a percentage expressed in a string or
+        list of real values or list of percentages.
+        For example, if threshold is a percentage expressed in a string
+        it must finish with a percent sign like "99.7%".
+    data: a numpy array of a map or a numpy array of a symmetric matrix.
+        This can then be utilised to calculate the threshold onto
+        using a string percentage value.
 
     Returns
     -------
-    returns threshold as an output also checks if the value entered
-    is valid
+    returns the calculated threshold onto the data if the threshold is a
+    string or simply returns threshold as it is if the threshold is a real
+    value. Both cases will first check if the value entered is valid
 
     """
-    if isinstance(thr, _basestring):
-        message = ("If 'threshold' is given as string it "
+    if isinstance(threshold, _basestring):
+        message = ('If %s is given as string it '
                    'should be a number followed by the percent'
-                   'sign, "e.g. 25.3%"')
-        if not thr.endswith('%'):
+                   'sign, e.g. "25.3%%"' % (name))
+        if not threshold.endswith('%'):
             raise ValueError(message)
+
         try:
-            percentile = float(thr[:-1])
-            thr = fast_abs_percentile(data, percentile) + 1e-6
+            percentile = float(threshold[:-1])
         except ValueError as exc:
             exc.args += (message, )
             raise
-        thr = thr
-    elif not isinstance(thr, numbers.Real):
-        raise TypeError('Threshold must be a real value but you '
-                        'gave a %s.' % type(thr))
-    return thr
+
+        if threshold.endswith('%'):
+            if len(data) == 2:
+                # Keep a percentile of edges with the highest absolute
+                # values, so only need to look at the covariance
+                # coefficients below the diagonal
+                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                              k=-1)
+                lower_diagonal_values = adjacency_matrix[
+                    lower_diagonal_indices]
+                edge_threshold = stats.scoreatpercentile(
+                    np.abs(lower_diagonal_values), percentile)
+                threshold = edge_threshold
+            else:
+                threshold = fast_abs_percentile(data, percentile)
+                print percentile
+                print threshold
+    elif not isinstance(threshold, numbers.Real):
+        raise TypeError('%s should be either a number '
+                        'or a string finishing with a percent sign' % (name))
+
+    return threshold
 
 
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
@@ -765,8 +787,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img), color_list, threshold)):
         data = map_img.get_data()
         # To threshold or choose the level of the contours
-        thr = check_threshold(thr, data)
-
+        thr = check_threshold(thr, data, name='threshold')
+        # Get rid of background values in all cases
+        thr = max(thr, 1e-6)
         if view_type.endswith('contours'):
             display.add_contours(map_img, levels=[thr],
                                  linewidths=linewidths,
