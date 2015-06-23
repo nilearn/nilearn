@@ -2,8 +2,6 @@
 Transformer for computing ROI signals.
 """
 
-import numpy as np
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
@@ -12,7 +10,6 @@ from .._utils import logger
 from .._utils import CacheMixin
 from .._utils.cache_mixin import cache
 from .._utils.niimg_conversions import _check_same_fov, _assert_same_fov
-from .._utils import _compose_err_msg
 from .. import signal
 from .. import region
 from .. import image
@@ -34,26 +31,26 @@ def _extract_signals(imgs, maps_img, smoothing_fwhm,
             image.resample_img, memory, func_memory_level=2,
             memory_level=memory_level)(
                 imgs, interpolation="continuous",
-                target_shape=maps_img.shape,
+                target_shape=maps_img.shape[:3],
                 target_affine=maps_img.get_affine())
 
     if smoothing_fwhm is not None:
         if verbose > 0:
             print("Smoothing images")
-        imgs = cache(image.smooth_img, func_memory_level=2,
+        imgs = cache(image.smooth_img, memory, func_memory_level=2,
                      memory_level=memory_level)(
             imgs, fwhm=smoothing_fwhm)
 
     if verbose > 0:
         print("Extracting maps signals")
     region_signals, labels_ = cache(
-        region.img_to_signals_maps, func_memory_level=2,
+        region.img_to_signals_maps, memory, func_memory_level=2,
         memory_level=memory_level)(
             imgs, maps_img, mask_img=mask_img)
 
     if verbose > 0:
         print("Cleaning extracted signals")
-    region_signals = cache(signal.clean, func_memory_level=2,
+    region_signals = cache(signal.clean, memory, func_memory_level=2,
                            memory_level=memory_level)(
         region_signals, detrend=detrend, standardize=standardize,
         t_r=t_r, low_pass=low_pass, high_pass=high_pass,
@@ -260,8 +257,10 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         if self.resampling_target is None:
             imgs_ = _utils.check_niimg_4d(imgs)
-            _assert_same_fov(mask=self.mask_img_, maps=self.maps_img_,
-                             data=imgs_)
+            images = dict(maps=self.maps_img_, data=imgs_)
+            if self.mask_img_ is not None:
+                images['mask'] = self.mask_img_
+            _assert_same_fov(**images)
         else:
             if self.resampling_target == "data":
                 imgs_ = _utils.check_niimg_4d(imgs)
@@ -277,7 +276,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 if self.verbose > 0:
                     print("Resampling maps")
                 self._resampled_maps_img_ = self._cache(image.resample_img, 1)(
-                        self.labels_img_, interpolation="continuous",
+                        self.maps_img_, interpolation="continuous",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
 
@@ -285,7 +284,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     not _check_same_fov(ref_img, self.mask_img_)):
                 if self.verbose > 0:
                     print("Resampling mask")
-                self._resampled_mask_img = self._cache(image.resample_img, 1)(
+                self._resampled_mask_img_ = self._cache(image.resample_img, 1)(
                         self.mask_img_, interpolation="nearest",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
@@ -300,7 +299,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 # Caching
                 self.memory, self.memory_level,
                 # kwargs
-                maps_img=self._resampled_mask_img,
+                mask_img=self._resampled_mask_img_,
                 resample_on_maps=(self.resampling_target != 'data'),
                 verbose=self.verbose)
         self.labels_ = labels_
