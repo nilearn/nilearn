@@ -19,7 +19,8 @@ from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name, get_params
 from .._utils.compat import _basestring, izip
-from nilearn._utils.niimg_conversions import _iter_check_niimg
+from nilearn._utils.niimg_conversions import (
+    _iter_check_niimg, _check_same_fov)
 
 
 def filter_and_mask(imgs, mask_img_,
@@ -51,12 +52,7 @@ def filter_and_mask(imgs, mask_img_,
 
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process
-
-    resampling_is_necessary = (
-            (not np.allclose(imgs.get_affine(), mask_img_.get_affine()))
-        or np.any(np.array(imgs.shape[:3]) != np.array(mask_img_.shape)))
-
-    if resampling_is_necessary:
+    if not _check_same_fov(imgs, mask_img_):
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
 
