@@ -14,7 +14,7 @@ Data preparation: loading and basic feature extraction
 
    For most applications of nilearn, it is not necessary to load
    the neuroimaging data oneself.
-   Rather raw data (i.e., numpy arrays),
+   Rather than raw data (i.e., numpy arrays),
    most nilearn functions and objects accept file names as
    arguments::
 
@@ -89,7 +89,7 @@ have to call low-level functions (see e.g. :mod:`nilearn.signal`,
 :class:`NiftiMasker`: loading, masking and filtering
 =========================================================
 
-This section details how to use the :class:`NiftiMasker` class
+This section details how to use the :class:`NiftiMasker` class.
 :class:`NiftiMasker` is a
 powerful tool to load images and extract voxel signals in the area
 defined by the mask. It is designed to apply some basic preprocessing
@@ -127,7 +127,7 @@ In this tutorial, we show how the masker object can compute a mask
 automatically for subsequent statistical analysis.
 On some datasets, the default algorithm may however perform poorly.
 This is why it is very important to
-**always look at look at your data look** before and after feature
+**always look at your data** before and after feature
 engineering using masker objects.
 
 Computing the mask
@@ -204,7 +204,7 @@ voxels that appear as bright in the EPI image.
 
 
 
-Common data preprocessing steps: resampling, smoothing, filtering
+Common data preparation steps: resampling, smoothing, filtering
 -----------------------------------------------------------------
 
 .. seealso::
@@ -232,7 +232,7 @@ Resampling
 As a common use case, resampling can be a viable means to
 downsample image quality on purpose to increase processing speed
 and lower memory consumption of an analysis pipeline.
-In fact, certain image viewers also require images to be
+In fact, certain image viewers (e.g., FSLView) also require images to be
 resampled to display overlays.
 
 On an advanced note,
@@ -273,7 +273,7 @@ Smoothing
 
 :class:`NiftiMasker` can further be used for local spatial filtering of
 the neuroimaging data to make the data more homogeneous and thus account
-for inter-individual differences in neuroanatomy and preprocessing.
+for inter-individual differences in neuroanatomy.
 It is achieved by passing the full-width
 half maximum (FWHM; typically in millimeter scale)
 along the x, y, and z image axes by specifying the `smoothing_fwhm` parameter.
@@ -367,7 +367,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   region a given voxel belongs to. This technique has a big advantage: the
   required memory load is independent of the number of regions, allowing
   for a large number of regions. On the other hand, there are
-  several disadvantages: regions cannot topographically overlap
+  several disadvantages: regions cannot spatially overlap
   (i.e., regions cannot overlap)
   and are represented in a binary present-nonpresent coding (no weighting).
 - maps: a single region is defined as the set of all the voxels that have a
