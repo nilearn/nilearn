@@ -267,7 +267,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=imgs.shape[:3],
                         target_affine=imgs.get_affine())
 
-        region_signals = self._cache(_extract_signals, 1, ignore=['verbose'])(
+        region_signals = self._cache(
+            _extract_signals, 1, ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, self._resampled_labels_img_, self.background_label,
             # Pre-treatments

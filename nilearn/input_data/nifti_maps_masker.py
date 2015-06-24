@@ -290,7 +290,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_affine=ref_img.get_affine())
 
         region_signals, labels_ = self._cache(
-            _extract_signals, 1, ignore=['verbose'])(
+            _extract_signals, 1, ignore=['verbose', 'memory', 'memory_level'])(
                 # Images
                 imgs, self._resampled_maps_img_,
                 # Pre-treatments
