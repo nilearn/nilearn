@@ -20,6 +20,8 @@ def _extract_signals(imgs, maps_img, smoothing_fwhm,
                      confounds, memory, memory_level,
                      resample_on_maps=False, mask_img=None,
                      verbose=0):
+    """Extract representative time series of each region from fMRI signal
+    """
     if verbose > 0:
         print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
     imgs = _utils.check_niimg_4d(imgs)
