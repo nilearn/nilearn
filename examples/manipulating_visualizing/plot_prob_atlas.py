@@ -4,12 +4,16 @@ Plotting 4D Atlas maps or regions onto the anatomical image
 
 We show here how to plot the atlas maps or statistical maps which are
 4D using a three different display types, for example using
-1. "contours", ROIs contours are delineated by colored lines
-2. "filled_contours", plots can be seen in contours with fillings
-3. "continuous or overlays", plots can be seen in continuous overlays
+
+1. "contours", ROIs contours are delineated by colored lines.
+
+2. "filled_contours", plots can be seen in contours with fillings.
+
+3. "continuous or overlays", plots can be seen in continuous overlays.
 
 This function can display each map with each different color which are picked
 randomly from the given colormap.
+
 Please see the related documentation for more information.
 """
 import matplotlib.pyplot as plt

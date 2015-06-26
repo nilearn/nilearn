@@ -16,7 +16,7 @@ import warnings
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import ndimage, stats
+from scipy import ndimage
 from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
@@ -31,7 +31,7 @@ from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import iter_img
-from .displays import get_slicer, get_projector
+from .displays import get_slicer, get_projector, check_threshold
 from . import cm
 
 ################################################################################
@@ -641,6 +641,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                 vmin=vmin, vmax=vmax, **kwargs)
     return display
 
+
 def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                     threshold=None, linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
@@ -660,16 +661,17 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        view_type: string, {'auto', 'contours', 'filled_contours', 'continuous'}, optional
+        view_type: {'auto', 'contours', 'filled_contours', 'continuous'}
             By default, view_type == 'auto', which means maps are overlayed as
             contours if the number of maps are more than 4 or
-            overlayed as continuous colors if the number of maps are less than 4.
+            overlayed as continuous colors if the number of maps
+            are less than 4.
             If view_type == 'contours', maps are overlayed as contours.
             If view_type == 'filled_contours', maps are overlayed as contours
             and also with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold: None, str or a list of strings or number or list of numbers, optional
+        threshold: str or list of strings or number or list of numbers, optional
             If threshold is a string it must finish with a percent sign,
             e.g. "25.3%", or if it is a number it can be real numbers.
             This option is served for two purposes, for contours and
@@ -745,7 +747,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         raise TypeError('view_type option should be '
                         'either as a "contours" or "filled_contours" '
                         'or "continuous" but you have given %s '
-                        %type(view_type))
+                        % type(view_type))
 
     cmap = plt.cm.get_cmap(cmap)
     # Build a custom colormap for displaying contours
@@ -769,7 +771,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         else:
             view_type = 'continuous'
 
-    for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img), color_list, threshold)):
+    for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img),
+                                                  color_list, threshold)):
         data = map_img.get_data()
         # To threshold or choose the level of the contours
         thr = check_threshold(thr, data,

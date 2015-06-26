@@ -1281,3 +1281,47 @@ def get_slicer(display_mode):
 def get_projector(display_mode):
     "Internal function to retrieve a projector"
     return get_create_display_fun(display_mode, PROJECTORS)
+
+
+def check_threshold(threshold, data, percentile_calculate, name):
+    """
+    Checks that the given threshold has an accepted string value
+    and returns a threshold computed on the data. Use case of data
+    is mainly from plot_connectome and plot_prob_atlas.
+
+    Parameters
+    ----------
+    threshold: a real value or a percentage in string or list of these.
+        For example, if threshold is a percentage expressed in a string
+        it must finish with a percent sign like "99.7%".
+    data: a numpy array of a map or a numpy array of a symmetric matrix.
+    percentile_calculate: define the name of a specific percentile
+        function to calculate the score on the data.
+
+    Returns
+    -------
+    returns the percentile threshold if the threshold is a string or
+    simply returns threshold as it is if the threshold is a real value.
+    In both cases threshold will be first checked if it is valid.
+
+    """
+    if isinstance(threshold, _basestring):
+        message = ('If "{0}" is given as string it '
+                   'should be a number followed by the percent '
+                   'sign, e.g. "25.3%"').format(name)
+        if not threshold.endswith('%'):
+            raise ValueError(message)
+
+        try:
+            percentile = float(threshold[:-1])
+        except ValueError as exc:
+            exc.args += (message, )
+            raise
+
+        threshold = percentile_calculate(data, percentile)
+
+    elif not isinstance(threshold, numbers.Real):
+        raise TypeError('%s should be either a number '
+                        'or a string finishing with a percent sign' % (name, ))
+    return threshold
+
