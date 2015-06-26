@@ -18,7 +18,8 @@ from nilearn.image.resampling import coord_transform
 
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
-                                           plot_glass_brain, plot_connectome)
+                                           plot_glass_brain, plot_connectome,
+                                           plot_prob_atlas)
 from nilearn._utils.testing import assert_raises_regex
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
@@ -429,3 +430,18 @@ def test_singleton_ax_dim():
         shape[axis] = 1
         img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
         plot_stat_map(img, None, display_mode=direction)
+
+
+def test_plot_prob_atlas():
+    affine = np.eye(4)
+    shape = (6, 8, 10, 5)
+    rng = np.random.RandomState(0)
+    data_rng = rng.normal(size=shape)
+    img = nibabel.Nifti1Image(data_rng, affine)
+    # Testing the 4D plot prob atlas with contours
+    display = plot_prob_atlas(img, view_type='contours')
+    # Testing the 4D plot prob atlas with contours
+    display = plot_prob_atlas(img, view_type='filled_contours',
+                              threshold=0.2)
+    # Testing the 4D plot prob atlas with contours
+    display = plot_prob_atlas(img, view_type='continuous')
