@@ -52,6 +52,7 @@ masker = MultiNiftiMasker(mask_img=miyawaki_dataset.mask, detrend=True,
 masker.fit()
 X_train = masker.transform(X_random_filenames)
 X_test = masker.transform(X_figure_filenames)
+thing
 
 # Load visual stimuli from csv files
 y_train = []
