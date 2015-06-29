@@ -537,9 +537,17 @@ class BaseSlicer(object):
                 these contours.
         """
         # Switches into contour filling function 'contourf'
-        filled_type = 'contourf' if filled else 'contour'
+        #filled_type = 'contourf' if filled else 'contour'
+        self._map_show(img, type='contour', **kwargs)
+        if filled:
+            colors = kwargs['colors']
+            levels = kwargs['levels']
+            # Append lower boundary value to '0' for contour fillings
+            levels.append(0.)
+            alpha = kwargs['alpha']
+            self._map_show(img, type='contourf', levels=levels, alpha=alpha,
+                           colors=colors[:3])
 
-        self._map_show(img, type=filled_type, **kwargs)
         plt.draw_if_interactive()
 
     def _map_show(self, img, type='imshow',
