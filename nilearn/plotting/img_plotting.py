@@ -661,7 +661,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        view_type: {'auto', 'contours', 'filled_contours', 'continuous'}
+        view_type: {'auto', 'contours', 'filled_contours', 'continuous'}, optional
             By default, view_type == 'auto', which means maps are overlayed as
             contours if the number of maps are more than 4 or
             overlayed as continuous colors if the number of maps
@@ -671,7 +671,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             and also with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold: str or list of strings or number or list of numbers, optional
+        threshold: string or list of strings or number or list of numbers, optional
             If threshold is a string it must finish with a percent sign,
             e.g. "25.3%", or if it is a number it can be real numbers.
             This option is served for two purposes, for contours and
@@ -737,17 +737,12 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
 
-    _view_type = set(('auto', 'contours', 'filled_contours', 'continuous'))
-    if isinstance(view_type, _basestring):
-        if view_type not in _view_type:
-            raise TypeError('view_type option should be given '
-                            'either as a "contours" or "filled_contours" '
-                            'or "continuous" ')
-    else:
-        raise TypeError('view_type option should be '
-                        'either as a "contours" or "filled_contours" '
-                        'or "continuous" but you have given %s '
-                        % type(view_type))
+    allowed_view_types = list(('auto', 'contours', 'filled_contours', 'continuous'))
+    if not isinstance(view_type, _basestring) or \
+            view_type not in allowed_view_types:
+        message = ('view_type option should be given '
+                   'either of these {0} ').format(allowed_view_types)
+        raise ValueError(message)
 
     cmap = plt.cm.get_cmap(cmap)
     # Build a custom colormap for displaying contours
