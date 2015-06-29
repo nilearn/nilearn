@@ -526,11 +526,8 @@ class BaseSlicer(object):
 
         if threshold is not None:
             data = img.get_data()
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(data, -threshold, threshold,
-                                           copy=False)
+            mask = np.abs(data) <= threshold
+            data = np.ma.masked_where(mask, data, copy=False)
             img = new_img_like(img, data, img.get_affine())
 
         affine = img.get_affine()
