@@ -3,7 +3,7 @@ Plotting 4D Atlas maps or regions onto the anatomical image
 ===========================================================
 
 We show here how to plot the atlas maps or statistical maps which are
-4D using a three different display types, for example using
+4D using three different display types, for example using
 
 1. "contours", ROIs contours are delineated by colored lines.
 

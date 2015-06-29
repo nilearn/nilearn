@@ -43,8 +43,7 @@ def test_demo_ortho_projector():
     oprojector.close()
 
 
-# Smoke test to check threshold function for plot connectome
-def test_threshold_plot_connectome():
+def test_check_threshold():
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
     name = 'edge_threshold'
@@ -53,14 +52,15 @@ def test_threshold_plot_connectome():
     wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
     for wrong_edge_threshold in wrong_edge_thresholds:
         assert_raises_regex(ValueError,
-                            'should be a number followed by the percent sign',
+                            '{0}.+should be a number followed by '
+                            'the percent sign'.format(name),
                             check_threshold,
                             wrong_edge_threshold, adjacency_matrix,
                             calculate, name)
 
     threshold = object()
     assert_raises_regex(TypeError,
-                        'should be either a number or a string',
+                        '{0}.+should be either a number or a string'.format(name),
                         check_threshold,
                         threshold, adjacency_matrix,
                         calculate, name)
