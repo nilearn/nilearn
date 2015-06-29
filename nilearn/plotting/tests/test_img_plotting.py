@@ -149,6 +149,23 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
     assert_true(plotted_array.mask.all())
 
 
+def test_plot_stat_map_threshold_for_uint8():
+    # mask was applied in [-threshold, threshold] which is problematic
+    # for uint8 data. See https://github.com/nilearn/nilearn/issues/611
+    # for more details
+    data = 10 * np.ones((10, 10, 10), dtype='uint8')
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(data, affine)
+    threshold = np.array(5, dtype='uint8')
+    display = plot_stat_map(img, bg_img=None, threshold=threshold,
+                            display_mode='z', cut_coords=1)
+    # Next two lines retrieve the numpy array from the plot
+    ax = list(display.axes.values())[0].ax
+    plotted_array = ax.images[0].get_array()
+    # Make sure that no data is masked
+    assert_equal(plotted_array.mask.sum(), 0)
+
+
 def test_save_plot():
     img = _generate_img()
 
