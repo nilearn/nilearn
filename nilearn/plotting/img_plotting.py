@@ -765,6 +765,10 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             view_type = 'contours'
         else:
             view_type = 'continuous'
+    elif view_type == 'contours':
+        filled = False
+    elif view_type == 'filled_contours':
+        filled = True
 
     for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img),
                                                   color_list, threshold)):
@@ -774,23 +778,20 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                 percentile_calculate=fast_abs_percentile, name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
-        if view_type.endswith('contours'):
-            display.add_contours(map_img, levels=[thr],
-                                 linewidths=linewidths,
-                                 colors=[color])
-            if view_type.startswith('filled'):
-                # Append the lower boundary value as 0 for contour fillings
-                display.add_contours(map_img, levels=[thr, 0.],
-                                     colors=[color[:3].tolist()],
-                                     linestyles='solid', filled=True,
-                                     alpha=alpha)
-        elif view_type == 'continuous':
+        if view_type == 'continuous':
             display.add_overlay(map_img, threshold=thr,
                                 cmap=cm.alpha_cmap(color))
+        else:
+            display.add_contours(map_img, levels=[thr],
+                                 linewidths=linewidths,
+                                 colors=[color], filled=filled,
+                                 alpha=alpha, linestyles='solid')
+
     if output_file is not None:
         display.savefig(output_file)
         display.close()
         display = None
+
     return display
 
 
