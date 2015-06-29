@@ -111,6 +111,26 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
+def _new_img_like(ref_niimg, data, affine=None, copy_header=False):
+    if affine is None:
+        affine = ref_niimg.get_affine()
+    if data.dtype == bool:
+        default_dtype = np.int8
+        if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
+                isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage)):
+            default_dtype = np.uint8
+        data = as_ndarray(data, dtype=default_dtype)
+    header = None
+    if copy_header:
+        header = copy.copy(ref_niimg.get_header())
+        header['scl_slope'] = 0.
+        header['scl_inter'] = 0.
+        header['glmax'] = 0.
+        header['cal_max'] = np.max(data) if data.size > 0 else 0.
+        header['cal_max'] = np.min(data) if data.size > 0 else 0.
+    return ref_niimg.__class__(data, affine, header=header)
+
+
 def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     """Create a new image of the same class as the reference image
 
@@ -137,24 +157,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     """
     from .niimg_conversions import check_niimg  # avoid circular import
 
-    ref_niimg = check_niimg(ref_niimg)
-    if affine is None:
-        affine = ref_niimg.get_affine()
-    if data.dtype == bool:
-        default_dtype = np.int8
-        if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
-                isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage)):
-            default_dtype = np.uint8
-        data = as_ndarray(data, dtype=default_dtype)
-    header = None
-    if copy_header:
-        header = copy.copy(ref_niimg.get_header())
-        header['scl_slope'] = 0.
-        header['scl_inter'] = 0.
-        header['glmax'] = 0.
-        header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        header['cal_max'] = np.min(data) if data.size > 0 else 0.
-    return ref_niimg.__class__(data, affine, header=header)
+    return _new_img_like(ref_niimg, data, affine, copy_header)
 
 
 def copy_img(img):
