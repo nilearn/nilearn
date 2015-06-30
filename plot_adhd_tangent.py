@@ -41,7 +41,7 @@ def plot_matrix(mean_conn, title="connectivity", ticks=[], tick_labels=[]):
     # Display connectivity matrix
     plt.figure()
     plt.imshow(mean_conn, interpolation="nearest",
-              vmin=-vmax, vmax=vmax, cmap=plt.cm.get_cmap("bwr"))
+               vmin=-vmax, vmax=vmax, cmap=plt.cm.get_cmap("bwr"))
     plt.colorbar()
     ax = plt.gca()
     ax.xaxis.set_ticks_position('top')
@@ -126,10 +126,10 @@ import nilearn.image
 import nilearn.input_data
 
 import joblib
-mem = joblib.Memory(".")
+mem = joblib.Memory("/home/sb238920/CODE/Parietal/nilearn/nilearn_cache/adhd")
 
 # Number of subjects to consider for connectivity computations
-n_subjects = 40
+n_subjects = 20
 subjects = []
 for subject_n in range(n_subjects):
     filename = dataset["func"][subject_n]
@@ -142,7 +142,7 @@ for subject_n in range(n_subjects):
     print("-- Computing region signals ...")
     masker = nilearn.input_data.NiftiMapsMasker(
         atlas["maps"], resampling_target="maps", detrend=True,
-        low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+        low_pass=None, high_pass=0.01, t_r=2.5, standardize=False,
         memory=mem, memory_level=1, verbose=1)
     region_ts = masker.fit_transform(filename,
                                      confounds=[hv_confounds, confound_file])
@@ -160,7 +160,8 @@ for kind in ['correlation', 'partial correlation', 'tangent']:
         cov_embedding.fit_transform(subjects))
     all_matrices.append(matrices)
     if kind == 'tangent':
-        mean = cov_embedding.mean_cov_
+        mean = nilearn.connectivity.embedding.cov_to_corr(
+            cov_embedding.mean_cov_)
     else:
         mean = matrices.mean(axis=0)
     mean_matrices.append(mean)
@@ -168,7 +169,7 @@ for kind in ['correlation', 'partial correlation', 'tangent']:
 print("-- Displaying results")
 regions = ['L DMN', 'med DMN', 'front DMN', 'R DMN']
 titles = ['correlations mean', 'partial correlations mean',
-          'covariances geometric mean']
+          'geometric mean']
 for matrix, title in zip(mean_matrices, titles):
     plot_matrix(matrix, title=title, ticks=range(3, 7), tick_labels=regions)
 
