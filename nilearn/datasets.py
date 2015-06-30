@@ -1097,6 +1097,64 @@ def fetch_atlas_power_2011():
     return Bunch(**params)
 
 
+def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
+                               resume=True, verbose=1):
+    """Download and load the Destrieux cortical atlas (dated 2009)
+
+    Parameters
+    ----------
+    lateralized: boolean, optional
+        If True, returns an atlas with distinct regions for right and left
+        hemispheres.
+    data_dir: string, optional
+        Path of the data directory. Use to forec data storage in a non-
+        standard location. Default: None (meaning: default)
+    url: string, optional
+        Download URL of the dataset. Overwrite the default URL.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - Cortical ROIs, lateralized or not (maps)
+        - Labels of the ROIs (labels)
+
+    References
+    ----------
+
+    Fischl, Bruce, et al. "Automatically parcellating the human cerebral
+    cortex." Cerebral cortex 14.1 (2004): 11-22.
+
+    Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
+    of the cerebral cortex." NeuroImage 47 (2009): S151.
+    """
+    if url is None:
+        url = "https://www.nitrc.org/frs/download.php/7739/"
+
+    url += "destrieux2009.tgz"
+    opts = {'uncompress': True}
+    lat = '_lateralized' if lateralized else ''
+
+    files = [
+        ('destrieux2009_rois_labels' + lat + '.csv', url, opts),
+        ('destrieux2009_rois' + lat + '.nii.gz', url, opts),
+        ('destrieux2009.rst', url, opts)
+    ]
+
+    dataset_name = 'destrieux_2009'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files_ = _fetch_files(data_dir, files, resume=resume,
+                          verbose=verbose)
+
+    params = dict(maps=files_[1], labels=np.recfromcsv(files_[0]))
+
+    with open(files_[2], 'r') as rst_file:
+        params['description'] = rst_file.read()
+
+    return Bunch(**params)
+
+
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load an example haxby dataset
 
