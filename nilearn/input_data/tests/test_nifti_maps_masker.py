@@ -5,7 +5,7 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_raises, assert_equal, assert_true
+from nose.tools import assert_raises, assert_equal, assert_less
 import numpy as np
 
 import nibabel
@@ -226,7 +226,7 @@ def test_nifti_maps_masker_2():
     transformed = masker.transform(fmri11_img)
     assert_equal(transformed.shape, (length, n_regions))
     # Some regions have been clipped. Resulting signal must be zero
-    assert_true((transformed.var(axis=0) == 0).sum() < n_regions)
+    assert_less((transformed.var(axis=0) == 0).sum(), n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
