@@ -159,7 +159,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if np.any(grp_mask > 0) and connected:
         grp_mask = largest_connected_component(grp_mask)
     grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
-    return new_img_like(mask_imgs[0], grp_mask, ref_affine)
+    return new_img_like(_utils.check_niimg_3d(mask_imgs[0]), grp_mask, ref_affine)
 
 
 def _post_process_mask(mask, affine, opening=2, connected=True,
