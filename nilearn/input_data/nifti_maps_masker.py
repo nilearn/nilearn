@@ -9,7 +9,7 @@ from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
 from .._utils.cache_mixin import cache
-from .._utils.niimg_conversions import _check_same_fov, _assert_same_fov
+from .._utils.niimg_conversions import _check_same_fov
 from .. import signal
 from .. import region
 from .. import image
@@ -192,7 +192,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         # Check shapes and affines or resample.
         if self.resampling_target is None and self.mask_img_ is not None:
-            _assert_same_fov(mask=self.mask_img_, maps=self.maps_img_)
+            _check_same_fov(mask=self.mask_img_, maps=self.maps_img_,
+                            raise_error=True)
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
             if self.verbose > 0:
@@ -262,7 +263,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             images = dict(maps=self.maps_img_, data=imgs_)
             if self.mask_img_ is not None:
                 images['mask'] = self.mask_img_
-            _assert_same_fov(**images)
+            _check_same_fov(raise_error=True, **images)
         else:
             if self.resampling_target == "data":
                 imgs_ = _utils.check_niimg_4d(imgs)

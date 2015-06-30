@@ -24,20 +24,13 @@ def _check_fov(img, affine, shape):
             np.allclose(img.get_affine(), affine))
 
 
-def _check_same_fov(img1, img2):
-    """ Return True if img1 and img2 have the same field of view
-        (shape and affine), False elsewhere.
-    """
-    img1 = check_niimg(img1)
-    img2 = check_niimg(img2)
-    return (img1.shape[:3] == img2.shape[:3]
-            and np.allclose(img1.get_affine(), img2.get_affine()))
-
-
-def _assert_same_fov(**kwargs):
+def _check_same_fov(*args, **kwargs):
     """ Assert the equivalence of all provided images. Parameter names are
         used to generate user friendly error message.
     """
+    raise_error = kwargs.pop('raise_error', False)
+    for i, arg in enumerate(args):
+        kwargs['arg_#%i' % i] = arg
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
             kwargs.items(), 2):
@@ -45,10 +38,11 @@ def _assert_same_fov(**kwargs):
             errors.append((a_name, b_name, 'shape'))
         if not np.allclose(a_img.get_affine(), b_img.get_affine()):
             errors.append((a_name, b_name, 'affine'))
-    if len(errors) > 0:
+    if len(errors) > 0 and raise_error:
         raise ValueError('Following field of view errors were detected:\n' +
                          '\n'.join(['- %s and %s do not have the same %s' % e
                                     for e in errors]))
+    return (len(errors) > 0)
 
 
 def _index_img(img, index):
