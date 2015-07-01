@@ -129,7 +129,7 @@ import joblib
 mem = joblib.Memory("/home/sb238920/CODE/Parietal/nilearn/nilearn_cache/adhd")
 
 # Number of subjects to consider for connectivity computations
-n_subjects = 20
+n_subjects = 40
 subjects = []
 for subject_n in range(n_subjects):
     filename = dataset["func"][subject_n]
@@ -153,7 +153,8 @@ import nilearn.connectivity
 print("-- Measuring connecivity ...")
 all_matrices = []
 mean_matrices = []
-for kind in ['correlation', 'partial correlation', 'tangent']:
+measures = ['correlation', 'partial correlation', 'tangent', 'covariance', 'precision']
+for kind in measures:
     estimator = {'kind': kind}
     cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
     matrices = nilearn.connectivity.vec_to_sym(
@@ -170,7 +171,7 @@ print("-- Displaying results")
 regions = ['L DMN', 'med DMN', 'front DMN', 'R DMN']
 titles = ['correlations mean', 'partial correlations mean',
           'geometric mean']
-for matrix, title in zip(mean_matrices, titles):
+for matrix, title in zip(mean_matrices[:3], titles):
     plot_matrix(matrix, title=title, ticks=range(3, 7), tick_labels=regions)
 
 Z_correlations = corr_to_Z(all_matrices[0])
@@ -187,4 +188,49 @@ scatterplot_matrix(Z_correlations[:, 3:5, 5:7],
                    title1='correlation\n(Z-transformed)',
                    title2='partial correlation\n(Z- transformed)',
                    title_ref='tangent')
+plt.show()
+
+
+# Classify conditions
+from sklearn.svm import LinearSVC
+from sklearn.cross_validation import StratifiedShuffleSplit, StratifiedKFold
+from sklearn.multiclass import OneVsRestClassifier
+mean_scores = []
+std_scores = []
+for measure, coefs in zip(measures, all_matrices):
+    y = dataset.phenotypic['adhd'][:n_subjects]
+    y = np.array([k / 8 for k in range(40)])
+    # regions of servier report
+    regions = range(coefs.shape[-1])
+    X = coefs[:, regions, :]
+    X = coefs[:, :, regions]
+    X = nilearn.connectivity.embedding.sym_to_vec(X)
+    print('---Shuffle split, this takes time ...')
+    skf = StratifiedShuffleSplit(y, n_iter=1000, test_size=0.33)
+#    skf = StratifiedKFold(y, 3)
+    clf_svc = LinearSVC(random_state=0, multi_class='ovr')  # TODO: multiclass?
+    cv_scores = []
+    for train_index, test_index in skf:
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        clf_svc.fit(X_train, y_train)
+        cv_scores.append(clf_svc.score(X_test, y_test))
+    mean_scores.append(np.mean(cv_scores) * 100)
+    std_scores.append(np.std(cv_scores) * 100)
+
+mean_scores = np.array(mean_scores)
+std_scores = np.array(std_scores)
+plt.figure()
+colors = ['k', 'c', 'g', 'b', 'r']
+for n, color in enumerate(colors):
+    indices = [n]
+    plt.bar([n], mean_scores[indices],
+            color=color, yerr=std_scores[indices], align="center")
+
+# TODO : automatic xticks and xticklabels
+plt.xticks([2], ['patients prediction'], fontsize='17')
+plt.xlim([-1, 11])
+plt.ylim([40, 100])
+plt.ylabel('Classification accuracy (%)', fontsize='17')
+plt.legend(measures, fontsize='17')
 plt.show()
