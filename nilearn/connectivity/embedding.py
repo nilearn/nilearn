@@ -6,7 +6,7 @@ from scipy import linalg
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import EmpiricalCovariance
-from .._utils.testing import is_spd
+from .._utils.extmath import is_spd
 
 
 def check_mat(mat, prop):
@@ -29,7 +29,7 @@ def check_mat(mat, prop):
             raise ValueError('Expected a symmetric matrix.')
 
     if prop == 'spd':
-        if not is_spd(mat):
+        if not is_spd(mat, decimal=7):
             raise ValueError('Expected a symmetric positive definite matrix.')
 
 
