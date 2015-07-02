@@ -22,6 +22,18 @@ mem = joblib.Memory("/home/sb238920/CODE/Parietal/nilearn/nilearn_cache/adhd")
 
 # Number of subjects to consider
 n_subjects = 40
+
+from sklearn.covariance import LedoitWolf, EmpiricalCovariance
+# Set preprocs and connectivity parameters
+sites_gmean = False  # if True, gmean is computed sperately for each site
+adhd_gmean = False  # if True, gmean is computed sperately for ADHD/controls
+cov_estimator = EmpiricalCovariance()
+standardize = False
+print('specific gmean for each site: {0}\n'
+      'specific gmean for each ADHD/controls: {1}\n'
+      'estimator: {2}\n standardize:{3}'.format(sites_gmean, adhd_gmean,
+                                                cov_estimator, standardize))
+
 subjects = []
 for subject_n in range(n_subjects):
     filename = dataset["func"][subject_n]
@@ -32,33 +44,31 @@ for subject_n in range(n_subjects):
     hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(filename)
 
     print("-- Computing region signals ...")
-    masker = nilearn.input_data.NiftiMapsMasker(
-        atlas["maps"], resampling_target="maps", detrend=True,
-        low_pass=None, high_pass=0.01, t_r=2.5, standardize=False,
-        memory=mem, memory_level=1, verbose=1)
-    region_ts = masker.fit_transform(filename,
+    masker = nilearn.input_data.NiftiMapsMasker(atlas["maps"],
+                                                resampling_target="maps",
+                                                memory=mem, t_r=2.5)
+
+    region_raw_ts = masker.fit_transform(filename)
+
+    # Use PSC units
+    region_psc_ts = region_raw_ts / region_raw_ts.mean(axis=0) * 100.
+    region_ts = nilearn.signal.clean(region_psc_ts, detrend=True,
+                                     low_pass=None, high_pass=.01,
+                                     t_r=2.5,
+                                     standardize=standardize,
                                      confounds=[hv_confounds, confound_file])
     subjects.append(region_ts)
 
 
 import nilearn.connectivity
-all_matrices = []
-measures = ['correlation', 'partial correlation', 'tangent', 'covariance',
-            'precision']
-from sklearn.covariance import LedoitWolf, EmpiricalCovariance
 sites = np.array([k / 8 for k in range(n_subjects)])
 adhd = dataset.phenotypic['adhd'][:n_subjects]
 subjects = np.array(subjects)
-
-# Define parameters
-sites_gmean = False  # if True, gmean is computed sperately for each site
-adhd_gmean = False  # if True, gmean is computed sperately for ADHD/controls
-cov_estimator = EmpiricalCovariance()
-print('specific gmean for each site: {0}, '
-      'specific gmean for each ADHD/controls: {1}'
-      'estimator: {3}'.format(sites_gmean, adhd_gmean, cov_estimator))
-for kind in measures:
-    estimator = {'kind': kind, 'cov_estimator': cov_estimator}
+all_matrices = {}
+measures = ['correlation', 'partial correlation', 'tangent', 'covariance',
+            'precision']
+for measure in measures:
+    estimator = {'kind': measure, 'cov_estimator': cov_estimator}
     cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
     matrices = np.zeros((n_subjects, region_ts.shape[-1], region_ts.shape[-1]))
     if sites_gmean:
@@ -76,26 +86,27 @@ for kind in measures:
     else:
         matrices = nilearn.connectivity.vec_to_sym(
             cov_embedding.fit_transform(subjects))
-    all_matrices.append(matrices)
+    all_matrices[measure] = matrices
 
 
-# Classify sites and ADHD
+# Classify sites and ADHD/controls
 from sklearn.svm import LinearSVC
 from sklearn.lda import LDA
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cross_validation import StratifiedShuffleSplit, cross_val_score
 both = sites * 2 + adhd
-clfs = [LinearSVC(), LDA()] + [KNeighborsClassifier(n_neighbors=n_neighbors)
-                               for n_neighbors in range(1, 6)]
+clfs = [LinearSVC(random_state=0), LDA()] + [KNeighborsClassifier(
+    n_neighbors=n_neighbors) for n_neighbors in range(1, 6)]
 clf_names = ['SVM', 'LDA'] + ['KNN n={}'.format(n) for n in range(1, 6)]
-cv = StratifiedShuffleSplit(both, n_iter=10000, test_size=0.33)
+cv = StratifiedShuffleSplit(both, n_iter=10000, test_size=0.33, random_state=0)
 for classes, prediction in zip([sites, adhd], ['sites', 'ADHD/controls']):
     print('-- {} classification ...'.format(prediction))
     scores = {}
-    for measure, coefs in zip(measures, all_matrices):
+    for measure in measures:
         scores[measure] = {}
         for clf, clf_name in zip(clfs, clf_names):
-            coefs_vec = nilearn.connectivity.embedding.sym_to_vec(coefs)
+            coefs_vec = nilearn.connectivity.embedding.sym_to_vec(
+                all_matrices[measure])
             scores[measure][clf_name] = cross_val_score(
                 clf, coefs_vec, classes, cv=cv, scoring='accuracy')
             print(' {0}, classifier {1}: score is {2:.2f} +- {3:.2f}'.format(
@@ -115,6 +126,7 @@ for classes, prediction in zip([sites, adhd], ['sites', 'ADHD/controls']):
         tick_position = tick_position + .15
     plt.ylabel('Classification accuracy')
     plt.legend(measures)
-    plt.title(prediction)
+    plt.title('{0}, standardize={1}\n estimator:{2}'.format(prediction,
+                  standardize, cov_estimator))
 
 plt.show()
