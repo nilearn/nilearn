@@ -25,7 +25,7 @@ def _check_fov(img, affine, shape):
 
 
 def _check_same_fov(*args, **kwargs):
-    """ Assert the equivalence of all provided images. Parameter names are
+    """ Check the equivalence of all provided images. Parameter names are
         used to generate user friendly error message.
     """
     raise_error = kwargs.pop('raise_error', False)
