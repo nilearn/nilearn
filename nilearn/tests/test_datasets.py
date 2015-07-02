@@ -296,8 +296,8 @@ def test_fail_fetch_atlas_harvard_oxford():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_craddock_2012_atlas():
-    bunch = datasets.fetch_craddock_2012_atlas(data_dir=tmpdir, verbose=0)
+def test_fetch_atlas_craddock_2012():
+    bunch = datasets.fetch_atlas_craddock_2012(data_dir=tmpdir, verbose=0)
 
     keys = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
@@ -316,8 +316,8 @@ def test_fetch_craddock_2012_atlas():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_smith_2009_atlas():
-    bunch = datasets.fetch_smith_2009(data_dir=tmpdir, verbose=0)
+def test_fetch_atlas_smith_2009():
+    bunch = datasets.fetch_atlas_smith_2009(data_dir=tmpdir, verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70",
             "bm20", "bm10", "bm70")
@@ -454,8 +454,8 @@ def test_miyawaki2008():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_msdl_atlas():
-    dataset = datasets.fetch_msdl_atlas(data_dir=tmpdir, verbose=0)
+def test_fetch_atlas_msdl():
+    dataset = datasets.fetch_atlas_msdl(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.labels, _basestring))
     assert_true(isinstance(dataset.maps, _basestring))
     assert_equal(len(url_request.urls), 1)
@@ -480,8 +480,8 @@ def test_fetch_icbm152_2009():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_yeo_2011_atlas():
-    dataset = datasets.fetch_yeo_2011_atlas(data_dir=tmpdir, verbose=0)
+def test_fetch_atlas_yeo_2011():
+    dataset = datasets.fetch_atlas_yeo_2011(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.anat, _basestring))
     assert_true(isinstance(dataset.colors_17, _basestring))
     assert_true(isinstance(dataset.colors_7, _basestring))

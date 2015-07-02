@@ -775,7 +775,17 @@ def _tree(path, pattern=None, dictionary=False):
 ###############################################################################
 # Dataset downloading functions
 
+@deprecated('it has been replace by fetch_atlas_craddock_2012 and '
+            'will be removed in nilearn 0.1.5')
 def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    return fetch_atlas_craddock_2012(
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose)
+
+
+def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2012 parcellation
 
     The provided images are in MNI152 space.
@@ -845,7 +855,17 @@ def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+@deprecated('it has been replace by fetch_atlas_yeo_2011 and '
+            'will be removed in nilearn 0.1.5')
 def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    return fetch_atlas_yeo_2011(
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose)
+
+
+def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
     The provided images are in MNI152 space.
@@ -1000,7 +1020,17 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+@deprecated('it has been replace by fetch_atlas_smith_2009 and '
+            'will be removed in nilearn 0.1.5')
 def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
+    return fetch_atlas_smith_2009(
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose)
+
+
+def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009)
 
     Parameters
@@ -1633,7 +1663,14 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
                  phenotypic=phenotypic, description=fdescr)
 
 
+@deprecated('it has been replace by fetch_atlas_msdl and '
+            'will be removed in nilearn 0.1.5')
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    return fetch_atlas_msdl(data_dir=data_dir, url=url,
+                            resume=resume, verbose=verbose)
+
+
+def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
     Parameters
