@@ -640,4 +640,11 @@ try:
 except ImportError:
     def assert_less_equal(a, b):
         if a > b:
+            raise AssertionError("%f is not less or equal than %f" % (a, b))
+
+try:
+    from nose.tools import assert_less
+except ImportError:
+    def assert_less(a, b):
+        if a >= b:
             raise AssertionError("%f is not less than %f" % (a, b))
