@@ -130,14 +130,14 @@ def test_mask_3d():
 
 def test_mask_4d():
     # Dummy mask
-    mask = np.zeros((10, 10, 10))
+    mask = np.zeros((10, 10, 10), dtype=int)
     mask[3:7, 3:7, 3:7] = 1
     mask_bool = mask.astype(bool)
     mask_img = Nifti1Image(mask, np.eye(4))
     n_mask_vox = mask_bool.sum()
 
     # Dummy data
-    data = np.zeros((10, 10, 10, 3))
+    data = np.zeros((10, 10, 10, 3), dtype=int)
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3

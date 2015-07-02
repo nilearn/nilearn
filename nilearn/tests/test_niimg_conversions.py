@@ -41,7 +41,7 @@ class PhonyNiimage(nibabel.spatialimages.SpatialImage):
         return self.data.shape
 
 
-def test_assert_same_fov():
+def test_check_same_fov():
 
     affine_a = np.eye(4)
     affine_b = np.eye(4) * 2
@@ -55,25 +55,33 @@ def test_assert_same_fov():
     shape_b_affine_a = nibabel.Nifti1Image(np.empty(shape_b), affine_a)
     shape_b_affine_b = nibabel.Nifti1Image(np.empty(shape_b), affine_b)
 
-    niimg_conversions._assert_same_fov(a=shape_a_affine_a,
-                                       b=shape_a_affine_a_2)
+    niimg_conversions._check_same_fov(a=shape_a_affine_a,
+                                      b=shape_a_affine_a_2,
+                                      raise_error=True)
 
-    assert_raises_regex(ValueError, '[a,c] and [a,c] do not have the same affine',
-                        niimg_conversions._assert_same_fov,
+    assert_raises_regex(ValueError,
+                        '[a,c] and [a,c] do not have the same affine',
+                        niimg_conversions._check_same_fov,
                         a=shape_a_affine_a, b=shape_a_affine_a_2,
-                        c=shape_a_affine_b)
+                        c=shape_a_affine_b, raise_error=True)
 
-    assert_raises_regex(ValueError, '[a,b] and [a,b] do not have the same shape',
-                        niimg_conversions._assert_same_fov,
-                        a=shape_a_affine_a, b=shape_b_affine_a)
+    assert_raises_regex(ValueError,
+                        '[a,b] and [a,b] do not have the same shape',
+                        niimg_conversions._check_same_fov,
+                        a=shape_a_affine_a, b=shape_b_affine_a,
+                        raise_error=True)
 
-    assert_raises_regex(ValueError, '[a,b] and [a,b] do not have the same affine',
-                        niimg_conversions._assert_same_fov,
-                        a=shape_b_affine_b, b=shape_a_affine_a)
+    assert_raises_regex(ValueError,
+                        '[a,b] and [a,b] do not have the same affine',
+                        niimg_conversions._check_same_fov,
+                        a=shape_b_affine_b, b=shape_a_affine_a,
+                        raise_error=True)
 
-    assert_raises_regex(ValueError, '[a,b] and [a,b] do not have the same shape',
-                        niimg_conversions._assert_same_fov,
-                        a=shape_b_affine_b, b=shape_a_affine_a)
+    assert_raises_regex(ValueError,
+                        '[a,b] and [a,b] do not have the same shape',
+                        niimg_conversions._check_same_fov,
+                        a=shape_b_affine_b, b=shape_a_affine_a,
+                        raise_error=True)
 
 
 def test_check_niimg_3d():

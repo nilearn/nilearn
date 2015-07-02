@@ -42,7 +42,7 @@ def _check_same_fov(*args, **kwargs):
         raise ValueError('Following field of view errors were detected:\n' +
                          '\n'.join(['- %s and %s do not have the same %s' % e
                                     for e in errors]))
-    return (len(errors) > 0)
+    return (len(errors) == 0)
 
 
 def _index_img(img, index):
