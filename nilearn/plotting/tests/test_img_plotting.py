@@ -238,6 +238,9 @@ def test_plot_img_with_resampling():
     img = nibabel.Nifti1Image(data, affine)
     display = plot_img(img)
     display.add_overlay(img)
+    display.add_contours(img, contours=2, linewidth=4,
+                         colors=['limegreen', 'yellow'])
+    display.add_edges(img, color='c')
 
 
 def test_plot_noncurrent_axes():

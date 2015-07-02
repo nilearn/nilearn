@@ -639,7 +639,7 @@ class BaseSlicer(object):
             color: matplotlib color: string or (r, g, b) value
                 The color used to display the edge map
         """
-        img = reorder_img(img)
+        img = reorder_img(img, resample='continuous')
         data = img.get_data()
         affine = img.get_affine()
         single_color_cmap = colors.ListedColormap([color])
