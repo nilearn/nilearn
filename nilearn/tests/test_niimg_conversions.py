@@ -60,25 +60,25 @@ def test_check_same_fov():
                                       raise_error=True)
 
     assert_raises_regex(ValueError,
-                        '[a,c] and [a,c] do not have the same affine',
+                        '[ac] and [ac] do not have the same affine',
                         niimg_conversions._check_same_fov,
                         a=shape_a_affine_a, b=shape_a_affine_a_2,
                         c=shape_a_affine_b, raise_error=True)
 
     assert_raises_regex(ValueError,
-                        '[a,b] and [a,b] do not have the same shape',
+                        '[ab] and [ab] do not have the same shape',
                         niimg_conversions._check_same_fov,
                         a=shape_a_affine_a, b=shape_b_affine_a,
                         raise_error=True)
 
     assert_raises_regex(ValueError,
-                        '[a,b] and [a,b] do not have the same affine',
+                        '[ab] and [ab] do not have the same affine',
                         niimg_conversions._check_same_fov,
                         a=shape_b_affine_b, b=shape_a_affine_a,
                         raise_error=True)
 
     assert_raises_regex(ValueError,
-                        '[a,b] and [a,b] do not have the same shape',
+                        '[ab] and [ab] do not have the same shape',
                         niimg_conversions._check_same_fov,
                         a=shape_b_affine_b, b=shape_a_affine_a,
                         raise_error=True)
