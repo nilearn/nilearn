@@ -27,7 +27,7 @@ def test_multi_pca():
         data.append(nibabel.Nifti1Image(this_data, affine))
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
-    multi_pca = MultiPCA(mask=mask_img, n_components=3)
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0, n_components=3)
 
     # Test that the components are the same if we put twice the same data
     components1 = multi_pca.fit(data).components_

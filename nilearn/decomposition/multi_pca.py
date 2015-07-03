@@ -10,11 +10,12 @@ import nibabel
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
+from sklearn.utils.validation import check_random_state
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
-from .._utils.cache_mixin import cache
+from .._utils.cache_mixin import CacheMixin, cache
 from .._utils import as_ndarray
 from .._utils.compat import _basestring
 
@@ -24,7 +25,9 @@ def session_pca(imgs, mask_img, parameters,
                 memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
-                copy=True):
+                return_data=False,
+                copy=True,
+                random_state=0):
     """Filter, mask and compute PCA on Niimg-like objects
 
     This is an helper function whose first call `base_masker.filter_and_mask`
@@ -39,6 +42,9 @@ def session_pca(imgs, mask_img, parameters,
     mask_img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply on the data
+
+    return_data: boolean,
+        Return data
 
     parameters: dictionary
         Dictionary of parameters passed to `filter_and_mask`. Please see the
@@ -63,6 +69,11 @@ def session_pca(imgs, mask_img, parameters,
 
     copy: boolean, optional
         Whether or not data should be copied
+
+    random_state: int or RandomState
+        Pseudo number generator state used for random sampling.
+
+    random_state:
     """
 
     data, affine = cache(
@@ -76,15 +87,26 @@ def session_pca(imgs, mask_img, parameters,
             confounds=confounds,
             copy=copy)
     if n_components <= data.shape[0] // 4:
-        U, S, _ = randomized_svd(data.T, n_components)
+        U, S, _ = cache(randomized_svd, memory, memory_level=memory_level,
+                        func_memory_level=2)(
+            data.T, n_components, random_state=random_state)
     else:
-        U, S, _ = linalg.svd(data.T, full_matrices=False)
+        U, S, _ = cache(linalg.svd, memory, memory_level=memory_level,
+                        func_memory_level=2)(
+            data.T, full_matrices=False)
     U = U.T[:n_components].copy()
     S = S[:n_components]
-    return U, S
+    if return_data:
+        # data -= np.mean(data, axis=0)
+        # std = data.std(axis=0)
+        # std[std == 0] = 1
+        # data /= std
+        return U, S, data
+    else:
+        return U, S, None
 
 
-class MultiPCA(BaseEstimator, TransformerMixin):
+class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     """Perform Multi Subject Principal Component Analysis.
 
     Perform a PCA on each subject and stack the results. An optional Canonical
@@ -133,6 +155,12 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    keep_data_flat: boolean,
+        Keep data in memory
+
+    random_state: int or RandomState
+        Pseudo number generator state used for random sampling.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -170,8 +198,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
                  do_cca=True, standardize=True, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
+                 keep_data_flat=False,
                  t_r=None, memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
+                 random_state=None
                  ):
         self.mask = mask
         self.memory = memory
@@ -181,6 +211,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.keep_data_mem = keep_data_flat
 
         self.do_cca = do_cca
         self.n_components = n_components
@@ -188,6 +219,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.standardize = standardize
+
+        self.random_state = random_state
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components
@@ -200,6 +233,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             the affine is considered the same for all.
         """
 
+        random_state = check_random_state(self.random_state)
         # Hack to support single-subject data:
         if isinstance(imgs, (_basestring, nibabel.Nifti1Image)):
             imgs = [imgs]
@@ -275,21 +309,26 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
-
+        if self.verbose:
+            print("[MultiPCA] Learning subject level PCAs")
         subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-            delayed(session_pca)(
+            delayed(self._cache(session_pca, func_memory_level=1))(
                 img,
                 self.masker_.mask_img_,
                 parameters,
                 n_components=self.n_components,
                 memory=self.memory,
+                return_data=self.keep_data_mem,
                 memory_level=self.memory_level,
                 confounds=confound,
-                verbose=self.verbose
+                verbose=self.verbose,
+                random_state=random_state
             )
             for img, confound in zip(imgs, confounds))
-        subject_pcas, subject_svd_vals = zip(*subject_pcas)
+        subject_pcas, subject_svd_vals, subject_datas = zip(*subject_pcas)
 
+        if self.verbose:
+            print("[MultiPCA] Learning group level PCA")
         if len(imgs) > 1:
             if not self.do_cca:
                 for subject_pca, subject_svd_val in \
@@ -306,11 +345,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                                           subject_pca.shape[0]))
                 data[index * self.n_components:
                      (index + 1) * self.n_components] = subject_pca
-            data, variance, _ = cache(randomized_svd,
-                                self.memory,
-                                func_memory_level=3,
-                                memory_level=self.memory_level)(
-                        data.T, n_components=self.n_components)
+            data, variance, _ = self._cache(randomized_svd, func_memory_level=1)\
+                (data.T, n_components=self.n_components, random_state=random_state)
             # as_ndarray is to get rid of memmapping
             data = as_ndarray(data.T)
         else:
@@ -318,6 +354,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             variance = subject_svd_vals[0]
         self.components_ = data
         self.variance_ = variance
+        if self.keep_data_mem:
+            self.data_flat_ = subject_datas
         return self
 
     def transform(self, imgs, confounds=None):
