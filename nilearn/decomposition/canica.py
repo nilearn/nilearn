@@ -121,11 +121,11 @@ class CanICA(MultiPCA, CacheMixin):
                  ):
         super(CanICA, self).__init__(
             mask=mask, memory=memory, memory_level=memory_level,
-            n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
+            n_jobs=n_jobs, verbose=max(0, verbose - 1), do_cca=do_cca,
             n_components=n_components, smoothing_fwhm=smoothing_fwhm,
-            target_affine=target_affine, target_shape=target_shape)
+            target_affine=target_affine, target_shape=target_shape,
+            random_state=random_state)
         self.threshold = threshold
-        self.random_state = random_state
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
@@ -149,17 +149,21 @@ class CanICA(MultiPCA, CacheMixin):
         MultiPCA.fit(self, imgs, y=y, confounds=confounds)
         random_state = check_random_state(self.random_state)
 
+        if self.verbose:
+            print("[CanICA] Performing ICA")
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
         if (LooseVersion(sklearn.__version__).version > [0, 12]):
             # random_state in fastica was added in 0.13
             results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T,
-                    whiten=True, fun='cube', random_state=seed)
-                for seed in seeds)
+                delayed(self._cache(fastica, func_memory_level=1))
+                       (self.components_.T,
+                        whiten=True, fun='cube', random_state=seed)
+                        for seed in seeds)
         else:
             results = Parallel(n_jobs=1, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T, whiten=True, fun='cube')
-                for seed in seeds)
+                delayed(self._cache(fastica, func_memory_level=1))
+                       (self.components_.T, whiten=True, fun='cube')
+                        for seed in seeds)
 
         ica_maps_gen_ = (result[2].T for result in results)
         ica_maps_and_sparsities = ((ica_map,
