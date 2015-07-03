@@ -92,7 +92,6 @@ def session_pca(imgs, mask_img, parameters,
             data.T, full_matrices=False)
     U = U.T[:n_components].copy()
     S = S[:n_components]
-
     return U, S
 
 
