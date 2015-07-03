@@ -124,7 +124,6 @@ class CanICA(MultiPCA, CacheMixin):
             n_jobs=n_jobs, verbose=max(0, verbose-1), do_cca=do_cca,
             n_components=n_components, smoothing_fwhm=smoothing_fwhm,
             target_affine=target_affine, target_shape=target_shape,
-            keep_data_flat=False,
             random_state=random_state)
         self.threshold = threshold
         self.low_pass = low_pass
