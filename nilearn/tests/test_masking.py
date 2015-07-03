@@ -231,6 +231,44 @@ def test_unmask():
                         unmask, transposed_vector, mask_img)
 
 
+def test_intersect_masks_filename():
+    # Create dummy masks
+    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a[2:4, 2:4] = 1
+    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   |   | X | X |
+    # +---+---+---+---+
+    # |   |   | X | X |
+    # +---+---+---+---+
+
+    mask_b = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_b[1:3, 1:3] = 1
+    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
+
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   | X | X |   |
+    # +---+---+---+---+
+    # |   | X | X |   |
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+
+    with write_tmp_imgs(mask_a_img, mask_b_img, create_files=True)\
+                     as filenames:
+        mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+        mask_ab[2, 2] = 1
+        mask_ab_ = intersect_masks(filenames, threshold=1.)
+        assert_array_equal(mask_ab, mask_ab_.get_data())
+
+
 def test_intersect_masks():
     """ Test the intersect_masks function
     """
