@@ -52,7 +52,7 @@ for subject_n in range(n_subjects):
 
     # Use PSC units
     region_psc_ts = region_raw_ts / region_raw_ts.mean(axis=0) * 100.
-    region_ts = nilearn.signal.clean(region_psc_ts, detrend=True,
+    region_ts = nilearn.signal.clean(region_raw_ts, detrend=True,
                                      low_pass=None, high_pass=.01,
                                      t_r=2.5,
                                      standardize=standardize,
