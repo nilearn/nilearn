@@ -64,7 +64,7 @@ logistic_l2 = LogisticRegression(C=1., penalty="l2")
 logistic_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
                            param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
                            scoring='f1')
-logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
+logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l2"),
                               param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
                               scoring='f1')
 
