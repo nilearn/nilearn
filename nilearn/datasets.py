@@ -1022,15 +1022,18 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 @deprecated('it has been replace by fetch_atlas_smith_2009 and '
             'will be removed in nilearn 0.1.5')
-def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_smith_2009(data_dir=None, mirror='origin', url=None, resume=True,
+                     verbose=1):
     return fetch_atlas_smith_2009(
         data_dir=data_dir,
+        mirror=mirror,
         url=url,
         resume=resume,
         verbose=verbose)
 
 
-def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
+                           resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009)
 
     Parameters
@@ -1038,6 +1041,10 @@ def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
+    mirror: string, optional
+        By default, the dataset is downloaded from the original website of the atlas.
+        Specifying "nitrc" will force download from a mirror, with potentially
+        higher bandwith.
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
 
@@ -1076,17 +1083,34 @@ def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/
     """
     if url is None:
-        url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
+        if mirror == 'origin':
+            url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
+        elif mirror == 'nitrc':
+            url = [
+                    'https://www.nitrc.org/frs/download.php/7730/',
+                    'https://www.nitrc.org/frs/download.php/7729/',
+                    'https://www.nitrc.org/frs/download.php/7731/',
+                    'https://www.nitrc.org/frs/download.php/7726/',
+                    'https://www.nitrc.org/frs/download.php/7728/',
+                    'https://www.nitrc.org/frs/download.php/7727/',
+            ]
+        else:
+            raise ValueError('Unknown mirror "%s". Mirror must be "origin" '
+                'or "nitrc"' % str(mirror))
 
-    files = [('rsn20.nii.gz', url + 'rsn20.nii.gz', {}),
-             ('PNAS_Smith09_rsn10.nii.gz',
-                 url + 'PNAS_Smith09_rsn10.nii.gz', {}),
-             ('rsn70.nii.gz', url + 'rsn70.nii.gz', {}),
-             ('bm20.nii.gz', url + 'bm20.nii.gz', {}),
-             ('PNAS_Smith09_bm10.nii.gz',
-                 url + 'PNAS_Smith09_bm10.nii.gz', {}),
-             ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
-             ]
+    files = [
+            'rsn20.nii.gz',
+            'PNAS_Smith09_rsn10.nii.gz',
+            'rsn70.nii.gz',
+            'bm20.nii.gz',
+            'PNAS_Smith09_bm10.nii.gz',
+            'bm70.nii.gz'
+    ]
+
+    if isinstance(url, _basestring):
+        url = [url] * len(files)
+
+    files = [(f, u + f, {}) for f, u in zip(files, url)]
 
     dataset_name = 'smith_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
