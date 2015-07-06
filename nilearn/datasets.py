@@ -655,6 +655,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   files that must be downloaded will be in this directory. If a corrupted
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
+    files = list(files)
     files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
