@@ -1588,78 +1588,67 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     """
 
     if url is None:
-        url = 'http://connectir.projects.nitrc.org'
-    f1 = url + '/adhd40_p1.tar.gz'
-    f2 = url + '/adhd40_p2.tar.gz'
-    f3 = url + '/adhd40_p3.tar.gz'
-    f4 = url + '/adhd40_p4.tar.gz'
-    f1_opts = {'uncompress': True}
-    f2_opts = {'uncompress': True}
-    f3_opts = {'uncompress': True}
-    f4_opts = {'uncompress': True}
+        url = 'https://www.nitrc.org/frs/download.php/'
 
-    fname = '%s_rest_tshift_RPI_voreg_mni.nii.gz'
-    rname = '%s_regressors.csv'
-
-    # Subjects ID per file
-    sub1 = ['3902469', '7774305', '3699991']
-    sub2 = ['2014113', '4275075', '1019436', '3154996', '3884955', '0027034',
-            '4134561', '0027018', '6115230', '0027037', '8409791', '0027011']
-    sub3 = ['3007585', '8697774', '9750701', '0010064', '0021019', '0010042',
-            '0010128', '2497695', '4164316', '1552181', '4046678', '0023012']
-    sub4 = ['1679142', '1206380', '0023008', '4016887', '1418396', '2950754',
-            '3994098', '3520880', '1517058', '9744150', '1562298', '3205761',
-            '3624598']
-    subs = sub1 + sub2 + sub3 + sub4
-
-    subjects_funcs = \
-        [(os.path.join('data', i, fname % i), f1, f1_opts) for i in sub1] + \
-        [(os.path.join('data', i, fname % i), f2, f2_opts) for i in sub2] + \
-        [(os.path.join('data', i, fname % i), f3, f3_opts) for i in sub3] + \
-        [(os.path.join('data', i, fname % i), f4, f4_opts) for i in sub4]
-
-    subjects_confounds = \
-        [(os.path.join('data', i, rname % i), f1, f1_opts) for i in sub1] + \
-        [(os.path.join('data', i, rname % i), f2, f2_opts) for i in sub2] + \
-        [(os.path.join('data', i, rname % i), f3, f3_opts) for i in sub3] + \
-        [(os.path.join('data', i, rname % i), f4, f4_opts) for i in sub4]
-
-    phenotypic = [('ADHD200_40subs_motion_parameters_and_phenotypics.csv', f1,
-        f1_opts)]
-
-    max_subjects = len(subjects_funcs)
-    # Check arguments
+    # Preliminary checks and declarations
+    dataset_name = 'adhd'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    ids = ['0010042', '0010064', '0010128', '0021019', '0023008', '0023012',
+           '0027011', '0027018', '0027034', '0027037', '1019436', '1206380',
+           '1418396', '1517058', '1552181', '1562298', '1679142', '2014113',
+           '2497695', '2950754', '3007585', '3154996', '3205761', '3520880',
+           '3624598', '3699991', '3884955', '3902469', '3994098', '4016887',
+           '4046678', '4134561', '4164316', '4275075', '6115230', '7774305',
+           '8409791', '8697774', '9744150', '9750701']
+    nitrc_ids = range(7782, 7822)
+    max_subjects = len(ids)
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
+    ids = ids[:n_subjects]
+    nitrc_ids = nitrc_ids[:n_subjects]
 
-    subs = subs[:n_subjects]
-    subjects_funcs = subjects_funcs[:n_subjects]
-    subjects_confounds = subjects_confounds[:n_subjects]
+    opts = dict(uncompress=True)
 
-    dataset_name = 'adhd'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume,
-                                  verbose=verbose)
-    subjects_confounds = _fetch_files(data_dir, subjects_confounds,
-            resume=resume, verbose=verbose)
-    phenotypic = _fetch_files(data_dir, phenotypic, resume=resume,
-                              verbose=verbose)[0]
-
+    # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
 
-    # Load phenotypic data
+    # First, get the metadata
+    phenotypic = ('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
+        url + '7781/adhd40_metadata.tgz', opts)
+
+    phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
+                              verbose=verbose)[0]
+
+    ## Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
                                dtype=None)
-    # Keep phenotypic information for selected subjects
-    isubs = np.asarray(subs, dtype=int)
-    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
-                             for i in isubs]]
 
-    return Bunch(func=subjects_funcs, confounds=subjects_confounds,
+    # Keep phenotypic information for selected subjects
+    int_ids = np.asarray(ids, dtype=int)
+    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
+                             for i in int_ids]]
+
+    # Download dataset files
+
+    archives = [url + '%i/adhd40_%s.tgz' % (ni, ii)
+                for ni, ii in zip(nitrc_ids, ids)]
+    functionals = ['data/%s/%s_rest_tshift_RPI_voreg_mni.nii.gz' % (i, i)
+                   for i in ids]
+    confounds = ['data/%s/%s_regressors.csv' % (i, i) for i in ids]
+
+    functionals = _fetch_files(
+        data_dir, zip(functionals, archives, (opts,) * n_subjects),
+        resume=resume, verbose=verbose)
+
+    confounds = _fetch_files(
+        data_dir, zip(confounds, archives, (opts,) * n_subjects),
+        resume=resume, verbose=verbose)
+
+    return Bunch(func=functionals, confounds=confounds,
                  phenotypic=phenotypic, description=fdescr)
 
 
