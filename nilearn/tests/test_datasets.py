@@ -438,7 +438,7 @@ def test_fetch_adhd():
                                n_subjects=12, verbose=0)
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
-    assert_equal(len(url_request.urls), 2)
+    assert_equal(len(url_request.urls), 13)  # Subjects + phenotypic
 
 
 @with_setup(setup_mock)
