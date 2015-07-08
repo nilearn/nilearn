@@ -1,26 +1,31 @@
 """
-CanICA
+DictLearning
 """
 
-# Author: Alexandre Abraham, Gael Varoquaux,
+# Author: Arthur Mensch
 # License: BSD 3 clause
-from distutils.version import LooseVersion
+from ..input_data.base_masker import filter_and_mask
 
-from operator import itemgetter
 import numpy as np
-from scipy.stats import scoreatpercentile
 
-import sklearn
-from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory, delayed, Parallel
-from sklearn.utils import check_random_state
 
-from .multi_pca import MultiPCA
-from .._utils.cache_mixin import CacheMixin
+from sklearn.decomposition import dict_learning_online
+from .._utils.class_inspect import get_params
+from .._utils import as_ndarray
 
+from ..input_data import MultiNiftiMasker
 
-class CanICA(MultiPCA, CacheMixin):
-    """Perform Canonical Independent Component Analysis.
+from .canica import CanICA
+from .._utils.cache_mixin import cache, CacheMixin
+
+from sklearn.linear_model import Ridge
+from sklearn.decomposition import MiniBatchDictionaryLearning
+from sklearn.utils import gen_batches
+from sklearn.decomposition.pca import RandomizedPCA
+
+class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
+    """Perform Dictionary Learning analysis.
 
     Parameters
     ----------
@@ -59,6 +64,10 @@ class CanICA(MultiPCA, CacheMixin):
 
     n_init: int, optional
         The number of times the fastICA algorithm is restarted
+
+    reduction: boolean, optional
+        # XXX: Experimental
+        Specify whether to reduce the dictionary by PCA before learning cde
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -113,26 +122,46 @@ class CanICA(MultiPCA, CacheMixin):
                  threshold='auto', n_init=10,
                  standardize=True,
                  random_state=0,
-                 keep_data_mem=False,
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
+                 alpha=1,
+                 batch_size=10,
+                 n_iter=1000,
+                 reduction=False,
                  # Common options
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
                  ):
-        super(CanICA, self).__init__(
-            mask=mask, memory=memory, memory_level=memory_level,
-            n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
-            n_components=n_components, smoothing_fwhm=smoothing_fwhm,
-            target_affine=target_affine, target_shape=target_shape,
-            keep_data_mem=keep_data_mem)
-        self.threshold = threshold
-        self.random_state = random_state
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.n_init = n_init
-        self.standardize = standardize
+        CanICA.__init__(self,
+                        mask=mask, memory=memory, memory_level=memory_level,
+                        n_jobs=n_jobs, verbose=max(0, verbose - 1), do_cca=do_cca,
+                        threshold=threshold, n_init=n_init,
+                        n_components=n_components, smoothing_fwhm=smoothing_fwhm,
+                        target_affine=target_affine, target_shape=target_shape,
+                        random_state=random_state, high_pass=high_pass, low_pass=low_pass,
+                        t_r=t_r,
+                        keep_data_mem=True,
+                        standardize=standardize)
+        self.reduction = reduction
+        MiniBatchDictionaryLearning.__init__(self, n_components=n_components, alpha=alpha,
+                                             n_iter=n_iter, batch_size=batch_size,
+                                             fit_algorithm='lars',
+                                             transform_alpha=alpha,
+                                             verbose=max(0, verbose - 1),
+                                             random_state=random_state,
+                                             shuffle=True,
+                                             n_jobs=1)
+
+    def _init_dict(self, imgs, y=None, confounds=None):
+        CanICA.fit(self, imgs, y=y, confounds=confounds)
+        self.data_flat_ = np.concatenate(self.data_flat_, axis=0)
+        if self.verbose:
+            print('[DictLearning] Learning time serie')
+        ridge = Ridge(alpha=1e-6, fit_intercept=None)
+        ridge.fit(self.components_.T, self.data_flat_.T)
+        self.dict_init = ridge.coef_.T
+        S = np.sqrt(np.sum(self.dict_init ** 2, axis=0))
+        self.dict_init /= S[np.newaxis, :]
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the ICA maps across subjects
@@ -148,48 +177,30 @@ class CanICA(MultiPCA, CacheMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
-        MultiPCA.fit(self, imgs, y=y, confounds=confounds)
-        random_state = check_random_state(self.random_state)
+        self._init_dict(imgs, y, confounds)
 
-        seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
-        if (LooseVersion(sklearn.__version__).version > [0, 12]):
-            # random_state in fastica was added in 0.13
-            results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T,
-                    whiten=True, fun='cube', random_state=seed)
-                for seed in seeds)
+        if self.verbose:
+            print('[DictLearning] Learning dictionary')
+        MiniBatchDictionaryLearning.fit(self, self.data_flat_.T)
+        if self.reduction:
+            if self.verbose:
+                print('[DictLearning] Reducing the dictionary')
+            pca = RandomizedPCA(n_components=self.n_components, iterated_power=0,
+                                random_state=self.random_state)
+            self.components_ = pca.fit_transform(self.components_)
+            data_trans = pca.transform(self.data_flat_.T)
         else:
-            results = Parallel(n_jobs=1, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T, whiten=True, fun='cube')
-                for seed in seeds)
+            data_trans = self.data_flat_.T
+        if self.verbose:
+            print('[DictLearning] Learning code')
+        self.components_ = MiniBatchDictionaryLearning.transform(self, data_trans).T
+        if self.verbose:
+            print('Done')
 
-        ica_maps_gen_ = (result[2].T for result in results)
-        ica_maps_and_sparsities = ((ica_map,
-                                    np.sum(np.abs(ica_map), axis=1).max())
-                                   for ica_map in ica_maps_gen_)
-        ica_maps, _ = min(ica_maps_and_sparsities, key=itemgetter(-1))
-
-        # Thresholding
-        ratio = None
-        if isinstance(self.threshold, float):
-            ratio = self.threshold
-        elif self.threshold == 'auto':
-            ratio = 1.
-        elif self.threshold is not None:
-            raise ValueError("Threshold must be None, "
-                             "'auto' or float. You provided %s." %
-                             str(self.threshold))
-        if ratio is not None:
-            abs_ica_maps = np.abs(ica_maps)
-            threshold = scoreatpercentile(
-                abs_ica_maps,
-                100. - (100. / len(ica_maps)) * ratio)
-            ica_maps[abs_ica_maps < threshold] = 0.
-        self.components_ = ica_maps
-
+        self.components_ = as_ndarray(self.components_)
         # flip signs in each component so that peak is +ve
         for component in self.components_:
-            if component.max() < -component.min():
+            if np.sum(component[component > 0]) < - np.sum(component[component <= 0]):
                 component *= -1
 
         return self

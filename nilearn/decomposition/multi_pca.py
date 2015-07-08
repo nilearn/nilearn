@@ -25,7 +25,9 @@ def session_pca(imgs, mask_img, parameters,
                 memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
-                copy=True):
+                return_data=False,
+                copy=True,
+                random_state=0):
     """Filter, mask and compute PCA on Niimg-like objects
 
     This is an helper function whose first call `base_masker.filter_and_mask`
@@ -82,7 +84,10 @@ def session_pca(imgs, mask_img, parameters,
         U, S, _ = linalg.svd(data.T, full_matrices=False)
     U = U.T[:n_components].copy()
     S = S[:n_components]
-    return U, S
+    if return_data:
+        return U, S, data
+    else:
+        return U, S
 
 
 class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
@@ -134,6 +139,9 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    keep_data_mem: boolean,
+        Keep data in memory
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -171,6 +179,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
                  do_cca=True, standardize=True, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
+                 keep_data_mem=False,
                  t_r=None, memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
                  ):
@@ -182,6 +191,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.keep_data_mem = keep_data_mem
 
         self.do_cca = do_cca
         self.n_components = n_components
@@ -212,7 +222,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('Need one or more Niimg-like objects as input, '
                              'an empty list was given.')
         if confounds is None:
-            confounds = itertools.repeat(None, len(imgs))
+            confounds = [None] * len(imgs)  # itertools.repeat(None, len(imgs))
 
         # First, learn the mask
         if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
@@ -285,11 +295,15 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                 n_components=self.n_components,
                 memory=self.memory,
                 memory_level=self.memory_level,
+                return_data=self.keep_data_mem,
                 confounds=confound,
                 verbose=self.verbose
             )
             for img, confound in zip(imgs, confounds))
-        subject_pcas, subject_svd_vals = zip(*subject_pcas)
+        if self.keep_data_mem:
+            subject_pcas, subject_svd_vals, subject_datas = zip(*subject_pcas)
+        else:
+            subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
         if len(imgs) > 1:
             if not self.do_cca:
@@ -315,8 +329,12 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             data = subject_pcas[0]
             variance = subject_svd_vals[0]
+            if self.keep_data_mem:
+                subject_datas = subject_datas[0]
         self.components_ = data
         self.variance_ = variance
+        if self.keep_data_mem:
+            self.data_flat_ = subject_datas
         return self
 
     def transform(self, imgs, confounds=None):
