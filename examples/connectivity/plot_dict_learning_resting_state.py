@@ -45,7 +45,7 @@ n_components = 50
 dict_learning = DictLearning(n_components=n_components, smoothing_fwhm=6.,
                              memory="nilearn_cache", memory_level=5,
                              threshold=1., verbose=2, random_state=0,
-                             n_jobs=1, n_init=1, alpha=3.7, n_iter=1000)
+                             n_jobs=1, n_init=1, alpha=6, n_iter=1000)
 
 dict_learning.fit(func_filenames)
 
@@ -65,7 +65,8 @@ from nilearn.plotting import plot_stat_map
 from nilearn.image import iter_img
 
 for i, cur_img in enumerate(iter_img(components_img)):
-    plot_stat_map(cur_img, display_mode="z", title="IC %d" % i, cut_coords=1,
-                  colorbar=False)
+    if i % 10 == 0:
+        plot_stat_map(cur_img, title="Component %d" % i,
+                      colorbar=False)
 
 plt.show()

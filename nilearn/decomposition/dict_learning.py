@@ -8,20 +8,16 @@ from ..input_data.base_masker import filter_and_mask
 
 import numpy as np
 
-from sklearn.externals.joblib import Memory, delayed, Parallel
+from sklearn.externals.joblib import Memory
 
-from sklearn.decomposition import dict_learning_online
-from .._utils.class_inspect import get_params
 from .._utils import as_ndarray
 
-from ..input_data import MultiNiftiMasker
 
 from .canica import CanICA
-from .._utils.cache_mixin import cache, CacheMixin
+from .._utils.cache_mixin import CacheMixin
 
 from sklearn.linear_model import Ridge
 from sklearn.decomposition import MiniBatchDictionaryLearning
-from sklearn.utils import gen_batches
 from sklearn.decomposition.pca import RandomizedPCA
 
 class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
@@ -143,9 +139,11 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
                         keep_data_mem=True,
                         standardize=standardize)
         self.reduction = reduction
+        # Setting n_jobs = 1 as it is slower otherwise
         MiniBatchDictionaryLearning.__init__(self, n_components=n_components, alpha=alpha,
                                              n_iter=n_iter, batch_size=batch_size,
                                              fit_algorithm='lars',
+                                             transform_algorithm='lasso_lars',
                                              transform_alpha=alpha,
                                              verbose=max(0, verbose - 1),
                                              random_state=random_state,
@@ -192,11 +190,9 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         else:
             data_trans = self.data_flat_.T
         if self.verbose:
+            print('')
             print('[DictLearning] Learning code')
         self.components_ = MiniBatchDictionaryLearning.transform(self, data_trans).T
-        if self.verbose:
-            print('Done')
-
         self.components_ = as_ndarray(self.components_)
         # flip signs in each component so that peak is +ve
         for component in self.components_:
