@@ -45,7 +45,7 @@ n_components = 50
 dict_learning = DictLearning(n_components=n_components, smoothing_fwhm=6.,
                              memory="nilearn_cache", memory_level=5,
                              threshold=1., verbose=2, random_state=0,
-                             n_jobs=1, n_init=1, alpha=6, n_iter=1000)
+                             n_jobs=1, n_init=1, alpha=3, n_iter=1000)
 
 dict_learning.fit(func_filenames)
 
