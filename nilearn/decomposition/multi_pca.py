@@ -418,10 +418,11 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                 copy=True)
         return self._score(data, per_component=per_component)
 
-    def score_training(self, per_component=False):
-        if not self.keep_data_mem:
-            raise ValueError("Training data has already been kept in memory")
-        return self._score(self.data_flat_, per_component=per_component)
+    # Wait for PR dict learning ?
+    # def score_training(self, per_component=False):
+    #     if not self.keep_data_mem:
+    #         raise ValueError("Training data has already been kept in memory")
+    #     return self._score(self.data_flat_, per_component=per_component)
 
     def _score(self, data,
                per_component=False):
