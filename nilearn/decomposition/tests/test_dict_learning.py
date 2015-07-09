@@ -9,6 +9,7 @@ from nilearn.image import iter_img
 
 import numpy as np
 
+
 def test_dict_learning():
     data, mask_img, components, rng = _make_canica_test_data()
 
