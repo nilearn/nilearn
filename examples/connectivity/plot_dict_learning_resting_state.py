@@ -24,8 +24,6 @@ from nilearn import datasets
 import os
 import datetime
 
-output_dir = os.path.expanduser('~/work/output/nilearn/plot_dict_learning_resting_state')
-output_dir = os.path.join(output_dir, datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 try:
     os.makedirs(output_dir)
 except OSError:
@@ -52,10 +50,8 @@ dict_learning.fit(func_filenames)
 print('')
 print('[Example] Dumping results')
 
-# Retrieve the independent components in brain space
+# Retrieve learned spatial maps in brain space
 components_img = dict_learning.masker_.inverse_transform(dict_learning.components_)
-# components_img is a Nifti Image object, and can be saved to a file with
-# the following line:
 components_img.to_filename('dict_learning_resting_state.nii.gz')
 
 ### Visualize the results #####################################################

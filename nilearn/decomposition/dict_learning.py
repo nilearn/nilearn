@@ -21,7 +21,7 @@ from sklearn.decomposition import MiniBatchDictionaryLearning
 from sklearn.decomposition.pca import RandomizedPCA
 
 class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
-    """Perform Dictionary Learning analysis.
+    """Perform Dictionary Learning analysis on a CanICA initialization : yields more stable maps
 
     Parameters
     ----------
