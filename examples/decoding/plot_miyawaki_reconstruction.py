@@ -41,17 +41,22 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ### Preprocess and mask #######################################################
 import numpy as np
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.input_data import NiftiMasker
+from nilearn.image import iter_img
 
 sys.stderr.write("Preprocessing data...")
 t0 = time.time()
 
 # Load and mask fMRI data
-masker = MultiNiftiMasker(mask_img=miyawaki_dataset.mask, detrend=True,
+masker = NiftiMasker(mask_img=miyawaki_dataset.mask, detrend=True,
                           standardize=False)
 masker.fit()
-X_train = masker.transform(X_random_filenames)
-X_test = masker.transform(X_figure_filenames)
+X_train = list()
+X_test = list()
+for img_path in X_random_filenames:
+    X_train.append(masker.transform(img_path))
+for img_path in X_figure_filenames:
+    X_test.append(masker.transform(img_path))
 
 # Load visual stimuli from csv files
 y_train = []

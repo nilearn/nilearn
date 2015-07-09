@@ -24,11 +24,10 @@ class CanICA(MultiPCA, CacheMixin):
 
     Parameters
     ----------
-    mask: Niimg-like object or MultiNiftiMasker instance, optional
+    mask: Niimg-like object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+        it will be computed automatically with default parameters.
 
     data: array-like, shape = [[n_samples, n_features], ...]
         Training vector, where n_samples is the number of samples,

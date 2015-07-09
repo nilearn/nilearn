@@ -8,7 +8,6 @@ from nose.tools import assert_raises
 import nibabel
 
 from nilearn.decomposition.multi_pca import MultiPCA
-from nilearn.input_data import MultiNiftiMasker
 
 
 def test_multi_pca():
@@ -44,11 +43,6 @@ def test_multi_pca():
     # Check that asking for too little components raises a ValueError
     multi_pca = MultiPCA()
     assert_raises(ValueError, multi_pca.fit, data[:2])
-
-    # Smoke test the use of a masker and without CCA
-    multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
-                         do_cca=False, n_components=3)
-    multi_pca.fit(data[:2])
 
     # Smoke test the transform and inverse_transform
     multi_pca.inverse_transform(multi_pca.transform(data[-2:]))

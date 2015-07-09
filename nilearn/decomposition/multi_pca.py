@@ -11,7 +11,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
-from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
+from ..input_data import NiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
@@ -99,11 +99,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker, optional
+    mask: Niimg-like object, instance of NiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+        it will be computed automatically with default parameters.
 
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
@@ -151,9 +150,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    `masker_`: instance of MultiNiftiMasker
+    `masker_`: instance of NiftiMasker
         Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in `mask` parameter,
+        NiftiMasker is given in `mask` parameter,
         this is a copy of it. Otherwise, a masker is created using the value
         of `mask` and other NiftiMasker related parameters as initialization.
 
@@ -214,20 +213,19 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             confounds = itertools.repeat(None, len(imgs))
 
         # First, learn the mask
-        if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
-            self.masker_ = MultiNiftiMasker(mask_img=self.mask,
-                                            smoothing_fwhm=self.smoothing_fwhm,
-                                            target_affine=self.target_affine,
-                                            target_shape=self.target_shape,
-                                            standardize=self.standardize,
-                                            low_pass=self.low_pass,
-                                            high_pass=self.high_pass,
-                                            mask_strategy='epi',
-                                            t_r=self.t_r,
-                                            memory=self.memory,
-                                            memory_level=self.memory_level,
-                                            n_jobs=self.n_jobs,
-                                            verbose=max(0, self.verbose - 1))
+        if not isinstance(self.mask, NiftiMasker):
+            self.masker_ = NiftiMasker(mask_img=self.mask,
+                                       smoothing_fwhm=self.smoothing_fwhm,
+                                       target_affine=self.target_affine,
+                                       target_shape=self.target_shape,
+                                       standardize=self.standardize,
+                                       low_pass=self.low_pass,
+                                       high_pass=self.high_pass,
+                                       mask_strategy='epi',
+                                       t_r=self.t_r,
+                                       memory=self.memory,
+                                       memory_level=self.memory_level,
+                                       verbose=max(0, self.verbose - 1))
         else:
             try:
                 self.masker_ = clone(self.mask)
@@ -265,7 +263,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
-        parameters = get_params(MultiNiftiMasker, self)
+        parameters = get_params(NiftiMasker, self)
         # Remove non specific and redudent parameters
         for param_name in ['memory', 'memory_level', 'confounds',
                            'verbose', 'n_jobs']:
