@@ -3,7 +3,7 @@ Test the multi-PCA module
 """
 
 import numpy as np
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_is_instance
 
 import nibabel
 
@@ -55,3 +55,46 @@ def test_multi_pca():
 
     # Smoke test to fit with no img
     assert_raises(TypeError, multi_pca.fit)
+
+def test_multi_pca_score():
+    shape = (6, 8, 10, 5)
+    affine = np.eye(4)
+    rng = np.random.RandomState(0)
+
+    # Create a "multi-subject" dataset
+    data = []
+    for i in range(8):
+        this_data = rng.normal(size=shape)
+        # Create fake activation to get non empty mask
+        this_data[2:4, 2:4, 2:4, :] += 10
+        data.append(nibabel.Nifti1Image(this_data, affine))
+
+    mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
+
+    # Assert that score is between zero and one
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0, n_components=3)
+    multi_pca.fit(data)
+    s = multi_pca.score(data, per_component=False)
+    np.testing.assert_array_less(s, np.ones(6))
+    np.testing.assert_array_less(-s, np.ones(6))
+
+    # Assert that score does not fail with single subject data
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0, n_components=3)
+    multi_pca.fit(data[0])
+    s = multi_pca.score(data, per_component=False)
+    assert_is_instance(s, float)
+    assert(0. <= s <= 1.)
+
+    # Single subject data
+    single_data = rng.normal(size=shape)
+    # Create fake activation to get non empty mask
+    single_data[2:4, 2:4, 2:4, :] += 10
+    single_data = nibabel.Nifti1Image(single_data, affine)
+
+    # Assert that score is one for n_components == n_sample in single subject configuration
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0, n_components=shape[0])
+    multi_pca.fit(single_data)
+    s = multi_pca.score(single_data, per_component=False)
+    assert(s == 1.)
+
+
