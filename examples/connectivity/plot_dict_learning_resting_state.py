@@ -20,15 +20,6 @@ import numpy as np
 ### Load ADHD rest dataset ####################################################
 from nilearn import datasets
 
-# OUTPUT DIR
-import os
-import datetime
-
-try:
-    os.makedirs(output_dir)
-except OSError:
-    pass
-
 adhd_dataset = datasets.fetch_adhd(n_subjects=10)
 func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
 
