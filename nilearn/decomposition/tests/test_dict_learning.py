@@ -23,6 +23,7 @@ def test_dict_learning():
     K = K.take(indices[:, 1], axis=1).take(indices[:, 0], axis=0)
     assert_array_almost_equal(np.abs(K), np.eye(4), 1)
 
+
 def test_component_sign():
     # We should have a heuristic that flips the sign of components in
     # DictLearning to have more positive values than negative values, for
