@@ -28,7 +28,7 @@ from sklearn.covariance import LedoitWolf, EmpiricalCovariance
 sites_gmean = False  # if True, gmean is computed sperately for each site
 adhd_gmean = False  # if True, gmean is computed sperately for ADHD/controls
 cov_estimator = EmpiricalCovariance()
-standardize = False
+standardize = True
 print('specific gmean for each site: {0}\n'
       'specific gmean for each ADHD/controls: {1}\n'
       'estimator: {2}\n standardize:{3}'.format(sites_gmean, adhd_gmean,
@@ -65,7 +65,7 @@ sites = np.array([k / 8 for k in range(n_subjects)])
 adhd = dataset.phenotypic['adhd'][:n_subjects]
 subjects = np.array(subjects)
 all_matrices = {}
-measures = ['correlation', 'partial correlation', 'tangent', 'covariance',
+measures = ['correlation', 'partial correlation', 'tangent', 'correlation',
             'precision']
 for measure in measures:
     estimator = {'kind': measure, 'cov_estimator': cov_estimator}
@@ -98,7 +98,7 @@ both = sites * 2 + adhd
 clfs = [LinearSVC(random_state=0), LDA()] + [KNeighborsClassifier(
     n_neighbors=n_neighbors) for n_neighbors in range(1, 6)]
 clf_names = ['SVM', 'LDA'] + ['KNN n={}'.format(n) for n in range(1, 6)]
-cv = StratifiedShuffleSplit(both, n_iter=10000, test_size=0.33, random_state=0)
+cv = StratifiedShuffleSplit(both, n_iter=1000, test_size=0.33, random_state=0)
 for classes, prediction in zip([sites, adhd], ['sites', 'ADHD/controls']):
     print('-- {} classification ...'.format(prediction))
     scores = {}
