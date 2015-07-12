@@ -4,20 +4,15 @@ DictLearning
 
 # Author: Arthur Mensch
 # License: BSD 3 clause
-from ..input_data.base_masker import filter_and_mask
 
 import numpy as np
-
 from sklearn.externals.joblib import Memory
-
-from .._utils import as_ndarray
-
-
-from .canica import CanICA
-from .._utils.cache_mixin import CacheMixin
-
 from sklearn.linear_model import Ridge
 from sklearn.decomposition import MiniBatchDictionaryLearning
+
+from .._utils import as_ndarray
+from .canica import CanICA
+from .._utils.cache_mixin import CacheMixin
 
 class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
     """Perform a map learning algorithm based on component sparsity (rather than independance),
@@ -181,7 +176,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
             print('[DictLearning] Learning code')
         self.components_ = MiniBatchDictionaryLearning.transform(self, self.data_flat_.T).T
         self.components_ = as_ndarray(self.components_)
-        # flip signs in each component so that peak is +ve
+        # flip signs in each composant positive part is l1 larger than negative part
         for component in self.components_:
             if np.sum(component[component > 0]) < - np.sum(component[component <= 0]):
                 component *= -1
