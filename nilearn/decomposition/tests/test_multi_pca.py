@@ -10,6 +10,8 @@ import nibabel
 from nilearn.decomposition.multi_pca import MultiPCA
 from nilearn.input_data import MultiNiftiMasker
 
+from numpy.testing import assert_almost_equal
+from nilearn.decomposition.tests.test_canica import _make_canica_test_data
 
 def test_multi_pca():
     # Smoke test the MultiPCA
@@ -55,3 +57,10 @@ def test_multi_pca():
 
     # Smoke test to fit with no img
     assert_raises(TypeError, multi_pca.fit)
+
+def test_multi_pca_data_mem():
+    data, mask_img, components, rng = _make_canica_test_data()
+    multi_pca = MultiPCA(mask=mask_img, n_components=3, keep_data_mem=True)
+    multi_pca.fit(data)
+    multi_pca.masker_.set_params(detrend=True)
+    assert_almost_equal(multi_pca.data_flat_,  multi_pca.masker_.transform(data))

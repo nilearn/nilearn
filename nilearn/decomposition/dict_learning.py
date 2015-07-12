@@ -20,8 +20,8 @@ from sklearn.linear_model import Ridge
 from sklearn.decomposition import MiniBatchDictionaryLearning
 
 class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
-    """Perform a map learning algorithm based on componentsparsity, over a CanICA initialization,
-    which yields more stable maps thatn CanICA.
+    """Perform a map learning algorithm based on component sparsity (rather than independance),
+     over a CanICA initialization, which yields more stable maps than CanICA.
 
     Parameters
     ----------
