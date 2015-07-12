@@ -765,7 +765,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             view_type = 'contours'
         else:
             view_type = 'continuous'
-    elif view_type == 'contours':
+    if view_type == 'contours':
         filled = False
     elif view_type == 'filled_contours':
         filled = True
