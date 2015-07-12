@@ -5,6 +5,7 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
+
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
@@ -197,7 +198,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     # run the permutations
     h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
     scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
-    for i in xrange(n_perm_chunk):
+    for i in range(n_perm_chunk):
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
             target_vars = (target_vars

@@ -14,10 +14,15 @@ from .. import image
 from .. import _utils
 from .._utils import CacheMixin
 from .base_masker import BaseMasker
+from .._utils.compat import _basestring
 
 
 class MultiNiftiMasker(BaseMasker, CacheMixin):
-    """Nifti data loader with preprocessing for multiple subjects
+    """Class for masking of Niimg-like objects.
+
+    MultiNiftiMasker is useful when dealing with image sets from multiple
+    subjects. Use case: integrates well with decomposition by MultiPCA and
+    CanICA (multi-subject models)
 
     Parameters
     ==========
@@ -147,25 +152,21 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
 
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print "[%s.fit] Loading data from %s" % (
+            print("[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
-                _utils._repr_niimgs(imgs)[:200])
+                _utils._repr_niimgs(imgs)[:200]))
         # Compute the mask if not given by the user
         if self.mask_img is None:
             if self.verbose > 0:
-                print "[%s.fit] Computing mask" % self.__class__.__name__
+                print("[%s.fit] Computing mask" % self.__class__.__name__)
             data = []
             if not isinstance(imgs, collections.Iterable) \
-                    or isinstance(imgs, basestring):
+                    or isinstance(imgs, _basestring):
                 raise ValueError("[%s.fit] For multiple processing, you should"
                                  " provide a list of data "
                                  "(e.g. Nifti1Image objects or filenames)."
                                  "%r is an invalid input"
                                  % (self.__class__.__name__, imgs))
-            for img in imgs:
-                # Note that data is not loaded into memory at this stage
-                # if img is a string
-                data.append(_utils.check_niimgs(img, accept_3d=True))
 
             mask_args = (self.mask_args if self.mask_args is not None
                          else {})
@@ -194,12 +195,12 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                              ' requested (imgs != None) while a mask has'
                              ' been provided at masker creation. Given mask'
                              ' will be used.' % self.__class__.__name__)
-            self.mask_img_ = _utils.check_niimg(self.mask_img, ensure_3d=True)
+            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
-            print "[%s.transform] Resampling mask" % self.__class__.__name__
+            print("[%s.transform] Resampling mask" % self.__class__.__name__)
         self.mask_img_ = self._cache(image.resample_img,
                                     func_memory_level=1)(
             self.mask_img_,
@@ -232,7 +233,9 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         data: {list of numpy arrays}
             preprocessed images
         """
+        self._check_fitted()
+
         if not hasattr(imgs, '__iter__')\
-                    or isinstance(imgs, basestring):
+                    or isinstance(imgs, _basestring):
                 return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

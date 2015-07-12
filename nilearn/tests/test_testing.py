@@ -2,9 +2,9 @@ import itertools
 
 import numpy as np
 
-from nose.tools import assert_equals, assert_raises
+from nose.tools import assert_equal, assert_raises
 
-from .._utils.testing import generate_fake_fmri
+from nilearn._utils.testing import generate_fake_fmri
 
 
 def test_generate_fake_fmri():
@@ -33,11 +33,11 @@ def test_generate_fake_fmri():
                 block_type=btype,
                 rand_gen=rand_gen)
 
-        assert_equals(fmri.shape[:-1], shape)
-        assert_equals(fmri.shape[-1], length)
+        assert_equal(fmri.shape[:-1], shape)
+        assert_equal(fmri.shape[-1], length)
 
         if n_block is not None:
-            assert_equals(target.size, length)
+            assert_equal(target.size, length)
 
     assert_raises(ValueError, generate_fake_fmri, length=10, n_blocks=10,
                   block_size=None, rand_gen=rand_gen)

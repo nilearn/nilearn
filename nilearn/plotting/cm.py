@@ -5,13 +5,8 @@ Matplotlib colormaps useful for neuroimaging.
 """
 import numpy as _np
 
-from nilearn._utils.testing import skip_if_running_nose
-
-try:
-    from matplotlib import cm as _cm
-    from matplotlib import colors as _colors
-except ImportError:
-    skip_if_running_nose('Could not import matplotlib')
+from matplotlib import cm as _cm
+from matplotlib import colors as _colors
 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -148,12 +143,16 @@ if hasattr(_cm, 'afmhot'): # or afmhot
     _cmaps_data['hot_white_bone'] = _concat_cmap(_cm.afmhot, _cm.bone_r)
     _cmaps_data['hot_black_bone'] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
+# Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
+_bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
+_cmaps_data['bwr'] = _colors.LinearSegmentedColormap.from_list(
+    'bwr', _bwr_data)._segmentdata.copy()
 
 ################################################################################
 # Build colormaps and their reverse.
 _cmap_d = dict()
 
-for _cmapname in _cmaps_data.keys():
+for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
     _cmapname_r = _cmapname + '_r'
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _cm.revcmap(_cmapspec)

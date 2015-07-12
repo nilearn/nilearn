@@ -6,9 +6,11 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 import nibabel
 
-from ..base_masker import filter_and_mask
-from ... import image
-from ..._utils.testing import assert_raises_regexp
+from nilearn.input_data.base_masker import filter_and_mask
+from nilearn import image
+from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.exceptions import DimensionError
+
 
 def test_cropping_code_paths():
     # Will mask data with an identically sampled mask and
@@ -54,5 +56,8 @@ def test_filter_and_mask():
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
 
-    assert_raises_regexp(TypeError, "A 3D image is expected", filter_and_mask,
-                         data, mask, {})
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+
+    assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
+                         data_img, mask_img, {})

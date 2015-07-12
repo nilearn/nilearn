@@ -10,10 +10,9 @@ or as weights in one image per region (maps).
 import numpy as np
 from scipy import linalg, ndimage
 
-import nibabel
-
 from . import _utils
 from . import masking
+from ._utils import new_img_like
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
@@ -66,23 +65,23 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     nilearn.region.img_to_signals_maps
     """
 
-    labels_img = _utils.check_niimg(labels_img, ensure_3d=True)
+    labels_img = _utils.check_niimg_3d(labels_img)
 
     # TODO: Make a special case for list of strings (load one image at a
     # time).
-    imgs = _utils.check_niimgs(imgs)
+    imgs = _utils.check_niimg_4d(imgs)
     target_affine = imgs.get_affine()
-    target_shape = _utils._get_shape(imgs)[:3]
+    target_shape = imgs.shape[:3]
 
     # Check shapes and affines.
-    if _utils._get_shape(labels_img) != target_shape:
+    if labels_img.shape != target_shape:
         raise ValueError("labels_img and imgs shapes must be identical.")
     if abs(labels_img.get_affine() - target_affine).max() > 1e-9:
         raise ValueError("labels_img and imgs affines must be identical")
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
-        if _utils._get_shape(mask_img) != target_shape:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        if mask_img.shape != target_shape:
             raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.get_affine() - target_affine).max() > 1e-9:
             raise ValueError("mask_img and imgs affines must be identical")
@@ -152,15 +151,15 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     nilearn.region.signals_to_img_maps
     """
 
-    labels_img = _utils.check_niimg(labels_img, ensure_3d=True)
+    labels_img = _utils.check_niimg_3d(labels_img)
 
     signals = np.asarray(signals)
     target_affine = labels_img.get_affine()
-    target_shape = _utils._get_shape(labels_img)[:3]
+    target_shape = labels_img.shape[:3]
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
-        if _utils._get_shape(mask_img) != target_shape:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        if mask_img.shape != target_shape:
             raise ValueError("mask_img and labels_img shapes "
                              "must be identical.")
         if abs(mask_img.get_affine() - target_affine).max() > 1e-9:
@@ -185,15 +184,15 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                     dtype=signals.dtype, order=order)
     labels_dict = dict([(label, n) for n, label in enumerate(labels)])
     # optimized for "data" in F order.
-    for k in xrange(labels_data.shape[2]):
-        for j in xrange(labels_data.shape[1]):
-            for i in xrange(labels_data.shape[0]):
+    for k in range(labels_data.shape[2]):
+        for j in range(labels_data.shape[1]):
+            for i in range(labels_data.shape[0]):
                 label = labels_data[i, j, k]
                 num = labels_dict.get(label, None)
                 if num is not None:
                     data[i, j, k, :] = signals[:, num]
 
-    return nibabel.Nifti1Image(data, target_affine)
+    return new_img_like(labels_img, data, target_affine)
 
 
 def img_to_signals_maps(imgs, maps_img, mask_img=None):
@@ -237,13 +236,13 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     nilearn.region.signals_to_img_maps
     """
 
-    maps_img = _utils.check_niimg(maps_img)
-    imgs = _utils.check_niimgs(imgs)
+    maps_img = _utils.check_niimg_4d(maps_img)
+    imgs = _utils.check_niimg_4d(imgs)
     affine = imgs.get_affine()
-    shape = _utils._get_shape(imgs)[:3]
+    shape = imgs.shape[:3]
 
     # Check shapes and affines.
-    if _utils._get_shape(maps_img)[:3] != shape:
+    if maps_img.shape[:3] != shape:
         raise ValueError("maps_img and imgs shapes must be identical.")
     if abs(maps_img.get_affine() - affine).max() > 1e-9:
         raise ValueError("maps_img and imgs affines must be identical")
@@ -251,8 +250,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     maps_data = maps_img.get_data()
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
-        if _utils._get_shape(mask_img) != shape:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        if mask_img.shape != shape:
             raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.get_affine() - affine).max() > 1e-9:
             raise ValueError("mask_img and imgs affines must be identical")
@@ -302,14 +301,14 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     nilearn.region.img_to_signals_maps
     """
 
-    maps_img = _utils.check_niimg(maps_img)
+    maps_img = _utils.check_niimg_4d(maps_img)
     maps_data = maps_img.get_data()
-    shape = _utils._get_shape(maps_img)[:3]
+    shape = maps_img.shape[:3]
     affine = maps_img.get_affine()
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img)
-        if _utils._get_shape(mask_img) != shape:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        if mask_img.shape != shape:
             raise ValueError("mask_img and maps_img shapes must be identical.")
         if abs(mask_img.get_affine() - affine).max() > 1e-9:
             raise ValueError("mask_img and maps_img affines must be "
@@ -323,9 +322,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     assert(maps_mask.shape == maps_data.shape[:3])
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
-    return masking.unmask(data, nibabel.Nifti1Image(
-        _utils.as_ndarray(maps_mask, dtype=np.int8), affine)
-                          )
+    return masking.unmask(data, new_img_like(maps_img, maps_mask, affine))
 
 
 def _trim_maps(maps, mask, keep_empty=False, order="F"):

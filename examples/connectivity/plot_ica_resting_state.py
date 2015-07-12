@@ -13,6 +13,12 @@ from nilearn import datasets
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 func_filename = nyu_dataset.func[0]
 
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) is at: %s' %
+      nyu_dataset.anat_anon[0])
+print('First subject functional nifti image (4D) is at: %s' %
+      nyu_dataset.func[0])  # 4D data
+
 ### Preprocess ################################################################
 from nilearn.input_data import NiftiMasker
 
@@ -47,7 +53,7 @@ component_img = masker.inverse_transform(components_masked)
 
 ### Visualize the results #####################################################
 # Show some interesting components
-import pylab as plt
+import matplotlib.pyplot as plt
 from nilearn import image
 from nilearn.plotting import plot_stat_map
 

@@ -25,6 +25,32 @@ create_new_venv() {
     pip install nose
 }
 
+print_conda_requirements() {
+    # Echo a conda requirement string for example
+    # "pip nose python='.7.3 scikit-learn=*". It has a hardcoded
+    # list of possible packages to install and looks at _VERSION
+    # environment variables to know whether to install a given package and
+    # if yes which version to install. For example:
+    #   - for numpy, NUMPY_VERSION is used
+    #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
+    TO_INSTALL_ALWAYS="pip nose"
+    REQUIREMENTS="$TO_INSTALL_ALWAYS"
+    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn"
+    for PACKAGE in $TO_INSTALL_MAYBE; do
+        # Capitalize package name and add _VERSION
+        PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
+        # replace - by _, needed for scikit-learn for example
+        PACKAGE_VERSION_VARNAME="${PACKAGE_VERSION_VARNAME//-/_}"
+        # dereference $PACKAGE_VERSION_VARNAME to figure out the
+        # version to install
+        PACKAGE_VERSION="${!PACKAGE_VERSION_VARNAME}"
+        if [ -n "$PACKAGE_VERSION" ]; then
+            REQUIREMENTS="$REQUIREMENTS $PACKAGE=$PACKAGE_VERSION"
+        fi
+    done
+    echo $REQUIREMENTS
+}
+
 create_new_conda_env() {
     # Deactivate the travis-provided virtual environment and setup a
     # conda-based environment instead
@@ -32,7 +58,7 @@ create_new_conda_env() {
 
     # Use the miniconda installer for faster download / install of conda
     # itself
-    wget http://repo.continuum.io/miniconda/Miniconda-3.6.0-Linux-x86_64.sh \
+    wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
         -O miniconda.sh
     chmod +x miniconda.sh && ./miniconda.sh -b
     export PATH=/home/travis/miniconda/bin:$PATH
@@ -40,9 +66,9 @@ create_new_conda_env() {
 
     # Configure the conda environment and put it in the path using the
     # provided versions
-    conda create -n testenv --yes python=$PYTHON_VERSION pip nose \
-        numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION \
-        matplotlib=$MATPLOTLIB_VERSION scikit-learn=$SKLEARN_VERSION
+    REQUIREMENTS=$(print_conda_requirements)
+    echo "conda requirements string: $REQUIREMENTS"
+    conda create -n testenv --yes $REQUIREMENTS
     source activate testenv
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
@@ -54,33 +80,28 @@ create_new_conda_env() {
     fi
 }
 
-if [[ "$DISTRIB" == "ubuntu" ]]; then
+if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
-    # Use standard ubuntu packages in their default version
-    sudo apt-get install -qq python-scipy python-nose python-pip python-sklearn
-
-elif [[ "$DISTRIB" == "ubuntu-no-matplotlib" ]]; then
-    create_new_venv
-    # --no-install-recommends only installs explictly mentioned
-    # packages. By default apt-get installs recommended packages and
-    # python-matplotlib is recommended by python-sklearn
-    # Note python-joblib needs to be added explicity because in 12.04
-    # it is marked 'recommends' rather than 'depends' by python-sklearn
-    sudo apt-get install --no-install-recommends -qq python-scipy python-nose python-pip python-sklearn python-joblib
-
-elif [[ "$DISTRIB" == "neurodebian" ]]; then
-    create_new_venv
-    wget -O- http://neuro.debian.net/lists/precise.us-nh.libre | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
-    sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
-    sudo apt-get update -qq
+    bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
+    # Note: nibabel is in setup.py install_requires so nibabel will
+    # always be installed eventually. Defining NIBABEL_VERSION is only
+    # useful if you happen to want a specific nibabel version rather
+    # than the latest available one.
+    if [ -n "$NIBABEL_VERSION" ]; then
+        pip install nibabel=="$NIBABEL_VERSION"
+    fi
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
     exit 1
+fi
+
+if [[ "$COVERAGE" == "true" ]]; then
+    pip install coverage coveralls
 fi
 
 python setup.py install

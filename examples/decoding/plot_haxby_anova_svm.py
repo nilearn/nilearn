@@ -12,13 +12,18 @@ from nilearn import datasets
 import numpy as np
 haxby_dataset = datasets.fetch_haxby_simple()
 
+# print basic information on the dataset
+print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
+print('Functional nifti image (4D) is located at: %s' %
+      haxby_dataset.func)
+
 y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 ### Preprocess data ###########################################################
 
 ### Restrict to faces and houses ##############################################
-condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 y = y[condition_mask]
 conditions = conditions[condition_mask]
 
@@ -111,9 +116,9 @@ for train, test in cv:
 classification_accuracy = np.mean(cv_scores)
 
 ### Printing the results
-print "=== ANOVA ==="
-print "Classification accuracy: %f" % classification_accuracy, \
-    " / Chance level: %f" % (1. / n_conditions)
-# Classification accuracy: 0.986111  / Chance level: 0.500000
+print("=== ANOVA ===")
+print("Classification accuracy: %.4f / Chance level: %f" % \
+    (classification_accuracy, 1. / n_conditions))
+# Classification accuracy: 0.9861 / Chance level: 0.5000
 
 plt.show()

@@ -2,48 +2,53 @@
 """
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
-import functools
-import os
-import sys
-import urllib2
 import contextlib
-import warnings
+import functools
 import inspect
+import os
 import re
+import sys
+import tempfile
+import warnings
+import copy
 
 import numpy as np
 import scipy.signal
 from sklearn.utils import check_random_state
 import scipy.linalg
-
-from nibabel import Nifti1Image
 import nibabel
 
 from .. import datasets
 from .. import masking
 from . import logger
+from .compat import _basestring, _urllib
+
 
 try:
-    from nose.tools import assert_raises_regexp
+    from nose.tools import assert_raises_regex
 except ImportError:
-    # for Py 2.6
-    def assert_raises_regexp(expected_exception, expected_regexp,
-                            callable_obj=None, *args, **kwargs):
-        """Helper function to check for message patterns in exceptions"""
+    # For Py 2.7
+    try:
+        from nose.tools import assert_raises_regexp as assert_raises_regex
+    except ImportError:
+        # for Py 2.6
+        def assert_raises_regex(expected_exception, expected_regexp,
+                                callable_obj=None, *args, **kwargs):
+            """Helper function to check for message patterns in exceptions"""
 
-        not_raised = False
-        try:
-            callable_obj(*args, **kwargs)
-            not_raised = True
-        except Exception as e:
-            error_message = str(e)
-            if not re.compile(expected_regexp).search(error_message):
-                raise AssertionError("Error message should match pattern "
-                                     "%r. %r does not." %
-                                     (expected_regexp, error_message))
-        if not_raised:
-            raise AssertionError("Should have raised %r" %
-                                 expected_exception(expected_regexp))
+            not_raised = False
+            try:
+                callable_obj(*args, **kwargs)
+                not_raised = True
+            except Exception as e:
+                error_message = str(e)
+                if not re.compile(expected_regexp).search(error_message):
+                    raise AssertionError("Error message should match pattern "
+                                         "%r. %r does not." %
+                                         (expected_regexp, error_message))
+            if not_raised:
+                raise AssertionError("Should have raised %r" %
+                                     expected_exception(expected_regexp))
 
 try:
     from sklearn.utils.testing import assert_warns
@@ -54,6 +59,22 @@ except ImportError:
             warnings.simplefilter("ignore", warning_class)
             output = func(*args, **kw)
         return output
+
+
+class MockRequest(object):
+    def __init__(self, url):
+        self.url = url
+
+    def add_header(*args):
+        pass
+
+
+class MockOpener(object):
+    def __init__(self):
+        pass
+
+    def open(self, request):
+        return request.url
 
 
 @contextlib.contextmanager
@@ -88,7 +109,7 @@ def write_tmp_imgs(*imgs, **kwargs):
     if len(invalid_keys) > 0:
         raise TypeError("%s: unexpected keyword argument(s): %s" %
                         (sys._getframe().f_code.co_name,
-                        " ".join(invalid_keys)))
+                         " ".join(invalid_keys)))
     create_files = kwargs.get("create_files", True)
 
     if create_files:
@@ -96,9 +117,11 @@ def write_tmp_imgs(*imgs, **kwargs):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for img in imgs:
-                filename = os.tempnam(None, "nilearn_") + ".nii"
+                _, filename = tempfile.mkstemp(prefix="nilearn_",
+                                               suffix=".nii",
+                                               dir=None)
                 filenames.append(filename)
-                nibabel.save(img, filename)
+                img.to_filename(filename)
 
         if len(imgs) == 1:
             yield filenames[0]
@@ -114,45 +137,34 @@ def write_tmp_imgs(*imgs, **kwargs):
             yield imgs
 
 
-class mock_urllib2(object):
-
-    urlparse = urllib2.urlparse
-
+class mock_request(object):
     def __init__(self):
-        """Object that mocks the urllib2 module to store downloaded filenames.
+        """Object that mocks the urllib (future) module to store downloaded filenames.
 
         `urls` is the list of the files whose download has been
         requested.
         """
         self.urls = set()
 
-    class HTTPError(urllib2.URLError):
-        code = 404
-
-    class URLError(urllib2.URLError):
-        pass
-
-    def urlopen(self, url):
-        self.urls.add(url)
-        # If the file is local, we try to open it
-        if url.startswith('file://'):
-            try:
-                return urllib2.urlopen(url)
-            except:
-                pass
-        return url
-
     def reset(self):
         self.urls = set()
+
+    def Request(self, url):
+        self.urls.add(url)
+        return MockRequest(url)
+
+    def build_opener(self, *args, **kwargs):
+        return MockOpener()
 
 
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
                          report_hook=None, verbose=0):
-        if not isinstance(response, basestring):
+        if not isinstance(response, _basestring):
             return _chunk_read_(response, local_file,
-                    initial_size=initial_size, chunk_size=chunk_size,
-                    report_hook=report_hook, verbose=verbose)
+                                initial_size=initial_size,
+                                chunk_size=chunk_size,
+                                report_hook=report_hook, verbose=verbose)
         return response
     return mock_chunk_read_
 
@@ -160,7 +172,7 @@ def wrap_chunk_read_(_chunk_read_):
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
                                  chunk_size=8192, report_hook=None,
                                  verbose=0):
-    raise urllib2.HTTPError("url", 418, "I'm a teapot", None, None)
+    raise _urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
 class FetchFilesMock (object):
@@ -186,14 +198,15 @@ class FetchFilesMock (object):
             basename = os.path.basename(fname)
             if basename in self.csv_files:
                 array = self.csv_files[basename]
+
                 # np.savetxt does not have a header argument for numpy 1.6
                 # np.savetxt(fname, array, delimiter=',', fmt="%s",
                 #            header=','.join(array.dtype.names))
                 # We need to add the header ourselves
-                with open(fname, 'w') as f:
+                with open(fname, 'wb') as f:
                     header = '# {0}\n'.format(','.join(array.dtype.names))
-                    f.write(header)
-                    np.savetxt(f, array, delimiter=',', fmt="%s")
+                    f.write(header.encode())
+                    np.savetxt(f, array, delimiter=',', fmt='%s')
 
         return filenames
 
@@ -238,14 +251,14 @@ def generate_regions_ts(n_features, n_regions,
     # Start at 1 to avoid getting an empty region
     boundaries = np.zeros(n_regions + 1)
     boundaries[-1] = n_features
-    boundaries[1:-1] = rand_gen.permutation(range(1, n_features)
+    boundaries[1:-1] = rand_gen.permutation(np.arange(1, n_features)
                                             )[:n_regions - 1]
     boundaries.sort()
 
     regions = np.zeros((n_regions, n_features), order="C")
-    overlap_end = int((overlap + 1) / 2)
-    overlap_start = int(overlap / 2)
-    for n in xrange(len(boundaries) - 1):
+    overlap_end = int((overlap + 1) / 2.)
+    overlap_start = int(overlap / 2.)
+    for n in range(len(boundaries) - 1):
         start = int(max(0, boundaries[n] - overlap_start))
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
@@ -282,7 +295,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
                              rand_gen=rand_gen, window=window)
-    mask_img = Nifti1Image(mask, affine)
+    mask_img = nibabel.Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
 
 
@@ -315,7 +328,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
-        labels = xrange(0, n_regions + 1)
+        labels = range(0, n_regions + 1)
         n_regions += 1
     else:
         n_regions = len(labels)
@@ -326,7 +339,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
-    return Nifti1Image(data, affine)
+    return nibabel.Nifti1Image(data, affine)
 
 
 def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
@@ -341,7 +354,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
     data = rand_gen.randint(n_regions + 1, size=shape)
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
-    return Nifti1Image(data, affine)
+    return nibabel.Nifti1Image(data, affine)
 
 
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
@@ -399,14 +412,14 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     full_shape = shape + (length, )
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
-    width = [s / 2 for s in shape]
-    shift = [s / 4 for s in shape]
+    width = [s // 2 for s in shape]
+    shift = [s // 4 for s in shape]
 
     if kind == "noise":
         signals = rand_gen.randint(256, size=(width + [length]))
     elif kind == "step":
         signals = np.ones(width + [length])
-        signals[..., :length / 2] = 0.5
+        signals[..., :length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
 
@@ -420,44 +433,46 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
          shift[1]:shift[1] + width[1],
          shift[2]:shift[2] + width[2]] = 1
 
-    if n_blocks is not None:
-        block_size = 3 if block_size is None else block_size
-        flat_fmri = fmri[mask.astype(np.bool)]
-        flat_fmri /= np.abs(flat_fmri).max()
-        target = np.zeros(length, dtype=np.int)
-        rest_max_size = (length - (n_blocks * block_size)) // n_blocks
-        if rest_max_size < 0:
-            raise ValueError(
-                '%s is too small '
-                'to put %s blocks of size %s' % (
-                    length, n_blocks, block_size))
-        t_start = 0
-        if rest_max_size > 0:
-            t_start = rand_gen.random_integers(0, rest_max_size, 1)[0]
-        for block in range(n_blocks):
-            if block_type == 'classification':
-                # Select a random voxel and add some signal to the background
-                voxel_idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
-                trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
-            else:
-                # Select the voxel in the image center and add some signal
-                # that increases with each block
-                voxel_idx = flat_fmri.shape[0] // 2
-                trials_effect = (
-                    rand_gen.random_sample(block_size) + 1) * block
-            t_rest = 0
-            if rest_max_size > 0:
-                t_rest = rand_gen.random_integers(0, rest_max_size, 1)[0]
-            flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
-            target[t_start:t_start + block_size] = block + 1
-            t_start += t_rest + block_size
-        target = target if block_type == 'classification' \
-            else target.astype(np.float)
-        fmri = np.zeros(fmri.shape)
-        fmri[mask.astype(np.bool)] = flat_fmri
-        return Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target
+    if n_blocks is None:
+        return (nibabel.Nifti1Image(fmri, affine),
+                nibabel.Nifti1Image(mask, affine))
 
-    return Nifti1Image(fmri, affine), Nifti1Image(mask, affine)
+    block_size = 3 if block_size is None else block_size
+    flat_fmri = fmri[mask.astype(np.bool)]
+    flat_fmri /= np.abs(flat_fmri).max()
+    target = np.zeros(length, dtype=np.int)
+    rest_max_size = (length - (n_blocks * block_size)) // n_blocks
+    if rest_max_size < 0:
+        raise ValueError(
+            '%s is too small '
+            'to put %s blocks of size %s' % (
+                length, n_blocks, block_size))
+    t_start = 0
+    if rest_max_size > 0:
+        t_start = rand_gen.random_integers(0, rest_max_size, 1)[0]
+    for block in range(n_blocks):
+        if block_type == 'classification':
+            # Select a random voxel and add some signal to the background
+            voxel_idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
+            trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
+        else:
+            # Select the voxel in the image center and add some signal
+            # that increases with each block
+            voxel_idx = flat_fmri.shape[0] // 2
+            trials_effect = (
+                rand_gen.random_sample(block_size) + 1) * block
+        t_rest = 0
+        if rest_max_size > 0:
+            t_rest = rand_gen.random_integers(0, rest_max_size, 1)[0]
+        flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
+        target[t_start:t_start + block_size] = block + 1
+        t_start += t_rest + block_size
+    target = target if block_type == 'classification' \
+        else target.astype(np.float)
+    fmri = np.zeros(fmri.shape)
+    fmri[mask.astype(np.bool)] = flat_fmri
+    return (nibabel.Nifti1Image(fmri, affine),
+            nibabel.Nifti1Image(mask, affine), target)
 
 
 def generate_signals_from_precisions(precisions,
@@ -545,7 +560,7 @@ def generate_group_sparse_gaussian_graphs(
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu((
         random_state.randint(0, high=int(1. / density),
-                         size=n_features * n_features)
+                             size=n_features * n_features)
     ).reshape(n_features, n_features) == 0, k=1)
 
     # Generate edges weights on topology
@@ -585,20 +600,15 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def skip_if_running_nose(msg=None):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
-
-    Parameters
-    ==========
-    msg: string, optional
-        The message issued when SkipTest is raised
+def is_nose_running():
+    """Returns whether we are running the nose test loader
     """
-    if not 'nose' in sys.modules:
+    if 'nose' not in sys.modules:
         return
     try:
         import nose
     except ImportError:
-        return
+        return False
     # Now check that we have the loader in the call stask
     stack = inspect.stack()
     from nose import loader
@@ -607,8 +617,27 @@ def skip_if_running_nose(msg=None):
         loader_file_name = loader_file_name[:-1]
     for _, file_name, _, _, _, _ in stack:
         if file_name == loader_file_name:
-            if msg is not None:
-                raise nose.SkipTest(msg)
-            else:
-                raise nose.SkipTest
+            return True
+    return False
 
+
+def skip_if_running_nose(msg=''):
+    """ Raise a SkipTest if we appear to be running the nose test loader.
+
+    Parameters
+    ==========
+    msg: string, optional
+        The message issued when SkipTest is raised
+    """
+    if is_nose_running():
+        import nose
+        raise nose.SkipTest(msg)
+
+
+# Backport: On some nose versions, assert_less_equal is not present
+try:
+    from nose.tools import assert_less_equal
+except ImportError:
+    def assert_less_equal(a, b):
+        if a > b:
+            raise AssertionError("%f is not less than %f" % (a, b))

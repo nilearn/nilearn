@@ -7,13 +7,13 @@ import warnings
 
 import numpy as np
 from scipy import ndimage
-from nibabel import Nifti1Image
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
+from ._utils import new_img_like
 from ._utils.cache_mixin import cache
-from ._utils.ndimage import largest_connected_component
-from ._utils.niimg_conversions import _safe_get_data
+from ._utils.ndimage import largest_connected_component, get_border_data
+from ._utils.niimg import _safe_get_data
 
 
 class MaskWarning(UserWarning):
@@ -40,8 +40,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     mask: numpy.ndarray
         boolean version of the mask
     '''
-    # 3D image for mask_img not enforced here on purpose
-    mask_img = _utils.check_niimg(mask_img, ensure_3d=False)
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask = mask_img.get_data()
     values = np.unique(mask)
 
@@ -160,10 +159,11 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if np.any(grp_mask > 0) and connected:
         grp_mask = largest_connected_component(grp_mask)
     grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
-    return Nifti1Image(grp_mask, ref_affine)
+    return new_img_like(mask_imgs[0], grp_mask, ref_affine)
 
 
-def _post_process_mask(mask, affine, opening=2, connected=True, warning_msg=""):
+def _post_process_mask(mask, affine, opening=2, connected=True,
+                       warning_msg=""):
     if opening:
         opening = int(opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
@@ -174,10 +174,9 @@ def _post_process_mask(mask, affine, opening=2, connected=True, warning_msg=""):
     if connected and mask_any:
         mask = largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask, iterations=2*opening)
+        mask = ndimage.binary_dilation(mask, iterations=2 * opening)
         mask = ndimage.binary_erosion(mask, iterations=opening)
-    return Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
-                       affine)
+    return mask, affine
 
 
 def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
@@ -253,9 +252,9 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
         The brain mask (3D image)
     """
     if verbose > 0:
-        print "EPI mask computation"
+        print("EPI mask computation")
 
-    epi_img = _utils.check_niimgs(epi_img, accept_3d=True)
+    epi_img = _utils.check_niimg(epi_img)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -284,9 +283,10 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
 
     mask = mean_epi >= threshold
 
-    return _post_process_mask(mask, affine, opening=opening,
+    mask, affine = _post_process_mask(mask, affine, opening=opening,
         connected=connected, warning_msg="Are you sure that input "
             "data are EPI images not detrended. ")
+    return new_img_like(epi_img, mask, affine)
 
 
 def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
@@ -419,9 +419,9 @@ def compute_background_mask(data_imgs, border_size=2,
         The brain mask (3D image)
     """
     if verbose > 0:
-        print "Background mask computation"
+        print("Background mask computation")
 
-    data_imgs = _utils.check_niimgs(data_imgs, accept_3d=True)
+    data_imgs = _utils.check_niimg(data_imgs)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -429,12 +429,7 @@ def compute_background_mask(data_imgs, border_size=2,
                 target_affine=target_affine, target_shape=target_shape,
                 smooth=False)
 
-    border_data = np.concatenate([
-            data[:border_size, :, :].ravel(), data[-border_size:, :, :].ravel(),
-            data[:, :border_size, :].ravel(), data[:, -border_size:, :].ravel(),
-            data[:, :, :border_size].ravel(), data[:, :, -border_size:].ravel(),
-        ])
-    background = np.median(border_data)
+    background = np.median(get_border_data(data, border_size))
     if np.isnan(background):
         # We absolutely need to catter for NaNs as a background:
         # SPM does that by default
@@ -442,9 +437,10 @@ def compute_background_mask(data_imgs, border_size=2,
     else:
         mask = data != background
 
-    return _post_process_mask(mask, affine, opening=opening,
+    mask, affine = _post_process_mask(mask, affine, opening=opening,
         connected=connected, warning_msg="Are you sure that input "
             "images have a homogeneous background.")
+    return new_img_like(data_imgs, mask, affine)
 
 
 def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
@@ -561,9 +557,9 @@ def apply_mask(imgs, mask_img, dtype='f',
     When using smoothing, ensure_finite is set to True, as non-finite
     values would spread accross the image.
     """
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask, mask_affine = _load_mask_img(mask_img)
-    mask_img = Nifti1Image(_utils.as_ndarray(mask, dtype=np.int8),
-                           mask_affine)
+    mask_img = new_img_like(mask_img, mask, mask_affine)
     return _apply_mask_fmri(imgs, mask_img, dtype=dtype,
                             smoothing_fwhm=smoothing_fwhm,
                             ensure_finite=ensure_finite)
@@ -578,7 +574,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     values (this is checked for in apply_mask, not in this function).
     """
 
-    mask_img = _utils.check_niimg(mask_img, ensure_3d=True)
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask_affine = mask_img.get_affine()
     mask_data = _utils.as_ndarray(mask_img.get_data(),
                                   dtype=np.bool)
@@ -586,7 +582,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     if smoothing_fwhm is not None:
         ensure_finite = True
 
-    imgs_img = _utils.check_niimgs(imgs)
+    imgs_img = _utils.check_niimg(imgs)
     affine = imgs_img.get_affine()[:3, :3]
 
     if not np.allclose(mask_affine, imgs_img.get_affine()):
@@ -625,7 +621,7 @@ def _unmask_3d(X, mask, order="C"):
     Parameters
     ==========
     X: numpy.ndarray
-        Masked data. shape: (samples,)
+        Masked data. shape: (features,)
 
     mask: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
@@ -633,9 +629,12 @@ def _unmask_3d(X, mask, order="C"):
     """
 
     if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+        raise TypeError("mask must be a boolean array")
     if X.ndim != 1:
-        raise ValueError("X must be a 1-dimensional array")
+        raise TypeError("X must be a 1-dimensional array")
+    n_features = mask.sum()
+    if X.shape[0] != n_features:
+        raise TypeError('X must be of shape (samples, %d).' % n_features)
 
     data = np.zeros(
         (mask.shape[0], mask.shape[1], mask.shape[2]),
@@ -644,8 +643,8 @@ def _unmask_3d(X, mask, order="C"):
     return data
 
 
-def _unmask_nd(X, mask, order="C"):
-    """Take masked data and bring them back to n-dimension
+def _unmask_4d(X, mask, order="C"):
+    """Take masked data and bring them back to 4D.
 
     Parameters
     ==========
@@ -653,7 +652,7 @@ def _unmask_nd(X, mask, order="C"):
         Masked data. shape: (samples, features)
 
     mask: numpy.ndarray
-        Mask. mask.ndim must be equal to 3, and dtype equal to bool.
+        Mask. mask.ndim must be equal to 4, and dtype *must* be bool.
 
     Returns
     =======
@@ -663,9 +662,12 @@ def _unmask_nd(X, mask, order="C"):
     """
 
     if mask.dtype != np.bool:
-        raise ValueError("mask must be a boolean array")
+        raise TypeError("mask must be a boolean array")
     if X.ndim != 2:
-        raise ValueError("X must be a 2-dimensional array")
+        raise TypeError("X must be a 2-dimensional array")
+    n_features = mask.sum()
+    if X.shape[1] != n_features:
+        raise TypeError('X must be of shape (samples, %d).' % n_features)
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
@@ -704,15 +706,15 @@ def unmask(X, mask_img, order="F"):
             ret.append(unmask(x, mask_img, order=order))  # 1-level recursion
         return ret
 
+    mask_img = _utils.check_niimg_3d(mask_img)
     mask, affine = _load_mask_img(mask_img)
 
     if X.ndim == 2:
-        unmasked = _unmask_nd(X, mask, order=order)
+        unmasked = _unmask_4d(X, mask, order=order)
     elif X.ndim == 1:
         unmasked = _unmask_3d(X, mask, order=order)
     else:
-        raise TypeError(
-            "Masked data X must be 2D or 1D array; got shape: %s" % str(
-                X.shape))
+        raise TypeError("Masked data X must be 2D or 1D array; "
+                        "got shape: %s" % str(X.shape))
 
-    return Nifti1Image(unmasked, affine)
+    return new_img_like(mask_img, unmasked, affine)

@@ -13,8 +13,9 @@ from nibabel import Nifti1Image
 import nibabel
 from distutils.version import LooseVersion
 
-from ..multi_nifti_masker import MultiNiftiMasker
-from ..._utils import testing
+from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
+from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
+from nilearn._utils.exceptions import DimensionError
 
 
 def test_auto_mask():
@@ -43,6 +44,12 @@ def test_auto_mask():
     masker.transform([[img, ]])
     # It should also work with a 3D image
     masker.transform(img)
+
+    # check exception when transform() called without prior fit()
+    masker2 = MultiNiftiMasker(mask_img=img)
+    assert_raises_regex(
+        ValueError,
+        'has not been fitted. ', masker2.transform, img2)
 
 
 def test_nan():
@@ -98,8 +105,8 @@ def test_3d_images():
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                               affine=np.diag((4, 4, 4, 1)))
     masker2 = MultiNiftiMasker(mask_img=mask_img_4d)
-    testing.assert_raises_regexp(TypeError, "A 3D image is expected",
-                                 masker2.fit)
+    assert_raises_regex(DimensionError, "Data must be a 3D",
+                        masker2.fit)
 
 
 def test_joblib_cache():
@@ -112,7 +119,7 @@ def test_joblib_cache():
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
 
-    with testing.write_tmp_imgs(mask_img, create_files=True)\
+    with write_tmp_imgs(mask_img, create_files=True)\
                 as filename:
         masker = MultiNiftiMasker(mask_img=filename)
         masker.fit()

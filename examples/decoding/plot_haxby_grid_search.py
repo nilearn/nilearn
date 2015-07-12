@@ -38,13 +38,17 @@ from nilearn import datasets
 import numpy as np
 haxby_dataset = datasets.fetch_haxby_simple()
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+# print basic information on the dataset
+print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
+print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func)
+
+y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 ### Preprocess data ###########################################################
 
 # Keep only data corresponding to shoes or bottles
-condition_mask = np.logical_or(conditions == 'shoe', conditions == 'bottle')
+condition_mask = np.logical_or(conditions == b'shoe', conditions == b'bottle')
 y = y[condition_mask]
 conditions = conditions[condition_mask]
 
@@ -100,12 +104,12 @@ for k in k_range:
     feature_selection.k = k
     cv_scores.append(np.mean(
         cross_val_score(anova_svc, X[session < 10], y[session < 10])))
-    print "CV score", cv_scores[-1]
+    print("CV score: %.4f" % cv_scores[-1])
 
     anova_svc.fit(X[session < 10], y[session < 10])
     y_pred = anova_svc.predict(X[session == 10])
     scores_validation.append(np.mean(y_pred == y[session == 10]))
-    print "score validation", scores_validation[-1]
+    print("score validation: %.4f" % scores_validation[-1])
 
 
 from matplotlib import pyplot as plt

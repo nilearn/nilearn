@@ -18,6 +18,12 @@ that have been defined via a standard GLM-based analysis.
 from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) located is at: %s' %
+      haxby_dataset.anat[0])
+print('First subject functional nifti image (4D) is located at: %s' %
+      haxby_dataset.func[0])
+
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
 from nilearn.input_data import NiftiMasker
 
@@ -25,14 +31,15 @@ from nilearn.input_data import NiftiMasker
 import numpy as np
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 stimuli = labels['labels']
+
 # identify resting state labels in order to be able to remove them
-resting_state = stimuli == "rest"
+resting_state = stimuli == b"rest"
 
 # find names of remaining active labels
-categories = np.unique(stimuli[resting_state == False])
+categories = np.unique(stimuli[np.logical_not(resting_state)])
 
 # extract tags indicating to which acquisition run a tag belongs
-session_labels = labels["chunks"][resting_state == False]
+session_labels = labels["chunks"][np.logical_not(resting_state)]
 
 # The classifier: a support vector classifier
 from sklearn.svm import SVC
@@ -53,19 +60,19 @@ mask_scores = {}
 mask_chance_scores = {}
 
 for mask_name in mask_names:
-    print "Working on mask %s" % mask_name
+    print("Working on mask %s" % mask_name)
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
     masked_timecourses = masker.fit_transform(
-        func_filename)[resting_state == False]
+        func_filename)[np.logical_not(resting_state)]
 
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
-        print "Processing %s %s" % (mask_name, category)
-        classification_target = stimuli[resting_state == False] == category
+        print("Processing %s %s" % (mask_name, category))
+        classification_target = stimuli[np.logical_not(resting_state)] == category
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
             masked_timecourses,
@@ -78,9 +85,9 @@ for mask_name in mask_names:
             classification_target,
             cv=cv, scoring="f1")
 
-        print "Scores: %1.2f +- %1.2f" % (
+        print("Scores: %1.2f +- %1.2f" % (
             mask_scores[mask_name][category].mean(),
-            mask_scores[mask_name][category].std())
+            mask_scores[mask_name][category].std()))
 
 # make a rudimentary diagram
 import matplotlib.pyplot as plt

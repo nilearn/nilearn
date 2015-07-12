@@ -7,10 +7,10 @@ import nibabel
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from .. import image
-from .. import resampling
-from .. import concat_imgs
-from ..._utils import testing, niimg_conversions
+from nilearn.image import image
+from nilearn.image import resampling
+from nilearn.image import concat_imgs
+from nilearn._utils import testing, niimg_conversions
 
 
 def test_high_variance_confounds():
@@ -264,10 +264,10 @@ def test_swap_img_hemispheres():
     np.testing.assert_array_equal(data_img.get_data(), data)
 
     # swapping operations work
-    np.testing.assert_array_equal( # one turn
+    np.testing.assert_array_equal(  # one turn
         image.swap_img_hemispheres(data_img).get_data(),
         data[::-1])
-    np.testing.assert_array_equal( # two turns -> back to original data
+    np.testing.assert_array_equal(  # two turns -> back to original data
         image.swap_img_hemispheres(
             image.swap_img_hemispheres(data_img)).get_data(),
         data)
@@ -279,8 +279,8 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regexp(TypeError, 'Niimg-like object',
-                                 image.index_img, img_3d, 0)
+    testing.assert_raises_regex(TypeError, '4D Niimg-like',
+                                image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -288,8 +288,8 @@ def test_index_img():
                        [0., 0., 0., 1.]])
     img_4d, _ = testing.generate_fake_fmri(affine=affine)
 
-    fourth_dim_size = niimg_conversions._get_shape(img_4d)[3]
-    tested_indices = (range(fourth_dim_size) +
+    fourth_dim_size = img_4d.shape[3]
+    tested_indices = (list(range(fourth_dim_size)) +
                       [slice(2, 8, 2), [1, 2, 3, 2], [],
                        (np.arange(fourth_dim_size) % 3) == 1])
     for i in tested_indices:
@@ -303,7 +303,7 @@ def test_index_img():
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
               np.repeat(True, fourth_dim_size + 1)]:
-        testing.assert_raises_regexp(
+        testing.assert_raises_regex(
             IndexError,
             'out of bounds|invalid index|out of range',
             image.index_img, img_4d, i)
@@ -311,8 +311,8 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regexp(TypeError, 'Niimg-like object',
-                                 image.iter_img, img_3d)
+    testing.assert_raises_regex(TypeError, '4D Niimg-like',
+                                image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -327,6 +327,14 @@ def test_iter_img():
         assert_array_equal(img.get_affine(),
                            img_4d.get_affine())
 
+    with testing.write_tmp_imgs(img_4d) as img_4d_filename:
+        for i, img in enumerate(image.iter_img(img_4d_filename)):
+            expected_data_3d = img_4d.get_data()[..., i]
+            assert_array_equal(img.get_data(),
+                               expected_data_3d)
+            assert_array_equal(img.get_affine(),
+                               img_4d.get_affine())
+
     img_3d_list = list(image.iter_img(img_4d))
     for i, img in enumerate(image.iter_img(img_3d_list)):
         expected_data_3d = img_4d.get_data()[..., i]
@@ -334,3 +342,11 @@ def test_iter_img():
                            expected_data_3d)
         assert_array_equal(img.get_affine(),
                            img_4d.get_affine())
+
+    with testing.write_tmp_imgs(*img_3d_list) as img_3d_filenames:
+        for i, img in enumerate(image.iter_img(img_3d_filenames)):
+            expected_data_3d = img_4d.get_data()[..., i]
+            assert_array_equal(img.get_data(),
+                               expected_data_3d)
+            assert_array_equal(img.get_affine(),
+                               img_4d.get_affine())

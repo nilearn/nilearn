@@ -26,6 +26,11 @@ sys.stderr.write("Fetching dataset...")
 t0 = time.time()
 
 miyawaki_dataset = datasets.fetch_miyawaki2008()
+
+# print basic information on the dataset
+print('First functional nifti image (4D) is located at: %s' %
+      miyawaki_dataset.func[0])  # 4D data
+
 X_random_filenames = miyawaki_dataset.func[12:]
 X_figure_filenames = miyawaki_dataset.func[:12]
 y_random_filenames = miyawaki_dataset.label[12:]
@@ -214,16 +219,16 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score)
 
-print "Scores"
-print "------"
-print "  - Accuracy (percent): %f" % np.mean([
-    accuracy_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
-print "  - Precision: %f" % np.mean([
-    precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
-print "  - Recall: %f" % np.mean([
-    recall_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
-print "  - F1-score: %f" % np.mean([
-    f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)])
+print("Scores")
+print("------")
+print("  - Accuracy (percent): %f" % np.mean([
+    accuracy_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
+print("  - Precision: %f" % np.mean([
+    precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
+print("  - Recall: %f" % np.mean([
+    recall_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
+print("  - F1-score: %f" % np.mean([
+    f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
 
 # Generate six images from reconstruction
 

@@ -10,7 +10,7 @@ values.
 
 # Licence : BSD
 
-print __doc__
+print(__doc__)
 
 from time import time
 
@@ -41,9 +41,9 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     w[-roi_size:, -roi_size:, 0:roi_size] = 0.5
     w[0:roi_size, -roi_size:, -roi_size:] = -0.6
     w[-roi_size:, 0:roi_size:, -roi_size:] = 0.5
-    w[(size - roi_size) / 2:(size + roi_size) / 2,
-      (size - roi_size) / 2:(size + roi_size) / 2,
-      (size - roi_size) / 2:(size + roi_size) / 2] = 0.5
+    w[(size - roi_size) // 2:(size + roi_size) // 2,
+      (size - roi_size) // 2:(size + roi_size) // 2,
+      (size - roi_size) // 2:(size + roi_size) // 2] = 0.5
     w = w.ravel()
     ### Generate smooth background noise
     XX = generator.randn(n_samples, size, size, size)
@@ -60,15 +60,15 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     noise_coef = norm_noise / linalg.norm(noise, 2)
     noise *= noise_coef
     snr = 20 * np.log(linalg.norm(X, 2) / linalg.norm(noise, 2))
-    print ("SNR: %.1f dB" % snr)
+    print("SNR: %.1f dB" % snr)
     ### Mixing of signal + noise and splitting into train/test
     X += noise
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]
-    X_test = X[n_samples / 2:, :]
-    X_train = X[:n_samples / 2, :]
-    y_test = y[n_samples / 2:]
-    y = y[:n_samples / 2]
+    X_test = X[n_samples // 2:, :]
+    X_train = X[:n_samples // 2, :]
+    y_test = y[n_samples // 2:]
+    y = y[:n_samples // 2]
 
     return X_train, X_test, y, y_test, snr, noise, w, size
 
@@ -77,7 +77,7 @@ def plot_slices(data, title=None):
     plt.figure(figsize=(5.5, 2.2))
     vmax = np.abs(data).max()
     for i in (0, 6, 11):
-        plt.subplot(1, 3, i / 5 + 1)
+        plt.subplot(1, 3, i // 5 + 1)
         plt.imshow(data[:, :, i], vmin=-vmax, vmax=vmax,
                   interpolation="nearest", cmap=plt.cm.RdBu_r)
         plt.xticks(())
@@ -150,7 +150,7 @@ for name, classifier in classifiers:
     # plot the results
     plot_slices(coefs, title=title)
 
-    print title
+    print(title)
 
 f_values, p_values = f_regression(X_train, y_train)
 p_values = np.reshape(p_values, (size, size, size))

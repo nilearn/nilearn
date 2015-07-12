@@ -11,8 +11,8 @@ from nose.tools import assert_true, assert_false, assert_raises
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
-from .. import signal as nisignal
-from ..signal import clean
+from nilearn import signal as nisignal
+from nilearn.signal import clean
 import scipy.signal
 
 
@@ -138,6 +138,15 @@ def test_butterworth():
                           copy=False)
     np.testing.assert_almost_equal(out1, data)
 
+    # Test nyquist frequency clipping, issue #482
+    out1 = nisignal.butterworth(data, sampling,
+                                 low_pass=50.,
+                                 copy=True)
+    out2 = nisignal.butterworth(data, sampling,
+                                 low_pass=80.,  # Greater than nyq frequency
+                                 copy=True)
+    np.testing.assert_almost_equal(out1, out2)
+
 
 def test_standardize():
     rand_gen = np.random.RandomState(0)
@@ -159,6 +168,11 @@ def test_standardize():
     a = np.atleast_2d(np.linspace(0, 2., n_features)).T
     b = nisignal._standardize(a, detrend=True, normalize=False)
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
+
+    length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
+    np.testing.assert_array_equal(length_1_signal,
+                                  nisignal._standardize(length_1_signal,
+                                                        normalize=True))
 
 
 def test_detrend():
@@ -196,6 +210,10 @@ def test_detrend():
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
 
+    length_1_signal = x[0]
+    length_1_signal = length_1_signal[np.newaxis, :]
+    np.testing.assert_array_equal(length_1_signal,
+                                  nisignal._detrend(length_1_signal))
 
 def test_mean_of_squares():
     """Test _mean_of_squares."""
@@ -260,8 +278,14 @@ def test_clean_confounds():
 
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignal.clean(signals + noises, confounds=confounds,
-                                      detrend=True, standardize=False)
-    assert_true(abs(np.dot(confounds.T, cleaned_signals)).max() < 100. * eps)
+                                      detrend=False, standardize=True)
+    assert_true(abs(np.dot(confounds.T, cleaned_signals)).max() < 1000. * eps)
+
+    # Same output when a constant confound is added
+    confounds1 = np.hstack((np.ones((45, 1)), confounds))
+    cleaned_signals1 = nisignal.clean(signals + noises, confounds=confounds1,
+                                      detrend=False, standardize=True)
+    np.testing.assert_almost_equal(cleaned_signals1, cleaned_signals)
 
     # Test detrending. No trend should exist in the output.
     # Use confounds with a trend.
@@ -278,7 +302,7 @@ def test_clean_confounds():
                                       detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert_true((abs(coeffs) < 10. * eps).all())  # trend removed
+    assert_true((abs(coeffs) < 100. * eps).all())  # trend removed
 
     # Test no-op
     input_signals = 10 * signals

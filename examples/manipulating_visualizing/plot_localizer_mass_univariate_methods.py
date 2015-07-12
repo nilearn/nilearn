@@ -28,9 +28,14 @@ from nilearn.mass_univariate import permuted_ols
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'], n_subjects=n_samples)
+
+# print basic information on the dataset
+print('First contrast nifti image (3D) is located at: %s' %
+      localizer_dataset.cmaps[0])
+
 tested_var = localizer_dataset.ext_vars['pseudo']
 # Quality check / Remove subjects with bad tested variate
-mask_quality_check = np.where(tested_var != 'None')[0]
+mask_quality_check = np.where(tested_var != b'None')[0]
 n_samples = mask_quality_check.size
 contrast_map_filenames = [localizer_dataset.cmaps[i]
                           for i in mask_quality_check]
@@ -71,7 +76,7 @@ from nilearn.image.resampling import coord_transform
 affine = neg_log_pvals_anova_unmasked.get_affine()
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = round(k_slice)
+k_slice = np.round(k_slice)
 
 threshold = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals_permuted_ols),

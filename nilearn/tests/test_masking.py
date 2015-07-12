@@ -12,12 +12,12 @@ from nose.tools import assert_true, assert_false, assert_equal, \
 
 from nibabel import Nifti1Image
 
-from .. import masking
-from ..masking import compute_epi_mask, compute_multi_epi_mask, \
-    compute_background_mask, unmask, intersect_masks, MaskWarning, \
-    _load_mask_img
-
-from .._utils.testing import write_tmp_imgs, assert_raises_regexp
+from nilearn import masking
+from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
+                             compute_background_mask, unmask, _unmask_3d,
+                             _unmask_4d, intersect_masks, MaskWarning)
+from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
+from nilearn._utils.exceptions import DimensionError
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
@@ -61,7 +61,7 @@ def test_compute_epi_mask():
     mean_image[0, 0, 0] = 1.2
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    with warnings.catch_warnings(True) as w:
+    with warnings.catch_warnings(record=True) as w:
         compute_epi_mask(mean_image, exclude_zeros=True)
     assert_equal(len(w), 1)
     assert_true(isinstance(w[0].message, masking.MaskWarning))
@@ -87,7 +87,7 @@ def test_compute_background_mask():
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    with warnings.catch_warnings(True) as w:
+    with warnings.catch_warnings(record=True) as w:
         compute_background_mask(mean_image)
     assert_equal(len(w), 1)
     assert_true(isinstance(w[0].message, masking.MaskWarning))
@@ -133,13 +133,22 @@ def test_apply_mask():
 
     # veriy that 4D masks are rejected
     mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), np.eye(4))
-    assert_raises_regexp(TypeError, "A 3D image is expected",
-                         masking.apply_mask, data_img, mask_img_4d)
+    assert_raises_regex(DimensionError, "Data must be a 3D",
+                        masking.apply_mask, data_img, mask_img_4d)
+
+    # Check that 3D data is accepted
+    data_3d = Nifti1Image(np.arange(27).reshape((3, 3, 3)), np.eye(4))
+    mask_data_3d = np.zeros((3, 3, 3))
+    mask_data_3d[1, 1, 0] = True
+    mask_data_3d[0, 1, 0] = True
+    mask_data_3d[0, 1, 1] = True
+    data_3d = masking.apply_mask(data_3d, Nifti1Image(mask_data_3d, np.eye(4)))
+    assert_equal(sorted(data_3d.tolist()), [3., 4., 12.])
 
     # Check data shape and affine
-    assert_raises_regexp(TypeError, "A 3D image is expected",
-                         masking.apply_mask, data_img,
-                         Nifti1Image(mask[20, ...], affine))
+    assert_raises_regex(DimensionError, "Data must be a 3D",
+                        masking.apply_mask, data_img,
+                        Nifti1Image(mask[20, ...], affine))
     assert_raises(ValueError, masking.apply_mask,
                   data_img, Nifti1Image(mask, affine / 2.))
     # Check that full masking raises error
@@ -179,7 +188,7 @@ def test_unmask():
     assert_array_equal(t, unmasked4D)
     t = unmask([masked4D], mask_img, order="F")
     t = [t_.get_data() for t_ in t]
-    assert_true(isinstance(t, types.ListType))
+    assert_true(isinstance(t, list))
     assert_equal(t[0].ndim, 4)
     assert_false(t[0].flags["C_CONTIGUOUS"])
     assert_true(t[0].flags["F_CONTIGUOUS"])
@@ -195,40 +204,31 @@ def test_unmask():
             assert_array_equal(t, unmasked3D)
             t = unmask([masked3D], filename, order="F")
             t = [t_.get_data() for t_ in t]
-            assert_true(isinstance(t, types.ListType))
+            assert_true(isinstance(t, list))
             assert_equal(t[0].ndim, 3)
             assert_false(t[0].flags["C_CONTIGUOUS"])
             assert_true(t[0].flags["F_CONTIGUOUS"])
             assert_array_equal(t[0], unmasked3D)
 
-    # 5D test
-    shape5D = (10, 20, 30, 40, 41)
-    data5D = generator.rand(*shape5D)
-    mask = generator.randint(2, size=shape5D[:-1])
-    mask_img = Nifti1Image(mask, np.eye(4))
-    mask = mask.astype(bool)
+    # Error test: shape
+    vec_1D = np.empty((500,), dtype=np.int)
+    assert_raises(TypeError, unmask, vec_1D, mask_img)
+    assert_raises(TypeError, unmask, [vec_1D], mask_img)
 
-    masked5D = data5D[mask, :].T
-    unmasked5D = data5D.copy()
-    unmasked5D[-mask, :] = 0
+    vec_2D = np.empty((500, 500), dtype=np.float64)
+    assert_raises(TypeError, unmask, vec_2D, mask_img)
+    assert_raises(TypeError, unmask, [vec_2D], mask_img)
 
-    t = unmask(masked5D, mask_img).get_data()
-    assert_equal(t.ndim, len(shape5D))
-    assert_array_equal(t, unmasked5D)
-    t = unmask([masked5D], mask_img)
-    t = [t_.get_data() for t_ in t]
-    assert_true(isinstance(t, types.ListType))
-    assert_equal(t[0].ndim, len(shape5D))
-    assert_array_equal(t[0], unmasked5D)
+    # Error test: mask type
+    assert_raises_regex(TypeError, 'mask must be a boolean array',
+                        _unmask_3d, vec_1D, mask.astype(np.int))
+    assert_raises_regex(TypeError, 'mask must be a boolean array',
+                        _unmask_4d, vec_2D, mask.astype(np.float64))
 
-    # Error test
-    dummy = generator.rand(500)
-    if np_version >= [1, 7, 1]:
-        assert_raises(IndexError, unmask, dummy, mask_img)
-        assert_raises(IndexError, unmask, [dummy], mask_img)
-    else:
-        assert_raises(ValueError, unmask, dummy, mask_img)
-        assert_raises(ValueError, unmask, [dummy], mask_img)
+    # Transposed vector
+    transposed_vector = np.ones((np.sum(mask), 1), dtype=np.bool)
+    assert_raises_regex(TypeError, 'X must be of shape',
+                        unmask, transposed_vector, mask_img)
 
 
 def test_intersect_masks():
@@ -236,7 +236,7 @@ def test_intersect_masks():
     """
 
     # Create dummy masks
-    mask_a = np.zeros((4, 4), dtype=np.bool)
+    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
     mask_a[2:4, 2:4] = 1
     mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
@@ -250,7 +250,7 @@ def test_intersect_masks():
     # |   |   | X | X |
     # +---+---+---+---+
 
-    mask_b = np.zeros((4, 4), dtype=np.bool)
+    mask_b = np.zeros((4, 4, 1), dtype=np.bool)
     mask_b[1:3, 1:3] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
 
@@ -264,7 +264,7 @@ def test_intersect_masks():
     # |   |   |   |   |
     # +---+---+---+---+
 
-    mask_c = np.zeros((4, 4), dtype=np.bool)
+    mask_c = np.zeros((4, 4, 1), dtype=np.bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
     mask_c_img = Nifti1Image(mask_c.astype(int), np.eye(4))
@@ -279,7 +279,7 @@ def test_intersect_masks():
     # |   |   | X |   |
     # +---+---+---+---+
 
-    mask_ab = np.zeros((4, 4), dtype=np.bool)
+    mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
     mask_ab[2, 2] = 1
     mask_ab_ = intersect_masks([mask_a_img, mask_b_img], threshold=1.)
     assert_array_equal(mask_ab, mask_ab_.get_data())
@@ -331,7 +331,7 @@ def test_compute_multi_epi_mask():
     assert_array_equal(mask_ab, mask_ab_.get_data())
 
 
-def test_warning_shape(random_state=42, shape=(3, 5, 7, 11)):
+def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
 
     rng = np.random.RandomState(random_state)
@@ -349,5 +349,5 @@ def test_warning_shape(random_state=42, shape=(3, 5, 7, 11)):
     assert_raises(TypeError, unmask, X, mask_img)
 
     X = rng.randn(n_samples, n_features)
-    # 2D X (should be ok)
-    unmask(X, mask_img)
+    # Raises an error because the mask is 4D
+    assert_raises(TypeError, unmask, X, mask_img)

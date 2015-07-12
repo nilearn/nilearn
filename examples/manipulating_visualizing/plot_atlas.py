@@ -1,16 +1,18 @@
 """
-Basic Atlas interaction
+Basic Atlas plotting
 =======================
 
-Plot the regions of a reference atlas.
+Plot the regions of a reference atlas (here the Harvard-Oxford atlas).
 """
 
 import matplotlib.pyplot as plt
-from nilearn.datasets import fetch_yeo_2011_atlas
+from nilearn import datasets
 from nilearn import plotting
 
-atlas = fetch_yeo_2011_atlas()
-print atlas.description
+dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+atlas_filename = dataset.maps
 
-plotting.plot_roi(atlas.thick_17, title="yeo 2011 atlas")
+print('Atlas ROIs are located at: %s' % atlas_filename)
+
+plotting.plot_roi(atlas_filename, title="Harvard Oxford atlas")
 plt.show()

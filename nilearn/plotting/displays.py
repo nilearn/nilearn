@@ -5,29 +5,29 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import operator
+import collections
+import numbers
 
 import numpy as np
+from scipy import sparse, stats
 
-import nibabel
-from .._utils.testing import skip_if_running_nose
+from .._utils import new_img_like
+from .._utils.compat import _basestring
 from .. import _utils
 
-try:
-    import pylab as pl
-    from matplotlib import transforms, colors
-    from matplotlib.colorbar import ColorbarBase
-except ImportError:
-    skip_if_running_nose('Could not import matplotlib')
-
+import matplotlib.pyplot as plt
+from matplotlib import transforms, colors
+from matplotlib.colorbar import ColorbarBase
+from matplotlib import cm as mpl_cm
+from matplotlib import lines
 
 # Local imports
+from . import glass_brain, cm
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
-from ..image.resampling import get_bounds, reorder_img, coord_transform,\
-            get_mask_bounds
+from ..image.resampling import (get_bounds, reorder_img, coord_transform,
+                                get_mask_bounds)
 
-from . import glass_brain
 
 ################################################################################
 # class BaseAxes
@@ -184,6 +184,23 @@ class CutAxes(BaseAxes):
                 **kwargs)
 
 
+def _coords_3d_to_2d(coords_3d, direction):
+    """Project 3d coordinates into 2d ones given the direction of a cut
+    """
+    direction_to_index = {'x': [1, 2],
+                          'y': [0, 2],
+                          'z': [0, 1]}
+    index = direction_to_index.get(direction)
+
+    if index is None:
+        message = (
+            '{0} is not a valid direction. '
+            "Allowed values are 'x', 'y' and 'z'").format(direction)
+        raise ValueError(message)
+
+    return coords_3d[:, index]
+
+
 class GlassBrainAxes(BaseAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
     volumes with a schematic view of the brain.
@@ -218,6 +235,88 @@ class GlassBrainAxes(BaseAxes):
         # the cuts since we are taking the max along one axis
         pass
 
+    def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
+        """Plot markers"""
+        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
+
+        xdata, ydata = marker_coords_2d.T
+
+        defaults = {'marker': 'o',
+                    'zorder': 1000}
+        for k, v in defaults.items():
+            kwargs.setdefault(k, v)
+
+        self.ax.scatter(xdata, ydata, s=marker_size,
+                        c=marker_color, **kwargs)
+
+    def _add_lines(self, line_coords, line_values, cmap,
+                   vmin=None, vmax=None, **kwargs):
+        """Plot lines
+
+            Parameters
+            ----------
+            line_coords: list of numpy arrays of shape (2, 3)
+                3d coordinates of lines start points and end points.
+            line_values: array_like
+                values of the lines.
+            cmap: colormap
+                colormap used to map line_values to a color.
+            vmin: float, optional, default: None
+            vmax: float, optional, default: None
+                If not None, either or both of these values will be used to
+                as the minimum and maximum values to color lines. If None are
+                supplied the maximum absolute value within the given threshold
+                will be used as minimum (multiplied by -1) and maximum
+                coloring levels.
+            kwargs: dict
+                additional arguments to pass to matplotlib Line2D.
+        """
+        if vmin is None and vmax is None:
+            abs_line_values_max = np.abs(line_values).max()
+            vmin = -abs_line_values_max
+            vmax = abs_line_values_max
+        elif vmin is None:
+            if vmax > 0:
+                vmin = -vmax
+            else:
+                raise ValueError(
+                    "If vmax is set to a non-positive number "
+                    "then vmin needs to be specified"
+                )
+        elif vmax is None:
+            if vmin < 0:
+                vmin = -vmax
+            else:
+                raise ValueError(
+                    "If vmin is set to a non-negative number "
+                    "then vmax needs to be specified"
+                )
+        norm = colors.Normalize(vmin=vmin,
+                                vmax=vmax)
+        abs_norm = colors.Normalize(vmin=0,
+                                    vmax=vmax)
+        value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+
+        for start_end_point_3d, line_value in zip(
+                line_coords, line_values):
+            start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
+                                                  self.direction)
+
+            color = value_to_color(line_value)
+            abs_line_value = abs(line_value)
+            linewidth = 1 + 2 * abs_norm(abs_line_value)
+            # Hacky way to put the strongest connections on top of the weakest
+            # note sign does not matter hence using 'abs'
+            zorder = 10 + 10 * abs_norm(abs_line_value)
+            this_kwargs = {'color': color, 'linewidth': linewidth,
+                           'zorder': zorder}
+            # kwargs should have priority over this_kwargs so that the
+            # user can override the default logic
+            this_kwargs.update(kwargs)
+            xdata, ydata = start_end_point_2d.T
+            line = lines.Line2D(xdata, ydata, **this_kwargs)
+            self.ax.add_line(line)
+
 
 ################################################################################
 # class BaseSlicer
@@ -229,10 +328,6 @@ class BaseSlicer(object):
     """
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
-    _colorbar = False
-    # pseudo absolute value
-    _colorbar_width = 0.06
-    _colorbar_labels_margin = 2.8
     _axes_class = CutAxes
 
     def __init__(self, cut_coords, axes=None, black_bg=False, **kwargs):
@@ -247,19 +342,25 @@ class BaseSlicer(object):
             black_bg: boolean, optional
                 If True, the background of the figure will be put to
                 black. If you wish to save figures with a black background,
-                you will need to pass "facecolor='k', edgecolor='k'" to 
-                pylab's savefig.
+                you will need to pass "facecolor='k', edgecolor='k'"
+                to matplotlib.pyplot.savefig.
 
         """
         self.cut_coords = cut_coords
         if axes is None:
-            axes = pl.axes((0., 0., 1., 1.))
+            axes = plt.axes((0., 0., 1., 1.))
             axes.axis('off')
         self.frame_axes = axes
         axes.set_zorder(1)
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._black_bg = black_bg
+        self._colorbar = False
+        self._colorbar_width = 0.05 * bb.width
+        self._colorbar_margin = dict(left=0.25 * bb.width,
+                                     right=0.02 * bb.width,
+                                     top=0.05 * bb.height,
+                                     bottom=0.05 * bb.height)
         self._init_axes(**kwargs)
 
     @staticmethod
@@ -275,14 +376,14 @@ class BaseSlicer(object):
                          **kwargs):
         # deal with "fake" 4D images
         if img is not None and img is not False:
-            img = _utils.check_niimg(img, ensure_3d=True)
+            img = _utils.check_niimg_3d(img)
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
-        if isinstance(axes, pl.Axes) and figure is None:
+        if isinstance(axes, plt.Axes) and figure is None:
             figure = axes.figure
 
-        if not isinstance(figure, pl.Figure):
+        if not isinstance(figure, plt.Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
             
@@ -297,9 +398,9 @@ class BaseSlicer(object):
 
             if leave_space:
                 figsize[0] += 3.4
-            figure = pl.figure(figure, figsize=figsize,
+            figure = plt.figure(figure, figsize=figsize,
                             facecolor=facecolor)
-        if isinstance(axes, pl.Axes):
+        if isinstance(axes, plt.Axes):
             assert axes.figure is figure, ("The axes passed are not "
                     "in the figure")
 
@@ -307,7 +408,7 @@ class BaseSlicer(object):
             axes = [0., 0., 1., 1.]
             if leave_space:
                 axes = [0.3, 0, .7, 1.]
-        if operator.isSequenceType(axes):
+        if isinstance(axes, collections.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
@@ -387,26 +488,17 @@ class BaseSlicer(object):
         else:
             self._colorbar = colorbar
 
-        img = _utils.check_niimg(img, ensure_3d=True)
+        img = _utils.check_niimg_3d(img)
 
-        if threshold is not None:
-            data = img.get_data()
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(data, -threshold, threshold,
-                                           copy=False)
-            img = nibabel.Nifti1Image(data, img.get_affine())
-
-        # To make sure that add_overlay has a consistant default behavior
+        # Make sure that add_overlay shows consistent default behavior
         # with plot_stat_map
         kwargs.setdefault('interpolation', 'nearest')
-        ims = self._map_show(img, type='imshow', **kwargs)
+        ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
         if colorbar:
             self._colorbar_show(ims[0], threshold)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def add_contours(self, img, **kwargs):
         """ Contour a 3D map in all the views.
@@ -425,10 +517,21 @@ class BaseSlicer(object):
                 these contours.
         """
         self._map_show(img, type='contour', **kwargs)
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
-    def _map_show(self, img, type='imshow', **kwargs):
-        img = reorder_img(img)
+    def _map_show(self, img, type='imshow',
+                  resampling_interpolation='continuous',
+                  threshold=None, **kwargs):
+        img = reorder_img(img, resample=resampling_interpolation)
+
+        if threshold is not None:
+            data = img.get_data()
+            if threshold == 0:
+                data = np.ma.masked_equal(data, 0, copy=False)
+            else:
+                data = np.ma.masked_inside(data, -threshold, threshold,
+                                           copy=False)
+            img = new_img_like(img, data, img.get_affine())
 
         affine = img.get_affine()
         data = img.get_data()
@@ -441,11 +544,10 @@ class BaseSlicer(object):
         if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                    get_mask_bounds(nibabel.Nifti1Image(not_mask.astype(np.int),
-                                    affine))
+                    get_mask_bounds(new_img_like(img, not_mask, affine))
 
         data_2d_list = []
-        for display_ax in self.axes.itervalues():
+        for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
             except IndexError:
@@ -454,12 +556,12 @@ class BaseSlicer(object):
 
             data_2d_list.append(data_2d)
 
-        if 'vmin' not in kwargs:
-            kwargs['vmin'] = min(d.min() for d in data_2d_list
-                                 if d is not None)
-        if 'vmax' not in kwargs:
-            kwargs['vmax'] = max(d.max() for d in data_2d_list
-                                 if d is not None)
+        if kwargs.get('vmin') is None:
+            kwargs['vmin'] = np.ma.min([d.min() for d in data_2d_list
+                                        if d is not None])
+        if kwargs.get('vmax') is None:
+            kwargs['vmax'] = np.ma.max([d.max() for d in data_2d_list
+                                        if d is not None])
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
 
@@ -481,18 +583,17 @@ class BaseSlicer(object):
             offset = im.norm.vmax
 
         # create new  axis for the colorbar
-        x_adjusted_width = self._colorbar_width / len(self.axes)
-        x_adjusted_right_margin = 0.01 / len(self.axes)
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
-        y_width = y1 - y0
-        y_margin = 0.05 * y_width
-
-        self._colorbar_ax = figure.add_axes([
-            x1 - (x_adjusted_width + x_adjusted_right_margin),
-            y0 + y_margin,
-            x_adjusted_width - x_adjusted_right_margin,
-            y_width - 2 * y_margin])
+        height = y1 - y0
+        x_adjusted_width = self._colorbar_width / len(self.axes)
+        x_adjusted_margin = self._colorbar_margin['right'] / len(self.axes)
+        lt_wid_top_ht = [x1 - (x_adjusted_width + x_adjusted_margin),
+                         y0 + self._colorbar_margin['top'],
+                         x_adjusted_width,
+                         height - (self._colorbar_margin['top'] +
+                                   self._colorbar_margin['bottom'])]
+        self._colorbar_ax = figure.add_axes(lt_wid_top_ht, axis_bgcolor='w')
 
         our_cmap = im.cmap
         # edge case where the data has a single value
@@ -504,20 +605,21 @@ class BaseSlicer(object):
 
         # some colormap hacking
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        istart = int(im.norm(-offset) * (our_cmap.N - 1))
-        istop = int(im.norm(offset) * (our_cmap.N - 1))
+        istart = int(im.norm(-offset, clip=True) * (our_cmap.N - 1))
+        istop = int(im.norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-        our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+        if im.norm.vmin == im.norm.vmax:  # len(np.unique(data)) == 1 ?
+            return
+        else:
+            our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=im.norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
-            spacing='proportional')
+            spacing='proportional', format='%.2g')
 
         self._colorbar_ax.yaxis.tick_left()
-        self._colorbar_ax.set_yticklabels(["% 2.2g" % t for t in ticks])
-
         tick_color = 'w' if self._black_bg else 'k'
         for tick in self._colorbar_ax.yaxis.get_ticklabels():
             tick.set_color(tick_color)
@@ -537,14 +639,14 @@ class BaseSlicer(object):
             color: matplotlib color: string or (r, g, b) value
                 The color used to display the edge map
         """
-        img = reorder_img(img)
+        img = reorder_img(img, resample='continuous')
         data = img.get_data()
         affine = img.get_affine()
         single_color_cmap = colors.ListedColormap([color])
         data_bounds = get_bounds(data.shape, img.get_affine())
 
         # For each ax, cut the data and plot it
-        for display_ax in self.axes.itervalues():
+        for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
                 edge_mask = _edge_map(data_2d)
@@ -554,7 +656,7 @@ class BaseSlicer(object):
             display_ax.draw_2d(edge_mask, data_bounds, data_bounds,
                                type='imshow', cmap=single_color_cmap)
 
-        pl.draw_if_interactive()
+        plt.draw_if_interactive()
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
@@ -594,7 +696,7 @@ class BaseSlicer(object):
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
         """
-        pl.close(self.frame_axes.figure.number)
+        plt.close(self.frame_axes.figure.number)
 
     def savefig(self, filename, dpi=None):
         """ Save the figure to a file
@@ -660,8 +762,10 @@ class OrthoSlicer(BaseSlicer):
         # Create our axes:
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
-            ax = pl.axes([0.3*index*(x1 - x0) + x0, y0, .3*(x1 - x0), y1 - y0],
-                         axisbg=axisbg)
+            fh = self.frame_axes.get_figure()
+            ax = fh.add_axes([0.3*index*(x1 - x0) + x0, y0,
+                              .3*(x1 - x0), y1 - y0],
+                             axisbg=axisbg, aspect='equal')
             ax.axis('off')
             coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
@@ -671,8 +775,8 @@ class OrthoSlicer(BaseSlicer):
         if self._black_bg:
             for ax in self.axes.values():
                 ax.ax.imshow(np.zeros((2, 2, 3)),
-                            extent=[-5000, 5000, -5000, 5000],
-                            zorder=-500, aspect='auto')
+                             extent=[-5000, 5000, -5000, 5000],
+                             zorder=-500, aspect='equal')
 
             # To have a black background in PDF, we need to create a
             # patch in black for the background
@@ -695,10 +799,11 @@ class OrthoSlicer(BaseSlicer):
 
         if self._colorbar:
             adjusted_width = self._colorbar_width / len(self.axes)
-            ticks_margin = adjusted_width * self._colorbar_labels_margin
-            x1 = x1 - (adjusted_width + ticks_margin)
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
+            x1 = x1 - (adjusted_width + ticks_margin + right_margin)
 
-        for display_ax in display_ax_dict.itervalues():
+        for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
@@ -708,9 +813,10 @@ class OrthoSlicer(BaseSlicer):
                 bounds = [0, 1, 0, 1]
             xmin, xmax, ymin, ymax = bounds
             width_dict[display_ax.ax] = (xmax - xmin)
+
         total_width = float(sum(width_dict.values()))
-        for ax, width in width_dict.iteritems():
-            width_dict[ax] = width/total_width*(x1 -x0)
+        for ax, width in width_dict.items():
+            width_dict[ax] = width / total_width * (x1 - x0)
         x_ax = display_ax_dict.get('x', dummy_ax)
         y_ax = display_ax_dict.get('y', dummy_ax)
         z_ax = display_ax_dict.get('z', dummy_ax)
@@ -718,6 +824,7 @@ class OrthoSlicer(BaseSlicer):
         left_dict[y_ax.ax] = x0
         left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
         left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
+
         return transforms.Bbox([[left_dict[axes], y0],
                           [left_dict[axes] + width_dict[axes], y1]])
 
@@ -804,8 +911,8 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
         else:
-            if (not operator.isSequenceType(cut_coords) and
-                    operator.isNumberType(cut_coords)):
+            if (not isinstance(cut_coords, collections.Sequence) and
+                    isinstance(cut_coords, numbers.Number)):
                 cut_coords = find_cut_slices(img,
                                              direction=cls._direction,
                                              n_cuts=cut_coords)
@@ -819,19 +926,20 @@ class BaseStackedSlicer(BaseSlicer):
         fraction = 1./len(self.cut_coords)
         for index, coord in enumerate(self.cut_coords):
             coord = float(coord)
-            ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
-                          fraction*(x1-x0), y1-y0])
+            fh = self.frame_axes.get_figure()
+            ax = fh.add_axes([fraction*index*(x1-x0) + x0, y0,
+                              fraction*(x1-x0), y1-y0])
             ax.axis('off')
             display_ax = self._axes_class(ax, self._direction,
-                                         coord, **kwargs)
+                                          coord, **kwargs)
             self.axes[coord] = display_ax
             ax.set_axes_locator(self._locator)
 
         if self._black_bg:
             for ax in self.axes.values():
                 ax.ax.imshow(np.zeros((2, 2, 3)),
-                            extent=[-5000, 5000, -5000, 5000],
-                            zorder=-500, aspect='auto')
+                             extent=[-5000, 5000, -5000, 5000],
+                             zorder=-500, aspect='equal')
 
             # To have a black background in PDF, we need to create a
             # patch in black for the background
@@ -851,10 +959,11 @@ class BaseStackedSlicer(BaseSlicer):
 
         if self._colorbar:
             adjusted_width = self._colorbar_width/len(self.axes)
-            ticks_margin = adjusted_width*self._colorbar_labels_margin
-            x1 = x1 - (adjusted_width+ticks_margin)
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
+            x1 = x1 - (adjusted_width + right_margin + ticks_margin)
 
-        for display_ax in display_ax_dict.itervalues():
+        for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
@@ -865,8 +974,8 @@ class BaseStackedSlicer(BaseSlicer):
             xmin, xmax, ymin, ymax = bounds
             width_dict[display_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
-        for ax, width in width_dict.iteritems():
-            width_dict[ax] = width/total_width*(x1 -x0)
+        for ax, width in width_dict.items():
+            width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = dict()
         left = float(x0)
         for coord, display_ax in sorted(display_ax_dict.items()):
@@ -942,6 +1051,156 @@ class OrthoProjector(OrthoSlicer):
         # It does not make sense to draw crosses for the position of
         # the cuts since we are taking the max along one axis
         pass
+
+    def add_graph(self, adjacency_matrix, node_coords,
+                  node_color='auto', node_size=50,
+                  edge_cmap=cm.bwr,
+                  edge_vmin=None, edge_vmax=None,
+                  edge_threshold=None,
+                  edge_kwargs=None, node_kwargs=None):
+        """Plot undirected graph on each of the axes
+
+            Parameters
+            ----------
+            adjacency_matrix: numpy array of shape (n, n)
+                represents the edges strengths of the graph. Assumed to be
+                a symmetric matrix.
+            node_coords: numpy array_like of shape (n, 3)
+                3d coordinates of the graph nodes in world space.
+            node_color: color or sequence of colors
+                color(s) of the nodes.
+            node_size: scalar or array_like
+                size(s) of the nodes in points^2.
+            edge_cmap: colormap
+                colormap used for representing the strength of the edges.
+            edge_vmin: float, optional, default: None
+            edge_vmax: float, optional, default: None
+                If not None, either or both of these values will be used to
+                as the minimum and maximum values to color edges. If None are
+                supplied the maximum absolute value within the given threshold
+                will be used as minimum (multiplied by -1) and maximum
+                coloring levels.
+            edge_threshold: str or number
+                If it is a number only the edges with a value greater than
+                edge_threshold will be shown.
+                If it is a string it must finish with a percent sign,
+                e.g. "25.3%", and only the edges with a abs(value) above
+                the given percentile will be shown.
+            edge_kwargs: dict
+                will be passed as kwargs for each edge matlotlib Line2D.
+            node_kwargs: dict
+                will be passed as kwargs to the plt.scatter call that plots all
+                the nodes in one go.
+
+        """
+        # set defaults
+        if edge_kwargs is None:
+            edge_kwargs = {}
+        if node_kwargs is None:
+            node_kwargs = {}
+        if node_color == 'auto':
+            nb_nodes = len(node_coords)
+            node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
+
+        node_coords = np.asarray(node_coords)
+
+        # decompress input matrix if sparse
+        if sparse.issparse(adjacency_matrix):
+            adjacency_matrix = adjacency_matrix.toarray()
+
+        # make the lines below well-behaved
+        adjacency_matrix = np.nan_to_num(adjacency_matrix)
+
+        # safety checks
+        if 's' in node_kwargs:
+            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
+                             "to specify node sizes")
+        if 'c' in node_kwargs:
+            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
+                             "to specify node colors")
+
+        adjacency_matrix_shape = adjacency_matrix.shape
+        if (len(adjacency_matrix_shape) != 2 or
+                adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+            raise ValueError(
+                "'adjacency_matrix' is supposed to have shape (n, n)."
+                ' Its shape was {0}'.format(adjacency_matrix_shape))
+
+        node_coords_shape = node_coords.shape
+        if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
+            message = (
+                "Invalid shape for 'node_coords'. You passed an "
+                "'adjacency_matrix' of shape {0} therefore "
+                "'node_coords' should be a array with shape ({0[0]}, 3) "
+                'while its shape was {1}').format(adjacency_matrix_shape,
+                                                  node_coords_shape)
+
+            raise ValueError(message)
+
+        if node_coords_shape[0] != adjacency_matrix_shape[0]:
+            raise ValueError(
+                "Shape mismatch between 'adjacency_matrix' "
+                "and 'node_coords'"
+                "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
+                .format(adjacency_matrix_shape, node_coords_shape))
+
+        if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
+            raise ValueError("'adjacency_matrix' should be symmetric")
+
+        # For a masked array, masked values are replaced with zeros
+        if hasattr(adjacency_matrix, 'mask'):
+            if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
+                raise ValueError(
+                    "'adjacency_matrix' was masked with a non symmetric mask")
+            adjacency_matrix = adjacency_matrix.filled(0)
+
+        if edge_threshold is not None:
+            if isinstance(edge_threshold, _basestring):
+                message = ("If 'edge_threshold' is given as a string it "
+                           'should be a number followed by the percent sign, '
+                           'e.g. "25.3%"')
+                if not edge_threshold.endswith('%'):
+                    raise ValueError(message)
+
+                try:
+                    percentile = float(edge_threshold[:-1])
+                except ValueError as exc:
+                    exc.args += (message, )
+                    raise
+
+                # Keep a percentile of edges with the highest absolute
+                # values, so only need to look at the covariance
+                # coefficients below the diagonal
+                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                              k=-1)
+                lower_diagonal_values = adjacency_matrix[
+                    lower_diagonal_indices]
+                edge_threshold = stats.scoreatpercentile(
+                    np.abs(lower_diagonal_values), percentile)
+
+            elif not isinstance(edge_threshold, numbers.Real):
+                raise TypeError('edge_threshold should be either a number '
+                                'or a string finishing with a percent sign')
+
+            adjacency_matrix = adjacency_matrix.copy()
+            threshold_mask = np.abs(adjacency_matrix) < edge_threshold
+            adjacency_matrix[threshold_mask] = 0
+
+        lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
+        non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+
+        line_coords = [node_coords[list(index)]
+                       for index in zip(*non_zero_indices)]
+
+        adjacency_matrix_values = adjacency_matrix[non_zero_indices]
+        for ax in self.axes.values():
+            ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
+            if line_coords:
+                ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
+                              vmin=edge_vmin, vmax=edge_vmax,
+                              **edge_kwargs)
+
+        plt.draw_if_interactive()
 
 
 class XProjector(OrthoProjector):

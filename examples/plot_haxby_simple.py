@@ -12,6 +12,12 @@ stream.
 from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) is at: %s' %
+      haxby_dataset.anat[0])
+print('First subject functional nifti images (4D) are at: %s' %
+      haxby_dataset.func[0])  # 4D data
+
 ### Load Target labels ########################################################
 
 import numpy as np
@@ -23,8 +29,8 @@ labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 _, target = np.unique(labels['labels'], return_inverse=True)
 
 ### Keep only data corresponding to faces or cats #############################
-condition_mask = np.logical_or(labels['labels'] == 'face',
-                               labels['labels'] == 'cat')
+condition_mask = np.logical_or(labels['labels'] == b'face',
+                               labels['labels'] == b'cat')
 target = target[condition_mask]
 
 
@@ -66,7 +72,7 @@ for train, test in cv:
     cv_scores.append(np.sum(prediction == target[test])
                      / float(np.size(target[test])))
 
-print cv_scores
+print(cv_scores)
 
 ### Unmasking #################################################################
 
@@ -80,7 +86,7 @@ coef_img = nifti_masker.inverse_transform(coef_)
 coef_img.to_filename('haxby_svc_weights.nii')
 
 ### Visualization #############################################################
-import pylab as plt
+import matplotlib.pyplot as plt
 from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi, plot_stat_map
 
@@ -90,4 +96,3 @@ plot_stat_map(coef_img, mean_epi, title="SVM weights", display_mode="yx")
 plot_roi(nifti_masker.mask_img_, mean_epi, title="Mask", display_mode="yx")
 
 plt.show()
-

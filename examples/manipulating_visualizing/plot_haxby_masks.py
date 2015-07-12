@@ -4,11 +4,18 @@ Plot Haxby masks
 
 Small script to plot the masks of the Haxby dataset.
 """
+import numpy as np
 from scipy import linalg
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
+
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) is at: %s' %
+      haxby_dataset.anat[0])
+print('First subject functional nifti image (4D) is at: %s' %
+      haxby_dataset.func[0])  # 4D data
 
 # Build the mean image because we have no anatomic data
 from nilearn import image
@@ -20,7 +27,7 @@ from nilearn.image.resampling import coord_transform
 affine = mean_img.get_affine()
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = round(k_slice)
+k_slice = np.round(k_slice)
 
 fig = plt.figure(figsize=(4, 5.4), facecolor='k')
 

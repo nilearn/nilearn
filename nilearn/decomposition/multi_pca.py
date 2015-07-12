@@ -1,16 +1,13 @@
 """
 PCA dimension reduction on multiple subjects
 """
-import warnings
 import itertools
-
-from scipy import linalg
 import numpy as np
+import warnings
+from scipy import linalg
 
 import nibabel
-
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
@@ -19,6 +16,7 @@ from ..input_data.base_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache
 from .._utils import as_ndarray
+from .._utils.compat import _basestring
 
 def session_pca(imgs, mask_img, parameters,
                 n_components=20,
@@ -77,7 +75,7 @@ def session_pca(imgs, mask_img, parameters,
             verbose=verbose,
             confounds=confounds,
             copy=copy)
-    if n_components <= data.shape[0] / 4:
+    if n_components <= data.shape[0] // 4:
         U, S, _ = randomized_svd(data.T, n_components)
     else:
         U, S, _ = linalg.svd(data.T, full_matrices=False)
@@ -191,7 +189,7 @@ class MultiPCA(BaseEstimator, TransformerMixin):
         self.target_shape = target_shape
         self.standardize = standardize
 
-    def fit(self, imgs=None, y=None, confounds=None):
+    def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components
 
         Parameters
@@ -201,8 +199,9 @@ class MultiPCA(BaseEstimator, TransformerMixin):
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
         """
+
         # Hack to support single-subject data:
-        if isinstance(imgs, (basestring, nibabel.Nifti1Image)):
+        if isinstance(imgs, (_basestring, nibabel.Nifti1Image)):
             imgs = [imgs]
             # This is a very incomplete hack, as it won't work right for
             # single-subject list of 3D filenames
@@ -227,7 +226,8 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                                             t_r=self.t_r,
                                             memory=self.memory,
                                             memory_level=self.memory_level,
-                                            n_jobs=self.n_jobs)
+                                            n_jobs=self.n_jobs,
+                                            verbose=max(0, self.verbose - 1))
         else:
             try:
                 self.masker_ = clone(self.mask)
@@ -255,7 +255,14 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                     warnings.warn('Parameter %s of the masker overriden'
                                   % param_name)
                 setattr(self.masker_, param_name, our_param)
-        self.masker_.fit(imgs)
+
+        # Masker warns if it has a mask_img and is passed
+        # imgs to fit().  Avoid the warning by being careful
+        # when calling fit.
+        if self.masker_.mask_img is None:
+            self.masker_.fit(imgs)
+        else:
+            self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
         parameters = get_params(MultiNiftiMasker, self)
@@ -293,9 +300,10 @@ class MultiPCA(BaseEstimator, TransformerMixin):
                             dtype=subject_pcas[0].dtype)
             for index, subject_pca in enumerate(subject_pcas):
                 if self.n_components > subject_pca.shape[0]:
-                    raise ValueError('You asked for %i components.'
-                                     'This is smaller than single-subject '
-                                     'data size.' % self.n_components)
+                    raise ValueError('You asked for %i components. '
+                                     'This is larger than the single-subject '
+                                     'data size (%d).' % (self.n_components,
+                                                          subject_pca.shape[0]))
                 data[index * self.n_components:
                      (index + 1) * self.n_components] = subject_pca
             data, variance, _ = cache(randomized_svd,

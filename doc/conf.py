@@ -21,6 +21,7 @@ import shutil
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
+import sphinxgallery
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -42,18 +43,13 @@ except:
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['gen_rst',
-              'sphinx.ext.autodoc', 'sphinx.ext.autosummary',
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
+              'numpy_ext.numpydoc',
+              'sphinxgallery.gen_gallery',
               ]
-try:
-    import numpy_ext.numpydoc
-    extensions.append('numpy_ext.numpydoc')
-    # With older versions of sphinx, this causes a crash
-    autosummary_generate = True
-except:
-    # Older version of sphinx
-    extensions.append('numpy_ext_old.numpydoc')
+
+autosummary_generate = True
 
 autodoc_default_flags = ['members', 'inherited-members']
 
@@ -76,8 +72,8 @@ plot_gallery = True
 master_doc = 'user_guide'
 
 # General information about the project.
-project = u'NiLearn'
-copyright = u'INRIA Parietal 2010-2013'
+project = u'Nilearn'
+copyright = u'The nilearn developers 2010-2015'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -154,7 +150,7 @@ html_theme_path = ['themes']
 html_title = "Machine learning for NeuroImaging"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = 'NiLearn'
+html_short_title = 'Nilearn'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -168,7 +164,7 @@ html_favicon = 'logos/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['images']
+html_static_path = ['images', sphinxgallery.path_static()]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -223,7 +219,7 @@ htmlhelp_basename = 'PythonScientic'
 latex_documents = [
   ('index', 'nilearn.tex', u'NeuroImaging with scikit-learn',
    ur"""Gaël Varoquaux and Alexandre Abraham"""
-   + r"\\\relax ~\\\relax http://nilearn.github.com",
+   + r"\\\relax ~\\\relax http://nilearn.github.io",
    'manual'),
 
 ]
@@ -285,7 +281,16 @@ extlinks = {
     'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
 }
 
-
+sphinxgallery_conf = {
+    'doc_module'        : 'nilearn',
+    'reference_url'     : {
+        'nilearn': None,
+        'matplotlib': 'http://matplotlib.org',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
+        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
+        'nibabel': 'http://nipy.org/nibabel',
+        'sklearn': 'http://scikit-learn.org/stable'}
+    }
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples

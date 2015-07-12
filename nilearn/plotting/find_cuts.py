@@ -5,13 +5,13 @@ Tools to find activations and cut on maps
 # Author: Gael Varoquaux
 # License: BSD
 
+import warnings
 import numpy as np
 from scipy import ndimage
 
-import nibabel
-
 # Local imports
 from .._utils.ndimage import largest_connected_component
+from .._utils import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
@@ -49,6 +49,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
     offset = np.zeros(3)
+
     # Deal with masked arrays:
     if hasattr(data, 'mask'):
         not_mask = np.logical_not(data.mask)
@@ -57,6 +58,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         else:
             mask *= not_mask
         data = np.asarray(data)
+
     # Get rid of potential memmapping
     data = as_ndarray(data)
     my_map = data.copy()
@@ -66,34 +68,37 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
         offset += [slice_x.start, slice_y.start, slice_z.start]
+
     # Testing min and max is faster than np.all(my_map == 0)
     if (my_map.max() == 0) and (my_map.min() == 0):
         return .5 * np.array(data.shape)
     if activation_threshold is None:
-        activation_threshold = fast_abs_percentile(my_map[my_map !=0].ravel(),
+        activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
                                                    80)
     mask = np.abs(my_map) > activation_threshold - 1.e-15
+    # mask may be zero everywhere in rare cases
+    if mask.max() == 0:
+        return .5 * np.array(data.shape)
     mask = largest_connected_component(mask)
     slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
     my_map = my_map[slice_x, slice_y, slice_z]
     mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
     offset += [slice_x.start, slice_y.start, slice_z.start]
+
     # For the second threshold, we use a mean, as it is much faster,
     # althought it is less robust
     second_threshold = np.abs(np.mean(my_map[mask]))
-    second_mask = (np.abs(my_map)>second_threshold)
+    second_mask = (np.abs(my_map) > second_threshold)
     if second_mask.sum() > 50:
         my_map *= largest_connected_component(second_mask)
     cut_coords = ndimage.center_of_mass(np.abs(my_map))
     x_map, y_map, z_map = cut_coords + offset
 
-    return coord_transform(x_map, y_map, z_map,
-                           img.get_affine())
+    # Return as a list of scalars
+    return np.asarray(coord_transform(x_map, y_map, z_map,
+                                      img.get_affine())).tolist()
 
-
-
-################################################################################
 
 def _get_auto_mask_bounds(img):
     """ Compute the bounds of the data with an automaticaly computed mask
@@ -114,11 +119,43 @@ def _get_auto_mask_bounds(img):
                         )
         edge_value /= 6
         mask = np.abs(data - edge_value) > .005*data.ptp()
-    # Nifti1Image cannot contain bools
-    mask = mask.astype(np.int)
     xmin, xmax, ymin, ymax, zmin, zmax = \
-            get_mask_bounds(nibabel.Nifti1Image(mask, affine))
+            get_mask_bounds(new_img_like(img, mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
+
+
+def _transform_cut_coords(cut_coords, direction, affine):
+    """Transforms cut_coords back in image space
+
+    Parameters
+    ----------
+    cut_coords: 1D array of length n_cuts
+        The coordinates to be transformed.
+
+    direction: string, optional (default "z")
+        sectional direction; possible values are "x", "y", or "z"
+
+    affine: 2D array of shape (4, 4)
+        The affine for the image.
+
+    Returns
+    -------
+    cut_coords: 1D array of length n_cuts
+       The original cut_coords transformed image space.
+    """
+    # make kwargs
+    axis = 'xyz'.index(direction)
+    kwargs = {}
+    for name in 'xyz':
+        kwargs[name] = np.zeros(len(cut_coords))
+    kwargs[direction] = cut_coords
+    kwargs['affine'] = affine
+
+    # We need atleast_1d to make sure that when n_cuts is 1 we do
+    # get an iterable
+    cut_coords = coord_transform(**kwargs)[axis]
+    return np.atleast_1d(cut_coords)
+
 
 def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
@@ -148,16 +185,23 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     less than 'spacing' will be returned.
     """
 
-    assert direction in 'xyz'
-
+    # misc
+    if not direction in 'xyz':
+        raise ValueError(
+            "'direction' must be one of 'x', 'y', or 'z'. Got '%s'" % (
+                direction))
     axis = 'xyz'.index(direction)
-
     affine = img.get_affine()
     orig_data = np.abs(img.get_data())
     this_shape = orig_data.shape[axis]
+
+    # BF issue #575: Return all the slices along and axis if this axis
+    # is the display mode and there are at least as many requested
+    # n_slices as there are slices.
     if n_cuts > this_shape:
-        raise ValueError('Too many cuts requested for the data: '
-                         'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+        warnings.warn('Too many cuts requested for the data: '
+                      'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+        return _transform_cut_coords(np.arange(this_shape), direction, affine)
 
     data = orig_data.copy()
     if data.dtype.kind == 'i':
@@ -224,14 +268,4 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     cut_coords = np.array(cut_coords)
     cut_coords.sort()
 
-    # Transform this back in image space
-    kwargs = dict()
-    for name in 'xyz':
-        kwargs[name] = np.zeros(len(cut_coords))
-    kwargs[direction] = cut_coords
-    kwargs['affine'] = affine
-
-    cut_coords = coord_transform(**kwargs)[axis]
-    # We need to atleast_1d to make sure that when n_cuts is 1 we do
-    # get an iterable
-    return np.atleast_1d(cut_coords)
+    return _transform_cut_coords(cut_coords, direction, affine)

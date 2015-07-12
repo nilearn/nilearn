@@ -24,12 +24,11 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
 from sklearn import neighbors
 
-import nibabel
-
 from .. import masking
-from .._utils import as_ndarray
+from .._utils.compat import _basestring
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
+
 
 def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
                  verbose=0):
@@ -309,12 +308,10 @@ class SearchLight(BaseEstimator):
 
         # scores is an 1D array of CV scores with length equals to the number
         # of voxels in processing mask (columns in process_mask)
-        X = masking._apply_mask_fmri(imgs,
-                nibabel.Nifti1Image(as_ndarray(mask, dtype=np.int8),
-                                    mask_affine))
+        X = masking._apply_mask_fmri(imgs, self.mask_img)
 
         estimator = self.estimator
-        if isinstance(estimator, basestring):
+        if isinstance(estimator, _basestring):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(X, y, estimator, A,

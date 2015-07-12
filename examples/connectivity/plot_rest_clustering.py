@@ -9,7 +9,7 @@ images by mean on the parcellation.
 
 This parcellation may be useful in a supervised learning, see for
 instance: `A supervised clustering approach for fMRI-based inference of
-brain states <http://hal.inria.fr/inria-00589201>`_, Michel et al,
+brain states <https://hal.inria.fr/inria-00589201>`_, Michel et al,
 Pattern Recognition 2011.
 
 """
@@ -21,6 +21,12 @@ from nilearn import datasets
 from nilearn import input_data
 from nilearn.plotting.img_plotting import plot_roi, plot_epi
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
+
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) is at: %s' %
+      nyu_dataset.anat_anon[0])
+print('First subject functional nifti image (4D) is at: %s' %
+      nyu_dataset.func[0])  # 4D data
 
 # This is resting-state data: the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the
@@ -41,21 +47,23 @@ connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                    n_z=shape[2], mask=mask)
 
 # Computing the ward for the first time, this is long...
-from sklearn.cluster import WardAgglomeration
+from sklearn.cluster import FeatureAgglomeration
+# If you have scikit-learn older than 0.14, you need to import
+# WardAgglomeration instead of FeatureAgglomeration
 import time
 start = time.time()
-ward = WardAgglomeration(n_clusters=1000, connectivity=connectivity,
-                         memory='nilearn_cache')
+ward = FeatureAgglomeration(n_clusters=1000, connectivity=connectivity,
+                            linkage='ward', memory='nilearn_cache')
 ward.fit(fmri_masked)
-print "Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start)
+print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
 # Compute the ward with more clusters, should be faster as we are using
 # the caching mechanism
 start = time.time()
-ward = WardAgglomeration(n_clusters=2000, connectivity=connectivity,
-                         memory='nilearn_cache')
+ward = FeatureAgglomeration(n_clusters=2000, connectivity=connectivity,
+                            linkage='ward', memory='nilearn_cache')
 ward.fit(fmri_masked)
-print "Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start)
+print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
 ### Show result ###############################################################
 

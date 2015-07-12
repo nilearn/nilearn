@@ -38,9 +38,9 @@ DESCRIPTION = 'Statistical learning for neuroimaging in Python'
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
-URL = 'http://nilearn.github.com'
+URL = 'http://nilearn.github.io'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'http://nilearn.github.com'
+DOWNLOAD_URL = 'http://nilearn.github.io'
 VERSION = _VERSION_GLOBALS['__version__']
 
 
@@ -81,7 +81,8 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 2.7',
           ],
           packages=find_packages(),
-          package_data={'nilearn.data': ['*.nii.gz'],
+          package_data={'nilearn.data': ['*.nii.gz', '*.csv'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
-                        'nilearn.tests.data': ['*']},
+                        'nilearn.tests.data': ['*'],
+                        'nilearn.description': ['*.rst']},
           install_requires=install_requires,)

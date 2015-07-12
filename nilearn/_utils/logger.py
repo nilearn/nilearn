@@ -1,4 +1,4 @@
-"""Logging facility for NiLearn"""
+"""Logging facility for nilearn"""
 
 # Author: Philippe Gervais
 # License: simplified BSD
@@ -6,6 +6,7 @@
 import inspect
 
 from sklearn.base import BaseEstimator
+from .compat import _basestring
 
 
 # The technique used in the log() function only applies to CPython, because
@@ -71,3 +72,34 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
             func_name = "%s.%s" % (object_self.__class__.__name__, func_name)
 
         print("[{func_name}] {msg}".format(func_name=func_name, msg=msg))
+
+
+def _compose_err_msg(msg, **kwargs):
+    """Append key-value pairs to msg, for display.
+
+    Parameters
+    ==========
+    msg: string
+        arbitrary message
+    kwargs: dict
+        arbitrary dictionary
+
+    Returns
+    =======
+    updated_msg: string
+        msg, with "key: value" appended. Only string values are appended.
+
+    Example
+    =======
+    >>> _compose_err_msg('Error message with arguments...', arg_num=123, \
+        arg_str='filename.nii', arg_bool=True)
+    'Error message with arguments...\\narg_str: filename.nii'
+    >>>
+    """
+    updated_msg = msg
+    for k, v in sorted(kwargs.items()):
+        if isinstance(v, _basestring):  # print only str-like arguments
+            updated_msg += "\n" + k + ": " + v
+
+    return updated_msg
+

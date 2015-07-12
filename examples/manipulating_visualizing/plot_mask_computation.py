@@ -31,8 +31,12 @@ from nilearn.plotting.img_plotting import plot_roi
 
 # Load Miyawaki dataset
 miyawaki_dataset = datasets.fetch_miyawaki2008()
-miyawaki_filename = miyawaki_dataset.func[0]
 
+# print basic information on the dataset
+print('First functional nifti image (4D) is located at: %s' %
+      miyawaki_dataset.func[0])  # 4D data
+
+miyawaki_filename = miyawaki_dataset.func[0]
 miyawaki_mean_img = image.mean_img(miyawaki_filename)
 
 # This time, we can use the NiftiMasker without changing the default mask
@@ -89,10 +93,10 @@ detrended = NiftiMasker(mask_strategy='epi', detrend=True)
 trended_data = trended.fit_transform(nyu_img)
 detrended_data = detrended.fit_transform(nyu_img)
 
-print "Trended: mean %.2f, std %.2f" % \
-    (np.mean(trended_data), np.std(trended_data))
-print "Detrended: mean %.2f, std %.2f" % \
-    (np.mean(detrended_data), np.std(detrended_data))
+print("Trended: mean %.2f, std %.2f" %
+       (np.mean(trended_data), np.std(trended_data)))
+print("Detrended: mean %.2f, std %.2f" %
+       (np.mean(detrended_data), np.std(detrended_data)))
 
 
 plt.show()

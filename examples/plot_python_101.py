@@ -10,6 +10,6 @@ plot it.
 import numpy as np
 t = np.linspace(1, 10, 2000)
 
-# import pylab: the module for scientific plotting
+# import matplotlib.pyplot: the module for scientific plotting
 import matplotlib.pyplot as plt
 plt.plot(t, np.cos(t))

@@ -15,12 +15,14 @@ from distutils.version import LooseVersion
 from nose.tools import assert_true, assert_false, assert_raises
 from nose import SkipTest
 import numpy as np
+from numpy.testing import assert_array_equal
 
 from nibabel import Nifti1Image
 import nibabel
 
-from ..nifti_masker import NiftiMasker
-from ..._utils import testing
+from nilearn.input_data.nifti_masker import NiftiMasker
+from nilearn._utils import testing
+from nilearn.image import index_img
 
 
 def test_auto_mask():
@@ -29,9 +31,6 @@ def test_auto_mask():
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker()
-    # Check that if we have not fit the masker we get a intelligible
-    # error
-    assert_raises(ValueError, masker.transform, [img, ])
     # Smoke test the fit
     masker.fit(img)
     # Smoke test the transform
@@ -39,6 +38,25 @@ def test_auto_mask():
     masker.transform([img, ])
     # With a 3D img
     masker.transform(img)
+
+    # check exception when transform() called without prior fit()
+    masker2 = NiftiMasker(mask_img=img)
+    testing.assert_raises_regex(
+        ValueError,
+        'has not been fitted. ', masker2.transform, img)
+
+
+def test_detrend():
+    # Check that detrending doesn't do something stupid with 3D images
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = Nifti1Image(data, np.eye(4))
+    mask = data.astype(np.int)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img, detrend=True)
+    # Smoke test the fit
+    X = masker.fit_transform(img)
+    assert_true(np.any(X != 0))
 
 
 def test_with_files():
@@ -110,6 +128,57 @@ def test_mask_3d():
         assert_raises(TypeError, masker.fit)
 
 
+def test_mask_4d():
+    # Dummy mask
+    mask = np.zeros((10, 10, 10))
+    mask[3:7, 3:7, 3:7] = 1
+    mask_bool = mask.astype(bool)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    n_mask_vox = mask_bool.sum()
+
+    # Dummy data
+    data = np.zeros((10, 10, 10, 3))
+    data[..., 0] = 1
+    data[..., 1] = 2
+    data[..., 2] = 3
+    data_img_4d = Nifti1Image(data, np.eye(4))
+    data_imgs = [index_img(data_img_4d, 0), index_img(data_img_4d, 1),
+                 index_img(data_img_4d, 2)]
+
+    # check whether transform is indeed selecting niimgs subset
+    sample_mask = np.array([0, 2])
+    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker.fit()
+    data_trans = masker.transform(data_imgs)
+    data_trans_img = index_img(data_img_4d, sample_mask)
+    data_trans_direct = data_trans_img.get_data()[mask_bool, :]
+    data_trans_direct = np.swapaxes(data_trans_direct, 0, 1)
+    assert_array_equal(data_trans, data_trans_direct)
+
+    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker.fit()
+    data_trans2 = masker.transform(data_img_4d)
+    assert_array_equal(data_trans2, data_trans_direct)
+
+
+def test_4d_single_scan():
+    mask = np.zeros((10, 10, 10))
+    mask[3:7, 3:7, 3:7] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    data_5d = [np.random.random((10, 10, 10, 1)) for i in range(5)]
+    data_4d = [d[..., 0] for d in data_5d]
+    data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
+    data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
+
+    masker = NiftiMasker(mask_img=mask_img)
+    masker.fit()
+    data_trans_5d = masker.transform(data_5d)
+    data_trans_4d = masker.transform(data_4d)
+
+    assert_array_equal(data_trans_4d, data_trans_5d)
+
+
 def test_sessions():
     # Test the sessions vector
     data = np.ones((40, 40, 40, 4))
@@ -157,3 +226,52 @@ def test_joblib_cache():
     finally:
         shutil.rmtree(cachedir, ignore_errors=True)
 
+
+def test_mask_init_errors():
+    # Errors that are caught in init
+    mask = NiftiMasker(mask_strategy='oops')
+    testing.assert_raises_regex(ValueError, "Unknown value of mask_strategy 'oops'",
+                                mask.fit)
+
+
+def test_compute_epi_mask():
+    # Taken from test_masking.py, but used to test that the masker class
+    #   is passing parameters appropriately.
+    mean_image = np.ones((9, 9, 3))
+    mean_image[3:-2, 3:-2, :] = 10
+    mean_image[5, 5, :] = 11
+    mean_image = Nifti1Image(mean_image.astype(float), np.eye(4))
+
+    masker = NiftiMasker(mask_strategy='epi',
+                         mask_args=dict(opening=False))
+    masker.fit(mean_image)
+    mask1 = masker.mask_img_
+
+    masker2 = NiftiMasker(mask_strategy='epi',
+                          mask_args=dict(opening=False, exclude_zeros=True))
+    masker2.fit(mean_image)
+    mask2 = masker2.mask_img_
+
+    # With an array with no zeros, exclude_zeros should not make
+    # any difference
+    np.testing.assert_array_equal(mask1.get_data(), mask2.get_data())
+
+    # Check that padding with zeros does not change the extracted mask
+    mean_image2 = np.zeros((30, 30, 3))
+    mean_image2[3:12, 3:12, :] = mean_image.get_data()
+    mean_image2 = Nifti1Image(mean_image2, np.eye(4))
+
+    masker3 = NiftiMasker(mask_strategy='epi',
+                          mask_args=dict(opening=False, exclude_zeros=True))
+    masker3.fit(mean_image2)
+    mask3 = masker3.mask_img_
+    np.testing.assert_array_equal(mask1.get_data(),
+                                  mask3.get_data()[3:12, 3:12])
+
+    # However, without exclude_zeros, it does
+    masker4 = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=False))
+    masker4.fit(mean_image2)
+    mask4 = masker4.mask_img_
+
+    assert_false(np.allclose(mask1.get_data(),
+                             mask4.get_data()[3:12, 3:12]))

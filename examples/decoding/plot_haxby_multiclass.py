@@ -13,14 +13,19 @@ from matplotlib import pyplot as plt
 from nilearn import datasets
 import numpy as np
 haxby_dataset = datasets.fetch_haxby_simple()
+
+# print basic information on the dataset
+print('Mask nifti images are located at: %s' % haxby_dataset.mask)
+print('Functional nifti images are located at: %s' % haxby_dataset.func)
+
 func_filename = haxby_dataset.func
 mask_filename = haxby_dataset.mask
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
+y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
 conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
 
 # Remove the rest condition, it is not very interesting
-non_rest = conditions != 'rest'
+non_rest = conditions != b'rest'
 conditions = conditions[non_rest]
 y = y[non_rest]
 
@@ -65,9 +70,9 @@ cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
 
 cv_scores_ova = cross_val_score(svc_ova, X, y, cv=5, verbose=1)
 
-print 79 * "_"
-print 'OvO', cv_scores_ovo.mean()
-print 'OvA', cv_scores_ova.mean()
+print(79 * "_")
+print('OvO', cv_scores_ovo.mean())
+print('OvA', cv_scores_ova.mean())
 
 plt.figure(figsize=(4, 3))
 plt.boxplot([cv_scores_ova, cv_scores_ovo])

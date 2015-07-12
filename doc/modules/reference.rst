@@ -29,15 +29,21 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   fetch_abide_pcp
    fetch_adhd
-   fetch_craddock_2011_atlas
+   fetch_craddock_2012_atlas
+   fetch_harvard_oxford
    fetch_haxby
    fetch_haxby_simple
-   fetch_nyu_rest
    fetch_icbm152_2009
+   fetch_localizer_contrasts
+   fetch_localizer_calculation_task
+   fetch_miyawaki2008
    fetch_msdl_atlas
+   fetch_nyu_rest
+   fetch_oasis_vbm
+   fetch_smith_2009
    fetch_yeo_2011_atlas
-   fetch_harvard_oxford
 
 .. _decoding_ref:
 
@@ -95,12 +101,14 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   crop_img
+   index_img
+   iter_img
    high_variance_confounds
-   smooth_img
+   mean_img
    resample_img
    reorder_img
-   crop_img
-   mean_img
+   smooth_img
    swap_img_hemispheres
 
 
@@ -201,6 +209,8 @@ uses.
    plot_epi
    plot_roi
    plot_stat_map
+   plot_glass_brain
+   plot_connectome
    find_xyz_cut_coords
 
 **Classes**:

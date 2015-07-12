@@ -52,6 +52,12 @@ oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
 
+# print basic information on the dataset
+print('First gray-matter anatomy image (3D) is located at: %s' %
+      oasis_dataset.gray_matter_maps[0])  # 3D data
+print('First white-matter anatomy image (3D) is located at: %s' %
+      oasis_dataset.white_matter_maps[0])  # 3D data
+
 ### Preprocess data ###########################################################
 nifti_masker = NiftiMasker(
     standardize=False,
@@ -64,10 +70,10 @@ gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 new_images = nifti_masker.inverse_transform(gm_maps_masked)
 gm_maps_masked = nifti_masker.fit_transform(new_images)
 n_samples, n_features = gm_maps_masked.shape
-print n_samples, "subjects, ", n_features, "features"
+print("%d samples, %d features" % (n_subjects, n_features))
 
 ### Prediction with SVR #######################################################
-print "ANOVA + SVR"
+print("ANOVA + SVR")
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVR
@@ -106,13 +112,12 @@ from nilearn.image.resampling import coord_transform
 affine = weight_img.get_affine()
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = round(k_slice)
+k_slice = np.round(k_slice)
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
 weight_slice_data = weight_img.get_data()[..., k_slice, 0]
 vmax = max(-np.min(weight_slice_data), np.max(weight_slice_data)) * 0.5
 display = plot_stat_map(weight_img, bg_img=bg_filename,
-                        cmap=plt.cm.Spectral_r,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig, vmax=vmax)
 display.title('SVM weights', y=1.2)
@@ -123,12 +128,12 @@ cv_scores = cross_val_score(anova_svr, gm_maps_masked, age)
 
 ### Return the corresponding mean prediction accuracy
 prediction_accuracy = np.mean(cv_scores)
-print "=== ANOVA ==="
-print "Prediction accuracy: %f" % prediction_accuracy
-print
+print("=== ANOVA ===")
+print("Prediction accuracy: %f" % prediction_accuracy)
+print("")
 
 ### Inference with massively univariate model #################################
-print "Massively univariate model"
+print("Massively univariate model")
 
 ### Statistical inference
 from nilearn.mass_univariate import permuted_ols
@@ -156,6 +161,6 @@ display.title(title, y=1.2)
 signed_neg_log_pvals_slice_data = \
     signed_neg_log_pvals_unmasked.get_data()[..., k_slice, 0]
 n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
-print '\n%d detections' % n_detections
+print('\n%d detections' % n_detections)
 
 plt.show()
