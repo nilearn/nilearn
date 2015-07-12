@@ -18,10 +18,10 @@ from .._utils.cache_mixin import CacheMixin
 
 from sklearn.linear_model import Ridge
 from sklearn.decomposition import MiniBatchDictionaryLearning
-from sklearn.decomposition.pca import RandomizedPCA
 
 class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
-    """Perform Dictionary Learning analysis on a CanICA initialization : yields more stable maps
+    """Perform a map learning algorithm based on componentsparsity, over a CanICA initialization,
+    which yields more stable maps thatn CanICA.
 
     Parameters
     ----------
@@ -52,7 +52,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         their variance is put to 1 in the time dimension.
 
     threshold: None, 'auto' or float
-        If None, no thresholding is applied. If 'auto',
+        Passed to CanICA. If None, no thresholding is applied. If 'auto',
         then we apply a thresholding that will keep the n_voxels,
         more intense voxels across all the maps, n_voxels being the number
         of voxels in a brain volume. A float value indicates the
@@ -60,10 +60,6 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
 
     n_init: int, optional
         The number of times the fastICA algorithm is restarted
-
-    reduction: boolean, optional
-        # XXX: Experimental
-        Specify whether to reduce the dictionary by PCA before learning cde
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -180,19 +176,10 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         if self.verbose:
             print('[DictLearning] Learning dictionary')
         MiniBatchDictionaryLearning.fit(self, self.data_flat_.T)
-        if self.reduction:
-            if self.verbose:
-                print('[DictLearning] Reducing the dictionary')
-            pca = RandomizedPCA(n_components=self.n_components, iterated_power=0,
-                                random_state=self.random_state)
-            self.components_ = pca.fit_transform(self.components_)
-            data_trans = pca.transform(self.data_flat_.T)
-        else:
-            data_trans = self.data_flat_.T
         if self.verbose:
             print('')
             print('[DictLearning] Learning code')
-        self.components_ = MiniBatchDictionaryLearning.transform(self, data_trans).T
+        self.components_ = MiniBatchDictionaryLearning.transform(self, self.data_flat_.T).T
         self.components_ = as_ndarray(self.components_)
         # flip signs in each component so that peak is +ve
         for component in self.components_:
