@@ -1,47 +1,49 @@
 """
-Plotting 4D Atlas maps or regions onto the anatomical image
+Visualizing 4D atlas maps onto the anatomical image
 ===========================================================
 
-We show here how to plot the atlas maps or statistical maps which are
-4D using three different display types, for example using
+Basically this example gives an idea on how to visualize the atlas maps which are
+4D using three different display types, for instance if you choose
 
-1. "contours", ROIs contours are delineated by colored lines.
+1. "contours", which means maps or ROIs are shown as contours delineated by \
+    colored lines.
 
-2. "filled_contours", plots can be seen in contours with fillings.
+2. "filled_contours", maps are shown as contours same as above but with \
+    fillings inside the contours.
 
-3. "continuous or overlays", plots can be seen in continuous overlays.
+3. "continuous", maps are shown as just color overlays.
 
 This function can display each map with each different color which are picked
-randomly from the given colormap.
+randomly from the colormap which is already defined.
 
-Please see the related documentation for more information.
+Please see the related documentation for more information to tune between the
+parameters.
 """
-import matplotlib.pyplot as plt
+# Load 4D Atlas maps
+print('--- Loading 4D Atlas Maps---')
 from nilearn import datasets
+
+#### Harvard Oxford Atlas ####
+harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
+#### Multi Subject Dictionary Learning Atlas ####
+msdl = datasets.fetch_atlas_msdl()
+#### Smith ICA Atlas and Brain Maps 2009 ####
+smith = datasets.fetch_atlas_smith_2009()
+#### Craddock Parcellations 2012 ####
+craddock = datasets.fetch_atlas_craddock_2012()
+
+# Visualization
+print('--- Visualizing ---')
+import matplotlib.pyplot as plt
 from nilearn import plotting
 
-# Fetch the 4D atlas data or 4D statistical output data
-# Harvard Oxford Atlas
-atlas_filename, labels = datasets.fetch_harvard_oxford('cort-prob-2mm')
+display_types = ['contours', 'filled_contours', 'continuous']
+atlas_types = [harvard_oxford.maps, msdl.maps, smith.rsn10, craddock.scorr_2level]
+atlas_names = ['Harvard_Oxford', 'MSDL', 'Smith2009', 'Craddock2012']
+for atlas, name in zip(atlas_types, atlas_names):
+    for option in display_types:
+        plotting.img_plotting.plot_prob_atlas(atlas, view_type=option,
+                                              title='%s as %s' % (name, option))
 
-# Plotting Harvard Oxford Atlas maps as a contours type
-# using view_type='contours'
-display = plotting.img_plotting.plot_prob_atlas(atlas_filename,
-                                                view_type='contours',
-                                                title='Harvard-Oxford atlas '
-                                                      'maps as contours')
-# Plotting Harvard Oxford Atlas maps as a contours filled regions
-# using view_type='filled_contours'
-display = plotting.img_plotting.plot_prob_atlas(atlas_filename,
-                                                view_type='filled_contours',
-                                                title='Harvard-Oxford atlas '
-                                                      'maps as a '
-                                                      'contours and contour fillings')
-# Plotting Harvard Oxford Atlas maps as a continuous type
-# using view_type='continuous'
-display = plotting.img_plotting.plot_prob_atlas(atlas_filename,
-                                                view_type='continuous',
-                                                title='Harvard-Oxford atlas '
-                                                      'maps as a '
-                                                      'continuous overlays')
 plt.show()
+

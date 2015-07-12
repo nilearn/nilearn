@@ -40,7 +40,7 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/plot_prob_atlas_002.png
+.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/plot_prob_atlas_005.png
      :target: ../auto_examples/manipulating_visualizing/plot_prob_atlas.html
      :scale: 50
 
