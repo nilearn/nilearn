@@ -3,7 +3,7 @@
 nistats
 =======
 
-Nistats is a Python module for fast and easy mdeolin and statistical analysis
+Nistats is a Python module for fast and easy modeling and statistical analysis
 of functional Magnetic Resonance Imaging data.
 
 It leverages the `nilearn <http://nilearn.github.io>`_ Python toolbox for neuroimaging data manipulation (data downloading, visualization, masking).
