@@ -1,4 +1,4 @@
-nilearn (0.1b1+git894-g857fd68-1) unstable; urgency=low
+nilearn (0.1b1+git893-gb89a84a~dfsg.1-1) unstable; urgency=low
 
   * Initial release.
   * No documentation is built as it required the download of auxiliary

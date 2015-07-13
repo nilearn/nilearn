@@ -2,10 +2,13 @@
 # -*- mode: makefile; coding: utf-8 -*-
 
 export DH_VERBOSE=1
-
 # see EXAMPLES in dpkg-buildflags(1) and read /usr/share/dpkg/*
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/default.mk
+
+export PYBUILD_NAME = nilearn
+export PYBUILD_TEST_NOSE = 1
+export PYBUILD_BEFORE_TEST = cp -v {dir}/setup.cfg {build_dir}
 
 srcpkg = $(shell LC_ALL=C dpkg-parsechangelog | grep '^Source:' | cut -d ' ' -f 2,2)
 debver = $(shell LC_ALL=C dpkg-parsechangelog | grep '^Version:' | cut -d ' ' -f 2,2 )
@@ -15,23 +18,18 @@ upstreamver = $(shell echo $(debver) | cut -d '-' -f 1,1 )
 # then described this commit relative to the last release tag (V...)
 # If this should make any sense the local master branch must track upstream's
 # master or whatever other source branch.
-gitver = $(shell [ -x /usr/bin/git ] && git describe --tags --match '[0-9]\.[0-9a-z]*' $$(git merge-base -a HEAD master) | sed -e 's/-/+git/')
+gitver = $(shell [ -x /usr/bin/git ] && git describe --tags --match '[0-9]\.[0-9a-z]*' $$(git merge-base -a HEAD master) | sed -e 's/-/+git/')~dfsg.1
 
 PYVER = $(shell pyversions -vd)
 
 # Mega rule
 %:
-	dh $@  --with python2 --buildsystem=python_distutils
+# put back once the sklearn package builds py3 support in
+#	dh $@  --with python2,python3 --buildsystem=pybuild
+	dh $@  --with python2 --buildsystem=pybuild
 
-override_dh_auto_test:
-#    : # Do not test just after build, lets install and then test
-
-override_dh_auto_build:
-	dh_auto_build
-	echo "backend : Agg" >| build/matplotlibrc
-
-#override_dh_auto_install:
-#	dh_auto_install
+#override_dh_auto_test:
+#	
 
 #test:
 #ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
@@ -59,7 +57,6 @@ override_dh_clean:
 	rm -f .coverage
 	rm -rf nilearn.egg-info build
 	-find . -name '*.pyc' -delete
-	$(MAKE) -C doc clean
 	dh_clean
 
 dfsg-source-tree:
@@ -74,7 +71,7 @@ dfsg-source-tree:
 	fi
 
 # make orig tarball from repository content
-get-orig-source:
+get-orig-source: dfsg-source-tree
 	# orig tarball, turn directory into something nicer
 	git archive --format=tar --prefix=$(srcpkg)-$(gitver)/ HEAD | \
 		gzip -9 > $(srcpkg)_$(gitver).orig.tar.gz
