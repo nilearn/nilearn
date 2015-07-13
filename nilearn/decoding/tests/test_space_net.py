@@ -164,7 +164,7 @@ def test_tv_regression_simple():
     X += rng.randn(n, p)
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
-    print X.shape, mask.get_data().sum()
+    print("%s %s" % (X.shape, mask.get_data().sum()))
     alphas = [.1, 1.]
 
     for l1_ratio in [1.]:

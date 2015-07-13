@@ -4,7 +4,6 @@ for computing image gradient, loss functins, etc.).
 
 """
 
-import random
 from nose.tools import nottest, assert_equal, assert_true
 import numpy as np
 import nibabel
@@ -45,8 +44,7 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
 
 
 def to_niimgs(X, dim, rng=None):
-    if rng is None:
-        rng = random.Random(42)
+    if rng is None: rng = check_random_state(42)
     p = np.prod(dim)
     assert_equal(len(dim), 3)
     assert_true(X.shape[-1] <= p)
