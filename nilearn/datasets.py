@@ -2873,7 +2873,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     # make data for learning problems, etc.
     if make_Xy:
         if verbose:
-            print "Chewing data into matrices X, y..."
+            print("Chewing data into matrices X, y...")
         X = []
         y = []
         mask = []
