@@ -37,8 +37,8 @@ DAMAGE.
 Licenses for incorporated software
 ==================================
 
-The included sphinx extensions in doc/sphintext are available under
-the license in doc/sphintext/LICENSE.txt
+The included sphinx extensions in doc/sphinxext are available under
+the license in doc/sphinxext/LICENSE.txt
 
 ----------------------------------------------------------------------
 
