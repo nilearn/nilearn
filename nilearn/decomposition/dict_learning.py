@@ -106,7 +106,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
     """
 
     def __init__(self, mask=None, n_components=20,
-                 smoothing_fwhm=6, n_init=10,
+                 smoothing_fwhm=6,
                  standardize=True,
                  random_state=0,
                  target_affine=None, target_shape=None,
@@ -121,7 +121,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         CanICA.__init__(self,
                         mask=mask, memory=memory, memory_level=memory_level,
                         n_jobs=n_jobs, verbose=verbose, do_cca=True,
-                        threshold=float(n_components), n_init=n_init,
+                        threshold=float(n_components), n_init=1,
                         n_components=n_components, smoothing_fwhm=smoothing_fwhm,
                         target_affine=target_affine, target_shape=target_shape,
                         random_state=random_state, high_pass=high_pass, low_pass=low_pass,
@@ -142,7 +142,8 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
     def _init_dict(self, imgs, y=None, confounds=None):
 
         CanICA.fit(self, imgs, y=y, confounds=confounds)
-        self.data_flat_ = np.concatenate(self.data_flat_, axis=0)
+        if isinstance(self.data_flat_, tuple):  # several subjects
+            self.data_flat_ = np.concatenate(self.data_flat_, axis=0)
         if self.n_iter == 'auto':
             # ceil(self.data_fat.shape[0] / self.batch_size)
             self.n_iter = (self.data_flat_.shape[0] - 1) / self.batch_size + 1

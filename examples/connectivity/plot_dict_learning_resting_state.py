@@ -17,6 +17,9 @@ Pre-prints for paper is available on hal
 
 ### Load ADHD rest dataset ####################################################
 from nilearn import datasets
+# For linear assignment (should be moved in non user space...)
+from sklearn.utils.linear_assignment_ import linear_assignment
+import numpy as np
 
 adhd_dataset = datasets.fetch_adhd(n_subjects=20, data_dir='/media/data/neuro')
 func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
@@ -26,38 +29,59 @@ print('First functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
 ### Apply DictLearning ########################################################
-from nilearn.decomposition.dict_learning import DictLearning, CanICA
-n_components = 30
+from nilearn.decomposition.dict_learning import DictLearning
+from nilearn.decomposition.canica import CanICA
+from nilearn.decomposition.multi_pca import MultiPCA
+n_components = 50
 
-estimators = [('Dictionary Learning',
-              DictLearning(n_components=n_components, smoothing_fwhm=6.,
-                             memory="nilearn_cache", memory_level=5, verbose=2, random_state=0,
-                             n_jobs=1, n_init=1, alpha=5, n_iter='auto')),
-              ('Canonical Independent Component Analysis',
-               CanICA(n_components=n_components, smoothing_fwhm=6.,
-                             memory="nilearn_cache", memory_level=5, verbose=2, random_state=0,
-                             n_jobs=1, n_init=1))
-              ]
+dict_learning = DictLearning(n_components=n_components, smoothing_fwhm=6.,
+                             memory="/media/data/nilearn_cache", memory_level=5, verbose=2, random_state=0,
+                             n_jobs=1, alpha=7, n_iter=1000)
+canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
+                memory="/media/data/nilearn_cache", memory_level=5, verbose=2, random_state=0,
+                n_jobs=1, n_init=1, threshold=1.)
 
-for name, estimator in estimators:
-dict_learning.fit(func_filenames)
+multi_pca = MultiPCA(n_components=n_components, smoothing_fwhm=6.,
+                memory="/media/data/nilearn_cache", memory_level=5, verbose=2)
 
-print('')
+estimators = [canica, dict_learning]
+
+
+for estimator in estimators:
+    estimator.fit(func_filenames)
+
+
+# np.save('temp', np.concatenate([estimator.components_ for estimator in estimators]))
+# import numpy as np
+# from sklearn.utils.linear_assignment_ import linear_assignment
+print('[Example] Aligning maps')
+K = np.corrcoef(np.concatenate([estimator.components_ for estimator in estimators]))
+K[np.isinf(K)] = 0
+K = np.nan_to_num(K)
+K = K[:n_components, n_components:]
+indices = linear_assignment(1-K)
+
 print('[Example] Dumping results')
 
+components_imgs = []
 # Retrieve learned spatial maps in brain space
-components_img = estimator.masker_.inverse_transform(estimator.components_)
-components_img.to_filename('%s_resting_state.nii.gz')
+for i, estimator in enumerate(estimators):
+    components_img = estimator.masker_.inverse_transform(estimator.components_[indices[:, i]])
+    components_img.to_filename('%s_resting_state.nii.gz' % type(estimator).__name__)
+    components_imgs.append(components_img)
 
 ### Visualize the results #####################################################
 # Show some interesting components
 import matplotlib.pyplot as plt
-from nilearn.plotting import plot_stat_map
-from nilearn.image import iter_img
+from nilearn.plotting import plot_stat_map, find_xyz_cut_coords
+from nilearn.image import index_img
 
-for i, cur_img in enumerate(iter_img(components_img)):
+for i in range(n_components):
     if i % 3 == 0:
-        plot_stat_map(cur_img, title="Component %d" % i,
-                      colorbar=False)
+        fig, axes = plt.subplots(nrows=3)
+        cut_coords = find_xyz_cut_coords(index_img(components_imgs[0], i))
+        for estimator, cur_img, ax in zip(estimators, components_imgs, axes):
+            plot_stat_map(index_img(cur_img, i), title="Component %d" % i, axes=ax,
+                          cut_coords=cut_coords, colorbar=False)
 
 plt.show()
