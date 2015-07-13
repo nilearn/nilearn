@@ -31,6 +31,10 @@ def _safe_get_data(img):
 
 
 def _get_data_dtype(img):
+    """Returns the dtype of an image.
+    If the image is non standard (no get_data_dtype member), this function
+    relies on the data itself.
+    """
     try:
         return img.get_data_dtype()
     except AttributeError:
@@ -38,6 +42,27 @@ def _get_data_dtype(img):
 
 
 def _get_target_dtype(dtype, target_dtype):
+    """Returns a new dtype if conversion is needed
+
+    Parameters
+    ----------
+
+    dtype: type
+        Data type of the original data
+
+    target_dtype: None, type or "auto"
+        If None, no conversion is required. If a type is provided, the
+        function will check if a conversion is needed. The "auto" mode will
+        automatically convert to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    Returns
+    -------
+
+    dtype: type
+        The data type toward which the original data should be converted.
+    """
+
     if target_dtype is None:
         return None
     if target_dtype == 'auto':
@@ -59,6 +84,11 @@ def load_niimg(niimg, dtype=None):
     niimg: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Image to load.
+
+    dtype: type
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     Returns:
     --------
