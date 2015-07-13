@@ -86,6 +86,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     return Bunch(**params)
 
+
 @deprecated('it has been replace by fetch_atlas_craddock_2012 and '
             'will be removed in nilearn 0.1.5')
 def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
@@ -94,6 +95,7 @@ def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
         url=url,
         resume=resume,
         verbose=verbose)
+
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
@@ -151,6 +153,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
         params['description'] = rst_file.read()
 
     return Bunch(**params)
+
 
 def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                                symmetric_split=False,
@@ -284,6 +287,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     atlas_img = new_img_like(atlas_img, atlas, atlas_img.get_affine())
     return Bunch(maps=atlas_img, labels=new_names)
 
+
 @deprecated('it has been replaced by fetch_atlas_harvard_oxford and '
             'will be removed in nilearn 0.1.5')
 def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
@@ -294,6 +298,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
                                        resume=resume, verbose=verbose)
 
     return atlas.maps, atlas.labels
+
 
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
@@ -375,6 +380,7 @@ def fetch_atlas_power_2011():
     params = dict(rois=np.recfromcsv(csv), description=fdescr)
 
     return Bunch(**params)
+
 
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
@@ -470,6 +476,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     return Bunch(**params)
 
+
 @deprecated('it has been replace by fetch_atlas_smith_2009 and '
             'will be removed in nilearn 0.1.5')
 def fetch_smith_2009(data_dir=None, mirror='origin', url=None, resume=True,
@@ -480,6 +487,7 @@ def fetch_smith_2009(data_dir=None, mirror='origin', url=None, resume=True,
         url=url,
         resume=resume,
         verbose=verbose)
+
 
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
@@ -557,6 +565,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
+
 
 @deprecated('it has been replace by fetch_atlas_yeo_2011 and '
             'will be removed in nilearn 0.1.5')
