@@ -134,6 +134,7 @@ uses.
    MultiNiftiMasker
    NiftiLabelsMasker
    NiftiMapsMasker
+   NiftiSpheresMasker
 
 .. _masking_ref:
 
