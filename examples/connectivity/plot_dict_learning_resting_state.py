@@ -50,7 +50,7 @@ print('[Example] Dumping results')
 components_imgs = []
 # Retrieve learned spatial maps in brain space
 for i, estimator in enumerate(estimators):
-    components_img = estimator.masker_.inverse_transform(estimator.components_[indices[:, i]])
+    components_img = estimator.masker_.inverse_transform(estimator.components_)
     components_img.to_filename('%s_resting_state.nii.gz' % type(estimator).__name__)
     components_imgs.append(components_img)
 
