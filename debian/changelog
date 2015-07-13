@@ -1,0 +1,7 @@
+nilearn (0.1b1+git894-g857fd68-1) unstable; urgency=low
+
+  * Initial release.
+  * No documentation is built as it required the download of auxiliary
+    data files.
+
+ -- Michael Hanke <mih@debian.org>  Mon, 13 Jul 2015 12:18:34 +0200

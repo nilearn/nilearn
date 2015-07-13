@@ -1,0 +1,36 @@
+Source: nilearn
+Section: python
+Priority: extra
+Maintainer: NeuroDebian Team <team@neuro.debian.net>
+Uploaders: Yaroslav Halchenko <debian@onerussian.com>, Michael Hanke <mih@debian.org>
+Build-Depends: debhelper (>= 9~),
+  python-all (>= 2.6),
+  dh-python,
+  python-setuptools,
+  python-numpy (>= 1:1.6),
+  python-scipy (>= 0.9),
+  python-sklearn (>= 0.12.1),
+  python-matplotlib (>= 1.1.1),
+  python-nibabel (>= 1.1.0),
+  python-nose (>= 1.2.1),
+  python-coverage (>= 3.6)
+Standards-Version: 3.9.6
+Homepage: https://nilearn.github.io
+Vcs-Browser: http://git.debian.org/?p=pkg-exppsy/nilearn.git
+Vcs-Git: git://git.debian.org/git/pkg-exppsy/nilearn.git
+
+
+Package: python-nilearn
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends},
+Recommends: python-matplotlib,
+  python-numpy (>= 1:1.6),
+  python-scipy (>= 0.9),
+  python-sklearn (>= 0.12.1),
+  python-nibabel (>= 1.1.0)
+Provides: ${python:Provides}
+XB-Python-Version: ${python:Versions}
+Description: fast and easy statistical learning on neuroimaging data
+ This Python module leverages the scikit-learn toolbox for multivariate
+ statistics with applications such as predictive modelling, classification,
+ decoding, or connectivity analysis.

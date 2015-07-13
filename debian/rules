@@ -1,0 +1,88 @@
+#!/usr/bin/make -f
+# -*- mode: makefile; coding: utf-8 -*-
+
+export DH_VERBOSE=1
+
+# see EXAMPLES in dpkg-buildflags(1) and read /usr/share/dpkg/*
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+
+srcpkg = $(shell LC_ALL=C dpkg-parsechangelog | grep '^Source:' | cut -d ' ' -f 2,2)
+debver = $(shell LC_ALL=C dpkg-parsechangelog | grep '^Version:' | cut -d ' ' -f 2,2 )
+upstreamver = $(shell echo $(debver) | cut -d '-' -f 1,1 )
+
+# this figures out the last merge point from 'master' into the Debian branch and
+# then described this commit relative to the last release tag (V...)
+# If this should make any sense the local master branch must track upstream's
+# master or whatever other source branch.
+gitver = $(shell [ -x /usr/bin/git ] && git describe --tags --match '[0-9]\.[0-9a-z]*' $$(git merge-base -a HEAD master) | sed -e 's/-/+git/')
+
+PYVER = $(shell pyversions -vd)
+
+# Mega rule
+%:
+	dh $@  --with python2 --buildsystem=python_distutils
+
+override_dh_auto_test:
+#    : # Do not test just after build, lets install and then test
+
+override_dh_auto_build:
+	dh_auto_build
+	echo "backend : Agg" >| build/matplotlibrc
+
+#override_dh_auto_install:
+#	dh_auto_install
+
+#test:
+#ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+#	: # I: Unittest only the default python version for now against "installed" materials
+#	cd debian; \
+#	 PYTHONPATH=$$(/bin/ls -d $(CURDIR)/debian/tmp/usr/lib/python$(PYVER)/*-packages):$$PYTHONPATH \
+#     MPLCONFIGDIR=$(CURDIR)/build \
+#	  nosetests nilearn
+#else
+#	: # Skip unittests due to nocheck
+#endif
+
+override_dh_install:
+	if [ -x /usr/bin/dh_numpy ]; then dh_numpy;	fi
+	dh_install
+
+
+## immediately useable documentation and exemplar scripts/data
+override_dh_compress:
+	: # I: Avoiding compression of what should not be compressed
+	dh_compress -X.py -X.html -X.pdf -X.css -X.jpg -X.txt -X.js -X.json -X.rtc -Xobjects.inv
+
+override_dh_clean:
+	# I: Custom cleaning
+	rm -f .coverage
+	rm -rf nilearn.egg-info build
+	-find . -name '*.pyc' -delete
+	$(MAKE) -C doc clean
+	dh_clean
+
+dfsg-source-tree:
+	-quilt pop -a
+	@echo "Testing for uncommited changes"
+	@git diff --quiet HEAD
+# binaries without sources
+	rm -f doc/themes/nilearn/static/jquery.js doc/themes/nilearn/static/jquery.jcarousel.min.js doc/themes/nilearn/static/doctools.js
+# commit any cleanup results
+	@if ! git diff --quiet HEAD; then \
+		git commit -e -a -m "Remove unwanted (e.g. non-DFSG-compliant) content"; \
+	fi
+
+# make orig tarball from repository content
+get-orig-source:
+	# orig tarball, turn directory into something nicer
+	git archive --format=tar --prefix=$(srcpkg)-$(gitver)/ HEAD | \
+		gzip -9 > $(srcpkg)_$(gitver).orig.tar.gz
+
+# check that DSC patches still apply
+maint-check-dsc-patches:
+	@for p in debian/patches/*-dsc-patch; \
+		do echo "check $$p"; \
+		patch -p1 --dry-run < $$p || exit 1 ; \
+	done
+
