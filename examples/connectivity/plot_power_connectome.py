@@ -1,12 +1,15 @@
-
+import numpy as np
+import matplotlib.pyplot as plt
 from nilearn import datasets
+
 
 #fetch power atlas coords
 power = datasets.fetch_atlas_power_2011()
-power_coords = [(i[1], i[2], i[3]) for i in power.rois]
+power_coords = power.rois[['x', 'y', 'z']]
 
 #fetch dataset
-adhd = datasets.fetch_adhd()
+
+adhd = datasets.fetch_adhd(n_subjects=1)
 
 # Preprocess image and extract signals from Power-264
 from nilearn import input_data
