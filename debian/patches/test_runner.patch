@@ -1,0 +1,65 @@
+From baa10063ec632e78750e1f288e8384cc3db28f82 Mon Sep 17 00:00:00 2001
+From: Gael Varoquaux <gael.varoquaux@normalesup.org>
+Date: Mon, 13 Jul 2015 16:51:24 +0200
+Subject: [PATCH] BUG: fix failure in "python -m nose"
+
+We were implicitely relying on the top level stack level being an
+anonymous module. This wasn't the case in the debian build environment,
+that relies on "python -m nose"
+---
+ nilearn/_utils/logger.py     | 8 ++++++--
+ nilearn/tests/test_logger.py | 4 ++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/nilearn/_utils/logger.py b/nilearn/_utils/logger.py
+index b01c6a2..6526f12 100644
+--- a/nilearn/_utils/logger.py
++++ b/nilearn/_utils/logger.py
+@@ -53,6 +53,7 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
+     if verbose >= msg_level:
+         stack = inspect.stack()
+         object_frame = None
++        object_self = None
+         for f in reversed(stack):
+             frame = f[0]
+             current_self = frame.f_locals.get("self", None)
+@@ -65,12 +66,15 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
+         if object_frame is None:  # no object found: use stack_level
+             if stack_level >= len(stack):
+                 stack_level = -1
+-            object_frame, _, _, func_name = stack[stack_level][:4]
+-            object_self = object_frame.f_locals.get("self", None)
++                func_name = '<top_level>'
++            else:
++                object_frame, _, _, func_name = stack[stack_level][:4]
++                object_self = object_frame.f_locals.get("self", None)
+ 
+         if object_self is not None:
+             func_name = "%s.%s" % (object_self.__class__.__name__, func_name)
+ 
++
+         print("[{func_name}] {msg}".format(func_name=func_name, msg=msg))
+ 
+ 
+diff --git a/nilearn/tests/test_logger.py b/nilearn/tests/test_logger.py
+index 2c8b419..1160d1f 100644
+--- a/nilearn/tests/test_logger.py
++++ b/nilearn/tests/test_logger.py
+@@ -33,7 +33,7 @@ def run():
+ def other_run():
+     # Test too large values for stack_level
+     # stack_level should exceed nosetests stack levels as well
+-    log("function other_run()", stack_level=30)
++    log("function other_run()", stack_level=100)
+ 
+ 
+ class Run3(object):
+@@ -86,7 +86,7 @@ def test_log():
+     # Test stack_level too large
+     with capture_output() as out:
+         other_run()
+-    assert_equal(out[0], "[<module>] function other_run()\n")
++    assert_equal(out[0], "[<top_level>] function other_run()\n")
+ 
+ # Will be executed by nosetests upon importing
+ with capture_output() as out:
