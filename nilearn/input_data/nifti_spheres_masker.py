@@ -244,16 +244,15 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         if self.smoothing_fwhm is not None:
             logger.log("smoothing images", verbose=self.verbose)
-            imgs = self._cache(image.smooth_img, func_memory_level=1)(
+            imgs = self._cache(image.smooth_img)(
                 imgs, fwhm=self.smoothing_fwhm)
 
         logger.log("extracting region signals", verbose=self.verbose)
-        signals = self._cache(
-            _signals_from_spheres, func_memory_level=1)(
+        signals = self._cache(_signals_from_spheres)(
                 self.seeds_, imgs, radius=self.radius, mask_img=self.mask_img)
 
         logger.log("cleaning extracted signals", verbose=self.verbose)
-        signals = self._cache(signal.clean, func_memory_level=1
+        signals = self._cache(signal.clean
                                      )(signals,
                                        detrend=self.detrend,
                                        standardize=self.standardize,
