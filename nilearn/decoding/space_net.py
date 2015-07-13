@@ -112,7 +112,7 @@ def _univariate_feature_screening(
     # smooth the data (with isotropic Gaussian kernel) before screening
     if smoothing_fwhm > 0.:
         sX = np.empty(X.shape)
-        for sample in xrange(sX.shape[0]):
+        for sample in range(sX.shape[0]):
             sX[sample] = ndimage.gaussian_filter(
                 _unmask(X[sample].copy(),  # avoid modifying X
                         mask), (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm))[mask]
@@ -823,7 +823,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                 is_classif=self.loss == "logistic", key=(cls, fold),
                 debias=self.debias, verbose=self.verbose,
                 screening_percentile=self.screening_percentile_
-                ) for cls in xrange(n_problems) for fold in xrange(n_folds)):
+                ) for cls in range(n_problems) for fold in range(n_folds)):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
             self.ymean_[cls] += y_train_mean

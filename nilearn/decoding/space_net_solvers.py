@@ -117,7 +117,7 @@ def smooth_lasso_data_function(X, w, mask, grad_weight):
     out = np.ndarray(X.shape[0] + mask.ndim * X.shape[1])
     out[:X.shape[0]] = X.dot(w)
     out[X.shape[0]:] = np.concatenate(
-        tuple([w_g[i][mask] for i in xrange(mask.ndim)]))
+        tuple([w_g[i][mask] for i in range(mask.ndim)]))
     return out
 
 
@@ -200,7 +200,7 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     a = rng.randn(X.shape[1])
     a /= sqrt(np.dot(a, a))
     grad_buffer = np.zeros(mask.shape)
-    for _ in xrange(n_iterations):
+    for _ in range(n_iterations):
         grad_buffer[mask] = a
         a = - div(gradient(grad_buffer))[mask] / sqrt(np.dot(a, a))
 
@@ -216,7 +216,7 @@ def logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     logistic loss"""
     grad_buffer = np.zeros(mask.shape)
     grad_buffer[mask] = w[:-1]
-    grad_mask = np.array([mask for _ in xrange(mask.ndim)])
+    grad_mask = np.array([mask for _ in range(mask.ndim)])
     grad_section = gradient(grad_buffer)[grad_mask]
     return (logistic_loss(X, y, w)
             + 0.5 * grad_weight * np.dot(grad_section, grad_section))

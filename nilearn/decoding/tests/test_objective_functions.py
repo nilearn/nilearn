@@ -16,7 +16,7 @@ def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5, random_state=42):
     # We need to check that <D x, y> = <x, DT y> for x and y random vectors
     rng = np.random.RandomState(random_state)
 
-    for ndim in xrange(1, max_ndim):
+    for ndim in range(1, max_ndim):
         shape = tuple([size] * ndim)
         x = rng.normal(size=shape)
         y = rng.normal(size=[ndim + 1] + list(shape))
@@ -89,7 +89,7 @@ def test_baseestimator_invalid_l1_ratio():
 
 def test_unmask(size=5):
     rng = np.random.RandomState(42)
-    for ndim in xrange(1, 4):
+    for ndim in range(1, 4):
         shape = [size] * ndim
         mask = np.zeros(shape).astype(np.bool)
         mask[rng.rand(*shape) > .8] = 1
