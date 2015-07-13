@@ -49,7 +49,7 @@ def to_niimgs(X, dim, rng=None):
     assert_equal(len(dim), 3)
     assert_true(X.shape[-1] <= p)
     mask = np.zeros(p).astype(np.bool)
-    mask[rng.sample(np.arange(p), X.shape[-1])] = 1
+    mask[rng.choice(np.arange(p), X.shape[-1])] = 1
     mask = mask.reshape(dim)
     X = np.rollaxis(np.array([_unmask(x, mask) for x in X]), 0, start=4)
     affine = np.eye(4)
