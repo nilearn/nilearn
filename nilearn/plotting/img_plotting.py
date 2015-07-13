@@ -74,7 +74,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         warnings.warn(nan_msg)
 
     if img is not False and img is not None:
-        img = _utils.check_niimg_3d(img)
+        img = _utils.check_niimg_3d(img, dtype='auto')
         data = img.get_data()
         affine = img.get_affine()
 
@@ -639,7 +639,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
-        stat_map_img = _utils.check_niimg_3d(stat_map_img)
+        stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):

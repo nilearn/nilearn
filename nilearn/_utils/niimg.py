@@ -8,6 +8,7 @@ import copy
 import gc
 import collections
 from distutils.version import LooseVersion
+import numbers
 
 import numpy as np
 import nibabel
@@ -28,6 +29,26 @@ def _safe_get_data(img):
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
     return img.get_data()
+
+
+def _get_data_dtype(img):
+    try:
+        return img.get_data_dtype()
+    except AttributeError:
+        return img.get_data().dtype
+
+
+def _get_target_dtype(dtype, target_dtype):
+    if target_dtype is None:
+        return None
+    if target_dtype == 'auto':
+        if issubclass(dtype.type, numbers.Integral):
+            target_dtype = np.int32
+        else:
+            target_dtype = np.float32
+    if target_dtype == dtype:
+        return None
+    return target_dtype
 
 
 def load_niimg(niimg, dtype=None):
@@ -52,6 +73,12 @@ def load_niimg(niimg, dtype=None):
         raise TypeError("Data given cannot be loaded because it is"
                         " not compatible with nibabel format:\n"
                         + short_repr(niimg))
+
+    dtype = _get_target_dtype(_get_data_dtype(niimg), dtype)
+
+    if dtype is not None:
+        niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
+                             niimg.get_affine())
     return niimg
 
 

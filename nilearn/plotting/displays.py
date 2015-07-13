@@ -523,6 +523,7 @@ class BaseSlicer(object):
                   resampling_interpolation='continuous',
                   threshold=None, **kwargs):
         img = reorder_img(img, resample=resampling_interpolation)
+        threshold = float(threshold) if threshold is not None else None
 
         if threshold is not None:
             data = img.get_data()
