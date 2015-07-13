@@ -1,3 +1,29 @@
+0.1.4
+=====
+
+Changelog
+---------
+
+Highlights:
+
+- NiftiSpheresMasker: extract signals from balls specified by their
+  coordinates
+- Obey Debian packaging rules
+- Add the Destrieux 2009 and Power 2011 atlas
+- Better caching in maskers
+
+
+Contributors (from ``git shortlog -ns 0.1.3..0.1.4``)::
+
+   141  Alexandre Abraham
+    15  Gael Varoquaux
+    10  Loïc Estève
+     2  Arthur Mensch
+     2  Danilo Bzdok
+     2  Michael Hanke
+     1  Mehdi Rahim
+
+
 0.1.3
 =====
 
