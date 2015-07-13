@@ -43,13 +43,12 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     return X, y, w, mask
 
 
-def to_niimgs(X, dim, rng=None):
-    if rng is None: rng = check_random_state(42)
+def to_niimgs(X, dim):
     p = np.prod(dim)
     assert_equal(len(dim), 3)
     assert_true(X.shape[-1] <= p)
     mask = np.zeros(p).astype(np.bool)
-    mask[rng.choice(np.arange(p), X.shape[-1], replace=False)] = 1
+    mask[:X.shape[-1]] = 1
     assert_equal(mask.sum(), X.shape[1])
     mask = mask.reshape(dim)
     X = np.rollaxis(np.array([_unmask(x, mask) for x in X]), 0, start=4)
@@ -75,7 +74,7 @@ def test_same_energy_calculus_pure_lasso():
 
 def test_lipschitz_constant_loss_mse():
     rng = check_random_state(42)
-    X, y, w, mask = _make_data(rng=rng, masked=True)
+    X, _, w, mask = _make_data(rng=rng, masked=True)
     l1_ratio = 1.
     alpha = .1
     mask = np.ones(X.shape[1]).astype(np.bool)
@@ -87,7 +86,7 @@ def test_lipschitz_constant_loss_mse():
 
 def test_lipschitz_constant_loss_logreg():
     rng = check_random_state(42)
-    X, y, w, mask = _make_data(rng=rng, masked=True)
+    X, _, w, mask = _make_data(rng=rng, masked=True)
     l1_ratio = 1.
     alpha = .1
     grad_weight = alpha * X.shape[0] * (1. - l1_ratio)
