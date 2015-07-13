@@ -1,7 +1,7 @@
-nilearn (0.1.3+git131-gb89a84a~dfsg.1-1) unstable; urgency=low
+nilearn (0.1.4+git3-g60d2a1b~dfsg.1-1) UNRELEASED; urgency=low
 
   * Initial release (Closes: #792279).
   * No documentation is built as it required the download of auxiliary
     data files.
 
- -- Michael Hanke <mih@debian.org>  Mon, 13 Jul 2015 12:18:34 +0200
+ -- Michael Hanke <mih@debian.org>  Mon, 13 Jul 2015 19:35:55 +0200
