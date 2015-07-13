@@ -701,6 +701,7 @@ def plot_glass_brain(stat_map_img,
                      alpha=0.7,
                      vmin=None, vmax=None,
                      plot_negative=False,
+                     symmetric_cbar="auto",
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
         Frontal, Axial, and Lateral). The brain glass schematics
@@ -749,8 +750,6 @@ def plot_glass_brain(stat_map_img,
             The colormap for specified image
         alpha: float between 0 and 1
             Alpha transparency for the brain schematics
-        vmin: float
-            Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
         plot_negative: boolean, optional
@@ -758,6 +757,10 @@ def plot_glass_brain(stat_map_img,
             be used to distinguish between positive and negative vales.
             By default this is set to false which results in using the
             same color scheme for both positive and negative values.
+        symmetric_cbar: boolean or 'auto', optional, default 'auto'
+            Specifies whether the colorbar should range from -vmax to vmax
+            or from 0 to vmax. Setting to 'auto' will select the latter if
+            the whole image is non-negative.
 
         Notes
         -----
@@ -766,11 +769,49 @@ def plot_glass_brain(stat_map_img,
 
     """
     if cmap is None:
-        if plot_negative:
-            cmap = cm.cold_hot
-        else:
-            cmap = plt.cm.hot if black_bg else plt.cm.hot_r
+        cmap = cm.cold_hot if black_bg else cm.cold_white_hot
 
+    # make sure that the color range is symmetrical
+    if vmax is None or symmetric_cbar in ['auto', False]:
+        stat_map_img = _utils.check_niimg_3d(stat_map_img)
+        stat_map_data = stat_map_img.get_data()
+        # Avoid dealing with masked_array:
+        if hasattr(stat_map_data, '_mask'):
+            stat_map_data = np.asarray(stat_map_data[
+                    np.logical_not(stat_map_data._mask)])
+        stat_map_max = np.nanmax(stat_map_data)
+        if plot_negative:
+            stat_map_min = np.nanmin(stat_map_data)
+        else:
+            stat_map_min = 0
+
+    if symmetric_cbar == 'auto':
+        symmetric_cbar = (stat_map_min < 0) and (stat_map_max > 0)
+
+    if vmax is None:
+        vmax = max(-stat_map_min, stat_map_max)
+
+    if 'vmin' in kwargs:
+        raise ValueError('plot_stat_map does not accept a "vmin" '
+                         'argument, as it uses a symmetrical range '
+                         'defined via the vmax argument. To threshold '
+                         'the map, use the "threshold" argument')
+    vmin = -vmax
+
+    if not symmetric_cbar:
+        negative_range = (stat_map_max <= 0)
+        positive_range = (stat_map_min >= 0)
+        if positive_range:
+            cbar_vmin = 0
+            cbar_vmax = None
+        elif negative_range:
+            cbar_vmax = 0
+            cbar_vmin = None
+        else:
+            cbar_vmin = stat_map_min
+            cbar_vmax = stat_map_max
+    else:
+        cbar_vmin, cbar_vmax = None, None
 
     def display_factory(display_mode):
         return functools.partial(get_projector(display_mode), alpha=alpha, plot_negative=plot_negative)
@@ -785,6 +826,7 @@ def plot_glass_brain(stat_map_img,
                                 display_factory=display_factory,
                                 resampling_interpolation='continuous',
                                 vmin=vmin, vmax=vmax,
+                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
                                 **kwargs)
 
     return display
