@@ -46,7 +46,7 @@ def test_space_net_alpha_grid(n_samples=4, n_features=3):
 
     for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
         alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
-        for n_alphas in xrange(1, 10):
+        for n_alphas in range(1, 10):
             alphas = _space_net_alpha_grid(
                 X, y, n_alphas=n_alphas, l1_ratio=l1_ratio,
                 logistic=is_classif)
@@ -75,7 +75,7 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
     escb = EarlyStoppingCallback(X_test, y_test, False)
-    for counter in xrange(50):
+    for counter in range(50):
         k = min(counter, n_features - 1)
         w[k] = 1
 

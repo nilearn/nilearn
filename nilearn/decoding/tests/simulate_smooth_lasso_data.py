@@ -76,7 +76,7 @@ def create_smooth_simulation_data(snr=1., n_samples=200,
     smooth_X = 1
     ### Coefs
     w = np.zeros((size, size, size))
-    for _ in xrange(n_points):
+    for _ in range(n_points):
         point = (generator.randint(0, size), generator.randint(0, size),
                  generator.randint(0, size))
         w[point] = 1.0

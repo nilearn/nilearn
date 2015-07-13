@@ -43,10 +43,10 @@ def get_gradient_matrix(w_size, mask):
     a w vector we have np.dot(G, w) == gradient(w_masked)[mask]
     """
     grad_matrix = np.zeros((mask.ndim * w_size, w_size))
-    grad_mask = np.array([mask for _ in xrange(mask.ndim)])
+    grad_mask = np.array([mask for _ in range(mask.ndim)])
     image_buffer = np.zeros(mask.shape)
 
-    for i in xrange(w_size):
+    for i in range(w_size):
         base_vector = np.zeros(w_size)
         base_vector[i] = 1
         image_buffer[mask] = base_vector
@@ -61,8 +61,8 @@ def test_grad_matrix():
     rng = check_random_state(42)
     G = get_gradient_matrix(w.size, mask)
     image_buffer = np.zeros(mask.shape)
-    grad_mask = np.array([mask for _ in xrange(mask.ndim)])
-    for _ in xrange(10):
+    grad_mask = np.array([mask for _ in range(mask.ndim)])
+    for _ in range(10):
         v = rng.rand(w.size) * rng.randint(1000)
         image_buffer[mask] = v
         assert_almost_equal(gradient(image_buffer)[grad_mask], np.dot(G, v))
@@ -71,7 +71,7 @@ def test_grad_matrix():
 def test_adjointness(size=4):
     """Tests for adjointness between gradient and div operators"""
     rng = check_random_state(42)
-    for _ in xrange(3):
+    for _ in range(3):
         image_1 = rng.rand(size, size, size)
         image_2 = rng.rand(3, size, size, size)
         Axdoty = np.dot((gradient(image_1).ravel()), image_2.ravel())
@@ -89,11 +89,11 @@ def test_identity_adjointness(size=4):
 
     # But with some zeros
     mask[0:3, 0:3, 0:3] = 0
-    adjoint_mask = np.array([mask for _ in xrange(mask.ndim)])
+    adjoint_mask = np.array([mask for _ in range(mask.ndim)])
     n_samples = np.sum(mask)
     X = np.eye(n_samples)
     l1_ratio = 0.5
-    for _ in xrange(10):
+    for _ in range(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
         Axdoty = np.dot(smooth_lasso_data_function(X, x, mask, l1_ratio), y)
@@ -111,11 +111,11 @@ def test_operators_adjointness(size=4):
 
     # But with some zeros
     mask[0:3, 0:3, 0:3] = 0
-    adjoint_mask = np.array([mask for _ in xrange(mask.ndim)])
+    adjoint_mask = np.array([mask for _ in range(mask.ndim)])
     n_samples = 200
     X = rng.rand(n_samples, np.sum(mask))
     l1_ratio = 0.5
-    for _ in xrange(10):
+    for _ in range(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
         Axdoty = np.dot(smooth_lasso_data_function(X, x, mask, l1_ratio), y)
@@ -151,7 +151,7 @@ def test_logistic_gradient_at_simple_points():
         X, y, w, mask, grad_weight)
     func_grad = lambda w: logistic_data_loss_and_spatial_grad_derivative(
         X, y, w, mask, grad_weight)
-    for i in xrange(0, w.size, 7):
+    for i in range(0, w.size, 7):
         point = np.zeros(*w.shape)
         point[i] = 1
         assert_almost_equal(sp.optimize.check_grad(func, func_grad, point),
@@ -165,7 +165,7 @@ def test_squared_loss_derivative_lipschitz_constant():
     grad_weight = 2.08e-1
     lipschitz_constant = squared_loss_derivative_lipschitz_constant(
         X, mask, grad_weight)
-    for _ in xrange(20):
+    for _ in range(20):
         x_1 = rng.rand(*w.shape) * rng.randint(1000)
         x_2 = rng.rand(*w.shape) * rng.randint(1000)
         gradient_difference = extmath.norm(
@@ -184,7 +184,7 @@ def test_logistic_derivative_lipschitz_constant():
     grad_weight = 2.08e-1
     lipschitz_constant = logistic_derivative_lipschitz_constant(
         X, mask, grad_weight)
-    for _ in xrange(20):
+    for _ in range(20):
         x_1 = rng.rand((w.shape[0] + 1)) * rng.randint(1000)
         x_2 = rng.rand((w.shape[0] + 1)) * rng.randint(1000)
         gradient_difference = extmath.norm(
@@ -217,7 +217,7 @@ def test_fista_convergence():
     # optimum), but, in this implementation (the test depend on the
     # implementation, this is awful, but simple) the initial point
     # is a zero vector
-    for i in xrange(len(objs)):
+    for i in range(len(objs)):
         assert_true(objs[i] - optimum <= 2 * l_c * np.dot(model, model)\
                     / (i + 1) ** 2)
 

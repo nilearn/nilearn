@@ -160,7 +160,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     w_old = w.copy()
 
     # FISTA loop
-    for i in xrange(max_iter):
+    for i in range(max_iter):
         history.append(old_energy)
         w_old[:] = w
 
