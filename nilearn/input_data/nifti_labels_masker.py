@@ -264,13 +264,14 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 if self.verbose > 0:
                     print("Resampling labels")
                 self._resampled_labels_img_ = self._cache(
-                    image.resample_img, 2)(
+                    image.resample_img, func_memory_level=2)(
                         self.labels_img_, interpolation="nearest",
                         target_shape=imgs.shape[:3],
                         target_affine=imgs.get_affine())
 
         region_signals = self._cache(
-            _extract_signals, 1, ignore=['verbose', 'memory', 'memory_level'])(
+                _extract_signals, func_memory_level=1,
+                ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, self._resampled_labels_img_, self.background_label,
             # Pre-treatments

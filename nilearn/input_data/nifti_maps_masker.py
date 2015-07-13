@@ -278,7 +278,8 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             if not _check_same_fov(ref_img, self._resampled_maps_img_):
                 if self.verbose > 0:
                     print("Resampling maps")
-                self._resampled_maps_img_ = self._cache(image.resample_img, 1)(
+                self._resampled_maps_img_ = self._cache(image.resample_img,
+                                                        func_memory_level=1)(
                         self.maps_img_, interpolation="continuous",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
@@ -287,13 +288,15 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     not _check_same_fov(ref_img, self.mask_img_)):
                 if self.verbose > 0:
                     print("Resampling mask")
-                self._resampled_mask_img_ = self._cache(image.resample_img, 1)(
+                self._resampled_mask_img_ = self._cache(image.resample_img,
+                                                        func_memory_level=1)(
                         self.mask_img_, interpolation="nearest",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
 
         region_signals, labels_ = self._cache(
-            _extract_signals, 1, ignore=['verbose', 'memory', 'memory_level'])(
+            _extract_signals, func_memory_level=1,
+            ignore=['verbose', 'memory', 'memory_level'])(
                 # Images
                 imgs, self._resampled_maps_img_,
                 # Pre-treatments
