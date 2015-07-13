@@ -115,6 +115,7 @@ def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
 # Our colormaps definition
 _cmaps_data = dict(
     cold_hot     = _pigtailed_cmap(_cm.hot),
+    cold_white_hot = _pigtailed_cmap(_cm.hot_r),
     brown_blue   = _pigtailed_cmap(_cm.bone),
     cyan_copper  = _pigtailed_cmap(_cm.copper),
     cyan_orange  = _pigtailed_cmap(_cm.YlOrBr_r),
