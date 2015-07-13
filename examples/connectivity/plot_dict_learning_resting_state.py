@@ -26,21 +26,28 @@ print('First functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
 ### Apply DictLearning ########################################################
-from nilearn.decomposition.dict_learning import DictLearning
+from nilearn.decomposition.dict_learning import DictLearning, CanICA
 n_components = 30
 
-dict_learning = DictLearning(n_components=n_components, smoothing_fwhm=6.,
+estimators = [('Dictionary Learning',
+              DictLearning(n_components=n_components, smoothing_fwhm=6.,
                              memory="nilearn_cache", memory_level=5, verbose=2, random_state=0,
-                             n_jobs=1, n_init=1, alpha=5, n_iter='auto')
+                             n_jobs=1, n_init=1, alpha=5, n_iter='auto')),
+              ('Canonical Independent Component Analysis',
+               CanICA(n_components=n_components, smoothing_fwhm=6.,
+                             memory="nilearn_cache", memory_level=5, verbose=2, random_state=0,
+                             n_jobs=1, n_init=1))
+              ]
 
+for name, estimator in estimators:
 dict_learning.fit(func_filenames)
 
 print('')
 print('[Example] Dumping results')
 
 # Retrieve learned spatial maps in brain space
-components_img = dict_learning.masker_.inverse_transform(dict_learning.components_)
-components_img.to_filename('dict_learning_resting_state.nii.gz')
+components_img = estimator.masker_.inverse_transform(estimator.components_)
+components_img.to_filename('%s_resting_state.nii.gz')
 
 ### Visualize the results #####################################################
 # Show some interesting components
