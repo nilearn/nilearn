@@ -14,6 +14,7 @@ from .._utils import as_ndarray
 from .canica import CanICA
 from .._utils.cache_mixin import CacheMixin
 
+
 class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
     """Perform a map learning algorithm based on component sparsity (rather than independance),
      over a CanICA initialization, which yields more stable maps than CanICA.
@@ -105,8 +106,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
     """
 
     def __init__(self, mask=None, n_components=20,
-                 smoothing_fwhm=6, do_cca=True,
-                 threshold='auto', n_init=10,
+                 smoothing_fwhm=6, n_init=10,
                  standardize=True,
                  random_state=0,
                  target_affine=None, target_shape=None,
@@ -114,36 +114,38 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
                  alpha=1,
                  batch_size=10,
                  n_iter=1000,
-                 reduction=False,
                  # Common options
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
                  ):
         CanICA.__init__(self,
                         mask=mask, memory=memory, memory_level=memory_level,
-                        n_jobs=n_jobs, verbose=max(0, verbose - 1), do_cca=do_cca,
-                        threshold=threshold, n_init=n_init,
+                        n_jobs=n_jobs, verbose=verbose, do_cca=True,
+                        threshold=float(n_components), n_init=n_init,
                         n_components=n_components, smoothing_fwhm=smoothing_fwhm,
                         target_affine=target_affine, target_shape=target_shape,
                         random_state=random_state, high_pass=high_pass, low_pass=low_pass,
                         t_r=t_r,
                         keep_data_mem=True,
                         standardize=standardize)
-        self.reduction = reduction
         # Setting n_jobs = 1 as it is slower otherwise
         MiniBatchDictionaryLearning.__init__(self, n_components=n_components, alpha=alpha,
                                              n_iter=n_iter, batch_size=batch_size,
                                              fit_algorithm='lars',
                                              transform_algorithm='lasso_lars',
                                              transform_alpha=alpha,
-                                             verbose=max(0, verbose - 1),
+                                             verbose=verbose,
                                              random_state=random_state,
                                              shuffle=True,
                                              n_jobs=1)
 
     def _init_dict(self, imgs, y=None, confounds=None):
+
         CanICA.fit(self, imgs, y=y, confounds=confounds)
         self.data_flat_ = np.concatenate(self.data_flat_, axis=0)
+        if self.n_iter == 'auto':
+            # ceil(self.data_fat.shape[0] / self.batch_size)
+            self.n_iter = (self.data_flat_.shape[0] - 1) / self.batch_size + 1
         if self.verbose:
             print('[DictLearning] Learning time serie')
         ridge = Ridge(alpha=1e-6, fit_intercept=None)

@@ -15,12 +15,10 @@ Pre-prints for paper is available on hal
 (http://hal.archives-ouvertes.fr)
 """
 
-import numpy as np
-
 ### Load ADHD rest dataset ####################################################
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=10)
+adhd_dataset = datasets.fetch_adhd(n_subjects=20, data_dir='/media/data/neuro')
 func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
@@ -29,12 +27,11 @@ print('First functional nifti image (4D) is at: %s' %
 
 ### Apply DictLearning ########################################################
 from nilearn.decomposition.dict_learning import DictLearning
-n_components = 50
+n_components = 30
 
 dict_learning = DictLearning(n_components=n_components, smoothing_fwhm=6.,
-                             memory="nilearn_cache", memory_level=5,
-                             threshold=1., verbose=2, random_state=0,
-                             n_jobs=1, n_init=1, alpha=3, n_iter=1000)
+                             memory="nilearn_cache", memory_level=5, verbose=2, random_state=0,
+                             n_jobs=1, n_init=1, alpha=5, n_iter='auto')
 
 dict_learning.fit(func_filenames)
 
@@ -52,7 +49,7 @@ from nilearn.plotting import plot_stat_map
 from nilearn.image import iter_img
 
 for i, cur_img in enumerate(iter_img(components_img)):
-    if i % 10 == 0:
+    if i % 3 == 0:
         plot_stat_map(cur_img, title="Component %d" % i,
                       colorbar=False)
 
