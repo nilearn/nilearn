@@ -90,6 +90,11 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
     target_fov: tuple of affine and shape
        If specified, images are resampled to this field of view
+
+    dtype: type
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
     """
     ref_fov = None
     resample_to_first_img = False
@@ -161,6 +166,11 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     atleast_4d: boolean, optional
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
+    dtype: type
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
     Returns
     -------
     result: 3D/4D Niimg-like object
@@ -215,6 +225,11 @@ def check_niimg_3d(niimg, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
+    
+    dtype: type
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     Returns
     -------
@@ -247,6 +262,11 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
+    dtype: type
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+    
     return_iterator: boolean
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
