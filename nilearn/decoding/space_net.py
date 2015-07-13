@@ -800,14 +800,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         self.screening_percentile_ = self.screening_percentile * (
             mask_volume / MNI152_BRAIN_VOLUME)
         if self.verbose > 1:
-            print "Mask volume = %gmm^3 = %gcm^3" % (
-                mask_volume, mask_volume / 1.e3)
-            print "Standard brain volume = %gmm^3 = %gcm^3" % (
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3)
-            print "Original screening-percentile: %g" % (
-                self.screening_percentile)
-            print "Volume-corrected screening-percentile: %g" % (
-                self.screening_percentile_)
+            print("Mask volume = %gmm^3 = %gcm^3" % (
+                mask_volume, mask_volume / 1.e3))
+            print("Standard brain volume = %gmm^3 = %gcm^3" % (
+                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
+            print("Original screening-percentile: %g" % (
+                self.screening_percentile))
+            print("Volume-corrected screening-percentile: %g" % (
+                self.screening_percentile_))
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
@@ -854,8 +854,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         # report time elapsed
         if self.verbose:
             duration = time.time() - tic
-            print "Time Elapsed: %g seconds, %i minutes."  % (duration,
-                                                              duration / 60.)
+            print("Time Elapsed: %g seconds, %i minutes." % (
+                duration, duration / 60.))
 
         return self
 
