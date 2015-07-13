@@ -53,6 +53,7 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
     if verbose >= msg_level:
         stack = inspect.stack()
         object_frame = None
+        object_self = None
         for f in reversed(stack):
             frame = f[0]
             current_self = frame.f_locals.get("self", None)
@@ -65,11 +66,14 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
         if object_frame is None:  # no object found: use stack_level
             if stack_level >= len(stack):
                 stack_level = -1
-            object_frame, _, _, func_name = stack[stack_level][:4]
-            object_self = object_frame.f_locals.get("self", None)
+                func_name = '<top_level>'
+            else:
+                object_frame, _, _, func_name = stack[stack_level][:4]
+                object_self = object_frame.f_locals.get("self", None)
 
         if object_self is not None:
             func_name = "%s.%s" % (object_self.__class__.__name__, func_name)
+
 
         print("[{func_name}] {msg}".format(func_name=func_name, msg=msg))
 
