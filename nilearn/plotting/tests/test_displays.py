@@ -3,12 +3,16 @@
 import tempfile
 
 import numpy as np
+
+from nose.tools import assert_true
+
 import matplotlib.pyplot as plt
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
 from nilearn.plotting.displays import check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.extmath import fast_abs_percentile
 
 
 ###############################################################################
@@ -64,3 +68,8 @@ def test_check_threshold():
                         check_threshold,
                         threshold, adjacency_matrix,
                         calculate, name)
+
+    # To check if it also gives the score which is expected
+    assert_true(1. < check_threshold("50%", adjacency_matrix,
+                                     percentile_calculate=fast_abs_percentile,
+                                     name='threshold') <= 2.)
