@@ -47,10 +47,10 @@ def _get_target_dtype(dtype, target_dtype):
     Parameters
     ----------
 
-    dtype: type
+    dtype: dtype
         Data type of the original data
 
-    target_dtype: None, type or "auto"
+    target_dtype: {None, dtype, "auto"}
         If None, no conversion is required. If a type is provided, the
         function will check if a conversion is needed. The "auto" mode will
         automatically convert to int32 if dtype is discrete and float32 if it
@@ -59,7 +59,7 @@ def _get_target_dtype(dtype, target_dtype):
     Returns
     -------
 
-    dtype: type
+    dtype: dtype
         The data type toward which the original data should be converted.
     """
 
@@ -85,7 +85,7 @@ def load_niimg(niimg, dtype=None):
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Image to load.
 
-    dtype: type
+    dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
