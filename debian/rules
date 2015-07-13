@@ -28,24 +28,9 @@ PYVER = $(shell pyversions -vd)
 #	dh $@  --with python2,python3 --buildsystem=pybuild
 	dh $@  --with python2 --buildsystem=pybuild
 
-#override_dh_auto_test:
-#	
-
-#test:
-#ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-#	: # I: Unittest only the default python version for now against "installed" materials
-#	cd debian; \
-#	 PYTHONPATH=$$(/bin/ls -d $(CURDIR)/debian/tmp/usr/lib/python$(PYVER)/*-packages):$$PYTHONPATH \
-#     MPLCONFIGDIR=$(CURDIR)/build \
-#	  nosetests nilearn
-#else
-#	: # Skip unittests due to nocheck
-#endif
-
 override_dh_install:
 	if [ -x /usr/bin/dh_numpy ]; then dh_numpy;	fi
 	dh_install
-
 
 ## immediately useable documentation and exemplar scripts/data
 override_dh_compress:
