@@ -101,7 +101,6 @@ def test_nifti_labels_masker():
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
                                    fmri11_img.get_affine())
 
-
 def test_nifti_labels_masker_resampling():
     # Test resampling in NiftiLabelsMasker
     shape1 = (10, 11, 12)
@@ -214,3 +213,11 @@ def test_nifti_labels_masker_resampling():
     np.testing.assert_array_equal(
         masker._resampled_labels_img_.get_affine(),
         affine2)
+
+    # Test with filenames
+    with testing.write_tmp_imgs(fmri22_img) as filename:
+        masker = NiftiLabelsMasker(labels33_img, resampling_target='data')
+        masker.fit_transform(filename)
+
+
+
