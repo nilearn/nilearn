@@ -8,7 +8,6 @@ import copy
 import gc
 import collections
 from distutils.version import LooseVersion
-import numbers
 
 import numpy as np
 import nibabel
@@ -42,7 +41,7 @@ def _get_target_dtype(dtype, target_dtype):
     if target_dtype is None:
         return None
     if target_dtype == 'auto':
-        if issubclass(dtype.type, numbers.Integral):
+        if dtype.kind == 'i':
             target_dtype = np.int32
         else:
             target_dtype = np.float32
