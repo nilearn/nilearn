@@ -166,13 +166,13 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
         # invoke callback
         if verbose:
-            print 'mFISTA: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
-                i + 1, max_iter, old_energy, energy_delta)
+            print('mFISTA: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
+                  i + 1, max_iter, old_energy, energy_delta))
         if callback and callback(locals()):
             break
         if np.abs(energy_delta) < tol:
             if verbose:
-                print "\tConverged (|dE| < %g)" % tol
+                print("\tConverged (|dE| < %g)" % tol)
             break
 
         # forward (gradient) step
@@ -191,7 +191,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
                 # tolerance.
                 dgap_factor *= .2
                 if verbose:
-                    print "decreased dgap_tol"
+                    print("decreased dgap_tol")
             else:
                 break
 
@@ -206,7 +206,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             w[:] = w_old
             ista_step = True
             if verbose:
-                print 'Monotonous FISTA: Switching to ISTA'
+                print('Monotonous FISTA: Switching to ISTA')
         else:
             if ista_step:
                 z = w

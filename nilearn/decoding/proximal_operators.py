@@ -226,8 +226,8 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 dgap = _dual_gap_prox_tvl1(input_img_norm, -negated_output,
                                            gap, weight, l1_ratio=l1_ratio)
                 if verbose:
-                    print '\tProxTVl1: Iteration % 2i, dual gap: % 6.3e' % (
-                        i, dgap)
+                    print('\tProxTVl1: Iteration % 2i, dual gap: % 6.3e' % (
+                        i, dgap))
                 if dgap < dgap_tol:
                     break
                 if old_dgap < dgap:
@@ -241,12 +241,12 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 diff = np.max(np.abs(negated_output_old - negated_output))
                 diff /= np.max(np.abs(negated_output))
                 if verbose:
-                    print ('\tProxTVl1 iteration % 2i, relative difference:'
-                           ' % 6.3e, energy: % 6.3e') % (
-                        i, diff, _objective_function_prox_tvl1(
-                                   input_img, -negated_output, gradient_id(
-                                       negated_output, l1_ratio=l1_ratio),
-                            weight))
+                    print(('\tProxTVl1 iteration % 2i, relative difference:'
+                           ' % 6.3e, energy: % 6.3e' ) % (i, diff,
+                            _objective_function_prox_tvl1(
+                                input_img, -negated_output, gradient_id(
+                                    negated_output, l1_ratio=l1_ratio),
+                                weight)))
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output
