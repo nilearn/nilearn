@@ -206,8 +206,9 @@ class GlassBrainAxes(BaseAxes):
     volumes with a schematic view of the brain.
 
     """
-    def __init__(self, ax, direction, coord, **kwargs):
+    def __init__(self, ax, direction, coord, plot_negative=False, **kwargs):
         super(GlassBrainAxes, self).__init__(ax, direction, coord)
+        self._plot_negative = plot_negative
         if ax is not None:
             object_bounds = glass_brain.plot_brain_schematics(ax,
                                                               direction,
@@ -227,17 +228,17 @@ class GlassBrainAxes(BaseAxes):
 
         """
         max_axis = 'xyz'.index(self.direction)
-        # maximum_intensity_data = np.abs(data).max(axis=max_axis)
-        # argmax_ = np.argmax(np.abs(data), axis=max_axis)
 
-        new_shape = list(data.shape)
-        del new_shape[max_axis]
-        a1, a2 = np.indices(new_shape)
-        inds = [a1, a2]
-        inds.insert(max_axis, np.abs(data).argmax(axis=max_axis))
-        maximum_intensity_data = np.abs(data)[inds] * data[inds[0], inds[1], inds[2]]
+        if self._plot_negative:
+            new_shape = list(data.shape)
+            del new_shape[max_axis]
+            a1, a2 = np.indices(new_shape)
+            inds = [a1, a2]
+            inds.insert(max_axis, np.abs(data).argmax(axis=max_axis))
+            maximum_intensity_data = np.abs(data)[inds] * np.sign(data[inds])
+        else:
+            maximum_intensity_data = np.abs(data).max(axis=max_axis)
 
-        maximum_intensity_data = np.abs(data)[inds] * np.sign(data[inds])
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
