@@ -21,6 +21,7 @@ import base64
 
 import numpy as np
 from scipy import ndimage
+import nibabel
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
