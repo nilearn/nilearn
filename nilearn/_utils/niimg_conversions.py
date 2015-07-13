@@ -25,12 +25,29 @@ def _check_fov(img, affine, shape):
 
 
 def _check_same_fov(*args, **kwargs):
-    """ Check the equivalence of all provided images. Parameter names are
-        used to generate user friendly error message.
+    """Returns True if provided images has the same field of view (shape and
+       affine). Returns False or raise an error elsewhere, depending on the
+       `raise_error` argument. This function can take an unlimited number of
+       images as arguments or keyword arguments and raise a user-friendly
+       ValueError if asked.
+
+    Parameters
+    ----------
+
+    args: images
+        Images to be checked. Images passed without keywords will be labelled
+        as img_#1 in the error message (replace 1 with the appropriate index)
+
+    kwargs: images
+        Images to be checked. In case of error, images will be reference by
+        their keyword name in the error message.
+
+    raise_error: boolean, optional
+        If True, an error will be raised in case of error.
     """
     raise_error = kwargs.pop('raise_error', False)
     for i, arg in enumerate(args):
-        kwargs['arg_#%i' % i] = arg
+        kwargs['img_#%i' % i] = arg
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
             kwargs.items(), 2):
