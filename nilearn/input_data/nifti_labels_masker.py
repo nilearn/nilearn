@@ -274,7 +274,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, self._resampled_labels_img_, self.background_label,
-            # Pre-treatments
+            # Pre-processing
             self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
             self.low_pass, self.high_pass, confounds,
             # Caching
