@@ -24,14 +24,42 @@ def _check_fov(img, affine, shape):
             np.allclose(img.get_affine(), affine))
 
 
-def _check_same_fov(img1, img2):
-    """ Return True if img1 and img2 have the same field of view
-        (shape and affine), False elsewhere.
+def _check_same_fov(*args, **kwargs):
+    """Returns True if provided images has the same field of view (shape and
+       affine). Returns False or raise an error elsewhere, depending on the
+       `raise_error` argument. This function can take an unlimited number of
+       images as arguments or keyword arguments and raise a user-friendly
+       ValueError if asked.
+
+    Parameters
+    ----------
+
+    args: images
+        Images to be checked. Images passed without keywords will be labelled
+        as img_#1 in the error message (replace 1 with the appropriate index)
+
+    kwargs: images
+        Images to be checked. In case of error, images will be reference by
+        their keyword name in the error message.
+
+    raise_error: boolean, optional
+        If True, an error will be raised in case of error.
     """
-    img1 = check_niimg(img1)
-    img2 = check_niimg(img2)
-    return (img1.shape[:3] == img2.shape[:3]
-            and np.allclose(img1.get_affine(), img2.get_affine()))
+    raise_error = kwargs.pop('raise_error', False)
+    for i, arg in enumerate(args):
+        kwargs['img_#%i' % i] = arg
+    errors = []
+    for (a_name, a_img), (b_name, b_img) in itertools.combinations(
+            kwargs.items(), 2):
+        if not a_img.shape[:3] == b_img.shape[:3]:
+            errors.append((a_name, b_name, 'shape'))
+        if not np.allclose(a_img.get_affine(), b_img.get_affine()):
+            errors.append((a_name, b_name, 'affine'))
+    if len(errors) > 0 and raise_error:
+        raise ValueError('Following field of view errors were detected:\n' +
+                         '\n'.join(['- %s and %s do not have the same %s' % e
+                                    for e in errors]))
+    return (len(errors) == 0)
 
 
 def _index_img(img, index):
@@ -85,9 +113,9 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         warnings.warn('Affine is different across subjects.'
                                       ' Realignement on first subject '
                                       'affine forced')
-                    niimg = cache(
-                        image.resample_img, memory, func_memory_level=2,
-                        memory_level=memory_level)(
+                    niimg = cache(image.resample_img, memory,
+                                  func_memory_level=2,
+                                  memory_level=memory_level)(
                             niimg, target_affine=ref_fov[0],
                             target_shape=ref_fov[1])
                 else:

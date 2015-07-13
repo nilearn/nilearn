@@ -178,9 +178,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                     "Acceptable values are 'background' and 'epi'.")
 
-            self.mask_img_ = self._cache(
-                        compute_mask,
-                        func_memory_level=1,
+            self.mask_img_ = self._cache(compute_mask,
                         ignore=['n_jobs', 'verbose', 'memory'])(
                             imgs,
                             target_affine=self.target_affine,
@@ -201,8 +199,7 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
             print("[%s.transform] Resampling mask" % self.__class__.__name__)
-        self.mask_img_ = self._cache(image.resample_img,
-                                    func_memory_level=1)(
+        self.mask_img_ = self._cache(image.resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
