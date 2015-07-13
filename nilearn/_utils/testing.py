@@ -10,7 +10,6 @@ import re
 import sys
 import tempfile
 import warnings
-import copy
 
 import numpy as np
 import scipy.signal
