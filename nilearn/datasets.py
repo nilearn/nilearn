@@ -2863,7 +2863,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                "jimura_poldrack_2012_zmaps.zip")
     opts = {'uncompress': True}
     files = [("zmaps/sub%03i_zmaps.nii.gz" % (j + 1), url, opts)
-             for j in xrange(n_subjects)]
+             for j in range(n_subjects)]
     data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
                                 data_dir=data_dir)
     zmap_fnames = _fetch_files(data_dir, files, resume=resume,
