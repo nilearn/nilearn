@@ -700,6 +700,7 @@ def plot_glass_brain(stat_map_img,
                      cmap=None,
                      alpha=0.7,
                      vmin=None, vmax=None,
+                     plot_negative=False,
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
         Frontal, Axial, and Lateral). The brain glass schematics
@@ -752,6 +753,11 @@ def plot_glass_brain(stat_map_img,
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
+        plot_negative: boolean, optional
+            If set to true the sign of the maximum projection value will
+            be used to distinguish between positive and negative vales.
+            By default this is set to false which results in using the
+            same color scheme for both positive and negative values.
 
         Notes
         -----
@@ -760,10 +766,14 @@ def plot_glass_brain(stat_map_img,
 
     """
     if cmap is None:
-        cmap = cm.cold_hot
+        if plot_negative:
+            cmap = cm.cold_hot
+        else:
+            cmap = plt.cm.hot if black_bg else plt.cm.hot_r
+
 
     def display_factory(display_mode):
-        return functools.partial(get_projector(display_mode), alpha=alpha)
+        return functools.partial(get_projector(display_mode), alpha=alpha, plot_negative=plot_negative)
 
     display = _plot_img_with_bg(img=stat_map_img,
                                 output_file=output_file,
