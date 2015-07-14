@@ -102,6 +102,9 @@ def test_plot_glass_brain():
     # test plot_glass_brain with colorbar
     plot_glass_brain(img, colorbar=True)
 
+    # test plot_glass_brain with negative values
+    plot_glass_brain(img, colorbar=True, plot_abs=False)
+
 
 def test_plot_stat_map():
     img = _generate_img()
