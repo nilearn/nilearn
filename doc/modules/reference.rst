@@ -29,21 +29,23 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   fetch_atlas_craddock_2012
+   fetch_atlas_destrieux_2009
+   fetch_atlas_harvard_oxford
+   fetch_atlas_msdl
+   fetch_atlas_power_2011
+   fetch_atlas_smith_2009
+   fetch_atlas_yeo_2011
    fetch_abide_pcp
    fetch_adhd
-   fetch_atlas_craddock_2012
-   fetch_atlas_harvard_oxford
    fetch_haxby
    fetch_haxby_simple
    fetch_icbm152_2009
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
-   fetch_atlas_msdl
    fetch_nyu_rest
    fetch_oasis_vbm
-   fetch_atlas_smith_2009
-   fetch_atlas_yeo_2011
 
 .. _decoding_ref:
 
