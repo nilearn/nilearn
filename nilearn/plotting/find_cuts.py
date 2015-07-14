@@ -274,8 +274,22 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
+def find_parcellation_cut_coords(label_img):
 
-def get_parcellation_coordinates(label_img):
+    """ Grab coordinates of center of mass of 3D parcellation atlas
+
+    Parameters
+    ----------
+    labe_img: 3D Nifti1Image
+        A brain parcellation atlas
+
+    Returns
+    -------
+    coord_dict: Dictionary
+       keys are label region values
+       items are center coordinates for label region
+    """
+
     # grab data and affine
     label_img = check_niimg(label_img)
     label_data = label_img.get_data()
@@ -285,8 +299,9 @@ def get_parcellation_coordinates(label_img):
     label_unique = np.unique(label_data)[1:]
 
     # grab center of mass from parcellations and dump into coords list
-    coord_list = []
-    for cur_label in label_unique:
+    coord_dict = {}
+
+    for i, cur_label in enumerate(label_unique):
         cur_img = label_data == cur_label
 
         #take the largest connected component
@@ -301,9 +316,7 @@ def get_parcellation_coordinates(label_img):
                                                   center_of_mass[1],
                                                   center_of_mass[2],
                                                   label_affine)
+        # dump label region and coordinates into a dictionary
+        coord_dict[cur_label] = world_coords
 
-        coord_list.append((world_coords[0],
-                           world_coords[1],
-                           world_coords[2]))
-
-    return coord_list
+    return coord_dict
