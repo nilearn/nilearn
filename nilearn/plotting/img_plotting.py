@@ -757,6 +757,8 @@ def plot_glass_brain(stat_map_img,
             absolute value will be used (rendering positive and negative
             values in the same manner). If set to false the sign of the
             maximum intensity will be represented with different colors.
+            See http://nilearn.github.io/auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
+            for examples.
         symmetric_cbar: boolean or 'auto', optional, default 'auto'
             Specifies whether the colorbar should range from -vmax to vmax
             or from 0 to vmax. Setting to 'auto' will select the latter if
