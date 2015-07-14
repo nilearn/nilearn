@@ -748,10 +748,24 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     # Build a custom colormap for displaying contours
     color_list = cmap(np.linspace(0, 1, n_maps))
 
+    if view_type == 'auto':
+        if n_maps > 20:
+            view_type = 'contours'
+        elif n_maps > 10:
+            view_type = 'filled_contours'
+        else:
+            view_type = 'continuous'
+
     if threshold is None:
         # it will use default percentage,
         # for a nicer look avoiding maximum overlaps for visualization
-        threshold = "99.7%"
+        if view_type == 'contours':
+            correction_factor = 1
+        elif view_type == 'filled_contours':
+            correction_factor = .8
+        else:
+            correction_factor = .5
+        threshold = "%f%%" % (100 * (1 - .2 * correction_factor / n_maps))
 
     if isinstance(threshold, list):
         if len(threshold) != n_maps:
@@ -760,11 +774,6 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     else:
         threshold = [threshold] * n_maps
 
-    if view_type == 'auto':
-        if n_maps > 4:
-            view_type = 'contours'
-        else:
-            view_type = 'continuous'
     if view_type == 'contours':
         filled = False
     elif view_type == 'filled_contours':
