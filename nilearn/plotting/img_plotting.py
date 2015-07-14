@@ -781,7 +781,7 @@ def plot_glass_brain(stat_map_img,
                 stat_map_data = np.asarray(stat_map_data[
                         np.logical_not(stat_map_data._mask)])
             stat_map_max = np.nanmax(stat_map_data)
-            if plot_abs:
+            if not plot_abs:
                 stat_map_min = np.nanmin(stat_map_data)
             else:
                 stat_map_min = 0
