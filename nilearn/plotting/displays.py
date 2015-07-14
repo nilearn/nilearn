@@ -229,7 +229,7 @@ class GlassBrainAxes(BaseAxes):
         """
         max_axis = 'xyz'.index(self.direction)
 
-        if self._plot_abs:
+        if not self._plot_abs:
             #get the shape of the array we are projecting to
             new_shape = list(data.shape)
             del new_shape[max_axis]
