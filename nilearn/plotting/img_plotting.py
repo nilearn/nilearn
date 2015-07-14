@@ -738,8 +738,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     n_maps = maps_img.shape[3]
 
     allowed_view_types = list(('auto', 'contours', 'filled_contours', 'continuous'))
-    if not isinstance(view_type, _basestring) or \
-            view_type not in allowed_view_types:
+    if not (isinstance(view_type, _basestring) or
+            view_type not in allowed_view_types):
         message = ('view_type option should be given '
                    'either of these {0} ').format(allowed_view_types)
         raise ValueError(message)
