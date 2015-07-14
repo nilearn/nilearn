@@ -359,23 +359,3 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         return np.array(coords), label_list
     else:
         return np.array(coords)
-
-
-def find_probabilistic_atlas_cut_coords(label_img):
-    """ Return coordinates of center probabilistic atlas 4D image
-
-    Parameters
-    ----------
-    label_img: 4D Nifti1Image
-        A probabilistic brain atlas with probabolistic masks in the fourth dimension.
-
-    Returns
-    -------
-    coords: array of shape (3, n_maps)
-       Label regions cut coordinates in image space (mm).
-    """
-
-    label_img = check_niimg(label_img)
-    label_imgs = iter_img(label_img)
-    coords = [find_xyz_cut_coords(img) for img in label_imgs]
-    return np.array(coords)
