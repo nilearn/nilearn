@@ -20,9 +20,11 @@ haxby_func_filename = haxby_dataset.func[0]
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects=2,
-    get_anats=True)
+    get_anats=True,
+    get_tmaps=True)
 localizer_anat_filename = localizer_dataset.anats[1]
 localizer_cmap_filename = localizer_dataset.cmaps[1]
+localizer_tmap_filename = localizer_dataset.tmaps[1]
 
 ###############################################################################
 # demo the different 'display_mode' options
@@ -56,6 +58,15 @@ plotting.plot_stat_map(localizer_cmap_filename, display_mode='yx',
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='yz',
                        cut_coords=(-27, 60),
                        title="display_mode='yz', cut_coords=(-27, 60)")
+
+###############################################################################
+# demo plot negative values in glass brain
+
+plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
+                          plot_abs=False)
+
+plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, colorbar=True,
+                          plot_abs=False)
 
 ###############################################################################
 # demo display objects with add_ methods
