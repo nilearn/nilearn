@@ -5,11 +5,12 @@ import itertools
 import warnings
 
 import numpy as np
+
 from scipy import linalg
 import nibabel
-
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
+
 from sklearn.utils.extmath import randomized_svd
 
 from sklearn.utils.validation import check_random_state
@@ -412,17 +413,23 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         """
         if not isinstance(imgs, tuple) and not isinstance(imgs, list):
             imgs = [imgs]
-        data = [self._cache(
-            filter_and_mask,
-            func_memory_level=2,
-            ignore=['verbose', 'copy'])(
-                img, self.mask_img_, self._get_filter_and_mask_parameters(),
-                memory_level=self.memory_level,
-                memory=self.memory,
-                verbose=self.verbose,
-                confounds=confounds,
-                copy=True)[0] for img in imgs]
-        return self._score(data, per_component=per_component)
+        if per_component:
+            score = np.zeros((len(imgs), self.n_components))
+        else:
+            score = np.zeros(len(imgs))
+        for i, img in enumerate(imgs):
+            data = self._cache(
+                filter_and_mask,
+                func_memory_level=2,
+                ignore=['verbose', 'copy'])(
+                    img, self.mask_img_, self._get_filter_and_mask_parameters(),
+                    memory_level=self.memory_level,
+                    memory=self.memory,
+                    verbose=self.verbose,
+                    confounds=confounds,
+                    copy=True)[0]
+            score[i] = self._score(data, per_component=per_component)
+        return score if len(imgs) > 1 else score[0]
 
     def _score(self, data,
                per_component=False):
@@ -430,8 +437,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        data: (tuple or list),
-            Holds records (for each subject) to be tested against components_
+        data: ndarray,
+            Holds single subject data to be tested against components
 
         per_component: boolean,
             Specify whether the explained variance ratio is desired for each map or for the global set of components_
@@ -441,17 +448,18 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         score: ndarray,
             Holds the score for each subjects. score is two dimensional if per_component = True
         """
-        full_var = np.array([np.sum(this_data ** 2) for this_data in data])
+        # If data is not standardized:
+        data -= np.mean(data)
+
+        full_var = np.sum(data ** 2)
+
         lr = LinearRegression(fit_intercept=False)
         if not per_component:
-            residual_variance = np.array([lr.fit(self.components_.T, this_data.T).residues_.sum()
-                                                  for this_data in data])
-            res = 1. - residual_variance / full_var
+            residual_variance = lr.fit(self.components_.T, data.T).residues_.sum()
         else:
             # Per-component score : residues of projection onto each map
-            residual_variance = np.array([[lr.fit(self.components_.T[:, i][:, np.newaxis], this_data.T).residues_.sum()
-                                         for i in range(self.n_components)]
-                                         for this_data in data])
-            res = np.maximum(0., 1. - residual_variance / full_var[:, np.newaxis])
-        return res if len(res) > 1 else res[0]
+            residual_variance = np.array([lr.fit(self.components_.T[:, i][:, np.newaxis], data.T).residues_.sum()
+                                         for i in range(self.n_components)])
+        res = np.maximum(0., 1. - residual_variance / full_var)
+        return res
 
