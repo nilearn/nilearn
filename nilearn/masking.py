@@ -10,7 +10,7 @@ from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
-from ._utils import new_img_like
+from .image import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data

@@ -6,6 +6,7 @@ from nose import SkipTest
 
 from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils import niimg
+from nilearn.image import new_img_like
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -29,4 +30,4 @@ def test_new_img_like_mgz():
     ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
     data = np.ones(ref_img.get_data().shape, dtype=np.bool)
     affine = ref_img.get_affine()
-    niimg.new_img_like(ref_img, data, affine, copy_header=False)
+    new_img_like(ref_img, data, affine, copy_header=False)

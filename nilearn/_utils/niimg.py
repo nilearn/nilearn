@@ -106,12 +106,12 @@ def load_niimg(niimg, dtype=None):
     dtype = _get_target_dtype(_get_data_dtype(niimg), dtype)
 
     if dtype is not None:
-        niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
+        niimg = _new_img_like(niimg, niimg.get_data().astype(dtype),
                              niimg.get_affine())
     return niimg
 
 
-def new_img_like(ref_img, data, affine, copy_header=False):
+def _new_img_like(ref_img, data, affine=None, copy_header=False):
     """Create a new image of the same class as the reference image
 
     Parameters
@@ -149,6 +149,8 @@ def new_img_like(ref_img, data, affine, copy_header=False):
         header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_max'] = np.min(data) if data.size > 0 else 0.
+    if affine is None:
+        affine = ref_img.get_affine()
     return ref_img.__class__(data, affine, header=header)
 
 
@@ -167,7 +169,7 @@ def copy_img(img):
     """
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, img.get_data().copy(), img.get_affine().copy(),
+    return _new_img_like(img, img.get_data().copy(), img.get_affine().copy(),
                         copy_header=True)
 
 

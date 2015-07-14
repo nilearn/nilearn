@@ -10,7 +10,7 @@ import itertools
 from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
-from .niimg import _safe_get_data, load_niimg, new_img_like
+from .niimg import _safe_get_data, load_niimg, _new_img_like
 from .compat import _basestring, izip
 from .exceptions import DimensionError
 
@@ -64,7 +64,7 @@ def _check_same_fov(*args, **kwargs):
 
 def _index_img(img, index):
     """Helper function for check_niimg_4d."""
-    return new_img_like(
+    return _new_img_like(
         img, img.get_data()[:, :, :, index], img.get_affine(),
         copy_header=True)
 
@@ -201,11 +201,11 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         # "squeeze" the image.
         data = _safe_get_data(niimg)
         affine = niimg.get_affine()
-        niimg = new_img_like(niimg, data[:, :, :, 0], affine)
+        niimg = _new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
         data = niimg.get_data().view()
         data.shape = data.shape + (1, )
-        niimg = new_img_like(niimg, data, niimg.get_affine())
+        niimg = _new_img_like(niimg, data, niimg.get_affine())
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
         raise DimensionError(len(niimg.shape), ensure_ndim)
@@ -385,4 +385,4 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
         cur_4d_index += size
 
-    return new_img_like(first_niimg, data, first_niimg.get_affine())
+    return _new_img_like(first_niimg, data, first_niimg.get_affine())
