@@ -1,6 +1,6 @@
 """
-Extracting signals from different atlases and compare correlation matrices
-==========================================================================
+Extracting signals from different atlases and compare
+======================================================
 
 In this example :class:`nilearn.input_data.NiftiLabelsMasker` is used to
 extract time series from nifti objects using different parcellation atlases.
@@ -17,20 +17,15 @@ from matplotlib import pyplot as plt
 
 # load atlases
 destrieux = datasets.fetch_atlas_destrieux_2009()
-destrieux_atlas = destrieux['maps']
-
 yeo = datasets.fetch_atlas_yeo_2011()
-yeo_atlas = yeo['thick_17']
-
 harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
-harvard_oxford_atlas = harvard_oxford['maps']
 
-atlases = {'Destrieux Atlas': destrieux_atlas,
-           'Yeo Atlas 17 thick': yeo_atlas,
-           'Harvard Oxford > 25%': harvard_oxford_atlas}
+atlases = {'Destrieux Atlas': destrieux['maps'],
+           'Yeo Atlas 17 thick': yeo['thick_17'],
+           'Harvard Oxford > 25%': harvard_oxford['maps']}
 
-# get functional data
-data = datasets.fetch_adhd()
+# load functional data
+data = datasets.fetch_adhd(n_subjects=10)
 
 # loop over atlases
 for name, atlas in sorted(atlases.items()):
@@ -39,17 +34,16 @@ for name, atlas in sorted(atlases.items()):
                                standardize=True,
                                memory='nilearn_cache')
 
-    # load timeseries from all subjects and concatenate them
+    # extract time series from all subjects and concatenate them
     time_series = []
     for func, confounds in zip(data.func, data.confounds):
         time_series.append(masker.fit_transform(func, confounds=confounds))
 
     time_series = np.concatenate((time_series))
 
-    # calculate correlation matrix and append it to the list
+    # calculate correlation matrix and display
     correlation_matrix = np.corrcoef(time_series.T)
 
-    # display correlation matrices
     plt.figure(figsize=(5, 5))
     plt.suptitle(name, size=14)
     plt.imshow(correlation_matrix, interpolation="nearest")
