@@ -8,6 +8,7 @@ DictLearning
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
+
 from sklearn.decomposition import dict_learning_online
 
 from .._utils import as_ndarray
@@ -16,8 +17,8 @@ from .._utils.cache_mixin import CacheMixin
 
 
 class DictLearning(CanICA, CacheMixin):
-    """Perform a map learning algorithm based on component sparsity (rather than independance),
-     over a CanICA initialization, which yields more stable maps than CanICA.
+    """Perform a map learning algorithm based on component sparsity,
+     over a CanICA initialization.  This yields more stable maps than CanICA.
 
     Parameters
     ----------
