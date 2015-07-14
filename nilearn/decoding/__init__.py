@@ -2,3 +2,4 @@
 """
 
 from .searchlight import SearchLight
+from .space_net import SpaceNetClassifier, SpaceNetRegressor

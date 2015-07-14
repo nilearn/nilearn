@@ -21,6 +21,7 @@ import base64
 
 import numpy as np
 from scipy import ndimage
+import nibabel
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
@@ -718,7 +719,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
-                abort = "Target file cannot be found"
+                abort = "Target file cannot be found (%s)" % file_
             else:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
@@ -2798,3 +2799,130 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
             files = [np.loadtxt(f) for f in files]
         results[derivative] = files
     return Bunch(**results)
+
+
+def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
+                        verbose=0, make_Xy=False, smooth=0.):
+    """Fetch Jimura "mixed gambles" dataset
+
+
+    Parameters
+    ----------
+    n_subjects: int, optional (default 1)
+        The number of subjects to load. If None is given, all the
+        subjects are used.
+
+    data_dir: string, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None.
+
+    url: string, optional (default None)
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    resume: bool, optional (default True)
+        If true, try resuming download if possible.
+
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
+
+    maks_Xy: bool, optional (default False)
+        If true, then the data will transformed into and (X, y) pair, suitable
+        for machine learning routines.
+        X is a list of n_subjects * 48 Nifti1Image objects, and
+        y is an array of shape (n_subjects * 48,).
+
+    smooth: float, or list of 3 floats, optional (default 0.)
+        Size of smoothing kernel to apply to the loaded z_maps.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'z_maps': string list
+            Paths to realigned gain betamaps (one nifti per subject).
+        'X': list of Nifi1Image objects, or None
+            If make_Xy is true, this is a list of n_subjects * 48
+            Nifti1Image objects, else it is None.
+        'y': array of shape (n_subjects * 48,) or None
+            If make_Xy is true, then this is an array of shape
+            (n_subjects * 48,), else it is None.
+
+    References
+    ----------
+    [1] K. Jimura and R. Poldrack, "Analyses of regional-average activation
+        and multivoxel pattern information tell complementary stories",
+        Neuropsychologia, vol. 50, page 544, 2012
+    """
+    if n_subjects > 16:
+        warnings.warn('Warning: there are only 16 subjects!')
+        n_subjects = 16
+
+    # fetch files
+    if url is None:
+        url = ("https://www.nitrc.org/frs/download.php/7229/"
+               "jimura_poldrack_2012_zmaps.zip")
+    opts = {'uncompress': True}
+    files = [("zmaps/sub%03i_zmaps.nii.gz" % (j + 1), url, opts)
+             for j in range(n_subjects)]
+    data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
+                                data_dir=data_dir)
+    zmap_fnames = _fetch_files(data_dir, files, resume=resume,
+                               verbose=verbose)
+    data = Bunch(z_maps=zmap_fnames)
+
+    # make data for learning problems, etc.
+    if make_Xy:
+        if verbose:
+            print("Chewing data into matrices X, y...")
+        X = []
+        y = []
+        mask = []
+        for zmap_fname in zmap_fnames:
+            # load subject data
+            img = nibabel.load(zmap_fname)
+            this_X = img.get_data()
+            affine = img.get_affine()
+            finite_mask = np.all(np.isfinite(this_X), axis=-1)
+            this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
+                                       finite_mask)
+
+            # smooth data ?
+            if smooth:
+                for i in range(this_X.shape[-1]):
+                    this_X[..., i] = ndimage.gaussian_filter(this_X[..., i],
+                                                             smooth)
+                this_X[np.logical_not(finite_mask)] = np.nan
+            this_y = np.array([np.arange(1, 9)] * 6).ravel()
+
+            # gain levels
+            if len(this_y) != this_X.shape[-1]:
+                raise RuntimeError("%s: Expecting %i volumes, got %i!" % (
+                    zmap_fname, len(this_y), this_X.shape[-1]))
+
+            # standardize subject data
+            this_X -= this_X.mean(axis=-1)[..., np.newaxis]
+            std = this_X.std(axis=-1)
+            std[std == 0] = 1
+            this_X /= std[..., np.newaxis]
+
+            # commit subject data
+            X.append(this_X)
+            y.extend(this_y)
+            mask.append(this_mask)
+
+        # final sip
+        y = np.array(y)
+        X = np.concatenate(X, axis=-1)
+        mask = np.sum(mask, axis=0) > .5 * len(zmap_fnames)
+        mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
+        X = X[mask, :].T
+        tmp = np.zeros(list(mask.shape) + [len(X)])
+        tmp[mask, :] = X.T
+        mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
+        X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
+        if len(X) != y.size:
+            raise RuntimeError
+        data.update(X=X, y=y, mask_img=mask_img)
+
+    return data
