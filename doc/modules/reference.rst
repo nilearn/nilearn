@@ -31,19 +31,19 @@ uses.
 
    fetch_abide_pcp
    fetch_adhd
-   fetch_craddock_2012_atlas
-   fetch_harvard_oxford
+   fetch_atlas_craddock_2012
+   fetch_atlas_harvard_oxford
    fetch_haxby
    fetch_haxby_simple
    fetch_icbm152_2009
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
-   fetch_msdl_atlas
+   fetch_atlas_msdl
    fetch_nyu_rest
    fetch_oasis_vbm
-   fetch_smith_2009
-   fetch_yeo_2011_atlas
+   fetch_atlas_smith_2009
+   fetch_atlas_yeo_2011
 
 .. _decoding_ref:
 
@@ -61,7 +61,7 @@ uses.
 .. autosummary::
    :toctree: generated/
    :template: class.rst
-   
+
    SearchLight
 
 .. _decomposition_ref:
@@ -243,7 +243,7 @@ uses.
 .. autosummary::
    :toctree: generated/
    :template: class.rst
-   
+
    OrthoSlicer
 
 
