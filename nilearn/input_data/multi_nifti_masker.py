@@ -159,7 +159,6 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         if self.mask_img is None:
             if self.verbose > 0:
                 print("[%s.fit] Computing mask" % self.__class__.__name__)
-            data = []
             if not isinstance(imgs, collections.Iterable) \
                     or isinstance(imgs, _basestring):
                 raise ValueError("[%s.fit] For multiple processing, you should"
