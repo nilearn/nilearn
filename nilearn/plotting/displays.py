@@ -230,12 +230,19 @@ class GlassBrainAxes(BaseAxes):
         max_axis = 'xyz'.index(self.direction)
 
         if self._plot_abs:
+            #get the shape of the array we are projecting to
             new_shape = list(data.shape)
             del new_shape[max_axis]
+
+            #generate a 3D indexing array that points to max abs value in the
+            #current projection
             a1, a2 = np.indices(new_shape)
             inds = [a1, a2]
             inds.insert(max_axis, np.abs(data).argmax(axis=max_axis))
-            maximum_intensity_data = np.abs(data)[inds] * np.sign(data[inds])
+
+            #take the values where the absolute value of the projection
+            #is the highest
+            maximum_intensity_data = data[inds]
         else:
             maximum_intensity_data = np.abs(data).max(axis=max_axis)
 
