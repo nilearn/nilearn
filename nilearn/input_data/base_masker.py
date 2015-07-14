@@ -270,3 +270,51 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('It seems that %s has not been fitted. '
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
+
+
+# XXX This function is converging toward filter_and_mask. They will merge
+# eventually.
+def filter_and_extract(imgs, extraction_func,
+                       smoothing_fwhm, t_r,
+                       standardize, detrend, low_pass, high_pass,
+                       confounds, memory, memory_level,
+                       target_fov=None, verbose=0):
+    """Extract representative time series using given function.
+    """
+    if verbose > 0:
+        print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
+    imgs = _utils.check_niimg_4d(imgs)
+
+    if target_fov is not None:
+        if verbose > 0:
+            print("Resampling images")
+        imgs = cache(
+            image.resample_img, memory, func_memory_level=2,
+            memory_level=memory_level)(
+                imgs, interpolation="continuous",
+                target_shape=target_fov[0],
+                target_affine=target_fov[1])
+
+    if smoothing_fwhm is not None:
+        if verbose > 0:
+            print("Smoothing images")
+        imgs = cache(
+            image.smooth_img, memory, func_memory_level=2,
+            memory_level=memory_level)(
+                imgs, smoothing_fwhm)
+
+    if verbose > 0:
+        print("Extracting region signals")
+    region_signals, aux = cache(extraction_func, memory, func_memory_level=2,
+                           memory_level=memory_level)(imgs)
+
+    if verbose > 0:
+        print("Cleaning extracted signals")
+    region_signals = cache(
+        signal.clean, memory=memory, func_memory_level=2,
+        memory_level=memory_level)(
+            region_signals, detrend=detrend, standardize=standardize, t_r=t_r,
+            low_pass=low_pass, high_pass=high_pass,
+            confounds=confounds)
+
+    return region_signals, aux
