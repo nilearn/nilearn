@@ -7,9 +7,11 @@ import warnings
 import numpy as np
 from scipy import linalg
 import nibabel
+
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
+
 from sklearn.utils.validation import check_random_state
 
 from sklearn.linear_model import LinearRegression
@@ -439,8 +441,6 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         score: ndarray,
             Holds the score for each subjects. score is two dimensional if per_component = True
         """
-        if not isinstance(data, list) and not isinstance(data, tuple):
-            data = [data]
         full_var = np.array([np.sum(this_data ** 2) for this_data in data])
         lr = LinearRegression(fit_intercept=False)
         if not per_component:
