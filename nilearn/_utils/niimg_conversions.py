@@ -70,7 +70,7 @@ def _index_img(img, index):
 
 
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
-                      target_fov=None,
+                      target_fov=None, dtype=None,
                       memory=Memory(cachedir=None),
                       memory_level=0, verbose=0):
     """Iterate over a list of niimgs and do sanity checks and resampling
@@ -90,6 +90,11 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
     target_fov: tuple of affine and shape
        If specified, images are resampled to this field of view
+
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
     """
     ref_fov = None
     resample_to_first_img = False
@@ -99,7 +104,8 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
     for i, niimg in enumerate(niimgs):
         try:
             niimg = check_niimg(
-                niimg, ensure_ndim=ndim_minus_one, atleast_4d=atleast_4d)
+                niimg, ensure_ndim=ndim_minus_one, atleast_4d=atleast_4d,
+                dtype=dtype)
             if i == 0:
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
@@ -141,7 +147,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             raise
 
 
-def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
+def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
                 return_iterator=False):
     """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
 
@@ -159,6 +165,11 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
 
     atleast_4d: boolean, optional
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
+
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     Returns
     -------
@@ -179,11 +190,12 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
         if return_iterator:
-            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim)
-        return concat_niimgs(niimg, ensure_ndim=ensure_ndim)
+            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
+                                     dtype=dtype)
+        return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
-    niimg = load_niimg(niimg)
+    niimg = load_niimg(niimg, dtype=dtype)
 
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
@@ -204,7 +216,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     return niimg
 
 
-def check_niimg_3d(niimg):
+def check_niimg_3d(niimg, dtype=None):
     """Check that niimg is a proper 3D niimg-like object and load it.
     Parameters
     ----------
@@ -213,6 +225,11 @@ def check_niimg_3d(niimg):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
+    
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     Returns
     -------
@@ -229,10 +246,10 @@ def check_niimg_3d(niimg):
 
     Its application is idempotent.
     """
-    return check_niimg(niimg, ensure_ndim=3)
+    return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
 
-def check_niimg_4d(niimg, return_iterator=False):
+def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters
@@ -245,6 +262,11 @@ def check_niimg_4d(niimg, return_iterator=False):
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+    
     return_iterator: boolean
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
@@ -262,7 +284,8 @@ def check_niimg_4d(niimg, return_iterator=False):
 
     Its application is idempotent.
     """
-    return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator)
+    return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator,
+                       dtype=dtype)
 
 
 def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,

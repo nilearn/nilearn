@@ -30,6 +30,51 @@ def _safe_get_data(img):
     return img.get_data()
 
 
+def _get_data_dtype(img):
+    """Returns the dtype of an image.
+    If the image is non standard (no get_data_dtype member), this function
+    relies on the data itself.
+    """
+    try:
+        return img.get_data_dtype()
+    except AttributeError:
+        return img.get_data().dtype
+
+
+def _get_target_dtype(dtype, target_dtype):
+    """Returns a new dtype if conversion is needed
+
+    Parameters
+    ----------
+
+    dtype: dtype
+        Data type of the original data
+
+    target_dtype: {None, dtype, "auto"}
+        If None, no conversion is required. If a type is provided, the
+        function will check if a conversion is needed. The "auto" mode will
+        automatically convert to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    Returns
+    -------
+
+    dtype: dtype
+        The data type toward which the original data should be converted.
+    """
+
+    if target_dtype is None:
+        return None
+    if target_dtype == 'auto':
+        if dtype.kind == 'i':
+            target_dtype = np.int32
+        else:
+            target_dtype = np.float32
+    if target_dtype == dtype:
+        return None
+    return target_dtype
+
+
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed
 
@@ -39,6 +84,11 @@ def load_niimg(niimg, dtype=None):
     niimg: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Image to load.
+
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     Returns:
     --------
@@ -52,6 +102,12 @@ def load_niimg(niimg, dtype=None):
         raise TypeError("Data given cannot be loaded because it is"
                         " not compatible with nibabel format:\n"
                         + short_repr(niimg))
+
+    dtype = _get_target_dtype(_get_data_dtype(niimg), dtype)
+
+    if dtype is not None:
+        niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
+                             niimg.get_affine())
     return niimg
 
 

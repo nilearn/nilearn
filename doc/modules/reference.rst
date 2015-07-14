@@ -150,6 +150,29 @@ uses.
 
 **Functions**:
 
+.. currentmodule:: nilearn.masking
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   compute_epi_mask
+   compute_multi_epi_mask
+   compute_background_mask
+   compute_multi_background_mask
+   intersect_mask
+   apply_mask
+   unmask
+
+:mod:`nilearn.region`: Operating on regions
+==============================================
+
+.. automodule:: nilearn.region
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
 .. currentmodule:: nilearn.region
 
 .. autosummary::
@@ -161,11 +184,11 @@ uses.
    img_to_signals_maps
    signals_to_img_maps
 
+
 .. seealso::
 
    :func:`nilearn.masking.apply_mask`,
    :func:`nilearn.masking.unmask`
-
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
 =========================================================

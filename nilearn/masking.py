@@ -1,5 +1,5 @@
 """
-Utilities to compute a brain mask from EPI images
+Utilities to compute and operate on brain masks
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
