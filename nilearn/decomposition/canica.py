@@ -50,11 +50,12 @@ class CanICA(MultiPCA, CacheMixin):
         their variance is put to 1 in the time dimension.
 
     threshold: None, 'auto' or float
-        If None, no thresholding is applied. If 'auto',
+        Passed to CanICA. If None, no thresholding is applied. If 'auto',
         then we apply a thresholding that will keep the n_voxels,
         more intense voxels across all the maps, n_voxels being the number
         of voxels in a brain volume. A float value indicates the
-        ratio of voxels to keep (2. means keeping 2 x n_voxels voxels).
+        ratio of voxels to keep (2. means that the maps will together
+        have 2 x n_voxels non-zero voxels ).
 
     n_init: int, optional
         The number of times the fastICA algorithm is restarted

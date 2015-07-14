@@ -8,6 +8,7 @@ DictLearning
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
+
 from sklearn.decomposition import MiniBatchDictionaryLearning
 
 from .._utils import as_ndarray
@@ -39,24 +40,12 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    do_cca: boolean, optional
-        Indicate if a Canonical Correlation Analysis must be run after the
-        PCA.
-
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    threshold: None, 'auto' or float
-        Passed to CanICA. If None, no thresholding is applied. If 'auto',
-        then we apply a thresholding that will keep the n_voxels,
-        more intense voxels across all the maps, n_voxels being the number
-        of voxels in a brain volume. A float value indicates the
-        ratio of voxels to keep (2. means that the maps will together
-        have 2 x n_voxels non-zero voxels ).
-
-    n_init: int, optional
-        The number of times the fastICA algorithm is restarted
+    alpha: float, optional, default=1
+        Sparsity controlling parameter
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -99,11 +88,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
 
     References
     ----------
-    * G. Varoquaux et al. "A group model for stable multi-subject ICA on
-      fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
 
-    * G. Varoquaux et al. "ICA-based sparse features recovery from fMRI
-      datasets", IEEE ISBI 2010, p. 1177
     """
 
     def __init__(self, mask=None, n_components=20,
@@ -113,7 +98,6 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
                  alpha=1,
-                 batch_size=10,
                  n_iter=1000,
                  # Common options
                  memory=Memory(cachedir=None), memory_level=0,
@@ -131,7 +115,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         self._keep_data_mem = True
         # Setting n_jobs = 1 as it is slower otherwise
         MiniBatchDictionaryLearning.__init__(self, n_components=n_components, alpha=alpha,
-                                             n_iter=n_iter, batch_size=batch_size,
+                                             n_iter=n_iter, batch_size=10,
                                              fit_algorithm='lars',
                                              transform_algorithm='lasso_lars',
                                              transform_alpha=alpha,
