@@ -27,4 +27,5 @@ predicting an output value.
    space_net.rst
    searchlight.rst
    space_net.rst
+   searchlight.rst
 
