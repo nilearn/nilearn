@@ -5,11 +5,10 @@ CanICA
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 from distutils.version import LooseVersion
-
 from operator import itemgetter
+
 import numpy as np
 from scipy.stats import scoreatpercentile
-
 import sklearn
 from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory, delayed, Parallel
@@ -113,7 +112,6 @@ class CanICA(MultiPCA, CacheMixin):
                  threshold='auto', n_init=10,
                  standardize=True,
                  random_state=0,
-                 keep_data_mem=False,
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
                  # Common options
@@ -124,8 +122,7 @@ class CanICA(MultiPCA, CacheMixin):
             mask=mask, memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
             n_components=n_components, smoothing_fwhm=smoothing_fwhm,
-            target_affine=target_affine, target_shape=target_shape,
-            keep_data_mem=keep_data_mem)
+            target_affine=target_affine, target_shape=target_shape)
         self.threshold = threshold
         self.random_state = random_state
         self.low_pass = low_pass

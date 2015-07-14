@@ -8,7 +8,9 @@ import numpy as np
 from scipy import linalg
 import nibabel
 from sklearn.base import BaseEstimator, TransformerMixin, clone
+
 from sklearn.externals.joblib import Parallel, delayed, Memory
+
 from sklearn.utils.extmath import randomized_svd
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
@@ -179,7 +181,6 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
                  do_cca=True, standardize=True, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
-                 keep_data_mem=False,
                  t_r=None, memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
                  ):
@@ -191,7 +192,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
-        self.keep_data_mem = keep_data_mem
+        self._keep_data_mem = False
 
         self.do_cca = do_cca
         self.n_components = n_components
@@ -295,13 +296,13 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                 n_components=self.n_components,
                 memory=self.memory,
                 memory_level=self.memory_level,
-                return_data=self.keep_data_mem,
+                return_data=self._keep_data_mem,
                 confounds=confound,
                 verbose=self.verbose
             )
             for img, confound in zip(imgs, confounds))
-        if self.keep_data_mem:
-            subject_pcas, subject_svd_vals, subject_datas = zip(*subject_pcas)
+        if self._keep_data_mem:
+            subject_pcas, subject_svd_vals, subject_data_set = zip(*subject_pcas)
         else:
             subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
@@ -329,12 +330,12 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             data = subject_pcas[0]
             variance = subject_svd_vals[0]
-            if self.keep_data_mem:
-                subject_datas = subject_datas[0]
+            if self._keep_data_mem:
+                subject_data_set = subject_data_set[0]
         self.components_ = data
         self.variance_ = variance
-        if self.keep_data_mem:
-            self.data_flat_ = subject_datas
+        if self._keep_data_mem:
+            self.data_flat_ = subject_data_set
         return self
 
     def transform(self, imgs, confounds=None):

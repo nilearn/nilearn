@@ -14,7 +14,7 @@ def test_dict_learning():
     data, mask_img, components, rng = _make_canica_test_data()
 
     dict_learning = DictLearning(n_components=4, random_state=rng, mask=mask_img,
-                                 smoothing_fwhm=0., n_init=3, n_iter=100, alpha=4)
+                                 smoothing_fwhm=0., n_iter=100, alpha=4)
     dict_learning.fit(data)
     maps = dict_learning.masker_.inverse_transform(dict_learning.components_).get_data()
     maps = np.reshape(np.rollaxis(maps, 3, 0), (4, 400))
@@ -36,7 +36,7 @@ def test_component_sign():
 
     # run CanICA many times (this is known to produce different results)
     dict_learning = DictLearning(n_components=4, random_state=rng, mask=mask_img,
-                                 smoothing_fwhm=0., n_init=1, n_iter=100, alpha=1)
+                                 smoothing_fwhm=0., n_iter=100, alpha=1)
     dict_learning.fit(data)
     for mp in iter_img(dict_learning.masker_.inverse_transform(
             dict_learning.components_)):

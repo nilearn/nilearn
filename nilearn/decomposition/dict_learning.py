@@ -126,8 +126,8 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
                         target_affine=target_affine, target_shape=target_shape,
                         random_state=random_state, high_pass=high_pass, low_pass=low_pass,
                         t_r=t_r,
-                        keep_data_mem=True,
                         standardize=standardize)
+        self._keep_data_mem = True
         # Setting n_jobs = 1 as it is slower otherwise
         MiniBatchDictionaryLearning.__init__(self, n_components=n_components, alpha=alpha,
                                              n_iter=n_iter, batch_size=batch_size,
@@ -140,7 +140,6 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
                                              n_jobs=1)
 
     def _init_dict(self, imgs, y=None, confounds=None):
-
         CanICA.fit(self, imgs, y=y, confounds=confounds)
         if isinstance(self.data_flat_, tuple):  # several subjects
             self.data_flat_ = np.concatenate(self.data_flat_, axis=0)
