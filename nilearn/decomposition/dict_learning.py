@@ -8,15 +8,14 @@ DictLearning
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
-
-from sklearn.decomposition import MiniBatchDictionaryLearning
+from sklearn.decomposition import dict_learning_online
 
 from .._utils import as_ndarray
 from .canica import CanICA
 from .._utils.cache_mixin import CacheMixin
 
 
-class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
+class DictLearning(CanICA, CacheMixin):
     """Perform a map learning algorithm based on component sparsity (rather than independance),
      over a CanICA initialization, which yields more stable maps than CanICA.
 
@@ -113,16 +112,9 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
                         t_r=t_r,
                         standardize=standardize)
         self._keep_data_mem = True
+        self.n_iter = n_iter
+        self.alpha = alpha
         # Setting n_jobs = 1 as it is slower otherwise
-        MiniBatchDictionaryLearning.__init__(self, n_components=n_components, alpha=alpha,
-                                             n_iter=n_iter, batch_size=10,
-                                             fit_algorithm='lars',
-                                             transform_algorithm='lasso_lars',
-                                             transform_alpha=alpha,
-                                             verbose=verbose,
-                                             random_state=random_state,
-                                             shuffle=True,
-                                             n_jobs=1)
 
     def _init_dict(self, imgs, y=None, confounds=None):
         CanICA.fit(self, imgs, y=y, confounds=confounds)
@@ -135,9 +127,9 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
             print('[DictLearning] Learning time serie')
         ridge = Ridge(alpha=1e-6, fit_intercept=None)
         ridge.fit(self.components_.T, self.data_flat_.T)
-        self.dict_init = ridge.coef_.T
-        S = np.sqrt(np.sum(self.dict_init ** 2, axis=0))
-        self.dict_init /= S[np.newaxis, :]
+        self.dict_init_ = ridge.coef_.T
+        S = np.sqrt(np.sum(self.dict_init_ ** 2, axis=0))
+        self.dict_init_ /= S[np.newaxis, :]
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the ICA maps across subjects
@@ -157,11 +149,21 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
 
         if self.verbose:
             print('[DictLearning] Learning dictionary')
-        MiniBatchDictionaryLearning.fit(self, self.data_flat_.T)
+        self.components_, _ = self._cache(dict_learning_online, func_memory_level=2)(
+            self.data_flat_.T,
+            n_components=self.n_components,
+            alpha=self.alpha,
+            n_iter=self.n_iter, batch_size=10,
+            method='lars',
+            return_code=True,
+            verbose=max(0, self.verbose - 1),
+            random_state=self.random_state,
+            shuffle=True,
+            n_jobs=1)
+        self.components_ = self.components_.T
         if self.verbose:
             print('')
             print('[DictLearning] Learning code')
-        self.components_ = MiniBatchDictionaryLearning.transform(self, self.data_flat_.T).T
         self.components_ = as_ndarray(self.components_)
         # flip signs in each composant positive part is l1 larger than negative part
         for component in self.components_:

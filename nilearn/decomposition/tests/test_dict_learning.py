@@ -1,5 +1,4 @@
 from sklearn.utils.linear_assignment_ import linear_assignment
-
 from numpy.testing import assert_array_almost_equal
 import numpy as np
 
@@ -13,13 +12,22 @@ def test_dict_learning():
     data, mask_img, components, rng = _make_canica_test_data()
 
     dict_learning = DictLearning(n_components=4, random_state=rng, mask=mask_img,
-                                 smoothing_fwhm=0., n_iter=100, alpha=4)
+                                 smoothing_fwhm=0., n_iter=200, alpha=2)
     dict_learning.fit(data)
     maps = dict_learning.masker_.inverse_transform(dict_learning.components_).get_data()
     maps = np.reshape(np.rollaxis(maps, 3, 0), (4, 400))
 
-    K = np.corrcoef(np.concatenate((components, maps)))[4:, :4]
-    indices = linear_assignment(-K)
+    S = np.sqrt(np.sum(components ** 2, axis=1))
+    S[S == 0] = 1
+    components /= S[:, np.newaxis]
+
+    S = np.sqrt(np.sum(maps ** 2, axis=1))
+    S[S == 0] = 1
+    maps /= S[:, np.newaxis]
+
+    K = np.abs(components.dot(maps.T))
+
+    indices = linear_assignment(1-K)
     K = K[indices[:, 0], :][:, indices[:, 1]]
     assert_array_almost_equal(np.abs(K), np.eye(4), 1)
 
