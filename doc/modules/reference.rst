@@ -64,6 +64,8 @@ uses.
    :toctree: generated/
    :template: class.rst
 
+   SpaceNetClassifier
+   SpaceNetRegressor
    SearchLight
    SpaceNet
 

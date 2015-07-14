@@ -1,4 +1,5 @@
-""" Decoding tools and algorithms
+"""
+Decoding tools and algorithms.
 """
 
 from .searchlight import SearchLight
