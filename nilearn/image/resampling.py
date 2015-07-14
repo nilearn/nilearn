@@ -13,7 +13,7 @@ import scipy
 from scipy import ndimage, linalg
 
 from .. import _utils
-from .._utils import new_img_like
+from ..image import new_img_like
 from .._utils.compat import _basestring
 
 ###############################################################################

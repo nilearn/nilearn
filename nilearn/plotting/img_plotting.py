@@ -24,7 +24,7 @@ from .._utils.numpy_conversions import as_ndarray
 import matplotlib.pyplot as plt
 
 from .. import _utils
-from .._utils import new_img_like
+from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
