@@ -170,6 +170,14 @@ a command prompt::
    Mac users need to type this in the "Terminal", while Windows users
    need to type it in command line of cmd.exe.
 
+Nilearn may also be available as a software package for your operating system.
+For example, the NeuroDebian_ project provides binary packages for recent
+Debian and Ubuntu releases. See the `NeuroDebian package page`_ for information
+on availability and installation instructions.
+
+.. _NeuroDebian: http://neuro.debian.net
+.. _NeuroDebian package page: http://neuro.debian.net/pkgs/python-nilearn.html
+
 |
 
 .. _testing_installation:
