@@ -206,9 +206,9 @@ class GlassBrainAxes(BaseAxes):
     volumes with a schematic view of the brain.
 
     """
-    def __init__(self, ax, direction, coord, plot_negative=False, **kwargs):
+    def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
         super(GlassBrainAxes, self).__init__(ax, direction, coord)
-        self._plot_negative = plot_negative
+        self._plot_abs = plot_abs
         if ax is not None:
             object_bounds = glass_brain.plot_brain_schematics(ax,
                                                               direction,
@@ -229,7 +229,7 @@ class GlassBrainAxes(BaseAxes):
         """
         max_axis = 'xyz'.index(self.direction)
 
-        if self._plot_negative:
+        if self._plot_abs:
             new_shape = list(data.shape)
             del new_shape[max_axis]
             a1, a2 = np.indices(new_shape)

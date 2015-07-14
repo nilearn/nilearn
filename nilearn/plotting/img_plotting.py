@@ -700,7 +700,7 @@ def plot_glass_brain(stat_map_img,
                      cmap=None,
                      alpha=0.7,
                      vmin=None, vmax=None,
-                     plot_negative=False,
+                     plot_abs=True,
                      symmetric_cbar="auto",
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
@@ -752,11 +752,11 @@ def plot_glass_brain(stat_map_img,
             Alpha transparency for the brain schematics
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
-        plot_negative: boolean, optional
-            If set to true the sign of the maximum projection value will
-            be used to distinguish between positive and negative vales.
-            By default this is set to false which results in using the
-            same color scheme for both positive and negative values.
+        plot_abs: boolean, optional
+            If set to True (default) maximum intensity projection of the
+            absolute value will be used (rendering positive and negative
+            values in the same manner). If set to false the sign of the
+            maximum intensity will be represented with different colors.
         symmetric_cbar: boolean or 'auto', optional, default 'auto'
             Specifies whether the colorbar should range from -vmax to vmax
             or from 0 to vmax. Setting to 'auto' will select the latter if
@@ -781,7 +781,7 @@ def plot_glass_brain(stat_map_img,
                 stat_map_data = np.asarray(stat_map_data[
                         np.logical_not(stat_map_data._mask)])
             stat_map_max = np.nanmax(stat_map_data)
-            if plot_negative:
+            if plot_abs:
                 stat_map_min = np.nanmin(stat_map_data)
             else:
                 stat_map_min = 0
@@ -817,7 +817,7 @@ def plot_glass_brain(stat_map_img,
         cbar_vmin, cbar_vmax = None, None
 
     def display_factory(display_mode):
-        return functools.partial(get_projector(display_mode), alpha=alpha, plot_negative=plot_negative)
+        return functools.partial(get_projector(display_mode), alpha=alpha, plot_abs=plot_abs)
 
     display = _plot_img_with_bg(img=stat_map_img,
                                 output_file=output_file,
