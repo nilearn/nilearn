@@ -5,11 +5,10 @@ CanICA
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 from distutils.version import LooseVersion
-
 from operator import itemgetter
+
 import numpy as np
 from scipy.stats import scoreatpercentile
-
 import sklearn
 from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory, delayed, Parallel
@@ -115,6 +114,7 @@ class CanICA(MultiPCA, CacheMixin):
                  random_state=0,
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
+                 sorted=False,
                  # Common options
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
@@ -123,6 +123,7 @@ class CanICA(MultiPCA, CacheMixin):
             mask=mask, memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=max(0, verbose - 1), do_cca=do_cca,
             n_components=n_components, smoothing_fwhm=smoothing_fwhm,
+            sorted=sorted,
             target_affine=target_affine, target_shape=target_shape,
             random_state=random_state)
         self.threshold = threshold
@@ -146,7 +147,11 @@ class CanICA(MultiPCA, CacheMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
+        # Fit MultiPCA without sorting
+        sorted = self.sorted
+        self.sorted = False
         MultiPCA.fit(self, imgs, y=y, confounds=confounds)
+        self.sorted = sorted
         random_state = check_random_state(self.random_state)
 
         if self.verbose:
@@ -193,5 +198,8 @@ class CanICA(MultiPCA, CacheMixin):
         for component in self.components_:
             if component.max() < -component.min():
                 component *= -1
+
+        if self.sorted:
+            self._sort_components(imgs, confounds)
 
         return self

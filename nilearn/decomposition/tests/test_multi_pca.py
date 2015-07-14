@@ -5,6 +5,7 @@ Test the multi-PCA module
 import numpy as np
 from nose.tools import assert_raises, assert_true
 import nibabel
+from numpy.testing import assert_equal
 
 from nilearn.decomposition.multi_pca import MultiPCA
 from nilearn.input_data import MultiNiftiMasker
@@ -103,7 +104,21 @@ def test_multi_pca_score():
     assert_true(np.all(s <= 1))
     assert_true(np.all(0 <= s))
 
+def test_sorted():
+    shape = (6, 8, 10, 5)
+    affine = np.eye(4)
+    rng = np.random.RandomState(0)
 
+    # Create a "multi-subject" dataset
+    data = []
+    for i in range(8):
+        this_data = rng.normal(size=shape)
+        data.append(nibabel.Nifti1Image(this_data, affine))
 
+    mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
 
-
+    # Check that components_ are sorted in ascending order relating to training score
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0, n_components=3, sorted=True)
+    multi_pca.fit(data)
+    score = multi_pca.score(data, per_component=True).mean(axis=0)
+    assert_equal(score, -np.sort(-score))

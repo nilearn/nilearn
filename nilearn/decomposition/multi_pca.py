@@ -5,16 +5,12 @@ import itertools
 import warnings
 
 import numpy as np
-
 from scipy import linalg
 import nibabel
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
-
 from sklearn.utils.extmath import randomized_svd
-
 from sklearn.utils.validation import check_random_state
-
 from sklearn.linear_model import LinearRegression
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
@@ -191,6 +187,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                  do_cca=True, standardize=True, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
                  t_r=None, memory=Memory(cachedir=None), memory_level=0,
+                 sorted=False,
                  n_jobs=1, verbose=0,
                  random_state=None
                  ):
@@ -210,6 +207,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         self.target_shape = target_shape
         self.standardize = standardize
         self.random_state = random_state
+        self.sorted = sorted
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components
@@ -336,6 +334,9 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         self.components_ = data
         self.explained_variance_ratio_ = variance ** 2 / np.sum(variance ** 2)
 
+        if self.sorted:
+            self._sort_components(imgs, confounds)
+
         return self
 
     def transform(self, imgs, confounds=None):
@@ -389,6 +390,12 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         parameters['detrend'] = True
         return parameters
 
+    def _sort_components(self, imgs, confounds=None):
+        """ Sort components by score obtained on test set imgs
+        """
+        score = self.score(imgs, confounds, per_component=True).mean(axis=0)
+        self.components_ = self.components_[np.argsort(-score)]
+
     def score(self, imgs, confounds=None, per_component=False):
         """Score function based on explained variance
 
@@ -413,11 +420,13 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         """
         if not isinstance(imgs, tuple) and not isinstance(imgs, list):
             imgs = [imgs]
+        if confounds is None:
+            confounds = [None] * len(imgs)
         if per_component:
             score = np.zeros((len(imgs), self.n_components))
         else:
             score = np.zeros(len(imgs))
-        for i, img in enumerate(imgs):
+        for i, (img, confound) in enumerate(zip(imgs, confounds)):
             data = self._cache(
                 filter_and_mask,
                 func_memory_level=2,
@@ -426,7 +435,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                     memory_level=self.memory_level,
                     memory=self.memory,
                     verbose=self.verbose,
-                    confounds=confounds,
+                    confounds=confound,
                     copy=True)[0]
             score[i] = self._score(data, per_component=per_component)
         return score if len(imgs) > 1 else score[0]
