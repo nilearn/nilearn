@@ -15,7 +15,8 @@ from .._utils import new_img_like, check_niimg
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
-from ..image.image import _smooth_array
+from ..image.image import _smooth_array, iter_img
+from ..plotting import find_xyz_cut_coords
 import numpy as np
 from scipy import ndimage
 
@@ -274,20 +275,21 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-def find_parcellation_cut_coords(label_img):
+def find_parcellation_atlas_cut_coords(label_img):
 
     """ Grab coordinates of center of mass of 3D parcellation atlas
 
     Parameters
     ----------
-    labe_img: 3D Nifti1Image
+    label_img: 3D Nifti1Image
         A brain parcellation atlas
 
     Returns
     -------
-    coord_dict: Dictionary
-       keys are label region values
-       items are center coordinates for label region
+    labels_list: List
+        Label region values
+    coord_list: List
+        Center coordinates for label regions
     """
 
     # grab data and affine
@@ -299,7 +301,8 @@ def find_parcellation_cut_coords(label_img):
     label_unique = np.unique(label_data)[1:]
 
     # grab center of mass from parcellations and dump into coords list
-    coord_dict = {}
+    coord_list = []
+    labels_list = []
 
     for i, cur_label in enumerate(label_unique):
         cur_img = label_data == cur_label
@@ -317,6 +320,12 @@ def find_parcellation_cut_coords(label_img):
                                                   center_of_mass[2],
                                                   label_affine)
         # dump label region and coordinates into a dictionary
-        coord_dict[cur_label] = world_coords
+        coord_list.append((world_coords[0],
+                       world_coords[1],
+                       world_coords[2]))
 
-    return coord_dict
+        labels_list.append(i)
+
+
+    return labels_list, coord_list
+
