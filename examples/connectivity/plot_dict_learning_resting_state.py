@@ -27,8 +27,7 @@ print('First functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
 ### Apply DictLearning ########################################################
-from nilearn.decomposition.dict_learning import DictLearning
-from nilearn.decomposition.canica import CanICA
+from nilearn.decomposition import DictLearning, CanICA
 
 n_components = 10
 
