@@ -21,7 +21,7 @@ def test_dict_learning():
 
     K = np.corrcoef(np.concatenate((components, maps)))[4:, :4]
     indices = linear_assignment(-K)
-    K = K.take(indices[:, 1], axis=1).take(indices[:, 0], axis=0)
+    K = K[indices[:, 0], :][:, indices[:, 1]]
     assert_array_almost_equal(np.abs(K), np.eye(4), 1)
 
 
