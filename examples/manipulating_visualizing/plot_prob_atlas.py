@@ -53,7 +53,7 @@ atlas_names = ['Harvard_Oxford', 'Harvard_Oxford sub', 'MSDL',
                'ICBM tissues']
 
 for atlas, name in zip(atlas_types, atlas_names):
-        plotting.img_plotting.plot_prob_atlas(atlas,
+        plotting.plot_prob_atlas(atlas,
                                               title='%s' % name)
 
 plt.show()

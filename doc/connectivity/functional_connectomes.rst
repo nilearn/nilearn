@@ -137,8 +137,8 @@ Probabilistic atlases are represented as a set of continuous maps, in a
 of these maps, which requires accessing them with
 :func:`nilearn.image.index_img` (see the :ref:`corresponding example <example_manipulating_visualizing_plot_probabilistic_atlas.py>`).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_probabilistic_atlas_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_probabilistic_atlas.html
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_overlay_001.png
+   :target: ../auto_examples/manipulating_visualizing/plot_overlay.html
    :scale: 60
 
 
