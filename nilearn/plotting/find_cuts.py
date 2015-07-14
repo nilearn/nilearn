@@ -275,37 +275,41 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-def find_parcellation_atlas_cut_coords(label_img):
+def find_parcellation_atlas_cut_coords(labels_img, background_label=0):
 
     """ Grab coordinates of center of mass of 3D parcellation atlas
 
     Parameters
     ----------
-    label_img: 3D Nifti1Image
-        A brain parcellation atlas
+    labels_img: 3D Nifti1Image
+        A brain parcellation atlas.
+
+    background_label: number, optional
+        Label used in labels_img to represent background.
 
     Returns
     -------
     labels_list: List
         Label region values
-    coord_list: List
-        Center coordinates for label regions
+
+    world_coords: List
+        World coordinates for center of label regions
     """
 
     # grab data and affine
-    label_img = check_niimg(label_img)
-    label_data = label_img.get_data()
-    label_affine = label_img.get_affine()
+    labels_img = check_niimg(labels_img)
+    labels_data = labels_img.get_data()
+    labels_affine = labels_img.get_affine()
 
     # grab number of unique values in 3d image
-    label_unique = np.unique(label_data)[1:]
+    unique_labels = set(np.unique(labels_data)) - set([background_label])
 
     # grab center of mass from parcellations and dump into coords list
     coord_list = []
-    labels_list = []
+    label_list = []
 
-    for i, cur_label in enumerate(label_unique):
-        cur_img = label_data == cur_label
+    for i, cur_label in enumerate(unique_labels):
+        cur_img = labels_data == cur_label
 
         #take the largest connected component
         volume = np.asarray(cur_img)
@@ -315,17 +319,38 @@ def find_parcellation_atlas_cut_coords(label_img):
 
         # get parcellation center of mass
         center_of_mass = ndimage.center_of_mass(volume)
-        world_coords = coord_transform(center_of_mass[0],
-                                                  center_of_mass[1],
-                                                  center_of_mass[2],
-                                                  label_affine)
+        center_coord = (center_of_mass[0],
+                        center_of_mass[1],
+                        center_of_mass[2])
+
         # dump label region and coordinates into a dictionary
-        coord_list.append((world_coords[0],
-                       world_coords[1],
-                       world_coords[2]))
+        label_list.append(cur_label)
+        coord_list.append((center_coord[0],
+                           center_coord[1],
+                           center_coord[2]))
 
-        labels_list.append(i)
+    # transform coordinates
+    world_coords = [np.asarray(coord_transform(i[0],i[1],i[2],labels_affine)) for i in coord_list]
+
+    return label_list, world_coords
 
 
-    return labels_list, coord_list
+def find_probabilistic_atlas_cut_coords(label_img):
+    """ Grab coordinates of center probabolistic atlas 4D image
+
+    Parameters
+    ----------
+    label_img: 4D Nifti1Image
+        A probabilistic brain atlas
+
+    Returns
+    -------
+    coords: list
+       center coordinates for each label region of the probabilistic atlas
+    """
+
+    label_img = check_niimg(label_img)
+    label_imgs = iter_img(label_img)
+    coords = [find_xyz_cut_coords(img) for img in label_imgs]
+    return coords
 
