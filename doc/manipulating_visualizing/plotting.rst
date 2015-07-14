@@ -59,7 +59,10 @@ different heuristics to find cutting coordinates.
 
 |plot_glass_brain|   :func:`plot_glass_brain`
                      |hack|
-                     Glass brain visualization
+                     Glass brain visualization. By default plots maximum
+					 intensity projection of the absolute values. To plot
+					 positive and negative values set plot_abs parameter to
+					 False.
 
 |plot_stat_map|      :func:`plot_stat_map`
                      |hack|
