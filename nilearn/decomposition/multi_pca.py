@@ -10,7 +10,9 @@ import nibabel
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
+
 from sklearn.utils.validation import check_random_state
+
 from sklearn.linear_model import LinearRegression
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
@@ -394,6 +396,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         """ Sort components by score obtained on test set imgs
         """
         score = self.score(imgs, confounds, per_component=True).mean(axis=0)
+        self.score_ = -np.sort(-score)
         self.components_ = self.components_[np.argsort(-score)]
 
     def score(self, imgs, confounds=None, per_component=False):
@@ -467,8 +470,13 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
             residual_variance = lr.fit(self.components_.T, data.T).residues_.sum()
         else:
             # Per-component score : residues of projection onto each map
-            residual_variance = np.array([lr.fit(self.components_.T[:, i][:, np.newaxis], data.T).residues_.sum()
-                                         for i in range(self.n_components)])
+            residual_variance = np.zeros(self.n_components)
+            for i in range(self.n_components):
+                if np.any(self.components_[i]):
+                    residual_variance[i] = lr.fit(self.components_.T[:, i][:, np.newaxis], data.T).residues_.sum()
+                else:
+                    # Setting score to 0 is component is empty
+                    residual_variance = full_var
         res = np.maximum(0., 1. - residual_variance / full_var)
         return res
 

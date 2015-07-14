@@ -122,3 +122,4 @@ def test_sorted():
     multi_pca.fit(data)
     score = multi_pca.score(data, per_component=True).mean(axis=0)
     assert_equal(score, -np.sort(-score))
+    assert_equal(score, multi_pca.score_)
