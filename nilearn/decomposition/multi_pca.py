@@ -11,6 +11,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 from sklearn.utils.validation import check_random_state
+
 from sklearn.linear_model import LinearRegression
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
@@ -328,8 +329,9 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             data = subject_pcas[0]
             variance = subject_svd_vals[0]
+
         self.components_ = data
-        self.variance_ = variance
+        self.explained_variance_ratio_ = variance ** 2 / np.sum(variance ** 2)
 
         return self
 
@@ -406,16 +408,18 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
             Holds the score for each subjects. Score is two dimensional if per_component is True. First dimension
             is squeezed if the number of subjects is one
         """
-        data, affine = self._cache(
+        if not isinstance(imgs, tuple) and not isinstance(imgs, list):
+            imgs = [imgs]
+        data = [self._cache(
             filter_and_mask,
             func_memory_level=2,
             ignore=['verbose', 'copy'])(
-                imgs, self.mask_img_, self._get_filter_and_mask_parameters(),
+                img, self.mask_img_, self._get_filter_and_mask_parameters(),
                 memory_level=self.memory_level,
                 memory=self.memory,
                 verbose=self.verbose,
                 confounds=confounds,
-                copy=True)
+                copy=True)[0] for img in imgs]
         return self._score(data, per_component=per_component)
 
     def _score(self, data,
@@ -442,11 +446,12 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         if not per_component:
             residual_variance = np.array([lr.fit(self.components_.T, this_data.T).residues_.sum()
                                                   for this_data in data])
+            res = 1. - residual_variance / full_var
         else:
             # Per-component score : residues of projection onto each map
-            residual_variance = np.array([[lr.fit(self.components_.T[:, i], this_data.T).residues_.sum()
+            residual_variance = np.array([[lr.fit(self.components_.T[:, i][:, np.newaxis], this_data.T).residues_.sum()
                                          for i in range(self.n_components)]
-                                 for this_data in data])
-        res = 1. - residual_variance / full_var
+                                         for this_data in data])
+            res = np.maximum(0., 1. - residual_variance / full_var[:, np.newaxis])
         return res if len(res) > 1 else res[0]
 
