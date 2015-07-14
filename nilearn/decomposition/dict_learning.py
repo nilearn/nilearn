@@ -52,7 +52,8 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         then we apply a thresholding that will keep the n_voxels,
         more intense voxels across all the maps, n_voxels being the number
         of voxels in a brain volume. A float value indicates the
-        ratio of voxels to keep (2. means keeping 2 x n_voxels voxels).
+        ratio of voxels to keep (2. means that the maps will together
+        have 2 x n_voxels non-zero voxels ).
 
     n_init: int, optional
         The number of times the fastICA algorithm is restarted
@@ -89,7 +90,7 @@ class DictLearning(CanICA, MiniBatchDictionaryLearning, CacheMixin):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs: integer, optional
+    n_jobs: integer, optional, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 

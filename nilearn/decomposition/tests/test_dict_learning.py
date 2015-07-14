@@ -1,6 +1,5 @@
-__author__ = 'arthur'
-
 from sklearn.utils.linear_assignment_ import linear_assignment
+
 from numpy.testing import assert_array_almost_equal
 import numpy as np
 
@@ -26,6 +25,7 @@ def test_dict_learning():
 
 
 def test_component_sign():
+    # Regression test
     # We should have a heuristic that flips the sign of components in
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
