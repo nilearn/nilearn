@@ -11,11 +11,14 @@ from scipy import ndimage
 
 # Local imports
 from .._utils.ndimage import largest_connected_component
-from .._utils import new_img_like
+from .._utils import new_img_like, check_niimg
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array
+import numpy as np
+from scipy import ndimage
+
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -269,3 +272,38 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     cut_coords.sort()
 
     return _transform_cut_coords(cut_coords, direction, affine)
+
+
+
+def get_parcellation_coordinates(label_img):
+    # grab data and affine
+    label_img = check_niimg(label_img)
+    label_data = label_img.get_data()
+    label_affine = label_img.get_affine()
+
+    # grab number of unique values in 3d image
+    label_unique = np.unique(label_data)[1:]
+
+    # grab center of mass from parcellations and dump into coords list
+    coord_list = []
+    for cur_label in label_unique:
+        cur_img = label_data == cur_label
+
+        #take the largest connected component
+        volume = np.asarray(cur_img)
+        labels, label_nb = ndimage.label(volume)
+        if label_nb == 1:
+            volume = volume.astype(np.bool)
+
+        # get parcellation center of mass
+        center_of_mass = ndimage.center_of_mass(volume)
+        world_coords = coord_transform(center_of_mass[0],
+                                                  center_of_mass[1],
+                                                  center_of_mass[2],
+                                                  label_affine)
+
+        coord_list.append((world_coords[0],
+                           world_coords[1],
+                           world_coords[2]))
+
+    return coord_list
