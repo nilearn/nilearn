@@ -284,6 +284,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     background_label: int, optional (default 0)
         Label value used in labels_img to represent background.
 
+
     return_label_names: boolean, optional (default False)
         Returns list of labels
 
