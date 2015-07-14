@@ -284,7 +284,6 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     background_label: int, optional (default 0)
         Label value used in labels_img to represent background.
 
-
     return_label_names: boolean, optional (default False)
         Returns list of labels
 
@@ -301,12 +300,13 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         Label region.
     """
 
-    # Grab data and affine
-    labels_img = reorder_img(check_niimg_3d(labels_img))
+
+    # grab data and affine
+    labels_img = check_niimg(labels_img)
     labels_data = labels_img.get_data()
     labels_affine = labels_img.get_affine()
 
-    # Grab number of unique values in 3d image
+    # grab number of unique values in 3d image
     unique_labels = set(np.unique(labels_data)) - set([background_label])
 
     # Loop over parcellation labels, grab center of mass and dump into coords list
@@ -359,3 +359,24 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         return np.array(coords), label_list
     else:
         return np.array(coords)
+
+
+def find_probabilistic_atlas_cut_coords(label_img):
+    """ Grab coordinates of center probabolistic atlas 4D image
+
+    Parameters
+    ----------
+    label_img: 4D Nifti1Image
+        A probabilistic brain atlas
+
+    Returns
+    -------
+    coords: list
+       center coordinates for each label region of the probabilistic atlas
+    """
+
+    label_img = check_niimg(label_img)
+    label_imgs = iter_img(label_img)
+    coords = [find_xyz_cut_coords(img) for img in label_imgs]
+    return coords
+
