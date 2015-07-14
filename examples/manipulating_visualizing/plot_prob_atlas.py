@@ -23,27 +23,38 @@ parameters.
 print('--- Loading 4D Atlas Maps---')
 from nilearn import datasets
 
-#### Harvard Oxford Atlas ####
+# Harvard Oxford Atlas
 harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
-#### Multi Subject Dictionary Learning Atlas ####
+harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford('sub-prob-2mm')
+
+# Multi Subject Dictionary Learning Atlas
 msdl = datasets.fetch_atlas_msdl()
-#### Smith ICA Atlas and Brain Maps 2009 ####
+
+# Smith ICA Atlas and Brain Maps 2009
 smith = datasets.fetch_atlas_smith_2009()
-#### Craddock Parcellations 2012 ####
-craddock = datasets.fetch_atlas_craddock_2012()
+
+# ICBM tissue probability
+icbm = datasets.fetch_icbm152_2009()
 
 # Visualization
 print('--- Visualizing ---')
 import matplotlib.pyplot as plt
 from nilearn import plotting
 
-display_types = ['contours', 'filled_contours', 'continuous']
-atlas_types = [harvard_oxford.maps, msdl.maps, smith.rsn10, craddock.scorr_2level]
-atlas_names = ['Harvard_Oxford', 'MSDL', 'Smith2009', 'Craddock2012']
+atlas_types = [harvard_oxford.maps, harvard_oxford_sub.maps,
+               msdl.maps, smith.rsn10,
+               smith.rsn20, smith.rsn70, smith.bm10,
+               smith.bm20, smith.bm70,
+               (icbm['wm'], icbm['gm'], icbm['csf'])]
+atlas_names = ['Harvard_Oxford', 'Harvard_Oxford sub', 'MSDL',
+               'Smith2009 10 RSNs', 'Smith2009 20 RSNs',
+               'Smith2009 70 RSNs', 'Smith2009 10 Brainmap',
+               'Smith2009 20 Brainmap', 'Smith2009 70 Brainmap',
+               'ICBM tissues']
+
 for atlas, name in zip(atlas_types, atlas_names):
-    for option in display_types:
-        plotting.img_plotting.plot_prob_atlas(atlas, view_type=option,
-                                              title='%s as %s' % (name, option))
+        plotting.img_plotting.plot_prob_atlas(atlas,
+                                              title='%s' % name)
 
 plt.show()
 
