@@ -8,7 +8,6 @@ DictLearning
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
-
 from sklearn.decomposition import dict_learning_online
 
 from .._utils import as_ndarray
@@ -152,7 +151,7 @@ class DictLearning(CanICA, CacheMixin):
             print('[DictLearning] Learning dictionary')
         self.components_, _ = self._cache(dict_learning_online, func_memory_level=2)(
             self.data_flat_.T,
-            n_components=self.n_components,
+            self.n_components,
             alpha=self.alpha,
             n_iter=self.n_iter, batch_size=10,
             method='lars',
