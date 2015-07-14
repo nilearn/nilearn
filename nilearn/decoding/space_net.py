@@ -16,10 +16,8 @@ import numbers
 import time
 import sys
 from functools import partial
-
 import numpy as np
 from scipy import stats, ndimage
-
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel
@@ -27,6 +25,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
+from .._utils.compat import _basestring
 from ..input_data import NiftiMasker
 from .._utils.fixes import center_data, LabelBinarizer, atleast2d_or_csr
 from .objective_functions import _unmask
@@ -706,7 +705,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         self.check_params()
 
         # sanitize object's memory
-        if self.memory is None or isinstance(self.memory, basestring):
+        if self.memory is None or isinstance(self.memory, _basestring):
             self.memory_ = Memory(self.memory,
                                   verbose=max(0, self.verbose - 1))
         else:
