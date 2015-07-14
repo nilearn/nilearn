@@ -10,9 +10,9 @@ import itertools
 from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
-from .niimg import _safe_get_data, load_niimg, new_img_like
-from .compat import _basestring, izip
-from .exceptions import DimensionError
+from .niimg import _safe_get_data, load_niimg
+from ..image import new_img_like
+from .compat import _basestring
 
 
 def _check_fov(img, affine, shape):
