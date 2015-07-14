@@ -26,4 +26,5 @@ predicting an output value.
    decoding_simulated.rst
    space_net.rst
    searchlight.rst
+   space_net.rst
 
