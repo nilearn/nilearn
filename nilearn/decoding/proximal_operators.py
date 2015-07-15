@@ -126,6 +126,9 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     init : array of shape shape as im
         Starting point for the optimization.
 
+    check_gap_frequency : int, optional (default 4)
+        Frequency at which duality gap is checked for convergence.
+
     Returns
     -------
     out : ndarray
@@ -277,6 +280,12 @@ def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
 
     init : ndarray, shape (w_size - 1,), optional (default None)
         Initialization vector for the prox.
+
+    max_iter : int
+        Maximum number of iterations for the solver.
+
+    verbose : int, optional (default 0)
+        Verbosity level.
 
     dgap_tol : float
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
