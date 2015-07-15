@@ -244,7 +244,8 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     return out
 
 
-def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs):
+def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
+                     gallery_conf, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory.
     """
     if not directory == '.':
@@ -254,11 +255,11 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
         src_dir = examples_dir
         target_dir = gallery_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print( 80 * '_')
+        print(80 * '_')
         print ('Example directory %s does not have a README.txt file' %
                src_dir)
-        print( 'Skipping this directory')
-        print( 80 * '_')
+        print('Skipping this directory')
+        print(80 * '_')
         return
 
     fhindex.write("""
@@ -274,7 +275,8 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
-            backrefs = generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery)
+            backrefs = generate_file_rst(fname, target_dir, src_dir,
+                                         gallery_conf, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
             fhindex.write(_thumbnail_div(directory, directory, fname, snippet))
@@ -287,7 +289,8 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
 
 """ % (directory, fname[:-3]))
             for backref in backrefs:
-                include_path = os.path.join(gallery_conf['mod_example_dir'], '%s.examples' % backref)
+                include_path = os.path.join(gallery_conf['mod_example_dir'],
+                                            '%s.examples' % backref)
                 seen = backref in seen_backrefs
                 with open(include_path, 'a' if seen else 'w') as ex_file:
                     if not seen:
@@ -297,8 +300,10 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
                         print('-----------------%s--' % ('-' * len(backref)),
                               file=ex_file)
                         print(file=ex_file)
-                    rel_dir = os.path.join(gallery_conf['gallery_dir'], directory)
-                    ex_file.write(_thumbnail_div(directory, rel_dir, fname, snippet))
+                    rel_dir = os.path.join(gallery_conf['gallery_dir'],
+                                           directory)
+                    ex_file.write(_thumbnail_div(directory, rel_dir, fname,
+                                                 snippet))
                     seen_backrefs.add(backref)
 
     fhindex.write("""
@@ -317,6 +322,9 @@ def make_thumbnail(in_fname, out_fname, width, height):
         from PIL import Image
     except ImportError:
         import Image
+    except IOError:
+        # something faulted; don't ruin the whole "make doc" process
+        return
     img = Image.open(in_fname)
     width_in, height_in = img.size
     scale_w = width / float(width_in)
@@ -345,7 +353,8 @@ def make_thumbnail(in_fname, out_fname, width, height):
         try:
             subprocess.call(["optipng", "-quiet", "-o", "9", out_fname])
         except Exception:
-            warnings.warn('Install optipng to reduce the size of the generated images')
+            warnings.warn(
+                'Install optipng to reduce the size of the generated images')
 
 
 def get_short_module_name(module_name, obj_name):
@@ -534,8 +543,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
                 #    incrementally: 1, 2, 3 and not 1, 2, 5)
                 # * iterate over [fig_mngr.num for fig_mngr in
                 #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
-                fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
-                for fig_mngr in fig_managers:
+                fig_mngrs = matplotlib._pylab_helpers.Gcf.get_all_fig_managers(
+                )
+                for fig_mngr in fig_mngrs:
                     # Set the fig_num figure as the current figure as we can't
                     # save a figure that's not the current figure.
                     fig = plt.figure(fig_mngr.num)
@@ -571,7 +581,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        make_thumbnail(sphinxgallery.path_static()+'/no_image.png', thumb_file, 200, 140)
+        make_thumbnail(sphinxgallery.path_static() + '/no_image.png',
+                       thumb_file, 200, 140)
 
     docstring, short_desc, end_row = extract_docstring(example_file)
 

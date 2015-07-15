@@ -1,5 +1,5 @@
 """
-Plotting code for nilearn
+Plotting code for nilearn.
 """
 # Authors: Chris Filo Gorgolewski, Gael Varoquaux
 

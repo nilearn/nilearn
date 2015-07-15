@@ -787,7 +787,7 @@ def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Craddock 2012 parcellation
+    """Download and return file names for the Craddock 2012 parcellation.
 
     The provided images are in MNI152 space.
 
@@ -945,7 +945,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load the ICBM152 template (dated 2009)
+    """Download and load the ICBM152 template (dated 2009).
 
     Parameters
     ----------
@@ -1035,7 +1035,7 @@ def fetch_smith_2009(data_dir=None, mirror='origin', url=None, resume=True,
 
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
-    """Download and load the Smith ICA and BrainMap atlas (dated 2009)
+    """Download and load the Smith ICA and BrainMap atlas (dated 2009).
 
     Parameters
     ----------
@@ -1043,9 +1043,9 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     mirror: string, optional
-        By default, the dataset is downloaded from the original website of the atlas.
-        Specifying "nitrc" will force download from a mirror, with potentially
-        higher bandwith.
+        By default, the dataset is downloaded from the original website of the
+        atlas. Specifying "nitrc" will force download from a mirror, with
+        potentially higher bandwith.
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
 
@@ -1211,7 +1211,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load an example haxby dataset
+    """Download and load an example haxby dataset.
 
     Parameters
     ----------
@@ -1276,7 +1276,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                 url=None, resume=True, verbose=1):
-    """Download and loads complete haxby dataset
+    """Download and loads complete haxby dataset.
 
     Parameters
     ----------
@@ -2632,7 +2632,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     band_pass_filtering=False, global_signal_regression=False,
                     derivatives=['func_preproc'],
                     quality_checked=True, url=None, verbose=1, **kwargs):
-    """ Fetch ABIDE dataset
+    """ Fetch ABIDE dataset.
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed

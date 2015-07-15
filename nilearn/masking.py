@@ -1,5 +1,5 @@
 """
-Utilities to compute and operate on brain masks
+Utilities to compute and operate on brain masks.
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
