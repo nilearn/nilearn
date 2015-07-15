@@ -37,9 +37,10 @@ from . import cm
 # Core, usage-agnostic functions
 
 def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_min_stat_map_value=None):
-# make sure that the color range is symmetrical
+    """ Internal function for setting value limits for plot_stat_map and plot_glass_brain
+    """
+    # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
-        stat_map_img = _utils.check_niimg_3d(stat_map_img)
         stat_map_data = stat_map_img.get_data()
     # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):
@@ -73,7 +74,7 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_
             cbar_vmax = stat_map_max
     else:
         cbar_vmin, cbar_vmax = None, None
-    return cbar_vmin, cbar_vmax, stat_map_img, vmin, vmax
+    return cbar_vmin, cbar_vmax, vmin, vmax
 
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       output_file=None, display_mode='ortho',
@@ -675,10 +676,12 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
     
-    cbar_vmin, cbar_vmax, stat_map_img, vmin, vmax = _get_plot_stat_map_params(stat_map_img, 
-                                                                     vmax, 
-                                                                     symmetric_cbar, 
-                                                                     kwargs)
+    stat_map_img = _utils.check_niimg_3d(stat_map_img)
+    
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img, 
+                                                                 vmax, 
+                                                                 symmetric_cbar, 
+                                                                 kwargs)
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                 cut_coords=cut_coords,
@@ -778,17 +781,18 @@ def plot_glass_brain(stat_map_img,
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
     
     if stat_map_img:
+        stat_map_img = _utils.check_niimg_3d(stat_map_img)
         if plot_abs:
-            cbar_vmin, cbar_vmax, stat_map_img, vmin, vmax = _get_plot_stat_map_params(stat_map_img, 
-                                                                                       vmax, 
-                                                                                       symmetric_cbar, 
-                                                                                       kwargs, 
-                                                                                       0)
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img, 
+                                                                         vmax, 
+                                                                         symmetric_cbar, 
+                                                                         kwargs, 
+                                                                         0)
         else:
-            cbar_vmin, cbar_vmax, stat_map_img, vmin, vmax = _get_plot_stat_map_params(stat_map_img, 
-                                                                                       vmax, 
-                                                                                       symmetric_cbar, 
-                                                                                       kwargs)
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img, 
+                                                                         vmax, 
+                                                                         symmetric_cbar, 
+                                                                         kwargs)
     else:
         cbar_vmin, cbar_vmax = None, None
 
