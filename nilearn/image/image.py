@@ -13,13 +13,11 @@ from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
-from .resampling import reorder_img
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img
-from .._utils.niimg import new_img_like, _safe_get_data
+from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
-from .. import masking
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -71,6 +69,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         ========
         nilearn.signal.high_variance_confounds
     """
+    from .. import masking
 
     if mask_img is not None:
         sigs = masking.apply_mask(imgs, mask_img)
@@ -485,6 +484,7 @@ def swap_img_hemispheres(img):
 
     Note that this does not require a change of the affine matrix.
     """
+    from .resampling import reorder_img
 
     # Check input is really a path to a nifti file or a nifti object
     img = check_niimg_3d(img)
