@@ -29,19 +29,20 @@ def _prox_l1_with_intercept(x, tau):
 
 
 def _projector_on_tvl1_dual(grad, l1_ratio):
-    """
-    modifies IN PLACE the gradient + id to project it
+    """Function to compute TV-l1 duality gap.
+
+    Modifies IN PLACE the gradient + id to project it
     on the l21 unit ball in the gradient direction and the L1 ball in the
-    identity direction
+    identity direction.
     """
 
     # The l21 ball for the gradient direction
     if l1_ratio < 1.:
+        # infer number of axes and include an additional axis if l1_ratio > 0
         end = len(grad) - int(l1_ratio > 0.)
         norm = np.sqrt(np.sum(grad[:end] * grad[:end], 0))
         norm.clip(1., out=norm)  # set everythx < 1 to 1
-        for grad_comp in grad[:end]:
-            grad_comp /= norm
+        for grad_comp in grad[:end]: grad_comp /= norm
 
     # The L1 ball for the identity direction
     if l1_ratio > 0.:
