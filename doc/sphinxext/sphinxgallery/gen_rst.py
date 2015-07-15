@@ -322,7 +322,9 @@ def make_thumbnail(in_fname, out_fname, width, height):
         from PIL import Image
     except ImportError:
         import Image
-    except IOError
+    except IOError:
+        # something faulted; don't ruin the whole "make doc" process
+        return
     img = Image.open(in_fname)
     width_in, height_in = img.size
     scale_w = width / float(width_in)
