@@ -5,7 +5,7 @@ from math import sqrt, exp, log, cosh, sinh
 import numpy as np
 from scipy import linalg
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from nose.tools import assert_raises, assert_equal, assert_is_instance, \
+from nose.tools import assert_raises, assert_equal, assert_true,\
     assert_greater, assert_greater_equal
 
 from nilearn._utils.extmath import is_spd
@@ -257,7 +257,7 @@ def test_geometric_mean_properties():
     gmean = _geometric_mean(spds)
 
     # Generic
-    assert_is_instance(spds, list)
+    assert_true(isinstance(spds, list))
     for spd, input_spd in zip(spds, input_spds):
         assert_array_equal(spd, input_spd)
     assert(is_spd(gmean, decimal=7))
@@ -425,7 +425,7 @@ def test_fit_transform():
         covs_transformed = cov_embedding.fit_transform(signals)
 
         # Generic
-        assert_is_instance(covs_transformed, np.ndarray)
+        assert_true(isinstance(covs_transformed, np.ndarray))
         assert_equal(len(covs_transformed), len(covs))
 
         for k, vec in enumerate(covs_transformed):
