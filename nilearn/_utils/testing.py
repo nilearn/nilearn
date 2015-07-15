@@ -175,8 +175,8 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
 
 
 class FetchFilesMock (object):
-    _mock_fetch_files = functools.partial(datasets._fetch_files,
-                                          mock=True)
+    from nilearn.datasets.utils import _fetch_files
+    _mock_fetch_files = functools.partial(_fetch_files, mock=True)
 
     def __init__(self):
         """Create a mock that can fill a CSV file if needed
