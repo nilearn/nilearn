@@ -5,6 +5,8 @@ DictLearning
 # Author: Arthur Mensch
 # License: BSD 3 clause
 
+from distutils.version import LooseVersion
+
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
@@ -149,6 +151,11 @@ class DictLearning(CanICA, CacheMixin):
 
         if self.verbose:
             print('[DictLearning] Learning dictionary')
+        parameters = {}
+        if LooseVersion(sklearn.__version__).version > [0, 12]:
+            parameters['chunk_size'] = 10
+        else:
+            parameters['batch_size'] = 10
         self.components_, _ = self._cache(dict_learning_online, func_memory_level=2)(
             self.data_flat_.T,
             self.n_components,
@@ -159,7 +166,7 @@ class DictLearning(CanICA, CacheMixin):
             verbose=max(0, self.verbose - 1),
             random_state=self.random_state,
             shuffle=True,
-            n_jobs=1)
+            n_jobs=1, **parameters)
         self.components_ = self.components_.T
         if self.verbose:
             print('')
