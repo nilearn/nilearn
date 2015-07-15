@@ -10,9 +10,9 @@
 
 .. _space_net.rst:
 
-======================================
-Multi-variate decoding with SpaceNet
-======================================
+=====================================
+Multivariate decoding with SpaceNet
+=====================================
 
 The SpaceNet decoder
 --------------------
