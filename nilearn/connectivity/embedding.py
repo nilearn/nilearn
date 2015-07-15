@@ -9,7 +9,7 @@ from sklearn.covariance import EmpiricalCovariance
 from .._utils.extmath import is_spd
 
 
-def check_mat(mat, prop):
+def _check_mat(mat, prop):
     """Raise a ValueError if the input matrix does not satisfy the property.
 
     Parameters
@@ -33,7 +33,7 @@ def check_mat(mat, prop):
             raise ValueError('Expected a symmetric positive definite matrix.')
 
 
-def map_eig(function, vals, vecs):
+def _map_eig(function, vals, vecs):
     """Return the symmetric matrix with eigenvectors vecs and eigenvalues
     obtained by applying the function to vals.
 
@@ -57,7 +57,7 @@ def map_eig(function, vals, vecs):
     return np.dot(vecs * function(vals), vecs.T)
 
 
-def map_sym(function, sym):
+def _map_sym(function, sym):
     """Matrix function, for real symmetric matrices. The function is applied
     to the eigenvalues of sym.
 
@@ -80,20 +80,23 @@ def map_sym(function, sym):
     be wrong.
     """
     vals, vecs = linalg.eigh(sym)
-    return map_eig(function, vals, vecs)
+    return _map_eig(function, vals, vecs)
 
 
-def geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
+def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     """Compute the geometric mean of symmetric positive definite matrices.
 
-    The geometric mean is the minimizer of the sum of squared distances from an
-    arbitrary matrix to each input matrix in the manifold of symmetric positive
-    definite matrices.
+    The geometric mean of n positive definite matrices
+    M_1, ..., M_n is the minimizer of the sum of squared distances from an
+    arbitrary matrix to each input matrix M_k
 
-    Minimization of the objective function is done by an intrinsic gradient
-    descent in the manifold: moving from the current point to the next one
-    along a short geodesic arc in the opposite direction of the
-    covariant derivative.
+    gmean(M_1, ..., M_n) = argmin_X sum_{k=1}^N dist(X, M_k)^2
+
+    where the used distance is related to matrices logarithm
+
+    dist(X, M_k) = ||log(X^{-1/2} M_k X^{-1/2)}||
+
+    In case of positive numbers, this mean is the usual geometric mean.
 
     See Algorithm 3 of:
         P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
@@ -118,27 +121,27 @@ def geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
     Returns
     -------
-    geo : numpy.ndarray, shape (n_features, n_features)
+    gmean : numpy.ndarray, shape (n_features, n_features)
         Geometric mean of the matrices.
     """
     # Shape and symmetry positive definiteness checks
     n_features = mats[0].shape[0]
     for mat in mats:
-        check_mat(mat, 'square')
+        _check_mat(mat, 'square')
         if mat.shape[0] != n_features:
             raise ValueError("Matrices are not of the same shape.")
-        check_mat(mat, 'spd')
+        _check_mat(mat, 'spd')
 
     # Initialization
     mats = np.array(mats)
     if init is None:
-        geo = np.mean(mats, axis=0)
+        gmean = np.mean(mats, axis=0)
     else:
-        check_mat(init, 'square')
+        _check_mat(init, 'square')
         if init.shape[0] != n_features:
             raise ValueError("Initialization has not the correct shape.")
-        check_mat(init, 'spd')
-        geo = init
+        _check_mat(init, 'spd')
+        gmean = init
 
     norm_old = np.inf
     step = 1.
@@ -146,24 +149,25 @@ def geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     # Gradient descent
     for n in range(max_iter):
         # Computation of the gradient
-        vals_geo, vecs_geo = linalg.eigh(geo)
-        geo_inv_sqrt = map_eig(np.sqrt, 1. / vals_geo, vecs_geo)
-        whitened_mats = [geo_inv_sqrt.dot(mat).dot(geo_inv_sqrt)
-            for mat in mats]
-        logs = [map_sym(np.log, w_mat) for w_mat in whitened_mats]
+        vals_gmean, vecs_gmean = linalg.eigh(gmean)
+        gmean_inv_sqrt = _map_eig(np.sqrt, 1. / vals_gmean, vecs_gmean)
+        whitened_mats = [gmean_inv_sqrt.dot(mat).dot(gmean_inv_sqrt)
+                         for mat in mats]
+        logs = [_map_sym(np.log, w_mat) for w_mat in whitened_mats]
         logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
-                                           # - geo.dot(logms_mean)
+                                           # - gmean.dot(logms_mean)
         if np.any(np.isnan(logs_mean)):
             raise FloatingPointError("Nan value after logarithm operation.")
 
         norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
-                                          # the tangent space at point geo
+                                          # the tangent space at point gmean
 
         # Update of the minimizer
         vals_log, vecs_log = linalg.eigh(logs_mean)
-        geo_sqrt = map_eig(np.sqrt, vals_geo, vecs_geo)
-        geo = geo_sqrt.dot(map_eig(np.exp, vals_log * step, vecs_log)).dot(
-            geo_sqrt)  # Move along the geodesic with step size step
+        gmean_sqrt = _map_eig(np.sqrt, vals_gmean, vecs_gmean)
+        # Move along the geodesic
+        gmean = gmean_sqrt.dot(
+            _map_eig(np.exp, vals_log * step, vecs_log)).dot(gmean_sqrt)
 
         # Update the norm and the step size
         if norm < norm_old:
@@ -171,68 +175,14 @@ def geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
         if norm > norm_old:
             step = step / 2.
             norm = norm_old
-        if tol is not None and norm / geo.size < tol:
+        if tol is not None and norm / gmean.size < tol:
             break
-    if tol is not None and norm / geo.size >= tol:
-        warnings.warn("Maximum number of iterations {0} reached without " \
-                      "getting to the requested tolerance level " \
+    if tol is not None and norm / gmean.size >= tol:
+        warnings.warn("Maximum number of iterations {0} reached without "
+                      "getting to the requested tolerance level "
                       "{1}.".format(max_iter, tol))
 
-    return geo
-
-
-def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
-    """Return the norm of the covariant derivative at each iteration step of
-    geometric_mean. See its docstring for details.
-
-    Norm is intrinsic norm on the tangent space of the manifold of symmetric
-    positive definite matrices.
-
-    Returns
-    -------
-    grad_norm : list of float
-        Norm of the covariant derivative in the tangent space at each step.
-    """
-    mats = np.array(mats)
-
-    # Initialization
-    if init is None:
-        geo = np.mean(mats, axis=0)
-    else:
-        geo = init
-    norm_old = np.inf
-    step = 1.
-    grad_norm = []
-    for n in range(max_iter):
-        # Computation of the gradient
-        vals_geo, vecs_geo = linalg.eigh(geo)
-        geo_inv_sqrt = map_eig(np.sqrt, 1. / vals_geo, vecs_geo)
-        whitened_mats = [geo_inv_sqrt.dot(mat).dot(geo_inv_sqrt)
-            for mat in mats]
-        logs = [map_sym(np.log, w_mat) for w_mat in whitened_mats]
-        logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
-                                           # - geo.dot(logms_mean)
-        norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
-                                          # the tangent space at point geo
-
-        # Update of the minimizer
-        vals_log, vecs_log = linalg.eigh(logs_mean)
-        geo_sqrt = map_eig(np.sqrt, vals_geo, vecs_geo)
-        geo = geo_sqrt.dot(map_eig(np.exp, vals_log * step, vecs_log)).dot(
-            geo_sqrt)  # Move along the geodesic with step size step
-
-        # Update the norm and the step size
-        if norm < norm_old:
-            norm_old = norm
-        if norm > norm_old:
-            step = step / 2.
-            norm = norm_old
-
-        grad_norm.append(norm / geo.size)
-        if tol is not None and norm / geo.size < tol:
-            break
-
-    return grad_norm
+    return gmean
 
 
 def sym_to_vec(sym, isometry=True):
@@ -302,7 +252,7 @@ def vec_to_sym(vec, isometry=True):
     return sym
 
 
-def cov_to_corr(cov):
+def _cov_to_corr(cov):
     """Return correlation matrix for a given covariance matrix.
 
     Parameters
@@ -320,7 +270,7 @@ def cov_to_corr(cov):
     return corr
 
 
-def prec_to_partial(prec):
+def _prec_to_partial(prec):
     """Return partial correlation matrix for a given precision matrix.
 
     Parameters
@@ -333,22 +283,21 @@ def prec_to_partial(prec):
     partial : 2D numpy.ndarray
         The 2D ouput partial correlation matrix.
     """
-    partial = -cov_to_corr(prec)
+    partial = -_cov_to_corr(prec)
     np.fill_diagonal(partial, 1.)
     return partial
 
 
 class CovEmbedding(BaseEstimator, TransformerMixin):
-    """Tranformer that returns the coefficients on a flat space to perform the
-    analysis.
+    """Tranformer that computes connectivity coefficients.
 
     Parameters
     ----------
     cov_estimator : estimator object, optional
         The covariance estimator.
 
-    kind : {"correlation", "partial correlation", "tangent", "precision"}, \
-        optional
+    measure : {"correlation", "partial correlation", "tangent", "covariance",
+               "precision"}, optional
         The connectivity measure.
 
     Attributes
@@ -356,26 +305,32 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
     `cov_estimator_` : estimator object
         A new covariance estimator with the same parameters as cov_estimator.
 
-    `mean_cov_` : numpy.ndarray
+    `gmean_` : numpy.ndarray
         The geometric mean of the covariance matrices.
 
     `whitening_` : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
+
+    Note
+    ----
+    For the use of "tangent" measure, see the paper:
+    G. Varoquaux et al. "Detection of brain functional-connectivity difference
+    in post-stroke patients using group-level covariance modeling, MICCAI 2010.
     """
 
     def __init__(self, cov_estimator=EmpiricalCovariance(assume_centered=True),
-                 kind='covariance'):
+                 measure='covariance'):
         self.cov_estimator = cov_estimator
-        self.kind = kind
+        self.measure = measure
 
     def fit(self, X, y=None):
-        """Fits the group sparse precision model according to the given
-        training data and parameters.
+        """Fit the covariance estimator to the given time series for each
+        subject.
 
         Parameters
         ----------
         X : list of numpy.ndarray, shapes (n_samples, n_features)
-            The input subjects.
+            The input subjects time series.
 
         Attributes
         ----------
@@ -383,12 +338,11 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
             A new covariance estimator with the same parameters as
             cov_estimator.
 
-        `mean_cov_` : numpy.ndarray
-            The geometric mean of the covariance matrices.
+        `tangent_mean_` : numpy.ndarray
+            The mean connectivity for the tangent measure.
 
         `whitening_` : numpy.ndarray
-            The inverted square-rooted geometric mean of the covariance
-            matrices.
+            The inverted square-rooted mean for the tangent measure.
 
         Returns
         -------
@@ -397,21 +351,22 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
         """
         self.cov_estimator_ = clone(self.cov_estimator)
 
-        if self.kind == 'tangent':
+        if self.measure == 'tangent':
             covs = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            self.mean_cov_ = geometric_mean(covs, max_iter=30, tol=1e-7)
-            self.whitening_ = map_sym(lambda x: 1. / np.sqrt(x),
-                                      self.mean_cov_)
+            self.tangent_mean_ = _geometric_mean(covs, max_iter=30, tol=1e-7)
+            self.whitening_ = _map_sym(lambda x: 1. / np.sqrt(x),
+                                       self.tangent_mean_)
 
         return self
 
     def transform(self, X):
-        """Apply transform to covariances.
+        """Apply transform to covariances matrices to get the connectivity
+        coefficients for the chosen measure.
 
         Parameters
         ----------
         X : list of numpy.ndarray with shapes (n_samples, n_features)
-            The input subjects.
+            The input subjects time series.
 
         Returns
         -------
@@ -421,18 +376,18 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
         """
         covs = [self.cov_estimator_.fit(x).covariance_ for x in X]
         covs = np.array(covs)
-        if self.kind == 'covariance':
+        if self.measure == 'covariance':
             pass
-        elif self.kind == 'tangent':
-            covs = [map_sym(np.log, self.whitening_.dot(c).dot(
-                            self.whitening_)) for c in covs]
-        elif self.kind == 'precision':
-            covs = [map_sym(lambda x: 1. / x, g) for g in covs]
-        elif self.kind == 'partial correlation':
-            covs = [prec_to_partial(map_sym(lambda x: 1. / x, g))
-                for g in covs]
-        elif self.kind == 'correlation':
-            covs = [cov_to_corr(g) for g in covs]
+        elif self.measure == 'tangent':
+            covs = [_map_sym(np.log, self.whitening_.dot(c).dot(
+                             self.whitening_)) for c in covs]
+        elif self.measure == 'precision':
+            covs = [_map_sym(lambda x: 1. / x, g) for g in covs]
+        elif self.measure == 'partial correlation':
+            covs = [_prec_to_partial(_map_sym(lambda x: 1. / x, g))
+                    for g in covs]
+        elif self.measure == 'correlation':
+            covs = [_cov_to_corr(g) for g in covs]
         else:
             raise ValueError("Unknown connectivity measure.")
 

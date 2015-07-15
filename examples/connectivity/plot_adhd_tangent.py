@@ -2,131 +2,106 @@
 Comparing different connectivity measures
 =========================================
 
-This example shows how to extract signals from regions defined by an atlas,
-and to estimate different connectivity measures based on these signals.
+This example compares different measures of functional connectivity between
+regions of interest.
+
 """
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-print("-- Fetching datasets ...")
+# Fetch dataset
 import nilearn.datasets
-atlas = nilearn.datasets.fetch_msdl_atlas()
+atlas = nilearn.datasets.fetch_atlas_msdl()
 dataset = nilearn.datasets.fetch_adhd()
 
-import nilearn.image
+# Extract and preprocess regions time series
 import nilearn.input_data
-
 import joblib
-mem = joblib.Memory("/home/sb238920/CODE/Parietal/nilearn/nilearn_cache/adhd")
-
-# Number of subjects to consider
-n_subjects = 40
-
-from sklearn.covariance import LedoitWolf, EmpiricalCovariance
-# Set preprocs and connectivity parameters
-sites_gmean = False  # if True, gmean is computed sperately for each site
-adhd_gmean = False  # if True, gmean is computed sperately for ADHD/controls
-cov_estimator = EmpiricalCovariance()
-standardize = True
-print('specific gmean for each site: {0}\n'
-      'specific gmean for each ADHD/controls: {1}\n'
-      'estimator: {2}\n standardize:{3}'.format(sites_gmean, adhd_gmean,
-                                                cov_estimator, standardize))
-
+mem = joblib.Memory('/home/sb238920/CODE/Parietal/nilearn/nilearn_cache/adhd')
+masker = nilearn.input_data.NiftiMapsMasker(
+    atlas.maps, resampling_target="maps", detrend=True,
+    low_pass=None, high_pass=None, t_r=2.5, standardize=False,
+    memory=mem, memory_level=1)
 subjects = []
-for subject_n in range(n_subjects):
-    filename = dataset["func"][subject_n]
-    print("Processing file %s" % filename)
+for func_file in dataset.func:
+    time_series = masker.fit_transform(func_file)
+    subjects.append(time_series)
 
-    print("-- Computing confounds ...")
-    confound_file = dataset["confounds"][subject_n]
-    hv_confounds = mem.cache(nilearn.image.high_variance_confounds)(filename)
-
-    print("-- Computing region signals ...")
-    masker = nilearn.input_data.NiftiMapsMasker(atlas["maps"],
-                                                resampling_target="maps",
-                                                memory=mem, t_r=2.5)
-
-    region_raw_ts = masker.fit_transform(filename)
-
-    # Use PSC units
-    region_psc_ts = region_raw_ts / region_raw_ts.mean(axis=0) * 100.
-    region_ts = nilearn.signal.clean(region_raw_ts, detrend=True,
-                                     low_pass=None, high_pass=.01,
-                                     t_r=2.5,
-                                     standardize=standardize,
-                                     confounds=[hv_confounds, confound_file])
-    subjects.append(region_ts)
-
-
+# Estimate connectivity matrices
 import nilearn.connectivity
-sites = np.array([k / 8 for k in range(n_subjects)])
-adhd = dataset.phenotypic['adhd'][:n_subjects]
-subjects = np.array(subjects)
-all_matrices = {}
-measures = ['correlation', 'partial correlation', 'tangent', 'correlation',
-            'precision']
+subjects_connectivity = {}
+measures = ['tangent', 'partial correlation', 'precision', 'correlation',
+            'covariance']
+mean_connectivity = {}
+from sklearn.covariance import EmpiricalCovariance
 for measure in measures:
-    estimator = {'kind': measure, 'cov_estimator': cov_estimator}
+    estimator = {'measure': measure, 'cov_estimator': EmpiricalCovariance()}
     cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
-    matrices = np.zeros((n_subjects, region_ts.shape[-1], region_ts.shape[-1]))
-    if sites_gmean:
-        for n_site in range(0, n_subjects / 8):
-            matrices[n_site * 8:(n_site + 1) * 8] = \
-                nilearn.connectivity.vec_to_sym(cov_embedding.fit_transform(
-                                    subjects[n_site * 8:(n_site + 1) * 8]))
-    elif adhd_gmean:
-        matrices[adhd == 1] = nilearn.connectivity.vec_to_sym(
-            cov_embedding.fit_transform(
-                subjects[adhd == 1]))
-        matrices[adhd == 0] = nilearn.connectivity.vec_to_sym(
-            cov_embedding.fit_transform(
-                subjects[adhd == 0]))
+    subjects_connectivity[measure] = nilearn.connectivity.vec_to_sym(
+        cov_embedding.fit_transform(subjects))
+    # Compute the mean connectivity across all subjects
+    if measure == 'tangent':
+        mean_connectivity[measure] = cov_embedding.tangent_mean_
     else:
-        matrices = nilearn.connectivity.vec_to_sym(
-            cov_embedding.fit_transform(subjects))
-    all_matrices[measure] = matrices
+        mean_connectivity[measure] = \
+            subjects_connectivity[measure].mean(axis=0)
 
+# Plot the mean connectivity
+import numpy as np
+import nilearn.plotting
+labels = np.recfromcsv(atlas.labels)
+region_coords = np.vstack((labels['x'], labels['y'], labels['z'])).T
+for measure in ['tangent', 'correlation', 'partial correlation']:
+    nilearn.plotting.plot_connectome(mean_connectivity[measure], region_coords,
+                                     edge_threshold='98%',
+                                     title='mean %s' % measure)
 
-# Classify sites and ADHD/controls
+# Plot a connectivity matrix for one subject
+import matplotlib.pyplot as plt
+subject_n = 28
+plt.figure()
+plt.imshow(subjects_connectivity['correlation'][subject_n],
+           interpolation="nearest", vmin=-1., vmax=1.)
+plt.title('subject %d, correlation' % subject_n)
+
+# Get site and ADHD/control label for each subject
+adhds = dataset.phenotypic['adhd']
+sites = ['"Peking"' if 'Peking' in site else site for site in
+         dataset.phenotypic['site']]  # Group Peking sites
+
+# Use connectivity coefficients to classify ADHD vs controls
 from sklearn.svm import LinearSVC
-from sklearn.lda import LDA
+from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import RidgeClassifier
 from sklearn.cross_validation import StratifiedShuffleSplit, cross_val_score
-both = sites * 2 + adhd
-clfs = [LinearSVC(random_state=0), LDA()] + [KNeighborsClassifier(
-    n_neighbors=n_neighbors) for n_neighbors in range(1, 6)]
-clf_names = ['SVM', 'LDA'] + ['KNN n={}'.format(n) for n in range(1, 6)]
-cv = StratifiedShuffleSplit(both, n_iter=1000, test_size=0.33, random_state=0)
-for classes, prediction in zip([sites, adhd], ['sites', 'ADHD/controls']):
-    print('-- {} classification ...'.format(prediction))
-    scores = {}
-    for measure in measures:
-        scores[measure] = {}
-        for clf, clf_name in zip(clfs, clf_names):
-            coefs_vec = nilearn.connectivity.embedding.sym_to_vec(
-                all_matrices[measure])
-            scores[measure][clf_name] = cross_val_score(
-                clf, coefs_vec, classes, cv=cv, scoring='accuracy')
-            print(' {0}, classifier {1}: score is {2:.2f} +- {3:.2f}'.format(
-                  measure, clf_name, scores[measure][clf_name].mean(),
-                  scores[measure][clf_name].std()))
+classifiers = [LinearSVC(), KNeighborsClassifier(n_neighbors=1),
+               LogisticRegression(), GaussianNB(), RidgeClassifier()]
+classifier_names = ['SVM', 'KNN', 'logistic', 'GNB', 'ridge']
+classes = [site + str(adhd) for site, adhd in zip(sites, adhds)]
+cv = StratifiedShuffleSplit(classes, n_iter=1000, test_size=0.33)
+scores = {}
+for measure in measures:
+    scores[measure] = {}
+    print('---------- %20s ----------' % measure)
+    for classifier, classifier_name in zip(classifiers, classifier_names):
+        coefs_vec = nilearn.connectivity.embedding.sym_to_vec(
+            subjects_connectivity[measure])
+        scores[measure][classifier_name] = cross_val_score(
+            classifier, coefs_vec, adhds, cv=cv, scoring='accuracy')
+        print(' %14s score: %1.2f +- %1.2f' % (classifier_name,
+              scores[measure][classifier_name].mean(),
+              scores[measure][classifier_name].std()))
 
-    plt.figure()
-    tick_position = np.arange(len(clfs))
-    plt.xticks(tick_position + 0.4, clf_names)
-    for color, measure in zip('kcgbr', measures):
-        score_means = [scores[measure][clf_name].mean() for clf_name in
-                       clf_names]
-        score_stds = [scores[measure][clf_name].std() for clf_name in
-                      clf_names]
-        plt.bar(tick_position, score_means, yerr=score_stds, label=measure,
-                color=color, width=.2)
-        tick_position = tick_position + .15
-    plt.ylabel('Classification accuracy')
-    plt.legend(measures)
-    plt.title('{0}, standardize={1}\n estimator:{2}'.format(prediction,
-                  standardize, cov_estimator))
-
+# Display the classification scores
+plt.figure()
+tick_position = np.arange(len(classifiers))
+plt.xticks(tick_position + 0.35, classifier_names)
+for color, measure in zip('rgbyk', measures):
+    score_means = [scores[measure][classifier_name].mean() for classifier_name
+                   in classifier_names]
+    plt.bar(tick_position, score_means, label=measure, color=color, width=.2)
+    tick_position = tick_position + .15
+plt.ylabel('Classification accuracy')
+plt.legend(measures, loc='upper left')
+plt.ylim([0., 1.])
 plt.show()

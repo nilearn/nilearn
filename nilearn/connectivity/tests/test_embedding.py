@@ -8,22 +8,75 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nose.tools import assert_raises, assert_equal, assert_is_instance, \
     assert_greater, assert_greater_equal
 
-from nilearn._utils.testing import is_spd
-from nilearn.connectivity.embedding import check_mat, map_sym, map_eig, \
-    geometric_mean, grad_geometric_mean, sym_to_vec, vec_to_sym, \
-    prec_to_partial, CovEmbedding
+from nilearn._utils.extmath import is_spd
+from nilearn.connectivity.embedding import _check_mat, _map_sym, _map_eig, \
+    _geometric_mean, sym_to_vec, vec_to_sym, _prec_to_partial, CovEmbedding
+
+
+def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
+    """Return the norm of the covariant derivative at each iteration step of
+    geometric_mean. See its docstring for details.
+
+    Norm is intrinsic norm on the tangent space of the manifold of symmetric
+    positive definite matrices.
+
+    Returns
+    -------
+    grad_norm : list of float
+        Norm of the covariant derivative in the tangent space at each step.
+    """
+    mats = np.array(mats)
+
+    # Initialization
+    if init is None:
+        gmean = np.mean(mats, axis=0)
+    else:
+        gmean = init
+    norm_old = np.inf
+    step = 1.
+    grad_norm = []
+    for n in range(max_iter):
+        # Computation of the gradient
+        vals_gmean, vecs_gmean = linalg.eigh(gmean)
+        gmean_inv_sqrt = _map_eig(np.sqrt, 1. / vals_gmean, vecs_gmean)
+        whitened_mats = [gmean_inv_sqrt.dot(mat).dot(gmean_inv_sqrt)
+                         for mat in mats]
+        logs = [_map_sym(np.log, w_mat) for w_mat in whitened_mats]
+        logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
+                                           # - gmean.dot(logms_mean)
+        norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
+                                          # the tangent space at point gmean
+
+        # Update of the minimizer
+        vals_log, vecs_log = linalg.eigh(logs_mean)
+        gmean_sqrt = _map_eig(np.sqrt, vals_gmean, vecs_gmean)
+        gmean = gmean_sqrt.dot(
+            _map_eig(np.exp, vals_log * step, vecs_log)).dot(gmean_sqrt)
+
+        # Update the norm and the step size
+        if norm < norm_old:
+            norm_old = norm
+        if norm > norm_old:
+            step = step / 2.
+            norm = norm_old
+
+        grad_norm.append(norm / gmean.size)
+        if tol is not None and norm / gmean.size < tol:
+            break
+
+    return grad_norm
 
 
 def test_check_mat():
     """Test check_mat function"""
     non_square = np.ones((2, 3))
-    assert_raises(ValueError, check_mat, non_square, 'square')
+    assert_raises(ValueError, _check_mat, non_square, 'square')
 
     non_sym = np.array([[0, 1], [0, 0]])
-    assert_raises(ValueError, check_mat, non_sym, 'symmetric')
+    assert_raises(ValueError, _check_mat, non_sym, 'symmetric')
 
     non_spd = np.ones((3, 3))
-    assert_raises(ValueError, check_mat, non_spd, 'spd')
+    assert_raises(ValueError, _check_mat, non_spd, 'spd')
 
 
 def test_map_sym():
@@ -31,17 +84,17 @@ def test_map_sym():
     # Test on exp map
     sym = np.ones((2, 2))
     sym_exp = exp(1.) * np.array([[cosh(1.), sinh(1.)], [sinh(1.), cosh(1.)]])
-    assert_array_almost_equal(map_sym(np.exp, sym), sym_exp)
+    assert_array_almost_equal(_map_sym(np.exp, sym), sym_exp)
 
     # Test on sqrt map
     spd_sqrt = np.array([[2., -1., 0.], [-1., 2., -1.], [0., -1., 2.]])
     spd = spd_sqrt.dot(spd_sqrt)
-    assert_array_almost_equal(map_sym(np.sqrt, spd), spd_sqrt)
+    assert_array_almost_equal(_map_sym(np.sqrt, spd), spd_sqrt)
 
     # Test on log map
     spd = np.array([[1.25, 0.75], [0.75, 1.25]])
     spd_log = np.array([[0., log(2.)], [log(2.), 0.]])
-    assert_array_almost_equal(map_sym(np.log, spd), spd_log)
+    assert_array_almost_equal(_map_sym(np.log, spd), spd_log)
 
 
 def test_geometric_mean_couple():
@@ -52,11 +105,11 @@ def test_geometric_mean_couple():
     spd2 = np.tril(np.ones((n_features, n_features)))
     spd2 = spd2.dot(spd2.T)
     vals_spd2, vecs_spd2 = np.linalg.eigh(spd2)
-    spd2_sqrt = map_eig(np.sqrt, vals_spd2, vecs_spd2)
-    spd2_inv_sqrt = map_eig(np.sqrt, 1. / vals_spd2, vecs_spd2)
-    geo = spd2_sqrt.dot(map_sym(np.sqrt,
-        spd2_inv_sqrt.dot(spd1).dot(spd2_inv_sqrt))).dot(spd2_sqrt)
-    assert_array_almost_equal(geometric_mean([spd1, spd2]), geo)
+    spd2_sqrt = _map_eig(np.sqrt, vals_spd2, vecs_spd2)
+    spd2_inv_sqrt = _map_eig(np.sqrt, 1. / vals_spd2, vecs_spd2)
+    geo = spd2_sqrt.dot(_map_sym(np.sqrt, spd2_inv_sqrt.dot(spd1).dot(
+                        spd2_inv_sqrt))).dot(spd2_sqrt)
+    assert_array_almost_equal(_geometric_mean([spd1, spd2]), geo)
 
 
 def test_geometric_mean_diagonal():
@@ -71,7 +124,7 @@ def test_geometric_mean_diagonal():
             (k + 1) * 1e-4
         diags.append(diag)
     geo = np.prod(np.array(diags), axis=0) ** (1 / float(len(diags)))
-    assert_array_almost_equal(geometric_mean(diags), geo)
+    assert_array_almost_equal(_geometric_mean(diags), geo)
 
 
 def test_geometric_mean_geodesic():
@@ -85,11 +138,11 @@ def test_geometric_mean_geodesic():
     non_singular[1:3, 1:3] = np.array([[-1, -.5], [-.5, -1]])
     spds = []
     for time in times:
-        spds.append(non_singular.dot(map_sym(np.exp, time * sym)).dot(
+        spds.append(non_singular.dot(_map_sym(np.exp, time * sym)).dot(
             non_singular.T))
-    geo = non_singular.dot(map_sym(np.exp, times.mean() * sym)).dot(
+    gmean = non_singular.dot(_map_sym(np.exp, times.mean() * sym)).dot(
         non_singular.T)
-    assert_array_almost_equal(geometric_mean(spds), geo)
+    assert_array_almost_equal(_geometric_mean(spds), gmean)
 
 
 def random_diagonal(p, v_min=1., v_max=2., rand_gen=None):
@@ -201,31 +254,31 @@ def test_geometric_mean_properties():
         spds.append(random_spd(n_features, eig_min=1., cond=10.,
                                rand_gen=rand_gen))
     input_spds = copy.copy(spds)
-    geo = geometric_mean(spds)
+    gmean = _geometric_mean(spds)
 
     # Generic
     assert_is_instance(spds, list)
     for spd, input_spd in zip(spds, input_spds):
         assert_array_equal(spd, input_spd)
-    assert(is_spd(geo))
+    assert(is_spd(gmean, decimal=7))
 
     # Invariance under reordering
     spds.reverse()
     spds.insert(0, spds[1])
     spds.pop(2)
-    assert_array_almost_equal(geometric_mean(spds), geo)
+    assert_array_almost_equal(_geometric_mean(spds), gmean)
 
     # Invariance under congruent transformation
     non_singular = random_non_singular(n_features, rand_gen=rand_gen)
     spds_cong = [non_singular.dot(spd).dot(non_singular.T) for spd in spds]
-    assert_array_almost_equal(geometric_mean(spds_cong),
-                              non_singular.dot(geo).dot(non_singular.T))
+    assert_array_almost_equal(_geometric_mean(spds_cong),
+                              non_singular.dot(gmean).dot(non_singular.T))
 
     # Invariance under inversion
     spds_inv = [linalg.inv(spd) for spd in spds]
     init = linalg.inv(np.mean(spds, axis=0))
-    assert_array_almost_equal(geometric_mean(spds_inv, init=init),
-                              linalg.inv(geo))
+    assert_array_almost_equal(_geometric_mean(spds_inv, init=init),
+                              linalg.inv(gmean))
 
     # Gradient norm is decreasing
     grad_norm = grad_geometric_mean(spds)
@@ -238,7 +291,7 @@ def test_geometric_mean_properties():
     tol = 1e-10
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        geo = geometric_mean(spds, max_iter=max_iter, tol=tol)
+        gmean = _geometric_mean(spds, max_iter=max_iter, tol=tol)
         assert_equal(len(w), 1)
     grad_norm = grad_geometric_mean(spds, max_iter=max_iter, tol=tol)
     assert_equal(len(grad_norm), max_iter)
@@ -257,7 +310,7 @@ def test_geometric_mean_properties():
             max_iter = 30
         else:
             max_iter = 60
-        geo = geometric_mean(spds, max_iter=max_iter, tol=1e-5)
+        gmean = _geometric_mean(spds, max_iter=max_iter, tol=1e-5)
 
 
 def test_geometric_mean_checks():
@@ -265,15 +318,15 @@ def test_geometric_mean_checks():
 
     # Non square input matrix
     mat1 = np.ones((n_features, n_features + 1))
-    assert_raises(ValueError, geometric_mean, [mat1])
+    assert_raises(ValueError, _geometric_mean, [mat1])
 
     # Input matrices of different shapes
     mat1 = np.eye(n_features)
     mat2 = np.ones((n_features + 1, n_features + 1))
-    assert_raises(ValueError, geometric_mean, [mat1, mat2])
+    assert_raises(ValueError, _geometric_mean, [mat1, mat2])
 
     # Non spd input matrix
-    assert_raises(ValueError, geometric_mean, [mat2])
+    assert_raises(ValueError, _geometric_mean, [mat2])
 
 
 def test_sym_to_vec():
@@ -345,7 +398,7 @@ def test_prec_to_partial():
     prec = np.array([[2., -1., 1.], [-1., 2., -1.], [1., -1., 1.]])
     partial = np.array([[1., .5, -sqrt(2.) / 2.], [.5, 1., sqrt(2.) / 2.],
                         [-sqrt(2.) / 2., sqrt(2.) / 2., 1.]])
-    assert_array_almost_equal(prec_to_partial(prec), partial)
+    assert_array_almost_equal(_prec_to_partial(prec), partial)
 
 
 def test_fit_transform():
@@ -365,8 +418,9 @@ def test_fit_transform():
         covs.append((signal.T).dot(signal) / n_samples)
 
     input_covs = copy.copy(covs)
-    for kind in ["correlation", "tangent", "precision", "partial correlation"]:
-        estimators = {'kind': kind}
+    measures = ["correlation", "tangent", "precision", "partial correlation"]
+    for measure in measures:
+        estimators = {'measure': measure}
         cov_embedding = CovEmbedding(**estimators)
         covs_transformed = cov_embedding.fit_transform(signals)
 
@@ -378,28 +432,29 @@ def test_fit_transform():
             assert_equal(vec.size, n_features * (n_features + 1) / 2)
             assert_array_equal(input_covs[k], covs[k])
             cov_new = vec_to_sym(vec)
-            assert(is_spd(covs[k]))
+            assert(is_spd(covs[k], decimal=7))
 
             # Positive definiteness if expected and output value checks
-            if estimators["kind"] == "tangent":
+            if estimators["measure"] == "tangent":
                 assert_array_almost_equal(cov_new, cov_new.T)
-                geo_sqrt = map_sym(np.sqrt, cov_embedding.mean_cov_)
-                assert(is_spd(geo_sqrt))
-                assert(is_spd(cov_embedding.whitening_))
-                assert_array_almost_equal(
-                cov_embedding.whitening_.dot(geo_sqrt), np.eye(n_features))
-                assert_array_almost_equal(geo_sqrt.dot(
-                    map_sym(np.exp, cov_new)).dot(geo_sqrt), covs[k])
-            if estimators["kind"] == "precision":
-                assert(is_spd(cov_new))
+                gmean_sqrt = _map_sym(np.sqrt, cov_embedding.mean_cov_)
+                assert(is_spd(gmean_sqrt, decimal=7))
+                assert(is_spd(cov_embedding.whitening_, decimal=7))
+                assert_array_almost_equal(cov_embedding.whitening_.dot(
+                    gmean_sqrt), np.eye(n_features))
+                assert_array_almost_equal(gmean_sqrt.dot(
+                    _map_sym(np.exp, cov_new)).dot(gmean_sqrt), covs[k])
+            if estimators["measure"] == "precision":
+                assert(is_spd(cov_new, decimal=7))
                 assert_array_almost_equal(cov_new.dot(covs[k]),
                                           np.eye(n_features))
-            if estimators["kind"] == "correlation":
-                assert(is_spd(cov_new))
+            if estimators["measure"] == "correlation":
+                assert(is_spd(cov_new, decimal=7))
                 d = np.sqrt(np.diag(np.diag(covs[k])))
                 assert_array_almost_equal(d.dot(cov_new).dot(d), covs[k])
-            if estimators["kind"] == "partial correlation":
+            if estimators["measure"] == "partial correlation":
                 prec = linalg.inv(covs[k])
                 d = np.sqrt(np.diag(np.diag(prec)))
-                assert_array_almost_equal(d.dot(cov_new).dot(d), -prec +\
+                assert_array_almost_equal(d.dot(cov_new).dot(d), -prec +
                     2 * np.diag(np.diag(prec)))
+    
