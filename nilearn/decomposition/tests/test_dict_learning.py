@@ -61,3 +61,6 @@ def test_component_sign():
             dict_learning.components_)):
         mp = mp.get_data()
         assert_less_equal(np.sum(mp[mp <= 0]), np.sum(mp[mp > 0]))
+
+if __name__ == '__main__':
+    test_dict_learning()

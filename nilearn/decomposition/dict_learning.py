@@ -12,13 +12,15 @@ import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
 from sklearn.decomposition import dict_learning_online
+from sklearn.base import TransformerMixin
 
 from .._utils import as_ndarray
 from .canica import CanICA
 from .._utils.cache_mixin import CacheMixin
+from .single_pca import SinglePCA
 
 
-class DictLearning(CanICA, CacheMixin):
+class DictLearning(SinglePCA, TransformerMixin, CacheMixin):
     """Perform a map learning algorithm based on component sparsity,
      over a CanICA initialization.  This yields more stable maps than CanICA.
 
@@ -104,35 +106,38 @@ class DictLearning(CanICA, CacheMixin):
                  # Common options
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
+                 dict_init=None
                  ):
-        CanICA.__init__(self,
-                        mask=mask, memory=memory, memory_level=memory_level,
-                        n_jobs=n_jobs, verbose=verbose, do_cca=True,
-                        threshold=float(n_components), n_init=1,
-                        n_components=n_components, smoothing_fwhm=smoothing_fwhm,
-                        target_affine=target_affine, target_shape=target_shape,
-                        random_state=random_state, high_pass=high_pass, low_pass=low_pass,
-                        t_r=t_r,
-                        standardize=standardize)
-        self._keep_data_mem = True
+        SinglePCA.__init__(self,
+                           mask=mask, memory=memory, memory_level=memory_level,
+                           n_jobs=n_jobs, verbose=verbose,
+                           n_components=n_components, smoothing_fwhm=smoothing_fwhm,
+                           target_affine=target_affine, target_shape=target_shape,
+                           random_state=random_state, high_pass=high_pass, low_pass=low_pass,
+                           t_r=t_r,
+                           standardize=standardize)
         self.n_iter = n_iter
         self.alpha = alpha
-        # Setting n_jobs = 1 as it is slower otherwise
+        self.dict_init = dict_init
 
     def _init_dict(self, imgs, y=None, confounds=None):
-        CanICA.fit(self, imgs, y=y, confounds=confounds)
-        if isinstance(self.data_flat_, tuple):  # several subjects
-            self.data_flat_ = np.concatenate(self.data_flat_, axis=0)
-        if self.n_iter == 'auto':
-            # ceil(self.data_fat.shape[0] / self.batch_size)
-            self.n_iter = (self.data_flat_.shape[0] - 1) / self.batch_size + 1
-        if self.verbose:
-            print('[DictLearning] Learning time serie')
-        ridge = Ridge(alpha=1e-6, fit_intercept=None)
-        ridge.fit(self.components_.T, self.data_flat_.T)
-        self.dict_init_ = ridge.coef_.T
-        S = np.sqrt(np.sum(self.dict_init_ ** 2, axis=0))
-        self.dict_init_ /= S[np.newaxis, :]
+        if self.dict_init is not None:
+            self.dict_init_ = self.dict_init
+        else:
+            # Perform a CanICA initialization using SinglePCA parameters
+            parameters = self.get_params().copy()
+            parameters.pop('n_iter')
+            parameters.pop('alpha')
+            parameters.pop('dict_init')
+            canica = CanICA(do_cca=True, threshold=float(self.n_components), n_init=1,
+                            **parameters)
+            canica.fit(imgs, y=y, confounds=confounds)
+
+            ridge = Ridge(alpha=1e-6, fit_intercept=None)
+            ridge.fit(canica.components_.T, self.data_flat_.T)
+            self.dict_init_ = ridge.coef_.T
+            S = np.sqrt(np.sum(self.dict_init_ ** 2, axis=0))
+            self.dict_init_ /= S[np.newaxis, :]
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the ICA maps across subjects
@@ -148,6 +153,18 @@ class DictLearning(CanICA, CacheMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
+        if self.n_iter == 'auto':
+            # ceil(self.data_fat.shape[0] / self.batch_size)
+            self.n_iter = (self.data_flat_.shape[0] - 1) / self.batch_size + 1
+
+        if self.verbose:
+            print('[DictLearning] Loading data')
+        SinglePCA.fit(self, imgs, y=y, confounds=confounds)
+        self.data_flat_ = np.concatenate(self.components_list_)
+        del self.components_list_, self.variance_list_
+
+        if self.verbose:
+            print('[DictLearning] Initializating dictionary')
         self._init_dict(imgs, y, confounds)
 
         if self.verbose:
