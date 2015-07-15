@@ -4,7 +4,7 @@ from math import sqrt, exp, log, cosh, sinh
 
 import numpy as np
 from scipy import linalg
-from np.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nose.tools import assert_raises, assert_equal, assert_true
 
 from nilearn._utils.extmath import is_spd
