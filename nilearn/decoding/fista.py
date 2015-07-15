@@ -101,6 +101,10 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
+    init : dict-like, optional (default None)
+        Dictionary of initialization parameters. Possible keys are 'w',
+        'stepsize', 'z', 't', 'dgap_factor'.
+
     callback : callable(dict) -> bool
         Function called on every iteration. If it returns True, then the loop
         breaks.
