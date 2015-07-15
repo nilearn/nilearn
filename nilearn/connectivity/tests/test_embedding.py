@@ -4,9 +4,8 @@ from math import sqrt, exp, log, cosh, sinh
 
 import numpy as np
 from scipy import linalg
-from numpy.testing import assert_array_almost_equal, assert_array_equal
-from nose.tools import assert_raises, assert_equal, assert_true,\
-    assert_greater, assert_greater_equal
+from np.testing import assert_array_almost_equal, assert_array_equal
+from nose.tools import assert_raises, assert_equal, assert_true
 
 from nilearn._utils.extmath import is_spd
 from nilearn.connectivity.embedding import _check_mat, _map_sym, _map_eig, \
@@ -283,7 +282,7 @@ def test_geometric_mean_properties():
     # Gradient norm is decreasing
     grad_norm = grad_geometric_mean(spds)
     difference = np.diff(grad_norm)
-    assert_greater_equal(0., np.amax(difference))
+    assert_true(np.amax(difference) <= 0.)
 
     # Check warning if gradient norm in the last step is less than
     # tolerance
@@ -295,7 +294,7 @@ def test_geometric_mean_properties():
         assert_equal(len(w), 1)
     grad_norm = grad_geometric_mean(spds, max_iter=max_iter, tol=tol)
     assert_equal(len(grad_norm), max_iter)
-    assert_greater(grad_norm[-1], tol)
+    assert_true(grad_norm[-1] > tol)
 
     # Evaluate convergence. A warning is printed if tolerance is not reached
     for p in [.5, 1.]:  # proportion of badly conditionned matrices
