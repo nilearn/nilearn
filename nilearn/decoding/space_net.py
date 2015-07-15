@@ -114,7 +114,8 @@ def _univariate_feature_screening(
         for sample in range(sX.shape[0]):
             sX[sample] = ndimage.gaussian_filter(
                 _unmask(X[sample].copy(),  # avoid modifying X
-                        mask), (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm))[mask]
+                        mask), (smoothing_fwhm, smoothing_fwhm,
+                                smoothing_fwhm))[mask]
     else:
         sX = X
 
