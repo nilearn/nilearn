@@ -7,9 +7,12 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import ndimage
+import copy
+import nibabel
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
