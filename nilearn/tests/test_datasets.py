@@ -16,8 +16,7 @@ from tempfile import mkdtemp, mkstemp
 import nibabel
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises,\
-    assert_raises_regexp
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 
 from nilearn import datasets
