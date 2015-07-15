@@ -11,7 +11,9 @@ from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
-from .compat import _basestring
+from .compat import _basestring, izip
+
+from nilearn._utils.exceptions import DimensionError
 
 
 def _check_fov(img, affine, shape):
