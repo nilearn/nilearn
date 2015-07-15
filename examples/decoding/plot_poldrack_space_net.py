@@ -1,6 +1,8 @@
 """
-SpaceNet learner on Jimura "mixed gambles" dataset.
+SpaceNet on Jimura et al "mixed gambles" dataset.
+==================================================
 
+The segmenting power of SpaceNet is quiete visible here.
 """
 # author: DOHMATOB Elvis Dopgima,
 #         GRAMFORT Alexandre
