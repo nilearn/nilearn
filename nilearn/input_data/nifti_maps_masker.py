@@ -11,7 +11,7 @@ from .._utils import CacheMixin
 from .._utils.niimg_conversions import _check_same_fov
 from .. import region
 from .. import image
-from base import filter_and_extract
+from .base_masker import filter_and_extract
 
 
 class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -249,12 +249,12 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         def extraction_function(imgs):
             return region.img_to_signals_maps(
-                imgs, self._resampled_maps_img,
+                imgs, self._resampled_maps_img_,
                 mask_img=self._resampled_mask_img_)
 
         target_fov = None
         if self.resampling_target != 'data':
-            target_fov = (self._resampled_maps_img_.shape,
+            target_fov = (self._resampled_maps_img_.shape[:3],
                           self._resampled_maps_img_.get_affine())
 
         region_signals, labels_ = self._cache(
@@ -268,7 +268,6 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 self.memory, self.memory_level,
                 # kwargs
                 target_fov=target_fov,
-                mask_img=self._resampled_mask_img_,
                 verbose=self.verbose)
         self.labels_ = labels_
 

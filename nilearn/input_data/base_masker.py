@@ -274,12 +274,22 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
 # XXX This function is converging toward filter_and_mask. They will merge
 # eventually.
-def filter_and_extract(imgs, extraction_func,
+def filter_and_extract(imgs, extraction_function,
                        smoothing_fwhm, t_r,
                        standardize, detrend, low_pass, high_pass,
                        confounds, memory, memory_level,
                        target_fov=None, verbose=0):
     """Extract representative time series using given function.
+
+    Parameters
+    ----------
+    imgs: images
+        Images to be masked
+
+    extraction_function: function
+        Function used to extract the time series from 4D data.
+
+    For all other parameters refer to NiftiMasker documentation
     """
     if verbose > 0:
         print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
@@ -305,8 +315,8 @@ def filter_and_extract(imgs, extraction_func,
 
     if verbose > 0:
         print("Extracting region signals")
-    region_signals, aux = cache(extraction_func, memory, func_memory_level=2,
-                           memory_level=memory_level)(imgs)
+    region_signals, aux = cache(extraction_function, memory, func_memory_level=2,
+                                memory_level=memory_level)(imgs)
 
     if verbose > 0:
         print("Cleaning extracted signals")

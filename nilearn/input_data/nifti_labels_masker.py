@@ -15,7 +15,7 @@ from .._utils.niimg_conversions import _check_same_fov
 from .. import region
 from .. import masking
 from .. import image
-from base_masker import filter_and__extract
+from .base_masker import filter_and_extract
 
 
 class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -221,20 +221,21 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.get_affine())
 
-        def extraction_func(imgs):
+        def extraction_function(imgs):
             return region.img_to_signals_labels(
-                imgs, self._resampled_labels_img, self.background_label)
+                imgs, self._resampled_labels_img_,
+                background_label=self.background_label)
 
         target_fov = None
         if self.resampling_target == 'labels':
-            target_fov = (self._resampled_labels_img.shape,
-                          self._resampled_labels_img.get_affine())
+            target_fov = (self._resampled_labels_img_.shape[:3],
+                          self._resampled_labels_img_.get_affine())
 
-        region_signals = self._cache(
-                filter_and__extract,
+        region_signals, labels_ = self._cache(
+                filter_and_extract,
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
-            imgs, extraction_func,
+            imgs, extraction_function,
             # Pre-processing
             self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
             self.low_pass, self.high_pass, confounds,
@@ -243,6 +244,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # kwargs
             target_fov=target_fov,
             verbose=self.verbose)
+
+        self.labels_ = labels_
 
         return region_signals
 
