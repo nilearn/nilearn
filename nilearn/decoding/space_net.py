@@ -163,6 +163,9 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     n_alphas : int, optional
         Number of alphas along the regularization path.
 
+    logistic : bool, optional (default False)
+        Indicates where the underlying loss function is logistic.
+
     """
 
     if logistic:
@@ -227,7 +230,7 @@ class EarlyStoppingCallback(object):
             self.test_scores = list()
         w = variables['w']
 
-        # use spearman score as stopping criterion
+        # use Spearman score as stopping criterion
         score = self.test_score(w)[0]
 
         self.test_scores.append(score)
@@ -267,11 +270,11 @@ class EarlyStoppingCallback(object):
         We use correlations between linear prediction and
         ground truth (y_test).
 
-        We return 2 scores for model selection: one is the spearman
+        We return 2 scores for model selection: one is the Spearman
         correlation, which captures ordering between input and
         output, but tends to have 'flat' regions. The other
-        is the pearson correlation, that we can use to disambiguate
-        between regions of equivalent spearman correlations
+        is the Pearson correlation, that we can use to disambiguate
+        between regions of equivalent Spearman correlations
 
         """
         if self.is_classif:
@@ -403,7 +406,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                     **solver_params)
 
                 # We use 2 scores for model selection: the second one is to
-                # disambiguate between regions of equivalent spearman
+                # disambiguate between regions of equivalent Spearman
                 # correlations
                 score, secondary_score = early_stopper.test_score(w)
                 this_test_scores.append(score)
@@ -469,6 +472,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
     penalty : string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
+    loss : string, optional (default "mse")
+        Loss to be used in the model. Must be an one of "mse", or "logistic".
+
     is_classif : bool, optional (default False)
         Flag telling whether the learning task is classification or regression.
 
@@ -492,10 +498,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
-
-    alpha_min : float, optional (default None)
-        Minimum value of alpha to consider. This is mutually exclusive with the
-        `eps` parameter.
 
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
@@ -535,7 +537,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         axis 0. This is here because nearly all linear models will want
         their data to be centered.
 
-    fit_intercept : bool
+    fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
     max_iter : int
@@ -549,6 +551,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
 
     n_jobs : int, optional (default 1)
         Number of jobs in solving the sub-problems.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
 
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
@@ -938,6 +945,9 @@ class SpaceNetClassifier(BaseSpaceNet):
     penalty : string, optional (default 'smooth-lasso')
         Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
 
+    loss : string, optional (default "mse")
+        Loss to be used in the model. Must be an one of "mse", or "logistic".
+
     l1_ratios : float or list of floats in the interval [0, 1];
     optinal (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
@@ -1001,7 +1011,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : bool
+    fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
     max_iter : int
@@ -1015,6 +1025,11 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     n_jobs : int, optional (default 1)
         Number of jobs in solving the sub-problems.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
 
     cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
@@ -1162,7 +1177,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : bool
+    fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
     max_iter : int
@@ -1176,6 +1191,11 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     n_jobs : int, optional (default 1)
         Number of jobs in solving the sub-problems.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
 
     cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
