@@ -2827,11 +2827,11 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     verbose: int, optional (default 0)
         Defines the level of verbosity of the output.
 
-    maks_Xy: bool, optional (default False)
+    make_Xy: bool, optional (default False)
         If true, then the data will transformed into and (X, y) pair, suitable
-        for machine learning routines.
-        X is a list of n_subjects * 48 Nifti1Image objects, and
-        y is an array of shape (n_subjects * 48,).
+        for machine learning routines. X is a list of n_subjects * 48
+        Nifti1Image objects (where 48 is the number of trials),
+        and y is an array of shape (n_subjects * 48,).
 
     smooth: float, or list of 3 floats, optional (default 0.)
         Size of smoothing kernel to apply to the loaded z_maps.
