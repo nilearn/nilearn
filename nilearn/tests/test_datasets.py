@@ -423,7 +423,7 @@ def test_fetch_adhd():
            3624598, 3699991, 3884955, 3902469, 3994098, 4016887,
            4046678, 4134561, 4164316, 4275075, 6115230, 7774305,
            8409791, 8697774, 9744150, 9750701]
-    ids = np.asarray(ids).view(dtype=[('Subject', 'int')])
+    ids = np.array(ids, dtype='i8').view(dtype=[('Subject', 'i8')])
     file_mock.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
                       ids)
     adhd = datasets.fetch_adhd(data_dir=tmpdir, url=local_url,
