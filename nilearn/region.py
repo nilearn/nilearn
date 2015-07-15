@@ -12,7 +12,7 @@ from scipy import linalg, ndimage
 
 from . import _utils
 from . import masking
-from ._utils import new_img_like
+from .image import new_img_like
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.

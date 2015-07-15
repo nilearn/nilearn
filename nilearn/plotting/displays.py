@@ -11,7 +11,7 @@ import numbers
 import numpy as np
 from scipy import sparse, stats
 
-from .._utils import new_img_like
+from ..image import new_img_like
 from .._utils.compat import _basestring
 from .. import _utils
 

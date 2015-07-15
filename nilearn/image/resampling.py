@@ -13,7 +13,6 @@ import scipy
 from scipy import ndimage, linalg
 
 from .. import _utils
-from .._utils import new_img_like
 from .._utils.compat import _basestring
 
 ###############################################################################
@@ -340,6 +339,8 @@ def resample_img(img, target_affine=None, target_shape=None,
     This function handles gracefully NaNs and infinite values in the input
     data, however they make the execution of the function much slower.
     """
+    from .image import new_img_like  # avoid circular imports
+
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
     if target_shape is not None and target_affine is None:
@@ -498,6 +499,8 @@ def reorder_img(img, resample=None):
             resample_img.
 
     """
+    from .image import new_img_like
+
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug

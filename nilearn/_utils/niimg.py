@@ -7,12 +7,9 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections
-from distutils.version import LooseVersion
 
-import numpy as np
 import nibabel
 
-from .numpy_conversions import as_ndarray
 from .compat import _basestring
 
 
@@ -95,6 +92,8 @@ def load_niimg(niimg, dtype=None):
     img: image
         A loaded image object.
     """
+    from ..image import new_img_like  # avoid circular imports
+
     if isinstance(niimg, _basestring):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
@@ -124,6 +123,8 @@ def copy_img(img):
     img_copy: image
         copy of input (data, affine and header)
     """
+    from ..image import new_img_like  # avoid circular imports
+
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
     return new_img_like(img, img.get_data().copy(), img.get_affine().copy(),
