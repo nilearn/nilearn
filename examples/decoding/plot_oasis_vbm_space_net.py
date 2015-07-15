@@ -2,6 +2,7 @@
 Voxel-Based Morphometry on Oasis dataset with Space-Net prior
 =============================================================
 
+Predicting age from gray-matter concentration maps from OASIS dataset
 """
 # Authors: DOHMATOB Elvis
 #          FRITSCH Virgile
