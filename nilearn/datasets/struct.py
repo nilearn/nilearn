@@ -7,9 +7,7 @@ import os
 import numpy as np
 from sklearn.datasets.base import Bunch
 
-from utils import _get_dataset_dir
-from utils import _fetch_files
-from utils import _get_dataset_descr
+from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 
 from .._utils import check_niimg
 
