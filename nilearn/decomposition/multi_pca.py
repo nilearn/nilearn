@@ -2,23 +2,21 @@
 PCA dimension reduction on multiple subjects
 """
 import itertools
+
 import warnings
 
 import numpy as np
 from scipy import linalg
 import nibabel
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-
 from sklearn.externals.joblib import Parallel, delayed, Memory
-
 from sklearn.utils.extmath import randomized_svd
-
 from sklearn.utils.validation import check_random_state
-
 from sklearn.linear_model import LinearRegression
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
+
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils import as_ndarray
@@ -104,8 +102,7 @@ def session_pca(imgs, mask_img, parameters,
 class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     """Perform Multi Subject Principal Component Analysis.
 
-    Perform a PCA on each subject and stack the results. An optional Canonical
-    Correlation Analysis can also be performed.
+    Perform a PCA on each subject, stack the results and perform a group level PCA on these.
 
     Parameters
     ----------
@@ -123,8 +120,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         parameters.
 
     do_cca: boolean, optional
-        Indicate if a Canonical Correlation Analysis must be run after the
-        PCA.
+        Indicate if a Canonical Correlation Analysis must be run after the single subject
+        PCAs.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
@@ -386,7 +383,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
 
     def _get_filter_and_mask_parameters(self):
         parameters = get_params(MultiNiftiMasker, self)
-        # Remove non specific and redudent parameters
+        # Remove non specific and redundant parameters
         for param_name in ['memory', 'memory_level', 'confounds',
                            'verbose', 'n_jobs']:
             parameters.pop(param_name, None)
@@ -398,8 +395,9 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         """ Sort components by score obtained on test set imgs
         """
         score = self.score(imgs, confounds, per_component=True).mean(axis=0)
-        self.score_ = -np.sort(-score)
-        self.components_ = self.components_[np.argsort(-score)]
+        index = np.argsort(score)[::-1]
+        self.score_ = score[index]
+        self.components_ = self.components_[index]
 
     def score(self, imgs, confounds=None, per_component=False):
         """Score function based on explained variance
