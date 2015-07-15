@@ -429,8 +429,8 @@ def test_fetch_adhd():
             4016887, 1418396, 2950754,
             3994098, 3520880, 1517058,
             9744150, 1562298, 3205761, 3624598]
-    subs = np.asarray(sub1 + sub2 + sub3 + sub4)
-    subs = subs.view(dtype=[('Subject', 'int')])
+    subs = np.asarray(sub1 + sub2 + sub3 + sub4, dtype="<i8")
+    subs = subs.view(dtype=[('Subject', '<i8')])
     file_mock.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
                       subs)
 
