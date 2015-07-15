@@ -1,3 +1,7 @@
+dependencies:
+  override:
+    - pip install numpy scipy sklearn nibabel
+
 test:
   override:
     - make
