@@ -2,7 +2,7 @@ dependencies:
   override:
     - pip install --upgrade pip
     - pip install -e .
-    - pip install sphinx matplotlib coverage
+    - pip install sphinx matplotlib coverage Pillow
 
 test:
   override:
