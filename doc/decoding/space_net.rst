@@ -76,7 +76,10 @@ Mixed gambles
 .. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_002.png
    :scale: 60
 
-.. literalinclude:: ../../examples/decoding/plot_poldrack_space_net.py
+.. topic:: **Code**
+
+    The complete script can be found
+    :ref:`here <example_decoding_plot_poldrack_space_net.py>`.
 
 
 Haxby
@@ -89,22 +92,10 @@ Haxby
 .. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_002.png
    :scale: 60
 
-See the script here:
-:doc:`plot_haxby_space_net.py <../auto_examples/decoding/plot_haxby_space_net>`
+.. topic:: **Code**
 
-Oasis VBM
-.........
-
-.. figure:: ../auto_examples/decoding/images/plot_oasis_vbm_space_net_001.png
-   :align: right
-   :scale: 60
-
-.. figure:: ../auto_examples/decoding/images/plot_oasis_vbm_space_net_002.png
-   :scale: 60
-
-See the script here:
-:doc:`plot_haxby_space_net.py <../auto_examples/decoding/plot_haxby_space_net>`
-
+    The complete script can be found
+    :ref:`here <example_decoding_plot_haxby_space_net.py>`.
 
 ..
    .. seealso::
