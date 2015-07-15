@@ -14,12 +14,12 @@ Regression with spatial priors like TV-L1 and Smooth LASSO.
 from math import sqrt
 import numpy as np
 from .objective_functions import (spectral_norm_squared,
-                                  gradient_id,
+                                  _gradient_id,
                                   logistic_loss_lipschitz_constant,
                                   squared_loss, squared_loss_grad, _unmask,
                                   logistic_loss_grad,
                                   logistic as logistic_loss)
-from .objective_functions import gradient, div
+from .objective_functions import _gradient, _div
 from .proximal_operators import (_prox_l1, _prox_l1_with_intercept,
                                  _prox_tvl1, _prox_tvl1_with_intercept)
 from .fista import mfista
@@ -53,7 +53,7 @@ def squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     grad_buffer = np.zeros(mask.shape)
     grad_buffer[mask] = w
     grad_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
-    grad_section = gradient(grad_buffer)[grad_mask]
+    grad_section = _gradient(grad_buffer)[grad_mask]
     return 0.5 * (np.dot(data_section, data_section)
                   + grad_weight * np.dot(grad_section, grad_section))
 
@@ -84,7 +84,7 @@ def squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     image_buffer = np.zeros(mask.shape)
     image_buffer[mask] = w
     return (np.dot(X.T, data_section)
-            - grad_weight * div(gradient(image_buffer))[mask])
+            - grad_weight * _div(_gradient(image_buffer))[mask])
 
 
 def smooth_lasso_data_function(X, w, mask, grad_weight):
@@ -113,7 +113,7 @@ def smooth_lasso_data_function(X, w, mask, grad_weight):
     """
     data_buffer = np.zeros(mask.shape)
     data_buffer[mask] = w
-    w_g = grad_weight * gradient(data_buffer)
+    w_g = grad_weight * _gradient(data_buffer)
     out = np.ndarray(X.shape[0] + mask.ndim * X.shape[1])
     out[:X.shape[0]] = X.dot(w)
     out[X.shape[0]:] = np.concatenate(
@@ -150,7 +150,7 @@ def smooth_lasso_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     out = X.T.dot(w[:n_samples])
     div_buffer = np.zeros(adjoint_mask.shape)
     div_buffer[adjoint_mask] = w[n_samples:]
-    out -= grad_weight * div(div_buffer)[adjoint_mask[0]]
+    out -= grad_weight * _div(div_buffer)[adjoint_mask[0]]
     return out
 
 
@@ -202,10 +202,10 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     grad_buffer = np.zeros(mask.shape)
     for _ in range(n_iterations):
         grad_buffer[mask] = a
-        a = - div(gradient(grad_buffer))[mask] / sqrt(np.dot(a, a))
+        a = - _div(_gradient(grad_buffer))[mask] / sqrt(np.dot(a, a))
 
     grad_buffer[mask] = a
-    grad_constant = (- np.dot(div(gradient(grad_buffer))[mask], a)
+    grad_constant = (- np.dot(_div(_gradient(grad_buffer))[mask], a)
                      / np.dot(a, a))
 
     return data_constant + grad_weight * grad_constant
@@ -217,7 +217,7 @@ def logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     grad_buffer = np.zeros(mask.shape)
     grad_buffer[mask] = w[:-1]
     grad_mask = np.array([mask for _ in range(mask.ndim)])
-    grad_section = gradient(grad_buffer)[grad_mask]
+    grad_section = _gradient(grad_buffer)[grad_mask]
     return (logistic_loss(X, y, w)
             + 0.5 * grad_weight * np.dot(grad_section, grad_section))
 
@@ -228,7 +228,7 @@ def logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     image_buffer[mask] = w[:-1]
     data_section = logistic_loss_grad(X, y, w)
     data_section[:-1] = data_section[:-1]\
-        - grad_weight * div(gradient(image_buffer))[mask]
+        - grad_weight * _div(_gradient(image_buffer))[mask]
     return data_section
 
 
@@ -390,7 +390,7 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
         out = logistic_loss(X, y, w)
         w = w[:-1]
 
-    grad_id = gradient_id(_unmask(w, mask), l1_ratio=l1_ratio)
+    grad_id = _gradient_id(_unmask(w, mask), l1_ratio=l1_ratio)
     out += alpha * _tvl1_objective_from_gradient(grad_id)
 
     return out

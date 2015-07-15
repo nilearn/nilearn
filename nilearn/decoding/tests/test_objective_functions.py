@@ -6,7 +6,7 @@ Test module for functions related cost functions (including penalties).
 import numpy as np
 from scipy.optimize import check_grad
 from nilearn.decoding.objective_functions import (
-    gradient_id, logistic, div_id,
+    _gradient_id, logistic, _div_id,
     logistic_loss_grad, _unmask)
 from nilearn.decoding.space_net import BaseSpaceNet
 from nose.tools import raises
@@ -22,15 +22,15 @@ def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5, random_state=42):
         y = rng.normal(size=[ndim + 1] + list(shape))
         for l1_ratio in [0., .1, .3, .5, .7, .9, 1.]:
             np.testing.assert_almost_equal(
-                np.sum(gradient_id(x, l1_ratio=l1_ratio) * y),
-                -np.sum(x * div_id(y, l1_ratio=l1_ratio)))
+                np.sum(_gradient_id(x, l1_ratio=l1_ratio) * y),
+                -np.sum(x * _div_id(y, l1_ratio=l1_ratio)))
 
 
-def test_1D_gradient_id():
+def test_1D__gradient_id():
     for size in [1, 2, 10]:
         img = np.arange(size)
         for l1_ratio in [0., .1, .3, .5, .7, .9, 1.]:
-            gid = gradient_id(img, l1_ratio=l1_ratio)
+            gid = _gradient_id(img, l1_ratio=l1_ratio)
 
             np.testing.assert_array_equal(
                 gid.shape, [img.ndim + 1] + list(img.shape))
@@ -38,10 +38,10 @@ def test_1D_gradient_id():
             np.testing.assert_array_equal(l1_ratio * img, gid[-1])
 
 
-def test_2D_gradient_id():
+def test_2D__gradient_id():
     img = np.array([[1, 3], [4, 2]])
     for l1_ratio in [0., .1, .3, .5, .7, .9, 1.]:
-        gid = gradient_id(img, l1_ratio)
+        gid = _gradient_id(img, l1_ratio)
 
         np.testing.assert_array_equal(
             gid.shape, [img.ndim + 1] + list(img.shape))
@@ -49,10 +49,10 @@ def test_2D_gradient_id():
         np.testing.assert_array_equal(l1_ratio * img, gid[-1])
 
 
-def test_3D_gradient_id():
+def test_3D__gradient_id():
     img = np.array([[1, 3], [4, 2], [1, 0]])
     for l1_ratio in [0., .1, .3, .5, .7, .9, 1.]:
-        gid = gradient_id(img, l1_ratio)
+        gid = _gradient_id(img, l1_ratio)
 
         np.testing.assert_array_equal(
             gid.shape, [img.ndim + 1] + list(img.shape))

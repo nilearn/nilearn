@@ -1,3 +1,4 @@
+
 """
 Common functions and base classes. Used by more specialized modules like
 tv.py, smooth_lasso.py, etc.
@@ -160,7 +161,7 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     return energy, grad
 
 
-def tv_l1_from_gradient(spatial_grad):
+def _tv_l1_from_gradient(spatial_grad):
     """Energy contribution due to penalized gradient, in TV-L1 model.
 
     Parameters
@@ -180,21 +181,21 @@ def tv_l1_from_gradient(spatial_grad):
     return l1_term + tv_term
 
 
-def div_id(grad, l1_ratio=.5):
+def _div_id(grad, l1_ratio=.5):
     """Compute divergence + id of image gradient + id
 
     Parameters
     ----------
-    grad : ndarray, shape (4, nx, ny, nx)
+    grad : ndarray, shape (4, nx, ny, nz, ...)
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
     -------
-    res : ndarray, shape (nx, ny, nx)
+    res : ndarray, shape (nx, ny, nz, ...)
         The computed divergence + id operator.
 
     Raises
@@ -226,20 +227,20 @@ def div_id(grad, l1_ratio=.5):
     return res
 
 
-def gradient_id(img, l1_ratio=.5):
+def _gradient_id(img, l1_ratio=.5):
     """Compute gradient + id of an image
 
     Parameters
     ----------
-    img : ndarray, shape (nx, ny, nz)
+    img : ndarray, shape (nx, ny, nz, ...)
         N-dimensional image
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
     -------
-    gradient : ndarray, shape (4, nx, ny, nx).
+    gradient : ndarray, shape (4, nx, ny, nz, ...).
         Spatial gradient of the image: the i-th component along the first
         axis is the gradient along the i-th axis of the original array img.
 
@@ -290,9 +291,10 @@ def _unmask(w, mask):
         The unmasked version of `w`
     """
 
+    if mask.sum() != len(w):
+        raise ValueError("Expecting mask.sum() == len(w).")
     out = np.zeros(mask.shape, dtype=w.dtype)
     out[mask] = w
-
     return out
 
 
@@ -354,13 +356,11 @@ squared_loss_grad = partial(squared_loss, compute_energy=False,
                             compute_grad=True)
 
 
-def gradient(w):
+def _gradient(w):
     """Pure spatial gradient"""
-    return gradient_id(w, l1_ratio=0.)[:-1]  # pure nabla
+    return _gradient_id(w, l1_ratio=0.)[:-1]  # pure nabla
 
 
-def div(v):
-    """ Pure spatial divergence
-
-    XXX div (see below) could be computed more efficiently!"""
-    return div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.)
+def _div(v):
+    """Pure spatial divergence"""
+    return _div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.)

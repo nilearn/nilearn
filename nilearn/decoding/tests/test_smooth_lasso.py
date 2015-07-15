@@ -4,7 +4,7 @@ import scipy as sp
 from numpy.testing import assert_almost_equal
 from sklearn.utils import extmath
 from sklearn.utils import check_random_state
-from nilearn.decoding.objective_functions import gradient, div
+from nilearn.decoding.objective_functions import _gradient, _div
 from nilearn.decoding.space_net_solvers import (
     smooth_lasso_data_function,
     smooth_lasso_adjoint_data_function,
@@ -50,7 +50,7 @@ def get_gradient_matrix(w_size, mask):
         base_vector = np.zeros(w_size)
         base_vector[i] = 1
         image_buffer[mask] = base_vector
-        gradient_column = gradient(image_buffer)[grad_mask]
+        gradient_column = _gradient(image_buffer)[grad_mask]
         grad_matrix[:, i] = gradient_column
 
     return grad_matrix
@@ -65,7 +65,7 @@ def test_grad_matrix():
     for _ in range(10):
         v = rng.rand(w.size) * rng.randint(1000)
         image_buffer[mask] = v
-        assert_almost_equal(gradient(image_buffer)[grad_mask], np.dot(G, v))
+        assert_almost_equal(_gradient(image_buffer)[grad_mask], np.dot(G, v))
 
 
 def test_adjointness(size=4):
@@ -74,8 +74,8 @@ def test_adjointness(size=4):
     for _ in range(3):
         image_1 = rng.rand(size, size, size)
         image_2 = rng.rand(3, size, size, size)
-        Axdoty = np.dot((gradient(image_1).ravel()), image_2.ravel())
-        xdotAty = np.dot((div(image_2).ravel()), image_1.ravel())
+        Axdoty = np.dot((_gradient(image_1).ravel()), image_2.ravel())
+        xdotAty = np.dot((_div(image_2).ravel()), image_1.ravel())
         assert_almost_equal(Axdoty, - xdotAty)
 
 

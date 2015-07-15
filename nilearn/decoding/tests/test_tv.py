@@ -1,6 +1,6 @@
 from nose.tools import assert_equal, assert_raises
 import numpy as np
-from nilearn.decoding.objective_functions import gradient_id, squared_loss
+from nilearn.decoding.objective_functions import _gradient_id, squared_loss
 from nilearn.decoding.space_net_solvers import (
     tvl1_objective, _tvl1_objective_from_gradient, tvl1_solver)
 
@@ -15,7 +15,7 @@ def test_tvl1_from_gradient(size=5, n_samples=10, random_state=42):
     mask = np.ones_like(w).astype(np.bool)
     for alpha in [0., 1e-1, 1e-3]:
         for l1_ratio in [0., .5, 1.]:
-            gradid = gradient_id(w, l1_ratio=l1_ratio)
+            gradid = _gradient_id(w, l1_ratio=l1_ratio)
             assert_equal(tvl1_objective(
                 X, y, w.copy().ravel(), alpha, l1_ratio, mask),
                 squared_loss(X, y, w.copy().ravel(),

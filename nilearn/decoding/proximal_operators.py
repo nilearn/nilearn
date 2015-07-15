@@ -8,7 +8,7 @@
 
 from math import sqrt
 import numpy as np
-from .objective_functions import tv_l1_from_gradient, div_id, gradient_id
+from .objective_functions import _tv_l1_from_gradient, _div_id, _gradient_id
 
 
 def _prox_l1(y, alpha, copy=True):
@@ -58,7 +58,7 @@ def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
     see "Total variation regularization for fMRI-based prediction of behavior",
     by Michel et al. (2011) for a derivation of the dual gap
     """
-    tv_new = tv_l1_from_gradient(gradient_id(new, l1_ratio=l1_ratio))
+    tv_new = _tv_l1_from_gradient(_gradient_id(new, l1_ratio=l1_ratio))
     gap = gap.ravel()
     d_gap = np.dot(gap, gap) + 2 * weight * tv_new - input_img_norm + (
         new * new).sum()
@@ -69,7 +69,7 @@ def _objective_function_prox_tvl1(
         input_img, output_img, gradient, weight):
     diff = (input_img - output_img).ravel()
     return (.5 * (diff * diff).sum()
-            + weight * tv_l1_from_gradient(gradient))
+            + weight * _tv_l1_from_gradient(gradient))
 
 
 def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
@@ -190,7 +190,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     fista_step = fista
 
     while i < max_iter:
-        grad_tmp = gradient_id(negated_output, l1_ratio=l1_ratio)
+        grad_tmp = _gradient_id(negated_output, l1_ratio=l1_ratio)
         grad_tmp *= 1. / (lipschitz_constant * weight)
         grad_aux += grad_tmp
         grad_tmp = _projector_on_tvl1_dual(
@@ -208,7 +208,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
             grad_aux = grad_tmp
         grad_im = grad_tmp
         t = t_new
-        gap = weight * div_id(grad_aux, l1_ratio=l1_ratio)
+        gap = weight * _div_id(grad_aux, l1_ratio=l1_ratio)
 
         # Compute the primal variable
         negated_output = gap - input_img
@@ -244,7 +244,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                     print(('\tProxTVl1 iteration % 2i, relative difference:'
                            ' % 6.3e, energy: % 6.3e' ) % (i, diff,
                             _objective_function_prox_tvl1(
-                                input_img, -negated_output, gradient_id(
+                                input_img, -negated_output, _gradient_id(
                                     negated_output, l1_ratio=l1_ratio),
                                 weight)))
                 if diff < x_tol:
@@ -254,7 +254,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
 
     # Compute the primal variable, however, here we must use the ista
     # value, not the fista one
-    output = input_img - weight * div_id(grad_im, l1_ratio=l1_ratio)
+    output = input_img - weight * _div_id(grad_im, l1_ratio=l1_ratio)
     if (val_min is not None or val_max is not None):
         output = output.clip(val_min, val_max, out=output)
     return output, dict(converged=(i < max_iter))
