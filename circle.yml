@@ -1,8 +1,7 @@
 dependencies:
   override:
     - pip install --upgrade pip
-    - pip install --upgrade numpy
-    - pip install --upgrade scipy scikit-learn nibabel sphinx
+    - pip install -e .
 
 test:
   override:
