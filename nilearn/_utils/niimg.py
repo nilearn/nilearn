@@ -8,6 +8,7 @@ import copy
 import gc
 import collections
 
+import numpy as np
 import nibabel
 
 from .compat import _basestring
