@@ -54,7 +54,7 @@ things a bit faster. These include:
   a principled way.
 - Continuation is used along the regularization path, where the
   solution of the optimization problem for a given value of the
-  regularization parameter `alpha` is used to used as initialization
+  regularization parameter `alpha` is used as initialization
   of for next the regularization (smaller) value on the regularization
   grid.
 
