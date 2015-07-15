@@ -8,7 +8,6 @@ DictLearning
 from distutils.version import LooseVersion
 
 import sklearn
-
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
@@ -154,7 +153,7 @@ class DictLearning(CanICA, CacheMixin):
         if self.verbose:
             print('[DictLearning] Learning dictionary')
         parameters = {}
-        if LooseVersion(sklearn.__version__).version > [0, 12]:
+        if LooseVersion(sklearn.__version__).version >= [0, 13]:
             parameters['batch_size'] = 10
         else:
             parameters['chunk_size'] = 10
