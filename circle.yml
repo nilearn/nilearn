@@ -1,6 +1,6 @@
 dependencies:
   override:
-    - pip install numpy scipy sklearn nibabel
+    - pip install numpy scipy scikit-learn nibabel
 
 test:
   override:
