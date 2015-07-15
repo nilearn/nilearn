@@ -60,15 +60,6 @@ plotting.plot_stat_map(localizer_cmap_filename, display_mode='yz',
                        title="display_mode='yz', cut_coords=(-27, 60)")
 
 ###############################################################################
-# demo plot negative values in glass brain
-
-plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
-                          plot_abs=False)
-
-plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, colorbar=True,
-                          plot_abs=False)
-
-###############################################################################
 # demo display objects with add_ methods
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
