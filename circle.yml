@@ -1,4 +1,6 @@
 dependencies:
+  cache_directories:
+    - "~/nilearn_data"
   override:
     - pip install --upgrade pip
     - pip install -e .
