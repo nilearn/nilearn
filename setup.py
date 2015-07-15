@@ -86,5 +86,6 @@ if __name__ == "__main__":
           package_data={'nilearn.data': ['*.nii.gz', '*.csv'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*'],
+                        'nilearn.image.tests.data': ['*.mgz'],
                         'nilearn.description': ['*.rst']},
           install_requires=install_requires,)
