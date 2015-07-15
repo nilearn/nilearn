@@ -211,6 +211,8 @@ uses.
    plot_glass_brain
    plot_connectome
    find_xyz_cut_coords
+   find_parcellation_atlas_cut_coords
+   find_probabilistic_atlas_cut_coords
 
 **Classes**:
 
