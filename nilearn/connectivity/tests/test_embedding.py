@@ -437,7 +437,7 @@ def test_fit_transform():
             # Positive definiteness if expected and output value checks
             if estimators["measure"] == "tangent":
                 assert_array_almost_equal(cov_new, cov_new.T)
-                gmean_sqrt = _map_sym(np.sqrt, cov_embedding.mean_cov_)
+                gmean_sqrt = _map_sym(np.sqrt, cov_embedding.tangent_mean_)
                 assert(is_spd(gmean_sqrt, decimal=7))
                 assert(is_spd(cov_embedding.whitening_, decimal=7))
                 assert_array_almost_equal(cov_embedding.whitening_.dot(
