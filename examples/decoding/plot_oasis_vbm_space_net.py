@@ -31,35 +31,35 @@ X_test = X_test[perm]
 
 
 ### Fit and predict ###########################################################
-from nilearn.decoding import SpaceNet
-decoder = SpaceNet(memory=memory, screening_percentile=10, verbose=1,
-                   mask=nifti_masker, n_jobs=14)
-
-### Fit and predict
-decoder.fit(new_images, age)
-coef_niimg = decoder.coef_img_
-age_pred = decoder.predict(new_images).ravel()
-
-### Visualization #############################################################
+from nilearn.decoding import SpaceNetRegressor
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
+for penalty in ['tv-l1', 'smooth-lasso']:
+    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2)
+    decoder.fit(X_train, y_train)  # fit
+    coef_img = decoder.coef_img_
+    y_pred = decoder.predict(X_test).ravel()  # predict
+    mse = np.mean(np.abs(y_test - y_pred))
 
-# weights map
-background_img = dataset_files.gray_matter_maps[0]
-plot_stat_map(coef_img, background_img, title="Graph-Net weights",
-              display_mode="z")
+    ### Visualization #########################################################
+    # weights map
+    background_img = X[0]
+    plot_stat_map(coef_img, background_img, title="%s weights" % penalty,
+                  display_mode="z", cut_coords=3)
 
-# quality of predictions
-plt.figure()
-linewidth = 3
-ax1 = plt.subplot('211')
-ax1.plot(age, label="True age", linewidth=linewidth)
-ax1.plot(age_pred, '--', c="g", label="Fitted age", linewidth=linewidth)
-ax1.set_ylabel("age")
-plt.legend(loc="best")
-ax2 = plt.subplot("212")
-ax2.plot(age - age_pred, label="True age - fitted age", linewidth=linewidth)
-ax2.set_xlabel("subject")
-plt.legend(loc="best")
+    # quality of predictions
+    plt.figure()
+    plt.suptitle("%s: Mean Absolute Error %.2f years" % (penalty, mse))
+    linewidth = 3
+    ax1 = plt.subplot('211')
+    ax1.plot(y_test, label="True age", linewidth=linewidth)
+    ax1.plot(y_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
+    ax1.set_ylabel("age")
+    plt.legend(loc="best")
+    ax2 = plt.subplot("212")
+    ax2.plot(y_test - y_pred, label="True age - predicted age",
+             linewidth=linewidth)
+    ax2.set_xlabel("subject")
+    plt.legend(loc="best")
 
 plt.show()
