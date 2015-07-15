@@ -69,11 +69,11 @@ technical details regarding the implementation of SpaceNet.
 Mixed gambles
 .............
 
-.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_1.png
+.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_2.png
+.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_002.png
    :scale: 60
 
 .. literalinclude:: ../../examples/decoding/plot_poldrack_space_net.py
@@ -82,11 +82,11 @@ Mixed gambles
 Haxby
 .....
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_1.png
+.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_2.png
+.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_002.png
    :scale: 60
 
 See the script here:
@@ -95,11 +95,11 @@ See the script here:
 Oasis VBM
 .........
 
-.. figure:: ../auto_examples/decoding/images/plot_oasis_vbm_space_net_1.png
+.. figure:: ../auto_examples/decoding/images/plot_oasis_vbm_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_oasis_vbm_space_net_2.png
+.. figure:: ../auto_examples/decoding/images/plot_oasis_vbm_space_net_002.png
    :scale: 60
 
 See the script here:
