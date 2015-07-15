@@ -8,8 +8,8 @@ import numpy as np
 import re
 from sklearn.datasets.base import Bunch
 
-from utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
-                   _read_md5_sum_file, _tree, _filter_columns)
+from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
+                    _read_md5_sum_file, _tree, _filter_columns)
 
 from .._utils.compat import BytesIO, _basestring, _urllib
 

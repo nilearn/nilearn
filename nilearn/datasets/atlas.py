@@ -9,9 +9,7 @@ from scipy import ndimage
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
-from utils import _get_dataset_dir
-from utils import _fetch_files
-from utils import _get_dataset_descr
+from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 
 from .._utils import check_niimg, new_img_like
 from .._utils.compat import _basestring
@@ -352,11 +350,13 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     return Bunch(labels=files[0], maps=files[1], description=fdescr)
 
+
 @deprecated('it has been replace by fetch_atlas_msdl and '
             'will be removed in nilearn 0.1.5')
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     return fetch_atlas_msdl(data_dir=data_dir, url=url,
                             resume=resume, verbose=verbose)
+
 
 def fetch_atlas_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs.

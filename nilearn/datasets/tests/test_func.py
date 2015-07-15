@@ -50,6 +50,7 @@ def teardown_tmpdata():
         shutil.rmtree(tmpdir)
 
 
+@with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby_simple():
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
@@ -86,7 +87,7 @@ def test_fail_fetch_haxby_simple():
             (os.path.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
-    assert_raises(IOError, datasets._fetch_files,
+    assert_raises(IOError, datasets.utils._fetch_files,
                   os.path.join(tmpdir, 'haxby2001_simple'), files,
                   verbose=0)
     dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
