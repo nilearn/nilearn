@@ -1,6 +1,17 @@
 dependencies:
+  cache_directories:
+    - ~/.pyenv/versions/3.3.6
+    - ~/.pyenv/versions/3.4.2
+    - ~/.pyenv/versions/3.5.0b3
+    - ~/.pyenv/versions/pypy3-2.4.0
   override:
-    - pip install numpy scipy scikit-learn nibabel
+    - pyenv install -l
+    - pyenv install -ks 2.7
+    - pyenv local 2.7
+    - python --version
+    - pip install --upgrade pip
+    - pip install --upgrade numpy
+    - pip install --upgrade scipy scikit-learn nibabel
 
 test:
   override:
