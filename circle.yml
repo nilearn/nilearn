@@ -1,0 +1,4 @@
+test:
+  override:
+    - make
+    - cd doc && make
