@@ -1,7 +1,6 @@
 from distutils.version import LooseVersion
 
 import sklearn
-
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 import numpy as np
 
@@ -30,7 +29,7 @@ def test_dict_learning():
 
     K = np.abs(components.dot(maps.T))
 
-    if LooseVersion(sklearn.__version__).version > [0, 12]:
+    if LooseVersion(sklearn.__version__).version >= [0, 13]:
         from sklearn.utils.linear_assignment_ import linear_assignment
         indices = linear_assignment(1-K)
         K = K[indices[:, 0], :][:, indices[:, 1]]
