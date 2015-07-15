@@ -206,8 +206,9 @@ class GlassBrainAxes(BaseAxes):
     volumes with a schematic view of the brain.
 
     """
-    def __init__(self, ax, direction, coord, **kwargs):
+    def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
         super(GlassBrainAxes, self).__init__(ax, direction, coord)
+        self._plot_abs = plot_abs
         if ax is not None:
             object_bounds = glass_brain.plot_brain_schematics(ax,
                                                               direction,
@@ -227,7 +228,24 @@ class GlassBrainAxes(BaseAxes):
 
         """
         max_axis = 'xyz'.index(self.direction)
-        maximum_intensity_data = np.abs(data).max(axis=max_axis)
+
+        if not self._plot_abs:
+            # get the shape of the array we are projecting to
+            new_shape = list(data.shape)
+            del new_shape[max_axis]
+
+            # generate a 3D indexing array that points to max abs value in the
+            # current projection
+            a1, a2 = np.indices(new_shape)
+            inds = [a1, a2]
+            inds.insert(max_axis, np.abs(data).argmax(axis=max_axis))
+
+            # take the values where the absolute value of the projection
+            # is the highest
+            maximum_intensity_data = data[inds]
+        else:
+            maximum_intensity_data = np.abs(data).max(axis=max_axis)
+
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):

@@ -20,8 +20,8 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_002.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
+.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_extensive_001.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_glass_brain_extensive.html
      :scale: 50
 
 .. |plot_connectome| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_002.png
@@ -59,7 +59,10 @@ different heuristics to find cutting coordinates.
 
 |plot_glass_brain|   :func:`plot_glass_brain`
                      |hack|
-                     Glass brain visualization
+                     Glass brain visualization. By default plots maximum
+                     intensity projection of the absolute values. To plot
+                     positive and negative values set plot_abs parameter to
+                     False.
 
 |plot_stat_map|      :func:`plot_stat_map`
                      |hack|
@@ -207,15 +210,15 @@ plot, and has methods to add overlays, contours or edge maps::
                    are computed for constant values, specified in
                    'levels'. This is typically useful to outline a mask,
                    or ROI on top of another map.
-                    |hack|
-                    **Example:** :ref:`example_manipulating_visualizing_plot_haxby_masks.py`
+                   |hack|
+                   **Example:** :ref:`example_manipulating_visualizing_plot_haxby_masks.py`
 
 
 **add_overlay**   `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
                   |hack|
                   Add a new overlay on the existing figure
-                   |hack|
-                   **Example:** :ref:`example_manipulating_visualizing_plot_probabilistic_atlas.py`
+                  |hack|
+                  **Example:** :ref:`example_manipulating_visualizing_plot_probabilistic_atlas.py`
 
 
 ================= =========================================================
