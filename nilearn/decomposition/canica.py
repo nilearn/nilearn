@@ -4,13 +4,11 @@ CanICA
 
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
-from distutils.version import LooseVersion
 
 from operator import itemgetter
 import numpy as np
 from scipy.stats import scoreatpercentile
 
-import sklearn
 from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
@@ -150,15 +148,9 @@ class CanICA(MultiPCA, CacheMixin):
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
-        if (LooseVersion(sklearn.__version__).version > [0, 12]):
-            # random_state in fastica was added in 0.13
-            results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+        results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(fastica)(self.components_.T,
                     whiten=True, fun='cube', random_state=seed)
-                for seed in seeds)
-        else:
-            results = Parallel(n_jobs=1, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T, whiten=True, fun='cube')
                 for seed in seeds)
 
         ica_maps_gen_ = (result[2].T for result in results)
