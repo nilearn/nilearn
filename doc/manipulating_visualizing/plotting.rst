@@ -40,7 +40,7 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/plot_prob_atlas_005.png
+.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/plot_prob_atlas_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_prob_atlas.html
      :scale: 50
 
@@ -80,15 +80,14 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting a connectome
 
+|plot_prob_atlas|    :func:`plot_prob_atlas`
+                     |hack|
+                     Plotting 4D probabilistic atlas maps
+
 **plot_img**         :func:`plot_img`
                      |hack|
                      General-purpose function, with no specific presets
-
-|plot_prob_atlas|    :func:`plot_prob_atlas`
-                     |hack|
-                     Plotting a 4D probabilistic atlas maps or statistical
-                     maps
-=================== =========================================================
+================== =========================================================
 
 
 .. warning:: **Opening too many figures without closing**

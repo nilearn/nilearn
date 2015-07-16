@@ -1,6 +1,6 @@
 """
-Visualizing 4D probabilistic atlas maps onto the anatomical image
-=================================================================
+Visualizing 4D probabilistic atlas maps
+=======================================
 
 This example shows how to visualize probabilistic atlases made of 4D images.
 There are 3 different display types:
@@ -13,7 +13,7 @@ There are 3 different display types:
 
 3. "continuous", maps are shown as just color overlays.
 
-The :func: nilearn.plotting.plot_prob_atlas function displays each map
+The :func:`nilearn.plotting.plot_prob_atlas` function displays each map
 with each different color which are picked randomly from the colormap
 which is already defined.
 
@@ -49,7 +49,7 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
                'Smith2009 70 Brainmap': smith.bm70,
                'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf'])}
 
-for name, atlas in atlas_types.items():
+for name, atlas in sorted(atlas_types.items()):
         plotting.plot_prob_atlas(atlas,
                                  title='%s' % name)
 
