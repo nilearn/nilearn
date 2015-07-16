@@ -272,7 +272,6 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-<<<<<<< HEAD
 def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False,
                                  label_hemisphere = 'left'):
     """ Return coordinates of center of mass of 3D parcellation atlas
@@ -281,6 +280,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     ----------
     labels_img: 3D Nifti1Image
         A brain parcellation atlas with specific mask labels for each parcellated region.
+
 
     background_label: int, optional (default 0)
         Label value used in labels_img to represent background.
