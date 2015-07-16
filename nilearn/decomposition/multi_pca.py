@@ -2,19 +2,23 @@
 PCA dimension reduction on multiple subjects
 """
 import itertools
-import numpy as np
-import warnings
-from scipy import linalg
 
+import warnings
+
+import numpy as np
+from scipy import linalg
 import nibabel
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
+from sklearn.utils.validation import check_random_state
+from sklearn.linear_model import LinearRegression
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
 from ..input_data.base_masker import filter_and_mask
+
 from .._utils.class_inspect import get_params
-from .._utils.cache_mixin import cache, CacheMixin
+from .._utils.cache_mixin import CacheMixin, cache
 from .._utils import as_ndarray
 from .._utils.compat import _basestring
 
@@ -25,7 +29,8 @@ def session_pca(imgs, mask_img, parameters,
                 memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
-                copy=True):
+                copy=True,
+                random_state=0):
     """Filter, mask and compute PCA on Niimg-like objects
 
     This is an helper function whose first call `base_masker.filter_and_mask`
@@ -64,6 +69,11 @@ def session_pca(imgs, mask_img, parameters,
 
     copy: boolean, optional
         Whether or not data should be copied
+
+    random_state: int or RandomState
+        Pseudo number generator state used for random sampling.
+
+    random_state:
     """
 
     data, affine = cache(
@@ -77,9 +87,13 @@ def session_pca(imgs, mask_img, parameters,
             confounds=confounds,
             copy=copy)
     if n_components <= data.shape[0] // 4:
-        U, S, _ = randomized_svd(data.T, n_components)
+        U, S, _ = cache(randomized_svd, memory, memory_level=memory_level,
+                        func_memory_level=2)(
+            data.T, n_components, random_state=random_state)
     else:
-        U, S, _ = linalg.svd(data.T, full_matrices=False)
+        U, S, _ = cache(linalg.svd, memory, memory_level=memory_level,
+                        func_memory_level=2)(
+            data.T, full_matrices=False)
     U = U.T[:n_components].copy()
     S = S[:n_components]
     return U, S
@@ -88,8 +102,7 @@ def session_pca(imgs, mask_img, parameters,
 class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     """Perform Multi Subject Principal Component Analysis.
 
-    Perform a PCA on each subject and stack the results. An optional Canonical
-    Correlation Analysis can also be performed.
+    Perform a PCA on each subject, stack the results and perform a group level PCA on these.
 
     Parameters
     ----------
@@ -107,8 +120,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         parameters.
 
     do_cca: boolean, optional
-        Indicate if a Canonical Correlation Analysis must be run after the
-        PCA.
+        Indicate if a Canonical Correlation Analysis must be run after the single subject
+        PCAs.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
@@ -133,6 +146,9 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
+
+    random_state: int or RandomState
+        Pseudo number generator state used for random sampling.
 
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
@@ -172,7 +188,9 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                  do_cca=True, standardize=True, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
                  t_r=None, memory=Memory(cachedir=None), memory_level=0,
+                 sorted=False,
                  n_jobs=1, verbose=0,
+                 random_state=None
                  ):
         self.mask = mask
         self.memory = memory
@@ -189,6 +207,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.standardize = standardize
+        self.random_state = random_state
+        self.sorted = sorted
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components
@@ -201,6 +221,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
             the affine is considered the same for all.
         """
 
+        random_state = check_random_state(self.random_state)
         # Hack to support single-subject data:
         if isinstance(imgs, (_basestring, nibabel.Nifti1Image)):
             imgs = [imgs]
@@ -212,7 +233,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('Need one or more Niimg-like objects as input, '
                              'an empty list was given.')
         if confounds is None:
-            confounds = itertools.repeat(None, len(imgs))
+            confounds = [None] * len(imgs)  # itertools.repeat(None, len(imgs))
 
         # First, learn the mask
         if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
@@ -266,31 +287,27 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
-        parameters = get_params(MultiNiftiMasker, self)
-        # Remove non specific and redudent parameters
-        for param_name in ['memory', 'memory_level', 'confounds',
-                           'verbose', 'n_jobs']:
-            parameters.pop(param_name, None)
-
-        parameters['detrend'] = True
-
         # Now do the subject-level signal extraction (i.e. data-loading +
         # PCA)
-
+        if self.verbose:
+            print("[MultiPCA] Learning subject level PCAs")
         subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-            delayed(session_pca)(
+            delayed(self._cache(session_pca, func_memory_level=1))(
                 img,
                 self.masker_.mask_img_,
-                parameters,
+                self._get_filter_and_mask_parameters(),
                 n_components=self.n_components,
                 memory=self.memory,
                 memory_level=self.memory_level,
                 confounds=confound,
-                verbose=self.verbose
+                verbose=self.verbose,
+                random_state=random_state
             )
             for img, confound in zip(imgs, confounds))
         subject_pcas, subject_svd_vals = zip(*subject_pcas)
 
+        if self.verbose:
+            print("[MultiPCA] Learning group level PCA")
         if len(imgs) > 1:
             if not self.do_cca:
                 for subject_pca, subject_svd_val in \
@@ -307,16 +324,20 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                                                           subject_pca.shape[0]))
                 data[index * self.n_components:
                      (index + 1) * self.n_components] = subject_pca
-            data, variance, _ = self._cache(
-                randomized_svd, func_memory_level=3)(
-                    data.T, n_components=self.n_components)
+            data, variance, _ = self._cache(randomized_svd, func_memory_level=3)(
+                data.T, n_components=self.n_components, random_state=random_state)
             # as_ndarray is to get rid of memmapping
             data = as_ndarray(data.T)
         else:
             data = subject_pcas[0]
             variance = subject_svd_vals[0]
+
         self.components_ = data
-        self.variance_ = variance
+        self.explained_variance_ratio_ = variance ** 2 / np.sum(variance ** 2)
+
+        if self.sorted:
+            self._sort_components(imgs, confounds)
+
         return self
 
     def transform(self, imgs, confounds=None):
@@ -359,3 +380,103 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         # XXX: dealing properly with 2D/ list of 2D data?
         return [nifti_maps_masker.inverse_transform(signal)
                 for signal in component_signals]
+
+    def _get_filter_and_mask_parameters(self):
+        parameters = get_params(MultiNiftiMasker, self)
+        # Remove non specific and redundant parameters
+        for param_name in ['memory', 'memory_level', 'confounds',
+                           'verbose', 'n_jobs']:
+            parameters.pop(param_name, None)
+
+        parameters['detrend'] = True
+        return parameters
+
+    def _sort_components(self, imgs, confounds=None):
+        """ Sort components by score obtained on test set imgs
+        """
+        score = self.score(imgs, confounds, per_component=True).mean(axis=0)
+        index = np.argsort(score)[::-1]
+        self.score_ = score[index]
+        self.components_ = self.components_[index]
+
+    def score(self, imgs, confounds=None, per_component=False):
+        """Score function based on explained variance
+
+        Parameters
+        ----------
+        imgs: iterable of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            Data to be scored
+
+        confounds: CSV file path or 2D matrix
+            This parameter is passed to nilearn.signal.clean. Please see the
+            related documentation for details
+
+        per_component: boolean,
+            Specify whether the explained variance ratio is desired for each map or for the global set of components
+
+        Returns
+        -------
+        score: ndarray or float,
+            Holds the score for each subjects. Score is two dimensional if per_component is True. First dimension
+            is squeezed if the number of subjects is one
+        """
+        if not isinstance(imgs, tuple) and not isinstance(imgs, list):
+            imgs = [imgs]
+        if confounds is None:
+            confounds = [None] * len(imgs)
+        if per_component:
+            score = np.zeros((len(imgs), self.n_components))
+        else:
+            score = np.zeros(len(imgs))
+        for i, (img, confound) in enumerate(zip(imgs, confounds)):
+            data = self._cache(
+                filter_and_mask,
+                func_memory_level=2,
+                ignore=['verbose', 'copy'])(
+                    img, self.mask_img_, self._get_filter_and_mask_parameters(),
+                    memory_level=self.memory_level,
+                    memory=self.memory,
+                    verbose=self.verbose,
+                    confounds=confound,
+                    copy=True)[0]
+            score[i] = self._score(data, per_component=per_component)
+        return score if len(imgs) > 1 else score[0]
+
+    def _score(self, data,
+               per_component=False):
+        """Score function based on explained variance
+
+        Parameters
+        ----------
+        data: ndarray,
+            Holds single subject data to be tested against components
+
+        per_component: boolean,
+            Specify whether the explained variance ratio is desired for each map or for the global set of components_
+
+        Returns
+        -------
+        score: ndarray,
+            Holds the score for each subjects. score is two dimensional if per_component = True
+        """
+        # If data is not standardized:
+        data -= np.mean(data)
+
+        full_var = np.sum(data ** 2)
+
+        lr = LinearRegression(fit_intercept=False)
+        if not per_component:
+            residual_variance = lr.fit(self.components_.T, data.T).residues_.sum()
+        else:
+            # Per-component score : residues of projection onto each map
+            residual_variance = np.zeros(self.n_components)
+            for i in range(self.n_components):
+                if np.any(self.components_[i]):
+                    residual_variance[i] = lr.fit(self.components_.T[:, i][:, np.newaxis], data.T).residues_.sum()
+                else:
+                    # Setting score to 0 is component is empty
+                    residual_variance[i] = full_var
+        res = np.maximum(0., 1. - residual_variance / full_var)
+        return res
+

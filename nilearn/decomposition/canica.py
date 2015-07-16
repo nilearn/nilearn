@@ -5,11 +5,10 @@ CanICA
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 from distutils.version import LooseVersion
-
 from operator import itemgetter
+
 import numpy as np
 from scipy.stats import scoreatpercentile
-
 import sklearn
 from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory, delayed, Parallel
@@ -115,17 +114,19 @@ class CanICA(MultiPCA, CacheMixin):
                  random_state=0,
                  target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
+                 sorted=False,
                  # Common options
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
                  ):
         super(CanICA, self).__init__(
             mask=mask, memory=memory, memory_level=memory_level,
-            n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
+            n_jobs=n_jobs, verbose=max(0, verbose - 1), do_cca=do_cca,
             n_components=n_components, smoothing_fwhm=smoothing_fwhm,
-            target_affine=target_affine, target_shape=target_shape)
+            sorted=sorted,
+            target_affine=target_affine, target_shape=target_shape,
+            random_state=random_state)
         self.threshold = threshold
-        self.random_state = random_state
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
@@ -146,20 +147,28 @@ class CanICA(MultiPCA, CacheMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
+        # Fit MultiPCA without sorting
+        sorted = self.sorted
+        self.sorted = False
         MultiPCA.fit(self, imgs, y=y, confounds=confounds)
+        self.sorted = sorted
         random_state = check_random_state(self.random_state)
 
+        if self.verbose:
+            print("[CanICA] Performing ICA")
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
         if (LooseVersion(sklearn.__version__).version > [0, 12]):
             # random_state in fastica was added in 0.13
             results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T,
-                    whiten=True, fun='cube', random_state=seed)
-                for seed in seeds)
+                delayed(self._cache(fastica, func_memory_level=1))
+                       (self.components_.T,
+                        whiten=True, fun='cube', random_state=seed)
+                        for seed in seeds)
         else:
             results = Parallel(n_jobs=1, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T, whiten=True, fun='cube')
-                for seed in seeds)
+                delayed(self._cache(fastica, func_memory_level=1))
+                       (self.components_.T, whiten=True, fun='cube')
+                        for seed in seeds)
 
         ica_maps_gen_ = (result[2].T for result in results)
         ica_maps_and_sparsities = ((ica_map,
@@ -189,5 +198,8 @@ class CanICA(MultiPCA, CacheMixin):
         for component in self.components_:
             if component.max() < -component.min():
                 component *= -1
+
+        if self.sorted:
+            self._sort_components(imgs, confounds)
 
         return self
