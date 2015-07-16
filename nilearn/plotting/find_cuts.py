@@ -74,7 +74,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         return .5 * np.array(data.shape)
     if activation_threshold is None:
         activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
-                                                   80)
+            80)
     mask = np.abs(my_map) > activation_threshold - 1.e-15
     # mask may be zero everywhere in rare cases
     if mask.max() == 0:
@@ -113,14 +113,14 @@ def _get_auto_mask_bounds(img):
         # The mask will be anything that is fairly different
         # from the values in the corners
         edge_value = float(data[0, 0, 0] + data[0, -1, 0]
-                            + data[-1, 0, 0] + data[0, 0, -1]
-                            + data[-1, -1, 0] + data[-1, 0, -1]
-                            + data[0, -1, -1] + data[-1, -1, -1]
-                        )
+                           + data[-1, 0, 0] + data[0, 0, -1]
+                           + data[-1, -1, 0] + data[-1, 0, -1]
+                           + data[0, -1, -1] + data[-1, -1, -1]
+                           )
         edge_value /= 6
-        mask = np.abs(data - edge_value) > .005*data.ptp()
+        mask = np.abs(data - edge_value) > .005 * data.ptp()
     xmin, xmax, ymin, ymax, zmin, zmax = \
-            get_mask_bounds(new_img_like(img, mask, affine))
+        get_mask_bounds(new_img_like(img, mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 
@@ -219,7 +219,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     for _ in range(n_cuts):
         # Find a peak
         max_along_axis = np.unravel_index(np.abs(data).argmax(),
-                                          data.shape)[axis]
+            data.shape)[axis]
 
         # cancel out the surroundings of the peak
         start = max(0, max_along_axis - spacing)
@@ -245,7 +245,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         if len(cut_coords) > 1:
             middle_idx = np.argmax(np.diff(cut_coords))
             slice_middle = int(.5 * (cut_coords[middle_idx]
-                                    + cut_coords[middle_idx + 1]))
+                                     + cut_coords[middle_idx + 1]))
             if not slice_middle in cut_coords:
                 candidates.append(slice_middle)
         if slice_below >= 0:
@@ -271,25 +271,24 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-def find_parcellation_atlas_cut_coords(labels_img, background_label=0):
-
-    """ Grab coordinates of center of mass of 3D parcellation atlas
+def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False):
+    """ Return coordinates of center of mass of 3D parcellation atlas
 
     Parameters
     ----------
     labels_img: 3D Nifti1Image
-        A brain parcellation atlas.
+        A brain parcellation atlas with specific mask labels for each region.
 
     background_label: number, optional
         Label used in labels_img to represent background.
 
     Returns
     -------
-    labels_list: List
-        Label region values
+    coords: array
+        World coordinates in mm for center of label regions.
 
-    coords: List
-        World coordinates for center of label regions
+    labels_list: List
+        Label region values.
     """
 
     # grab data and affine
@@ -307,41 +306,43 @@ def find_parcellation_atlas_cut_coords(labels_img, background_label=0):
     for cur_label in unique_labels:
         cur_img = labels_data == cur_label
 
-        #take the largest connected component
-        volume = np.asarray(cur_img)
-        labels, label_nb = ndimage.label(volume)
+        # take the largest connected component
+        labels, label_nb = ndimage.label(cur_img)
         label_count = np.bincount(labels.ravel())
-        labels ==label_count.argmax()
         label_count[0] = 0
+        labels == label_count.argmax()
 
         # get parcellation center of mass
-        x,y,z = ndimage.center_of_mass(labels)
+        x, y, z = ndimage.center_of_mass(labels)
 
         # dump label region and coordinates into a dictionary
         label_list.append(cur_label)
-        coord_list.append((x,y,z))
+        coord_list.append((x, y, z))
 
     # transform coordinates
-    coords = [coord_transform(i[0],i[1],i[2],labels_affine) for i in coord_list]
+    coords = [coord_transform(i[0], i[1], i[2], labels_affine) for i in coord_list]
 
-    return label_list, np.array(coords)
+    if return_label_names:
+        return np.array(coords), label_list
+    else:
+        return np.array(coords)
 
 
 def find_probabilistic_atlas_cut_coords(label_img):
-    """ Grab coordinates of center probabolistic atlas 4D image
+    """ Return coordinates of center probabilistic atlas 4D image
 
     Parameters
     ----------
     label_img: 4D Nifti1Image
-        A probabilistic brain atlas
+        A probabilistic brain atlas with probabolistic masks in the fourth dimension.
 
     Returns
     -------
-    coords: list
-       center coordinates for each label region of the probabilistic atlas
+    coords: array of shape (3, n_maps)
+       center coordinates for each label region of the probabilistic atlas.
     """
 
     label_img = check_niimg(label_img)
     label_imgs = iter_img(label_img)
     coords = [find_xyz_cut_coords(img) for img in label_imgs]
-    return coords
+    return np.array(coords)
