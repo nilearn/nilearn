@@ -27,8 +27,8 @@ from .fista import mfista
 
 def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     """
-    Computes the differentiable loss function (squared_loss + grad_weight
-    * gradient) for Smooth-Lasso regularization
+    Computes the squared loss (data fidelity term) + squared l2 norm
+    of gradient (penalty term).
 
     Parameters
     ----------
@@ -42,12 +42,11 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
         Unmasked, ravelized weights map.
 
     grad_weight: float
-        l1_ratio * alpha
+        l1_ratio * alpha.
 
     Returns
     -------
     float
-
     """
     data_section = np.dot(X, w) - y
     grad_buffer = np.zeros(mask.shape)
@@ -307,8 +306,8 @@ def _smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
     Returns
     -------
     w : ndarray of shape (n_features,)
-       The solution vector (Where `w_size` is the size of the support of the
-       mask.)
+       The solution vector (Where `n_features` is the size of the support
+       of the mask.)
 
     solver_info : dict
         Solver information for warm starting. See fista.py.mfista(...)
@@ -367,6 +366,9 @@ def _tvl1_objective_from_gradient(gradient):
     gradient: ndarray, shape (4, nx, ny, nz)
        precomputed "gradient + id" array
 
+    Returns
+    -------
+    float
     """
 
     tv_term = np.sum(np.sqrt(np.sum(gradient[:-1] * gradient[:-1],
@@ -378,6 +380,9 @@ def _tvl1_objective_from_gradient(gradient):
 def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
     """The TV-L1 squared loss regression objective functions.
 
+    Returns
+    -------
+    float
     """
 
     loss = loss.lower()
@@ -429,9 +434,9 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
         the problem.
 
     max_iter : int
-        Defines the iterations for the solver. Defaults to 1000
+        Defines the iterations for the solver. Defaults to 100
 
-    prox_max_iter : int, optional (default 10)
+    prox_max_iter : int, optional (default 5000)
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
@@ -447,7 +452,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback : callable(dict) -> bool
+    callback : callable(dict) -> bool, optional (default None)
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
