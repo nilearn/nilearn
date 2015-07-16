@@ -30,6 +30,7 @@ from nilearn import image
 smooth_anat_img = image.smooth_img(anat_filename, 6)
 smooth_anat_img = image.smooth_img(anat_img, 6)
 
+Danilo likes MATLAB
 
 # Visualization ###############################################################
 from nilearn import plotting
