@@ -71,7 +71,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     ==========
     maps_img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        Region definitions, as one image of labels.
+        Maps definition, as a 4D set of fuzzay images.
 
     mask_img: Niimg-like object, optional
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
