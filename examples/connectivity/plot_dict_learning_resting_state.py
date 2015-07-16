@@ -53,19 +53,17 @@ for estimator in estimators:
 ### Visualize the results #####################################################
 # Show some interesting components
 import matplotlib.pyplot as plt
-from nilearn.plotting import plot_stat_map, find_xyz_cut_coords
+from nilearn.plotting import plot_prob_atlas, find_xyz_cut_coords
 from nilearn.image import index_img
 
 mem = Memory(cachedir='~/nilearn_cache')
 
 print('[Example] Displaying')
 
-for i in range(n_components):
-    if i % 2 == 0:
-        fig, axes = plt.subplots(nrows=2)
-        cut_coords = find_xyz_cut_coords(index_img(components_imgs[1], i))
-        for estimator, cur_img, ax in zip(estimators, components_imgs, axes):
-            plot_stat_map(index_img(cur_img, i), title="Component %d" % i, axes=ax,
-                          cut_coords=cut_coords, colorbar=False)
+fig, axes = plt.subplots(nrows=2)
+cut_coords = find_xyz_cut_coords(index_img(components_imgs[1], 1))
+for estimator, cur_img, ax in zip(estimators, components_imgs, axes):
+    plot_prob_atlas(cur_img, title="%s" % estimator.__class__.__name__, axes=ax,
+                  cut_coords=cut_coords, colorbar=False)
 
 plt.show()
