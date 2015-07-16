@@ -278,7 +278,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     Parameters
     ----------
     labels_img: 3D Nifti1Image
-        A brain parcellation atlas with specific mask labels for each region.
+        A brain parcellation atlas with specific mask labels for each parcellated region .
 
     background_label: number, optional
         Label used in labels_img to represent background.
