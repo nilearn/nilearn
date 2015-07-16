@@ -81,7 +81,7 @@ $(function () {
 	url	 = document.URL.replace(/#.*$/, ""),
 	current_section = 0;
 
-    // Grab positions of our sections 
+    // Grab positions of our sections
     $('.headerlink').each(function(){
         sections[this.href.replace(url, '')] = $(this).offset().top - 50;
     });
@@ -99,7 +99,7 @@ $(function () {
 	    $('.sphinxsidebarwrapper').css("position", "relative");
 	    $('.sphinxsidebarwrapper').css("top",0);
 	}
-            
+
 	// Highlight the current section
 	$('a.internal').removeClass('active');
         for(i in sections){
@@ -143,20 +143,20 @@ $(function () {
  <div class="tags">
   <ul>
     <li>
-      <big><a href="{{pathto('auto_examples/plot_haxby_anova_svm')}}">SVM</a></big>
+      <big><a href="{{pathto('auto_examples/decoding/plot_haxby_anova_svm')}}">SVM</a></big>
     </li>
     <li>
-      <small><a href="{{pathto('data_analysis/parcellating')}}">Ward
+      <small><a href="{{pathto('connectivity/parcellating')}}">Ward
           clustering</a></small>
     </li>
     <li>
-      <a href="{{pathto('building_blocks/haxby_searchlight')}}">Searchlight</a>
+      <a href="{{pathto('decoding/searchlight')}}">Searchlight</a>
     </li>
     <li>
-      <big><a href="{{pathto('data_analysis/resting_state_networks')}}">ICA</a></big>
+      <big><a href="{{pathto('connectivity/resting_state_networks')}}">ICA</a></big>
     </li>
     <li>
-      <a href="{{pathto('building_blocks/data_preparation')}}">Nifti IO</a>
+      <a href="{{pathto('manipulating_visualizing/data_preparation')}}">Nifti IO</a>
     </li>
     <li>
       <a href="{{pathto('modules/reference')}}#module-nilearn.datasets">Datasets</a>
