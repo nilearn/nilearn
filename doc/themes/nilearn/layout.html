@@ -1,4 +1,4 @@
-{#
+  {#
     nilearn/layout.html
     ~~~~~~~~~~~~~~~~~
 
@@ -81,7 +81,7 @@ $(function () {
 	url	 = document.URL.replace(/#.*$/, ""),
 	current_section = 0;
 
-    // Grab positions of our sections 
+    // Grab positions of our sections
     $('.headerlink').each(function(){
         sections[this.href.replace(url, '')] = $(this).offset().top - 50;
     });
@@ -99,7 +99,7 @@ $(function () {
 	    $('.sphinxsidebarwrapper').css("position", "relative");
 	    $('.sphinxsidebarwrapper').css("top",0);
 	}
-            
+
 	// Highlight the current section
 	$('a.internal').removeClass('active');
         for(i in sections){

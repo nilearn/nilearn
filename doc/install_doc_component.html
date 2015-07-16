@@ -1,0 +1,196 @@
+<script type="text/javascript">
+var OSName=2;
+if (navigator.appVersion.indexOf("Win")!=-1) OSName=1;
+if (navigator.appVersion.indexOf("Mac")!=-1) OSName=2;
+if (navigator.appVersion.indexOf("X11")!=-1) OSName=3;
+if (navigator.appVersion.indexOf("Linux")!=-1) OSName=3;
+
+$(document).ready(function(){
+    $("ul#tabs li.active").removeClass("active");
+    $("ul#tab li.active").removeClass("active");
+    $("ul#tabs li:nth-child("+OSName+")").addClass("active");
+    $("ul#tab li:nth-child("+OSName+")").addClass("active");
+});
+
+$(document).ready(function(){
+    $("ul#tabs li").click(function(e){
+        if (!$(this).hasClass("active")) {
+            var tabNum = $(this).index();
+            var nthChild = tabNum+1;
+            $("ul#tabs li.active").removeClass("active");
+            $(this).addClass("active");
+            $("ul#tab li.active").removeClass("active");
+            jQuery("ul#tab li:nth-child("+nthChild+")").fadeIn(400).siblings().hide();
+            $("ul#tab li:nth-child("+nthChild+")").addClass("active");
+        }
+    });
+});
+</script>
+
+
+<style type="text/css">
+ul#tabs {
+  list-style-type: none;
+  margin: 0 0 0px 0;
+  padding: 0;
+  text-align: center; }
+  ul#tabs li {
+    font-size:20px;
+    display: inline-block;
+    background-color: #355F7C;
+    border-bottom: solid 5px #C4D8E2;
+    padding: 5px 20px;
+    margin-bottom: 0px;
+    color: black;
+    cursor: pointer; }
+    ul#tabs li:hover {
+      color: black;
+      background-color: #C4D8E2; }
+      ul#tabs li.active {
+        color: black;
+        background-color: #C4D8E2; }
+
+        ul#tab {
+          list-style-type: none;
+          margin: 0;
+          padding: 0;
+
+
+          background:#FF7F50;
+          -moz-box-shadow: 3px 4px 0px 0px #355F7C;
+          -webkit-box-shadow: 3px 4px 0px 0px #355F7C;
+          box-shadow: 8px 8px 0px 0px #355F7C;
+          background-color:#C4D8E2;
+          -moz-border-radius:5px;
+          -webkit-border-radius:5px;
+          border-radius:5px;
+          border:1px solid #C4D8E2;
+          color: black;
+          font-family:Arial;
+          font-size:17px;
+          font-weight:bold;
+          padding:12px 44px;
+          text-decoration:none;}
+          ul#tab li {
+            display: none;
+            padding: 0px;
+            border: solid 0px #d2f4e9; }
+            ul#tab li.active {
+              display: block; }
+              ul#tab li h2 {
+                font-weight: 400;
+                margin-bottom: 30px;
+                padding-bottom: 5px;
+                background-color: #FFFAF0}
+                ul#tab li div.code{
+                  font-size:15px;
+                  color: black;
+                  background-color: white;
+                }
+                ul#tab li p{
+                  font-size:15px;
+                  font-weight:normal;
+                }
+                ul#tab li p.emphasize{
+                  font-size:25px;
+                }
+                ul#tab li div.contents p{
+                  font-size:20px;
+                }
+
+</style>
+
+
+<div class="container">
+  <ul id="tabs">
+    <li class="active">My OS is Windows</li>
+    <li>My OS is Mac</li>
+    <li>My OS is Linux</li>
+    <li>I want the source</li>
+  </ul>
+  <ul id="tab">
+    <li class="active">
+
+      <p class="emphasize">First: download and install 64 bit <a class="reference external" href="https://store.continuum.io/cshop/anaconda/" target="_blank">Anaconda</a></p>
+
+      <p><strong>We recommend that you install a complete scientific Python distribution like 64 bit <a class="reference external" href="https://store.continuum.io/cshop/anaconda/" target="_blank">Anaconda</a></strong>. Since It will meet all the requirements of nilearn, save you time and trouble. You could also check <a class="reference external" href="http://code.google.com/p/pythonxy/" target="_blank">PythonXY</a> as an alternative.</p>
+
+      <p>Nilearn requires a Python installation and the following dependencies: ipython, scikit-learn, matplotlib and nibabel</p>
+
+      <p class="emphasize">Second: open a Command Prompt</p>
+      <p><strong>(Press "Win-R", type "cmd" and press "Enter". This will open the program cmd.exe, which is the command prompt)</strong></p>
+      <p>Then type the following line and press "Enter"</p>
+      <div class="code"><pre>pip install -U --user nilearn</pre></div>
+
+      <p class="emphasize">Third: open iPython</p>
+      <p><strong>(You can open it by writing "ipython" in the command prompt and pressing "Enter")</strong></p>
+      <p>Then type in the following line and press "Enter":</p>
+      <div class="code"><pre>In [1]: import nilearn</pre></div>
+      <p>If no error occurs, you have installed nilearn correctly.</p>
+    </li>
+
+
+    <li>
+      <p class="emphasize">First: download and install 64 bit <a class="reference external" href="https://store.continuum.io/cshop/anaconda/" target="_blank">Anaconda</a></p>
+
+      <p><strong>We recommend that you install a complete scientific Python distribution like 64 bit <a class="reference external" href="https://store.continuum.io/cshop/anaconda/" target="_blank">Anaconda</a></strong>. Since It will meet all the requirements of nilearn, save you time and trouble.</p>
+
+      <p>Nilearn requires a Python installation and the following dependencies: ipython, scikit-learn, matplotlib and nibabel</p>
+
+      <p class="emphasize">Second: open a Terminal</p>
+      <p><strong>(Navigate to /Applications/Utilities and double-click on Terminal)</strong></p>
+      <p>Then type the following line and press "Enter"</p>
+      <div class="code"><pre>pip install -U --user nilearn</pre></div>
+
+      <p class="emphasize">Third: open iPython</p>
+      <p><strong>(You can open it by writing "ipython" in the terminal and pressing "Enter")</strong></p>
+      <p>Then type in the following line and press "Enter":</p>
+      <div class="code"><pre>In [1]: import nilearn</pre></div>
+      <p>If no error occurs, you have installed nilearn correctly.</p>
+
+    </li>
+
+    <li>
+
+      <div class="contents"><p>If you are <strong>Ubuntu or Debian</strong> and you have access to <a class="reference external" href="http://neuro.debian.net/pkgs/python-nilearn.html" target="_blank">Neurodebian</a> or can install it. Then simply install nilearn through <a class="reference external" href="http://neuro.debian.net/pkgs/python-nilearn.html" target="_blank">Neurodebian</a>.</p></div>
+
+      <p class="emphasize">First: Install dependencies</p>
+
+      <p>Install or ask your system administrator to install the following packages using the distribution package manager: <strong>ipython</strong>, <strong>scikit-learn</strong> (sometimes called <cite>sklearn</cite>, or <cite>python-sklearn</cite>), <strong>matplotlib</strong> (sometimes called <cite>python-matplotlib</cite>) and <strong>nibabel</strong> (sometimes called <cite>python-nibabel</cite>)</p>
+
+      <p><strong>If you do not have access to the package manager we recommend that you install a complete scientific Python distribution like 64 bit <a class="reference external" href="https://store.continuum.io/cshop/anaconda/" target="_blank">Anaconda</a></strong>. Since It will meet all the requirements of nilearn, save you time and trouble.</p>
+
+      <p class="emphasize">Second: open a Terminal</p>
+      <p><strong>(Press ctrl+alt+t and a Terminal console will pop up)</strong></p>
+      <p>Then type the following line and press "Enter"</p>
+      <div class="code"><pre>pip install -U --user nilearn</pre></div>
+
+      <p class="emphasize">Third: open iPython</p>
+      <p><strong>(You can open it by writing "ipython" in the terminal and pressing "Enter")</strong></p>
+      <p>Then type in the following line and press "Enter":</p>
+      <div class="code"><pre>In [1]: import nilearn</pre></div>
+      <p>If no error occurs, you have installed nilearn correctly.</p>
+
+    </li>
+
+    <li>
+
+      <p class="emphasize">To Install the development version:</p>
+
+      <p><strong>Use git as an alternative to using pip, to get the latest nilearn version</strong></p>
+      <p class="first">Simply run the following command (as a shell command, not a Python command):</p>
+      <div class="code"><pre>git clone https://github.com/nilearn/nilearn.git</pre></div>
+
+      <p>In the future, you can readily update your copy of nilearn by executing &#8220;git pull&#8221; in the nilearn root directory (as a shell command).</p>
+      <p>If you really do not want to use git, you may still download the latest development snapshot from the following link (unziping required): <a class="reference external" href="https://github.com/nilearn/nilearn/archive/master.zip">https://github.com/nilearn/nilearn/archive/master.zip</a></p>
+      <p><strong>Install in the nilearn directory created by the previous steps, run (again, as a shell command):</strong></p>
+      <div class="code"><pre>python setup.py install --user</pre></div>
+
+      <p><strong>Now to test everything is set up correctly, open IPython and type in the following line:</strong></p>
+      <div class="code"><pre>In [1]: import nilearn</pre></div>
+      <p>If no error occurs, you have installed nilearn correctly.</p>
+
+    </li>
+
+  </ul>
+</div>
