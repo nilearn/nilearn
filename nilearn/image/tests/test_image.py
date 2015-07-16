@@ -2,7 +2,10 @@
 Test image pre-processing functions
 """
 from nose.tools import assert_true, assert_false
+from distutils.version import LooseVersion
+from nose import SkipTest
 
+import os
 import nibabel
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -11,6 +14,12 @@ from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
 from nilearn._utils import testing, niimg_conversions
+from nilearn._utils import niimg
+from nilearn.image import new_img_like
+
+
+currdir = os.path.dirname(os.path.abspath(__file__))
+datadir = os.path.join(currdir, 'data')
 
 
 def test_high_variance_confounds():
@@ -350,3 +359,19 @@ def test_iter_img():
                                expected_data_3d)
             assert_array_equal(img.get_affine(),
                                img_4d.get_affine())
+
+
+def test_new_img_like_mgz():
+    """Check that new images can be generated with bool MGZ type
+    This is usually when computing masks using MGZ inputs, e.g.
+    when using plot_stap_map
+    """
+
+    if not LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0'):
+        # Old nibabel do not support MGZ files
+        raise SkipTest
+
+    ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
+    data = np.ones(ref_img.get_data().shape, dtype=np.bool)
+    affine = ref_img.get_affine()
+    new_img_like(ref_img, data, affine, copy_header=False)

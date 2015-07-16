@@ -5,7 +5,7 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_raises, assert_equal, assert_true
+from nose.tools import assert_raises, assert_equal
 import numpy as np
 
 import nibabel
@@ -13,6 +13,7 @@ import nibabel
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.testing import assert_less
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
@@ -100,7 +101,6 @@ def test_nifti_labels_masker():
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
                                    fmri11_img.get_affine())
 
-
 def test_nifti_labels_masker_resampling():
     # Test resampling in NiftiLabelsMasker
     shape1 = (10, 11, 12)
@@ -185,12 +185,12 @@ def test_nifti_labels_masker_resampling():
 
     uniq_labels = np.unique(masker.labels_img_.get_data())
     assert_equal(uniq_labels[0], 0)
-    assert_true(len(uniq_labels) - 1 == n_regions)
+    assert_equal(len(uniq_labels) - 1, n_regions)
 
     transformed = masker.transform(fmri11_img)
     assert_equal(transformed.shape, (length, n_regions))
     # Some regions have been clipped. Resulting signal must be zero
-    assert_true((transformed.var(axis=0) == 0).sum() < n_regions)
+    assert_less((transformed.var(axis=0) == 0).sum(), n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
@@ -213,3 +213,11 @@ def test_nifti_labels_masker_resampling():
     np.testing.assert_array_equal(
         masker._resampled_labels_img_.get_affine(),
         affine2)
+
+    # Test with filenames
+    with testing.write_tmp_imgs(fmri22_img) as filename:
+        masker = NiftiLabelsMasker(labels33_img, resampling_target='data')
+        masker.fit_transform(filename)
+
+
+

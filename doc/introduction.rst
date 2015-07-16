@@ -170,6 +170,14 @@ a command prompt::
    Mac users need to type this in the "Terminal", while Windows users
    need to type it in command line of cmd.exe.
 
+Nilearn may also be available as a software package for your operating system.
+For example, the NeuroDebian_ project provides binary packages for recent
+Debian and Ubuntu releases. See the `NeuroDebian package page`_ for information
+on availability and installation instructions.
+
+.. _NeuroDebian: http://neuro.debian.net
+.. _NeuroDebian package page: http://neuro.debian.net/pkgs/python-nilearn.html
+
 |
 
 .. _testing_installation:
@@ -287,7 +295,7 @@ first have to import the :ref:`plotting <plotting>` functionality by::
 Then you can call the function that creates a "glass brain" by giving it
 the file name::
 
-    >>> plotting.plot_glass_brain("/home/user/t_map000.nii")
+    >>> plotting.plot_glass_brain("/home/user/t_map000.nii")   # doctest: +SKIP
 
 .. image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_001.png
     :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
@@ -308,14 +316,14 @@ the :mod:`nilearn.image` module for image manipulation, e.g.
 :func:`image.smooth_img` for smoothing::
 
     >>> from nilearn import image
-    >>> smoothed_img = image.smooth_img("/home/user/t_map000.nii", fwhm=5)
+    >>> smoothed_img = image.smooth_img("/home/user/t_map000.nii", fwhm=5)   # doctest: +SKIP
 
 The returned value `smoothed_img` is a `NiftiImage object
 <http://nipy.org/nibabel/nibabel_images.html>`_. It can either be passed
 to other nilearn functions operating on niimgs (neuroimaging images) or
 saved to disk with::
 
-    >>> smoothed_img.to_filename("/home/user/t_map000_smoothed.nii")
+    >>> smoothed_img.to_filename("/home/user/t_map000_smoothed.nii")   # doctest: +SKIP
 
 Finally, nilearn deals with Nifti images that come in two flavors: 3D
 images, which represent a brain volume, and 4D images, which represent a
@@ -323,11 +331,11 @@ series of brain volumes. To extract the n-th 3D image from a 4D image, you can
 use the :func:`image.index_img` function (keep in mind that array indexing
 always starts at 0 in the Python language)::
 
-    >>> first_volume = image.index_img("/home/user/fmri_volumes.nii", 0)
+    >>> first_volume = image.index_img("/home/user/fmri_volumes.nii", 0)   # doctest: +SKIP
 
 To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
 
-   >>> for volume in image.iter_img("/home/user/fmri_volumes.nii"):
+   >>> for volume in image.iter_img("/home/user/fmri_volumes.nii"):   # doctest: +SKIP
    ...     smoothed_img = image.smooth_img(volume, fwhm=5)
 
 .. topic:: **Exercise: varying the amount of smoothing**

@@ -10,9 +10,10 @@ import itertools
 from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
-from .niimg import _safe_get_data, load_niimg, new_img_like
+from .niimg import _safe_get_data, load_niimg
 from .compat import _basestring, izip
-from .exceptions import DimensionError
+
+from nilearn._utils.exceptions import DimensionError
 
 
 def _check_fov(img, affine, shape):
@@ -24,17 +25,49 @@ def _check_fov(img, affine, shape):
             np.allclose(img.get_affine(), affine))
 
 
-def _check_same_fov(img1, img2):
-    """ Return True if img1 and img2 have the same field of view
-        (shape and affine), False elsewhere.
+def _check_same_fov(*args, **kwargs):
+    """Returns True if provided images has the same field of view (shape and
+       affine). Returns False or raise an error elsewhere, depending on the
+       `raise_error` argument. This function can take an unlimited number of
+       images as arguments or keyword arguments and raise a user-friendly
+       ValueError if asked.
+
+    Parameters
+    ----------
+
+    args: images
+        Images to be checked. Images passed without keywords will be labelled
+        as img_#1 in the error message (replace 1 with the appropriate index)
+
+    kwargs: images
+        Images to be checked. In case of error, images will be reference by
+        their keyword name in the error message.
+
+    raise_error: boolean, optional
+        If True, an error will be raised in case of error.
     """
-    img1 = check_niimg(img1)
-    img2 = check_niimg(img2)
-    return (img1.shape[:3] == img2.shape[:3]
-            and np.allclose(img1.get_affine(), img2.get_affine()))
+    from ..image import new_img_like  # avoid circular imports
+
+    raise_error = kwargs.pop('raise_error', False)
+    for i, arg in enumerate(args):
+        kwargs['img_#%i' % i] = arg
+    errors = []
+    for (a_name, a_img), (b_name, b_img) in itertools.combinations(
+            kwargs.items(), 2):
+        if not a_img.shape[:3] == b_img.shape[:3]:
+            errors.append((a_name, b_name, 'shape'))
+        if not np.allclose(a_img.get_affine(), b_img.get_affine()):
+            errors.append((a_name, b_name, 'affine'))
+    if len(errors) > 0 and raise_error:
+        raise ValueError('Following field of view errors were detected:\n' +
+                         '\n'.join(['- %s and %s do not have the same %s' % e
+                                    for e in errors]))
+    return (len(errors) == 0)
 
 
 def _index_img(img, index):
+    from ..image import new_img_like  # avoid circular imports
+
     """Helper function for check_niimg_4d."""
     return new_img_like(
         img, img.get_data()[:, :, :, index], img.get_affine(),
@@ -42,7 +75,7 @@ def _index_img(img, index):
 
 
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
-                      target_fov=None,
+                      target_fov=None, dtype=None,
                       memory=Memory(cachedir=None),
                       memory_level=0, verbose=0):
     """Iterate over a list of niimgs and do sanity checks and resampling
@@ -62,6 +95,11 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
     target_fov: tuple of affine and shape
        If specified, images are resampled to this field of view
+
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
     """
     ref_fov = None
     resample_to_first_img = False
@@ -71,7 +109,8 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
     for i, niimg in enumerate(niimgs):
         try:
             niimg = check_niimg(
-                niimg, ensure_ndim=ndim_minus_one, atleast_4d=atleast_4d)
+                niimg, ensure_ndim=ndim_minus_one, atleast_4d=atleast_4d,
+                dtype=dtype)
             if i == 0:
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
@@ -85,9 +124,9 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         warnings.warn('Affine is different across subjects.'
                                       ' Realignement on first subject '
                                       'affine forced')
-                    niimg = cache(
-                        image.resample_img, memory, func_memory_level=2,
-                        memory_level=memory_level)(
+                    niimg = cache(image.resample_img, memory,
+                                  func_memory_level=2,
+                                  memory_level=memory_level)(
                             niimg, target_affine=ref_fov[0],
                             target_shape=ref_fov[1])
                 else:
@@ -113,7 +152,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             raise
 
 
-def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
+def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
                 return_iterator=False):
     """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
 
@@ -132,6 +171,11 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     atleast_4d: boolean, optional
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
     Returns
     -------
     result: 3D/4D Niimg-like object
@@ -147,15 +191,17 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
 
     Its application is idempotent.
     """
+    from ..image import new_img_like  # avoid circular imports
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
         if return_iterator:
-            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim)
-        return concat_niimgs(niimg, ensure_ndim=ensure_ndim)
+            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
+                                     dtype=dtype)
+        return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
-    niimg = load_niimg(niimg)
+    niimg = load_niimg(niimg, dtype=dtype)
 
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
@@ -176,7 +222,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     return niimg
 
 
-def check_niimg_3d(niimg):
+def check_niimg_3d(niimg, dtype=None):
     """Check that niimg is a proper 3D niimg-like object and load it.
     Parameters
     ----------
@@ -185,6 +231,11 @@ def check_niimg_3d(niimg):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
+    
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     Returns
     -------
@@ -201,10 +252,10 @@ def check_niimg_3d(niimg):
 
     Its application is idempotent.
     """
-    return check_niimg(niimg, ensure_ndim=3)
+    return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
 
-def check_niimg_4d(niimg, return_iterator=False):
+def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters
@@ -217,6 +268,11 @@ def check_niimg_4d(niimg, return_iterator=False):
         call nibabel.load on it. If it is an object, check if get_data
         and get_affine methods are present, raise an Exception otherwise.
 
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+    
     return_iterator: boolean
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
@@ -234,7 +290,8 @@ def check_niimg_4d(niimg, return_iterator=False):
 
     Its application is idempotent.
     """
-    return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator)
+    return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator,
+                       dtype=dtype)
 
 
 def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
@@ -279,6 +336,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     concatenated: nibabel.Nifti1Image
         A single image.
     """
+    from ..image import new_img_like  # avoid circular imports
 
     target_fov = 'first' if auto_resample else None
 

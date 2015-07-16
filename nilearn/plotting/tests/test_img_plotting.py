@@ -18,7 +18,8 @@ from nilearn.image.resampling import coord_transform
 
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
-                                           plot_glass_brain, plot_connectome)
+                                           plot_glass_brain, plot_connectome,
+                                           plot_prob_atlas)
 from nilearn._utils.testing import assert_raises_regex
 
 mni_affine = np.array([[  -2.,    0.,    0.,   90.],
@@ -102,6 +103,9 @@ def test_plot_glass_brain():
     # test plot_glass_brain with colorbar
     plot_glass_brain(img, colorbar=True)
 
+    # test plot_glass_brain with negative values
+    plot_glass_brain(img, colorbar=True, plot_abs=False)
+
 
 def test_plot_stat_map():
     img = _generate_img()
@@ -147,6 +151,23 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
     plotted_array = ax.images[0].get_array()
     # Given the high threshold the array should be entirely masked
     assert_true(plotted_array.mask.all())
+
+
+def test_plot_stat_map_threshold_for_uint8():
+    # mask was applied in [-threshold, threshold] which is problematic
+    # for uint8 data. See https://github.com/nilearn/nilearn/issues/611
+    # for more details
+    data = 10 * np.ones((10, 10, 10), dtype='uint8')
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(data, affine)
+    threshold = np.array(5, dtype='uint8')
+    display = plot_stat_map(img, bg_img=None, threshold=threshold,
+                            display_mode='z', cut_coords=1)
+    # Next two lines retrieve the numpy array from the plot
+    ax = list(display.axes.values())[0].ax
+    plotted_array = ax.images[0].get_array()
+    # Make sure that no data is masked
+    assert_equal(plotted_array.mask.sum(), 0)
 
 
 def test_save_plot():
@@ -409,3 +430,18 @@ def test_singleton_ax_dim():
         shape[axis] = 1
         img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
         plot_stat_map(img, None, display_mode=direction)
+
+
+def test_plot_prob_atlas():
+    affine = np.eye(4)
+    shape = (6, 8, 10, 5)
+    rng = np.random.RandomState(0)
+    data_rng = rng.normal(size=shape)
+    img = nibabel.Nifti1Image(data_rng, affine)
+    # Testing the 4D plot prob atlas with contours
+    display = plot_prob_atlas(img, view_type='contours')
+    # Testing the 4D plot prob atlas with contours
+    display = plot_prob_atlas(img, view_type='filled_contours',
+                              threshold=0.2)
+    # Testing the 4D plot prob atlas with contours
+    display = plot_prob_atlas(img, view_type='continuous')

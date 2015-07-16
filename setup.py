@@ -79,10 +79,13 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 2',
               'Programming Language :: Python :: 2.6',
               'Programming Language :: Python :: 2.7',
+              'Programming Language :: Python :: 3.3',
+              'Programming Language :: Python :: 3.4',
           ],
           packages=find_packages(),
           package_data={'nilearn.data': ['*.nii.gz', '*.csv'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*'],
+                        'nilearn.image.tests.data': ['*.mgz'],
                         'nilearn.description': ['*.rst']},
           install_requires=install_requires,)

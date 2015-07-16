@@ -1,5 +1,5 @@
 """
-Utilities to compute a brain mask from EPI images
+Utilities to compute and operate on brain masks
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
@@ -10,7 +10,7 @@ from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
-from ._utils import new_img_like
+from .image import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data
@@ -159,7 +159,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if np.any(grp_mask > 0) and connected:
         grp_mask = largest_connected_component(grp_mask)
     grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
-    return new_img_like(mask_imgs[0], grp_mask, ref_affine)
+    return new_img_like(_utils.check_niimg_3d(mask_imgs[0]), grp_mask, ref_affine)
 
 
 def _post_process_mask(mask, affine, opening=2, connected=True,

@@ -10,12 +10,60 @@ from sklearn.externals.joblib import Memory
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
+from .._utils.cache_mixin import cache
 from .._utils import _compose_err_msg
 from .._utils.niimg_conversions import _check_same_fov
 from .. import signal
 from .. import region
 from .. import masking
 from .. import image
+
+
+def _extract_signals(imgs, labels_img, background_label, smoothing_fwhm,
+                     t_r, standardize, detrend, low_pass, high_pass,
+                     confounds, memory, memory_level,
+                     resample_on_labels=False, verbose=0):
+    """Extract representative time series of each region from fMRI signal
+    """
+    if verbose > 0:
+        print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
+    imgs = _utils.check_niimg_4d(imgs)
+
+    if resample_on_labels:
+        if verbose > 0:
+            print("Resampling images")
+        imgs = cache(
+            image.resample_img, memory, func_memory_level=2,
+            memory_level=memory_level)(
+                imgs, interpolation="continuous",
+                target_shape=labels_img.shape,
+                target_affine=labels_img.get_affine())
+
+    if smoothing_fwhm is not None:
+        if verbose > 0:
+            print("Smoothing images")
+        imgs = cache(
+            image.smooth_img, memory, func_memory_level=2,
+            memory_level=memory_level)(
+                imgs, smoothing_fwhm)
+
+    if verbose > 0:
+        print("Extracting region signals")
+    region_signals, labels_ = cache(
+        region.img_to_signals_labels, memory, func_memory_level=2,
+        memory_level=memory_level)(
+            imgs, labels_img, background_label=background_label)
+
+    if verbose > 0:
+        print("Cleaning extracted signals")
+    region_signals = cache(
+        signal.clean, memory=memory, func_memory_level=2,
+        memory_level=memory_level)(
+            region_signals, detrend=detrend, standardize=standardize, t_r=t_r,
+            low_pass=low_pass, high_pass=high_pass,
+            confounds=confounds)
+
+    return region_signals
 
 
 class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -205,51 +253,36 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         self._check_fitted()
 
-        logger.log("loading images: %s" %
-                   _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
-        imgs = _utils.check_niimg_4d(imgs)
+        # We handle the resampling of labels separately because the affine of
+        # the labels image should not impact the extraction of the signal.
 
+        if not hasattr(self, '_resampled_labels_img_'):
+            self._resampled_labels_img_ = self.labels_img_
         if self.resampling_target == "data":
-            if not hasattr(self, '_resampled_labels_img_'):
-                self._resampled_labels_img_ = self.labels_img_
-            if not _check_same_fov(imgs, self._resampled_labels_img_):
-                logger.log("resampling labels", verbose=self.verbose)
-                self._resampled_labels_img_ = self._cache(image.resample_img,
-                    func_memory_level=1)(
+            imgs_ = _utils.check_niimg_4d(imgs)
+            if not _check_same_fov(imgs_, self._resampled_labels_img_):
+                if self.verbose > 0:
+                    print("Resampling labels")
+                self._resampled_labels_img_ = self._cache(
+                    image.resample_img, func_memory_level=2)(
                         self.labels_img_, interpolation="nearest",
-                        target_shape=imgs.shape[:3],
-                        target_affine=imgs.get_affine(),
-                    )
-        elif self.resampling_target == "labels":
-            self._resampled_labels_img_ = self.labels_img_
-            logger.log("resampling images", verbose=self.verbose)
-            imgs = self._cache(image.resample_img, func_memory_level=1)(
-                imgs, interpolation="continuous",
-                target_shape=self.labels_img_.shape,
-                target_affine=self.labels_img_.get_affine())
-        else:
-            self._resampled_labels_img_ = self.labels_img_
+                        target_shape=imgs_.shape[:3],
+                        target_affine=imgs_.get_affine())
 
-        if self.smoothing_fwhm is not None:
-            logger.log("smoothing images", verbose=self.verbose)
-            imgs = self._cache(image.smooth_img, func_memory_level=1)(
-                imgs, fwhm=self.smoothing_fwhm)
+        region_signals = self._cache(
+                _extract_signals,
+                ignore=['verbose', 'memory', 'memory_level'])(
+            # Images
+            imgs, self._resampled_labels_img_, self.background_label,
+            # Pre-processing
+            self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
+            self.low_pass, self.high_pass, confounds,
+            # Caching
+            self.memory, self.memory_level,
+            # kwargs
+            resample_on_labels=(self.resampling_target == 'labels'),
+            verbose=self.verbose)
 
-        logger.log("extracting region signals", verbose=self.verbose)
-        region_signals, self.labels_ = self._cache(
-            region.img_to_signals_labels, func_memory_level=1)(
-                imgs, self._resampled_labels_img_,
-                background_label=self.background_label)
-
-        logger.log("cleaning extracted signals", verbose=self.verbose)
-        region_signals = self._cache(signal.clean, func_memory_level=1
-                                     )(region_signals,
-                                       detrend=self.detrend,
-                                       standardize=self.standardize,
-                                       t_r=self.t_r,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       confounds=confounds)
         return region_signals
 
     def inverse_transform(self, signals):

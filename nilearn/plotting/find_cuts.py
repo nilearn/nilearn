@@ -11,7 +11,8 @@ from scipy import ndimage
 
 # Local imports
 from .._utils.ndimage import largest_connected_component
-from .._utils import new_img_like, check_niimg
+from .._utils import check_niimg
+from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform

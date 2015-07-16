@@ -27,17 +27,20 @@ def _set_mpl_backend():
         _import_module_with_version_check('matplotlib',
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
 
+
 _set_mpl_backend()
 
 ###############################################################################
 
 from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
-    plot_roi, plot_stat_map, plot_glass_brain, plot_connectome
-from .find_cuts import find_xyz_cut_coords, find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
+    plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, plot_prob_atlas
+from .find_cuts import find_xyz_cut_coords, find_parcellation_cut_coords, \
+    find_probabilistic_atlas_cut_coords
 
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_connectome',
-           'find_xyz_cut_coords' , 'find_parcellation_cut_coords',
-           'find_probabilistic_atlas_cut_coords']
+           'find_xyz_cut_coords',
+           'find_parcellation_cut_coords', 'find_probabilistic_atlas_cut_coords',
+           'plot_prob_atlas', ]
