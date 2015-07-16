@@ -14,34 +14,62 @@ import nibabel
 from nose import with_setup
 from nose.tools import assert_true, assert_equal
 
-from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
 
 from nilearn._utils.compat import _basestring
 
+from nilearn.datasets import utils, atlas, struct
 
+
+original_fetch_files = None
+original_url_request = None
+original_chunk_read = None
+mock_fetch_files = None
+mock_url_request = None
+mock_chunk_read = None
+
+
+def setup_mock():
+    global original_url_request
+    global mock_url_request
+    mock_url_request = mock_request()
+    original_url_request = utils._urllib.request
+    utils._urllib.request = mock_url_request
+
+    global original_chunk_read
+    global mock_chunk_read
+    mock_chunk_read = wrap_chunk_read_(utils._chunk_read_)
+    original_chunk_read = utils._chunk_read_
+    utils._chunk_read_ = mock_chunk_read
+
+    global original_fetch_files
+    global mock_fetch_files
+    mock_fetch_files = FetchFilesMock()
+    original_fetch_files = atlas._fetch_files
+    atlas._fetch_files = mock_fetch_files
+
+
+def teardown_mock():
+    global original_url_request
+    utils._urllib.request = original_url_request
+
+    global original_chunk_read
+    utils._chunk_read_ = original_chunk_read
+
+    global original_fetch_files
+    atlas._fetch_files = original_fetch_files
+
+
+tmpdir = None
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
-tmpdir = None
-url_request = None
-file_mock = None
 
 
 def setup_tmpdata():
     # create temporary dir
     global tmpdir
     tmpdir = mkdtemp()
-
-
-def setup_mock():
-    global url_request
-    url_request = mock_request()
-    datasets.utils._urllib.request = url_request
-    datasets.utils._chunk_read_ = wrap_chunk_read_(datasets.utils._chunk_read_)
-    global file_mock
-    file_mock = FetchFilesMock()
-    datasets.atlas._fetch_files = file_mock  # overwrite the actual function
 
 
 def teardown_tmpdata():
@@ -59,28 +87,28 @@ def test_get_dataset_dir():
     os.environ.pop('NILEARN_SHARED_DATA', None)
 
     expected_base_dir = os.path.expanduser('~/nilearn_data')
-    data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
+    data_dir = utils._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
-    data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
+    data_dir = utils._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
+    data_dir = utils._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'env_data')
     expected_dataset_dir = os.path.join(expected_base_dir, 'test')
-    data_dir = datasets.utils._get_dataset_dir(
+    data_dir = utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
@@ -92,7 +120,7 @@ def test_get_dataset_dir():
 
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = datasets.utils._get_dataset_dir('test',
+    data_dir = utils._get_dataset_dir('test',
                                                default_paths=[no_write],
                                                verbose=0)
     # Non writeable dir is returned because dataset may be in there.
@@ -105,7 +133,7 @@ def test_get_dataset_dir():
     with open(test_file, 'w') as out:
         out.write('abcfeg')
     assert_raises_regex(OSError, 'Not a directory',
-                        datasets.utils._get_dataset_dir, 'test', test_file,
+                        utils._get_dataset_dir, 'test', test_file,
                         verbose=0)
 
 
@@ -113,7 +141,7 @@ def test_get_dataset_dir():
 def test_fail_fetch_atlas_harvard_oxford():
     # specify non-existing atlas item
     assert_raises_regex(ValueError, 'Invalid atlas name',
-                        datasets.atlas.fetch_atlas_harvard_oxford,
+                        atlas.fetch_atlas_harvard_oxford,
                         'not_inside')
 
     # specify existing atlas item
@@ -126,7 +154,7 @@ def test_fail_fetch_atlas_harvard_oxford():
     os.makedirs(nifti_dir)
 
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-    datasets.struct.load_mni152_template().to_filename(target_atlas_nii)
+    struct.load_mni152_template().to_filename(target_atlas_nii)
 
     dummy = open(os.path.join(HO_dir, 'HarvardOxford-Cortical.xml'), 'w')
     dummy.write("<?xml version='1.0' encoding='us-ascii'?> "
@@ -134,7 +162,7 @@ def test_fail_fetch_atlas_harvard_oxford():
                 "</metadata>")
     dummy.close()
 
-    ho = datasets.atlas.fetch_atlas_harvard_oxford(target_atlas,
+    ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
                                                    data_dir=tmpdir)
 
     assert_true(isinstance(nibabel.load(ho.maps), nibabel.Nifti1Image))
@@ -142,13 +170,13 @@ def test_fail_fetch_atlas_harvard_oxford():
     assert_true(len(ho.labels) > 0)
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_craddock_2012():
     print '*' * 80
     print tmpdir
     print '*' * 80
-    bunch = datasets.atlas.fetch_atlas_craddock_2012(data_dir=tmpdir,
+    bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmpdir,
                                                      verbose=0)
 
     keys = ("scorr_mean", "tcorr_mean",
@@ -161,15 +189,15 @@ def test_fetch_atlas_craddock_2012():
             "tcorr05_2level_all.nii.gz",
             "random_all.nii.gz",
     ]
-    assert_equal(len(url_request.urls), 1)
+    assert_equal(len(mock_url_request.urls), 1)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2012', fn))
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_smith_2009():
-    bunch = datasets.atlas.fetch_atlas_smith_2009(data_dir=tmpdir, verbose=0)
+    bunch = atlas.fetch_atlas_smith_2009(data_dir=tmpdir, verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70",
             "bm20", "bm10", "bm70")
@@ -182,17 +210,17 @@ def test_fetch_atlas_smith_2009():
             "bm70.nii.gz",
     ]
 
-    assert_equal(len(url_request.urls), 6)
+    assert_equal(len(mock_url_request.urls), 6)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
 
 
 def test_fetch_atlas_power_2011_atlas():
-    bunch = datasets.atlas.fetch_atlas_power_2011()
+    bunch = atlas.fetch_atlas_power_2011()
     assert_equal(len(bunch.rois), 264)
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_destrieux_2009_atlas():
     datadir = os.path.join(tmpdir, 'destrieux_2009')
@@ -201,10 +229,10 @@ def test_fetch_atlas_destrieux_2009_atlas():
         datadir, 'destrieux2009_rois_labels_lateralized.csv'), 'w')
     dummy.write("name,index")
     dummy.close()
-    bunch = datasets.atlas.fetch_atlas_destrieux_2009(data_dir=tmpdir,
+    bunch = atlas.fetch_atlas_destrieux_2009(data_dir=tmpdir,
                                                       verbose=0)
 
-    assert_equal(len(url_request.urls), 1)
+    assert_equal(len(mock_url_request.urls), 1)
     assert_equal(bunch['maps'], os.path.join(
         tmpdir, 'destrieux_2009', 'destrieux2009_rois_lateralized.nii.gz'))
 
@@ -212,27 +240,27 @@ def test_fetch_atlas_destrieux_2009_atlas():
         datadir, 'destrieux2009_rois_labels.csv'), 'w')
     dummy.write("name,index")
     dummy.close()
-    bunch = datasets.atlas.fetch_atlas_destrieux_2009(
+    bunch = atlas.fetch_atlas_destrieux_2009(
         lateralized=False, data_dir=tmpdir, verbose=0)
 
-    assert_equal(len(url_request.urls), 1)
+    assert_equal(len(mock_url_request.urls), 1)
     assert_equal(bunch['maps'], os.path.join(
         tmpdir, 'destrieux_2009', 'destrieux2009_rois.nii.gz'))
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_msdl():
-    dataset = datasets.atlas.fetch_atlas_msdl(data_dir=tmpdir, verbose=0)
+    dataset = atlas.fetch_atlas_msdl(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.labels, _basestring))
     assert_true(isinstance(dataset.maps, _basestring))
-    assert_equal(len(url_request.urls), 1)
+    assert_equal(len(mock_url_request.urls), 1)
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_yeo_2011():
-    dataset = datasets.atlas.fetch_atlas_yeo_2011(data_dir=tmpdir, verbose=0)
+    dataset = atlas.fetch_atlas_yeo_2011(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.anat, _basestring))
     assert_true(isinstance(dataset.colors_17, _basestring))
     assert_true(isinstance(dataset.colors_7, _basestring))
@@ -240,4 +268,4 @@ def test_fetch_atlas_yeo_2011():
     assert_true(isinstance(dataset.thick_7, _basestring))
     assert_true(isinstance(dataset.thin_17, _basestring))
     assert_true(isinstance(dataset.thin_7, _basestring))
-    assert_equal(len(url_request.urls), 1)
+    assert_equal(len(mock_url_request.urls), 1)
