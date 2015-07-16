@@ -12,8 +12,8 @@ from __future__ import with_statement
 import numpy as np
 import os.path as osp
 from ..design_matrix import (
-    design_matrix_light, _convolve_regressors, design_matrix_from_csv,
-    make_design_matrix, _cosine_drift)
+    design_matrix_light, _convolve_regressors, make_design_matrix,
+    _cosine_drift, plot_design_matrix, check_design_matrix)
 from pandas import DataFrame
 from ..experimental_paradigm import check_paradigm
 
@@ -87,7 +87,7 @@ def test_show_design_matrix():
     frame_times = np.linspace(0, 127 * 1., 128)
     DM = make_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3)
-    ax = DM.show()
+    ax = plot_design_matrix(DM)
     assert (ax is not None)
 
 
@@ -109,8 +109,8 @@ def test_design_matrix0():
     # Test design matrix creation when no paradigm is provided
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    X, names = design_matrix_light(frame_times, drift_model='polynomial',
-                            drift_order=3)
+    X, names = design_matrix_light(
+        frame_times, drift_model='polynomial', drift_order=3)
     assert_equal(len(names), 4)
 
 
@@ -457,10 +457,13 @@ def test_csv_io():
                    drift_model='polynomial', drift_order=3)
     path = 'design_matrix.csv'
     with InTemporaryDirectory():
-        DM.write_csv(path)
-        DM2 = design_matrix_from_csv(path)
-    assert_almost_equal(DM.matrix, DM2.matrix)
-    assert_equal(DM.names, DM2.names)
+        DM.to_csv(path)
+        DM2 = DataFrame().from_csv(path)
+
+    _, matrix, names = check_design_matrix(DM)
+    _, matrix_, names_ = check_design_matrix(DM2)
+    assert_almost_equal(matrix, matrix_)
+    assert_equal(names, names_)
 
 
 def test_spm_1():
@@ -472,8 +475,9 @@ def test_spm_1():
     paradigm = DataFrame({'name': conditions,
                           'onset': onsets})
     X1 = make_design_matrix(frame_times, paradigm, drift_model='blank')
+    _, matrix, _ = check_design_matrix(X1)
     spm_design_matrix = DESIGN_MATRIX['arr_0']
-    assert_true(((spm_design_matrix - X1.matrix) ** 2).sum() /
+    assert_true(((spm_design_matrix - matrix) ** 2).sum() /
                 (spm_design_matrix ** 2).sum() < .1)
 
 
@@ -489,5 +493,6 @@ def test_spm_2():
                           'duration': duration})
     X1 = make_design_matrix(frame_times, paradigm, drift_model='blank')
     spm_design_matrix = DESIGN_MATRIX['arr_1']
-    assert_true(((spm_design_matrix - X1.matrix) ** 2).sum() /
+    _, matrix, _ = check_design_matrix(X1)
+    assert_true(((spm_design_matrix - matrix) ** 2).sum() /
                 (spm_design_matrix ** 2).sum() < .1)

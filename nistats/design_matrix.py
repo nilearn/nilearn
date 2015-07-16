@@ -33,7 +33,6 @@ import numpy as np
 from warnings import warn
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
-from .utils  import open4csv
 from .experimental_paradigm import check_paradigm
 from pandas import DataFrame
 
@@ -256,7 +255,6 @@ def _full_rank(X, cmax=1e15):
 ######################################################################
 
 
-
 def make_design_matrix(
     frame_times, paradigm=None, hrf_model='canonical',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
@@ -265,35 +263,44 @@ def make_design_matrix(
 
     Parameters
     ----------
-    frame_times: array of shape(n_frames)
+    frame_times : array of shape(n_frames),
         the timing of the scans
-    paradigm: DataFrame instance, optional
-              description of the experimental paradigm
-    hrf_model: string, optional,
-               that specifies the hemodynamic response function
-               it can be 'canonical', 'canonical with derivative' or 'fir'
-    drift_model: string, optional
-                 specifies the desired drift model,
-                 to be chosen among 'polynomial', 'cosine', 'blank'
-    period_cut: float, optional
-           cut period of the low-pass filter
-    drift_order: int, optional
-                 order of the drift model (in case it is polynomial)
-    fir_delays: array of shape(nb_onsets) or list, optional,
-                in case of FIR design, yields the array of delays
-                used in the FIR model
-    add_regs: array of shape(n_frames, n_add_reg), optional
-              additional user-supplied regressors
-    add_reg_names: list of (n_addreg) regressor names, optional
-                   if None, while n_add_reg > 0, these will be termed
-                   'reg_%i', i = 0..n_add_reg - 1
-    min_onset: float, optional
+
+    paradigm : DataFrame instance, optional
+        description of the experimental paradigm
+
+    hrf_model : string, optional,
+        that specifies the hemodynamic response function
+        it can be 'canonical', 'canonical with derivative' or 'fir'
+
+    drift_model : string, optional
+        specifies the desired drift model,
+        to be chosen among 'polynomial', 'cosine', 'blank'
+
+    period_cut : float, optional
+        cut period of the low-pass filter in seconds
+
+    drift_order : int, optional
+        order of the drift model (in case it is polynomial)
+
+    fir_delays : array of shape(n_onsets) or list, optional,
+        in case of FIR design, yields the array of delays used in the FIR model
+
+    add_regs : array of shape(n_frames, n_add_reg), optional
+        additional user-supplied regressors
+
+    add_reg_names : list of (n_add_reg) strings, optional
+        if None, while n_add_reg > 0, these will be termed
+        'reg_%i', i = 0..n_add_reg - 1
+
+    min_onset : float, optional
         minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered
 
     Returns
     -------
-    DesignMatrix instance
+    design_matrix: DataFrame instance,
+        describing the design matrix
     """
     # check arguments
     # check that additional regressor specification is correct
@@ -332,7 +339,7 @@ def make_design_matrix(
         matrix = np.hstack((matrix, add_regs))
         names += add_reg_names
 
-    # setp 3: drifts
+    # step 3: drifts
     drift, dnames = _make_drift(drift_model.lower(), frame_times, drift_order,
                                 period_cut)
     matrix = np.hstack((matrix, drift))
@@ -341,40 +348,88 @@ def make_design_matrix(
     # step 4: Force the design matrix to be full rank at working precision
     matrix, _ = _full_rank(matrix)
 
-    return DesignMatrix(matrix, names, frame_times)
+    design_matrix = DataFrame(
+        np.hstack((frame_times[:, np.newaxis], matrix)),
+        columns=['frame_times'] + names)
+    return design_matrix
 
 
-def design_matrix_from_csv(path, frame_times=None):
-    """ Return a DesignMatrix instance from  a csv file
+def check_design_matrix(design_matrix):
+    """ Check that the provided DataFrame is indeed a valid design matrix
+    descriptor, and returns a triplet of fields
 
     Parameters
     ----------
-    path: string, path of the .csv file
+    design matrix : pandas DataFrame,
+        describes a design matrix
 
     Returns
     -------
-    A DesignMatrix instance
+    frame_times : array of shape (n_frames),
+        sampling times of the design matrix
+
+    matrix : array of shape (n_frames, n_regressors), dtype='f'
+        numerical values for the design matrix
+
+    names : array of shape (n_events), dtype='f'
+           per-event onset time (in seconds)
     """
-    import csv
-    with open4csv(path, 'r') as csvfile:
-        dialect = csv.Sniffer().sniff(csvfile.read())
-        csvfile.seek(0)
-        reader = csv.reader(csvfile, dialect)
-        boolfirst = True
-        design = []
-        for row in reader:
-            if boolfirst:
-                names = [row[j] for j in range(len(row))]
-                boolfirst = False
-            else:
-                design.append([row[j] for j in range(len(row))])
-    x = np.array([[float(t) for t in xr] for xr in design])
-    return(DesignMatrix(x, names, frame_times))
+    names = design_matrix.keys()
+    if 'frame_times' not in names:
+        raise ValueError('The provided DataFrame does not contain the'
+                         'mandatory frame_times field')
+    frame_times = design_matrix['frame_times']
+    names = [key for key in names if key != 'frame_times']
+    matrix = np.array([design_matrix[key] for key in names]).T
+    return frame_times, matrix, names
 
 
-def design_matrix_light(frame_times, paradigm=None, hrf_model='canonical',
-               drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
-               add_regs=None, add_reg_names=None, min_onset=-24, path=None):
+def plot_design_matrix(design_matrix, rescale=True, ax=None):
+    """ plot a design matrix provided as a DataFrame
+
+    Parameters
+    ----------
+    design matrix : pandas DataFrame,
+        describes a design matrix
+
+    rescale: bool, optional
+        rescale columns magnitude for visualization or not
+
+    ax: axis handle, optional
+        Handle to axis onto which we will draw design matrix
+
+    Returns
+    -------
+    ax: axis handle
+    """
+    # We import _set_mpl_backend because just the fact that we are
+    # importing it sets the backend
+    from nilearn.plotting import _set_mpl_backend
+    # avoid unhappy pyflackes
+    _set_mpl_backend
+    import matplotlib.pyplot as plt
+
+    # normalize the values per column for better visualization
+    _, X, names = check_design_matrix(design_matrix)
+    if rescale:
+        X = X / np.maximum(1.e-12, np.sqrt(np.sum(X ** 2, 0)))
+    if ax is None:
+        plt.figure()
+        ax = plt.subplot(1, 1, 1)
+
+    ax.imshow(X, interpolation='Nearest', aspect='auto')
+    ax.set_label('conditions')
+    ax.set_ylabel('scan number')
+
+    ax.set_xticks(range(len(names)))
+    ax.set_xticklabels(names, rotation=60, ha='right')
+    return ax
+
+
+def design_matrix_light(
+    frame_times, paradigm=None, hrf_model='canonical',
+    drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
+    add_regs=None, add_reg_names=None, min_onset=-24, path=None):
     """Make a design matrix while avoiding framework
 
     Parameters
@@ -395,92 +450,5 @@ def design_matrix_light(frame_times, paradigm=None, hrf_model='canonical',
         min_onset)
     if path is not None:
         design_matrix_.write_csv(path)
-    return design_matrix_.matrix, design_matrix_.names
-
-
-
-class DesignMatrix():
-    """ This is a container for a light-weight class for design matrices
-    This class is only used to make IO and visualization
-
-    Class members
-    -------------
-    matrix: array of shape(n_scans, n_regressors),
-            the numerical specification of the matrix
-    names: list of len (n_regressors);
-           the names associated with the columns
-    frame_times: array of shape(n_scans), optional,
-                the occurrence time of the matrix rows
-    """
-
-    def __init__(self, matrix, names, frame_times=None):
-        """
-        """
-        matrix_ = np.atleast_2d(matrix)
-        if matrix_.shape[1] != len(names):
-            raise ValueError(
-                'The number of names should equate the number of columns')
-        if frame_times is not None:
-            if frame_times.size != matrix.shape[0]:
-                raise ValueError(
-                    'The number %d of frame_times is different from the' +
-                    'number %d of rows' % (frame_times.size, matrix.shape[0]))
-
-        self.frame_times = frame_times
-        self.matrix = matrix_
-        self.names = names
-
-    def write_csv(self, path):
-        """ write self.matrix as a csv file with appropriate column names
-
-        Parameters
-        ----------
-        path: string, path of the resulting csv file
-
-        Notes
-        -----
-        The frame_times are not written
-        """
-        import csv
-        with open4csv(path, "w") as fid:
-            writer = csv.writer(fid)
-            writer.writerow(self.names)
-            writer.writerows(self.matrix)
-
-    def show(self, rescale=True, ax=None):
-        """Visualization of a design matrix
-
-        Parameters
-        ----------
-        rescale: bool, optional
-                 rescale columns magnitude for visualization or not
-        ax: axis handle, optional
-            Handle to axis onto which we will draw design matrix
-
-        Returns
-        -------
-        ax: axis handle
-        """
-        # We import _set_mpl_backend because just the fact that we are
-        # importing it sets the backend
-        from nilearn.plotting import _set_mpl_backend
-        # avoid unhappy pyflackes
-        _set_mpl_backend
-        import matplotlib.pyplot as plt
-
-        # normalize the values per column for better visualization
-        x = self.matrix.copy()
-        if rescale:
-            x = x / np.sqrt(np.sum(x ** 2, 0))
-        if ax is None:
-            plt.figure()
-            ax = plt.subplot(1, 1, 1)
-
-        ax.imshow(x, interpolation='Nearest', aspect='auto')
-        ax.set_label('conditions')
-        ax.set_ylabel('scan number')
-
-        if self.names is not None:
-            ax.set_xticks(range(len(self.names)))
-            ax.set_xticklabels(self.names, rotation=60, ha='right')
-        return ax
+    _, matrix, names = check_design_matrix(design_matrix_)
+    return matrix, names
