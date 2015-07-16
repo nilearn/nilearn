@@ -1275,10 +1275,9 @@ def get_projector(display_mode):
 
 
 def check_threshold(threshold, data, percentile_calculate, name):
-    """
-    Checks that the given threshold has an accepted string value
-    and returns a threshold computed on the data. Use case of data
-    is mainly from plot_connectome and plot_prob_atlas.
+    """ Checks that the given threshold has an accepted string value
+        and returns a threshold computed on the data. Use case of data
+        is mainly from plot_connectome and plot_prob_atlas.
 
     Parameters
     ----------
@@ -1292,9 +1291,9 @@ def check_threshold(threshold, data, percentile_calculate, name):
 
     Returns
     -------
-    returns the percentile threshold if the threshold is a string or
-    simply returns threshold as it is if the threshold is a real value.
-    In both cases threshold will be first checked if it is valid.
+        returns the percentile threshold if the threshold is a string or
+        simply returns threshold as it is if the threshold is a real value.
+        In both cases threshold will be first checked if it is valid.
 
     """
     if isinstance(threshold, _basestring):
