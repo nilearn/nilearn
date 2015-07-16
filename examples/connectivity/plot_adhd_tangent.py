@@ -14,12 +14,10 @@ dataset = nilearn.datasets.fetch_adhd()
 
 # Extract and preprocess regions time series
 import nilearn.input_data
-import joblib
-mem = joblib.Memory('/home/sb238920/CODE/Parietal/nilearn/nilearn_cache/adhd')
 masker = nilearn.input_data.NiftiMapsMasker(
     atlas.maps, resampling_target="maps", detrend=True,
     low_pass=None, high_pass=None, t_r=2.5, standardize=False,
-    memory=mem, memory_level=1)
+    memory='nilearn_cache', memory_level=1)
 subjects = []
 for func_file in dataset.func:
     time_series = masker.fit_transform(func_file)
@@ -86,11 +84,11 @@ for measure in measures:
     for classifier, classifier_name in zip(classifiers, classifier_names):
         coefs_vec = nilearn.connectivity.embedding.sym_to_vec(
             subjects_connectivity[measure])
-        scores[measure][classifier_name] = cross_val_score(
+        cv_scores = cross_val_score(
             classifier, coefs_vec, adhds, cv=cv, scoring='accuracy')
+        scores[measure][classifier_name] = cv_scores
         print(' %14s score: %1.2f +- %1.2f' % (classifier_name,
-              scores[measure][classifier_name].mean(),
-              scores[measure][classifier_name].std()))
+              cv_scores.mean(), cv_scores.std()))
 
 # Display the classification scores
 plt.figure()
