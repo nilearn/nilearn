@@ -107,6 +107,7 @@ uses.
    iter_img
    high_variance_confounds
    mean_img
+   new_img_like
    resample_img
    reorder_img
    smooth_img

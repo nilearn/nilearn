@@ -551,7 +551,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     data: numpy array
         Data to be stored in the image
 
-    affine: 4x4 numpy array
+    affine: 4x4 numpy array, optional
         Transformation matrix
 
     copy_header: boolean, optional
@@ -560,9 +560,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
     Returns
     -------
-
     new_img: image
-        An image which has the same type as the reference image.
+        A loaded image with the same type (and header) as the reference image.
     """
     from .._utils import load_niimg  # avoid circular import
 
