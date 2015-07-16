@@ -1,4 +1,3 @@
-# *- encoding: utf-8 -*-
 """
 Downloading NeuroImaging datasets: structural datasets
 """
@@ -46,9 +45,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
     Organization for Human Brain Mapping 2009 Annual Meeting.
 
-    DL Collins, AP Zijdenbos, WFC Baaré and AC Evans,
+    DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
     "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
-    IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210–223
+    IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
 
     Notes
     -----
@@ -103,7 +102,7 @@ def load_mni152_template():
 
     VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and
     BDCG, Unbiased average age-appropriate atlases for pediatric studies,
-    NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053–8119, DOI:
+    NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119, DOI:
     10.1016/j.neuroimage.2010.07.033
 
     VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
