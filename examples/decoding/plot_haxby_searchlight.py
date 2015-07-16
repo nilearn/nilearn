@@ -13,6 +13,7 @@ the fMRI (see the generated figures).
 import numpy as np
 import nibabel
 from nilearn import datasets
+from nilearn.image import new_img_like
 
 haxby_dataset = datasets.fetch_haxby_simple()
 
@@ -47,7 +48,7 @@ picked_slice = 27
 process_mask[..., (picked_slice + 1):] = 0
 process_mask[..., :picked_slice] = 0
 process_mask[:, 30:] = 0
-process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
+process_mask_img = new_img_like(mask_img, process_mask)
 
 ### Searchlight computation ###################################################
 
@@ -95,15 +96,13 @@ from nilearn import image
 from nilearn.plotting import plot_stat_map
 mean_fmri = image.mean_img(fmri_img)
 
-plot_stat_map(nibabel.Nifti1Image(searchlight.scores_,
-                                  mean_fmri.get_affine()), mean_fmri,
+plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
               title="Searchlight", display_mode="z", cut_coords=[-16],
               colorbar=False)
 
 ### F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-plot_stat_map(nibabel.Nifti1Image(p_ma,
-                                  mean_fmri.get_affine()), mean_fmri,
+plot_stat_map(new_img_like(mean_fmri, p_ma), mean_fmri,
               title="F-scores", display_mode="z", cut_coords=[-16],
               colorbar=False)
 
