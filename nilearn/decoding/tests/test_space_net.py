@@ -27,8 +27,8 @@ squared_loss_path_scores = partial(path_scores, is_classif=False)
 # Data used in almost all tests
 from .test_same_api import to_niimgs
 size = 4
-from .simulate_smooth_lasso_data import create_smooth_simulation_data
-X_, y, w, mask = create_smooth_simulation_data(
+from .simulate_smooth_lasso_data import create_smooth_lasso_simulation_data
+X_, y, w, mask = create_smooth_lasso_simulation_data(
     snr=1., n_samples=10, size=size, n_points=5, random_state=42)
 X, mask = to_niimgs(X_, [size] * 3)
 

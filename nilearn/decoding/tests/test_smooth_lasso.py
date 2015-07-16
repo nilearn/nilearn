@@ -21,11 +21,11 @@ from nilearn.decoding.space_net import BaseSpaceNet
 import nibabel
 from .test_same_api import to_niimgs
 from .simulate_smooth_lasso_data import (
-    create_smooth_simulation_data, create_simulation_data)
+    create_smooth_lasso_simulation_data, create_smooth_lasso_simulation_data)
 
 
 def _make_data(task="regression", size=4):
-    X, y, w, mask = create_smooth_simulation_data(
+    X, y, w, mask = create_smooth_lasso_simulation_data(
         snr=1., n_samples=10, size=size, n_points=5, random_state=42,
         task=task)
     X_, _ = to_niimgs(X, [size] * 3)
@@ -127,7 +127,7 @@ def test_operators_adjointness(size=4):
 def test__squared_loss_gradient_at_simple_points():
     """Tests gradient of data loss function in points near to zero. This is
     a not so hard test, just for detecting big errors"""
-    X, y, w, mask = create_simulation_data(n_samples=10, size=4, roi_size=2)
+    X, y, w, mask = create_smooth_lasso_simulation_data(n_samples=10, size=4)
     grad_weight = 1
     func = lambda w: _squared_loss_and_spatial_grad(X, y, w, mask,
                                                    grad_weight)
@@ -143,7 +143,7 @@ def test__squared_loss_gradient_at_simple_points():
 def test_logistic_gradient_at_simple_points():
     # Tests gradient of logistic data loss function in points near to zero.
     # This is a not so hard test, just for detecting big errors
-    X, y, w, mask = create_simulation_data(n_samples=10, size=4, roi_size=2)
+    X, y, w, mask = create_smooth_lasso_simulation_data(n_samples=10, size=4)
     grad_weight = 1
     # Add the intercept
     w = np.append(w, 0)
