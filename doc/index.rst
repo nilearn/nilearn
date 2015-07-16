@@ -33,6 +33,19 @@
 .. |canica| image:: auto_examples/connectivity/images/plot_canica_resting_state_011.png
    :target: auto_examples/connectivity/plot_canica_resting_state.html
 
+
+.. |smooth_lasso_poldrack| image:: auto_examples/decoding/images/plot_poldrack_space_net_001.png
+   :target: auto_examples/decoding/plot_poldrack_space_net.html
+
+.. |tvl1_poldrack| image:: auto_examples/decoding/images/plot_poldrack_space_net_002.png
+   :target: auto_examples/decoding/plot_poldrack_space_net.html
+
+.. |smooth_lasso_haxby| image:: auto_examples/decoding/images/plot_haxby_space_net_001.png
+   :target: auto_examples/decoding/plot_haxby_space_net.html
+
+.. |tvl1_haxby| image:: auto_examples/decoding/images/plot_haxby_space_net_002.png
+   :target: auto_examples/decoding/plot_haxby_space_net.html
+
 .. |searchlight| image:: auto_examples/decoding/images/plot_haxby_searchlight_001.png
    :target: auto_examples/decoding/plot_haxby_searchlight.html
 
