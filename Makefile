@@ -54,12 +54,12 @@ ctags:
 	$(CTAGS) -R *
 
 .PHONY : doc-plot
-doc:
+doc-plot:
 	make -C doc html
 
 .PHONY : doc
-doc-noplot:
-	cd doc && make html-noplot
+doc:
+	make -C doc html-noplot
 
 .PHONY : pdf
 pdf:
