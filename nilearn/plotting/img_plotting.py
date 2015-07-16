@@ -12,6 +12,7 @@ Only matplotlib is required.
 import functools
 import numbers
 import warnings
+import collections
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -20,6 +21,7 @@ from scipy import ndimage
 from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
+from .._utils.compat import _basestring
 
 import matplotlib.pyplot as plt
 
@@ -605,30 +607,30 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                     draw_cross=True, black_bg='auto', dim=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.5, **kwargs):
-    """ Plot the multiple atlas maps or statistical maps onto the anatomical image
+
+    """ Plot the probabilistic atlases onto the anatomical image
         by default MNI template
 
         Parameters
         ----------
-        maps_img: a nifti like object or the filename of the 4D probabilistic
-            atlas maps or statistical maps
+        maps_img: Niimg-like object or the filename
+            4D image of the probabilistic atlas maps
         anat_img : Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
         view_type: {'auto', 'contours', 'filled_contours', 'continuous'}, optional
-            By default, view_type == 'auto', which means maps are overlayed as
-            contours if the number of maps are more than 4 or
-            overlayed as continuous colors if the number of maps
-            are less than 4.
-            If view_type == 'contours', maps are overlayed as contours.
+            By default view_type == 'auto', which means maps are overlayed as
+            contours if number of maps to display are more or
+            overlayed as continuous colors if number of maps are less.
+            If view_type == 'contours', maps are overlayed as contours
             If view_type == 'filled_contours', maps are overlayed as contours
-            and also with color fillings inside the contours.
+            along with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold: string or list of strings or number or list of numbers, optional
+        threshold: None, a str or a number, list of either str or number, optional
             If threshold is a string it must finish with a percent sign,
-            e.g. "25.3%", or if it is a number it can be real numbers.
+            e.g. "25.3%", or if it is a number it should be real numbers.
             This option is served for two purposes, for contours and
             contour fillings threshold serves to select the level of
             the maps to display and same threshold is applied for color fillings.
@@ -680,8 +682,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
         alpha: float between 0 and 1
-            Alpha value sets the transparency of the color fillings inside the
-            contours.
+            Alpha sets the transparency of the color inside the filled contours.
     """
     display = plot_anat(anat_img, cut_coords=cut_coords,
                         display_mode=display_mode,
@@ -694,13 +695,12 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
 
     valid_view_types = ['auto', 'contours', 'filled_contours', 'continuous']
     if not (isinstance(view_type, _basestring) or
-            view_type not in valid_view_types):
+                       view_type not in valid_view_types):
         message = ('view_type option should be given '
-                   'either of these {0} ').format(valid_view_types)
+                   'either of these {0}').format(valid_view_types)
         raise ValueError(message)
 
     cmap = plt.cm.get_cmap(cmap)
-    # Build a custom colormap for displaying contours
     color_list = cmap(np.linspace(0, 1, n_maps))
 
     if view_type == 'auto':
@@ -713,7 +713,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
 
     if threshold is None:
         # it will use default percentage,
-        # for a nicer look avoiding maximum overlaps for visualization
+        # strategy is to avoid maximum overlaps as possible
         if view_type == 'contours':
             correction_factor = 1
         elif view_type == 'filled_contours':
@@ -722,10 +722,13 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             correction_factor = .5
         threshold = "%f%%" % (100 * (1 - .2 * correction_factor / n_maps))
 
-    if isinstance(threshold, list):
+    if (isinstance(threshold, collections.Iterable)
+            and not isinstance(threshold, _basestring)):
+        threshold = [thr for thr in threshold]
         if len(threshold) != n_maps:
             raise TypeError('The list of values to threshold '
                             'should be equal to number of maps')
+
     else:
         threshold = [threshold] * n_maps
 

@@ -1275,26 +1275,25 @@ def get_projector(display_mode):
 
 
 def check_threshold(threshold, data, percentile_calculate, name):
-    """ Checks that the given threshold has an accepted string value
-        and returns a threshold computed on the data. Use case of data
-        is mainly from plot_connectome and plot_prob_atlas.
+    """ Checks if the given threshold is in correct format
 
     Parameters
     ----------
     threshold: a real value or a percentage in string.
-        For example, if threshold is a percentage expressed in a string
+        if threshold is a percentage expressed in a string
         it must finish with a percent sign like "99.7%".
-    data: a numpy array
-        data on which the threshold will be calculated.
-    percentile_calculate: define the name of a specific percentile
-        function to calculate the score on the data.
+    data: ndarray
+        an array of the input masked data
+    percentile_calculate: a percentile function
+        define the name of a specific percentile function
+        to calculate the score on the data.
 
     Returns
     -------
-        returns the percentile threshold if the threshold is a string or
-        simply returns threshold as it is if the threshold is a real value.
-        In both cases threshold will be first checked if it is valid.
-
+    value: a number
+        returns the score of the percentile on the data or
+        returns threshold as it is if input threshold is not
+        a percentile.
     """
     if isinstance(threshold, _basestring):
         message = ('If "{0}" is given as string it '
