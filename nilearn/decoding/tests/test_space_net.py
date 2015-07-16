@@ -13,7 +13,7 @@ from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from nilearn.decoding.space_net import (
-    EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
+    _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
     _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
 from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
@@ -68,13 +68,13 @@ def test_space_net_alpha_grid_same_as_sk():
 
 
 def test_early_stopping_callback_object(n_samples=10, n_features=30):
-    # This test evolves w so that every line of th EarlyStoppingCallback
+    # This test evolves w so that every line of th _EarlyStoppingCallback
     # code is executed a some point. This a kind of code fuzzing.
     rng = check_random_state(42)
     X_test = rng.randn(n_samples, n_features)
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
-    escb = EarlyStoppingCallback(X_test, y_test, False)
+    escb = _EarlyStoppingCallback(X_test, y_test, False)
     for counter in range(50):
         k = min(counter, n_features - 1)
         w[k] = 1

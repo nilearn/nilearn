@@ -201,7 +201,7 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
                        num=n_alphas)[::-1]
 
 
-class EarlyStoppingCallback(object):
+class _EarlyStoppingCallback(object):
     """Out-of-bag early stopping
 
         A callable that returns True when the test error starts
@@ -393,7 +393,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             init = None
             for alpha in alphas_:
                 # setup callback mechanism for early stopping
-                early_stopper = EarlyStoppingCallback(
+                early_stopper = _EarlyStoppingCallback(
                     X_test, y_test, is_classif=is_classif, debias=debias,
                     verbose=verbose)
                 w, _, init = solver(
@@ -427,7 +427,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                              mask=mask, init=best_init,
                              verbose=max(verbose - 1, 0), **solver_params)
     if debias:
-        best_w = EarlyStoppingCallback(
+        best_w = _EarlyStoppingCallback(
             X_test, y_test, is_classif=is_classif, debias=debias,
             verbose=verbose)._debias(best_w)
 
@@ -604,7 +604,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-                 memory=Memory(None, verbose=0), copy_data=True,
+                 memory=Memory(None, verbose=0),
                  standardize=True, verbose=0, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
@@ -620,7 +620,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         self.memory = memory
         self.max_iter = max_iter
         self.tol = tol
-        self.copy_data = copy_data
         self.verbose = verbose
         self.standardize = standardize
         self.n_jobs = n_jobs
@@ -1073,7 +1072,7 @@ class SpaceNetClassifier(BaseSpaceNet):
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-                 memory=Memory(None), copy_data=True, standardize=True,
+                 memory=Memory(None), standardize=True,
                  verbose=0, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
@@ -1081,7 +1080,7 @@ class SpaceNetClassifier(BaseSpaceNet):
             penalty=penalty, is_classif=True, l1_ratios=l1_ratios,
             alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
-            max_iter=max_iter, tol=tol, memory=memory, copy_data=copy_data,
+            max_iter=max_iter, tol=tol, memory=memory,
             n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
             fit_intercept=fit_intercept, standardize=standardize,
             screening_percentile=screening_percentile, loss=loss,
@@ -1234,14 +1233,14 @@ class SpaceNetRegressor(BaseSpaceNet):
     def __init__(self, penalty="smooth-lasso", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=1000, tol=1e-4, memory=Memory(None), copy_data=True,
+                 max_iter=1000, tol=1e-4, memory=Memory(None),
                  standardize=True, verbose=0, n_jobs=1, eps=1e-3, cv=8,
                  fit_intercept=True, screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
             penalty=penalty, is_classif=False, l1_ratios=l1_ratios,
             alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
-            max_iter=max_iter, tol=tol, memory=memory, copy_data=copy_data,
+            max_iter=max_iter, tol=tol, memory=memory,
             n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
             fit_intercept=fit_intercept, standardize=standardize,
             screening_percentile=screening_percentile,
