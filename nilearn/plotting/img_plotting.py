@@ -630,10 +630,12 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             colors irrespective of the number maps.
         threshold: None, a str or a number, list of either str or number, optional
             If threshold is a string it must finish with a percent sign,
-            e.g. "25.3%", or if it is a number it should be real numbers.
-            This option is served for two purposes, for contours and
-            contour fillings threshold serves to select the level of
-            the maps to display and same threshold is applied for color fillings.
+            e.g. "25.3%", and it is a percentile. Or if it is a number,
+            it should be a real number, in which case it is the value
+            to threshold at.
+            This option is served for two purposes, for contours and contour
+            fillings threshold serves to select the level of the maps
+            to display and same threshold is applied for color fillings.
             For continuous overlays this threshold value serves to select
             the maps which are greater than a given value or list of given values.
             If None is given, the maps are thresholded with default value.
