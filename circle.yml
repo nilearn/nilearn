@@ -8,5 +8,5 @@ dependencies:
 
 test:
   override:
-    - make
-    - cd doc && make
+    - make clean test
+    - cd doc && make html
