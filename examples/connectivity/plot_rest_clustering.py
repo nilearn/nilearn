@@ -73,7 +73,6 @@ labels = ward.labels_ + 1
 labels_img = nifti_masker.inverse_transform(labels)
 
 from nilearn.image import mean_img
-import matplotlib.pyplot as plt
 mean_func_img = mean_img(func_filename)
 
 # common cut coordinates for all plots
@@ -101,8 +100,8 @@ fmri_reduced = ward.transform(fmri_masked)
 fmri_compressed = ward.inverse_transform(fmri_reduced)
 compressed_img = nifti_masker.inverse_transform(fmri_compressed[0])
 
-plot_epi(compressed_img, cut_coords=first_plot.cut_coords,
-         title='Compressed representation (2000 parcels)',
-         display_mode='xz')
+display = plot_epi(compressed_img, cut_coords=first_plot.cut_coords,
+                   title='Compressed representation (2000 parcels)',
+                   display_mode='xz')
 
-plt.show()
+display.show()

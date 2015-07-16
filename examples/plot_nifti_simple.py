@@ -28,7 +28,6 @@ nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_
 
 ### Visualize the mask ########################################################
-import matplotlib.pyplot as plt
 from nilearn.plotting import plot_roi
 from nilearn.image.image import mean_img
 
@@ -55,7 +54,7 @@ components = nifti_masker.inverse_transform(components_masked)
 from nilearn.plotting import plot_stat_map
 from nilearn.image import index_img
 
-plot_stat_map(index_img(components, 0), mean_func_img, display_mode='y',
-              cut_coords=4, title="Component 0")
+display = plot_stat_map(index_img(components, 0), mean_func_img,
+                        display_mode='y', cut_coords=4, title="Component 0")
 
-plt.show()
+display.show()

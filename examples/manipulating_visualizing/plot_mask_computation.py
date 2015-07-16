@@ -16,7 +16,6 @@ underlying mask extraction routine
 
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import nibabel
@@ -82,7 +81,8 @@ masker = NiftiMasker(mask_strategy='epi',
                      mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
                                     opening=False))
 masker.fit(nyu_img)
-plot_roi(masker.mask_img_, nyu_mean_img, title='EPI Mask: high lower_cutoff')
+display = plot_roi(masker.mask_img_, nyu_mean_img,
+                   title='EPI Mask: high lower_cutoff')
 
 ################################################################################
 # Extract time series
@@ -99,4 +99,4 @@ print("Detrended: mean %.2f, std %.2f" %
        (np.mean(detrended_data), np.std(detrended_data)))
 
 
-plt.show()
+display.show()

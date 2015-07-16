@@ -36,13 +36,12 @@ from nilearn import plotting
 cut_coords = (0, 0, 0)
 plotting.plot_anat(anat_filename, cut_coords=cut_coords,
                    title='Anatomy image')
-plotting.plot_anat(smooth_anat_img,
-                   cut_coords=cut_coords,
-                   title='Smoothed anatomy image')
+display = plotting.plot_anat(smooth_anat_img,
+                             cut_coords=cut_coords,
+                             title='Smoothed anatomy image')
 
 # Saving image to file ########################################################
 smooth_anat_img.to_filename('smooth_anat_img.nii.gz')
 
 # Showing plots ###############################################################
-import matplotlib.pyplot as plt
-plt.show()
+display.show()

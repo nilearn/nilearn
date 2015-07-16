@@ -723,6 +723,12 @@ class BaseSlicer(object):
                 display_ax.draw_position(size=size, bg_color=bg_color,
                                        **kwargs)
 
+    @staticmethod
+    def show():
+        """Show all generated figures.
+        """
+        plt.show()
+
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
         """

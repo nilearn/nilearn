@@ -83,13 +83,12 @@ weight_img = nifti_masker.inverse_transform(coef)
 
 ### Create the figure
 from nilearn import image
-import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 
 # Plot the mean image because we have no anatomic data
 mean_img = image.mean_img(func_filename)
 
-plot_stat_map(weight_img, mean_img, title='SVM weights')
+display = plot_stat_map(weight_img, mean_img, title='SVM weights')
 
 ### Saving the results as a Nifti file may also be important
 weight_img.to_filename('haxby_face_vs_house.nii')
@@ -121,4 +120,4 @@ print("Classification accuracy: %.4f / Chance level: %f" % \
     (classification_accuracy, 1. / n_conditions))
 # Classification accuracy: 0.9861 / Chance level: 0.5000
 
-plt.show()
+display.show()
