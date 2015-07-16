@@ -237,6 +237,7 @@ uses.
    plot_stat_map
    plot_glass_brain
    plot_connectome
+   plot_prob_atlas
    find_xyz_cut_coords
 
 **Classes**:
