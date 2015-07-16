@@ -16,10 +16,6 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array, iter_img
-from ..plotting import find_xyz_cut_coords
-import numpy as np
-from scipy import ndimage
-
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -292,7 +288,7 @@ def find_parcellation_atlas_cut_coords(labels_img, background_label=0):
     labels_list: List
         Label region values
 
-    world_coords: List
+    coords: List
         World coordinates for center of label regions
     """
 
@@ -308,31 +304,27 @@ def find_parcellation_atlas_cut_coords(labels_img, background_label=0):
     coord_list = []
     label_list = []
 
-    for i, cur_label in enumerate(unique_labels):
+    for cur_label in unique_labels:
         cur_img = labels_data == cur_label
 
         #take the largest connected component
         volume = np.asarray(cur_img)
         labels, label_nb = ndimage.label(volume)
-        if label_nb == 1:
-            volume = volume.astype(np.bool)
+        label_count = np.bincount(labels.ravel())
+        labels ==label_count.argmax()
+        label_count[0] = 0
 
         # get parcellation center of mass
-        center_of_mass = ndimage.center_of_mass(volume)
-        center_coord = (center_of_mass[0],
-                        center_of_mass[1],
-                        center_of_mass[2])
+        x,y,z = ndimage.center_of_mass(labels)
 
         # dump label region and coordinates into a dictionary
         label_list.append(cur_label)
-        coord_list.append((center_coord[0],
-                           center_coord[1],
-                           center_coord[2]))
+        coord_list.append((x,y,z))
 
     # transform coordinates
-    world_coords = [np.asarray(coord_transform(i[0],i[1],i[2],labels_affine)) for i in coord_list]
+    coords = [coord_transform(i[0],i[1],i[2],labels_affine) for i in coord_list]
 
-    return label_list, world_coords
+    return label_list, np.array(coords)
 
 
 def find_probabilistic_atlas_cut_coords(label_img):
@@ -353,4 +345,3 @@ def find_probabilistic_atlas_cut_coords(label_img):
     label_imgs = iter_img(label_img)
     coords = [find_xyz_cut_coords(img) for img in label_imgs]
     return coords
-
