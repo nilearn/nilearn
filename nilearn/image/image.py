@@ -7,19 +7,20 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import ndimage
+import copy
+import nibabel
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
-from .resampling import reorder_img
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img
-from .._utils.niimg import new_img_like, _safe_get_data
+from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
-from .. import masking
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -71,6 +72,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         ========
         nilearn.signal.high_variance_confounds
     """
+    from .. import masking
 
     if mask_img is not None:
         sigs = masking.apply_mask(imgs, mask_img)
@@ -485,6 +487,7 @@ def swap_img_hemispheres(img):
 
     Note that this does not require a change of the affine matrix.
     """
+    from .resampling import reorder_img
 
     # Check input is really a path to a nifti file or a nifti object
     img = check_niimg_3d(img)
@@ -535,3 +538,49 @@ def iter_img(imgs):
     output: iterator of 3D nibabel.Nifti1Image
     """
     return check_niimg_4d(imgs, return_iterator=True)
+
+
+def new_img_like(ref_niimg, data, affine=None, copy_header=False):
+    """Create a new image of the same class as the reference image
+
+    Parameters
+    ----------
+    ref_niimg: image
+        Reference image. The new image will be of the same type.
+
+    data: numpy array
+        Data to be stored in the image
+
+    affine: 4x4 numpy array, optional
+        Transformation matrix
+
+    copy_header: boolean, optional
+        Indicated if the header of the reference image should be used to
+        create the new image
+
+    Returns
+    -------
+    new_img: image
+        A loaded image with the same type (and header) as the reference image.
+    """
+    from .._utils import load_niimg  # avoid circular import
+
+    ref_niimg = load_niimg(ref_niimg)
+
+    if affine is None:
+        affine = ref_niimg.get_affine()
+    if data.dtype == bool:
+        default_dtype = np.int8
+        if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
+                isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage)):
+            default_dtype = np.uint8
+        data = as_ndarray(data, dtype=default_dtype)
+    header = None
+    if copy_header:
+        header = copy.copy(ref_niimg.get_header())
+        header['scl_slope'] = 0.
+        header['scl_inter'] = 0.
+        header['glmax'] = 0.
+        header['cal_max'] = np.max(data) if data.size > 0 else 0.
+        header['cal_max'] = np.min(data) if data.size > 0 else 0.
+    return ref_niimg.__class__(data, affine, header=header)

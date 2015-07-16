@@ -2,7 +2,7 @@
 from .niimg_conversions import (check_niimg, check_niimg_3d, concat_niimgs,
     check_niimg_4d)
 
-from .niimg import new_img_like, _repr_niimgs, copy_img
+from .niimg import _repr_niimgs, copy_img, load_niimg
 
 from .numpy_conversions import as_ndarray
 

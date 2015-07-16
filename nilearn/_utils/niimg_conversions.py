@@ -10,9 +10,10 @@ import itertools
 from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
-from .niimg import _safe_get_data, load_niimg, new_img_like
+from .niimg import _safe_get_data, load_niimg
 from .compat import _basestring, izip
-from .exceptions import DimensionError
+
+from nilearn._utils.exceptions import DimensionError
 
 
 def _check_fov(img, affine, shape):
@@ -45,6 +46,8 @@ def _check_same_fov(*args, **kwargs):
     raise_error: boolean, optional
         If True, an error will be raised in case of error.
     """
+    from ..image import new_img_like  # avoid circular imports
+
     raise_error = kwargs.pop('raise_error', False)
     for i, arg in enumerate(args):
         kwargs['img_#%i' % i] = arg
@@ -63,6 +66,8 @@ def _check_same_fov(*args, **kwargs):
 
 
 def _index_img(img, index):
+    from ..image import new_img_like  # avoid circular imports
+
     """Helper function for check_niimg_4d."""
     return new_img_like(
         img, img.get_data()[:, :, :, index], img.get_affine(),
@@ -186,6 +191,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     Its application is idempotent.
     """
+    from ..image import new_img_like  # avoid circular imports
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
@@ -330,6 +336,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     concatenated: nibabel.Nifti1Image
         A single image.
     """
+    from ..image import new_img_like  # avoid circular imports
 
     target_fov = 'first' if auto_resample else None
 
