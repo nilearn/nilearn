@@ -208,10 +208,16 @@ with MNI coordinates for each region (see for instance example:
     >>> from nilearn import datasets
     >>> atlas_filename = datasets.fetch_msdl_atlas().maps
 
-For another atlas this information can be computed for each region with
-the :func:`nilearn.plotting.find_xyz_cut_coords` function
-(see example:
-:ref:`example_connectivity_plot_multi_subject_connectome.py`)::
+For atlases without readily available label coordinates, center coordinates
+can be computed for each region on hard parcellation or probabilistic atlases.
+
+For hard parcellation atlases (eg. :func:`datasets.fetch_atlas_destrieux_2009`), center
+coordinates can be extracted using the :func:`nilearn.plotting.find_parcellation_atlas_cut_coords`
+function.
+
+For probabilistic atlases, center coordinates can be extracted using
+the :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
+
 
  >>> from nilearn import image, plotting
  >>> atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in image.iter_img(atlas_filename)]
