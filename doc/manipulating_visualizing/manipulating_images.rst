@@ -135,7 +135,7 @@ Nifti and Analyze files
 
 
 Neuroimaging data can be loaded in a simple way thanks to nibabel_.
-A nifti file on disk can be loaded by a single line.
+A nifti file on disk can be loaded with a single line.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
      :start-after: ### Load an fMRI file #########################################################
@@ -151,7 +151,7 @@ A nifti file on disk can be loaded by a single line.
       nifti file.
       `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to
       prefer this format.
-    - several 3D matrices representing each time point (single 3D voluem) of the
+    - several 3D matrices representing each time point (single 3D volume) of the
       session, stored in set of 3D nifti or analyse files.
       `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
@@ -170,7 +170,7 @@ As a baseline, nilearn functions take as input argument what we call
   * Any object exposing ``get_data()`` and ``get_affine()`` methods, typically
     a ``Nifti1Image`` from nibabel_.
 
-**Niimg-4D:** Similarly, some functions require sets of Nifti-like
+**Niimg-4D:** Similarly, some functions require Nifti-like
 data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
 
   * A path to a 4D Nifti image
