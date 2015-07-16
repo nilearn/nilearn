@@ -424,16 +424,3 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     ax.set_xticks(range(len(names)))
     ax.set_xticklabels(names, rotation=60, ha='right')
     return ax
-
-
-def design_matrix_light(
-    frame_times, paradigm=None, hrf_model='canonical',
-    drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
-    add_regs=None, add_reg_names=None, min_onset=-24, path=None):
-    """ Idem make_design_matrix, but only returns the computed matrix
-    and associated names """
-    dmtx = make_design_matrix(frame_times, paradigm, hrf_model,
-    drift_model, period_cut, drift_order, fir_delays,
-    add_regs, add_reg_names, min_onset)
-    _, matrix, names = check_design_matrix(dmtx)
-    return matrix, names
