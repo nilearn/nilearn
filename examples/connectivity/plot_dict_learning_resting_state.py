@@ -12,9 +12,9 @@ Dictionary learning is a sparsity based decomposition method for extracting spat
     Information Processing in Medical Imaging, 2011, pp. 562-573, Lecture Notes in Computer Science
 
 Pre-prints for paper is available on hal
-(http://hal.archives-ouvertes.fr)
+https://hal.inria.fr/inria-00588898/en/
 """
-from joblib import Memory
+from sklearn.externals.joblib import Memory
 
 ### Load ADHD rest dataset ####################################################
 from nilearn import datasets
