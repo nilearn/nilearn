@@ -1,9 +1,9 @@
 
 .. _estimator_choice:
 
-============================================
-Choosing the right predictive model
-============================================
+=====================================
+ Choosing the right predictive model
+=====================================
 
 This page gives a few simple considerations on the choice of an estimator.
 It is slightly oriented towards a *decoding* application, that is the
@@ -18,11 +18,11 @@ the :ref:`dedicated section of the nilearn documentation
 
 
 Predictions: regression, classification and multi-class
-========================================================
+=======================================================
 
 
 Regression
------------
+----------
 
 A regression problem is a learning task in which the variable to predict
 --that we often call ``y``-- is a continuous value, such as an age.
@@ -33,8 +33,12 @@ Encoding models [1]_ typically call for regressions.
    Naselaris et al, Encoding and decoding in fMRI, NeuroImage Encoding
    and decoding in fMRI.2011 http://www.ncbi.nlm.nih.gov/pubmed/20691790
 
+.. seealso::
+
+   * :ref:`space_net`
+
 Classification: two classes or multi-class
--------------------------------------------
+------------------------------------------
 
 A classification task consists in predicting a *class* label for each
 observation. In other words, the variable to predict is categorical.
@@ -68,8 +72,8 @@ whereas the former is linear with the number of classes.
 
 .. seealso::
 
-    `Multi-class prediction in scikit-learn's documentation
-    <http://scikit-learn.org/stable/modules/multiclass.html>`_
+    * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules/multiclass.html>`_
+    * :ref:`space_net`
 
 
 **Confusion matrix** `The confusion matrix
@@ -93,7 +97,7 @@ understand the classifier's errors in a multiclass problem.
    :scale: 40
 
 Setting estimator parameters
-=============================
+============================
 
 Most estimators have parameters that can be set to optimize their
 performance. Importantly, this must be done via **nested**
@@ -124,7 +128,7 @@ CPUs.
    * The example :ref:`example_decoding_plot_haxby_grid_search.py`
 
 Different linear models
-========================
+=======================
 
 There is a wide variety of classifiers available in scikit-learn (see the
 `scikit-learn documentation on supervised learning
@@ -222,41 +226,7 @@ little guarantee on the brain maps.
    :align: left
    :scale: 70
 
+.. seealso::
 
-SpaceNet
-========
-SpaceNet implements a suite of multi-variate priors which for improved brain decoding. It uses priors like TV (Total Variation) [Michel et al. 2011], TV-L1 [Baldassarre et al. 2012], [Gramfort et al. 2013] (`penalty="tvl1"), and Smooth-Lasso [Hebiri et al. 2011] (known as GraphNet in neuroimaging [Grosenick 2013]) to regularize classification and regression problems in brain imaging. The result are brain maps which are both sparse (i.e regression coefficients are zero everywhere, except at predictive voxels) and structured (blobby). The superiority of TV-L1 over methods without structured priors like the Lasso, SVM, ANOVA, Ridge, etc. for yielding more interpretable maps and improved prediction scores is now well established [Baldassarre et al. 2012], [Gramfort et al. 2013], [Grosenick et al. 2013].
+   * :ref:`space_net`
 
-Note that TV-L1 prior leads to a hard optimization problem, and so can be slow to run.
-The follow ing table summarizes the parameter(s) used to activate a given prior:
-
-- TV-L1: `penalty="tv-l1"`
-- Smooth-Lasso: `penalty="smooth-lasso"` (this is the default prior in SpaceNet)
-- TV: `l1_ratio=0`
-- Lasso: `l1_ratio=1`
-
-Examples
-........
-
-* Mixed gambles
-
-.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_1.png
-   :align: right
-   :scale: 60
-
-.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_2.png
-   :scale: 60
-
-.. literalinclude:: ../../examples/decoding/plot_poldrack_space_net.py
-
-* Haxby
-
-.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_1.png
-   :align: right
-   :scale: 60
-
-.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_2.png
-   :scale: 60
-
-See the script here:
-:doc:`plot_haxby_space_net.py <../auto_examples/decoding/plot_haxby_space_net>`
