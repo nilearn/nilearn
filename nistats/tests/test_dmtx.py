@@ -12,7 +12,7 @@ from __future__ import with_statement
 import numpy as np
 import os.path as osp
 from ..design_matrix import (
-    design_matrix_light, _convolve_regressors, make_design_matrix,
+    _convolve_regressors, make_design_matrix,
     _cosine_drift, plot_design_matrix, check_design_matrix)
 from pandas import DataFrame
 from ..experimental_paradigm import check_paradigm
@@ -39,6 +39,19 @@ else:
 my_path = osp.dirname(osp.abspath(__file__))
 full_path_design_matrix_file = osp.join(my_path, 'spm_dmtx.npz')
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
+
+
+def design_matrix_light(
+    frame_times, paradigm=None, hrf_model='canonical',
+    drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
+    add_regs=None, add_reg_names=None, min_onset=-24, path=None):
+    """ Idem make_design_matrix, but only returns the computed matrix
+    and associated names """
+    dmtx = make_design_matrix(frame_times, paradigm, hrf_model,
+    drift_model, period_cut, drift_order, fir_delays,
+    add_regs, add_reg_names, min_onset)
+    _, matrix, names = check_design_matrix(dmtx)
+    return matrix, names
 
 
 def basic_paradigm():
@@ -109,17 +122,10 @@ def test_design_matrix0():
     # Test design matrix creation when no paradigm is provided
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    X, names = design_matrix_light(
-        frame_times, drift_model='polynomial', drift_order=3)
+
+    _, X, names = check_design_matrix(make_design_matrix(
+        frame_times, drift_model='polynomial', drift_order=3))
     assert_equal(len(names), 4)
-
-
-def test_design_matrix0b():
-    # Test design matrix creation when no paradigm is provided
-    tr = 1.0
-    frame_times = np.linspace(0, 127 * tr, 128)
-    X, names = design_matrix_light(frame_times, drift_model='polynomial',
-                                   drift_order=3)
     assert_almost_equal(X[:, 0], np.linspace(- 0.5, .5, 128))
 
 
@@ -128,8 +134,9 @@ def test_design_matrix0c():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     ax = np.random.randn(128, 4)
-    X, names = design_matrix_light(frame_times, drift_model='polynomial',
-                            drift_order=3, add_regs=ax)
+    _, X, names = check_design_matrix(make_design_matrix(
+                frame_times, drift_model='polynomial',
+                drift_order=3, add_regs=ax))
     assert_almost_equal(X[:, 0], ax[:, 0])
 
 
@@ -138,8 +145,8 @@ def test_design_matrix0d():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     ax = np.random.randn(128, 4)
-    X, names = design_matrix_light(frame_times, drift_model='polynomial',
-                            drift_order=3, add_regs=ax)
+    _, X, names = check_design_matrix(make_design_matrix(
+            frame_times, drift_model='polynomial', drift_order=3, add_regs=ax))
     assert_equal(len(names), 8)
     assert_equal(X.shape[1], 8)
 

@@ -430,25 +430,10 @@ def design_matrix_light(
     frame_times, paradigm=None, hrf_model='canonical',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
     add_regs=None, add_reg_names=None, min_onset=-24, path=None):
-    """Make a design matrix while avoiding framework
-
-    Parameters
-    ----------
-    see make_design_matrix, plus
-    path: string, optional: a path to write the output
-
-    Returns
-    -------
-    design_matrix array of shape(nreg, n_frames):
-        the sampled design matrix
-    names list of strings of len (nreg)
-        the names of the columns of the design matrix
-    """
-    design_matrix_ = make_design_matrix(
-        frame_times, paradigm, hrf_model, drift_model, period_cut,
-        drift_order, fir_delays, add_regs, add_reg_names,
-        min_onset)
-    if path is not None:
-        design_matrix_.write_csv(path)
-    _, matrix, names = check_design_matrix(design_matrix_)
+    """ Idem make_design_matrix, but only returns the computed matrix
+    and associated names """
+    dmtx = make_design_matrix(frame_times, paradigm, hrf_model,
+    drift_model, period_cut, drift_order, fir_delays,
+    add_regs, add_reg_names, min_onset)
+    _, matrix, names = check_design_matrix(dmtx)
     return matrix, names
