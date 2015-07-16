@@ -207,7 +207,7 @@ def test_design_matrix2():
     paradigm = basic_paradigm()
     hrf_model = 'Canonical'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
-                        drift_model='cosine', hfcut=63)
+                        drift_model='cosine', period_cut=63)
     assert_equal(len(names), 7)  # was 8 with old cosine
 
 

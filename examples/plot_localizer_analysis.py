@@ -58,7 +58,7 @@ paradigm.columns = ['session', 'name', 'onset']
 n_conditions = len(paradigm.name.unique())
 design_matrix = make_design_matrix(frame_times, paradigm,
                                    hrf_model='canonical with derivative',
-                                   drift_model="cosine", hfcut=128)
+                                   drift_model="cosine", period_cut=128)
 
 # Plot the design matrix
 ax = design_matrix.show()
