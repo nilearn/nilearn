@@ -49,9 +49,6 @@
 .. |searchlight| image:: auto_examples/decoding/images/plot_haxby_searchlight_001.png
    :target: auto_examples/decoding/plot_haxby_searchlight.html
 
-.. |banner7| image:: auto_examples/decoding/images/plot_poldrack_space_net_1.png
-   :target: auto_examples/decoding/plot_poldrack_space_net.html
-
 .. raw:: html
 
    <div id="index-grid" class="section group">
@@ -80,6 +77,14 @@
 * |rest_clustering|
 
 * |canica|
+
+* |tvl1_poldrack|
+
+* |smooth_lasso_poldrack|
+
+* |tvl1_haxby|
+
+* |smooth_lasso_haxby|
 
 * |searchlight|
 
