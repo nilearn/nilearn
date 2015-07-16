@@ -67,7 +67,6 @@ uses.
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
-   SpaceNet
 
 .. _decomposition_ref:
 
