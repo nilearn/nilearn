@@ -269,7 +269,7 @@ def _smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
         # it's always a good idea to use somethx a bit bigger
         lipschitz_constant *= 1.05
 
-    # mooth part of energy, and gradient of
+    # smooth part of energy, and gradient thereof
     def f1(w):
         return _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight)
 
