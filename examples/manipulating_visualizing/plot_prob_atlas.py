@@ -1,9 +1,9 @@
 """
-Visualizing 4D atlas maps onto the anatomical image
-===========================================================
+Visualizing 4D probabilistic atlas maps onto the anatomical image
+=================================================================
 
-Basically this example gives an idea on how to visualize the atlas maps which are
-4D using three different display types, for instance if you choose
+This example shows how to visualize probabilistic atlases made of 4D images.
+There are 3 different display types:
 
 1. "contours", which means maps or ROIs are shown as contours delineated by \
     colored lines.
@@ -13,14 +13,13 @@ Basically this example gives an idea on how to visualize the atlas maps which ar
 
 3. "continuous", maps are shown as just color overlays.
 
-This function can display each map with each different color which are picked
-randomly from the colormap which is already defined.
+The :func: nilearn.plotting.plot_prob_atlas function displays each map
+with each different color which are picked randomly from the colormap
+which is already defined.
 
-Please see the related documentation for more information to tune between the
-parameters.
+See :ref:`plotting` for more information to know how to tune the parameters.
 """
-# Load 4D Atlas maps
-print('--- Loading 4D Atlas Maps---')
+# Load 4D probabilistic atlases
 from nilearn import datasets
 
 # Harvard Oxford Atlas
@@ -37,24 +36,22 @@ smith = datasets.fetch_atlas_smith_2009()
 icbm = datasets.fetch_icbm152_2009()
 
 # Visualization
-print('--- Visualizing ---')
 import matplotlib.pyplot as plt
 from nilearn import plotting
 
-atlas_types = [harvard_oxford.maps, harvard_oxford_sub.maps,
-               msdl.maps, smith.rsn10,
-               smith.rsn20, smith.rsn70, smith.bm10,
-               smith.bm20, smith.bm70,
-               (icbm['wm'], icbm['gm'], icbm['csf'])]
-atlas_names = ['Harvard_Oxford', 'Harvard_Oxford sub', 'MSDL',
-               'Smith2009 10 RSNs', 'Smith2009 20 RSNs',
-               'Smith2009 70 RSNs', 'Smith2009 10 Brainmap',
-               'Smith2009 20 Brainmap', 'Smith2009 70 Brainmap',
-               'ICBM tissues']
+atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
+               'Harvard_Oxford sub': harvard_oxford_sub.maps,
+               'MSDL': msdl.maps, 'Smith 2009 10 RSNs': smith.rsn10,
+               'Smith2009 20 RSNs': smith.rsn20,
+               'Smith2009 70 RSNs': smith.rsn70,
+               'Smith2009 10 Brainmap': smith.bm10,
+               'Smith2009 20 Brainmap': smith.bm20,
+               'Smith2009 70 Brainmap': smith.bm70,
+               'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf'])}
 
-for atlas, name in zip(atlas_types, atlas_names):
+for name, atlas in atlas_types.items():
         plotting.plot_prob_atlas(atlas,
-                                              title='%s' % name)
+                                 title='%s' % name)
 
 plt.show()
 
