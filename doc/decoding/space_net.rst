@@ -8,7 +8,7 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
-.. _space_net.rst:
+.. _space_net:
 
 =====================================
 Multivariate decoding with SpaceNet
@@ -38,12 +38,12 @@ prediction scores is now well established `[Baldassarre et al. 2012]
 `[Grosenick et al. 2013] <https://hal.inria.fr/hal-00839984>`_.
 
 
-The following table summarizes the parameter(s) used to activate a given penalty:
+The following table summarizes the parameter(s) used to activate a
+given penalty:
 
 - TV-L1: `penalty="tv-l1"`
-- Smooth-Lasso: `penalty="smooth-lasso"` (this is the default prior in SpaceNet)
-- TV: `l1_ratio=0`
-- Lasso: `l1_ratio=1`
+- Smooth-Lasso: `penalty="smooth-lasso"` (this is the default prior in
+  SpaceNet)
 
 Note that TV-L1 prior leads to a hard optimization problem, and so can
 be slow to run. Under the hood, a few heuristics are used to make
