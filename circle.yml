@@ -6,15 +6,14 @@ dependencies:
     - pip install -e .
     - pip install sphinx matplotlib coverage Pillow
     # we need to do this here so the datasets will be cached
-    #- cd doc && make html 2>&1 | tee ~/log.txt
+    - cd doc && make html 2>&1 | tee ~/log.txt
 
 test:
   override:
-    - sleep 10
-    #- make clean test test-coverage
+    - make clean test test-coverage
     # workaround - make html returns 0 even if examples fail to build
     # (see https://github.com/sphinx-gallery/sphinx-gallery/issues/45)
-    #- cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
+    - cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
 
 general:
   artifacts:
