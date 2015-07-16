@@ -75,7 +75,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         return .5 * np.array(data.shape)
     if activation_threshold is None:
         activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
-                                                   80)
+            80)
     mask = np.abs(my_map) > activation_threshold - 1.e-15
     # mask may be zero everywhere in rare cases
     if mask.max() == 0:
@@ -220,7 +220,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     for _ in range(n_cuts):
         # Find a peak
         max_along_axis = np.unravel_index(np.abs(data).argmax(),
-                                          data.shape)[axis]
+            data.shape)[axis]
 
         # cancel out the surroundings of the peak
         start = max(0, max_along_axis - spacing)
@@ -272,6 +272,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
+<<<<<<< HEAD
 def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False,
                                  label_hemisphere = 'left'):
     """ Return coordinates of center of mass of 3D parcellation atlas
@@ -296,13 +297,14 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     coords: array
         Label regions cut coordinates in image space (mm).
 
-<<<<<<< HEAD
     labels_list: list
         Label region.
-=======
     coords: List
         World coordinates for center of label regions
->>>>>>> removed redundancies, takes largest connect component
+        World coordinates in mm for center of label regions.
+
+    labels_list: List
+        Label region values.
     """
 
 
@@ -353,6 +355,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         # Get parcellation center of mass
         x, y, z = ndimage.center_of_mass(component)
 
+
         # Dump label region and coordinates into a dictionary
         label_list.append(cur_label)
         coord_list.append((x, y, z))
@@ -366,20 +369,20 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         return np.array(coords)
 
 def find_probabilistic_atlas_cut_coords(label_img):
-    """ Grab coordinates of center probabolistic atlas 4D image
+    """ Return coordinates of center probabilistic atlas 4D image
 
     Parameters
     ----------
     label_img: 4D Nifti1Image
-        A probabilistic brain atlas
+        A probabilistic brain atlas with probabolistic masks in the fourth dimension.
 
     Returns
     -------
-    coords: list
-       center coordinates for each label region of the probabilistic atlas
+    coords: array of shape (3, n_maps)
+       center coordinates for each label region of the probabilistic atlas.
     """
 
     label_img = check_niimg(label_img)
     label_imgs = iter_img(label_img)
     coords = [find_xyz_cut_coords(img) for img in label_imgs]
-    return coords
+    return np.array(coords)
