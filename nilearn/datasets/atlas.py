@@ -8,9 +8,11 @@ from scipy import ndimage
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
+#from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 
-from .._utils import check_niimg, new_img_like
+from .._utils import check_niimg
+from ..image import new_img_like
 from .._utils.compat import _basestring
 
 

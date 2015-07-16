@@ -13,34 +13,61 @@ from nose import with_setup
 from nose.tools import assert_true, assert_equal, assert_raises
 
 
-from nilearn import datasets
+from nilearn.datasets import utils, func
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock)
 
 from nilearn._utils.compat import _basestring
 
 
+original_fetch_files = None
+original_url_request = None
+original_chunk_read = None
+mock_fetch_files = None
+mock_url_request = None
+mock_chunk_read = None
+
+
+def setup_mock():
+    global original_url_request
+    global mock_url_request
+    mock_url_request = mock_request()
+    original_url_request = utils._urllib.request
+    utils._urllib.request = mock_url_request
+
+    global original_chunk_read
+    global mock_chunk_read
+    mock_chunk_read = wrap_chunk_read_(utils._chunk_read_)
+    original_chunk_read = utils._chunk_read_
+    utils._chunk_read_ = mock_chunk_read
+
+    global original_fetch_files
+    global mock_fetch_files
+    mock_fetch_files = FetchFilesMock()
+    original_fetch_files = func._fetch_files
+    func._fetch_files = mock_fetch_files
+
+
+def teardown_mock():
+    global original_url_request
+    utils._urllib.request = original_url_request
+
+    global original_chunk_read
+    utils._chunk_read_ = original_chunk_read
+
+    global original_fetch_files
+    func._fetch_files = original_fetch_files
+
+
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 tmpdir = None
-url_request = None
-file_mock = None
 
 
 def setup_tmpdata():
     # create temporary dir
     global tmpdir
     tmpdir = mkdtemp()
-
-
-def setup_mock():
-    global url_request
-    url_request = mock_request()
-    datasets.utils._urllib.request = url_request
-    datasets.utils._chunk_read_ = wrap_chunk_read_(datasets.utils._chunk_read_)
-    global file_mock
-    file_mock = FetchFilesMock()
-    datasets.func._fetch_files = file_mock  # overwrite the actual function
 
 
 def teardown_tmpdata():
@@ -50,11 +77,10 @@ def teardown_tmpdata():
         shutil.rmtree(tmpdir)
 
 
-@with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby_simple():
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
-    haxby = datasets.func.fetch_haxby_simple(data_dir=tmpdir, url=local_url,
+    haxby = func.fetch_haxby_simple(data_dir=tmpdir, url=local_url,
                                              verbose=0)
     datasetdir = os.path.join(tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
     for key, file in [
@@ -87,7 +113,7 @@ def test_fail_fetch_haxby_simple():
             (os.path.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
-    assert_raises(IOError, datasets.utils._fetch_files,
+    assert_raises(IOError, utils._fetch_files,
                   os.path.join(tmpdir, 'haxby2001_simple'), files,
                   verbose=0)
     dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
@@ -96,13 +122,13 @@ def test_fail_fetch_haxby_simple():
     assert_equal(stuff, 'stuff')
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby():
     for i in range(1, 6):
-        haxby = datasets.func.fetch_haxby(data_dir=tmpdir, n_subjects=i,
+        haxby = func.fetch_haxby(data_dir=tmpdir, n_subjects=i,
                                           verbose=0)
-        assert_equal(len(url_request.urls), 1 + (i == 1))  # subject_data + md5
+        assert_equal(len(mock_url_request.urls), 1 + (i == 1))  # subject_data + md5
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
         assert_equal(len(haxby.session_target), i)
@@ -111,26 +137,26 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house), i)
         assert_equal(len(haxby.mask_face_little), i)
         assert_equal(len(haxby.mask_house_little), i)
-        url_request.reset()
+        mock_url_request.reset()
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_nyu_rest():
     # First session, all subjects
-    nyu = datasets.func.fetch_nyu_rest(data_dir=tmpdir, verbose=0)
-    assert_equal(len(url_request.urls), 2)
+    nyu = func.fetch_nyu_rest(data_dir=tmpdir, verbose=0)
+    assert_equal(len(mock_url_request.urls), 2)
     assert_equal(len(nyu.func), 25)
     assert_equal(len(nyu.anat_anon), 25)
     assert_equal(len(nyu.anat_skull), 25)
     assert_true(np.all(np.asarray(nyu.session) == 1))
 
     # All sessions, 12 subjects
-    url_request.reset()
-    nyu = datasets.func.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
+    mock_url_request.reset()
+    nyu = func.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
                                        n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
-    assert_equal(len(url_request.urls), 2)
+    assert_equal(len(mock_url_request.urls), 2)
     assert_equal(len(nyu.func), 36)
     assert_equal(len(nyu.anat_anon), 36)
     assert_equal(len(nyu.anat_skull), 36)
@@ -140,7 +166,7 @@ def test_fetch_nyu_rest():
     assert_true(np.all(s[24:] == 3))
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_adhd():
     local_url = "file://" + datadir
@@ -160,39 +186,39 @@ def test_fetch_adhd():
             9744150, 1562298, 3205761, 3624598]
     subs = np.asarray(sub1 + sub2 + sub3 + sub4)
     subs = subs.view(dtype=[('Subject', '<i8')])
-    file_mock.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
+    mock_fetch_files.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
                       subs)
 
-    adhd = datasets.func.fetch_adhd(data_dir=tmpdir, url=local_url,
+    adhd = func.fetch_adhd(data_dir=tmpdir, url=local_url,
                                     n_subjects=12, verbose=0)
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
-    assert_equal(len(url_request.urls), 13)  # Subjects + phenotypic
+    assert_equal(len(mock_url_request.urls), 13)  # Subjects + phenotypic
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_miyawaki2008():
-    dataset = datasets.func.fetch_miyawaki2008(data_dir=tmpdir, verbose=0)
+    dataset = func.fetch_miyawaki2008(data_dir=tmpdir, verbose=0)
     assert_equal(len(dataset.func), 32)
     assert_equal(len(dataset.label), 32)
     assert_true(isinstance(dataset.mask, _basestring))
     assert_equal(len(dataset.mask_roi), 38)
-    assert_equal(len(url_request.urls), 1)
+    assert_equal(len(mock_url_request.urls), 1)
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_localizer_contrasts():
     local_url = "file://" + datadir
     ids = np.asarray([('S%2d' % i).encode() for i in range(94)])
     ids = ids.view(dtype=[('subject_id', 'S3')])
-    file_mock.add_csv('cubicwebexport.csv', ids)
-    file_mock.add_csv('cubicwebexport2.csv', ids)
+    mock_fetch_files.add_csv('cubicwebexport.csv', ids)
+    mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
-    dataset = datasets.func.fetch_localizer_contrasts(["checkerboard"],
+    dataset = func.fetch_localizer_contrasts(["checkerboard"],
                                                       data_dir=tmpdir,
                                                       url=local_url,
                                                       verbose=0)
@@ -205,7 +231,7 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.cmaps), 94)
 
     # 20 subjects
-    dataset = datasets.func.fetch_localizer_contrasts(["checkerboard"],
+    dataset = func.fetch_localizer_contrasts(["checkerboard"],
                                                       n_subjects=20,
                                                       data_dir=tmpdir,
                                                       url=local_url,
@@ -219,7 +245,7 @@ def test_fetch_localizer_contrasts():
     assert_equal(dataset.ext_vars.size, 20)
 
     # Multiple contrasts
-    dataset = datasets.func.fetch_localizer_contrasts(
+    dataset = func.fetch_localizer_contrasts(
         ["checkerboard", "horizontal checkerboard"],
         n_subjects=20, data_dir=tmpdir,
         verbose=0)
@@ -232,7 +258,7 @@ def test_fetch_localizer_contrasts():
     assert_equal(dataset.ext_vars.size, 20)
 
     # get_anats=True
-    dataset = datasets.func.fetch_localizer_contrasts(["checkerboard"],
+    dataset = func.fetch_localizer_contrasts(["checkerboard"],
                                                       data_dir=tmpdir,
                                                       url=local_url,
                                                       get_anats=True,
@@ -247,7 +273,7 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.cmaps), 94)
 
     # get_masks=True
-    dataset = datasets.func.fetch_localizer_contrasts(["checkerboard"],
+    dataset = func.fetch_localizer_contrasts(["checkerboard"],
                                                       data_dir=tmpdir,
                                                       url=local_url,
                                                       get_masks=True,
@@ -262,7 +288,7 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.masks), 94)
 
     # get_tmaps=True
-    dataset = datasets.func.fetch_localizer_contrasts(["checkerboard"],
+    dataset = func.fetch_localizer_contrasts(["checkerboard"],
                                                       data_dir=tmpdir,
                                                       url=local_url,
                                                       get_tmaps=True,
@@ -277,7 +303,7 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.tmaps), 94)
 
     # all get_*=True
-    dataset = datasets.func.fetch_localizer_contrasts(["checkerboard"],
+    dataset = func.fetch_localizer_contrasts(["checkerboard"],
                                                       data_dir=tmpdir,
                                                       url=local_url,
                                                       get_anats=True,
@@ -297,18 +323,18 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.tmaps), 94)
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
     local_url = "file://" + datadir
     ids = np.asarray(['S%2d' % i for i in range(94)])
     ids = ids.view(dtype=[('subject_id', 'S3')])
-    file_mock.add_csv('cubicwebexport.csv', ids)
-    file_mock.add_csv('cubicwebexport2.csv', ids)
+    mock_fetch_files.add_csv('cubicwebexport.csv', ids)
+    mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
-    dataset = datasets.func.fetch_localizer_calculation_task(data_dir=tmpdir,
+    dataset = func.fetch_localizer_calculation_task(data_dir=tmpdir,
                                                              url=local_url,
                                                              verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
@@ -317,7 +343,7 @@ def test_fetch_localizer_calculation_task():
     assert_equal(len(dataset.cmaps), 94)
 
     # 20 subjects
-    dataset = datasets.func.fetch_localizer_calculation_task(n_subjects=20,
+    dataset = func.fetch_localizer_calculation_task(n_subjects=20,
                                                              data_dir=tmpdir,
                                                              url=local_url,
                                                              verbose=0)
@@ -327,7 +353,7 @@ def test_fetch_localizer_calculation_task():
     assert_equal(len(dataset.cmaps), 20)
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_abide_pcp():
     local_url = "file://" + datadir
@@ -337,9 +363,9 @@ def test_fetch_abide_pcp():
     pheno = np.asarray(list(zip(ids, filenames)), dtype=[('subject_id', int),
                                                          ('FILE_ID', 'U11')])
     # pheno = pheno.T.view()
-    file_mock.add_csv('Phenotypic_V1_0b_preprocessed1.csv', pheno)
+    mock_fetch_files.add_csv('Phenotypic_V1_0b_preprocessed1.csv', pheno)
 
     # All subjects
-    dataset = datasets.func.fetch_abide_pcp(data_dir=tmpdir, url=local_url,
+    dataset = func.fetch_abide_pcp(data_dir=tmpdir, url=local_url,
                                             quality_checked=False, verbose=0)
     assert_equal(len(dataset.func_preproc), 400)
