@@ -1482,3 +1482,83 @@ div.body .jcarousel-pagination a.active {
     color: #fff;
     opacity: 1;
 }
+
+ul#tabs {
+    list-style-type: none;
+    margin: 0 0 0px 0;
+    padding: 0;
+    text-align: center;
+}
+
+ul#tabs li {
+    font-size:20px;
+    display: inline-block;
+    background-color: #355F7C;
+    border-bottom: solid 5px #C4D8E2;
+    padding: 5px 20px;
+    margin-bottom: 0px;
+    color: black;
+    cursor: pointer;
+}
+
+ul#tabs li:hover {
+    color: black;
+    background-color: #C4D8E2;
+}
+
+ul#tabs li.active {
+    color: black;
+    background-color: #C4D8E2;
+}
+
+ul#tab {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background:#FF7F50;
+    -moz-box-shadow: 3px 4px 0px 0px #355F7C;
+    -webkit-box-shadow: 3px 4px 0px 0px #355F7C;
+    box-shadow: 8px 8px 0px 0px #355F7C;
+    background-color:#C4D8E2;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    border:1px solid #C4D8E2;
+    color: black;
+    font-family:Arial;
+    font-size:17px;
+    font-weight:bold;
+    padding:12px 44px;
+    text-decoration:none;
+}
+
+ul#tab li {
+    display: none;
+    padding: 0px;
+    border: solid 0px #d2f4e9; }
+    ul#tab li.active {
+    display: block; }
+    ul#tab li h2 {
+    font-weight: 400;
+    margin-bottom: 30px;
+    padding-bottom: 5px;
+    background-color: #FFFAF0}
+    ul#tab li div.code{
+    font-size:15px;
+    color: black;
+    background-color: white;
+}
+
+ul#tab li p{
+    font-size:15px;
+    font-weight:normal;
+}
+
+ul#tab li p.emphasize{
+    font-size:25px;
+    font-weight:600;
+}
+
+ul#tab li div.contents p{
+    font-size:20px;
+}
