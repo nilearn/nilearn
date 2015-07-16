@@ -53,11 +53,11 @@ ctags:
 	# Install with: sudo apt-get install exuberant-ctags
 	$(CTAGS) -R *
 
-.PHONY : doc
+.PHONY : doc-plot
 doc:
 	make -C doc html
 
-.PHONY : doc-noplot
+.PHONY : doc
 doc-noplot:
 	make -C doc html-noplot
 
