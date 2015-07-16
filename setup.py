@@ -26,7 +26,8 @@ def load_version():
 
 def is_installing():
     # Allow command-lines such as "python setup.py build install"
-    return 'install' in sys.argv
+    install_commands = set(['install', 'develop'])
+    return install_commands.intersection(set(sys.argv))
 
 
 # Make sources available using relative paths from this file's directory.
