@@ -59,7 +59,7 @@ doc:
 
 .PHONY : doc
 doc-noplot:
-	make -C doc html-noplot
+	cd doc && make html-noplot
 
 .PHONY : pdf
 pdf:
