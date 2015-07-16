@@ -35,7 +35,7 @@ datasets and atlases. Dataset fetching functions can be imported from
     >>> haxby_files = datasets.fetch_haxby(n_subjects=1)
 
 They return a data structure that contains different pieces of
-information on the retrieved dataset, including file names of the
+information on the retrieved dataset, including the
 file names on hard disk::
 
     >>> # The different files
@@ -68,7 +68,7 @@ participant information for confound removal), the fetching functions
 perform data downloads only once and return the locally saved data upon
 any later function calls.
 The locally stored data can be found in one of the
-following directories (in order of priority; if present):
+following directories (in order of priority, if present):
 
   * default system paths used by third party software that may already
     provide the data (e.g., the Harvard-Oxford atlas
@@ -135,7 +135,7 @@ Nifti and Analyze files
 
 
 Neuroimaging data can be loaded in a simple way thanks to nibabel_.
-A nifti file on disk can be loaded with a single line.
+A Nifti file on disk can be loaded with a single line.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
      :start-after: ### Load an fMRI file #########################################################
@@ -144,15 +144,15 @@ A nifti file on disk can be loaded with a single line.
 .. topic:: **Dataset formatting: data shape**
 
     It is important to appreciate two main representations for
-    storing and accessing more than one nifti images, that is sets
+    storing and accessing more than one Nifti images, that is sets
     of MRI scans:
 
     - a big 4D matrix representing (3D MRI + 1D for time), stored in a single
-      nifti file.
+      Nifti file.
       `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to
       prefer this format.
     - several 3D matrices representing each time point (single 3D volume) of the
-      session, stored in set of 3D nifti or analyse files.
+      session, stored in set of 3D Nifti or analyse files.
       `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 
@@ -170,7 +170,7 @@ As a baseline, nilearn functions take as input argument what we call
   * Any object exposing ``get_data()`` and ``get_affine()`` methods, typically
     a ``Nifti1Image`` from nibabel_.
 
-**Niimg-4D:** Similarly, some functions require Nifti-like
+**Niimg-4D:** Similarly, some functions require 4D Nifti-like
 data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
 
   * A path to a 4D Nifti image
@@ -234,14 +234,14 @@ can be easily extracted from the fMRI data by the
 
 .. _mask_4d_2_3d:
 
-From 4D nifti images to 2D data arrays
+From 4D Nifti images to 2D data arrays
 --------------------------------------
 
 fMRI data is usually represented as a 4D block of data: 3 spatial
 dimensions and one time dimension. In practice, we are usually
 interested in working on the voxel time-series in the
-brain. It is thus convenient to apply a brain mask in order to translate the
-4D brain images representation into a compressed 2D data representation,
+brain. It is thus convenient to apply a brain mask in order to convert the
+4D brain images representation into a restructured 2D data representation,
 `voxel` **x** `time`, as depicted below:
 
 .. image:: ../images/masking.jpg
@@ -342,7 +342,7 @@ However, simple means from the realms of classical statistics can help
 reducing the number of voxels.
 
 The Student's t-test (:func:`scipy.stats.ttest_ind`) is an established
-mean to determine whether two
+method to determine whether two
 distributions are statistically different. It can be used to compare voxel
 time-series from two different experimental conditions
 (e.g., when houses or faces are shown to individuals during brain scanning).
@@ -391,7 +391,7 @@ corresponding spatial mask is provided in `haxby.mask_vt`.
 We want to compute the
 intersection of this provided mask with our self-computed mask.
 The first step is to load it with
-nibabel's :func:`nibabel.load`. We can then a logical "and" operation
+nibabel's :func:`nibabel.load`. We can then use a logical "and" operation
 -- :func:`numpy.logical_and` -- to keep only voxels
 that have been selected in both masks. In neuroimaging jargon, this is
 called an "AND conjunction."
@@ -449,6 +449,6 @@ The final voxel mask is saved using nibabel for further inspection
 with a software such as FSLView.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
-    :start-after: # save the ROI 'atlas' to a single output nifti
+    :start-after: # save the ROI 'atlas' to a single output Nifti
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
