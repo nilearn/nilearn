@@ -11,8 +11,7 @@ def test_get_params():
         for is_classif in [True, False]:
             kwargs = {}
             for param in ["max_iter", "alphas", "l1_ratios", "verbose",
-                          "tol", "mask", "memory", "copy_data",
-                          "fit_intercept", "alphas"]:
+                          "tol", "mask", "memory", "fit_intercept", "alphas"]:
                 m = BaseSpaceNet(mask='dummy',
                              penalty=penalty, is_classif=is_classif, **kwargs)
                 try:
