@@ -32,7 +32,7 @@ test-code:
 	$(NOSETESTS) -s nilearn 
 test-doc:
 	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \
-	--doctest-extension=inc --doctest-fixtures=_fixture doc/ \
+	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
 	
 
 test-coverage:

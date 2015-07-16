@@ -206,7 +206,7 @@ with MNI coordinates for each region (see for instance example:
     For doctesting
     
     >>> from nilearn import datasets
-    >>> atlas_filename = datasets.fetch_atlas_msdl().maps  # doctest: +SKIP
+    >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
 
 For another atlas this information can be computed for each region with
 the :func:`nilearn.plotting.find_xyz_cut_coords` function
@@ -214,7 +214,8 @@ the :func:`nilearn.plotting.find_xyz_cut_coords` function
 :ref:`example_connectivity_plot_multi_subject_connectome.py`)::
 
  >>> from nilearn import image, plotting
- >>> atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in image.iter_img(atlas_filename)]
+ >>> atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in image.iter_img(atlas_filename)] # doctest: +SKIP
+
 
 
 .. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_002.png

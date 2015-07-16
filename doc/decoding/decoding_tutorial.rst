@@ -223,7 +223,7 @@ There is a specific function,
 the score for the different folds of cross-validation::
 
   >>> from sklearn.cross_validation import cross_val_score
-  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
+  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)  # doctest: +SKIP
 
 You can speed up the computation by using n_jobs=-1, which will spread
 the computation equally across all processors (but will probably not work
@@ -263,8 +263,8 @@ to use the session label, present in the behavioral data file, and
     >>> # We need to remember to remove the rest conditions
     >>> session_label = session_label[condition_mask] # doctest: +SKIP
     >>> cv = LeaveOneLabelOut(labels=session_label) # doctest: +SKIP
-    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
-    >>> print(cv_scores)
+    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv) # doctest: +SKIP
+    >>> print(cv_scores) # doctest: +SKIP
     [ 1.          0.61111111  0.94444444  0.88888889  0.88888889  0.94444444
       0.72222222  0.94444444  0.5         0.72222222  0.5         0.55555556]
 
@@ -275,7 +275,7 @@ to use the session label, present in the behavioral data file, and
 
 .. topic:: Solution
 
-    >>> classification_accuracy = np.mean(cv_scores)
+    >>> classification_accuracy = np.mean(cv_scores) # doctest: +SKIP
     >>> classification_accuracy # doctest: +SKIP
     0.76851851851851849
 
@@ -291,7 +291,7 @@ choosing the dominant class can achieve a low number of errors.
 
 Other metrics, such as the f1-score, can be used::
 
-    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='f1')
+    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='f1') # doctest: +SKIP
 
 .. seealso::
 
@@ -306,14 +306,14 @@ at chance, is to use a dummy classifier,
 :class:`sklearn.dummy.DummyClassifier`::
 
     >>> from sklearn.dummy import DummyClassifier
-    >>> null_cv_scores = cross_val_score(DummyClassifier(), fmri_masked, target, cv=cv)
+    >>> null_cv_scores = cross_val_score(DummyClassifier(), fmri_masked, target, cv=cv) # doctest: +SKIP
 
 **Permutation testing**: A more controlled way, but slower, is to do
 permutation testing on the labels, with
 :func:`sklearn.cross_validation.permutation_test_score`::
 
   >>> from sklearn.cross_validation import permutation_test_score
-  >>> null_cv_scores = permutation_test_score(svc, fmri_masked, target, cv=cv)
+  >>> null_cv_scores = permutation_test_score(svc, fmri_masked, target, cv=cv) # doctest: +SKIP
 
 |
 
@@ -442,6 +442,7 @@ Changing the prediction engine
 
 .. for doctest:
     >>> from sklearn.feature_selection import SelectKBest, f_classif
+    >>> from sklearn.svm import LinearSVC
     >>> feature_selection = SelectKBest(f_classif, k=4)
     >>> clf = LinearSVC()
 

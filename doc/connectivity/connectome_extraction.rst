@@ -53,7 +53,7 @@ estimator :class:`sklearn.covariance.GraphLassoCV` is a good, simple
 solution. To use it, you need to create an estimator object::
 
     >>> from sklearn.covariance import GraphLassoCV
-    >>> estimator = GraphLasso()
+    >>> estimator = GraphLassoCV()
 
 And then you can fit it on the activation time series, for instance
 extracted in :ref:`the previous section <functional_connectomes>`::
