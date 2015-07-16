@@ -51,7 +51,7 @@ for penalty in ['smooth-lasso', 'tv-l1']:
     coef_img = decoder.coef_img_
     plot_stat_map(coef_img, background_img,
                   title="%s: accuracy %g%%" % (penalty, accuracy),
-                  cut_coords=(20, -34, -16))
+                  cut_coords=(-34, -16), display_mode="yz")
     coef_img.to_filename('haxby_%s_weights.nii' % penalty)
     print("- %s %s" % (penalty, '-' * 60))
     print("Number of train samples : %i" % condition_mask_train.sum())
