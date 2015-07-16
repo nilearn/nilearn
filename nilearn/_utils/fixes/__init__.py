@@ -1,5 +1,3 @@
-# XXX use LooseVersion to specify correct breakpoint of ALL backported APIs!
-
 from distutils.version import LooseVersion
 import sklearn
 
