@@ -4,8 +4,8 @@ Test the multi-PCA module
 
 import numpy as np
 from nose.tools import assert_raises
-
 import nibabel
+from numpy.testing import assert_almost_equal
 
 from nilearn.decomposition.multi_pca import MultiPCA
 from nilearn.input_data import MultiNiftiMasker

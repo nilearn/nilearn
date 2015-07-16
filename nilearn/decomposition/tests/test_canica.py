@@ -46,12 +46,14 @@ def _make_canica_components(shape):
                       component3.ravel(), component4.ravel()))
 
 
-def _make_canica_test_data(rng=None, n_subjects=8):
+def _make_canica_test_data(rng=None, n_subjects=8, noisy=False):
     if rng is None:
         rng = np.random.RandomState(0)
     shape = (20, 20, 1)
     affine = np.eye(4)
     components = _make_canica_components(shape)
+    if noisy:
+        components[rng.randn(*components.shape) > .8] *= -5.
 
     # Create a "multi-subject" dataset
     data = _make_data_from_components(components, affine, shape, rng=rng,
@@ -90,21 +92,9 @@ def test_component_sign():
     # CanICA to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    # make data (SVD)
-    rng = np.random.RandomState(0)
-    shape = (20, 10, 1)
-    affine = np.eye(4)
-    components = _make_canica_components(shape)
-
-    # make +ve
+    data, mask_img, components, rng = _make_canica_test_data(n_subjects=2, noisy=True)
     for mp in components:
-        mp[rng.randn(*mp.shape) > .8] *= -5.
-        assert_less_equal(mp.max(), -mp.min())  # goal met ?
-
-    # synthesize data with given components
-    data = _make_data_from_components(components, affine, shape, rng=rng,
-                                      n_subjects=2)
-    mask_img = nibabel.Nifti1Image(np.ones(shape, dtype=np.int8), affine)
+        assert_less_equal(-mp.min(), mp.max())
 
     # run CanICA many times (this is known to produce different results)
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
