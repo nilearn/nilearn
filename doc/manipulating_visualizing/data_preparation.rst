@@ -93,7 +93,7 @@ This section details how to use the :class:`NiftiMasker` class.
 :class:`NiftiMasker` is a
 powerful tool to load images and extract voxel signals in the area
 defined by the mask. It is designed to apply some basic preprocessing
-steps by default with commonly used parameters. But it is
+steps by default with commonly used parameters as defaults. But it is
 *very important* to look at your data to see the effects of the
 preprocessings and validate them.
 
@@ -113,7 +113,7 @@ build a brand new Nifti-like object to give it to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
 :class:`NiftiMasker`. Simply use `nibabel
 <http://nipy.sourceforge.net/nibabel/>`_ to create a :ref:`Niimg <niimg>`
-dynamically in memory:
+in memory:
 
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
@@ -140,7 +140,7 @@ Computing the mask
     It is also related to this example:
     :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
-If a mask is not specified as an arugment,
+If a mask is not specified as an argument,
 :class:`NiftiMasker` will try to compute
 one from the provided neuroimaging data.
 It is *very important* to verify the quality of the generated mask by
@@ -154,8 +154,7 @@ As a first example, we will now automatically build a mask from a dataset.
 We will here use the Haxby dataset because it provides the original mask that
 we can compare the data-derived mask against.
 
-The first step is to generate a mask with default parameters and visualize it
-for eye inspection.
+The first step is to generate a mask with default parameters and visualize it.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
     :start-after: # Simple mask extraction from EPI images
@@ -186,7 +185,7 @@ skull parts in the image.
 Looking at the :func:`nilearn.masking.compute_epi_mask` called by the
 :class:`NiftiMasker` object, we see two interesting parameters:
 *lower_cutoff* and *upper_cutoff*. These set the grey-value bounds in
-which the masking algorithm will search for it's threshold
+which the masking algorithm will search for its threshold
 (0 being the minimum of the image and 1 the maximum). We will here increase
 the lower cutoff to enforce selection of those
 voxels that appear as bright in the EPI image.
@@ -219,8 +218,9 @@ Common data preparation steps: resampling, smoothing, filtering
 Resampling
 ..........
 
-:class:`NiftiMasker` and many similar classes enable recasting of images
-       into different resolutions and constellations of brain voxel data.
+:class:`NiftiMasker` and many similar classes enable resampling (recasting
+       of images into different resolutions and transformations of brain voxel
+       data).
        The resampling procedure takes as input the
        *target_affine* to resample (resize, rotate...) images in order
        to match the spatial configuration defined by the new
@@ -275,10 +275,10 @@ Smoothing
 the neuroimaging data to make the data more homogeneous and thus account
 for inter-individual differences in neuroanatomy.
 It is achieved by passing the full-width
-half maximum (FWHM; typically in millimeter scale)
+half maximum (FWHM; in millimeter scale)
 along the x, y, and z image axes by specifying the `smoothing_fwhm` parameter.
 For an isotropic filtering, passing a scalar is also possible. The underlying
-function handles properly this tricky case of non-cubic voxels by scaling the
+function handles properly the tricky case of non-cubic voxels by scaling the
 given widths appropriately.
 
 .. seealso::
@@ -292,13 +292,13 @@ Temporal Filtering
 ..................
 
 Rather than optimizing spatial properties of the neuroimaging data,
-the user typically wants to improve aspects of temporal data properties,
+the user may want to improve aspects of temporal data properties,
 before conversion to voxel signals.
 :class:`NiftiMasker` can also process voxel signals. Here are the possibilities:
 
 - Confound removal. Two ways of removing confounds are provided. Any linear
   trend can be removed by activating the `detrend` option.
-  This accounts for slowly (as opposed to abruptly or transiently) changes
+  This accounts for slow (as opposed to abrupt or transient) changes
   in voxel values along a series of brain images that are unrelated to the
   signal of interest (e.g., the neural correlates of cognitive tasks).
   It is not activated
@@ -368,13 +368,12 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   required memory load is independent of the number of regions, allowing
   for a large number of regions. On the other hand, there are
   several disadvantages: regions cannot spatially overlap
-  (i.e., regions cannot overlap)
   and are represented in a binary present-nonpresent coding (no weighting).
 - maps: a single region is defined as the set of all the voxels that have a
   non-zero weight. A set of regions is thus defined by a set of 3D images (or a
   single 4D image), one 3D image per region (as opposed to all regions in a
   single 3D image such as for labels, cf. above).
-  While these the defined weighted regions can exhibit spatial
+  While these defined weighted regions can exhibit spatial
   overlap (as opposed to labels), storage cost scales linearly with the
   number of regions. Handling a large number (e.g., thousands)
   of regions will prove
@@ -396,9 +395,10 @@ The `background_label` keyword of :class:`NiftiLabelsMasker` deserves
 some explanation. The voxels that correspond to the brain or a region
 of interest in an fMRI image do not fill the entire
 image. Consequently, in the labels image, there must be a label value that
-corresponding to "outside" the brain (for which no signal should be
+corresponds to "outside" the brain (for which no signal should be
 extracted). By default, this label is set to zero in nilearn
-("background"). Should some non-zero value encoding be necessary, it is
+(refered to as "background").
+Should some non-zero value encoding be necessary, it is
 possible to change the background value with the `background_label`
 keyword.
 
