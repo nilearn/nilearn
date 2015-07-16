@@ -20,14 +20,13 @@ import numpy as np
 from scipy import stats, ndimage
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.linear_model.base import LinearModel
-from sklearn.feature_selection import (SelectPercentile, f_regression,
-                                       f_classif)
+from sklearn.linear_model.base import LinearModel, center_data
+from sklearn.feature_selection import (SelectPercentile, f_regression,                                       f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from .._utils.compat import _basestring
 from ..input_data import NiftiMasker
-from .._utils.fixes import center_data, LabelBinarizer, atleast2d_or_csr
+from .._utils.fixes import LabelBinarizer, atleast2d_or_csr
 from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
                                 smooth_lasso_squared_loss)

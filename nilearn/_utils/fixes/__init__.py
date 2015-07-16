@@ -3,18 +3,6 @@
 from distutils.version import LooseVersion
 import sklearn
 
-if (LooseVersion(sklearn.__version__) < LooseVersion('0.14')):
-    from .sklearn_center_data import center_data
-else:
-    from sklearn.feature_selection import f_regression
-
-# center_data backport
-try:
-    from sklearn.linear_models.base import center_data
-except ImportError:
-    from .sklearn_basic_backports import center_data
-
-
 # atleast2d_or_csr
 try:
     from sklearn.utils import atleast2d_or_csr
