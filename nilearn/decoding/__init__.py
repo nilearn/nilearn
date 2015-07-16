@@ -2,3 +2,4 @@
 """
 
 from .searchlight import SearchLight
+from .decoder import Decoder
