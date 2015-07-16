@@ -13,6 +13,3 @@ try:
     from sklearn.metrics import roc_auc_score
 except ImportError:
     from sklearn.metrics import auc as roc_auc_score
-
-# LabelBinarizer backport
-from .sklearn_basic_backports import LabelBinarizer
