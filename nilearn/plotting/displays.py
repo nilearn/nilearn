@@ -404,14 +404,14 @@ class BaseSlicer(object):
         if not isinstance(figure, plt.Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
-            
+
             # Adjust for the number of axes
             figsize[0] *= len(cut_coords)
-            
+
             # Make space for the colorbar
             if colorbar:
                 figsize[0] += .7
-                
+
             facecolor = 'k' if black_bg else 'w'
 
             if leave_space:
@@ -443,10 +443,10 @@ class BaseSlicer(object):
             text: string
                 The text of the title
             x: float, optional
-                The horizontal position of the title on the frame in 
+                The horizontal position of the title on the frame in
                 fraction of the frame width.
             y: float, optional
-                The vertical position of the title on the frame in 
+                The vertical position of the title on the frame in
                 fraction of the frame height.
             size: integer, optional
                 The size of the title text.
@@ -518,7 +518,7 @@ class BaseSlicer(object):
 
         plt.draw_if_interactive()
 
-    def add_contours(self, img, **kwargs):
+    def add_contours(self, img, filled=False, **kwargs):
         """ Contour a 3D map in all the views.
 
             Parameters
@@ -526,6 +526,8 @@ class BaseSlicer(object):
             img: Niimg-like object
                 See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
                 Provides image to plot.
+            filled: boolean, optional
+                If filled=True, contours are displayed with color fillings.
             kwargs:
                 Extra keyword arguments are passed to contour, see the
                 documentation of pylab.contour
@@ -535,6 +537,15 @@ class BaseSlicer(object):
                 these contours.
         """
         self._map_show(img, type='contour', **kwargs)
+        if filled:
+            colors = kwargs['colors']
+            levels = kwargs['levels']
+            # Append lower boundary value to '0' for contour fillings
+            levels.append(0.)
+            alpha = kwargs['alpha']
+            self._map_show(img, type='contourf', levels=levels, alpha=alpha,
+                           colors=colors[:3])
+
         plt.draw_if_interactive()
 
     def _map_show(self, img, type='imshow',
@@ -1174,32 +1185,17 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            if isinstance(edge_threshold, _basestring):
-                message = ("If 'edge_threshold' is given as a string it "
-                           'should be a number followed by the percent sign, '
-                           'e.g. "25.3%"')
-                if not edge_threshold.endswith('%'):
-                    raise ValueError(message)
-
-                try:
-                    percentile = float(edge_threshold[:-1])
-                except ValueError as exc:
-                    exc.args += (message, )
-                    raise
-
-                # Keep a percentile of edges with the highest absolute
-                # values, so only need to look at the covariance
-                # coefficients below the diagonal
-                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
-                                                              k=-1)
-                lower_diagonal_values = adjacency_matrix[
-                    lower_diagonal_indices]
-                edge_threshold = stats.scoreatpercentile(
-                    np.abs(lower_diagonal_values), percentile)
-
-            elif not isinstance(edge_threshold, numbers.Real):
-                raise TypeError('edge_threshold should be either a number '
-                                'or a string finishing with a percent sign')
+            # Keep a percentile of edges with the highest absolute
+            # values, so only need to look at the covariance
+            # coefficients below the diagonal
+            lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                          k=-1)
+            lower_diagonal_values = adjacency_matrix[
+                lower_diagonal_indices]
+            edge_threshold = check_threshold(edge_threshold,
+                                             np.abs(lower_diagonal_values),
+                                             stats.scoreatpercentile,
+                                             'edge_threshold')
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold
@@ -1276,3 +1272,46 @@ def get_slicer(display_mode):
 def get_projector(display_mode):
     "Internal function to retrieve a projector"
     return get_create_display_fun(display_mode, PROJECTORS)
+
+
+def check_threshold(threshold, data, percentile_calculate, name):
+    """ Checks if the given threshold is in correct format
+
+    Parameters
+    ----------
+    threshold: a real value or a percentage in string.
+        if threshold is a percentage expressed in a string
+        it must finish with a percent sign like "99.7%".
+    data: ndarray
+        an array of the input masked data
+    percentile_calculate: a percentile function
+        define the name of a specific percentile function
+        to calculate the score on the data.
+
+    Returns
+    -------
+    value: a number
+        returns the score of the percentile on the data or
+        returns threshold as it is if input threshold is not
+        a percentile.
+    """
+    if isinstance(threshold, _basestring):
+        message = ('If "{0}" is given as string it '
+                   'should be a number followed by the percent '
+                   'sign, e.g. "25.3%"').format(name)
+        if not threshold.endswith('%'):
+            raise ValueError(message)
+
+        try:
+            percentile = float(threshold[:-1])
+        except ValueError as exc:
+            exc.args += (message, )
+            raise
+
+        threshold = percentile_calculate(data, percentile)
+
+    elif not isinstance(threshold, numbers.Real):
+        raise TypeError('%s should be either a number '
+                        'or a string finishing with a percent sign' % (name, ))
+    return threshold
+

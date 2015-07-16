@@ -40,6 +40,9 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
+.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/plot_prob_atlas_003.png
+     :target: ../auto_examples/manipulating_visualizing/plot_prob_atlas.html
+     :scale: 50
 
 .. A temporary hack to avoid a sphinx bug
 .. |hack| raw:: html
@@ -77,10 +80,14 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting a connectome
 
+|plot_prob_atlas|    :func:`plot_prob_atlas`
+                     |hack|
+                     Plotting 4D probabilistic atlas maps
+
 **plot_img**         :func:`plot_img`
                      |hack|
                      General-purpose function, with no specific presets
-=================== =========================================================
+================== =========================================================
 
 
 .. warning:: **Opening too many figures without closing**
@@ -218,7 +225,7 @@ plot, and has methods to add overlays, contours or edge maps::
                   |hack|
                   Add a new overlay on the existing figure
                   |hack|
-                  **Example:** :ref:`example_manipulating_visualizing_plot_probabilistic_atlas.py`
+                  **Example:** :ref:`example_manipulating_visualizing_plot_overlay.py`
 
 
 ================= =========================================================
