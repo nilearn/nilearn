@@ -296,8 +296,13 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     coords: array
         Label regions cut coordinates in image space (mm).
 
+<<<<<<< HEAD
     labels_list: list
         Label region.
+=======
+    coords: List
+        World coordinates for center of label regions
+>>>>>>> removed redundancies, takes largest connect component
     """
 
 
@@ -360,7 +365,6 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     else:
         return np.array(coords)
 
-
 def find_probabilistic_atlas_cut_coords(label_img):
     """ Grab coordinates of center probabolistic atlas 4D image
 
@@ -379,4 +383,3 @@ def find_probabilistic_atlas_cut_coords(label_img):
     label_imgs = iter_img(label_img)
     coords = [find_xyz_cut_coords(img) for img in label_imgs]
     return coords
-
