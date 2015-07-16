@@ -6,7 +6,7 @@ dependencies:
     - pip install -e .
     - pip install sphinx matplotlib coverage Pillow
     # we need to do this here so the datasets will be cached
-    - cd doc && make html 2>&1 | tee log.txt
+    - cd doc && make html
 
 test:
   override:
