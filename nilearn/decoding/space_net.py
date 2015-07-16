@@ -224,9 +224,6 @@ class EarlyStoppingCallback(object):
         if not isinstance(variables, dict):
             variables = dict(w=variables)
         self.counter += 1
-        if self.counter == 0:
-            # reset the test_scores list
-            self.test_scores = list()
         w = variables['w']
 
         # use Spearman score as stopping criterion

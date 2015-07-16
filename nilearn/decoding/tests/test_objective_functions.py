@@ -6,8 +6,8 @@ Test module for functions related cost functions (including penalties).
 import numpy as np
 from scipy.optimize import check_grad
 from nilearn.decoding.objective_functions import (
-    _gradient_id, logistic, _div_id,
-    logistic_loss_grad, _unmask)
+    _gradient_id, _logistic, _div_id,
+    _logistic_loss_grad, _unmask)
 from nilearn.decoding.space_net import BaseSpaceNet
 from nose.tools import raises
 
@@ -69,12 +69,12 @@ def test_logistic_loss_derivative(n_samples=4, n_features=10, random_state=42,
     w = rng.randn(n_features + 1)
 
     np.testing.assert_almost_equal(check_grad(
-        lambda w: logistic(X, y, w),
-        lambda w: logistic_loss_grad(X, y, w), w), 0., decimal=decimal)
+        lambda w: _logistic(X, y, w),
+        lambda w: _logistic_loss_grad(X, y, w), w), 0., decimal=decimal)
 
     np.testing.assert_almost_equal(check_grad(
-        lambda w: logistic(X, y, w),
-        lambda w: logistic_loss_grad(X, y, w), w), 0., decimal=decimal)
+        lambda w: _logistic(X, y, w),
+        lambda w: _logistic_loss_grad(X, y, w), w), 0., decimal=decimal)
 
 
 def test_grad_div_adjoint_arbitrary_ndim_():

@@ -103,7 +103,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     init : dict-like, optional (default None)
         Dictionary of initialization parameters. Possible keys are 'w',
-        'stepsize', 'z', 't', 'dgap_factor'.
+        'stepsize', 'z', 't', 'dgap_factor', etc.
 
     callback : callable(dict) -> bool
         Function called on every iteration. If it returns True, then the loop

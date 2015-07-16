@@ -8,12 +8,12 @@ from nilearn.decoding.objective_functions import _gradient, _div
 from nilearn.decoding.space_net_solvers import (
     smooth_lasso_data_function,
     smooth_lasso_adjoint_data_function,
-    squared_loss_and_spatial_grad,
-    logistic_data_loss_and_spatial_grad,
-    squared_loss_and_spatial_grad_derivative,
-    logistic_data_loss_and_spatial_grad_derivative,
-    squared_loss_derivative_lipschitz_constant,
-    logistic_derivative_lipschitz_constant,
+    _squared_loss_and_spatial_grad,
+    _logistic_data_loss_and_spatial_grad,
+    _squared_loss_and_spatial_grad_derivative,
+    _logistic_data_loss_and_spatial_grad_derivative,
+    _squared_loss_derivative_lipschitz_constant,
+    _logistic_derivative_lipschitz_constant,
     mfista)
 from nilearn.decoding.space_net import BaseSpaceNet
 
@@ -124,14 +124,14 @@ def test_operators_adjointness(size=4):
         np.testing.assert_almost_equal(Axdoty, xdotAty)
 
 
-def test_squared_loss_gradient_at_simple_points():
+def test__squared_loss_gradient_at_simple_points():
     """Tests gradient of data loss function in points near to zero. This is
     a not so hard test, just for detecting big errors"""
     X, y, w, mask = create_simulation_data(n_samples=10, size=4, roi_size=2)
     grad_weight = 1
-    func = lambda w: squared_loss_and_spatial_grad(X, y, w, mask,
+    func = lambda w: _squared_loss_and_spatial_grad(X, y, w, mask,
                                                    grad_weight)
-    func_grad = lambda w: squared_loss_and_spatial_grad_derivative(
+    func_grad = lambda w: _squared_loss_and_spatial_grad_derivative(
         X, y, w, mask, grad_weight)
     for i in range(0, w.size, 2):
         point = np.zeros(*w.shape)
@@ -147,9 +147,9 @@ def test_logistic_gradient_at_simple_points():
     grad_weight = 1
     # Add the intercept
     w = np.append(w, 0)
-    func = lambda w: logistic_data_loss_and_spatial_grad(
+    func = lambda w: _logistic_data_loss_and_spatial_grad(
         X, y, w, mask, grad_weight)
-    func_grad = lambda w: logistic_data_loss_and_spatial_grad_derivative(
+    func_grad = lambda w: _logistic_data_loss_and_spatial_grad_derivative(
         X, y, w, mask, grad_weight)
     for i in range(0, w.size, 7):
         point = np.zeros(*w.shape)
@@ -158,20 +158,20 @@ def test_logistic_gradient_at_simple_points():
                             0, decimal=3)
 
 
-def test_squared_loss_derivative_lipschitz_constant():
-    # Tests Lipschitz-continuity of the derivative of squared_loss loss
+def test__squared_loss_derivative_lipschitz_constant():
+    # Tests Lipschitz-continuity of the derivative of _squared_loss loss
     # function
     rng = check_random_state(42)
     grad_weight = 2.08e-1
-    lipschitz_constant = squared_loss_derivative_lipschitz_constant(
+    lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
         X, mask, grad_weight)
     for _ in range(20):
         x_1 = rng.rand(*w.shape) * rng.randint(1000)
         x_2 = rng.rand(*w.shape) * rng.randint(1000)
         gradient_difference = extmath.norm(
-            squared_loss_and_spatial_grad_derivative(X, y, x_1, mask,
+            _squared_loss_and_spatial_grad_derivative(X, y, x_1, mask,
                                                      grad_weight)
-            - squared_loss_and_spatial_grad_derivative(X, y, x_2, mask,
+            - _squared_loss_and_spatial_grad_derivative(X, y, x_2, mask,
                                                        grad_weight))
         point_difference = extmath.norm(x_1 - x_2)
         assert_true(
@@ -182,15 +182,15 @@ def test_logistic_derivative_lipschitz_constant():
     # Tests Lipschitz-continuity of of the derivative of logistic loss
     rng = check_random_state(42)
     grad_weight = 2.08e-1
-    lipschitz_constant = logistic_derivative_lipschitz_constant(
+    lipschitz_constant = _logistic_derivative_lipschitz_constant(
         X, mask, grad_weight)
     for _ in range(20):
         x_1 = rng.rand((w.shape[0] + 1)) * rng.randint(1000)
         x_2 = rng.rand((w.shape[0] + 1)) * rng.randint(1000)
         gradient_difference = extmath.norm(
-            logistic_data_loss_and_spatial_grad_derivative(
+            _logistic_data_loss_and_spatial_grad_derivative(
                 X, y, x_1, mask, grad_weight)
-            - logistic_data_loss_and_spatial_grad_derivative(
+            - _logistic_data_loss_and_spatial_grad_derivative(
                 X, y, x_2, mask, grad_weight))
         point_difference = extmath.norm(x_1 - x_2)
         assert_true(
@@ -211,7 +211,7 @@ def test_fista_convergence():
     # model and objetive with the last model the estimator computes
     optimum = objs[-1]
     model = reg.coef_
-    l_c = squared_loss_derivative_lipschitz_constant(
+    l_c = _squared_loss_derivative_lipschitz_constant(
         X, mask, alpha * (1 - l1_ratio) * y.size)
     # If you look at the paper, you take the norm of (starting point -
     # optimum), but, in this implementation (the test depend on the
@@ -222,7 +222,7 @@ def test_fista_convergence():
                     / (i + 1) ** 2)
 
 
-def test_max_alpha_squared_loss():
+def test_max_alpha__squared_loss():
     """Tests that models with L1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
     l1_ratios = np.linspace(0.1, 1, 3)
@@ -266,7 +266,7 @@ def test_mfista_solver_smooth_lasso_no_l1_term():
     f1 = lambda w: 0.5 * np.dot(np.dot(X, w) - y, np.dot(X, w) - y)
     f1_grad = lambda w: np.dot(X.T, np.dot(X, w) - y)
     f2_prox = lambda w, l, *args, **kwargs: (w, dict(converged=True))
-    lipschitz_constant = squared_loss_derivative_lipschitz_constant(
+    lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
         X, (np.eye(2) == 1).astype(np.bool), 1)
     estimate_solution, _, _ = mfista(
         f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8)

@@ -2,9 +2,9 @@ from nose.tools import assert_equal, assert_true
 import numpy as np
 from nilearn.decoding.fista import mfista
 from nilearn.decoding.proximal_operators import _prox_l1
-from nilearn.decoding.objective_functions import (squared_loss, logistic,
-                                   squared_loss_grad,
-                                   logistic_loss_lipschitz_constant,
+from nilearn.decoding.objective_functions import (_squared_loss, _logistic,
+                                   _squared_loss_grad,
+                                   _logistic_loss_lipschitz_constant,
                                    spectral_norm_squared)
 from nilearn.decoding.fista import _check_lipschitz_continuous
 
@@ -17,8 +17,8 @@ def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):
         y = rng.randn(n_samples)
         n_features = X.shape[1]
 
-        L = logistic_loss_lipschitz_constant(X)
-        _check_lipschitz_continuous(lambda w: logistic(
+        L = _logistic_loss_lipschitz_constant(X)
+        _check_lipschitz_continuous(lambda w: _logistic(
             X, y, w), n_features + 1, L)
 
 
@@ -31,7 +31,7 @@ def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
         n_features = X.shape[1]
 
         L = spectral_norm_squared(X)
-        _check_lipschitz_continuous(lambda w: squared_loss_grad(
+        _check_lipschitz_continuous(lambda w: _squared_loss_grad(
             X, y, w), n_features, L)
 
 
@@ -51,8 +51,8 @@ def test_input_args_and_kwargs():
     alpha_ = alpha * X.shape[0]
     l1_ratio = .2
     l1_weight = alpha_ * l1_ratio
-    f1 = lambda w: squared_loss(X, y, w, compute_grad=False)
-    f1_grad = lambda w: squared_loss(X, y, w, compute_grad=True,
+    f1 = lambda w: _squared_loss(X, y, w, compute_grad=False)
+    f1_grad = lambda w: _squared_loss(X, y, w, compute_grad=True,
                                compute_energy=False)
     f2_prox = lambda w, l, *args, **kwargs: (_prox_l1(w, l * l1_weight),
                                              dict(converged=True))

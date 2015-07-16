@@ -17,7 +17,7 @@ from nilearn.decoding.space_net import (
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
     _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
 from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
-                                 smooth_lasso_squared_loss)
+                                                smooth_lasso_squared_loss)
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
@@ -107,7 +107,7 @@ def test_params_correctly_propagated_in_constructors():
         assert_equal(cvobj.screening_percentile, perc)
 
 
-def test_logistic_path_scores():
+def testlogistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     X_, mask = to_niimgs(X, [2, 2, 2])

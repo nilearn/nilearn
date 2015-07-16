@@ -40,7 +40,7 @@ def spectral_norm_squared(X):
     return linalg.svdvals(X)[0] ** 2
 
 
-def logistic_loss_lipschitz_constant(X):
+def _logistic_loss_lipschitz_constant(X):
     """Compute the Lipschitz constant (upper bound) for the gradient of the
     logistic sum:
 
@@ -52,7 +52,7 @@ def logistic_loss_lipschitz_constant(X):
     return spectral_norm_squared(X)
 
 
-def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
+def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """Compute the MSE error, and optionally, its gradient too.
 
     The cost / energy function is
@@ -228,12 +228,12 @@ def _unmask(w, mask):
       The image to be unmasked.
 
     mask : ndarray, shape (nx, ny, nz)
-      The mask used in the unmasking operation. It's required that
+      The mask used in the unmasking operation. It is required that
       mask.sum() == n_features.
 
     Returns
     -------
-    out : ndarray of same shape as `mask`.
+    out : 3d of same shape as `mask`.
         The unmasked version of `w`
     """
 
@@ -255,7 +255,7 @@ def _sigmoid(t, copy=True):
     return t
 
 
-def logistic(X, y, w):
+def _logistic(X, y, w):
     """Compute the logistic function of the data: sum(sigmoid(yXw))
 
     Parameters
@@ -285,7 +285,7 @@ def logistic(X, y, w):
     return out
 
 
-def logistic_loss_grad(X, y, w):
+def _logistic_loss_grad(X, y, w):
     """Computes the derivative of logistic"""
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
@@ -298,7 +298,7 @@ def logistic_loss_grad(X, y, w):
 
 
 # gradient of squared loss function
-squared_loss_grad = partial(squared_loss, compute_energy=False,
+_squared_loss_grad = partial(_squared_loss, compute_energy=False,
                             compute_grad=True)
 
 

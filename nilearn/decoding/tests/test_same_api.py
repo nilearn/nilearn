@@ -10,15 +10,16 @@ import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import (
-    squared_loss, squared_loss_grad, logistic_loss_lipschitz_constant,
+    _squared_loss, _squared_loss_grad, _logistic_loss_lipschitz_constant,
     spectral_norm_squared, _unmask)
-from nilearn.decoding.space_net_solvers import (squared_loss_and_spatial_grad,
-                                 logistic_derivative_lipschitz_constant,
-                                 squared_loss_derivative_lipschitz_constant,
-                                 smooth_lasso_squared_loss,
-                                 smooth_lasso_logistic,
-                                 squared_loss_and_spatial_grad_derivative,
-                                 tvl1_solver)
+from nilearn.decoding.space_net_solvers import (
+    _squared_loss_and_spatial_grad,
+    _logistic_derivative_lipschitz_constant,
+    _squared_loss_derivative_lipschitz_constant,
+    smooth_lasso_squared_loss,
+    smooth_lasso_logistic,
+    _squared_loss_and_spatial_grad_derivative,
+    tvl1_solver)
 from nilearn.decoding.space_net import (BaseSpaceNet, SpaceNetClassifier,
                                         SpaceNetRegressor)
 
@@ -62,13 +63,13 @@ def test_same_energy_calculus_pure_lasso():
     X, y, w, mask = _make_data(rng=rng, masked=True)
 
     # check funcvals
-    f1 = squared_loss(X, y, w)
-    f2 = squared_loss_and_spatial_grad(X, y, w.ravel(), mask, 0.)
+    f1 = _squared_loss(X, y, w)
+    f2 = _squared_loss_and_spatial_grad(X, y, w.ravel(), mask, 0.)
     assert_equal(f1, f2)
 
     # check derivatives
-    g1 = squared_loss_grad(X, y, w)
-    g2 = squared_loss_and_spatial_grad_derivative(X, y, w.ravel(), mask, 0.)
+    g1 = _squared_loss_grad(X, y, w)
+    g2 = _squared_loss_and_spatial_grad_derivative(X, y, w.ravel(), mask, 0.)
     np.testing.assert_array_equal(g1, g2)
 
 
@@ -79,7 +80,7 @@ def test_lipschitz_constant_loss_mse():
     alpha = .1
     mask = np.ones(X.shape[1]).astype(np.bool)
     grad_weight = alpha * X.shape[0] * (1. - l1_ratio)
-    a = squared_loss_derivative_lipschitz_constant(X, mask, grad_weight)
+    a = _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight)
     b = spectral_norm_squared(X)
     np.testing.assert_almost_equal(a, b)
 
@@ -90,8 +91,8 @@ def test_lipschitz_constant_loss_logreg():
     l1_ratio = 1.
     alpha = .1
     grad_weight = alpha * X.shape[0] * (1. - l1_ratio)
-    a = logistic_derivative_lipschitz_constant(X, mask, grad_weight)
-    b = logistic_loss_lipschitz_constant(X)
+    a = _logistic_derivative_lipschitz_constant(X, mask, grad_weight)
+    b = _logistic_loss_lipschitz_constant(X)
     assert_equal(a, b)
 
 

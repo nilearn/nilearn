@@ -15,17 +15,17 @@ from math import sqrt
 import numpy as np
 from .objective_functions import (spectral_norm_squared,
                                   _gradient_id,
-                                  logistic_loss_lipschitz_constant,
-                                  squared_loss, squared_loss_grad, _unmask,
-                                  logistic_loss_grad,
-                                  logistic as logistic_loss)
+                                  _logistic_loss_lipschitz_constant,
+                                  _squared_loss, _squared_loss_grad, _unmask,
+                                  _logistic_loss_grad,
+                                  _logistic as _logistic_loss)
 from .objective_functions import _gradient, _div
 from .proximal_operators import (_prox_l1, _prox_l1_with_intercept,
                                  _prox_tvl1, _prox_tvl1_with_intercept)
 from .fista import mfista
 
 
-def squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
+def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     """
     Computes the differentiable loss function (squared_loss + grad_weight
     * gradient) for Smooth-Lasso regularization
@@ -58,9 +58,9 @@ def squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
                   + grad_weight * np.dot(grad_section, grad_section))
 
 
-def squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
+def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     """
-    Computes the gradient of squared_loss_and_spatial_grad
+    Computes the gradient of _squared_loss_and_spatial_grad
 
     Parameters
     ----------
@@ -154,7 +154,7 @@ def smooth_lasso_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     return out
 
 
-def squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
+def _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
                                                n_iterations=100):
     """
     Computes the lipschitz constant of the gradient of the smooth part
@@ -184,7 +184,7 @@ def squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
     return lipschitz_constant
 
 
-def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
+def _logistic_derivative_lipschitz_constant(X, mask, grad_weight,
                                            n_iterations=100):
     """
     Computes the lipschitz constant of the gradient of the smooth part
@@ -194,7 +194,7 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     """
     # L. constant for the data term (logistic)
     # data_constant = sp.linalg.norm(X, 2) ** 2
-    data_constant = logistic_loss_lipschitz_constant(X)
+    data_constant = _logistic_loss_lipschitz_constant(X)
 
     rng = np.random.RandomState(42)
     a = rng.randn(X.shape[1])
@@ -211,22 +211,22 @@ def logistic_derivative_lipschitz_constant(X, mask, grad_weight,
     return data_constant + grad_weight * grad_constant
 
 
-def logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
+def _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     """Compute the smooth part of the smooth lasso objective, with
     logistic loss"""
     grad_buffer = np.zeros(mask.shape)
     grad_buffer[mask] = w[:-1]
     grad_mask = np.array([mask for _ in range(mask.ndim)])
     grad_section = _gradient(grad_buffer)[grad_mask]
-    return (logistic_loss(X, y, w)
+    return (_logistic_loss(X, y, w)
             + 0.5 * grad_weight * np.dot(grad_section, grad_section))
 
 
-def logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
-    """Compute the derivative of logistic_loss_and_spatial_grad"""
+def _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
+    """Compute the derivative of _logistic_loss_and_spatial_grad"""
     image_buffer = np.zeros(mask.shape)
     image_buffer[mask] = w[:-1]
-    data_section = logistic_loss_grad(X, y, w)
+    data_section = _logistic_loss_grad(X, y, w)
     data_section[:-1] = data_section[:-1]\
         - grad_weight * _div(_gradient(image_buffer))[mask]
     return data_section
@@ -262,7 +262,7 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
     grad_weight = alpha * (1. - l1_ratio)
 
     if lipschitz_constant is None:
-        lipschitz_constant = squared_loss_derivative_lipschitz_constant(
+        lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
             X, mask, grad_weight)
 
         # it's always a good idea to use somethx a bit bigger
@@ -270,10 +270,10 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
 
     # mooth part of energy, and gradient of
     def f1(w):
-        return squared_loss_and_spatial_grad(X, y, w, mask, grad_weight)
+        return _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight)
 
     def f1_grad(w):
-        return squared_loss_and_spatial_grad_derivative(X, y, w, mask,
+        return _squared_loss_and_spatial_grad_derivative(X, y, w, mask,
                                                         grad_weight)
 
     # prox of nonsmooth path of energy (account for the intercept)
@@ -325,7 +325,7 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
     grad_weight = alpha * (1 - l1_ratio)
 
     if lipschitz_constant is None:
-        lipschitz_constant = logistic_derivative_lipschitz_constant(
+        lipschitz_constant = _logistic_derivative_lipschitz_constant(
             X, mask, grad_weight)
 
         # it's always a good idea to use somethx a bit bigger
@@ -333,10 +333,10 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
     # smooth part of energy, and gradient of
     def f1(w):
-        return logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight)
+        return _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight)
 
     def f1_grad(w):
-        return logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask,
+        return _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask,
                                                               grad_weight)
 
     # prox of nonsmooth path of energy (account for the intercept)
@@ -385,9 +385,9 @@ def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
             "loss must be one of 'mse' or 'logistic'; got '%s'" % loss)
 
     if loss == "mse":
-        out = squared_loss(X, y, w)
+        out = _squared_loss(X, y, w)
     else:
-        out = logistic_loss(X, y, w)
+        out = _logistic_loss(X, y, w)
         w = w[:-1]
 
     grad_id = _gradient_id(_unmask(w, mask), l1_ratio=l1_ratio)
@@ -492,9 +492,9 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     # function to compute derivative of f1
     def f1_grad(w):
         if loss == "logistic":
-            return logistic_loss_grad(X, y, w)
+            return _logistic_loss_grad(X, y, w)
         else:
-            return squared_loss_grad(X, y, w)
+            return _squared_loss_grad(X, y, w)
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
     def total_energy(w):
@@ -505,7 +505,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
         if loss == "mse":
             lipschitz_constant = 1.05 * spectral_norm_squared(X)
         else:
-            lipschitz_constant = 1.1 * logistic_loss_lipschitz_constant(X)
+            lipschitz_constant = 1.1 * _logistic_loss_lipschitz_constant(X)
 
     # proximal operator of nonsmooth proximable part of energy (f2)
     if loss == "mse":
