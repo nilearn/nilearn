@@ -69,11 +69,12 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ==========
-    maps_img: Niimg-like object
+    maps_img: 4D niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        Maps definition, as a 4D set of fuzzay images.
+        Set of continuous maps. One representative time course per map is
+        extracted using least square regression.
 
-    mask_img: Niimg-like object, optional
+    mask_img: 3D niimg-like object, optional
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
 
