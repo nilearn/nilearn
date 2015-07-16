@@ -16,8 +16,8 @@ from nilearn.decoding.space_net_solvers import (
     _squared_loss_and_spatial_grad,
     _logistic_derivative_lipschitz_constant,
     _squared_loss_derivative_lipschitz_constant,
-    smooth_lasso_squared_loss,
-    smooth_lasso_logistic,
+    _smooth_lasso_squared_loss,
+    _smooth_lasso_logistic,
     _squared_loss_and_spatial_grad_derivative,
     tvl1_solver)
 from nilearn.decoding.space_net import (BaseSpaceNet, SpaceNetClassifier,
@@ -110,7 +110,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     # results should be exactly the same for pure lasso
     a = tvl1_solver(unmasked_X, y, alpha, 1., mask, loss="mse",
                     max_iter=max_iter)[0]
-    b = smooth_lasso_squared_loss(unmasked_X, y, alpha, 1.,
+    b = _smooth_lasso_squared_loss(unmasked_X, y, alpha, 1.,
                                   max_iter=max_iter,
                                   mask=mask)[0]
 
@@ -147,7 +147,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     mask = mask_.get_data().astype(np.bool).ravel()
 
     # results should be exactly the same for pure lasso
-    a = smooth_lasso_logistic(X, y, alpha, 1., mask=mask,
+    a = _smooth_lasso_logistic(X, y, alpha, 1., mask=mask,
                               max_iter=max_iter)[0]
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]

@@ -16,8 +16,8 @@ from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
     _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
-from nilearn.decoding.space_net_solvers import (smooth_lasso_logistic,
-                                                smooth_lasso_squared_loss)
+from nilearn.decoding.space_net_solvers import (_smooth_lasso_logistic,
+                                                _smooth_lasso_squared_loss)
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
@@ -114,7 +114,7 @@ def testlogistic_path_scores():
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = logistic_path_scores(
-        smooth_lasso_logistic, X, y, mask, alphas, .5,
+        _smooth_lasso_logistic, X, y, mask, alphas, .5,
         range(len(X)), range(len(X)), {})[:2]
     test_scores = test_scores[0]
     assert_equal(len(test_scores), len(alphas))
@@ -128,7 +128,7 @@ def test_squared_loss_path_scores():
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = squared_loss_path_scores(
-        smooth_lasso_squared_loss, X, y, mask, alphas, .5,
+        _smooth_lasso_squared_loss, X, y, mask, alphas, .5,
         range(len(X)), range(len(X)), {})[:2]
     test_scores = test_scores[0]
     assert_equal(len(test_scores), len(alphas))

@@ -60,7 +60,7 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
 
 def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     """
-    Computes the gradient of _squared_loss_and_spatial_grad
+    Computes the derivative of _squared_loss_and_spatial_grad.
 
     Parameters
     ----------
@@ -87,10 +87,12 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
             - grad_weight * _div(_gradient(image_buffer))[mask])
 
 
-def smooth_lasso_data_function(X, w, mask, grad_weight):
+def _smooth_lasso_data_function(X, w, mask, grad_weight):
     """
-    Computes [X;grad_weight*grad]w. This function is made for the Lasso-like
-    interpretation of the Smooth Lasso
+    Computes dot([X; grad_weight * grad], w).
+
+    This function is made for the Lasso-like interpretation of the
+    Smooth Lasso.
 
     Parameters
     ----------
@@ -104,7 +106,7 @@ def smooth_lasso_data_function(X, w, mask, grad_weight):
         Unmasked, ravelized weights map.
 
     grad_weight: float
-        l1_ratio * alpha
+        l1_ratio * alpha.
 
     Returns
     -------
@@ -121,11 +123,11 @@ def smooth_lasso_data_function(X, w, mask, grad_weight):
     return out
 
 
-def smooth_lasso_adjoint_data_function(X, w, adjoint_mask, grad_weight):
+def _smooth_lasso_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     """
-    Computes the adjoint of the smooth_lasso_data_function, that is
-    [X.T;grad_weight*div]w. This function is made for the Lasso-like
-    interpretation of the Smooth Lasso
+    Computes the adjoint of the _smooth_lasso_data_function, that is
+    np.dot([X.T; grad_weight * div], w). This function is made for the
+    Lasso-like interpretation of the Smooth Lasso.
 
     Parameters
     ----------
@@ -172,13 +174,13 @@ def _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
     # square root of the desired weight
     actual_grad_weight = sqrt(grad_weight)
     for _ in range(n_iterations):
-        a = smooth_lasso_adjoint_data_function(
-            X, smooth_lasso_data_function(X, a, mask, actual_grad_weight),
+        a = _smooth_lasso_adjoint_data_function(
+            X, _smooth_lasso_data_function(X, a, mask, actual_grad_weight),
             adjoint_mask, actual_grad_weight)
         a /= sqrt(np.dot(a, a))
 
-    lipschitz_constant = np.dot(smooth_lasso_adjoint_data_function(
-        X, smooth_lasso_data_function(X, a, mask, actual_grad_weight),
+    lipschitz_constant = np.dot(_smooth_lasso_adjoint_data_function(
+        X, _smooth_lasso_data_function(X, a, mask, actual_grad_weight),
         adjoint_mask, actual_grad_weight), a) / np.dot(a, a)
 
     return lipschitz_constant
@@ -222,7 +224,8 @@ def _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
             + 0.5 * grad_weight * np.dot(grad_section, grad_section))
 
 
-def _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
+def _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask,
+                                                    grad_weight):
     """Compute the derivative of _logistic_loss_and_spatial_grad"""
     image_buffer = np.zeros(mask.shape)
     image_buffer[mask] = w[:-1]
@@ -232,7 +235,7 @@ def _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     return data_section
 
 
-def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
+def _smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
                               max_iter=1000, tol=1e-4, callback=None,
                               lipschitz_constant=None, verbose=0):
     """Computes a solution for the Smooth Lasso regression problem, as in the
@@ -253,8 +256,7 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
         Objective function (fval) computed on every iteration.
 
     """
-
-    n_samples, n_features = X.shape
+    _, n_features = X.shape
 
     # misc
     model_size = n_features
@@ -293,7 +295,7 @@ def smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
         tol=tol, max_iter=max_iter, verbose=verbose, init=init)
 
 
-def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
+def _smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
                           max_iter=1000, tol=1e-4, callback=None, verbose=0,
                           lipschitz_constant=None):
     """Computes a solution for the Smooth Lasso classification problem, with
@@ -316,8 +318,7 @@ def smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
         Cost function (fval) computed on every iteration.
 
     """
-
-    n_samples, n_features = X.shape
+    _, n_features = X.shape
 
     # misc
     model_size = n_features + 1

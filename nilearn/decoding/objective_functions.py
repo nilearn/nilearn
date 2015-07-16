@@ -1,7 +1,6 @@
 
 """
-Common functions and base classes. Used by more specialized modules like
-tv.py, smooth_lasso.py, etc.
+Common functions and base classes.
 
 """
 # Author: DOHMATOB Elvis Dopgima,

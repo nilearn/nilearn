@@ -29,8 +29,8 @@ from .._utils.compat import _basestring
 from ..input_data import NiftiMasker
 from .._utils.fixes import atleast2d_or_csr
 from .objective_functions import _unmask
-from .space_net_solvers import (tvl1_solver, smooth_lasso_logistic,
-                                smooth_lasso_squared_loss)
+from .space_net_solvers import (tvl1_solver, _smooth_lasso_logistic,
+                                _smooth_lasso_squared_loss)
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -757,9 +757,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         # set backend solver
         if self.penalty.lower() == "smooth-lasso":
             if not self.is_classif or loss == "mse":
-                solver = smooth_lasso_squared_loss
+                solver = _smooth_lasso_squared_loss
             else:
-                solver = smooth_lasso_logistic
+                solver = _smooth_lasso_logistic
         else:
             if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")

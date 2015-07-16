@@ -6,8 +6,8 @@ from sklearn.utils import extmath
 from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import _gradient, _div
 from nilearn.decoding.space_net_solvers import (
-    smooth_lasso_data_function,
-    smooth_lasso_adjoint_data_function,
+    _smooth_lasso_data_function,
+    _smooth_lasso_adjoint_data_function,
     _squared_loss_and_spatial_grad,
     _logistic_data_loss_and_spatial_grad,
     _squared_loss_and_spatial_grad_derivative,
@@ -80,8 +80,8 @@ def test_adjointness(size=4):
 
 
 def test_identity_adjointness(size=4):
-    """Tests adjointess between smooth_lasso_data_function and
-    smooth_lasso_adjoint_data_function, with identity design matrix"""
+    """Tests adjointess between _smooth_lasso_data_function and
+    _smooth_lasso_adjoint_data_function, with identity design matrix"""
     rng = check_random_state(42)
 
     # A mask full of ones
@@ -96,8 +96,8 @@ def test_identity_adjointness(size=4):
     for _ in range(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
-        Axdoty = np.dot(smooth_lasso_data_function(X, x, mask, l1_ratio), y)
-        xdotAty = np.dot(smooth_lasso_adjoint_data_function(
+        Axdoty = np.dot(_smooth_lasso_data_function(X, x, mask, l1_ratio), y)
+        xdotAty = np.dot(_smooth_lasso_adjoint_data_function(
             X, y, adjoint_mask, l1_ratio), x)
         assert_almost_equal(Axdoty, xdotAty)
 
@@ -118,8 +118,8 @@ def test_operators_adjointness(size=4):
     for _ in range(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
-        Axdoty = np.dot(smooth_lasso_data_function(X, x, mask, l1_ratio), y)
-        xdotAty = np.dot(smooth_lasso_adjoint_data_function(
+        Axdoty = np.dot(_smooth_lasso_data_function(X, x, mask, l1_ratio), y)
+        xdotAty = np.dot(_smooth_lasso_adjoint_data_function(
             X, y, adjoint_mask, l1_ratio), x)
         np.testing.assert_almost_equal(Axdoty, xdotAty)
 
