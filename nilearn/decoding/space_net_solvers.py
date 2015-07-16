@@ -300,7 +300,7 @@ def _smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
     """Computes a solution for the Smooth Lasso classification problem, with
     response vector in {-1, 1}^n_samples.
 
-    This function invokes the mfista backend (from fista.py) to solver the
+    This function invokes the mfista backend (from fista.py) to solve the
     underlying optimization problem.
 
     Returns
