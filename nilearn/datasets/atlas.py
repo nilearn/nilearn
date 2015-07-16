@@ -1,4 +1,3 @@
-# *- encoding: utf-8 -*-
 """
 Downloading NeuroImaging datasets: altas datasets
 """
@@ -50,7 +49,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
     and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
     Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
-    1914–1928. doi:10.1002/hbm.21333.
+    1914-1928. doi:10.1002/hbm.21333.
 
     See http://www.nitrc.org/projects/cluster_roi/ for more information
     on this parcellation.
@@ -326,14 +325,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     :Paper to cite:
         `Multi-subject dictionary learning to segment an atlas of brain
         spontaneous activity <http://hal.inria.fr/inria-00588898/en>`_
-        Gaël Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel,
+        Gael Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel,
         Bertrand Thirion. Information Processing in Medical Imaging, 2011,
         pp. 562-573, Lecture Notes in Computer Science.
 
     :Other references:
         `Learning and comparing functional connectomes across subjects
         <http://hal.inria.fr/hal-00812911/en>`_.
-        Gaël Varoquaux, R.C. Craddock NeuroImage, 2013.
+        Gael Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
     url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'

@@ -1,4 +1,3 @@
-# *- encoding: utf-8 -*-
 """
 Downloading NeuroImaging datasets: utility functions
 """
