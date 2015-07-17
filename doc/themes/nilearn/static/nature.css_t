@@ -1483,6 +1483,10 @@ div.body .jcarousel-pagination a.active {
     opacity: 1;
 }
 
+div.container{
+    padding-bottom:1em;
+}
+
 ul#tabs {
     list-style-type: none;
     margin: 0 0 0 0;
@@ -1515,7 +1519,7 @@ ul#tabs li.active {
 
 ul#tab {
     list-style-type: none;
-    margin: 0;
+    margin-bottom: 1em;
     padding: 0;
     background:#FF7F50;
     -moz-box-shadow: 8px 8px 0px 0px #355F7C;
