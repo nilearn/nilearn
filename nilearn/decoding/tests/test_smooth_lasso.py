@@ -6,8 +6,8 @@ from sklearn.utils import extmath
 from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import _gradient, _div
 from nilearn.decoding.space_net_solvers import (
-    _smooth_lasso_data_function,
-    _smooth_lasso_adjoint_data_function,
+    _graph_net_data_function,
+    _graph_net_adjoint_data_function,
     _squared_loss_and_spatial_grad,
     _logistic_data_loss_and_spatial_grad,
     _squared_loss_and_spatial_grad_derivative,
@@ -20,12 +20,12 @@ from nilearn.decoding.space_net import BaseSpaceNet
 # Data used in almost all tests
 import nibabel
 from .test_same_api import to_niimgs
-from .simulate_smooth_lasso_data import (
-    create_smooth_lasso_simulation_data, create_smooth_lasso_simulation_data)
+from .simulate_graph_net_data import (
+    create_graph_net_simulation_data, create_graph_net_simulation_data)
 
 
 def _make_data(task="regression", size=4):
-    X, y, w, mask = create_smooth_lasso_simulation_data(
+    X, y, w, mask = create_graph_net_simulation_data(
         snr=1., n_samples=10, size=size, n_points=5, random_state=42,
         task=task)
     X_, _ = to_niimgs(X, [size] * 3)
@@ -80,8 +80,8 @@ def test_adjointness(size=4):
 
 
 def test_identity_adjointness(size=4):
-    """Tests adjointess between _smooth_lasso_data_function and
-    _smooth_lasso_adjoint_data_function, with identity design matrix"""
+    """Tests adjointess between _graph_net_data_function and
+    _graph_net_adjoint_data_function, with identity design matrix"""
     rng = check_random_state(42)
 
     # A mask full of ones
@@ -96,8 +96,8 @@ def test_identity_adjointness(size=4):
     for _ in range(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
-        Axdoty = np.dot(_smooth_lasso_data_function(X, x, mask, l1_ratio), y)
-        xdotAty = np.dot(_smooth_lasso_adjoint_data_function(
+        Axdoty = np.dot(_graph_net_data_function(X, x, mask, l1_ratio), y)
+        xdotAty = np.dot(_graph_net_adjoint_data_function(
             X, y, adjoint_mask, l1_ratio), x)
         assert_almost_equal(Axdoty, xdotAty)
 
@@ -118,8 +118,8 @@ def test_operators_adjointness(size=4):
     for _ in range(10):
         x = rng.rand(np.sum(mask))
         y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
-        Axdoty = np.dot(_smooth_lasso_data_function(X, x, mask, l1_ratio), y)
-        xdotAty = np.dot(_smooth_lasso_adjoint_data_function(
+        Axdoty = np.dot(_graph_net_data_function(X, x, mask, l1_ratio), y)
+        xdotAty = np.dot(_graph_net_adjoint_data_function(
             X, y, adjoint_mask, l1_ratio), x)
         np.testing.assert_almost_equal(Axdoty, xdotAty)
 
@@ -127,7 +127,7 @@ def test_operators_adjointness(size=4):
 def test__squared_loss_gradient_at_simple_points():
     """Tests gradient of data loss function in points near to zero. This is
     a not so hard test, just for detecting big errors"""
-    X, y, w, mask = create_smooth_lasso_simulation_data(n_samples=10, size=4)
+    X, y, w, mask = create_graph_net_simulation_data(n_samples=10, size=4)
     grad_weight = 1
     func = lambda w: _squared_loss_and_spatial_grad(X, y, w, mask,
                                                    grad_weight)
@@ -143,7 +143,7 @@ def test__squared_loss_gradient_at_simple_points():
 def test_logistic_gradient_at_simple_points():
     # Tests gradient of logistic data loss function in points near to zero.
     # This is a not so hard test, just for detecting big errors
-    X, y, w, mask = create_smooth_lasso_simulation_data(n_samples=10, size=4)
+    X, y, w, mask = create_graph_net_simulation_data(n_samples=10, size=4)
     grad_weight = 1
     # Add the intercept
     w = np.append(w, 0)
@@ -226,7 +226,7 @@ def test_max_alpha__squared_loss():
     """Tests that models with L1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
     l1_ratios = np.linspace(0.1, 1, 3)
-    reg = BaseSpaceNet(mask=mask_, max_iter=10, penalty="smooth-lasso",
+    reg = BaseSpaceNet(mask=mask_, max_iter=10, penalty="graph-net",
                        is_classif=False)
     for l1_ratio in l1_ratios:
         reg.l1_ratios = l1_ratio
@@ -235,31 +235,31 @@ def test_max_alpha__squared_loss():
         assert_almost_equal(reg.coef_, 0.)
 
 
-def test_tikhonov_regularization_vs_smooth_lasso():
-    # Test for one of the extreme cases of Smooth Lasso: That is, with
-    # l1_ratio = 0 (pure Smooth), we compare Smooth Lasso's performance
+def test_tikhonov_regularization_vs_graph_net():
+    # Test for one of the extreme cases of Graph-Net: That is, with
+    # l1_ratio = 0 (pure Smooth), we compare Graph-Net's performance
     # with the analytical solution for Tikhonov Regularization
 
     # XXX A small dataset here (this test is very lengthy)
     G = get_gradient_matrix(w.size, mask)
     optimal_model = np.dot(sp.linalg.pinv(
         np.dot(X.T, X) + y.size * np.dot(G.T, G)), np.dot(X.T, y))
-    smooth_lasso = BaseSpaceNet(
+    graph_net = BaseSpaceNet(
         mask=mask_, alphas=1. * X.shape[0], l1_ratios=0., max_iter=400,
         fit_intercept=False,
         screening_percentile=100., standardize=False)
-    smooth_lasso.fit(X_, y.copy())
-    coef_ = smooth_lasso.coef_[0]
-    smooth_lasso_perf = 0.5 / y.size * extmath.norm(
+    graph_net.fit(X_, y.copy())
+    coef_ = graph_net.coef_[0]
+    graph_net_perf = 0.5 / y.size * extmath.norm(
         np.dot(X, coef_) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, coef_)) ** 2
     optimal_model_perf = 0.5 / y.size * extmath.norm(
         np.dot(X, optimal_model) - y) ** 2\
         + 0.5 * extmath.norm(np.dot(G, optimal_model)) ** 2
-    assert_almost_equal(smooth_lasso_perf, optimal_model_perf, decimal=1)
+    assert_almost_equal(graph_net_perf, optimal_model_perf, decimal=1)
 
 
-def test_mfista_solver_smooth_lasso_no_l1_term():
+def test_mfista_solver_graph_net_no_l1_term():
     w = np.zeros(2)
     X = np.array([[1, 0], [0, 4]])
     y = np.array([-10, 20])

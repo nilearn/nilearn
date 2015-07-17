@@ -7,7 +7,7 @@ def test_get_params():
     # Issue #12 (on github) reported that our objects
     # get_params() methods returned empty dicts.
 
-    for penalty in ["smooth-lasso", "tv-l1"]:
+    for penalty in ["graph-net", "tv-l1"]:
         for is_classif in [True, False]:
             kwargs = {}
             for param in ["max_iter", "alphas", "l1_ratios", "verbose",

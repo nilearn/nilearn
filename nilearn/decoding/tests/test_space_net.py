@@ -16,8 +16,8 @@ from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
     _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
-from nilearn.decoding.space_net_solvers import (_smooth_lasso_logistic,
-                                                _smooth_lasso_squared_loss)
+from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
+                                                _graph_net_squared_loss)
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
@@ -27,8 +27,8 @@ squared_loss_path_scores = partial(path_scores, is_classif=False)
 # Data used in almost all tests
 from .test_same_api import to_niimgs
 size = 4
-from .simulate_smooth_lasso_data import create_smooth_lasso_simulation_data
-X_, y, w, mask = create_smooth_lasso_simulation_data(
+from .simulate_graph_net_data import create_graph_net_simulation_data
+X_, y, w, mask = create_graph_net_simulation_data(
     snr=1., n_samples=10, size=size, n_points=5, random_state=42)
 X, mask = to_niimgs(X_, [size] * 3)
 
@@ -94,7 +94,7 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
 def test_params_correctly_propagated_in_constructors():
     for (penalty, is_classif, n_alphas, l1_ratio, n_jobs,
          cv, perc) in itertools.product(
-        ["smooth-lasso", "tv-l1"], [True, False],
+        ["graph-net", "tv-l1"], [True, False],
         [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
         cvobj = BaseSpaceNet(
             mask="dummy", n_alphas=n_alphas, n_jobs=n_jobs, l1_ratios=l1_ratio,
@@ -114,7 +114,7 @@ def testlogistic_path_scores():
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = logistic_path_scores(
-        _smooth_lasso_logistic, X, y, mask, alphas, .5,
+        _graph_net_logistic, X, y, mask, alphas, .5,
         range(len(X)), range(len(X)), {})[:2]
     test_scores = test_scores[0]
     assert_equal(len(test_scores), len(alphas))
@@ -128,7 +128,7 @@ def test_squared_loss_path_scores():
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = squared_loss_path_scores(
-        _smooth_lasso_squared_loss, X, y, mask, alphas, .5,
+        _graph_net_squared_loss, X, y, mask, alphas, .5,
         range(len(X)), range(len(X)), {})[:2]
     test_scores = test_scores[0]
     assert_equal(len(test_scores), len(alphas))
@@ -141,7 +141,7 @@ def test_squared_loss_path_scores():
 #     alpha = 1.
 #     X, mask = to_niimgs(X, (2, 2, 2))
 #     for penalty, is_classif, verbose in itertools.product(
-#             ['smooth-lasso', 'tv-l1'], [True, False], [True, False]):
+#             ['graph-net', 'tv-l1'], [True, False], [True, False]):
 #         cv_class = eval('SpaceNet%s' % (
 #             ['Regressor', 'Classifier'][is_classif]))
 #         cv = cv_class(
@@ -193,10 +193,10 @@ def test_tv_regression_3D_image_doesnt_crash():
                      penalty="tv-l1", is_classif=False, max_iter=10).fit(X, y)
 
 
-def test_log_reg_vs_smooth_lasso_two_classes_iris(C=.01, tol=1e-10,
+def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
                                                   zero_thr=1e-4):
-    # Test for one of the extreme cases of Smooth Lasso: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's coefficients'
+    # Test for one of the extreme cases of Graph-Net: That is, with
+    # l1_ratio = 1 (pure Lasso), we compare Graph-Net's coefficients'
     # performance with the coefficients obtained from Scikit-Learn's
     # LogisticRegression, with L1 penalty, in a 2 classes classification task
     iris = load_iris()
@@ -219,9 +219,9 @@ def test_log_reg_vs_smooth_lasso_two_classes_iris(C=.01, tol=1e-10,
 
 
 @SkipTest
-def test_log_reg_vs_smooth_lasso_multiclass(C=1., tol=1e-6):
-    # Test for one of the extreme cases of Smooth Lasso: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's coefficients'
+def test_log_reg_vs_graph_net_multiclass(C=1., tol=1e-6):
+    # Test for one of the extreme cases of Graph-Net: That is, with
+    # l1_ratio = 1 (pure Lasso), we compare Graph-Net's coefficients'
     # performance with the coefficients obtained from Scikit-Learn's
     # LogisticRegression, with L1 penalty, in a 4 classes classification task
     iris = load_iris()
@@ -241,25 +241,25 @@ def test_log_reg_vs_smooth_lasso_multiclass(C=1., tol=1e-6):
                                   sklogreg.predict(iris.data))
 
 
-def test_lasso_vs_smooth_lasso():
-    # Test for one of the extreme cases of Smooth Lasso: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Smooth Lasso's performance with
+def test_lasso_vs_graph_net():
+    # Test for one of the extreme cases of Graph-Net: That is, with
+    # l1_ratio = 1 (pure Lasso), we compare Graph-Net's performance with
     # Scikit-Learn lasso
     lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
-    smooth_lasso = BaseSpaceNet(mask=mask, alphas=1. * X_.shape[0],
+    graph_net = BaseSpaceNet(mask=mask, alphas=1. * X_.shape[0],
                                 l1_ratios=1, is_classif=False,
-                                penalty="smooth-lasso", max_iter=100)
+                                penalty="graph-net", max_iter=100)
     lasso.fit(X_, y)
-    smooth_lasso.fit(X, y)
+    graph_net.fit(X, y)
     lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
         X_, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
-    smooth_lasso_perf = 0.5 * ((smooth_lasso.predict(X) - y) ** 2).mean()
-    np.testing.assert_almost_equal(smooth_lasso_perf, lasso_perf, decimal=3)
+    graph_net_perf = 0.5 * ((graph_net.predict(X) - y) ** 2).mean()
+    np.testing.assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
 
 
 def test_params_correctly_propagated_in_constructors_biz():
     for penalty, is_classif, alpha, l1_ratio in itertools.product(
-            ["smooth-lasso", "tv-l1"], [True, False], [.4, .01], [.5, 1.]):
+            ["graph-net", "tv-l1"], [True, False], [.4, .01], [.5, 1.]):
         cvobj = BaseSpaceNet(
             mask="dummy", penalty=penalty, is_classif=is_classif, alphas=alpha,
             l1_ratios=l1_ratio)
@@ -310,7 +310,7 @@ def test_get_mask_volume():
 
 def test_space_net_classifier_subclass():
     for penalty, alpha, l1_ratio, verbose in itertools.product(
-            ["smooth-lasso", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
+            ["graph-net", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
         cvobj = SpaceNetClassifier(
             mask="dummy", penalty=penalty, alphas=alpha, l1_ratios=l1_ratio,
             verbose=verbose)
@@ -320,7 +320,7 @@ def test_space_net_classifier_subclass():
 
 def test_space_net_regressor_subclass():
     for penalty, alpha, l1_ratio, verbose in itertools.product(
-            ["smooth-lasso", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
+            ["graph-net", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
         cvobj = SpaceNetRegressor(
             mask="dummy", penalty=penalty, alphas=alpha, l1_ratios=l1_ratio,
             verbose=verbose)
@@ -340,7 +340,7 @@ def test_space_net_alpha_grid_pure_spatial():
 def test_string_params_case():
     # penalty
     assert_raises(ValueError, BaseSpaceNet, penalty='TV-L1')
-    assert_raises(ValueError, BaseSpaceNet, penalty='smooth-Lasso')
+    assert_raises(ValueError, BaseSpaceNet, penalty='Graph-Net')
 
     # loss
     assert_raises(ValueError, SpaceNetClassifier, loss="MSE")

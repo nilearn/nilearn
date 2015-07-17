@@ -1,5 +1,5 @@
 """
-Regression with spatial priors like TV-L1 and Smooth LASSO.
+Regression with spatial priors like TV-L1 and Graph-Net.
 
 """
 # Author: DOHMATOB Elvis Dopgima,
@@ -86,12 +86,12 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
             - grad_weight * _div(_gradient(image_buffer))[mask])
 
 
-def _smooth_lasso_data_function(X, w, mask, grad_weight):
+def _graph_net_data_function(X, w, mask, grad_weight):
     """
     Computes dot([X; grad_weight * grad], w).
 
     This function is made for the Lasso-like interpretation of the
-    Smooth Lasso.
+    Graph-Net.
 
     Parameters
     ----------
@@ -122,11 +122,11 @@ def _smooth_lasso_data_function(X, w, mask, grad_weight):
     return out
 
 
-def _smooth_lasso_adjoint_data_function(X, w, adjoint_mask, grad_weight):
+def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     """
-    Computes the adjoint of the _smooth_lasso_data_function, that is
+    Computes the adjoint of the _graph_net_data_function, that is
     np.dot([X.T; grad_weight * div], w). This function is made for the
-    Lasso-like interpretation of the Smooth Lasso.
+    Lasso-like interpretation of the Graph-Net.
 
     Parameters
     ----------
@@ -159,7 +159,7 @@ def _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
                                                n_iterations=100):
     """
     Computes the lipschitz constant of the gradient of the smooth part
-    of the smooth lasso regression problem (squared_loss + grad_weight*grad)
+    of the Graph-Net regression problem (squared_loss + grad_weight*grad)
     via power method
 
     """
@@ -173,13 +173,13 @@ def _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
     # square root of the desired weight
     actual_grad_weight = sqrt(grad_weight)
     for _ in range(n_iterations):
-        a = _smooth_lasso_adjoint_data_function(
-            X, _smooth_lasso_data_function(X, a, mask, actual_grad_weight),
+        a = _graph_net_adjoint_data_function(
+            X, _graph_net_data_function(X, a, mask, actual_grad_weight),
             adjoint_mask, actual_grad_weight)
         a /= sqrt(np.dot(a, a))
 
-    lipschitz_constant = np.dot(_smooth_lasso_adjoint_data_function(
-        X, _smooth_lasso_data_function(X, a, mask, actual_grad_weight),
+    lipschitz_constant = np.dot(_graph_net_adjoint_data_function(
+        X, _graph_net_data_function(X, a, mask, actual_grad_weight),
         adjoint_mask, actual_grad_weight), a) / np.dot(a, a)
 
     return lipschitz_constant
@@ -189,7 +189,7 @@ def _logistic_derivative_lipschitz_constant(X, mask, grad_weight,
                                            n_iterations=100):
     """
     Computes the lipschitz constant of the gradient of the smooth part
-    of the smooth lasso classification problem (logistic_loss +
+    of the Graph-Net classification problem (logistic_loss +
     grad_weight*grad) via analytical formula on the logistic loss +
     power method on the smooth part
     """
@@ -213,7 +213,7 @@ def _logistic_derivative_lipschitz_constant(X, mask, grad_weight,
 
 
 def _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
-    """Compute the smooth part of the smooth lasso objective, with
+    """Compute the smooth part of the Graph-Net objective, with
     logistic loss"""
     grad_buffer = np.zeros(mask.shape)
     grad_buffer[mask] = w[:-1]
@@ -234,10 +234,10 @@ def _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask,
     return data_section
 
 
-def _smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
+def _graph_net_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
                               max_iter=1000, tol=1e-4, callback=None,
                               lipschitz_constant=None, verbose=0):
-    """Computes a solution for the Smooth Lasso regression problem, as in the
+    """Computes a solution for the Graph-Net regression problem, as in the
     SmoothLassoRegressor estimator, with no data preprocessing.
 
     This function invokes the mfista backend (from fista.py) to solve the
@@ -294,10 +294,10 @@ def _smooth_lasso_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
         tol=tol, max_iter=max_iter, verbose=verbose, init=init)
 
 
-def _smooth_lasso_logistic(X, y, alpha, l1_ratio, mask, init=None,
+def _graph_net_logistic(X, y, alpha, l1_ratio, mask, init=None,
                           max_iter=1000, tol=1e-4, callback=None, verbose=0,
                           lipschitz_constant=None):
-    """Computes a solution for the Smooth Lasso classification problem, with
+    """Computes a solution for the Graph-Net classification problem, with
     response vector in {-1, 1}^n_samples.
 
     This function invokes the mfista backend (from fista.py) to solve the

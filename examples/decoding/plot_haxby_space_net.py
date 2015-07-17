@@ -2,7 +2,7 @@
 Decoding with SpaceNet: face vs house object recognition
 =========================================================
 
-Here is a simple example of decoding with a SpaceNet prior (i.e S-LASSO,
+Here is a simple example of decoding with a SpaceNet prior (i.e Graph-Net,
 TV-l1, etc.), reproducing the Haxby 2001 study on a face vs house
 discrimination task.
 """
@@ -32,13 +32,13 @@ y_train = target[condition_mask_train]
 y_test = target[condition_mask_test]
 
 
-### Loop over Smooth-LASSO and TV-L1 penalties ###############################
+### Loop over Graph-Net and TV-L1 penalties ####################################
 from nilearn.decoding import SpaceNetClassifier
 import matplotlib.pyplot as plt
 from nilearn.image import mean_img
 from nilearn.plotting import plot_stat_map
 background_img = mean_img(data_files.func[0])
-for penalty in ['smooth-lasso', 'tv-l1']:
+for penalty in ['graph-net', 'tv-l1']:
     ### Fit model on train data and predict on test data ######################
     decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=2)
     decoder.fit(X_train, y_train)

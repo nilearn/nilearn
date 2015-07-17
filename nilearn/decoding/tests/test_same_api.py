@@ -16,8 +16,8 @@ from nilearn.decoding.space_net_solvers import (
     _squared_loss_and_spatial_grad,
     _logistic_derivative_lipschitz_constant,
     _squared_loss_derivative_lipschitz_constant,
-    _smooth_lasso_squared_loss,
-    _smooth_lasso_logistic,
+    _graph_net_squared_loss,
+    _graph_net_logistic,
     _squared_loss_and_spatial_grad_derivative,
     tvl1_solver)
 from nilearn.decoding.space_net import (BaseSpaceNet, SpaceNetClassifier,
@@ -110,7 +110,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     # results should be exactly the same for pure lasso
     a = tvl1_solver(unmasked_X, y, alpha, 1., mask, loss="mse",
                     max_iter=max_iter)[0]
-    b = _smooth_lasso_squared_loss(unmasked_X, y, alpha, 1.,
+    b = _graph_net_squared_loss(unmasked_X, y, alpha, 1.,
                                   max_iter=max_iter,
                                   mask=mask)[0]
 
@@ -118,7 +118,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     X = nibabel.Nifti1Image(X.astype(np.float), np.eye(4))
     for standardize in [True, False]:
         sl = BaseSpaceNet(
-            alphas=alpha, l1_ratios=1., mask=mask, penalty="smooth-lasso",
+            alphas=alpha, l1_ratios=1., mask=mask, penalty="graph-net",
             max_iter=max_iter, standardize=standardize).fit(X, y)
         tvl1 = BaseSpaceNet(
                 alphas=alpha, l1_ratios=1., mask=mask, penalty="tv-l1",
@@ -147,13 +147,13 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     mask = mask_.get_data().astype(np.bool).ravel()
 
     # results should be exactly the same for pure lasso
-    a = _smooth_lasso_logistic(X, y, alpha, 1., mask=mask,
+    a = _graph_net_logistic(X, y, alpha, 1., mask=mask,
                               max_iter=max_iter)[0]
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
     for standardize in [True, False]:
         sl = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
-                      max_iter=max_iter, mask=mask_, penalty="smooth-lasso",
+                      max_iter=max_iter, mask=mask_, penalty="graph-net",
                       standardize=standardize).fit(X_, y)
         tvl1 = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
                         max_iter=max_iter, mask=mask_, penalty="tv-l1",
@@ -180,7 +180,7 @@ def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=1):
 
     for standardize in [True, False]:
         sl = BaseSpaceNet(alphas=alpha, l1_ratios=l1_ratio,
-                          penalty="smooth-lasso", max_iter=max_iter,
+                          penalty="graph-net", max_iter=max_iter,
                           mask=mask, is_classif=False,
                           standardize=standardize, verbose=0).fit(X, y)
         tvl1 = BaseSpaceNet(alphas=alpha, l1_ratios=l1_ratio, penalty="tv-l1",
@@ -195,7 +195,7 @@ def test_coef_shape():
     iris = load_iris()
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, (2, 2, 2))
-    for penalty in ["smooth-lasso", "tv-l1"]:
+    for penalty in ["graph-net", "tv-l1"]:
         for cls in [SpaceNetRegressor, SpaceNetClassifier]:
             model = cls(
                 mask=mask, max_iter=3, penalty=penalty, alphas=1.).fit(X, y)

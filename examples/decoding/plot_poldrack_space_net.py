@@ -30,14 +30,14 @@ plot_stat_map(mean_img(decoder.coef_img_), title=penalty, display_mode="yz",
               cut_coords=[20, -2])
 
 
-### Fit Smooth-Lasso ##########################################################
-penalty = "smooth-lasso"
+### Fit Graph-Net ##########################################################
+penalty = "graph-net"
 decoder = SpaceNetRegressor(mask=mask_img, penalty=penalty,
                             eps=1e-1,  # prefer large alphas
                             memory="cache", verbose=2)
 decoder.fit(X, y)  # fit
 
-### Visualize Smooth-Lasso weights
+### Visualize Graph-Net weights
 plot_stat_map(mean_img(decoder.coef_img_), title=penalty, display_mode="yz",
               cut_coords=[20, -2])
 

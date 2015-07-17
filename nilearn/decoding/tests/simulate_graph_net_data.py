@@ -9,7 +9,7 @@ from scipy import linalg, ndimage
 from sklearn.utils import check_random_state
 
 
-def create_smooth_lasso_simulation_data(
+def create_graph_net_simulation_data(
         snr=1., n_samples=200, size=8, n_points=10, random_state=42,
         task="regression", smooth_X=1):
     """

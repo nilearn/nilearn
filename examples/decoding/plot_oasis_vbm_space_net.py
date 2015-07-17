@@ -34,7 +34,7 @@ X_test = X_test[perm]
 from nilearn.decoding import SpaceNetRegressor
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
-for penalty in ['tv-l1', 'smooth-lasso']:
+for penalty in ['tv-l1', 'graph-net']:
     decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2)
     decoder.fit(X_train, y_train)  # fit
     coef_img = decoder.coef_img_

@@ -1,6 +1,6 @@
 """
 sklearn-compatible implementation of spatially structured learners (
-TV-L1, S-LASSO, etc.)
+TV-L1, Graph-Net, etc.)
 
 """
 # Author: DOHMATOB Elvis Dopgima,
@@ -29,8 +29,8 @@ from .._utils.compat import _basestring
 from ..input_data import NiftiMasker
 from .._utils.fixes import atleast2d_or_csr
 from .objective_functions import _unmask
-from .space_net_solvers import (tvl1_solver, _smooth_lasso_logistic,
-                                _smooth_lasso_squared_loss)
+from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
+                                _graph_net_squared_loss)
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -139,7 +139,7 @@ def _univariate_feature_screening(
 
 def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
         logistic=False):
-    """Compute the grid of alpha values for TV-L1 and S-Lasso.
+    """Compute the grid of alpha values for TV-L1 and Graph-Net.
 
     Parameters
     ----------
@@ -152,7 +152,7 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     l1_ratio : float
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
-        (S-LASSO, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
+        (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior
 
@@ -316,7 +316,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         List of indices for the test samples
 
     l1_ratio : float in the interval [0, 1]; optinal (default .5)
-        Constant that mixes L1 and TV (resp. Smooth Lasso) penalization.
+        Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
     eps : float, optional (default 1e-3)
@@ -459,15 +459,15 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
     """
     Regression and classification learners with sparsity and spatial priors
 
-    `SpaceNet` implements Smooth-LASSO (aka Graph-Net) and TV-L1 priors (aka
-    penalties). Thus, the penalty is a sum an L1 term and a spatial term. The
+    `SpaceNet` implements Graph-Net and TV-L1 priors /
+    penalties. Thus, the penalty is a sum an L1 term and a spatial term. The
     aim of such a hybrid prior is to obtain weights maps which are structured
     (due to the spatial prior) and sparse (enforced by L1 norm)
 
     Parameters
     ----------
-    penalty : string, optional (default 'smooth-lasso')
-        Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
+    penalty : string, optional (default 'graph-net')
+        Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
     loss : string, optional (default "mse")
         Loss to be used in the model. Must be an one of "mse", or "logistic".
@@ -598,10 +598,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-    SUPPORTED_PENALTIES = ["smooth-lasso", "tv-l1"]
+    SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
 
-    def __init__(self, penalty="smooth-lasso", is_classif=False, loss=None,
+    def __init__(self, penalty="graph-net", is_classif=False, loss=None,
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
@@ -755,11 +755,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
             loss = "mse"
 
         # set backend solver
-        if self.penalty.lower() == "smooth-lasso":
+        if self.penalty.lower() == "graph-net":
             if not self.is_classif or loss == "mse":
-                solver = _smooth_lasso_squared_loss
+                solver = _graph_net_squared_loss
             else:
-                solver = _smooth_lasso_logistic
+                solver = _graph_net_logistic
         else:
             if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")
@@ -930,16 +930,16 @@ class SpaceNetClassifier(BaseSpaceNet):
     """
     Classification learners with sparsity and spatial priors.
 
-    `SpaceNetClassifier` implements Smooth-LASSO (aka Graph-Net) and TV-L1
-    priors (aka penalties) for classification problems. Thus, the penalty
+    `SpaceNetClassifier` implements Graph-Net and TV-L1
+    priors / penalties for classification problems. Thus, the penalty
     is a sum an L1 term and a spatial term. The aim of such a hybrid prior
     is to obtain weights maps which are structured (due to the spatial
     prior) and sparse (enforced by L1 norm).
 
     Parameters
     ----------
-    penalty : string, optional (default 'smooth-lasso')
-        Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
+    penalty : string, optional (default 'graph-net')
+        Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
     loss : string, optional (default "mse")
         Loss to be used in the model. Must be an one of "mse", or "logistic".
@@ -1069,7 +1069,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-    def __init__(self, penalty="smooth-lasso", loss="logistic",
+    def __init__(self, penalty="graph-net", loss="logistic",
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
@@ -1103,16 +1103,16 @@ class SpaceNetRegressor(BaseSpaceNet):
     """
     Regression learners with sparsity and spatial priors.
 
-    `SpaceNetClassifier` implements Smooth-LASSO (aka Graph-Net) and TV-L1
-    priors (aka penalties) for regression problems. Thus, the penalty
-    is a sum an L1 term and a spatial term. The aim of such a hybrid prior
-    is to obtain weights maps which are structured (due to the spatial
-    prior) and sparse (enforced by L1 norm).
+    `SpaceNetClassifier` implements Graph-Net and TV-L1 priors / penalties
+    for regression problems. Thus, the penalty is a sum an L1 term and a
+    spatial term. The aim of such a hybrid prior is to obtain weights maps
+    which are structured (due to the spatial prior) and sparse (enforced
+    by L1 norm).
 
     Parameters
     ----------
-    penalty : string, optional (default 'smooth-lasso')
-        Penalty to used in the model. Can be 'smooth-lasso' or 'tv-l1'.
+    penalty : string, optional (default 'graph-net')
+        Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
     l1_ratios : float or list of floats in the interval [0, 1];
     optinal (default .5)
@@ -1231,7 +1231,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
-    def __init__(self, penalty="smooth-lasso", l1_ratios=.5, alphas=None,
+    def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None),
