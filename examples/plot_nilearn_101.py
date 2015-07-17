@@ -7,7 +7,7 @@ basic nilearn functionalities.
 """
 
 import os
-from nilearn import data
+from nilearn.datasets import data
 
 # This is just a Nifti file that is shipped with nilearn
 anat_filename = os.path.join(os.path.dirname(data.__file__),
