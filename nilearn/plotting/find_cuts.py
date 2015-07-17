@@ -12,7 +12,11 @@ from scipy import ndimage
 # Local imports
 from .._utils.ndimage import largest_connected_component
 from .._utils import check_niimg, check_niimg_3d
+<<<<<<< HEAD
 from ..image import new_img_like, reorder_img
+=======
+from ..image import new_img_like
+>>>>>>> fixes bug in taking largest component and check image, tests amened and passed
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
@@ -309,7 +313,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
 
     # grab data and affine
-    labels_img = check_niimg(labels_img)
+    labels_img = check_niimg_3d(labels_img)
     labels_data = labels_img.get_data()
     labels_affine = labels_img.get_affine()
 
@@ -354,7 +358,6 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
         # Get parcellation center of mass
         x, y, z = ndimage.center_of_mass(component)
-
 
         # Dump label region and coordinates into a dictionary
         label_list.append(cur_label)
