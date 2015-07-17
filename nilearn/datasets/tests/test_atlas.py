@@ -148,15 +148,15 @@ def test_fail_fetch_atlas_harvard_oxford():
     target_atlas = 'cort-maxprob-thr0-1mm'
     target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
 
-    HO_dir = os.path.join(tmpdir, 'fsl', 'data', 'atlases')
-    os.makedirs(HO_dir)
-    nifti_dir = os.path.join(HO_dir, 'HarvardOxford')
+    ho_dir = os.path.join(tmpdir, 'fsl', 'data', 'atlases')
+    os.makedirs(ho_dir)
+    nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
     os.makedirs(nifti_dir)
 
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
     struct.load_mni152_template().to_filename(target_atlas_nii)
 
-    dummy = open(os.path.join(HO_dir, 'HarvardOxford-Cortical.xml'), 'w')
+    dummy = open(os.path.join(ho_dir, 'HarvardOxford-Cortical.xml'), 'w')
     dummy.write("<?xml version='1.0' encoding='us-ascii'?> "
                 "<metadata>"
                 "</metadata>")
