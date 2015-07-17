@@ -194,7 +194,7 @@ def test_tv_regression_3D_image_doesnt_crash():
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
-                                                  zero_thr=1e-4):
+                                               zero_thr=1e-4):
     # Test for one of the extreme cases of Graph-Net: That is, with
     # l1_ratio = 1 (pure Lasso), we compare Graph-Net's coefficients'
     # performance with the coefficients obtained from Scikit-Learn's
@@ -247,8 +247,8 @@ def test_lasso_vs_graph_net():
     # Scikit-Learn lasso
     lasso = Lasso(max_iter=100, tol=1e-8, normalize=False)
     graph_net = BaseSpaceNet(mask=mask, alphas=1. * X_.shape[0],
-                                l1_ratios=1, is_classif=False,
-                                penalty="graph-net", max_iter=100)
+                             l1_ratios=1, is_classif=False,
+                             penalty="graph-net", max_iter=100)
     lasso.fit(X_, y)
     graph_net.fit(X, y)
     lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
