@@ -13,7 +13,7 @@ import numpy as np
 import nibabel
 from scipy import ndimage
 from nilearn.datasets import fetch_mixed_gambles
-data = fetch_mixed_gambles(n_subjects=16, return_raw_data=True)
+data = fetch_mixed_gambles(n_subjects=16, return_raw_data=False)
 zmaps, object_category, mask_img = data.X, data.y, data.mask_img
 
 

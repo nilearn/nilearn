@@ -1157,7 +1157,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
 
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
-                        return_raw_data=False, verbose=0):
+                        return_raw_data=True, verbose=0):
     """Fetch Jimura "mixed gambles" dataset
 
 
@@ -1181,8 +1181,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     verbose: int, optional (default 0)
         Defines the level of verbosity of the output.
 
-    return_raw_data: bool, optional (default False)
-        If true, then the data will transformed into and (X, y) pair, suitable
+    return_raw_data: bool, optional (default True)
+        If false, then the data will transformed into and (X, y) pair, suitable
         for machine learning routines. X is a list of n_subjects * 48
         Nifti1Image objects (where 48 is the number of trials),
         and y is an array of shape (n_subjects * 48,).
@@ -1222,7 +1222,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                                 data_dir=data_dir)
     zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     data = Bunch(zmaps=zmap_fnames)
-    if return_raw_data:
+    if not return_raw_data:
         X = []
         y = []
         mask = []
