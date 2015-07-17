@@ -456,46 +456,58 @@ def test_get_plot_stat_map_params_pos_neg():
                      [1.5, 2.5, 3.]])
     img = nibabel.Nifti1Image(data, affine)
 
-    # symmtric_cbar set to True
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img, None,
-                                                                 True, {})
+    # symmetric_cbar set to True
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img, vmax=None,
+                                  symmetric_cbar=True,
+                                  kwargs={})
     assert_equal(vmin, -np.nanmax(data))
     assert_equal(vmax, np.nanmax(data))
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img, 2,
-                                                                 True, {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img, vmax=2,
+                                  symmetric_cbar=True,
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
 
     # symmetric_cbar is set to False
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img, None,
-                                                                 False, {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img, vmax=None,
+                                  symmetric_cbar=False,
+                                  kwargs={})
     assert_equal(vmin, -np.nanmax(data))
     assert_equal(vmax, np.nanmax(data))
     assert_equal(cbar_vmin, np.nanmin(data))
     assert_equal(cbar_vmax, np.nanmax(data))
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img, 2,
-                                                                 False, {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img, vmax=2,
+                                  symmetric_cbar=False,
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, np.nanmin(data))
     assert_equal(cbar_vmax, np.nanmax(data))
 
     # symmetric_cbar is set to 'auto', same behaviours as True for this case
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img, None,
-                                                                 'auto', {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img, vmax=None,
+                                  symmetric_cbar='auto',
+                                  kwargs={})
     assert_equal(vmin, -np.nanmax(data))
     assert_equal(vmax, np.nanmax(data))
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img, 2,
-                                                                 'auto', {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img, vmax=2,
+                                  symmetric_cbar='auto',
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
@@ -510,49 +522,58 @@ def test_get_plot_stat_map_params_pos():
                          [1.5, 2.5, 3.]])
     img_pos = nibabel.Nifti1Image(data_pos, affine)
 
-    # symmtric_cbar set to True
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_pos,
-                                                                 None, True,
-                                                                 {})
+    # symmetric_cbar set to True
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_pos, vmax=None,
+                                  symmetric_cbar=True,
+                                  kwargs={})
     assert_equal(vmin, -np.nanmax(data_pos))
     assert_equal(vmax, np.nanmax(data_pos))
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_pos, 2,
-                                                                 True, {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_pos, vmax=2,
+                                  symmetric_cbar=True,
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
 
     # symmetric_cbar is set to False
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_pos,
-                                                                 None, False,
-                                                                 {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_pos, vmax=None,
+                                  symmetric_cbar=False,
+                                  kwargs={})
     assert_equal(vmin, -np.nanmax(data_pos))
     assert_equal(vmax, np.nanmax(data_pos))
     assert_equal(cbar_vmin, 0)
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_pos, 2,
-                                                                 False, {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_pos, vmax=2,
+                                  symmetric_cbar=False,
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, 0)
     assert_equal(cbar_vmax, None)
 
     # symmetric_cbar is set to 'auto', same behaviour as false in this case
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_pos,
-                                                                 None, 'auto',
-                                                                 {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_pos, vmax=None,
+                                  symmetric_cbar='auto',
+                                  kwargs={})
     assert_equal(vmin, -np.nanmax(data_pos))
     assert_equal(vmax, np.nanmax(data_pos))
     assert_equal(cbar_vmin, 0)
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_pos, 2,
-                                                                 'auto', {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_pos, vmax=2,
+                                  symmetric_cbar='auto',
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, 0)
@@ -568,48 +589,57 @@ def test_get_plot_stat_map_params_neg():
     img_neg = nibabel.Nifti1Image(data_neg, affine)
 
     # symmetric_cbar set to True
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_neg,
-                                                                 None, True,
-                                                                 {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_neg, vmax=None,
+                                  symmetric_cbar=True,
+                                  kwargs={})
     assert_equal(vmin, np.nanmin(data_neg))
     assert_equal(vmax, -np.nanmin(data_neg))
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_neg, 2,
-                                                                 True, {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_neg, vmax=2,
+                                  symmetric_cbar=True,
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
 
     # symmetric_cbar is set to False
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_neg,
-                                                                 None, False,
-                                                                 {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_neg, vmax=None,
+                                  symmetric_cbar=False,
+                                  kwargs={})
     assert_equal(vmin, np.nanmin(data_neg))
     assert_equal(vmax, -np.nanmin(data_neg))
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, 0)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_neg, 2,
-                                                                 False, {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_neg, vmax=2,
+                                  symmetric_cbar=False,
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, 0)
 
     # symmetric_cbar is set to 'auto', same behaviour as False in this case
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_neg,
-                                                                 None, 'auto',
-                                                                 {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_neg, vmax=None,
+                                  symmetric_cbar='auto',
+                                  kwargs={})
     assert_equal(vmin, np.nanmin(data_neg))
     assert_equal(vmax, -np.nanmin(data_neg))
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, 0)
     # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(img_neg, 2,
-                                                                 'auto',  {})
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+        _get_plot_stat_map_params(img_neg, vmax=2,
+                                  symmetric_cbar='auto',
+                                  kwargs={})
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
