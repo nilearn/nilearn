@@ -32,20 +32,20 @@ datasets and atlases. Dataset fetching functions can be imported from
 :mod:`nilearn.datasets`::
 
     >>> from nilearn import datasets
-    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)
+    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
 
 They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
 file names on hard disk::
 
     >>> # The different files
-    >>> print(list(haxby_files.keys()))
-    ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
+    >>> print(sorted(list(haxby_files.keys())))  # doctest: +SKIP
+    ['anat', 'description', 'func', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
     >>> # Path to first functional file
-    >>> print(haxby_files.func[0])  # doctest: +ELLIPSIS
+    >>> print(haxby_files.func[0])  # doctest: +ELLIPSIS +SKIP
     /.../nilearn_data/haxby2001/subj1/bold.nii.gz
     >>> # Provide information on the dataset
-    >>> print(haxby_files.description) # doctest: +ELLIPSIS
+    >>> print(haxby_files.description) # doctest: +ELLIPSIS +SKIP
     Haxby 2001 results
 
 
@@ -58,7 +58,7 @@ file names on hard disk::
 Explanation and further resources of the dataset at hand can be
 retrieved as follows:
 
-    >>> print haxby_dataset['description']
+    >>> print haxby_dataset['description']  # doctest: +SKIP
 
 For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref`.
 
@@ -195,11 +195,11 @@ For the Haxby datasets, we can load the categories of the images
 presented to the subject::
 
     >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
     >>> import numpy as np
-    >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-    >>> stimuli = labels['labels']
-    >>> print(np.unique(stimuli))
+    >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")  # doctest: +SKIP
+    >>> stimuli = labels['labels']  # doctest: +SKIP
+    >>> print(np.unique(stimuli))  # doctest: +SKIP
     ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
      'shoe']
 

@@ -19,7 +19,7 @@ Data preparation: loading and basic feature extraction
    arguments::
 
     >>> from nilearn import image
-    >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii')
+    >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii') # doctest: +SKIP
   
    Nilearn can operate on either file names or `NiftiImage objects
    <http://nipy.org/nibabel/nibabel_images.html>`_. The later
