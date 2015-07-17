@@ -40,10 +40,8 @@ from . import cm
 # Core, usage-agnostic functions
 
 
-def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar,
-                              kwargs, force_min_stat_map_value=None):
-    """ Internal function for setting value limits for plot_stat_map,
-    plot_glass_brain and plot_surf
+def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_min_stat_map_value=None):
+    """ Internal function for setting value limits for plot_stat_map and plot_glass_brain
     """
     stat_map_data = stat_map_img.get_data()
     # Avoid dealing with masked_array:
