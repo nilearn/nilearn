@@ -8,7 +8,8 @@ dependencies:
     - pip install scikit-learn
     - pip install -e .
     # we need to do this here so the datasets will be cached
-    - cd doc && make html 2>&1 | tee ~/log.txt
+    # pipefail is necessary to propagate exit codes
+    - set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
 
 test:
   override:
