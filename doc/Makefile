@@ -134,10 +134,16 @@ pdf: latex
 
 install:
 	rm -rf _build/doctrees/
-	make html
+	# first clone the nilearn.github.io repo because it may ask
+	# for password and we don't want to delay this long build in
+	# the middle of it
 	rm -rf _build/nilearn.github.io
+	# --no-checkout just fetches the root folder without content
+	# --depth 1 is a speed optimization since we don't need the
+	# history prior to the last commit
+	git clone --no-checkout --depth 1 https://github.com/nilearn/nilearn.github.io.git _build/nilearn.github.io
+	make html
 	cd _build/ && \
-        git clone git@github.com:nilearn/nilearn.github.io.git && \
 	cp -r html/* nilearn.github.io && \
 	cd nilearn.github.io && \
 	git add * && \
