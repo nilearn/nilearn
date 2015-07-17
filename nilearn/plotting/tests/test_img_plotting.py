@@ -451,8 +451,8 @@ def test_plot_prob_atlas():
 def test_get_plot_stat_map_params_pos_neg():
     # data with positive and negative range
     affine = np.eye(4)
-    data = np.array([[-.5, 1., 0.],
-                     [0., 1., -.2],
+    data = np.array([[-.5, 1., np.nan],
+                     [0., np.nan, -.2],
                      [1.5, 2.5, 3.]])
     img = nibabel.Nifti1Image(data, affine)
 
@@ -517,8 +517,8 @@ def test_get_plot_stat_map_params_pos_neg():
 def test_get_plot_stat_map_params_pos():
     # data with positive range
     affine = np.eye(4)
-    data_pos = np.array([[0, 1., 0.],
-                         [0., 1., 0],
+    data_pos = np.array([[0, 1., np.nan],
+                         [0., np.nan, 0],
                          [1.5, 2.5, 3.]])
     img_pos = nibabel.Nifti1Image(data_pos, affine)
 
@@ -583,8 +583,8 @@ def test_get_plot_stat_map_params_pos():
 def test_get_plot_stat_map_params_neg():
     # data with negative range
     affine = np.eye(4)
-    data_neg = np.array([[-.5, 0, 0.],
-                         [0., 0, -.2],
+    data_neg = np.array([[-.5, 0, np.nan],
+                         [0., np.nan, -.2],
                          [0, 0, 0]])
     img_neg = nibabel.Nifti1Image(data_neg, affine)
 

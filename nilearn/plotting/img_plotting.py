@@ -46,7 +46,7 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
     plot_glass_brain.
     The limits for the colormap will always be set to range from -vmax to vmax.
     The limits for the colorbar depend on the symmetric_cbar argument, please
-    refer to docstring of plot_stat_map).
+    refer to docstring of plot_stat_map.
     """
     # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
