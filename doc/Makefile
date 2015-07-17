@@ -133,15 +133,15 @@ pdf: latex
 	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
 
 install:
-	rm -rf _build/doctrees/
+	rm -rf _build/doctrees _build/nilearn.github.io
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in
 	# the middle of it
-	rm -rf _build/nilearn.github.io
 	# --no-checkout just fetches the root folder without content
 	# --depth 1 is a speed optimization since we don't need the
 	# history prior to the last commit
 	git clone --no-checkout --depth 1 https://github.com/nilearn/nilearn.github.io.git _build/nilearn.github.io
+	touch _build/nilearn.github.io/.nojekyll
 	make html
 	cd _build/ && \
 	cp -r html/* nilearn.github.io && \
