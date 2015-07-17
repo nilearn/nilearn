@@ -2,7 +2,7 @@
 .. _estimator_choice:
 
 =====================================
- Choosing the right predictive model
+Choosing the right predictive model
 =====================================
 
 This page gives a few simple considerations on the choice of an estimator.

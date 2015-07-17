@@ -63,9 +63,6 @@ things a bit faster. These include:
 et al. 2015 (PRNI)] <https://hal.inria.fr/hal-00991743>`_ for
 technical details regarding the implementation of SpaceNet.
 
-..
-   Below are some application examples of SpaceNet.
-
 Mixed gambles
 .............
 
