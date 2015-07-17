@@ -129,7 +129,26 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
 
 
 def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
-    """Read a CSV file by guessing the delimiter
+    """Read a CSV file by trying to guess its delimiter
+
+    Parameters
+    ----------
+
+    csv_path: string
+        Path of the CSV file to load.
+
+    delimiters: string
+        String containing the possible delimiters for the CSV file.
+
+    **kwargs: keyword arguments
+        The additional keyword arguments are passed to numpy.genfromtxt when
+        loading the CSV.
+
+    Returns
+    -------
+
+    array: numpy.ndarray
+        An array containing the data loaded from the CSV file.
     """
     if not isinstance(csv_path, _basestring):
         raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
