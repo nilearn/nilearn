@@ -40,11 +40,12 @@ from . import cm
 # Core, usage-agnostic functions
 
 
-def _get_plot_stat_map_params(stat_map_data, vmax, symmetric_cbar,
+def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar,
                               kwargs, force_min_stat_map_value=None):
     """ Internal function for setting value limits for plot_stat_map,
     plot_glass_brain and plot_surf
     """
+    stat_map_data = stat_map_img.get_data()
     # Avoid dealing with masked_array:
     if hasattr(stat_map_data, '_mask'):
         stat_map_data = \
@@ -859,9 +860,10 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     stat_map_img = _utils.check_niimg_3d(stat_map_img)
 
-    cbar_vmin, cbar_vmax, vmin, vmax = \
-        _get_plot_stat_map_params(stat_map_img.get_data(), vmax,
-                                  symmetric_cbar, kwargs)
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img,
+                                                                 vmax,
+                                                                 symmetric_cbar,
+                                                                 kwargs)
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                 cut_coords=cut_coords,
@@ -963,13 +965,16 @@ def plot_glass_brain(stat_map_img,
     if stat_map_img:
         stat_map_img = _utils.check_niimg_3d(stat_map_img)
         if plot_abs:
-            cbar_vmin, cbar_vmax, vmin, vmax = \
-             _get_plot_stat_map_params(stat_map_img.get_data(),
-                                       vmax, symmetric_cbar, kwargs, 0)
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img,
+                                                                         vmax,
+                                                                         symmetric_cbar,
+                                                                         kwargs,
+                                                                         0)
         else:
-            cbar_vmin, cbar_vmax, vmin, vmax = \
-             _get_plot_stat_map_params(stat_map_img.get_data(),
-                                       vmax, symmetric_cbar, kwargs)
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img,
+                                                                         vmax,
+                                                                         symmetric_cbar,
+                                                                         kwargs)
     else:
         cbar_vmin, cbar_vmax = None, None
 
