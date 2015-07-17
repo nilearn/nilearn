@@ -51,7 +51,6 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
 
 for name, atlas in sorted(atlas_types.items()):
         plotting.plot_prob_atlas(atlas,
-                                 title='%s' % name)
+                                 title=name)
 
 plt.show()
-
