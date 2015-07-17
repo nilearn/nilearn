@@ -462,8 +462,8 @@ Construct the new estimator object and use it in a pipeline::
 
 and recompute the cross-validation score::
 
-    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, verbose=1)
-    >>> classification_accuracy = np.mean(cv_scores)
+    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, verbose=1)  # doctest: +SKIP
+    >>> classification_accuracy = np.mean(cv_scores)  # doctest: +SKIP
     >>> print("Classification accuracy: %.4f / Chance Level: %.4f" % \
     ...    (classification_accuracy, 1. / n_conditions)) # doctest: +SKIP
     Classification accuracy: 1.0000 / Chance level: 0.5000
