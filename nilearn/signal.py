@@ -17,6 +17,7 @@ from sklearn.utils import gen_even_slices
 from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
+from ._utils.numpy_conversions import csv_to_array
 
 np_version = distutils.version.LooseVersion(np.version.short_version).version
 
@@ -423,13 +424,13 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         for confound in confounds:
             if isinstance(confound, _basestring):
                 filename = confound
-                confound = np.genfromtxt(filename)
+                confound = csv_to_array(filename)
                 if np.isnan(confound.flat[0]):
                     # There may be a header
                     if np_version >= [1, 4, 0]:
-                        confound = np.genfromtxt(filename, skip_header=1)
+                        confound = csv_to_array(filename, skip_header=1)
                     else:
-                        confound = np.genfromtxt(filename, skiprows=1)
+                        confound = csv_to_array(filename, skiprows=1)
                 if confound.shape[0] != signals.shape[0]:
                     raise ValueError("Confound signal has an incorrect length")
 

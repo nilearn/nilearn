@@ -128,17 +128,25 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     return ret
 
 
-def csv_to_array(csv_path, delimiters=' \t,;'):
+def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     """Read a CSV file by guessing the delimiter
     """
     if not isinstance(csv_path, _basestring):
         raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
                         type(csv_path))
-    try:
-        with open(csv_path, 'r') as csv_file:
-            dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
-    except csv.Error as e:
-        raise TypeError(
-            'Could not read CSV file [%s]: %s' % (csv_path, e.message))
+    # First, we try genfromtxt which works in most cases.
+    array = np.genfromtxt(csv_path, **kwargs)
 
-    return np.genfromtxt(csv_path, delimiter=dialect.delimiter)
+    if array.ndim == 1 and np.isnan(array[0]):
+        # If the delimiter is not known genfromtxt generates an array full of
+        # nan. In that case, we try to guess the delimiter
+        try:
+            with open(csv_path, 'r') as csv_file:
+                dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
+        except csv.Error as e:
+            raise TypeError(
+                'Could not read CSV file [%s]: %s' % (csv_path, e.message))
+
+        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter, **kwargs)
+
+    return array
