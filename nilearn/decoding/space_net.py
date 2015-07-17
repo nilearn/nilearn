@@ -544,7 +544,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     tol : float, optional (default 1e-4)
         Defines the tolerance for convergence for the backend fista solver.
 
-    verbose : int, optional (default 0)
+    verbose : int, optional (default 1)
         Verbosity level.
 
     n_jobs : int, optional (default 1)
@@ -607,7 +607,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), memory_level=2,
-                 standardize=True, verbose=0, n_jobs=1, eps=1e-3,
+                 standardize=True, verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         self.penalty = penalty
@@ -1018,7 +1018,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose : int, optional (default 0)
+    verbose : int, optional (default 1)
         Verbosity level.
 
     n_jobs : int, optional (default 1)
@@ -1076,7 +1076,7 @@ class SpaceNetClassifier(BaseSpaceNet):
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
                  memory=Memory(None), standardize=True,
-                 verbose=0, n_jobs=1, eps=1e-3,
+                 verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
         super(SpaceNetClassifier, self).__init__(
@@ -1184,7 +1184,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
 
-    verbose : int, optional (default 0)
+    verbose : int, optional (default 1)
         Verbosity level.
 
     n_jobs : int, optional (default 1)
@@ -1237,7 +1237,7 @@ class SpaceNetRegressor(BaseSpaceNet):
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
                  max_iter=1000, tol=1e-4, memory=Memory(None),
-                 standardize=True, verbose=0, n_jobs=1, eps=1e-3, cv=8,
+                 standardize=True, verbose=1, n_jobs=1, eps=1e-3, cv=8,
                  fit_intercept=True, screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
             penalty=penalty, is_classif=False, l1_ratios=l1_ratios,
