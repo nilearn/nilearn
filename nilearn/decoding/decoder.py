@@ -22,30 +22,39 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_selection import SelectPercentile, SelectKBest
 from sklearn.feature_selection import f_classif, f_regression
 from sklearn.svm.bounds import l1_min_c
-from sklearn.metrics import make_scorer
 from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
-# only sklearn.__version__ > 0.14.1
-from sklearn.metrics.scorer import check_scoring
+
 from sklearn.grid_search import ParameterGrid
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
 from sklearn.utils import check_X_y, check_consistent_length
 from sklearn import clone
 
+from sklearn.utils import check_arrays
+from sklearn.cross_validation import check_cv
+
 try:
+    # scikit-learn < 0.16
     from sklearn.utils import check_arrays as check_array
-except ImportError as e:
+except ImportError:
+    # scikit-learn >= 0.16
     from sklearn.utils import check_array
 
 try:
-    # scikit-learn < 0.17
+    # scikit-learn < 0.16
     from sklearn.cross_validation import _check_cv as check_cv
-except ImportError as e:
-    # scikit-learn >= 0.17
+except ImportError:
+    # scikit-learn >= 0.16
     from sklearn.cross_validation import check_cv
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
+
+
+from sklearn.metrics.scorer import check_scoring
+from sklearn.metrics import make_scorer
+
+# from .._utils.fixes.scorer import check_scoring
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -256,7 +265,7 @@ class Decoder(BaseEstimator):
         # Load data and target
         X = self.masker_.transform(niimgs)
         X = np.vstack(X) if isinstance(X, tuple) else X
-        y = check_array(y)
+        y, = check_array(y)
 
         # Additional checking, otherwise it will continue
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
@@ -390,7 +399,7 @@ def _parallel_estimate(estimator, X, y, train, test, param_grid,
 
     if is_classification and pos_label is None:
         raise warnings.warn(
-            'It seems like you have a classification task'
+            'It seems like you have a classification task '
             'but you did not specify which label you are trying to '
             'predict: y=%s' % y)
 
