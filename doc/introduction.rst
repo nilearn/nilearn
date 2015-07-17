@@ -19,11 +19,11 @@ What is nilearn: MVPA, decoding, predictive models, functional connectivity
     :ref:`decoding <decoding>`,
     :ref:`predictive modelling <decoding>`,
     :ref:`functional connectivity <functional_connectomes>`,
-    :ref:`brain parcellations <parcellating_brain>`, 
+    :ref:`brain parcellations <parcellating_brain>`,
     :ref:`connectomes <functional_connectomes>`.
 
     Nilearn can readily be used on :ref:`task fMRI <decoding_tutorial>`,
-    :ref:`resting-state <functional_connectomes>`, or 
+    :ref:`resting-state <functional_connectomes>`, or
     :ref:`VBM <example_decoding_plot_oasis_vbm.py>` data.
 
     For a machine-learning expert, the value of nilearn can be seen as
@@ -88,11 +88,11 @@ Glossary: machine learning vocabulary
     learned, this model is then applied to new unlabeled data (the **test set**)
     to predict the labels (although we actually know them). There are
     essentially two possible goals:
-    
-    * a **regression** problem: predicting a continuous variable, such 
+
+    * a **regression** problem: predicting a continuous variable, such
       as participant age, from the data `X`
-    
-    * a **classification** problem: predicting a binary variable that splits 
+
+    * a **classification** problem: predicting a binary variable that splits
       the observations into two groups, such as patients versus controls
 
     In neuroimaging research, supervised learning is typically used to
@@ -110,7 +110,7 @@ Glossary: machine learning vocabulary
     factors, for instance using **independent components analysis (ICA)**.
 
     In neuroimaging research, it is typically used to create functional and
-    anatomical brain atlases by clustering based on connectivity or to 
+    anatomical brain atlases by clustering based on connectivity or to
     extract the main brain networks from resting-state correlations. An
     important option of future research will be the identification of
     potential neurobiological subgroups in psychiatric and neurobiological
@@ -123,108 +123,8 @@ Glossary: machine learning vocabulary
 Installing nilearn
 ====================
 
-Installing the scientific Python environment
-----------------------------------------------
-
-We recommend that you **install a complete scientific Python distribution**,
-rather than downloading the bare Python.
-Given the richness of the scientific Python tool stack, installing
-the various required packages may be time-consuming and error
-prone.
-
-:Windows and MacOSX:
-  We suggest you to install 64 bit Anaconda_.
-
-  `Enthought Canopy`_, `PythonXY <http://code.google.com/p/pythonxy/>`_ are
-  alternative options.
-  Enthought Canopy Express (download the free version) should provide
-  the entirety of required packages.
-
-
-:Linux:
-  While the Anaconda_ distribution is available for Linux, most recent linux
-  distributions come with all packages that are needed for nilearn.
-  Kindly ask your system administrator to install the following packages
-  using the distribution package manager:
-
-    - scikit-learn (sometimes called `sklearn`, or `python-sklearn`)
-    - matplotlib (sometimes called `python-matplotlib`)
-    - ipython
-    - nibabel (sometimes called `python-nibabel`)
-
-.. _Enthought Canopy: https://store.enthought.com/
-
-.. _Anaconda: https://store.continuum.io/cshop/anaconda/
-
-Installing nilearn
--------------------
-
-The simplest way to install nilearn is to run the following command in
-a command prompt::
-
-    pip install -U --user nilearn
-
-.. warning::
-
-   Note that this is a "shell" command, not a Python command. Concretely,
-   Mac users need to type this in the "Terminal", while Windows users
-   need to type it in command line of cmd.exe.
-
-Nilearn may also be available as a software package for your operating system.
-For example, the NeuroDebian_ project provides binary packages for recent
-Debian and Ubuntu releases. See the `NeuroDebian package page`_ for information
-on availability and installation instructions.
-
-.. _NeuroDebian: http://neuro.debian.net
-.. _NeuroDebian package page: http://neuro.debian.net/pkgs/python-nilearn.html
-
-|
-
-.. _testing_installation:
-
-Testing your installation
-.........................
-
-To check whether everything is set up correctly, open IPython (an widely
-used enhanced version of the Python prompt, cf. below) and type
-in the following line::
-
-    In [1]: import nilearn
-
-If no error occurs, you have installed nilearn correctly.
-
-Installing the development version
-....................................
-
-**Downloading** If you really want the latest nilearn version, you can use
-git as an alternative to using pip.
-
-* **Under Windows or Max OSX**, simply go to
-  https://github.com/nilearn/nilearn and click on the 'Clone in Desktop'
-  button on the lower right of the webpage. This will install a program
-  that will automatically download nilearn and that you can use to update
-  nilearn.
-  
-* **Under Linux**, run the following command (as a shell command, not a
-  Python command)::
-
-    git clone https://github.com/nilearn/nilearn.git
-
-In the future, you can readily update your copy of nilearn
-by executing "git pull" in
-the nilearn root directory (as a shell command).
-
-If you really do not want to use git, you may still download the latest
-development snapshot from the following link (unziping required):
-https://github.com/nilearn/nilearn/archive/master.zip
-
-**Installing** In the ``nilearn`` directory created by the previous steps, run
-(again, as a shell command)::
-
-    python setup.py install --user
-
-To make sure that the installation was successful, just follow the
-same steps as in :ref:`testing_installation`.
+.. raw:: html
+   :file: install_doc_component.html
 
 .. _quick_start:
 
@@ -341,7 +241,7 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
 .. topic:: **Exercise: varying the amount of smoothing**
    :class: green
 
-   Want to sharpen your skills with nilearn? 
+   Want to sharpen your skills with nilearn?
    Compute the mean EPI for first subject of the ADHD
    dataset downloaded with :func:`nilearn.datasets.fetch_adhd` and
    smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
@@ -412,7 +312,7 @@ Basic numerics
    :align: right
    :scale: 30
 
- :: 
+ ::
 
     >>> import matplotlib.pyplot as plt
     >>> plt.plot(t, np.cos(t))       # doctest: +ELLIPSIS
@@ -424,7 +324,7 @@ Basic numerics
 
 :Image processing:
 
- :: 
+ ::
 
     >>> from scipy import ndimage
     >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
@@ -522,11 +422,11 @@ Finding help
 :Reference material:
 
     * A quick and gentle introduction to scientific computing with Python can
-      be found in the 
+      be found in the
       `scipy lecture notes <http://scipy-lectures.github.io/>`_.
 
     * The documentation of scikit-learn explains each method with tips on
-      practical use and examples: 
+      practical use and examples:
       `http://scikit-learn.org/ <http://scikit-learn.org/>`_.
       While not specific to neuroimaging, it is often a recommended read.
       Be careful to consult the documentation of the scikit-learn version
