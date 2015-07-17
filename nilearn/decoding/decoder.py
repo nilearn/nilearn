@@ -241,9 +241,8 @@ class Decoder(BaseEstimator):
                                       self.standardize, self.mask_strategy,
                                       self.memory, self.memory_level)
 
-        if index is not None :
-            if isinstance(index, collections.Iterable):
-                niimgs = index_img(niimgs, index)
+        if index is not None and isinstance(index, collections.Iterable):
+            niimgs = index_img(niimgs, index)
 
         # Fit masker
         if not hasattr(self.masker_, 'mask_img_'):
@@ -359,9 +358,9 @@ class Decoder(BaseEstimator):
         """Provide prediction values for new X which can be turned into
         a label by thresholding
         """
-        if index is not None:
-            if isinstance(index, collections.Iterable):
-                niimgs = index_img(niimgs, index)
+        if index is not None and isinstance(index, collections.Iterable):
+            niimgs = index_img(niimgs, index)
+
         X = self.masker_.transform(niimgs)
         if isinstance(X, tuple):
             X = np.vstack(X)
