@@ -175,19 +175,20 @@ def test_fetch_adhd():
     sub2 = [2014113, 4275075, 1019436,
             3154996, 3884955,   27034,
             4134561,   27018, 6115230,
-              27037, 8409791,   27011]
+            27037, 8409791,   27011]
     sub3 = [3007585, 8697774, 9750701,
-              10064,   21019,   10042,
-              10128, 2497695, 4164316,
+            10064,   21019,   10042,
+            10128, 2497695, 4164316,
             1552181, 4046678,   23012]
     sub4 = [1679142, 1206380,   23008,
             4016887, 1418396, 2950754,
             3994098, 3520880, 1517058,
             9744150, 1562298, 3205761, 3624598]
-    subs = np.asarray(sub1 + sub2 + sub3 + sub4)
+    subs = np.array(sub1 + sub2 + sub3 + sub4, dtype='i8')
     subs = subs.view(dtype=[('Subject', '<i8')])
-    mock_fetch_files.add_csv('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
-                      subs)
+    mock_fetch_files.add_csv(
+        'ADHD200_40subs_motion_parameters_and_phenotypics.csv',
+        subs)
 
     adhd = func.fetch_adhd(data_dir=tmpdir, url=local_url,
                                     n_subjects=12, verbose=0)
