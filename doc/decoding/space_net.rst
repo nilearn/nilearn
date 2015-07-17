@@ -60,23 +60,23 @@ things a bit faster. These include:
 
 **Implementation:** See `[Dohmatob et al. 2015 (PRNI)]
 <https://hal.inria.fr/hal-01147731>`_ and  `[Dohmatob
-et al. 2015 (PRNI)] <https://hal.inria.fr/hal-00991743>`_ for
+et al. 2014 (PRNI)] <https://hal.inria.fr/hal-00991743>`_ for
 technical details regarding the implementation of SpaceNet.
 
 Mixed gambles
 .............
 
-.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_001.png
+.. figure:: ../auto_examples/decoding/images/plot_mixed_gambles_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_poldrack_space_net_002.png
+.. figure:: ../auto_examples/decoding/images/plot_mixed_gambles_space_net_002.png
    :scale: 60
 
 .. topic:: **Code**
 
     The complete script can be found
-    :ref:`here <example_decoding_plot_poldrack_space_net.py>`.
+    :ref:`here <example_decoding_plot_mixed_gambles_space_net.py>`.
 
 
 Haxby
