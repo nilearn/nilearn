@@ -75,7 +75,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         return .5 * np.array(data.shape)
     if activation_threshold is None:
         activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
-            80)
+                                                   80)
     mask = np.abs(my_map) > activation_threshold - 1.e-15
     # mask may be zero everywhere in rare cases
     if mask.max() == 0:
@@ -220,7 +220,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     for _ in range(n_cuts):
         # Find a peak
         max_along_axis = np.unravel_index(np.abs(data).argmax(),
-            data.shape)[axis]
+                                          data.shape)[axis]
 
         # cancel out the surroundings of the peak
         start = max(0, max_along_axis - spacing)
