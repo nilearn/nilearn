@@ -256,7 +256,7 @@ class Decoder(BaseEstimator):
         # Load data and target
         X = self.masker_.transform(niimgs)
         X = np.vstack(X) if isinstance(X, tuple) else X
-        y, = check_array(y)
+        y = check_array(y)
 
         # Additional checking, otherwise it will continue
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
@@ -529,6 +529,7 @@ def _check_param_grid(estimator, X, y, param_grid):
 # XXX same function implemented in space_net
 def _get_mask_volume(mask_img):
     """Computes the volume of a brain mask in mm^3
+
     Parameters
     ----------
     mask_img : nibabel image object
