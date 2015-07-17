@@ -137,7 +137,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     # First, we try genfromtxt which works in most cases.
     array = np.genfromtxt(csv_path, **kwargs)
 
-    if array.ndim == 1 and np.isnan(array[0]):
+    if array.ndim <= 1 and np.all(np.isnan(array)):
         # If the delimiter is not known genfromtxt generates an array full of
         # nan. In that case, we try to guess the delimiter
         try:
