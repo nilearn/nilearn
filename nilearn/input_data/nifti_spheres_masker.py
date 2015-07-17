@@ -191,7 +191,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                  % (i, type(seed)))
             # Convert to list because it is easier to process
             if isinstance(seed, np.ndarray):
-                seed = seed.to_list()
+                seed = seed.tolist()
             else:
                 # in case of tuple
                 seed = list(seed)
