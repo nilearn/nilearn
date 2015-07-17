@@ -54,13 +54,13 @@ component_img = masker.inverse_transform(components_masked)
 ### Visualize the results #####################################################
 # Show some interesting components
 from nilearn import image
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 # Use the mean as a background
 mean_img = image.mean_img(func_filename)
 
 plot_stat_map(image.index_img(component_img, 5), mean_img)
 
-display = plot_stat_map(image.index_img(component_img, 12), mean_img)
+plot_stat_map(image.index_img(component_img, 12), mean_img)
 
-display.show()
+show()

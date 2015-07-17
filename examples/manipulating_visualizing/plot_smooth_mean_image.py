@@ -28,8 +28,8 @@ mean_func = image.mean_img(first_epi_file)
 # by increments of 5mm
 for smoothing in range(0, 25, 5):
     smoothed_img = image.smooth_img(mean_func, smoothing)
-    display = plotting.plot_epi(smoothed_img,
-                                title="Smoothing %imm" % smoothing)
+    plotting.plot_epi(smoothed_img,
+                      title="Smoothing %imm" % smoothing)
 
 
-display.show()
+plotting.show()

@@ -22,8 +22,8 @@ from nilearn import plotting
 
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3)
 
-display = plotting.plot_glass_brain(
+plotting.plot_glass_brain(
     localizer_tmap_filename, title='plot_glass_brain',
     black_bg=True, display_mode='xz', threshold=3)
 
-display.show()
+plotting.show()

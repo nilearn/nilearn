@@ -48,7 +48,7 @@ components_img.to_filename('canica_resting_state.nii.gz')
 
 ### Visualize the results #####################################################
 # Show some interesting components
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 from nilearn.image import iter_img
 
 # Plot all ICA components together
@@ -56,7 +56,7 @@ plot_prob_atlas(components_img, title='All ICA components')
 
 # Plot the map for each ICA component separately
 for i, cur_img in enumerate(iter_img(components_img)):
-    display = plot_stat_map(cur_img, display_mode="z", title="IC %d" % i,
-                            cut_coords=1, colorbar=False)
+    plot_stat_map(cur_img, display_mode="z", title="IC %d" % i,
+                  cut_coords=1, colorbar=False)
 
-display.show()
+show()

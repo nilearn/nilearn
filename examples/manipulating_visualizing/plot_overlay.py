@@ -38,4 +38,4 @@ display.add_overlay(image.index_img(atlas_filename, 6),
 display.add_overlay(image.index_img(atlas_filename, 3),
                     cmap=plotting.cm.black_pink)
 
-display.show()
+plotting.show()

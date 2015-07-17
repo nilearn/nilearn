@@ -54,6 +54,6 @@ plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
 
 # Plotting EPI haxby
 mean_haxby_img = image.mean_img(haxby_func_filename)
-display = plotting.plot_epi(mean_haxby_img, title="plot_epi")
+plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
-display.show()
+plotting.show()

@@ -19,7 +19,7 @@ Pattern Recognition 2011.
 import numpy as np
 from nilearn import datasets
 from nilearn import input_data
-from nilearn.plotting.img_plotting import plot_roi, plot_epi
+from nilearn.plotting import plot_roi, plot_epi, show
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 # print basic information on the dataset
@@ -100,8 +100,8 @@ fmri_reduced = ward.transform(fmri_masked)
 fmri_compressed = ward.inverse_transform(fmri_reduced)
 compressed_img = nifti_masker.inverse_transform(fmri_compressed[0])
 
-display = plot_epi(compressed_img, cut_coords=first_plot.cut_coords,
-                   title='Compressed representation (2000 parcels)',
-                   display_mode='xz')
+plot_epi(compressed_img, cut_coords=first_plot.cut_coords,
+         title='Compressed representation (2000 parcels)',
+         display_mode='xz')
 
-display.show()
+show()

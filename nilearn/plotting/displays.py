@@ -29,6 +29,8 @@ from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 
 
+
+
 ################################################################################
 # class BaseAxes
 ################################################################################
@@ -722,12 +724,6 @@ class BaseSlicer(object):
             for display_ax in self.axes.values():
                 display_ax.draw_position(size=size, bg_color=bg_color,
                                        **kwargs)
-
-    @staticmethod
-    def show():
-        """Show all generated figures.
-        """
-        plt.show()
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.

@@ -13,5 +13,5 @@ atlas_filename = dataset.maps
 
 print('Atlas ROIs are located at: %s' % atlas_filename)
 
-display = plotting.plot_roi(atlas_filename, title="Harvard Oxford atlas")
-display.show()
+plotting.plot_roi(atlas_filename, title="Harvard Oxford atlas")
+plotting.show()
