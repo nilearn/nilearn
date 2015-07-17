@@ -2,7 +2,7 @@
 SpaceNet on Jimura et al "mixed gambles" dataset.
 ==================================================
 
-The segmenting power of SpaceNet is quiete visible here.
+The segmenting power of SpaceNet is quite visible here.
 """
 # author: DOHMATOB Elvis Dopgima,
 #         GRAMFORT Alexandre
