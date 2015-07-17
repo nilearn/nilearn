@@ -40,15 +40,18 @@ from . import cm
 # Core, usage-agnostic functions
 
 
-def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_min_stat_map_value=None):
-    """ Internal function for setting value limits for plot_stat_map and plot_glass_brain
+def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
+    force_min_stat_map_value=None):
+    """ Internal function for setting value limits for plot_stat_map and
+    plot_glass_brain
     """
     # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
         stat_map_data = stat_map_img.get_data()
-    # Avoid dealing with masked_array:
+        # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):
-            stat_map_data = np.asarray(stat_map_data[np.logical_not(stat_map_data._mask)])
+            stat_map_data = np.asarray(
+                    stat_map_data[np.logical_not(stat_map_data._mask)])
         stat_map_max = np.nanmax(stat_map_data)
         if force_min_stat_map_value == None:
             stat_map_min = np.nanmin(stat_map_data)
@@ -847,10 +850,11 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     stat_map_img = _utils.check_niimg_3d(stat_map_img)
 
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img,
-                                                                 vmax,
-                                                                 symmetric_cbar,
-                                                                 kwargs)
+    cbar_vmin, cbar_vmax, vmin, vmax = \
+                    _get_plot_stat_map_params(stat_map_img,
+                                            vmax,
+                                            symmetric_cbar,
+                                            kwargs)
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                 cut_coords=cut_coords,
@@ -952,21 +956,24 @@ def plot_glass_brain(stat_map_img,
     if stat_map_img:
         stat_map_img = _utils.check_niimg_3d(stat_map_img)
         if plot_abs:
-            cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img,
-                                                                         vmax,
-                                                                         symmetric_cbar,
-                                                                         kwargs,
-                                                                         0)
+            cbar_vmin, cbar_vmax, vmin, vmax = \
+                        _get_plot_stat_map_params(stat_map_img,
+                                                  vmax,
+                                                  symmetric_cbar,
+                                                  kwargs,
+                                                  0)
         else:
-            cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(stat_map_img,
-                                                                         vmax,
-                                                                         symmetric_cbar,
-                                                                         kwargs)
+            cbar_vmin, cbar_vmax, vmin, vmax = \
+                        _get_plot_stat_map_params(stat_map_img,
+                                                  vmax,
+                                                  symmetric_cbar,
+                                                  kwargs)
     else:
         cbar_vmin, cbar_vmax = None, None
 
     def display_factory(display_mode):
-        return functools.partial(get_projector(display_mode), alpha=alpha, plot_abs=plot_abs)
+        return functools.partial(get_projector(display_mode),
+                                 alpha=alpha, plot_abs=plot_abs)
 
     display = _plot_img_with_bg(img=stat_map_img,
                                 output_file=output_file,
