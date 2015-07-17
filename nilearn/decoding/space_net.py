@@ -26,8 +26,9 @@ from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from .._utils.compat import _basestring
-from ..input_data import NiftiMasker
 from .._utils.fixes import atleast2d_or_csr
+from .._utils.cache_mixin import CacheMixin
+from ..input_data import NiftiMasker
 from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
@@ -455,7 +456,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             y_train_mean, key)
 
 
-class BaseSpaceNet(LinearModel, RegressorMixin):
+class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     """
     Regression and classification learners with sparsity and spatial priors
 
@@ -605,7 +606,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-                 memory=Memory(None, verbose=0),
+                 memory=Memory(None), memory_level=2,
                  standardize=True, verbose=0, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
@@ -619,6 +620,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         self.mask = mask
         self.fit_intercept = fit_intercept
         self.memory = memory
+        self.memory_level = memory_level
         self.max_iter = max_iter
         self.tol = tol
         self.verbose = verbose
@@ -819,7 +821,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin):
         for (test_scores, best_w, best_alpha, best_l1_ratio, alphas,
              y_train_mean, (cls, fold)) in Parallel(
             n_jobs=self.n_jobs, verbose=2 * self.verbose)(
-            delayed(self.memory_.cache(path_scores))(
+                delayed(self._cache(path_scores, func_memory_level=2))(
                 solver, X, y[:, cls] if n_problems > 1 else y, self.mask_,
                 alphas, l1_ratios, self.cv_[fold][0], self.cv_[fold][1],
                 solver_params, n_alphas=self.n_alphas, eps=self.eps,

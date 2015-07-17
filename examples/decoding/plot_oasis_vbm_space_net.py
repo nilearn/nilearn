@@ -21,7 +21,7 @@ from sklearn.utils import check_random_state
 from sklearn.cross_validation import train_test_split
 rng = check_random_state(42)
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
-    gm_imgs, age, train_size=.7, random_state=rng)
+    gm_imgs, age, train_size=.6, random_state=rng)
 
 ### Sort test data for better visualization (trend, etc.)
 perm = np.argsort(age_test)[::-1]
@@ -34,7 +34,10 @@ from nilearn.decoding import SpaceNetRegressor
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 for penalty in ['tv-l1', 'graph-net']:
-    decoder = SpaceNetRegressor(memory="cache", penalty=penalty, verbose=2)
+    # to save time (because these are anat images with many voxels), we include
+    # only the 5-percent voxels most correlated with the age variable to fit
+    decoder = SpaceNetRegressor(memory="cache", penalty=penalty,
+                                screening_percentile=5)
     decoder.fit(gm_imgs_train, age_train)  # fit
     coef_img = decoder.coef_img_
     y_pred = decoder.predict(gm_imgs_test).ravel()  # predict
@@ -44,7 +47,7 @@ for penalty in ['tv-l1', 'graph-net']:
     # weights map
     background_img = gm_imgs[0]
     plot_stat_map(coef_img, background_img, title="%s weights" % penalty,
-                  display_mode="z", cut_coords=1, colorbar=False)
+                  display_mode="z", cut_coords=1)
 
     # quality of predictions
     plt.figure()

@@ -40,7 +40,7 @@ from nilearn.plotting import plot_stat_map
 background_img = mean_img(data_files.func[0])
 for penalty in ['graph-net', 'tv-l1']:
     ### Fit model on train data and predict on test data ######################
-    decoder = SpaceNetClassifier(memory="cache", penalty=penalty, verbose=2)
+    decoder = SpaceNetClassifier(memory="cache", penalty=penalty)
     decoder.fit(X_train, y_train)
     y_pred = decoder.predict(X_test)
     accuracy = (y_pred == y_test).mean() * 100.

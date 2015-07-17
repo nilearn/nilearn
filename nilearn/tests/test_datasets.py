@@ -800,6 +800,6 @@ def test_fetch_mixed_gambles(n_subjects=5):
                                             data_dir=tmpdir, url=local_url,
                                             verbose=0)
     datasetdir = os.path.join(tmpdir, "jimura_poldrack_2012_zmaps/")
-    assert_equal(mgambles["z_maps"][0], os.path.join(datasetdir, "zmaps",
+    assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
                                                      "sub001_zmaps.nii.gz"))
-    assert_equal(len(mgambles["z_maps"]), n_subjects)
+    assert_equal(len(mgambles["zmaps"]), n_subjects)
