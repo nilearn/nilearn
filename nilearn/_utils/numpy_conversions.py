@@ -4,7 +4,9 @@ Validation and conversion utilities for numpy.
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
+import csv
 import numpy as np
+from .compat import _basestring
 
 
 def _asarray(arr, dtype=None, order=None):
@@ -124,3 +126,19 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
         raise ValueError("Type not handled: %s" % arr.__class__)
 
     return ret
+
+
+def csv_to_array(csv_path, delimiters=' \t,;'):
+    """Read a CSV file by guessing the delimiter
+    """
+    if not isinstance(csv_path, _basestring):
+        raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
+                        type(csv_path))
+    try:
+        with open(csv_path, 'r') as csv_file:
+            dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
+    except csv.Error as e:
+        raise TypeError(
+            'Could not read CSV file [%s]: %s' % (csv_path, e.message))
+
+    return np.genfromtxt(csv_path, delimiter=dialect.delimiter)

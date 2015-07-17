@@ -1,15 +1,16 @@
 """
 Test the numpy_conversions module
 
-This test file is in nilearn/tests because nosetests seems to ignore modules whose
-name starts with an underscore
+This test file is in nilearn/tests because nosetests seems to ignore modules
+whose name starts with an underscore
 """
 import numpy as np
 import os
+import tempfile
 
 from nose.tools import assert_true, assert_raises
 
-from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 
 
 def are_arrays_identical(arr1, arr2):
@@ -230,3 +231,13 @@ def test_as_ndarray():
     ## Unhandled cases
     assert_raises(ValueError, as_ndarray, "test string")
     assert_raises(ValueError, as_ndarray, [], order="invalid")
+
+
+def test_csv_to_array():
+    # Create a phony CSV file
+    with tempfile.NamedTemporaryFile(suffix='.csv', delete=False) as csv_file:
+        csv_file.write('1.,2.,3.,4.,5.\n')
+        csv_file.close()
+        assert_true(np.allclose(csv_to_array(csv_file.name),
+                     np.asarray([1., 2., 3., 4., 5.])))
+        assert_raises(TypeError, csv_to_array, csv_file, delimiters='?!')
