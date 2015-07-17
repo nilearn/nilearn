@@ -4,7 +4,7 @@ Group analysis of resting-state fMRI with ICA: CanICA
 
 An example applying CanICA to resting-state data. This example applies it
 to 40 subjects of the ADHD200 datasets. Then it plots a map with all the
-components together and a z coordinate map for each of the components separately.
+components together and axial cut for each of the components separately.
 
 CanICA is an ICA method for group-level analysis of fMRI data. Compared
 to other strategies, it brings a well-controlled group model, as well as a
@@ -53,10 +53,10 @@ from nilearn.plotting import plot_prob_atlas
 from nilearn.plotting import plot_stat_map
 from nilearn.image import iter_img
 
-# Plot all ICA components
+# Plot all ICA components together
 plot_prob_atlas(components_img, title='All ICA components')
 
-# Show some interesting components
+# Plot the map for each ICA component separately
 for i, cur_img in enumerate(iter_img(components_img)):
     plot_stat_map(cur_img, display_mode="z", title="IC %d" % i, cut_coords=1,
                   colorbar=False)
