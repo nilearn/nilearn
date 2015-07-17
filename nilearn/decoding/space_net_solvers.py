@@ -479,8 +479,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     flat_mask = mask.ravel()
     volume_shape = mask.shape
 
-    # We'll work on the full brain, and do the masking / unmasking
-    # magic when needed
+    # in logistic regression, we fit the intercept explicitly
     w_size = X.shape[1] + int(loss == "logistic")
 
     def unmaskvec(w):
