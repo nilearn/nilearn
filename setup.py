@@ -88,5 +88,6 @@ if __name__ == "__main__":
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*'],
                         'nilearn.image.tests.data': ['*.mgz'],
+                        'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst']},
           install_requires=install_requires,)
