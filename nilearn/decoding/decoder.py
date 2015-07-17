@@ -30,9 +30,6 @@ from sklearn.base import is_classifier
 from sklearn.utils import check_X_y, check_consistent_length
 from sklearn import clone
 
-from sklearn.utils import check_arrays
-from sklearn.cross_validation import check_cv
-
 try:
     # scikit-learn < 0.16
     from sklearn.utils import check_arrays as check_array
@@ -77,7 +74,8 @@ REQUIRES_POS_LABEL = [f1_score, precision_score, recall_score]
 
 
 class Decoder(BaseEstimator):
-    """Popular classification and regression strategies for neuroimgaging.
+    """A wrapper for popular classification/regression strategies for
+    neuroimgaging.
 
     The `Decoder` object supports classification and regression methods.
     It implements a model selection scheme that averages the best models
@@ -174,8 +172,7 @@ class Decoder(BaseEstimator):
                  smoothing_fwhm=None, standardize=True, target_affine=None,
                  target_shape=None, mask_strategy='background',
                  memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, verbose=False,
-                 ):
+                 n_jobs=1, verbose=False):
         self.estimator = estimator
         self.mask = mask
         self.cv = cv
@@ -266,6 +263,7 @@ class Decoder(BaseEstimator):
         X = self.masker_.transform(niimgs)
         X = np.vstack(X) if isinstance(X, tuple) else X
         y, = check_array(y)
+        import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
         # Additional checking, otherwise it will continue
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
@@ -392,6 +390,7 @@ class Decoder(BaseEstimator):
         return scorer(self, niimgs, y)
 
 
+# XXX here verbose is not doing anything, add verbosity
 def _parallel_estimate(estimator, X, y, train, test, param_grid,
                        pos_label, is_classification, scoring, mask_volume,
                        screening_percentile=None, verbose=0):
