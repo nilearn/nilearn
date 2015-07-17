@@ -43,27 +43,38 @@ from . import cm
 def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs, force_min_stat_map_value=None):
     """ Internal function for setting value limits for plot_stat_map and plot_glass_brain
     """
-    # make sure that the color range is symmetrical
-    if vmax is None or symmetric_cbar in ['auto', False]:
-        stat_map_data = stat_map_img.get_data()
+    stat_map_data = stat_map_img.get_data()
     # Avoid dealing with masked_array:
-        if hasattr(stat_map_data, '_mask'):
-            stat_map_data = np.asarray(stat_map_data[np.logical_not(stat_map_data._mask)])
-        stat_map_max = np.nanmax(stat_map_data)
-        if force_min_stat_map_value == None:
-            stat_map_min = np.nanmin(stat_map_data)
-        else:
-            stat_map_min = force_min_stat_map_value
+    if hasattr(stat_map_data, '_mask'):
+        stat_map_data = \
+            np.asarray(stat_map_data[np.logical_not(stat_map_data._mask)])
+
+    # Derive min and max of stat_map_data
+    stat_map_max = np.nanmax(stat_map_data)
+    if force_min_stat_map_value is None:
+        stat_map_min = np.nanmin(stat_map_data)
+    else:
+        stat_map_min = force_min_stat_map_value
+
+    # If auto mode is used, set symmetric_cbar to True in case the values span
+    # both positive and negative range, to False otherwise
     if symmetric_cbar == 'auto':
         symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+
+    # If no vmax is provided, set it to max absolute value of data
     if vmax is None:
         vmax = max(-stat_map_min, stat_map_max)
+    # If symmetric_cbar is True, set vmin to neg vmax, otherwise to data min
+    if symmetric_cbar:
+        vmin = -vmax
+    else:
+        vmin = stat_map_min
     if 'vmin' in kwargs:
-        raise ValueError('this function does not accept a "vmin" '
-            'argument, as it uses a symmetrical range '
-            'defined via the vmax argument. To threshold '
-            'the map, use the "threshold" argument')
-    vmin = -vmax
+        raise ValueError('This function does not accept a "vmin" '
+                         'argument, as it uses a symmetrical range '
+                         'defined via the vmax argument. To threshold '
+                         'the map, use the "threshold" argument. ')
+
     if not symmetric_cbar:
         negative_range = stat_map_max <= 0
         positive_range = stat_map_min >= 0
