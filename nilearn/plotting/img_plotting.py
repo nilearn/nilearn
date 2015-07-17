@@ -43,7 +43,10 @@ from . import cm
 def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
     force_min_stat_map_value=None):
     """ Internal function for setting value limits for plot_stat_map and
-    plot_glass_brain
+    plot_glass_brain.
+    The limits for the colormap will always be set to range from -vmax to vmax.
+    The limits for the colorbar depend on the symmetric_cbar argument, please
+    refer to docstring of plot_stat_map.
     """
     # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
@@ -834,8 +837,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             symmetrical.
         symmetric_cbar: boolean or 'auto', optional, default 'auto'
             Specifies whether the colorbar should range from -vmax to vmax
-            or from 0 to vmax. Setting to 'auto' will select the latter if
-            the whole image is non-negative.
+            or from vmin to vmax. Setting to 'auto' will select the latter if
+            the range of the whole image is either positive or negative.
+            Note: The colormap will always be set to range from -vmax to vmax.
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
@@ -941,8 +945,9 @@ def plot_glass_brain(stat_map_img,
             for examples.
         symmetric_cbar: boolean or 'auto', optional, default 'auto'
             Specifies whether the colorbar should range from -vmax to vmax
-            or from 0 to vmax. Setting to 'auto' will select the latter if
-            the whole image is non-negative.
+            or from vmin to vmax. Setting to 'auto' will select the latter if
+            the range of the whole image is either positive or negative.
+            Note: The colormap will always be set to range from -vmax to vmax.
 
         Notes
         -----
