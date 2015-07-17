@@ -173,9 +173,6 @@ def test_fail_fetch_atlas_harvard_oxford():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_craddock_2012():
-    print '*' * 80
-    print tmpdir
-    print '*' * 80
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmpdir,
                                                      verbose=0)
 
