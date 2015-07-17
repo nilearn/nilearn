@@ -1519,7 +1519,7 @@ ul#tabs li.active {
 
 ul#tab {
     list-style-type: none;
-    margin-bottom: 1em;
+    margin:0;
     padding: 0;
     background:#FF7F50;
     -moz-box-shadow: 8px 8px 0px 0px #355F7C;
