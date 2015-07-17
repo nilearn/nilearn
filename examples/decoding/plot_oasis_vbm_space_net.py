@@ -45,7 +45,7 @@ for penalty in ['tv-l1', 'smooth-lasso']:
     # weights map
     background_img = X[0]
     plot_stat_map(coef_img, background_img, title="%s weights" % penalty,
-                  display_mode="z", cut_coords=1)
+                  display_mode="z", cut_coords=1, colorbar=False)
 
     # quality of predictions
     plt.figure()
