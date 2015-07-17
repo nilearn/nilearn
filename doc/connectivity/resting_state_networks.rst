@@ -53,7 +53,9 @@ object.
 Visualizing the results
 ========================
 
-We can visualize the components as in the previous examples. The first plot shows a map generated from all the components. Then we plot the activation of each component separately.
+We can visualize the components as in the previous examples. The first plot
+shows a map generated from all the components. Then we plot the activation of
+each component separately.
 
 .. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
     :start-after: ### Visualize the results #####################################################
