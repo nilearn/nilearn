@@ -34,10 +34,12 @@ from nilearn.decoding import SpaceNetRegressor
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 for penalty in ['tv-l1', 'graph-net']:
-    # to save time (because these are anat images with many voxels), we include
-    # only the 5-percent voxels most correlated with the age variable to fit
+    # To save time (because these are anat images with many voxels), we include
+    # only the 5-percent voxels most correlated with the age variable to fit.
+    # Also, we set memory_level=2 so that more of the intermediate computations
+    # are cached.
     decoder = SpaceNetRegressor(memory="cache", penalty=penalty,
-                                screening_percentile=5)
+                                screening_percentile=5, memory_level=2)
     decoder.fit(gm_imgs_train, age_train)  # fit
     coef_img = decoder.coef_img_
     y_pred = decoder.predict(gm_imgs_test).ravel()  # predict

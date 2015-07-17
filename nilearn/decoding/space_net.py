@@ -555,6 +555,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
+    memory_level: integer, optional (default 1)
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -606,7 +610,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-                 memory=Memory(None), memory_level=2,
+                 memory=Memory(None), memory_level=1,
                  standardize=True, verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
@@ -1029,6 +1033,10 @@ class SpaceNetClassifier(BaseSpaceNet):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
+    memory_level: integer, optional (default 1)
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
     cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1075,7 +1083,7 @@ class SpaceNetClassifier(BaseSpaceNet):
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-                 memory=Memory(None), standardize=True,
+                 memory=Memory(None), memory_level=1, standardize=True,
                  verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
@@ -1084,6 +1092,7 @@ class SpaceNetClassifier(BaseSpaceNet):
             alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
             max_iter=max_iter, tol=tol, memory=memory,
+            memory_level=memory_level,
             n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
             fit_intercept=fit_intercept, standardize=standardize,
             screening_percentile=screening_percentile, loss=loss,
@@ -1195,6 +1204,10 @@ class SpaceNetRegressor(BaseSpaceNet):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
+    memory_level: integer, optional (default 1)
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
     cv : int, a cv generator instance, or None (default 10)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1236,7 +1249,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=1000, tol=1e-4, memory=Memory(None),
+                 max_iter=1000, tol=1e-4, memory=Memory(None), memory_level=1,
                  standardize=True, verbose=1, n_jobs=1, eps=1e-3, cv=8,
                  fit_intercept=True, screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
@@ -1244,6 +1257,7 @@ class SpaceNetRegressor(BaseSpaceNet):
             alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
             max_iter=max_iter, tol=tol, memory=memory,
+            memory_level=memory_level,
             n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
             fit_intercept=fit_intercept, standardize=standardize,
             screening_percentile=screening_percentile,

@@ -21,7 +21,7 @@ zmaps, object_category, mask_img = data.X, data.y, data.mask_img
 from nilearn.decoding import SpaceNetRegressor
 decoder = SpaceNetRegressor(mask=mask_img, penalty="tv-l1",
                             eps=1e-1,  # prefer large alphas
-                            memory="cache")
+                            memory="cache", memory_level=3)
 decoder.fit(zmaps, object_category)  # fit
 
 ### Visualize TV-L1 weights
