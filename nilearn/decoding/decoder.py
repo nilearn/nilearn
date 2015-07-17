@@ -24,6 +24,7 @@ from sklearn.feature_selection import f_classif, f_regression
 from sklearn.svm.bounds import l1_min_c
 from sklearn.metrics import make_scorer
 from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
+# only sklearn.__version__ > 0.14.1
 from sklearn.metrics.scorer import check_scoring
 from sklearn.grid_search import ParameterGrid
 from sklearn.base import BaseEstimator
@@ -159,8 +160,6 @@ class Decoder(BaseEstimator):
     verbose : int, optional
         Verbosity level. Default is False
     """
-    # XXX problems when performing regression, it shold change to svr or
-    # ridge_regression
     def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
                  screening_percentile=20, pos_label=None, scoring=None,
                  smoothing_fwhm=None, standardize=True, target_affine=None,
@@ -312,18 +311,34 @@ class Decoder(BaseEstimator):
                 coefs.setdefault(other_class, []).append(-best_coef)
                 intercepts.setdefault(other_class, []).append(-best_intercept)
 
-        # TODO separe each fold, just to calculate the mean and std of the cv
+        # Transforming cv_pred into a list of dict
+        y_prob = [{k: v[i] for k, v in cv_pred.items()}
+                  for i in range(len(cv_pred[cv_pred.keys()[0]]))]
+
+        self.cv_y_pred_ = []
+        self.cv_y_true_ = []
+        self.cv_scores_ = []
+
         if is_classification_:
             classes = self.classes_
-            y_prob = np.vstack([np.hstack(cv_pred[c]) for c in classes]).T
-            self.cv_y_pred_ = self.classes_[np.argmax(y_prob, axis=1)]
-            self.cv_y_true_ = np.hstack(cv_true[cv_true.keys()[0]])
+            for k in range(len(y_prob)):
+                y_prob_ = np.vstack([y_prob[k][c] for c in classes]).T
+                y_pred_ = self.classes_[np.argmax(y_prob_, axis=1)]
+                y_true_ = cv_true[cv_true.keys()[0]][k]
+
+                self.cv_y_pred_.append(y_pred_)
+                self.cv_y_true_.append(y_true_)
+                self.cv_scores_.append(scorer._score_func(y_true_, y_pred_))
         else:
             classes = classes_to_predict
-            self.cv_y_pred_ = np.vstack([
-                np.hstack(cv_pred[c]) for c in classes]).T.ravel()
-            self.cv_y_true_ = np.vstack([
-                np.hstack(cv_true[c]) for c in classes]).T.ravel()
+            for k in range(len(y_prob)):
+                y_pred_ = np.vstack([y_prob[k][c] for c in classes]).T
+                y_true_ = cv_true[cv_true.keys()[0]][k]
+
+                self.cv_y_pred_.append(y_pred_)
+                self.cv_y_true_.append(y_true_)
+                self.cv_scores_.append(scorer._score_func(y_true_, y_pred_))
+
             self.cv_params_['beta'] = self.cv_params_.pop(None)
 
         self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
@@ -339,9 +354,6 @@ class Decoder(BaseEstimator):
 
         self.coef_img_ = coef_img
         self.std_coef_img_ = std_coef_img
-        # TODO add cv_score, like in cross_val_score, using cv_y_pred and
-        # cv_y_true (we have the results, scorer, etc)
-        # self.cv_score
 
     def decision_function(self, niimgs, index=None):
         """Provide prediction values for new X which can be turned into
