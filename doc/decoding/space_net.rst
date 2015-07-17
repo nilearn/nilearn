@@ -22,7 +22,7 @@ al. 2011] <https://hal.inria.fr/inria-00563468/document>`_, TV-L1
 `[Baldassarre et al. 2012]
 <http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf>`_,
 `[Gramfort et al. 2013] <https://hal.inria.fr/hal-00839984>`_
-(option: penalty="tvl1"), and Smooth-Lasso `[Hebiri et al. 2011]
+(option: penalty="tvl1"), and Graph-Net `[Hebiri et al. 2011]
 <https://hal.archives-ouvertes.fr/hal-00462882/document>`_ (known
 as GraphNet in neuroimaging `[Grosenick et al. 2013]
 <https://hal.inria.fr/hal-00839984>`_) (option:
@@ -42,7 +42,7 @@ The following table summarizes the parameter(s) used to activate a
 given penalty:
 
 - TV-L1: `penalty="tv-l1"`
-- Smooth-Lasso: `penalty="smooth-lasso"` (this is the default prior in
+- Graph-Net: `penalty="smooth-lasso"` (this is the default prior in
   SpaceNet)
 
 Note that TV-L1 prior leads to a hard optimization problem, and so can
