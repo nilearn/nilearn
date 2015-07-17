@@ -37,7 +37,8 @@ for penalty in ['tv-l1', 'graph-net']:
     # To save time (because these are anat images with many voxels), we include
     # only the 5-percent voxels most correlated with the age variable to fit.
     # Also, we set memory_level=2 so that more of the intermediate computations
-    # are cached.
+    # are cached. Also, you may pass and n_jobs=<some_high_value> to the
+    # SpaceNetRegressor class, to take advantage of a multi-core system.
     decoder = SpaceNetRegressor(memory="cache", penalty=penalty,
                                 screening_percentile=5, memory_level=2)
     decoder.fit(gm_imgs_train, age_train)  # fit
