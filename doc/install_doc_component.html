@@ -1,9 +1,10 @@
 <script type="text/javascript">
 var OSName=2;
-if (navigator.appVersion.indexOf("Win")!=-1) OSName=1;
-if (navigator.appVersion.indexOf("Mac")!=-1) OSName=2;
-if (navigator.appVersion.indexOf("X11")!=-1) OSName=3;
-if (navigator.appVersion.indexOf("Linux")!=-1) OSName=3;
+if (navigator.userAgent.indexOf("Win")!=-1) OSName=1;
+if (navigator.userAgent.indexOf("Mac")!=-1) OSName=2;
+if (navigator.userAgent.indexOf("X11")!=-1) OSName=3;
+if (navigator.userAgent.indexOf("Linux")!=-1) OSName=3;
+if (navigator.userAgent.indexOf("Android")!=-1) OSName=1;
 
 $(document).ready(function(){
     $("ul#tabs li.active").removeClass("active");
