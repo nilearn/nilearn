@@ -2,8 +2,6 @@
 Simple code to simulate data
 """
 
-# Licence: BSD
-
 import numpy as np
 from scipy import linalg, ndimage
 from sklearn.utils import check_random_state
