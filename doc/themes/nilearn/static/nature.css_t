@@ -1483,13 +1483,16 @@ div.body .jcarousel-pagination a.active {
     opacity: 1;
 }
 
+/** Tabs in the installation documentation **/
+
 div.container{
-    padding-bottom:1em;
+    padding-bottom: 1em;
+    padding-top: 1em;
 }
 
 ul#tabs {
     list-style-type: none;
-    margin: 0 0 0 0;
+    margin: 0 0 -1px 0;
     padding: 0;
     text-align: center;
 }
@@ -1499,43 +1502,48 @@ ul#tabs li {
     width: 20%;
     font-size:20px;
     display: inline-block;
-    background-color: #355F7C;
-    border-bottom: solid 5px black;
-    padding: 5px 10px;
-    margin-bottom: 0px;
-    color: black;
+    background-color: #F7F9FA;
+    border: solid 1px #AAAAAA;
+    border-top: solid 5px #999;
+    border-radius: 5px 5px 0 0;
+    border-bottom: none;
+    padding: 5px 10px 4px 10px;
+    color: rgb(60, 60, 60);
     cursor: pointer;
 }
 
 ul#tabs li:hover {
     color: black;
     background-color: #C4D8E2;
+    border-top: solid 5px black;
 }
 
 ul#tabs li.active {
     color: black;
-    background-color: #C4D8E2;
+    background-color: #E2EEF3;
+    border-top: solid 5px black;
+    font-weight: 600;
+    padding-bottom: 5px;
 }
 
 ul#tab {
     list-style-type: none;
     margin:0;
     padding: 0;
-    background:#FF7F50;
-    -moz-box-shadow: 8px 8px 0px 0px #355F7C;
-    -webkit-box-shadow: 8px 8px 0px 0px #355F7C;
-    box-shadow: 8px 8px 0px 0px #355F7C;
-    background-color:#C4D8E2;
-    -moz-border-radius:5px;
-    -webkit-border-radius:5px;
-    border-radius:5px;
-    border:1px solid #C4D8E2;
+    -moz-box-shadow:  1px 3px 3px rgba(0, 0, 0, 0.4);
+    -webkit-box-shadow: 1px 3px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: 1px 3px 3px rgba(0, 0, 0, 0.4);
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    border: solid 1px #AAAAAA;
+    background-color: #E2EEF3;
     color: black;
-    font-family:Arial;
-    font-size:17px;
-    font-weight:bold;
-    padding:12px 44px;
-    text-decoration:none;
+    font-family: Arial;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 12px 44px;
+    text-decoration: none;
 }
 
 ul#tab li {
@@ -1590,7 +1598,6 @@ ul#tab li div.contents p{
       -moz-box-shadow: 0px 0px 0px 0px #355F7C;
       -webkit-box-shadow: 0px 0px 0px 0px #355F7C;
       box-shadow: 0px 0px 0px 0px #355F7C;
-      background-color:#C4D8E2;
       -moz-border-radius:0px;
       -webkit-border-radius:0px;
       border-radius:0px;
