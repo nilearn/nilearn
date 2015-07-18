@@ -637,8 +637,9 @@ def _check_scorer(estimator, scoring, pos_label, y):
                          'for classification.' % scoring)
 
     # Check that pos_label is correctly set if needed
-    if (estimator.is_binary_ and np.array(y).dtype.kind == 'S' \
-        and score_func in REQUIRES_POS_LABEL):
+    is_binary = estimator.is_binary_
+    y_kind = np.array(y).dtype.king
+    if is_binary and y_kind == 'S' and score_func in REQUIRES_POS_LABEL:
 
         if pos_label is None:
             raise ValueError('Decoder must be given a pos_label in '
