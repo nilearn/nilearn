@@ -316,7 +316,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     test : array or list of integers
         List of indices for the test samples
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
 
@@ -477,7 +477,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Flag telling whether the learning task is classification or regression.
 
     l1_ratios : float or list of floats in the interval [0, 1];
-    optinal (default .5)
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -951,7 +951,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Loss to be used in the model. Must be an one of "mse", or "logistic".
 
     l1_ratios : float or list of floats in the interval [0, 1];
-    optinal (default .5)
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -1126,7 +1126,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
     l1_ratios : float or list of floats in the interval [0, 1];
-    optinal (default .5)
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
