@@ -265,7 +265,8 @@ class Decoder(BaseEstimator):
         y, = check_array(y)
         import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
-        # Additional checking, otherwise it will continue
+        # Additional checking, otherwise it will continue (even where the
+        # lenghts are different)
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
 
