@@ -197,31 +197,6 @@ def test_logistic_derivative_lipschitz_constant():
             gradient_difference <= lipschitz_constant * point_difference)
 
 
-@nottest
-def test_fista_convergence():
-    """Tests fista 1/k**2 convergence, theorem 4.4, "A Fast Iterative
-    Shrinkage-Thresholding Algorithm for Linear Inverse Problems",
-    url:http://mechroom.technion.ac.il/~becka/papers/71654.pdf"""
-    alpha = 1
-    l1_ratio = 0.5
-    reg = BaseSpaceNet(mask=mask, alphas=alpha, l1_ratios=l1_ratio)
-    reg.fit(X, y)
-    objs = reg.objective_
-    # Since we don't have the optimum, we just aproximate the optimum
-    # model and objetive with the last model the estimator computes
-    optimum = objs[-1]
-    model = reg.coef_
-    l_c = _squared_loss_derivative_lipschitz_constant(
-        X, mask, alpha * (1 - l1_ratio) * y.size)
-    # If you look at the paper, you take the norm of (starting point -
-    # optimum), but, in this implementation (the test depend on the
-    # implementation, this is awful, but simple) the initial point
-    # is a zero vector
-    for i in range(len(objs)):
-        assert_true(objs[i] - optimum <= 2 * l_c * np.dot(model, model)\
-                    / (i + 1) ** 2)
-
-
 def test_max_alpha__squared_loss():
     """Tests that models with L1 regularization over the theoretical bound
     are full of zeros, for logistic regression"""
