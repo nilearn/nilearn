@@ -10,6 +10,7 @@ with optional feature selection, and integrated parameter selection.
 import collections
 import itertools
 import warnings
+# XXX unused
 import copy
 
 import numpy as np
@@ -19,6 +20,7 @@ from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC, SVR
 from sklearn.preprocessing import LabelBinarizer
+# XXX unused KBest
 from sklearn.feature_selection import SelectPercentile, SelectKBest
 from sklearn.feature_selection import f_classif, f_regression
 from sklearn.svm.bounds import l1_min_c
@@ -27,6 +29,7 @@ from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
 from sklearn.grid_search import ParameterGrid
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
+# XXX unused check_consistent_length
 from sklearn.utils import check_X_y, check_consistent_length
 from sklearn import clone
 
@@ -57,6 +60,7 @@ from sklearn.metrics import make_scorer
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
 
+# XXX When using _score_func: access to a protected member _score_func of a client class
 
 ESTIMATOR_CATALOG = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False, class_weight='auto'),
@@ -167,6 +171,8 @@ class Decoder(BaseEstimator):
     verbose : int, optional
         Verbosity level. Default is False
     """
+    # XXX Too many arguments (17/5)
+    # XXX Too many local variables (17/15)
     def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
                  screening_percentile=20, pos_label=None, scoring=None,
                  smoothing_fwhm=None, standardize=True, target_affine=None,
@@ -192,6 +198,8 @@ class Decoder(BaseEstimator):
 
 
     def fit(self, niimgs, y, index=None):
+        # XXX Too many local variables
+        # XXX Too many statements (75/60)
         """Fit the decoder
 
         Parameters
@@ -263,7 +271,6 @@ class Decoder(BaseEstimator):
         X = self.masker_.transform(niimgs)
         X = np.vstack(X) if isinstance(X, tuple) else X
         y, = check_array(y)
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
         # Additional checking, otherwise it will continue (even where the
         # lenghts are different)
@@ -392,6 +399,8 @@ class Decoder(BaseEstimator):
 
 
 # XXX here verbose is not doing anything, add verbosity
+# XXX Too many arguments (31/15)
+# XXX Too many branches (16/15)
 def _parallel_estimate(estimator, X, y, train, test, param_grid,
                        pos_label, is_classification, scoring, mask_volume,
                        screening_percentile=None, verbose=0):
@@ -470,7 +479,7 @@ def _parallel_estimate(estimator, X, y, train, test, param_grid,
 
     return pos_label, best_coef, best_intercept, best_y, best_params
 
-
+# XXX Too many arguments (8/5)
 def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
                    standardize, mask_strategy, memory, memory_level):
     """Setup a nifti masker."""
@@ -632,6 +641,7 @@ def _check_scorer(estimator, scoring, pos_label, y):
                          'for classification.' % scoring)
 
     # Check that pos_label is correctly set if needed
+    # XXX line break before binary operator
     if (estimator.is_binary_ and np.array(y).dtype.kind == 'S'
             and score_func in REQUIRES_POS_LABEL):
 
