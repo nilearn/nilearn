@@ -5,6 +5,7 @@ Test module for functions related cost functions (including penalties).
 
 import numpy as np
 from scipy.optimize import check_grad
+from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import (
     _gradient_id, _logistic, _div_id,
     _logistic_loss_grad, _unmask)
@@ -12,9 +13,9 @@ from nilearn.decoding.space_net import BaseSpaceNet
 from nose.tools import raises
 
 
-def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5, random_state=42):
+def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5):
     # We need to check that <D x, y> = <x, DT y> for x and y random vectors
-    rng = np.random.RandomState(random_state)
+    rng = check_random_state(42)
 
     for ndim in range(1, max_ndim):
         shape = tuple([size] * ndim)
@@ -58,16 +59,12 @@ def test_3D__gradient_id():
             gid.shape, [img.ndim + 1] + list(img.shape))
 
 
-def test_logistic_loss_derivative(n_samples=4, n_features=10, random_state=42,
-                                  decimal=5):
-
-    rng = np.random.RandomState(random_state)
-
+def test_logistic_loss_derivative(n_samples=4, n_features=10, decimal=5):
+    rng = np.random.RandomState(42)
     X = rng.randn(n_samples, n_features)
     y = rng.randn(n_samples)
     n_features = X.shape[1]
     w = rng.randn(n_features + 1)
-
     np.testing.assert_almost_equal(check_grad(
         lambda w: _logistic(X, y, w),
         lambda w: _logistic_loss_grad(X, y, w), w), 0., decimal=decimal)
@@ -88,7 +85,7 @@ def test_baseestimator_invalid_l1_ratio():
 
 
 def test_unmask(size=5):
-    rng = np.random.RandomState(42)
+    rng = check_random_state(42)
     for ndim in range(1, 4):
         shape = [size] * ndim
         mask = np.zeros(shape).astype(np.bool)
