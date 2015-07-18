@@ -124,7 +124,7 @@ def testlogistic_path_scores():
 def test_squared_loss_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
-    X_, mask = to_niimgs(X, [2, 2, 2])
+    _, mask = to_niimgs(X, [2, 2, 2])
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = squared_loss_path_scores(
@@ -133,24 +133,6 @@ def test_squared_loss_path_scores():
     test_scores = test_scores[0]
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
-
-
-# def test_alpha_attrs():
-#     iris = load_iris()
-#     X, y = iris.data, iris.target
-#     alpha = 1.
-#     X, mask = to_niimgs(X, (2, 2, 2))
-#     for penalty, is_classif, verbose in itertools.product(
-#             ['graph-net', 'tv-l1'], [True, False], [True, False]):
-#         cv_class = eval('SpaceNet%s' % (
-#             ['Regressor', 'Classifier'][is_classif]))
-#         cv = cv_class(
-#             mask=mask, penalty=penalty, alphas=alpha, verbose=verbose,
-#         ).fit(X, y)
-#         if is_classif:
-#             np.testing.assert_array_equal([alpha] * 3, cv.alphas_)
-#         else:
-#             np.testing.assert_array_equal([alpha], cv.alphas_)
 
 
 def test_tv_regression_simple():
