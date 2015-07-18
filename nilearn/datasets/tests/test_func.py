@@ -389,13 +389,14 @@ def test__load_mixed_gambles():
 
 @with_setup(setup_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_mixed_gambles(n_subjects=5):
+def test_fetch_mixed_gambles():
     local_url = "file://" + os.path.join(datadir,
                                          "jimura_poldrack_2012_zmaps.zip")
-    mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
-                                        data_dir=tmpdir, url=local_url,
-                                        verbose=0)
-    datasetdir = os.path.join(tmpdir, "jimura_poldrack_2012_zmaps/")
-    assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
-                                                    "sub001_zmaps.nii.gz"))
-    assert_equal(len(mgambles["zmaps"]), n_subjects)
+    for n_subjects in [1, 5, 16]:
+        mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
+                                            data_dir=tmpdir, url=local_url,
+                                            verbose=0)
+        datasetdir = os.path.join(tmpdir, "jimura_poldrack_2012_zmaps/")
+        assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
+                                                        "sub001_zmaps.nii.gz"))
+        assert_equal(len(mgambles["zmaps"]), n_subjects)

@@ -1157,6 +1157,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
 
 def _load_mixed_gambles(zmap_imgs):
+    """Ravel zmaps (one per subject) along time axis, resulting,
+    in a n_subjects * n_trials 3D niimgs and, and then make
+    gain vector y of same length.
+    """
     X = []
     y = []
     mask = []
