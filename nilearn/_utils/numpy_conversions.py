@@ -164,7 +164,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
             raise TypeError(
-                'Could not read CSV file [%s]: %s' % (csv_path, e.message))
+                'Could not read CSV file [%s]: %s' % (csv_path, e.args[0]))
 
         array = np.genfromtxt(csv_path, delimiter=dialect.delimiter, **kwargs)
 
