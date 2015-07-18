@@ -1,5 +1,5 @@
 """Backports for matplotlib compatibility across versions"""
-import matplotlib
+
 
 def cbar_outline_get_xy(cbar_outline):
     """In the matplotlib versions >= 1.4.0, ColorbarBase.outline is a
