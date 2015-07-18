@@ -26,7 +26,7 @@ from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
 from sklearn.grid_search import ParameterGrid
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
-from sklearn.utils import check_X_yh
+from sklearn.utils import check_X_y
 from sklearn import clone
 
 try:
