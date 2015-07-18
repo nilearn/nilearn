@@ -505,7 +505,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     def total_energy(w):
         return tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss=loss)
 
-    # Lispschitz constant of f1_grad
+    # Lipschitz constant of f1_grad
     if lipschitz_constant is None:
         if loss == "mse":
             lipschitz_constant = 1.05 * spectral_norm_squared(X)
