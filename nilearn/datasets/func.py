@@ -1156,6 +1156,46 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     return Bunch(**results)
 
 
+def _load_mixed_gambles(zmap_imgs):
+    X = []
+    y = []
+    mask = []
+    for zmap_img in zmap_imgs:
+        # load subject data
+        this_X = zmap_img.get_data()
+        affine = zmap_img.get_affine()
+        finite_mask = np.all(np.isfinite(this_X), axis=-1)
+        this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
+                                   finite_mask)
+        this_y = np.array([np.arange(1, 9)] * 6).ravel()
+
+        # gain levels
+        if len(this_y) != this_X.shape[-1]:
+            raise RuntimeError("%s: Expecting %i volumes, got %i!" % (
+                zmap_img, len(this_y), this_X.shape[-1]))
+
+        # standardize subject data
+        this_X -= this_X.mean(axis=-1)[..., np.newaxis]
+        std = this_X.std(axis=-1)
+        std[std == 0] = 1
+        this_X /= std[..., np.newaxis]
+
+        # commit subject data
+        X.append(this_X)
+        y.extend(this_y)
+        mask.append(this_mask)
+    y = np.array(y)
+    X = np.concatenate(X, axis=-1)
+    mask = np.sum(mask, axis=0) > .5 * len(zmap_imgs)
+    mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
+    X = X[mask, :].T
+    tmp = np.zeros(list(mask.shape) + [len(X)])
+    tmp[mask, :] = X.T
+    mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
+    X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
+    return X, y, mask_img
+
+
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                         return_raw_data=True, verbose=0):
     """Fetch Jimura "mixed gambles" dataset
@@ -1196,7 +1236,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         Dictionary-like object, the interest attributes are :
         'zmaps': string list
             Paths to realigned gain betamaps (one nifti per subject).
-        'X': list of Nifi1Image objects, or None
+        'gain': ..
             If make_Xy is true, this is a list of n_subjects * 48
             Nifti1Image objects, else it is None.
         'y': array of shape (n_subjects * 48,) or None
@@ -1223,42 +1263,6 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     data = Bunch(zmaps=zmap_fnames)
     if not return_raw_data:
-        X = []
-        y = []
-        mask = []
-        for zmap_fname in data.zmaps:
-            # load subject data
-            img = nibabel.load(zmap_fname)
-            this_X = img.get_data()
-            affine = img.get_affine()
-            finite_mask = np.all(np.isfinite(this_X), axis=-1)
-            this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
-                                       finite_mask)
-            this_y = np.array([np.arange(1, 9)] * 6).ravel()
-
-            # gain levels
-            if len(this_y) != this_X.shape[-1]:
-                raise RuntimeError("%s: Expecting %i volumes, got %i!" % (
-                    zmap_fname, len(this_y), this_X.shape[-1]))
-
-            # standardize subject data
-            this_X -= this_X.mean(axis=-1)[..., np.newaxis]
-            std = this_X.std(axis=-1)
-            std[std == 0] = 1
-            this_X /= std[..., np.newaxis]
-
-            # commit subject data
-            X.append(this_X)
-            y.extend(this_y)
-            mask.append(this_mask)
-        y = np.array(y)
-        X = np.concatenate(X, axis=-1)
-        mask = np.sum(mask, axis=0) > .5 * len(data.zmaps)
-        mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
-        X = X[mask, :].T
-        tmp = np.zeros(list(mask.shape) + [len(X)])
-        tmp[mask, :] = X.T
-        mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
-        X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
-        data = Bunch(zmaps=data.zmaps, X=X, y=y, mask_img=mask_img)
+        X, y, mask_img = _load_mixed_gambles(map(nibabel.load, data.zmaps))
+        data.zmaps, data.gain, data.mask_img = X, y, mask_img
     return data

@@ -8,10 +8,11 @@ import os
 import shutil
 import numpy as np
 from tempfile import mkdtemp
+import nibabel
+from sklearn.utils import check_random_state
 
 from nose import with_setup
 from nose.tools import assert_true, assert_equal, assert_raises
-
 
 from nilearn.datasets import utils, func
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
@@ -370,3 +371,31 @@ def test_fetch_abide_pcp():
     dataset = func.fetch_abide_pcp(data_dir=tmpdir, url=local_url,
                                    quality_checked=False, verbose=0)
     assert_equal(len(dataset.func_preproc), 400)
+
+
+def test__load_mixed_gambles():
+    rng = check_random_state(42)
+    n_trials = 48
+    affine = np.eye(4)
+    for n_subjects in [1, 5, 16]:
+        zmaps = []
+        for _ in range(n_subjects):
+            zmaps.append(nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials),
+                                             affine))
+        zmaps, gain, _ = func._load_mixed_gambles(zmaps)
+        assert_equal(len(zmaps), n_subjects * n_trials)
+        assert_equal(len(zmaps), len(gain))
+
+
+@with_setup(setup_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_mixed_gambles(n_subjects=5):
+    local_url = "file://" + os.path.join(datadir,
+                                         "jimura_poldrack_2012_zmaps.zip")
+    mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
+                                        data_dir=tmpdir, url=local_url,
+                                        verbose=0)
+    datasetdir = os.path.join(tmpdir, "jimura_poldrack_2012_zmaps/")
+    assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
+                                                    "sub001_zmaps.nii.gz"))
+    assert_equal(len(mgambles["zmaps"]), n_subjects)
