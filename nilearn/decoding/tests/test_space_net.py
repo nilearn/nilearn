@@ -218,29 +218,6 @@ def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
     np.testing.assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
-@SkipTest
-def test_log_reg_vs_graph_net_multiclass(C=1., tol=1e-6):
-    # Test for one of the extreme cases of Graph-Net: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Graph-Net's coefficients'
-    # performance with the coefficients obtained from Scikit-Learn's
-    # LogisticRegression, with L1 penalty, in a 4 classes classification task
-    iris = load_iris()
-    mask = np.ones(X.shape[1]).astype(np.bool)
-    sl = BaseSpaceNet(mask=mask, alphas=1. / C / iris.data.shape[0],
-                      l1_ratios=1., tol=tol, is_classif=True).fit(
-        iris.data, iris.target)
-    sklogreg = LogisticRegression(
-        mask=mask, penalty="l1", C=C, fit_intercept=True,
-        tol=tol).fit(iris.data, iris.target)
-
-    # compare supports
-    np.testing.assert_array_equal((sl.coef_ == 0.), (sklogreg.coef_ == 0.))
-
-    # compare predictions
-    np.testing.assert_array_equal(sl.predict(iris.data),
-                                  sklogreg.predict(iris.data))
-
-
 def test_lasso_vs_graph_net():
     # Test for one of the extreme cases of Graph-Net: That is, with
     # l1_ratio = 1 (pure Lasso), we compare Graph-Net's performance with
