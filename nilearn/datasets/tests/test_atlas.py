@@ -121,8 +121,8 @@ def test_get_dataset_dir():
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test',
-                                               default_paths=[no_write],
-                                               verbose=0)
+                                      default_paths=[no_write],
+                                      verbose=0)
     # Non writeable dir is returned because dataset may be in there.
     assert_equal(data_dir, no_write)
     assert os.path.exists(data_dir)
@@ -163,7 +163,7 @@ def test_fail_fetch_atlas_harvard_oxford():
     dummy.close()
 
     ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                                   data_dir=tmpdir)
+                                          data_dir=tmpdir)
 
     assert_true(isinstance(nibabel.load(ho.maps), nibabel.Nifti1Image))
     assert_true(isinstance(ho.labels, np.ndarray))
@@ -174,7 +174,7 @@ def test_fail_fetch_atlas_harvard_oxford():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_craddock_2012():
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmpdir,
-                                                     verbose=0)
+                                            verbose=0)
 
     keys = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
@@ -227,7 +227,7 @@ def test_fetch_atlas_destrieux_2009_atlas():
     dummy.write("name,index")
     dummy.close()
     bunch = atlas.fetch_atlas_destrieux_2009(data_dir=tmpdir,
-                                                      verbose=0)
+                                             verbose=0)
 
     assert_equal(len(mock_url_request.urls), 1)
     assert_equal(bunch['maps'], os.path.join(

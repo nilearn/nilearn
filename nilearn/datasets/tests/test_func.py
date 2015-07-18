@@ -81,7 +81,7 @@ def teardown_tmpdata():
 def test_fetch_haxby_simple():
     local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
     haxby = func.fetch_haxby_simple(data_dir=tmpdir, url=local_url,
-                                             verbose=0)
+                                    verbose=0)
     datasetdir = os.path.join(tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
     for key, file in [
             ('session_target', 'attributes.txt'),
@@ -127,7 +127,7 @@ def test_fail_fetch_haxby_simple():
 def test_fetch_haxby():
     for i in range(1, 6):
         haxby = func.fetch_haxby(data_dir=tmpdir, n_subjects=i,
-                                          verbose=0)
+                                 verbose=0)
         assert_equal(len(mock_url_request.urls), 1 + (i == 1))  # subject_data + md5
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
@@ -154,7 +154,7 @@ def test_fetch_nyu_rest():
     # All sessions, 12 subjects
     mock_url_request.reset()
     nyu = func.fetch_nyu_rest(data_dir=tmpdir, sessions=[1, 2, 3],
-                                       n_subjects=12, verbose=0)
+                              n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
     assert_equal(len(mock_url_request.urls), 2)
     assert_equal(len(nyu.func), 36)
@@ -191,7 +191,7 @@ def test_fetch_adhd():
         subs)
 
     adhd = func.fetch_adhd(data_dir=tmpdir, url=local_url,
-                                    n_subjects=12, verbose=0)
+                           n_subjects=12, verbose=0)
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
     assert_equal(len(mock_url_request.urls), 13)  # Subjects + phenotypic
@@ -220,9 +220,9 @@ def test_fetch_localizer_contrasts():
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
     dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                                      data_dir=tmpdir,
-                                                      url=local_url,
-                                                      verbose=0)
+                                             data_dir=tmpdir,
+                                             url=local_url,
+                                             verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
@@ -233,10 +233,10 @@ def test_fetch_localizer_contrasts():
 
     # 20 subjects
     dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                                      n_subjects=20,
-                                                      data_dir=tmpdir,
-                                                      url=local_url,
-                                                      verbose=0)
+                                             n_subjects=20,
+                                             data_dir=tmpdir,
+                                             url=local_url,
+                                             verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(dataset.masks is None)
@@ -260,10 +260,10 @@ def test_fetch_localizer_contrasts():
 
     # get_anats=True
     dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                                      data_dir=tmpdir,
-                                                      url=local_url,
-                                                      get_anats=True,
-                                                      verbose=0)
+                                             data_dir=tmpdir,
+                                             url=local_url,
+                                             get_anats=True,
+                                             verbose=0)
     assert_true(dataset.masks is None)
     assert_true(dataset.tmaps is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
@@ -275,10 +275,10 @@ def test_fetch_localizer_contrasts():
 
     # get_masks=True
     dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                                      data_dir=tmpdir,
-                                                      url=local_url,
-                                                      get_masks=True,
-                                                      verbose=0)
+                                             data_dir=tmpdir,
+                                             url=local_url,
+                                             get_masks=True,
+                                             verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.tmaps is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
@@ -290,10 +290,10 @@ def test_fetch_localizer_contrasts():
 
     # get_tmaps=True
     dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                                      data_dir=tmpdir,
-                                                      url=local_url,
-                                                      get_tmaps=True,
-                                                      verbose=0)
+                                             data_dir=tmpdir,
+                                             url=local_url,
+                                             get_tmaps=True,
+                                             verbose=0)
     assert_true(dataset.anats is None)
     assert_true(dataset.masks is None)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
@@ -305,12 +305,12 @@ def test_fetch_localizer_contrasts():
 
     # all get_*=True
     dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                                      data_dir=tmpdir,
-                                                      url=local_url,
-                                                      get_anats=True,
-                                                      get_masks=True,
-                                                      get_tmaps=True,
-                                                      verbose=0)
+                                             data_dir=tmpdir,
+                                             url=local_url,
+                                             get_anats=True,
+                                             get_masks=True,
+                                             get_tmaps=True,
+                                             verbose=0)
 
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.anats[0], _basestring))
@@ -336,8 +336,8 @@ def test_fetch_localizer_calculation_task():
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
     dataset = func.fetch_localizer_calculation_task(data_dir=tmpdir,
-                                                             url=local_url,
-                                                             verbose=0)
+                                                    url=local_url,
+                                                    verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_equal(dataset.ext_vars.size, 94)
@@ -345,9 +345,9 @@ def test_fetch_localizer_calculation_task():
 
     # 20 subjects
     dataset = func.fetch_localizer_calculation_task(n_subjects=20,
-                                                             data_dir=tmpdir,
-                                                             url=local_url,
-                                                             verbose=0)
+                                                    data_dir=tmpdir,
+                                                    url=local_url,
+                                                    verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_equal(dataset.ext_vars.size, 20)
@@ -368,5 +368,5 @@ def test_fetch_abide_pcp():
 
     # All subjects
     dataset = func.fetch_abide_pcp(data_dir=tmpdir, url=local_url,
-                                            quality_checked=False, verbose=0)
+                                   quality_checked=False, verbose=0)
     assert_equal(len(dataset.func_preproc), 400)
