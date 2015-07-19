@@ -6,6 +6,7 @@ import numpy as np
 from scipy import linalg
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nose.tools import assert_raises, assert_equal, assert_true
+from sklearn.utils import check_random_state
 
 from nilearn._utils.extmath import is_spd
 from nilearn.connectivity.embedding import _check_mat, _map_sym, _map_eig, \
@@ -144,7 +145,7 @@ def test_geometric_mean_geodesic():
     assert_array_almost_equal(_geometric_mean(spds), gmean)
 
 
-def random_diagonal(p, v_min=1., v_max=2., rand_gen=None):
+def random_diagonal(p, v_min=1., v_max=2., random_state=0):
     """Generate a random diagonal matrix.
 
     Parameters
@@ -158,8 +159,8 @@ def random_diagonal(p, v_min=1., v_max=2., rand_gen=None):
     v_max : float, optional (default to 2.)
         Maximal element.
 
-    rand_gen: numpy.random.RandomState or None, optional
-        Random generator to use for generation.
+    random_state : int or numpy.random.RandomState instance, optional
+        random number generator, or seed.
 
     Returns
     -------
@@ -167,16 +168,14 @@ def random_diagonal(p, v_min=1., v_max=2., rand_gen=None):
         A diagonal matrix with the given minimal and maximal elements.
 
     """
-    if rand_gen is None:
-        rand_gen = np.random.RandomState(0)
-
-    diag = rand_gen.rand(p) * (v_max - v_min) + v_min
+    random_state = check_random_state(random_state)
+    diag = random_state.rand(p) * (v_max - v_min) + v_min
     diag[diag == np.amax(diag)] = v_max
     diag[diag == np.amin(diag)] = v_min
     return np.diag(diag)
 
 
-def random_spd(p, eig_min, cond, rand_gen=None):
+def random_spd(p, eig_min, cond, random_state=0):
     """Generate a random symmetric positive definite matrix.
 
     Parameters
@@ -191,8 +190,8 @@ def random_spd(p, eig_min, cond, rand_gen=None):
         Condition number, defined as the ratio of the maximum eigenvalue to the
         minimum one.
 
-    rand_gen: numpy.random.RandomState or None, optional
-        Random generator to use for generation.
+    random_state : int or numpy.random.RandomState instance, optional
+        random number generator, or seed.
 
     Returns
     -------
@@ -200,17 +199,15 @@ def random_spd(p, eig_min, cond, rand_gen=None):
         A symmetric positive definite matrix with the given minimal eigenvalue
         and condition number.
     """
-    if rand_gen is None:
-        rand_gen = np.random.RandomState(0)
-
-    mat = rand_gen.randn(p, p)
+    random_state = check_random_state(random_state)
+    mat = random_state.randn(p, p)
     unitary, _ = linalg.qr(mat)
     diag = random_diagonal(p, v_min=eig_min, v_max=cond * eig_min,
-                           rand_gen=rand_gen)
+                           random_state=random_state)
     return unitary.dot(diag).dot(unitary.T)
 
 
-def random_non_singular(p, sing_min=1., sing_max=2., rand_gen=None):
+def random_non_singular(p, sing_min=1., sing_max=2., random_state=0):
     """Generate a random nonsingular matrix.
 
     Parameters
@@ -224,19 +221,20 @@ def random_non_singular(p, sing_min=1., sing_max=2., rand_gen=None):
     sing_max : float, optional (default to 2.)
         Maximal singular value.
 
+    random_state : int or numpy.random.RandomState instance, optional
+        random number generator, or seed.
+
     Returns
     -------
     output : numpy.ndarray, shape (p, p)
         A nonsingular matrix with the given minimal and maximal singular
         values.
     """
-    if rand_gen is None:
-        rand_gen = np.random.RandomState(0)
-
+    random_state = check_random_state(random_state)
     diag = random_diagonal(p, v_min=sing_min, v_max=sing_max,
-                           rand_gen=rand_gen)
-    mat1 = rand_gen.randn(p, p)
-    mat2 = rand_gen.randn(p, p)
+                           random_state=random_state)
+    mat1 = random_state.randn(p, p)
+    mat2 = random_state.randn(p, p)
     unitary1, _ = linalg.qr(mat1)
     unitary2, _ = linalg.qr(mat2)
     return unitary1.dot(diag).dot(unitary2.T)
@@ -247,11 +245,10 @@ def test_geometric_mean_properties():
     """
     n_matrices = 40
     n_features = 15
-    rand_gen = np.random.RandomState(0)
     spds = []
     for k in range(n_matrices):
         spds.append(random_spd(n_features, eig_min=1., cond=10.,
-                               rand_gen=rand_gen))
+                               random_state=0))
     input_spds = copy.copy(spds)
     gmean = _geometric_mean(spds)
 
@@ -268,7 +265,7 @@ def test_geometric_mean_properties():
     assert_array_almost_equal(_geometric_mean(spds), gmean)
 
     # Invariance under congruent transformation
-    non_singular = random_non_singular(n_features, rand_gen=rand_gen)
+    non_singular = random_non_singular(n_features, random_state=0)
     spds_cong = [non_singular.dot(spd).dot(non_singular.T) for spd in spds]
     assert_array_almost_equal(_geometric_mean(spds_cong),
                               non_singular.dot(gmean).dot(non_singular.T))
@@ -280,14 +277,14 @@ def test_geometric_mean_properties():
                               linalg.inv(gmean))
 
     # Gradient norm is decreasing
-    grad_norm = grad_geometric_mean(spds)
+    grad_norm = grad_geometric_mean(spds, tol=1e-20)
     difference = np.diff(grad_norm)
     assert_true(np.amax(difference) <= 0.)
 
     # Check warning if gradient norm in the last step is less than
     # tolerance
     max_iter = 1
-    tol = 1e-10
+    tol = 1e-20
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         gmean = _geometric_mean(spds, max_iter=max_iter, tol=tol)
@@ -301,10 +298,10 @@ def test_geometric_mean_properties():
         spds = []
         for k in range(int(p * n_matrices)):
             spds.append(random_spd(n_features, eig_min=1e-2, cond=1e6,
-                                   rand_gen=rand_gen))
+                                   random_state=0))
         for k in range(int(p * n_matrices), n_matrices):
             spds.append(random_spd(n_features, eig_min=1., cond=10.,
-                                   rand_gen=rand_gen))
+                                   random_state=0))
         if p < 1:
             max_iter = 30
         else:
@@ -334,29 +331,17 @@ def test_sym_to_vec():
     sym = np.ones((3, 3))
     vec = np.array([1., sqrt(2), 1., sqrt(2),  sqrt(2), 1.])
     assert_array_almost_equal(sym_to_vec(sym), vec)
-    mask_sym = sym > 0
-    mask_vec = np.ones(6, dtype=bool)
-    assert_array_equal(sym_to_vec(mask_sym, isometry=False), mask_vec)
 
     # Check vec_to_sym is the inverse function of sym_to_vec
     n_features = 19
-    rand_gen = np.random.RandomState(0)
-    m = rand_gen.rand(n_features, n_features)
+    random_state = check_random_state(0)
+    m = random_state.rand(n_features, n_features)
     sym = m + m.T
     vec = sym_to_vec(sym)
     assert_array_almost_equal(vec_to_sym(vec), sym)
     syms = np.asarray([sym, 2. * sym, 0.5 * sym])
     vecs = sym_to_vec(syms)
     assert_array_almost_equal(vec_to_sym(vecs), syms)
-
-    vec = sym_to_vec(sym, isometry=False)
-    assert_array_almost_equal(vec_to_sym(vec, isometry=False),
-                              sym)
-    assert_array_almost_equal(vec[..., -n_features:], sym[..., -1, :])
-    vecs = sym_to_vec(syms, isometry=False)
-    assert_array_almost_equal(vec_to_sym(vecs, isometry=False),
-                              syms)
-    assert_array_almost_equal(vecs[..., -n_features:], syms[..., -1, :])
 
 
 def test_vec_to_sym():
@@ -370,26 +355,17 @@ def test_vec_to_sym():
     sym = np.array([[sqrt(2), 1., 1.], [1., sqrt(2), 1.],
                     [1., 1., sqrt(2)]]) / sqrt(2)
     assert_array_almost_equal(vec_to_sym(vec), sym)
-    mask_vec = vec > 0
-    mask_sym = np.ones((3, 3), dtype=bool)
-    assert_array_equal(vec_to_sym(mask_vec, isometry=False), mask_sym)
 
     # Check sym_to_vec is the inverse function of vec_to_sym
     n = 41
     p = n * (n + 1) / 2
-    rand_gen = np.random.RandomState(0)
-    vec = rand_gen.rand(p)
+    random_state = check_random_state(0)
+    vec = random_state.rand(p)
     sym = vec_to_sym(vec)
     assert_array_almost_equal(sym_to_vec(sym), vec)
-    sym = vec_to_sym(vec, isometry=False)
-    assert_array_almost_equal(sym_to_vec(sym, isometry=False),
-                              vec)
     vecs = np.asarray([vec, 2. * vec, 0.5 * vec])
     syms = vec_to_sym(vecs)
     assert_array_almost_equal(sym_to_vec(syms), vecs)
-    syms = vec_to_sym(vecs, isometry=False)
-    assert_array_almost_equal(sym_to_vec(syms, isometry=False),
-                              vecs)
 
 
 def test_prec_to_partial():
@@ -409,9 +385,9 @@ def test_fit_transform():
     # Generate signals and compute empirical covariances
     covs = []
     signals = []
-    rand_gen = np.random.RandomState(0)
+    random_state = check_random_state(0)
     for k in range(n_subjects):
-        signal = rand_gen.randn(n_samples, n_features)
+        signal = random_state.randn(n_samples, n_features)
         signals.append(signal)
         signal -= signal.mean(axis=0)
         covs.append((signal.T).dot(signal) / n_samples)

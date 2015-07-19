@@ -42,15 +42,15 @@ def _map_eig(function, vals, vecs):
     function : function
         The function to apply.
 
-    vals : numpy.ndarray, shape (M, )
+    vals : numpy.ndarray, shape (n_features, )
         Input argument of the function.
 
-    vecs : numpy.ndarray, shape (M, M)
+    vecs : numpy.ndarray, shape (n_features, n_features)
         Unitary matrix.
 
     Returns
     -------
-    output : numpy.ndarray, shape (M, M)
+    output : numpy.ndarray, shape (n_features, n_features)
         The symmetric matrix obtained after transforming the eigenvalues, with
         eigenvectors the columns of vecs.
     """
@@ -66,12 +66,12 @@ def _map_sym(function, sym):
     function : function
         The function to apply.
 
-    sym : numpy.ndarray, shape (M, M)
+    sym : numpy.ndarray, shape (n_features, n_features)
         The matrix to be transformed.
 
     Returns
     -------
-    output : numpy.ndarray, shape (M, M)
+    output : numpy.ndarray, shape (n_features, n_features)
         The new symmetric matrix obtained after transforming the eigenvalues.
 
     Note
@@ -185,49 +185,41 @@ def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-def sym_to_vec(sym, isometry=True):
+def sym_to_vec(sym):
     """Return the flattened lower triangular part of an array.
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
     Parameters
     ----------
-    sym : numpy.ndarray, shape (..., p, p)
+    sym : numpy.ndarray, shape (..., n_features, n_features)
         Input array.
-
-    isometry : bool, optional (default to True)
-        If True, off diagonal terms of sym are multiplied by sqrt(2).
 
     Returns
     -------
-    output : numpy.ndarray, shape (..., p * (p + 1) / 2)
+    output : numpy.ndarray, shape (..., n_features * (n_features + 1) / 2)
         The output flattened lower triangular part of sym.
     """
     tril_mask = np.tril(np.ones(sym.shape[-2:]), -1).astype(np.bool)
-    if isometry:
-        sym = sym.copy()
-        sym[..., tril_mask] *= sqrt(2)
-
+    sym = sym.copy()
+    sym[..., tril_mask] *= sqrt(2)
     tril_mask.flat[::sym.shape[-1] + 1] = True
     return sym[..., tril_mask]
 
 
-def vec_to_sym(vec, isometry=True):
+def vec_to_sym(vec):
     """Return the symmetric array given its flattened lower triangular part.
 
     Acts on the last dimension of the array if not 1-dimensional.
 
     Parameters
     ----------
-    vec : numpy.ndarray, shape (..., p * (p + 1) /2)
+    vec : numpy.ndarray, shape (..., n_features * (n_features + 1) /2)
         The input array.
-
-    isometry : bool, optional (default to True)
-        If True, off diagonal terms of the output array are divided by sqrt(2).
 
     Returns
     -------
-    sym : numpy.ndarray, shape (..., p, p)
+    sym : numpy.ndarray, shape (..., n_features, n_features)
         The output symmetric array.
     """
     n = vec.shape[-1]
@@ -244,10 +236,9 @@ def vec_to_sym(vec, isometry=True):
     sym = np.zeros(vec.shape[:-1] + (p, p))
     sym[..., mask] = vec
     sym.swapaxes(-1, -2)[..., mask] = vec
-    if isometry:
-        mask.flat[::p + 1] = False
-        mask = mask + mask.T
-        sym[..., mask] /= sqrt(2)
+    mask.flat[::p + 1] = False
+    mask = mask + mask.T
+    sym[..., mask] /= sqrt(2)
 
     return sym
 
