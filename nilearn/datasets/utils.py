@@ -257,7 +257,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                     path, short_error_message))
 
     raise OSError('Nilearn tried to store the dataset in the following '
-            'directories, but:' + ''.join(errors))
+                  'directories, but:' + ''.join(errors))
 
 
 def _uncompress_file(file_, delete_archive=True, verbose=1):
@@ -528,14 +528,14 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     except _urllib.error.HTTPError as e:
         if verbose > 0:
             print('Error while fetching file %s. Dataset fetching aborted.' %
-                   (file_name))
+                  (file_name))
         if verbose > 1:
             print("HTTP Error: %s, %s" % (e, url))
         raise
     except _urllib.error.URLError as e:
         if verbose > 0:
             print('Error while fetching file %s. Dataset fetching aborted.' %
-                   (file_name))
+                  (file_name))
         if verbose > 1:
             print("URL Error: %s, %s" % (e, url))
         raise
@@ -719,8 +719,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
-        #XXX We could only moved the files requested
-        #XXX Movetree can go wrong
+        # XXX We could only moved the files requested
+        # XXX Movetree can go wrong
         movetree(temp_dir, data_dir)
         shutil.rmtree(temp_dir)
     return files_

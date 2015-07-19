@@ -118,8 +118,8 @@ def test_get_dataset_dir():
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test',
-                                               default_paths=[no_write],
-                                               verbose=0)
+                                      default_paths=[no_write],
+                                      verbose=0)
     # Non writeable dir is returned because dataset may be in there.
     assert_equal(data_dir, no_write)
     assert os.path.exists(data_dir)
@@ -161,7 +161,7 @@ def test_fetch_oasis_vbm():
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
     dataset = struct.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
-                                              verbose=0)
+                                     verbose=0)
     assert_equal(len(dataset.gray_matter_maps), 403)
     assert_equal(len(dataset.white_matter_maps), 403)
     assert_true(isinstance(dataset.gray_matter_maps[0], _basestring))
@@ -171,7 +171,7 @@ def test_fetch_oasis_vbm():
     assert_equal(len(mock_url_request.urls), 3)
 
     dataset = struct.fetch_oasis_vbm(data_dir=tmpdir, url=local_url,
-                                              dartel_version=False, verbose=0)
+                                     dartel_version=False, verbose=0)
     assert_equal(len(dataset.gray_matter_maps), 415)
     assert_equal(len(dataset.white_matter_maps), 415)
     assert_true(isinstance(dataset.gray_matter_maps[0], _basestring))
