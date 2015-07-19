@@ -12,7 +12,7 @@ import nilearn.datasets
 atlas = nilearn.datasets.fetch_atlas_msdl()
 dataset = nilearn.datasets.fetch_adhd()
 
-# Extract and preprocess regions time series
+# Extract regions time series
 import nilearn.input_data
 masker = nilearn.input_data.NiftiMapsMasker(
     atlas.maps, resampling_target="maps", detrend=True,
@@ -67,39 +67,27 @@ sites = ['"Peking"' if 'Peking' in site else site for site in
 
 # Use connectivity coefficients to classify ADHD vs controls
 from sklearn.svm import LinearSVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.linear_model import RidgeClassifier
 from sklearn.cross_validation import StratifiedShuffleSplit, cross_val_score
-classifiers = [LinearSVC(), KNeighborsClassifier(n_neighbors=1),
-               LogisticRegression(), GaussianNB(), RidgeClassifier()]
-classifier_names = ['SVM', 'KNN', 'logistic', 'GNB', 'ridge']
 classes = [site + str(adhd) for site, adhd in zip(sites, adhds)]
 cv = StratifiedShuffleSplit(classes, n_iter=1000, test_size=0.33)
-scores = {}
+mean_scores = []
+print('Classification accuracy:')
 for measure in measures:
-    scores[measure] = {}
-    print('---------- %20s ----------' % measure)
-    for classifier, classifier_name in zip(classifiers, classifier_names):
-        coefs_vec = nilearn.connectivity.embedding.sym_to_vec(
-            subjects_connectivity[measure])
-        cv_scores = cross_val_score(
-            classifier, coefs_vec, adhds, cv=cv, scoring='accuracy')
-        scores[measure][classifier_name] = cv_scores
-        print(' %14s score: %1.2f +- %1.2f' % (classifier_name,
-              cv_scores.mean(), cv_scores.std()))
+    svc = LinearSVC()
+    coefs_vec = nilearn.connectivity.embedding.sym_to_vec(
+        subjects_connectivity[measure])
+    cv_scores = cross_val_score(
+        svc, coefs_vec, adhds, cv=cv, scoring='accuracy')
+    print('%20s score: %1.2f +- %1.2f' % (measure, cv_scores.mean(),
+                                          cv_scores.std()))
+    mean_scores.append(cv_scores.mean())
 
 # Display the classification scores
 plt.figure()
-tick_position = np.arange(len(classifiers))
-plt.xticks(tick_position + 0.35, classifier_names)
-for color, measure in zip('rgbyk', measures):
-    score_means = [scores[measure][classifier_name].mean() for classifier_name
-                   in classifier_names]
-    plt.bar(tick_position, score_means, label=measure, color=color, width=.2)
-    tick_position = tick_position + .15
-plt.ylabel('Classification accuracy')
-plt.legend(measures, loc='upper left')
-plt.ylim([0., 1.])
+positions = np.arange(len(measures)) * .5 + .5
+plt.barh(positions, mean_scores, align='center', height=0.2)
+measures[1] = 'partial\ncorrelation'
+plt.yticks(positions, measures)
+plt.xlabel('Classification accuracy')
+plt.grid(True)
 plt.show()
