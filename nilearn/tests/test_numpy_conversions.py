@@ -242,4 +242,4 @@ def test_csv_to_array():
         assert_true(np.allclose(csv_to_array(csv_file.name),
                      np.asarray([1., 2., 3., 4., 5.])))
         assert_raises(TypeError, csv_to_array, csv_file.name, delimiters='?!')
-        os.unlink(csv_file.name)
+        os.remove(csv_file.name)

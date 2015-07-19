@@ -133,12 +133,12 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
 
     Parameters
     ----------
-
     csv_path: string
         Path of the CSV file to load.
 
     delimiters: string
-        String containing the possible delimiters for the CSV file.
+        Each character of the delimiters string is a potential delimiters for
+        the CSV file.
 
     **kwargs: keyword arguments
         The additional keyword arguments are passed to numpy.genfromtxt when
@@ -146,7 +146,6 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
 
     Returns
     -------
-
     array: numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
