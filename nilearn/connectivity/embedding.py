@@ -226,17 +226,17 @@ def vec_to_sym(vec):
     # solve p * (p + 1) / 2 = n subj. to p > 0
     # p ** 2 + p - 2n = 0 & p > 0
     # p = - 1 / 2 + sqrt( 1 + 8 * n) / 2
-    p = (sqrt(8 * n + 1) - 1.) / 2
-    if p > floor(p):
+    n_features = (sqrt(8 * n + 1) - 1.) / 2
+    if n_features > floor(n_features):
         raise ValueError("Vector size unsuitable, can not transform vector to "
                          "symmetric matrix.")
 
-    p = int(p)
-    mask = np.tril(np.ones((p, p))).astype(np.bool)
-    sym = np.zeros(vec.shape[:-1] + (p, p))
+    n_features = int(n_features)
+    mask = np.tril(np.ones((n_features, n_features))).astype(np.bool)
+    sym = np.zeros(vec.shape[:-1] + (n_features, n_features))
     sym[..., mask] = vec
     sym.swapaxes(-1, -2)[..., mask] = vec
-    mask.flat[::p + 1] = False
+    mask.flat[::n_features + 1] = False
     mask = mask + mask.T
     sym[..., mask] /= sqrt(2)
 
