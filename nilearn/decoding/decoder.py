@@ -26,6 +26,7 @@ from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
 from sklearn.grid_search import ParameterGrid
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
+# scikit-learn >= 0.16
 from sklearn.utils import check_X_y
 from sklearn import clone
 
@@ -173,7 +174,7 @@ class Decoder(BaseEstimator):
                  screening_percentile=20, pos_label=None, scoring=None,
                  smoothing_fwhm=None, standardize=True, target_affine=None,
                  target_shape=None, mask_strategy='background',
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=None, memory_level=0,
                  n_jobs=1, verbose=False):
         self.estimator = estimator
         self.mask = mask
@@ -269,7 +270,7 @@ class Decoder(BaseEstimator):
         y, = check_array(y)
 
         # Additional checking, otherwise it will continue (even where the
-        # lenghts are different)
+        # lengths are different)
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
 
@@ -305,6 +306,7 @@ class Decoder(BaseEstimator):
         cv_pred = {}
         cv_true = {}
         self.cv_params_ = {}
+        # XXX change this here to a list of dict
         for c, best_coef, best_intercept, best_y, best_params in results:
             coefs.setdefault(c, []).append(best_coef)
             intercepts.setdefault(c, []).append(best_intercept)
@@ -322,8 +324,12 @@ class Decoder(BaseEstimator):
                 intercepts.setdefault(other_class, []).append(-best_intercept)
 
         # Transforming cv_pred into a list of dict
-        y_prob = [{k: v[i] for k, v in cv_pred.items()}
-                  for i in range(len(cv_pred[cv_pred.keys()[0]]))]
+        y_prob = []
+        for i in range(len(cv_pred[cv_pred.keys()[0]])):
+            cv_pred_ = {}
+            for c, cv_pred_values in cv_pred.items():
+                cv_pred_[c] = cv_pred_values[i]
+            y_prob.append(cv_pred_)
 
         self.cv_y_pred_ = []
         self.cv_y_true_ = []
@@ -348,7 +354,6 @@ class Decoder(BaseEstimator):
                 self.cv_y_pred_.append(y_pred_)
                 self.cv_y_true_.append(y_true_)
                 self.cv_scores_.append(scorer._score_func(y_true_, y_pred_))
-
             self.cv_params_['beta'] = self.cv_params_.pop(None)
 
         self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
@@ -638,7 +643,7 @@ def _check_scorer(estimator, scoring, pos_label, y):
 
     # Check that pos_label is correctly set if needed
     is_binary = estimator.is_binary_
-    y_kind = np.array(y).dtype.king
+    y_kind = np.array(y).dtype.kind
     if is_binary and y_kind == 'S' and score_func in REQUIRES_POS_LABEL:
 
         if pos_label is None:
