@@ -140,7 +140,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
         Each character of the delimiters string is a potential delimiters for
         the CSV file.
 
-    **kwargs: keyword arguments
+    kwargs: keyword arguments
         The additional keyword arguments are passed to numpy.genfromtxt when
         loading the CSV.
 
