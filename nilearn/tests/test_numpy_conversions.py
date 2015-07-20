@@ -235,11 +235,9 @@ def test_as_ndarray():
 
 def test_csv_to_array():
     # Create a phony CSV file
-    with tempfile.NamedTemporaryFile(suffix='.csv', delete=False,
-                                     mode='wt') as csv_file:
+    with tempfile.NamedTemporaryFile(suffix='.csv', mode='wt') as csv_file:
         csv_file.write('1.,2.,3.,4.,5.\n')
-        csv_file.close()
+        csv_file.flush()
         assert_true(np.allclose(csv_to_array(csv_file.name),
                      np.asarray([1., 2., 3., 4., 5.])))
         assert_raises(TypeError, csv_to_array, csv_file.name, delimiters='?!')
-        os.remove(csv_file.name)
