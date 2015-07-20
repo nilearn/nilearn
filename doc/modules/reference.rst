@@ -68,7 +68,7 @@ uses.
 
 .. _decomposition_ref:
 
-:mod:`nilearn.decompositon`: Multivariate decompositions
+:mod:`nilearn.decomposition`: Multivariate decompositions
 =========================================================
 
 .. automodule:: nilearn.decomposition
