@@ -38,7 +38,7 @@ The required dependencies to use the software are:
 * setuptools
 * Numpy >= 1.6.1
 * SciPy >= 0.9
-* Scikit-learn >= 0.12.1
+* Scikit-learn >= 0.13
 * Nibabel >= 1.1.0
 
 If you are using nilearn plotting functionalities or running the
