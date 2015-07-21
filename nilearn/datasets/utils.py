@@ -480,6 +480,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         request = _urllib.request.Request(url)
         request.add_header('Connection', 'Keep-Alive')
         if username is not None and password is not None:
+            if not url.startswith('https'):
+                raise ValueError(
+                    'Authentication was requested on a non  secured URL (%s).'
+                    'Request has been blocked for security reasons.' % url)
             # Note: HTTPBasicAuthHandler is not fitted here because it relies
             # on the fact that the server will return a 401 error with proper
             # www-authentication header, which is not the case of most
