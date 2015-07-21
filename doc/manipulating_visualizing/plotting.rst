@@ -233,13 +233,10 @@ plot, and has methods to add overlays, contours or edge maps::
 Displaying or saving to an image file
 =====================================
 
-Plotted figures can be viewed in interactive windows allowing basic operations
-such as zooming or saving to a file. This display can be triggered by calling
- :func:`matplotlib.pyplot.show` function. For convenience, an alias of this
- function is available in :func:`nilearn.plotting.show`::
+To display the figure when running a script, you need to call
+:func:`nilearn.plotting.show`: (this is just an alias to
+:func:`matplotlib.pyplot.show`)::
 
-    >>> from matplotlib import pyplot as plt
-    >>> plt.show() # doctest: +SKIP
     >>> from nilearn import plotting
     >>> plotting.show() # doctest: +SKIP
 
