@@ -106,8 +106,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
                       **kwargs):
-    """ Internal function, please refer to the docstring of plot_img for parameters
-        not listed below.
+    """ Internal function, please refer to the docstring of plot_img for
+        parameters not listed below.
 
         Parameters
         ----------
@@ -200,8 +200,9 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
 
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
-            figure=None, axes=None, title=None, threshold=None,
-            annotate=True, draw_cross=True, black_bg=False, colorbar=False, **kwargs):
+             figure=None, axes=None, title=None, threshold=None,
+             annotate=True, draw_cross=True, black_bg=False, colorbar=False,
+             **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
@@ -255,17 +256,18 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to matplotlib.pyplot.imshow
     """
-    display = _plot_img_with_bg(img, cut_coords=cut_coords,
-                    output_file=output_file, display_mode=display_mode,
-                    figure=figure, axes=axes, title=title,
-                    threshold=threshold, annotate=annotate,
-                    draw_cross=draw_cross, resampling_interpolation='continuous',
-                    black_bg=black_bg, colorbar=colorbar, **kwargs)
+    display = _plot_img_with_bg(
+        img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title,
+        threshold=threshold, annotate=annotate,
+        draw_cross=draw_cross, resampling_interpolation='continuous',
+        black_bg=black_bg, colorbar=colorbar, **kwargs)
 
     return display
 
 
-################################################################################
+###############################################################################
 # Anatomy image for background
 
 # A constant class to serve as a sentinel for the default MNI template
@@ -274,10 +276,10 @@ class _MNI152Template(SpatialImage):
         provided by nilearn
     """
 
-    data   = None
+    data = None
     affine = None
-    vmax   = None
-    _shape  = None
+    vmax = None
+    _shape = None
 
     def __init__(self, data=None, affine=None, header=None):
         # Comply with spatial image requirements while allowing empty init
@@ -548,8 +550,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             with integer values.
         bg_img : Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            The background image that the ROI/mask will be plotted on top of. If
-            not specified MNI152 template will be used.
+            The background image that the ROI/mask will be plotted on top of.
+            If not specified MNI152 template will be used.
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
@@ -652,10 +654,12 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             fillings threshold serves to select the level of the maps
             to display and same threshold is applied for color fillings.
             For continuous overlays this threshold value serves to select
-            the maps which are greater than a given value or list of given values.
-            If None is given, the maps are thresholded with default value.
+            the maps which are greater than a given value or list of given
+            values. If None is given, the maps are thresholded with default
+            value.
         linewidths: float, optional
-            This option can be used to set the boundary thickness of the contours.
+            This option can be used to set the boundary thickness of the
+            contours.
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
@@ -699,7 +703,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
         alpha: float between 0 and 1
-            Alpha sets the transparency of the color inside the filled contours.
+            Alpha sets the transparency of the color inside the filled
+            contours.
     """
     display = plot_anat(anat_img, cut_coords=cut_coords,
                         display_mode=display_mode,
@@ -795,8 +800,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The statistical map image
         bg_img : Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            The background image that the ROI/mask will be plotted on top of. If
-            not specified MNI152 template will be used.
+            The background image that the ROI/mask will be plotted on top of.
+            If not specified MNI152 template will be used.
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
