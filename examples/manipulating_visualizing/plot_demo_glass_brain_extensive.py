@@ -33,6 +33,6 @@ plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
                           plot_abs=False)
 
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
-                                    colorbar=True, plot_abs=False)
+                          colorbar=True, plot_abs=False)
 
 plotting.show()
