@@ -239,6 +239,7 @@ uses.
    plot_connectome
    plot_prob_atlas
    find_xyz_cut_coords
+   show
 
 **Classes**:
 
