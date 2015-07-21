@@ -21,7 +21,8 @@ from scipy import stats, ndimage
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel, center_data
-from sklearn.feature_selection import (SelectPercentile, f_regression,                                       f_classif)
+from sklearn.feature_selection import (SelectPercentile, f_regression,
+                                       f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
@@ -334,7 +335,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     solver_params: dict
        Dictionary of param-value pairs to be passed to solver.
     """
-
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
 
@@ -675,7 +675,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                         self.SUPPORTED_LOSSES) > 2 else "",
                     self.SUPPORTED_LOSSES[-1], self.loss))
         if not self.loss is None and not self.is_classif and (
-            self.loss == "logistic"):
+                self.loss == "logistic"):
             raise ValueError(
                 ("'logistic' loss is only available for classification "
                  "problems."))

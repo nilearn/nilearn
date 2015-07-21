@@ -66,7 +66,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
            dgap_tol=None, init=None, max_iter=1000, tol=1e-4,
            check_lipschitz=False, dgap_factor=None, callback=None,
            verbose=2):
-    """Generic FISTA solver
+    """Generic FISTA solver.
 
     Minimizes the a sum `f + g` of two convex functions f (smooth)
     and g (proximable nonsmooth).
@@ -187,7 +187,6 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             w, prox_info = f2_prox(z - stepsize * gradient_buffer, stepsize,
                                    dgap_factor * dgap_tol, init=w)
             energy = total_energy(w)
-
             if ista_step and prox_info['converged'] and old_energy <= energy:
                 # Even when doing ISTA steps we are not decreasing.
                 # Thus we need a tighter dual_gap on the prox_tv
