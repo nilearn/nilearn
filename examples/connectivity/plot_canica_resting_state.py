@@ -47,7 +47,6 @@ components_img = canica.masker_.inverse_transform(canica.components_)
 components_img.to_filename('canica_resting_state.nii.gz')
 
 ### Visualize the results #####################################################
-# Show some interesting components
 from nilearn.plotting import plot_stat_map, show, plot_prob_atlas
 from nilearn.image import iter_img
 
