@@ -1067,6 +1067,11 @@ def plot_connectome(adjacency_matrix, node_coords,
             will be passed as kwargs to the plt.scatter call that plots all
             the nodes in one go
 
+        See Also
+        --------
+        nilearn.plotting.find_parcellation_cut_coords
+        nilearn.plotting.find_probabilistic_atlas_cut_coords
+
     """
     display = plot_glass_brain(None,
                                display_mode=display_mode,

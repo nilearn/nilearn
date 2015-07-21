@@ -239,6 +239,8 @@ uses.
    plot_connectome
    plot_prob_atlas
    find_xyz_cut_coords
+   find_parcellation_atlas_cut_coords
+   find_probabilistic_atlas_cut_coords
 
 **Classes**:
 
