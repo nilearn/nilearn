@@ -83,5 +83,4 @@ display.savefig('plot_stat_map_from_display.png')
 # In non-interactive settings make sure you close your displays
 display.close()
 
-import matplotlib.pyplot as plt
-plt.show()
+plotting.show()

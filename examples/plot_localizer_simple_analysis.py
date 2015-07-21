@@ -45,7 +45,7 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova)
 
 ### Visualization #############################################################
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
 z_slice = 45  # plotted slice
@@ -64,7 +64,8 @@ display = plot_stat_map(neg_log_pvals_anova_unmasked,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig)
 
-masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(), threshold)
+masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(),
+                                 threshold)
 
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric + Bonferroni correction)'
@@ -72,4 +73,4 @@ title = ('Negative $\log_{10}$ p-values'
 
 display.title(title, y=1.1, alpha=0.8)
 
-plt.show()
+show()

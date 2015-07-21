@@ -68,7 +68,7 @@ neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_permuted_ols))
 
 ### Visualization #############################################################
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
 z_slice = 12  # plotted slice
@@ -119,4 +119,4 @@ title = ('Negative $\log_{10}$ p-values'
 
 display.title(title, y=1.2)
 
-plt.show()
+show()

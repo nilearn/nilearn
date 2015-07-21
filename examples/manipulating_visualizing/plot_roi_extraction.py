@@ -38,7 +38,7 @@ haxby_labels = session_target['labels']
 ### Visualization function ####################################################
 
 import matplotlib.pyplot as plt
-from nilearn.plotting import plot_epi, plot_stat_map, plot_roi
+from nilearn.plotting import plot_epi, plot_stat_map, plot_roi, show
 from nilearn.input_data import NiftiLabelsMasker
 
 ### Find voxels of interest ###################################################
@@ -135,7 +135,7 @@ for i in np.arange(2):
                rotation=25)
     plt.title('Boxplots of data in ROI%i per condition' % (i + 1))
 
-plt.show()
+show()
 
 # save the ROI 'atlas' to a single output nifti
 nibabel.save(new_img_like(fmri_img, labels),

@@ -105,7 +105,7 @@ coef = feature_selection.inverse_transform(coef)
 weight_img = nifti_masker.inverse_transform(coef)
 
 ### Create the figure
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
 from nilearn.image.resampling import coord_transform
@@ -163,4 +163,4 @@ signed_neg_log_pvals_slice_data = \
 n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
 print('\n%d detections' % n_detections)
 
-plt.show()
+show()

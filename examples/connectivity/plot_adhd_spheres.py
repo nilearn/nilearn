@@ -67,4 +67,4 @@ plt.tight_layout()
 # Display connectome
 title = "Default Mode Network Connectivity"
 plotting.plot_connectome(cve.precision_, dmn_coords, title=title)
-plt.show()
+plotting.show()
