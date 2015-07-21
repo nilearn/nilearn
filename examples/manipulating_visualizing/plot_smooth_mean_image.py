@@ -32,5 +32,4 @@ for smoothing in range(0, 25, 5):
                       title="Smoothing %imm" % smoothing)
 
 
-from matplotlib import pyplot as plt
-plt.show()
+plotting.show()

@@ -44,5 +44,4 @@ plotting.plot_anat(smooth_anat_img,
 smooth_anat_img.to_filename('smooth_anat_img.nii.gz')
 
 # Showing plots ###############################################################
-import matplotlib.pyplot as plt
-plt.show()
+plotting.show()

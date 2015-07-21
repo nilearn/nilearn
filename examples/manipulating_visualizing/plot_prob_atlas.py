@@ -36,7 +36,6 @@ smith = datasets.fetch_atlas_smith_2009()
 icbm = datasets.fetch_icbm152_2009()
 
 # Visualization
-import matplotlib.pyplot as plt
 from nilearn import plotting
 
 atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
@@ -50,7 +49,6 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
                'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf'])}
 
 for name, atlas in sorted(atlas_types.items()):
-        plotting.plot_prob_atlas(atlas,
-                                 title=name)
+        plotting.plot_prob_atlas(atlas, title=name)
 
-plt.show()
+plotting.show()

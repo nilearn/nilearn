@@ -19,7 +19,7 @@ Pattern Recognition 2011.
 import numpy as np
 from nilearn import datasets
 from nilearn import input_data
-from nilearn.plotting.img_plotting import plot_roi, plot_epi
+from nilearn.plotting import plot_roi, plot_epi, show
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 
 # print basic information on the dataset
@@ -73,7 +73,6 @@ labels = ward.labels_ + 1
 labels_img = nifti_masker.inverse_transform(labels)
 
 from nilearn.image import mean_img
-import matplotlib.pyplot as plt
 mean_func_img = mean_img(func_filename)
 
 # common cut coordinates for all plots
@@ -105,4 +104,4 @@ plot_epi(compressed_img, cut_coords=first_plot.cut_coords,
          title='Compressed representation (2000 parcels)',
          display_mode='xz')
 
-plt.show()
+show()

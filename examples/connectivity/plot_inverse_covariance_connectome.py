@@ -86,5 +86,4 @@ plt.title('Sparse inverse covariance')
 plotting.plot_connectome(-estimator.precision_, coords,
                          title='Sparse inverse covariance')
 
-plt.show()
-
+plotting.show()

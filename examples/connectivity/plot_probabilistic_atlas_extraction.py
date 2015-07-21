@@ -64,6 +64,4 @@ coords = np.vstack((labels['x'], labels['y'], labels['z'])).T
 plotting.plot_connectome(correlation_matrix, coords,
                          edge_threshold="80%")
 
-plt.show()
-
-
+plotting.show()

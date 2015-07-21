@@ -105,7 +105,7 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 
 ### Visualization #############################################################
 import matplotlib.pyplot as plt
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
@@ -162,4 +162,4 @@ title = ('Negative $\log_{10}$ p-values'
 
 display.title(title, y=1.1)
 
-plt.show()
+show()

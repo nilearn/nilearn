@@ -89,11 +89,10 @@ p_values[p_values > 10] = 10
 p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
 ### Visualization #############################################################
-import matplotlib.pyplot as plt
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 mean_fmri = image.mean_img(fmri_img)
 
 plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
@@ -103,7 +102,7 @@ plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
 ### F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 plot_stat_map(new_img_like(mean_fmri, p_ma), mean_fmri,
-              title="F-scores", display_mode="z", cut_coords=[-16],
-              colorbar=False)
+              title="F-scores", display_mode="z",
+              cut_coords=[-16], colorbar=False)
 
-plt.show()
+show()

@@ -145,7 +145,7 @@ stimuli = stimuli[condition_mask]
 # Transform the stimuli to binary values
 stimuli = (stimuli == b'face').astype(np.int)
 
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 for classifier_name, classifier in sorted(classifiers.items()):
     classifier.fit(masked_timecourses, stimuli)
@@ -164,4 +164,4 @@ for classifier_name, classifier in sorted(classifiers.items()):
                   threshold=threshold,
                   title='%s: face vs house' % classifier_name)
 
-plt.show()
+show()

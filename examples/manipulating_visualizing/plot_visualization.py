@@ -9,7 +9,7 @@ Simple example to show Nifti data visualization.
 
 from nilearn import datasets
 from nilearn.image.image import mean_img
-from nilearn.plotting.img_plotting import plot_epi, plot_roi
+from nilearn.plotting import plot_epi, plot_roi, show
 
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
@@ -52,4 +52,4 @@ plt.ylabel('Intensity', fontsize=16)
 plt.xlim(0, 150)
 plt.subplots_adjust(bottom=.12, top=.95, right=.95, left=.12)
 
-plt.show()
+show()
