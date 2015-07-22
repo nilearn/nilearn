@@ -11,7 +11,8 @@ Predicting age from gray-matter concentration maps from OASIS dataset
 ### Load Oasis dataset ########################################################
 import numpy as np
 from nilearn import datasets
-dataset_files = datasets.fetch_oasis_vbm(n_subjects=200)
+n_subjects = 200  # increase this number if you have more RAM on your box
+dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars['age'].astype(float)
 age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
@@ -21,7 +22,7 @@ from sklearn.utils import check_random_state
 from sklearn.cross_validation import train_test_split
 rng = check_random_state(42)
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
-    gm_imgs, age, train_size=.5, random_state=rng)
+    gm_imgs, age, train_size=.6, random_state=rng)
 
 ### Sort test data for better visualization (trend, etc.)
 perm = np.argsort(age_test)[::-1]

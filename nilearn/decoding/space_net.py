@@ -500,7 +500,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
-        automatically by a MultiNiftiMasker with default parameters.
+        automatically by a NiftiMasker.
 
     target_affine : 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. Please see the
@@ -711,24 +711,18 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
-        # sanity check on params
+        # misc
         self.check_params()
-
-        # sanitize object's memory
         if self.memory is None or isinstance(self.memory, _basestring):
             self.memory_ = Memory(self.memory,
                                   verbose=max(0, self.verbose - 1))
-        else:
-            self.memory_ = self.memory
+        else: self.memory_ = self.memory
+        if self.verbose: tic = time.time()
 
-        if self.verbose:
-            tic = time.time()
-
-        # compute / sanitize mask
+        # nifti masking
         if isinstance(self.mask, NiftiMasker):
             self.masker_ = clone(self.mask)
         else:
-            # compute mask
             self.masker_ = NiftiMasker(mask_img=self.mask,
                                        target_affine=self.target_affine,
                                        target_shape=self.target_shape,
@@ -738,53 +732,43 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
+
+        # misc
         self.Xmean_ = X.mean(axis=0)
         self.Xstd_ = X.std(axis=0)
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.mask_img_.get_data().astype(np.bool)
         n_samples, _ = X.shape
-
         y = np.array(y).copy()
-
-        # misc
         l1_ratios = self.l1_ratios
-        if isinstance(l1_ratios, numbers.Number):
-            l1_ratios = [l1_ratios]
+        if isinstance(l1_ratios, numbers.Number): l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if isinstance(alphas, numbers.Number):
-            alphas = [alphas]
-        if not self.loss is None:
-            loss = self.loss
-        elif self.is_classif:
-            loss = "logistic"
-        else:
-            loss = "mse"
+        if isinstance(alphas, numbers.Number): alphas = [alphas]
+        if not self.loss is None: loss = self.loss
+        elif self.is_classif: loss = "logistic"
+        else: loss = "mse"
 
         # set backend solver
         if self.penalty.lower() == "graph-net":
             if not self.is_classif or loss == "mse":
                 solver = _graph_net_squared_loss
-            else:
-                solver = _graph_net_logistic
+            else: solver = _graph_net_logistic
         else:
             if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")
             else:
                 solver = partial(tvl1_solver, loss="logistic")
 
-        if self.is_classif:
-            y = self._binarize_y(y)
-        else:
-            y = y[:, np.newaxis]
+        # number of problems to solve
+        if self.is_classif: y = self._binarize_y(y)
+        else: y = y[:, np.newaxis]
         if self.is_classif and self.n_classes_ > 2:
             n_problems = self.n_classes_
-        else:
-            n_problems = 1
+        else: n_problems = 1
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
-        if n_problems == 1:
-            y = y[:, 0]
+        if n_problems == 1: y = y[:, 0]
 
         # generate fold indices
         if (None in [alphas, l1_ratios] and self.n_alphas > 1) or min(
