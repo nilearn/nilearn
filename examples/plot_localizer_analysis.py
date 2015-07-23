@@ -84,8 +84,9 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 # simplest ones
 contrasts = {}
 n_columns = len(column_names)
+contrast_matrix = np.eye(n_columns)
 for i in range(n_conditions):
-    contrasts['%s' % column_names[2 * i]] = np.eye(n_columns)[2 * i]
+    contrasts[column_names[2 * i]] = contrast_matrix[2 * i]
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\

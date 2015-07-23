@@ -72,8 +72,9 @@ for x in range(2):
 _, matrix, names = check_design_matrix(design_matrix)
 contrasts = {}
 n_columns = len(names)
+contrast_matrix = np.eye(n_columns)
 for i in range(2):
-    contrasts['%s' % names[2 * i]] = np.eye(n_columns)[2 * i]
+    contrasts[names[2 * i]] = contrast_matrix[2 * i]
 
 # more interesting contrasts
 contrasts['faces-scrambled'] = contrasts['faces'] - contrasts['scrambled']

@@ -75,15 +75,15 @@ def _cosine_drift(period_cut, frame_times):
     Parameters
     ----------
     period_cut : float
-         Cut period of the low-pass filter (in sec)
+        Cut period of the low-pass filter (in sec)
 
     frame_times : array of shape(n_scans)
-         The sampling times (in sec)
+        The sampling times (in sec)
 
     Returns
     -------
-    cosine_drift:  array of shape(n_scans, n_drifts)
-             cosine drifts plus a constant regressor at cosine_drift[:, -1]
+    cosine_drift : array of shape(n_scans, n_drifts)
+        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
 
     Ref: http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
     """
@@ -126,17 +126,17 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
         list of values representing the desired TRs
 
     order : int, optional,
-           order of the drift model (in case it is polynomial)
+        order of the drift model (in case it is polynomial)
 
     period_cut : float, optional (defaults to 128),
-           period cut in case of a cosine model (in seconds)
+        period cut in case of a cosine model (in seconds)
 
     Returns
     -------
-    drift: array of shape(n_scans, n_drifts),
+    drift : array of shape(n_scans, n_drifts),
         the drift matrix
 
-    names: list of length(n_drifts),
+    names : list of length(n_drifts),
         the associated names
     """
     drift_model = drift_model.lower()   # for robust comparisons
@@ -164,30 +164,30 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
     ----------
     paradigm : DataFrame instance,
         Descriptor of an experimental paradigm
-        see .experimental_paradigm to check the specification
+        see nistats.experimental_paradigm to check the specification
         for these to be valid paradigm descriptors
 
     hrf_model : {'canonical', 'canonical with derivative', 'fir'}
         string that specifies the hemodynamic response function
 
-    frame_times: array of shape(n_scans)
+    frame_times : array of shape(n_scans)
         the targeted timing for the design matrix
 
     fir_delays : array-like of shape(nb_onsets), optional,
         in case of FIR design, yields the array of delays
         used in the FIR model
 
-    min_onset: float, optional (default: -24),
+    min_onset : float, optional (default: -24),
         minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered
 
     Returns
     -------
-    regressor_matrix: array of shape(n_scans, n_regressors),
+    regressor_matrix : array of shape(n_scans, n_regressors),
         contains the convolved regressors
         associated with the experimental conditions
 
-    regressor_names: list of strings,
+    regressor_names : list of strings,
         the regressor names, that depend on the hrf model used
         if 'canonical' then this is identical to the input names
         if 'canonical with derivative', then two names are produced for
@@ -299,8 +299,8 @@ def make_design_matrix(
 
     Returns
     -------
-    design_matrix: DataFrame instance,
-        describing the design matrix
+    design_matrix : DataFrame instance,
+        holding the computed design matrix
     """
     # check arguments
     # check that additional regressor specification is correct
@@ -379,23 +379,23 @@ def check_design_matrix(design_matrix):
         raise ValueError('The provided DataFrame does not contain the'
                          'mandatory frame_times field')
     frame_times = design_matrix['frame_times']
-    names = [key for key in names if key != 'frame_times']
-    matrix = np.array([design_matrix[key] for key in names]).T
+    names = list(names.drop('frame_times'))
+    matrix = design_matrix[names].values
     return frame_times, matrix, names
 
 
 def plot_design_matrix(design_matrix, rescale=True, ax=None):
-    """ plot a design matrix provided as a DataFrame
+    """ Plot a design matrix provided as a DataFrame
 
     Parameters
     ----------
     design matrix : pandas DataFrame,
         describes a design matrix
 
-    rescale: bool, optional
+    rescale : bool, optional
         rescale columns magnitude for visualization or not
 
-    ax: axis handle, optional
+    ax : axis handle, optional
         Handle to axis onto which we will draw design matrix
 
     Returns

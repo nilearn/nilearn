@@ -56,10 +56,11 @@ ax.set_title('Design matrix')
 # specify contrasts
 contrasts = {}
 _, matrix, names = check_design_matrix(design_matrix)
+contrast_matrix = np.eye(len(names))
 for i in range(len(names)):
-    contrasts['%s' % names[i]] = np.eye(len(names))[i]
+    contrasts[names[i]] = contrast_matrix[i]
 
-# more interesting contrasts
+# Use a  more interesting contrast
 contrasts = {'active-rest': contrasts['active'] - contrasts['rest']}
 
 # fit GLM
