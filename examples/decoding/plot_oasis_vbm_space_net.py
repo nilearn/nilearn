@@ -46,7 +46,7 @@ for penalty in ['graph-net', 'tv-l1']:
     # SpaceNetRegressor class, to take advantage of a multi-core system.
     decoder = SpaceNetRegressor(memory="cache", penalty=penalty,
                                 screening_percentile=5., memory_level=2,
-                                target_affine=target_affine, verbose=2)
+                                target_affine=target_affine)
     decoder.fit(gm_imgs_train, age_train)  # fit
     coef_img = decoder.coef_img_
     y_pred = decoder.predict(gm_imgs_test).ravel()  # predict
