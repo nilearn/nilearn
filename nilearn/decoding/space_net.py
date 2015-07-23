@@ -503,8 +503,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         automatically by a NiftiMasker.
 
     target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+        This parameter is passed to image.resample_img. An important use-case
+        of this parameter is for downsamping the input data to a coarser
+        resolution (to speed of the model fit). Please see the related
+        documentation for details.
 
     target_shape : 3-tuple of integers, optional (default None)
         This parameter is passed to image.resample_img. Please see the

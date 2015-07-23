@@ -11,37 +11,42 @@ Predicting age from gray-matter concentration maps from OASIS dataset
 ### Load Oasis dataset ########################################################
 import numpy as np
 from nilearn import datasets
-n_subjects = 200  # increase this number if you have more RAM on your box
+n_subjects = 250  # increase this number if you have more RAM on your box
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars['age'].astype(float)
 age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
+
 
 ### Split data into training set and test set
 from sklearn.utils import check_random_state
 from sklearn.cross_validation import train_test_split
 rng = check_random_state(42)
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
-    gm_imgs, age, train_size=.6, random_state=rng)
+    gm_imgs, age, train_size=.75, random_state=rng)
 
 ### Sort test data for better visualization (trend, etc.)
 perm = np.argsort(age_test)[::-1]
 age_test = age_test[perm]
 gm_imgs_test = gm_imgs_test[perm]
 
+### We will downsample the data to 4x4x4 to speed up the model fit.
+target_affine = np.eye(3) * 4.
+
 
 ### Fit and predict ###########################################################
 from nilearn.decoding import SpaceNetRegressor
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
-for penalty in ['tv-l1', 'graph-net']:
+for penalty in ['graph-net', 'tv-l1']:
     # To save time (because these are anat images with many voxels), we include
     # only the 5-percent voxels most correlated with the age variable to fit.
     # Also, we set memory_level=2 so that more of the intermediate computations
     # are cached. Also, you may pass and n_jobs=<some_high_value> to the
     # SpaceNetRegressor class, to take advantage of a multi-core system.
     decoder = SpaceNetRegressor(memory="cache", penalty=penalty,
-                                screening_percentile=5, memory_level=2)
+                                screening_percentile=5., memory_level=2,
+                                target_affine=target_affine, verbose=2)
     decoder.fit(gm_imgs_train, age_train)  # fit
     coef_img = decoder.coef_img_
     y_pred = decoder.predict(gm_imgs_test).ravel()  # predict
