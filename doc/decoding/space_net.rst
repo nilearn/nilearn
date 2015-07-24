@@ -94,10 +94,9 @@ Haxby
     The complete script can be found
     :ref:`here <example_decoding_plot_haxby_space_net.py>`.
 
-..
-   .. seealso::
+.. seealso::
 
-     * The :ref:`supervised_learning` section of the nilearn documentation.
+     * :ref:`Age prediction on OASIS dataset with SpaceNet <example_decoding_plot_oasis_vbm_space_net.py>`.
 
      * The `scikit-learn documentation <http://scikit-learn.org>`_
        has very detailed explanations on a large variety of estimators and
