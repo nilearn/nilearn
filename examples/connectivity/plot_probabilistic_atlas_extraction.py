@@ -57,7 +57,7 @@ y_ticks = plt.yticks(range(len(names)), names)
 
 # And now display the corresponding graph
 from nilearn import plotting
-coords = np.vstack((labels['x'], labels['y'], labels['z'])).T
+coords = labels[['x', 'y', 'z']].tolist()
 
 # We threshold to keep only the 20% of edges with the highest value
 # because the graph is very dense

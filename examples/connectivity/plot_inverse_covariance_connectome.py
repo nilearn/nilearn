@@ -56,7 +56,7 @@ estimator.fit(time_series)
 from matplotlib import pyplot as plt
 
 from nilearn import plotting
-coords = np.vstack((labels['x'], labels['y'], labels['z'])).T
+coords = labels[['x', 'y', 'z']].tolist()
 
 # Display the covariance
 plt.figure(figsize=(10, 10))
