@@ -72,15 +72,15 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 
 # save computed mask
 mask_path = os.path.join(output_dir, "mask.nii.gz")
-print "Saving mask image %s" % mask_path
+print("Saving mask image %s" % mask_path)
 nibabel.save(fmri_glm.mask, mask_path)
 
 # compute bg unto which activation will be projected
 mean_img = mean_img(subject_data.func)
 
-print "Computing contrasts .."
-for contrast_id, contrast_val in contrasts.iteritems():
-    print "\tcontrast id: %s" % contrast_id
+print("Computing contrasts ..")
+for contrast_id, contrast_val in contrasts.items():
+    print("\tcontrast id: %s" % contrast_id)
     z_map, t_map, eff_map, var_map = fmri_glm.contrast(
         contrasts[contrast_id], con_id=contrast_id, output_z=True,
         output_stat=True, output_effects=True, output_variance=True)
@@ -93,7 +93,7 @@ for contrast_id, contrast_val in contrasts.iteritems():
             os.makedirs(map_dir)
         map_path = os.path.join(map_dir, '%s.nii.gz' % contrast_id)
         nibabel.save(out_map, map_path)
-        print "\t\t%s map: %s" % (dtype, map_path)
+        print("\t\t%s map: %s" % (dtype, map_path))
     # plot activation map
     if contrast_id == 'active-rest':
         display = plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,

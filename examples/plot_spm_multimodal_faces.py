@@ -83,7 +83,7 @@ contrasts['effects_of_interest'] = np.vstack((contrasts['faces'],
                                               contrasts['scrambled']))
 
 # fit GLM
-print 'Fitting a GLM (this takes time)...'
+print('Fitting a GLM (this takes time)...')
 fmri_glm = FMRILinearModel(
     subject_data.func,
     [check_design_matrix(design_matrix)[1] for design_matrix in design_matrices],
@@ -95,8 +95,8 @@ mean_image = mean_img(subject_data.func)
 
 # compute contrast maps
 from nilearn.plotting import plot_stat_map
-for contrast_id, contrast_val in contrasts.iteritems():
-    print "\tcontrast id: %s" % contrast_id
+for contrast_id, contrast_val in contrasts.items():
+    print("\tcontrast id: %s" % contrast_id)
     z_map, t_map, effects_map, var_map = fmri_glm.contrast(
         [contrast_val] * 2, con_id=contrast_id, output_z=True,
         output_stat=True, output_effects=True, output_variance=True)
