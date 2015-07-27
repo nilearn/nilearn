@@ -19,7 +19,7 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nistats.design_matrix import make_design_matrix
+from nistats.design_matrix import make_design_matrix, plot_design_matrix
 from pandas import DataFrame
 
 
@@ -60,13 +60,13 @@ X3 = make_design_matrix(frame_times, paradigm, hrf_model='fir',
 # plot the results
 fig = plt.figure(figsize=(10, 6))
 ax = plt.subplot(1, 3, 1)
-X1.show(ax=ax)
+plot_design_matrix(X1, ax=ax)
 ax.set_title('Event-related design matrix', fontsize=12)
 ax = plt.subplot(1, 3, 2)
-X2.show(ax=ax)
+plot_design_matrix(X2, ax=ax)
 ax.set_title('Block design matrix', fontsize=12)
 ax = plt.subplot(1, 3, 3)
-X3.show(ax=ax)
+plot_design_matrix(X3, ax=ax)
 ax.set_title('FIR design matrix', fontsize=12)
 plt.subplots_adjust(top=0.9, bottom=0.25)
 plt.show()

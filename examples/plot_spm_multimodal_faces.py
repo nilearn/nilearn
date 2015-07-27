@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 # imports for GLM business
 from pandas import DataFrame
 from nilearn.image import concat_imgs, resample_img, mean_img
-from nistats.design_matrix import make_design_matrix
+from nistats.design_matrix import make_design_matrix, check_design_matrix
 from nistats.glm import FMRILinearModel
 from nistats.datasets import fetch_spm_multimodal_fmri
 
@@ -32,7 +32,7 @@ output_dir = 'results'
 tr = 2.
 drift_model = 'Cosine'
 hrf_model = 'Canonical With Derivative'
-hfcut = 128.
+period_cut = 128.
 
 # make design matrices
 first_level_effects_maps = []
@@ -65,14 +65,16 @@ for x in range(2):
     frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
     design_matrix = make_design_matrix(
         frametimes, paradigm, hrf_model=hrf_model, drift_model=drift_model,
-        hfcut=hfcut)
+        period_cut=period_cut)
     design_matrices.append(design_matrix)
 
 # specify contrasts
+_, matrix, names = check_design_matrix(design_matrix)
 contrasts = {}
-n_columns = len(design_matrix.names)
-for i in xrange(2):
-    contrasts['%s' % design_matrix.names[2 * i]] = np.eye(n_columns)[2 * i]
+n_columns = len(names)
+contrast_matrix = np.eye(n_columns)
+for i in range(2):
+    contrasts[names[2 * i]] = contrast_matrix[2 * i]
 
 # more interesting contrasts
 contrasts['faces-scrambled'] = contrasts['faces'] - contrasts['scrambled']
@@ -84,7 +86,7 @@ contrasts['effects_of_interest'] = np.vstack((contrasts['faces'],
 print 'Fitting a GLM (this takes time)...'
 fmri_glm = FMRILinearModel(
     subject_data.func,
-    [design_matrix.matrix for design_matrix in design_matrices],
+    [check_design_matrix(design_matrix)[1] for design_matrix in design_matrices],
     mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
 

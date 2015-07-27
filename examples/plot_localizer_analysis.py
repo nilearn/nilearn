@@ -23,7 +23,8 @@ from pandas import DataFrame
 from nibabel import save
 
 from nistats.glm import FMRILinearModel
-from nistats.design_matrix import make_design_matrix
+from nistats.design_matrix import (
+    make_design_matrix, plot_design_matrix, check_design_matrix)
 from nistats import datasets
 
 from nilearn import plotting
@@ -58,10 +59,11 @@ paradigm.columns = ['session', 'name', 'onset']
 n_conditions = len(paradigm.name.unique())
 design_matrix = make_design_matrix(frame_times, paradigm,
                                    hrf_model='canonical with derivative',
-                                   drift_model="cosine", hfcut=128)
+                                   drift_model="cosine", period_cut=128)
+_, matrix, column_names = check_design_matrix(design_matrix)
 
 # Plot the design matrix
-ax = design_matrix.show()
+ax = plot_design_matrix(design_matrix)
 ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 plt.savefig(path.join(write_dir, 'design_matrix.png'))
@@ -70,8 +72,7 @@ plt.savefig(path.join(write_dir, 'design_matrix.png'))
 # Perform a GLM analysis
 ########################################
 
-fmri_glm = FMRILinearModel(epi_img,
-                           design_matrix.matrix, mask='compute')
+fmri_glm = FMRILinearModel(epi_img, matrix, mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
 
 #########################################
@@ -82,28 +83,33 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 
 # simplest ones
 contrasts = {}
-n_columns = len(design_matrix.names)
+n_columns = len(column_names)
+contrast_matrix = np.eye(n_columns)
 for i in range(n_conditions):
-    contrasts['%s' % design_matrix.names[2 * i]] = np.eye(n_columns)[2 * i]
+    contrasts[column_names[2 * i]] = contrast_matrix[2 * i]
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
-                     contrasts["calculaudio"] + contrasts["phraseaudio"]
+    contrasts["calculaudio"] + contrasts["phraseaudio"]
 contrasts["video"] = contrasts["clicDvideo"] + contrasts["clicGvideo"] + \
-                     contrasts["calculvideo"] + contrasts["phrasevideo"]
+    contrasts["calculvideo"] + contrasts["phrasevideo"]
 contrasts["left-right"] = (contrasts["clicGaudio"] + contrasts["clicGvideo"]
                            - contrasts["clicDaudio"] - contrasts["clicDvideo"])
 contrasts["computation"] = contrasts["calculaudio"] + contrasts["calculvideo"]
 contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
 contrasts["H-V"] = contrasts["damier_H"] - contrasts["damier_V"]
-contrasts["V-H"] = contrasts["damier_V"] - contrasts["damier_H"]
+contrasts["V-H"] = - contrasts['H-V']
 contrasts["audio-video"] = contrasts["audio"] - contrasts["video"]
-contrasts["video-audio"] = contrasts["video"] - contrasts["audio"]
-contrasts["computation-sentences"] = contrasts["computation"] -  \
-                                     contrasts["sentences"]
-contrasts["reading-visual"] = contrasts["sentences"] * 2 - \
-                              contrasts["damier_H"] - contrasts["damier_V"]
+contrasts["video-audio"] = - contrasts["audio-video"]
+contrasts["computation-sentences"] = contrasts["computation"] -\
+    contrasts["sentences"]
+contrasts["reading-visual"] = contrasts["phrasevideo"] - contrasts["damier_H"]
 
+# keep only interesting contrasts
+interesting_contrasts = [
+    'H-V', 'V-H', 'computation-sentences', 'reading-visual', 'video-audio',
+    'audio-video', 'left-right']
+contrasts = dict([(key, contrasts[key]) for key in interesting_contrasts])
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
@@ -116,8 +122,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     # Create snapshots of the contrasts
     vmax = max(-z_map.get_data().min(), z_map.get_data().max())
     plotting.plot_stat_map(z_map,
-             display_mode='z', threshold=2.5, title=contrast_id)
+             display_mode='z', threshold=3.0, title=contrast_id)
     plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
-
 
 plt.show()

@@ -10,7 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import nibabel
 from pandas import DataFrame
-from nistats.design_matrix import make_design_matrix
+from nistats.design_matrix import (
+    make_design_matrix, plot_design_matrix, check_design_matrix)
 from nistats.glm import FMRILinearModel
 from nistats.datasets import fetch_spm_auditory
 from nilearn.plotting import plot_stat_map
@@ -42,29 +43,30 @@ nscans = len(subject_data.func)
 frametimes = np.linspace(0, (nscans - 1) * tr, nscans)
 drift_model = 'Cosine'
 hrf_model = 'Canonical With Derivative'
-hfcut = 2 * 2 * epoch_duration
+period_cut = 2 * 2 * epoch_duration
 design_matrix = make_design_matrix(
     frametimes, paradigm, hrf_model=hrf_model, drift_model=drift_model,
-    hfcut=hfcut)
+    period_cut=period_cut)
 
 # plot and save design matrix
-ax = design_matrix.show()
+ax = plot_design_matrix(design_matrix)
 ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
 # specify contrasts
 contrasts = {}
-n_columns = len(design_matrix.names)
-for i in range(n_conditions):
-    contrasts['%s' % design_matrix.names[2 * i]] = np.eye(n_columns)[2 * i]
+_, matrix, names = check_design_matrix(design_matrix)
+contrast_matrix = np.eye(len(names))
+for i in range(len(names)):
+    contrasts[names[i]] = contrast_matrix[i]
 
-# more interesting contrasts
-contrasts['active-rest'] = contrasts['active'] - contrasts['rest']
+# Use a  more interesting contrast
+contrasts = {'active-rest': contrasts['active'] - contrasts['rest']}
 
 # fit GLM
 print('\r\nFitting a GLM (this takes time) ..')
 fmri_glm = FMRILinearModel(nibabel.concat_images(subject_data.func),
-                           design_matrix.matrix,
+                           matrix,
                            mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
 
