@@ -370,7 +370,11 @@ def _compute_mean(imgs, target_affine=None,
     input_repr = _repr_niimgs(imgs)
 
     imgs = check_niimg(imgs)
+    img_class = imgs.__class__
     mean_data = _safe_get_data(imgs)
+    affine = imgs.get_affine()
+    # Free memory ASAP
+    imgs = None
     if not mean_data.ndim in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
@@ -378,7 +382,7 @@ def _compute_mean(imgs, target_affine=None,
     if mean_data.ndim == 4:
         mean_data = mean_data.mean(axis=-1)
     mean_data = resampling.resample_img(
-        new_img_like(imgs, mean_data, imgs.get_affine()),
+        nibabel.Nifti1Image(mean_data, affine),
         target_affine=target_affine, target_shape=target_shape)
     affine = mean_data.get_affine()
     mean_data = mean_data.get_data()
