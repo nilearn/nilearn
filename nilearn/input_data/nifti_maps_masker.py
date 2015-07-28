@@ -8,56 +8,10 @@ from sklearn.externals.joblib import Memory
 from .. import _utils
 from .._utils import logger
 from .._utils import CacheMixin
-from .._utils.cache_mixin import cache
 from .._utils.niimg_conversions import _check_same_fov
-from .. import signal
 from .. import region
 from .. import image
-
-
-def _extract_signals(imgs, maps_img, smoothing_fwhm,
-                     t_r, standardize, detrend, low_pass, high_pass,
-                     confounds, memory, memory_level,
-                     resample_on_maps=False, mask_img=None,
-                     verbose=0):
-    """Extract representative time series of each region from fMRI signal
-    """
-    if verbose > 0:
-        print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
-    imgs = _utils.check_niimg_4d(imgs)
-
-    if resample_on_maps:
-        if verbose > 0:
-            print("Resampling images")
-        imgs = cache(
-            image.resample_img, memory, func_memory_level=2,
-            memory_level=memory_level)(
-                imgs, interpolation="continuous",
-                target_shape=maps_img.shape[:3],
-                target_affine=maps_img.get_affine())
-
-    if smoothing_fwhm is not None:
-        if verbose > 0:
-            print("Smoothing images")
-        imgs = cache(image.smooth_img, memory, func_memory_level=2,
-                     memory_level=memory_level)(
-            imgs, fwhm=smoothing_fwhm)
-
-    if verbose > 0:
-        print("Extracting maps signals")
-    region_signals, labels_ = cache(
-        region.img_to_signals_maps, memory, func_memory_level=2,
-        memory_level=memory_level)(
-            imgs, maps_img, mask_img=mask_img)
-
-    if verbose > 0:
-        print("Cleaning extracted signals")
-    region_signals = cache(signal.clean, memory, func_memory_level=2,
-                           memory_level=memory_level)(
-        region_signals, detrend=detrend, standardize=standardize,
-        t_r=t_r, low_pass=low_pass, high_pass=high_pass,
-        confounds=confounds)
-    return region_signals, labels_
+from .base_masker import filter_and_extract
 
 
 class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -293,18 +247,27 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
 
-        region_signals, labels_ = self._cache(
-            _extract_signals, ignore=['verbose', 'memory', 'memory_level'])(
-                # Images
+        def extraction_function(imgs):
+            return region.img_to_signals_maps(
                 imgs, self._resampled_maps_img_,
+                mask_img=self._resampled_mask_img_)
+
+        target_fov = None
+        if self.resampling_target != 'data':
+            target_fov = (self._resampled_maps_img_.shape[:3],
+                          self._resampled_maps_img_.get_affine())
+
+        region_signals, labels_ = self._cache(
+            filter_and_extract, ignore=['verbose', 'memory', 'memory_level'])(
+                # Images
+                imgs, extraction_function,
                 # Pre-treatments
                 self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
                 self.low_pass, self.high_pass, confounds,
                 # Caching
                 self.memory, self.memory_level,
                 # kwargs
-                mask_img=self._resampled_mask_img_,
-                resample_on_maps=(self.resampling_target != 'data'),
+                target_fov=target_fov,
                 verbose=self.verbose)
         self.labels_ = labels_
 
