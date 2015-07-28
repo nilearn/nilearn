@@ -7,6 +7,7 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import operator
 from distutils.version import LooseVersion
 
 import numpy as np
@@ -566,9 +567,16 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     new_img: image
         A loaded image with the same type (and header) as the reference image.
     """
-    from .._utils import load_niimg  # avoid circular import
-
-    ref_niimg = load_niimg(ref_niimg)
+    # Hand-written loading code to avoid too much memory consumption
+    if not (hasattr(ref_niimg, 'get_data')
+              and hasattr(ref_niimg,'get_affine')):
+        if isinstance(ref_niimg, _basestring):
+            ref_niimg = nibabel.load(ref_niimg)
+        elif operator.isSequenceType(ref_niimg):
+            ref_niimg = nibabel.load(ref_niimg[0])
+        else:
+            raise TypeError(('The reference image should be a niimg, %r '
+                            'was passed') % ref_niimg )
 
     if affine is None:
         affine = ref_niimg.get_affine()
