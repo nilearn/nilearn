@@ -383,7 +383,8 @@ def _compute_mean(imgs, target_affine=None,
         mean_data = mean_data.mean(axis=-1)
     mean_data = resampling.resample_img(
         nibabel.Nifti1Image(mean_data, affine),
-        target_affine=target_affine, target_shape=target_shape)
+        target_affine=target_affine, target_shape=target_shape,
+        copy=False)
     affine = mean_data.get_affine()
     mean_data = mean_data.get_data()
 
