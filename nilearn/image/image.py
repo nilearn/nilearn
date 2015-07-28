@@ -370,26 +370,26 @@ def _compute_mean(imgs, target_affine=None,
     input_repr = _repr_niimgs(imgs)
 
     imgs = check_niimg(imgs)
-    mean_img = _safe_get_data(imgs)
-    if not mean_img.ndim in (3, 4):
+    mean_data = _safe_get_data(imgs)
+    if not mean_data.ndim in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
-                         % (mean_img.ndim, input_repr))
-    if mean_img.ndim == 4:
-        mean_img = mean_img.mean(axis=-1)
-    mean_img = resampling.resample_img(
-        new_img_like(imgs, mean_img, imgs.get_affine()),
+                         % (mean_data.ndim, input_repr))
+    if mean_data.ndim == 4:
+        mean_data = mean_data.mean(axis=-1)
+    mean_data = resampling.resample_img(
+        new_img_like(imgs, mean_data, imgs.get_affine()),
         target_affine=target_affine, target_shape=target_shape)
-    affine = mean_img.get_affine()
-    mean_img = mean_img.get_data()
+    affine = mean_data.get_affine()
+    mean_data = mean_data.get_data()
 
     if smooth:
-        nan_mask = np.isnan(mean_img)
-        mean_img = _smooth_array(mean_img, affine=np.eye(4), fwhm=smooth,
-                                 ensure_finite=True, copy=False)
-        mean_img[nan_mask] = np.nan
+        nan_mask = np.isnan(mean_data)
+        mean_data = _smooth_array(mean_data, affine=np.eye(4), fwhm=smooth,
+                                  ensure_finite=True, copy=False)
+        mean_data[nan_mask] = np.nan
 
-    return mean_img, affine
+    return mean_data, affine
 
 
 def mean_img(imgs, target_affine=None, target_shape=None,
