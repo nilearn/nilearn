@@ -50,7 +50,7 @@ be slow to run. Under the hood, a few heuristics are used to make
 things a bit faster. These include:
 
 - Feature preprocessing, where an F-test is used to eliminate
-  non-predictive voxels, thus reducting the size of the brain mask in
+  non-predictive voxels, thus reducing the size of the brain mask in
   a principled way.
 - Continuation is used along the regularization path, where the
   solution of the optimization problem for a given value of the
