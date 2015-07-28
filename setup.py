@@ -26,8 +26,8 @@ def load_version():
 
 def is_installing():
     # Allow command-lines such as "python setup.py build install"
-    return 'install' in sys.argv
-
+    install_commands = set(['install', 'develop'])
+    return install_commands.intersection(set(sys.argv))
 
 # Make sources available using relative paths from this file's directory.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -79,6 +79,8 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 2',
               'Programming Language :: Python :: 2.6',
               'Programming Language :: Python :: 2.7',
+              'Programming Language :: Python :: 3.3',
+              'Programming Language :: Python :: 3.4',
           ],
           packages=find_packages(),
           package_data={'nistats.tests': ['*.nii.gz', '*.npz'],
