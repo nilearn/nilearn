@@ -13,11 +13,13 @@ import numpy as np
 import nibabel
 from scipy import ndimage
 from nilearn.datasets import fetch_mixed_gambles
-data = fetch_mixed_gambles(n_subjects=16, return_raw_data=False)
+data = fetch_mixed_gambles(n_subjects=16)
 zmaps, object_category, mask_img = data.zmaps, data.gain, data.mask_img
 
 
 ### Fit TV-L1 #################################################################
+# Here we're using the regressor object given that the task is to predict a
+# continuous variable, the gain of the gamble.
 from nilearn.decoding import SpaceNetRegressor
 decoder = SpaceNetRegressor(mask=mask_img, penalty="tv-l1",
                             eps=1e-1,  # prefer large alphas

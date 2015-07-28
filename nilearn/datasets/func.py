@@ -1201,9 +1201,8 @@ def _load_mixed_gambles(zmap_imgs):
 
 
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
-                        return_raw_data=True, verbose=0):
-    """Fetch Jimura "mixed gambles" dataset
-
+                        return_raw_data=False, verbose=0):
+    """Fetch Jimura "mixed gambles" dataset.
 
     Parameters
     ----------

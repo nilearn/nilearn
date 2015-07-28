@@ -395,7 +395,7 @@ def test_fetch_mixed_gambles():
     for n_subjects in [1, 5, 16]:
         mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
                                             data_dir=tmpdir, url=local_url,
-                                            verbose=0)
+                                            verbose=0, return_raw_data=True)
         datasetdir = os.path.join(tmpdir, "jimura_poldrack_2012_zmaps/")
         assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
                                                         "sub001_zmaps.nii.gz"))
