@@ -370,7 +370,6 @@ def _compute_mean(imgs, target_affine=None,
     input_repr = _repr_niimgs(imgs)
 
     imgs = check_niimg(imgs)
-    img_class = imgs.__class__
     mean_data = _safe_get_data(imgs)
     affine = imgs.get_affine()
     # Free memory ASAP
