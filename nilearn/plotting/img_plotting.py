@@ -51,8 +51,10 @@ def show():
 
 def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
                               force_min_stat_map_value=None):
-    """ Internal function for setting value limits for plot_stat_map and
-    plot_glass_brain.
+    """ Internal function for setting colormap and colorbar limits
+
+    Used by for plot_stat_map and plot_glass_brain.
+
     The limits for the colormap will always be set to range from -vmax to vmax.
     The limits for the colorbar depend on the symmetric_cbar argument, please
     refer to docstring of plot_stat_map.
@@ -65,7 +67,7 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
             stat_map_data = np.asarray(
                     stat_map_data[np.logical_not(stat_map_data._mask)])
         stat_map_max = np.nanmax(stat_map_data)
-        if force_min_stat_map_value == None:
+        if force_min_stat_map_value is None:
             stat_map_min = np.nanmin(stat_map_data)
         else:
             stat_map_min = force_min_stat_map_value
@@ -75,9 +77,9 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
         vmax = max(-stat_map_min, stat_map_max)
     if 'vmin' in kwargs:
         raise ValueError('this function does not accept a "vmin" '
-            'argument, as it uses a symmetrical range '
-            'defined via the vmax argument. To threshold '
-            'the map, use the "threshold" argument')
+                         'argument, as it uses a symmetrical range '
+                         'defined via the vmax argument. To threshold '
+                         'the map, use the "threshold" argument')
     vmin = -vmax
     if not symmetric_cbar:
         negative_range = stat_map_max <= 0
@@ -159,8 +161,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     if bg_img is not None:
         bg_img = _utils.check_niimg_3d(bg_img)
         display.add_overlay(bg_img,
-                           vmin=bg_vmin, vmax=bg_vmax,
-                           cmap=plt.cm.gray, interpolation=interpolation)
+                            vmin=bg_vmin, vmax=bg_vmax,
+                            cmap=plt.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
         display.add_overlay(new_img_like(img, data, affine),
@@ -526,11 +528,11 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         ordered.
     """
     display = plot_img(epi_img, cut_coords=cut_coords,
-                      output_file=output_file, display_mode=display_mode,
-                      figure=figure, axes=axes, title=title,
-                      threshold=None, annotate=annotate,
-                      draw_cross=draw_cross, black_bg=black_bg,
-                      cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+                       output_file=output_file, display_mode=display_mode,
+                       figure=figure, axes=axes, title=title,
+                       threshold=None, annotate=annotate,
+                       draw_cross=draw_cross, black_bg=black_bg,
+                       cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
     return display
 
 
@@ -717,7 +719,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
 
     valid_view_types = ['auto', 'contours', 'filled_contours', 'continuous']
     if not (isinstance(view_type, _basestring) or
-                       view_type not in valid_view_types):
+            view_type not in valid_view_types):
         message = ('view_type option should be given '
                    'either of these {0}').format(valid_view_types)
         raise ValueError(message)
@@ -744,8 +746,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             correction_factor = .5
         threshold = "%f%%" % (100 * (1 - .2 * correction_factor / n_maps))
 
-    if (isinstance(threshold, collections.Iterable)
-            and not isinstance(threshold, _basestring)):
+    if (isinstance(threshold, collections.Iterable) and
+            not isinstance(threshold, _basestring)):
         threshold = [thr for thr in threshold]
         if len(threshold) != n_maps:
             raise TypeError('The list of values to threshold '
@@ -764,7 +766,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         data = map_img.get_data()
         # To threshold or choose the level of the contours
         thr = check_threshold(thr, data,
-                percentile_calculate=fast_abs_percentile, name='threshold')
+                              percentile_calculate=fast_abs_percentile,
+                              name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
         if view_type == 'continuous':
@@ -868,11 +871,11 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     stat_map_img = _utils.check_niimg_3d(stat_map_img)
 
-    cbar_vmin, cbar_vmax, vmin, vmax = \
-                    _get_plot_stat_map_params(stat_map_img,
-                                            vmax,
-                                            symmetric_cbar,
-                                            kwargs)
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(
+        stat_map_img,
+        vmax,
+        symmetric_cbar,
+        kwargs)
 
     display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
                                 cut_coords=cut_coords,
