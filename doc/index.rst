@@ -33,6 +33,9 @@
 .. |canica| image:: auto_examples/connectivity/images/plot_canica_resting_state_011.png
    :target: auto_examples/connectivity/plot_canica_resting_state.html
 
+.. |tvl1_haxby| image:: auto_examples/decoding/images/plot_haxby_space_net_002.png
+   :target: auto_examples/decoding/plot_haxby_space_net.html
+
 .. |searchlight| image:: auto_examples/decoding/images/plot_haxby_searchlight_001.png
    :target: auto_examples/decoding/plot_haxby_searchlight.html
 
@@ -64,6 +67,8 @@
 * |rest_clustering|
 
 * |canica|
+
+* |tvl1_haxby|
 
 * |searchlight|
 

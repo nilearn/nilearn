@@ -105,4 +105,9 @@ models, a `coef_` attribute that stores the coefficients **w** estimated
    The full file to run the simulation can be found in
    :ref:`example_decoding_plot_simulated_data.py`
 
+.. seealso::
+
+   * :ref:`space_net`
+   * :ref:`searchlight`
+
 

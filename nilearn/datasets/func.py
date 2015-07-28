@@ -3,8 +3,9 @@ Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 """
 import warnings
 import os
-import numpy as np
 import re
+import numpy as np
+import nibabel
 from sklearn.datasets.base import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
@@ -1153,3 +1154,118 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
             files = [np.loadtxt(f) for f in files]
         results[derivative] = files
     return Bunch(**results)
+
+
+def _load_mixed_gambles(zmap_imgs):
+    """Ravel zmaps (one per subject) along time axis, resulting,
+    in a n_subjects * n_trials 3D niimgs and, and then make
+    gain vector y of same length.
+    """
+    X = []
+    y = []
+    mask = []
+    for zmap_img in zmap_imgs:
+        # load subject data
+        this_X = zmap_img.get_data()
+        affine = zmap_img.get_affine()
+        finite_mask = np.all(np.isfinite(this_X), axis=-1)
+        this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
+                                   finite_mask)
+        this_y = np.array([np.arange(1, 9)] * 6).ravel()
+
+        # gain levels
+        if len(this_y) != this_X.shape[-1]:
+            raise RuntimeError("%s: Expecting %i volumes, got %i!" % (
+                zmap_img, len(this_y), this_X.shape[-1]))
+
+        # standardize subject data
+        this_X -= this_X.mean(axis=-1)[..., np.newaxis]
+        std = this_X.std(axis=-1)
+        std[std == 0] = 1
+        this_X /= std[..., np.newaxis]
+
+        # commit subject data
+        X.append(this_X)
+        y.extend(this_y)
+        mask.append(this_mask)
+    y = np.array(y)
+    X = np.concatenate(X, axis=-1)
+    mask = np.sum(mask, axis=0) > .5 * len(zmap_imgs)
+    mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
+    X = X[mask, :].T
+    tmp = np.zeros(list(mask.shape) + [len(X)])
+    tmp[mask, :] = X.T
+    mask_img = nibabel.Nifti1Image(mask.astype(np.int), affine)
+    X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
+    return X, y, mask_img
+
+
+def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
+                        return_raw_data=False, verbose=0):
+    """Fetch Jimura "mixed gambles" dataset.
+
+    Parameters
+    ----------
+    n_subjects: int, optional (default 1)
+        The number of subjects to load. If None is given, all the
+        subjects are used.
+
+    data_dir: string, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None.
+
+    url: string, optional (default None)
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    resume: bool, optional (default True)
+        If true, try resuming download if possible.
+
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
+
+    return_raw_data: bool, optional (default True)
+        If false, then the data will transformed into and (X, y) pair, suitable
+        for machine learning routines. X is a list of n_subjects * 48
+        Nifti1Image objects (where 48 is the number of trials),
+        and y is an array of shape (n_subjects * 48,).
+
+    smooth: float, or list of 3 floats, optional (default 0.)
+        Size of smoothing kernel to apply to the loaded zmaps.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'zmaps': string list
+            Paths to realigned gain betamaps (one nifti per subject).
+        'gain': ..
+            If make_Xy is true, this is a list of n_subjects * 48
+            Nifti1Image objects, else it is None.
+        'y': array of shape (n_subjects * 48,) or None
+            If make_Xy is true, then this is an array of shape
+            (n_subjects * 48,), else it is None.
+
+    References
+    ----------
+    [1] K. Jimura and R. Poldrack, "Analyses of regional-average activation
+        and multivoxel pattern information tell complementary stories",
+        Neuropsychologia, vol. 50, page 544, 2012
+    """
+    if n_subjects > 16:
+        warnings.warn('Warning: there are only 16 subjects!')
+        n_subjects = 16
+    if url is None:
+        url = ("https://www.nitrc.org/frs/download.php/7229/"
+               "jimura_poldrack_2012_zmaps.zip")
+    opts = dict(uncompress=True)
+    files = [("zmaps/sub%03i_zmaps.nii.gz" % (j + 1), url, opts)
+             for j in range(n_subjects)]
+    data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
+                                data_dir=data_dir)
+    zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    data = Bunch(zmaps=zmap_fnames)
+    if not return_raw_data:
+        X, y, mask_img = _load_mixed_gambles(map(nibabel.load, data.zmaps))
+        data.zmaps, data.gain, data.mask_img = X, y, mask_img
+    return data

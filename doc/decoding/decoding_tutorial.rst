@@ -426,8 +426,10 @@ To visualize the results, we need to:
 
 .. seealso::
 
-   * :ref:`searchlight`
    * :ref:`decoding_simulated`
+   * :ref:`space_net`
+   * :ref:`searchlight`
+
 
 Going further with scikit-learn
 ===================================
@@ -503,3 +505,4 @@ But, be aware that this can take A WHILE...
     has very detailed explanations on a large variety of estimators and
     machine learning techniques. To become better at decoding, you need
     to study it.
+  

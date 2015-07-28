@@ -6,6 +6,8 @@
 *.swo
 .DS_Store
 build
+#*
+*#
 
 nilearn.egg-info/
 dist/
