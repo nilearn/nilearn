@@ -1,4 +1,4 @@
-from nose.tools import nottest, assert_true
+from nose.tools import assert_true
 import numpy as np
 import scipy as sp
 from numpy.testing import assert_almost_equal
@@ -20,8 +20,7 @@ from nilearn.decoding.space_net import BaseSpaceNet
 # Data used in almost all tests
 import nibabel
 from .test_same_api import to_niimgs
-from .simulate_graph_net_data import (
-    create_graph_net_simulation_data, create_graph_net_simulation_data)
+from .simulate_graph_net_data import create_graph_net_simulation_data
 
 
 def _make_data(task="regression", size=4):
@@ -130,7 +129,7 @@ def test__squared_loss_gradient_at_simple_points():
     X, y, w, mask = create_graph_net_simulation_data(n_samples=10, size=4)
     grad_weight = 1
     func = lambda w: _squared_loss_and_spatial_grad(X, y, w, mask,
-                                                   grad_weight)
+                                                    grad_weight)
     func_grad = lambda w: _squared_loss_and_spatial_grad_derivative(
         X, y, w, mask, grad_weight)
     for i in range(0, w.size, 2):
@@ -170,9 +169,9 @@ def test__squared_loss_derivative_lipschitz_constant():
         x_2 = rng.rand(*w.shape) * rng.randint(1000)
         gradient_difference = extmath.norm(
             _squared_loss_and_spatial_grad_derivative(X, y, x_1, mask,
-                                                     grad_weight)
+                                                      grad_weight)
             - _squared_loss_and_spatial_grad_derivative(X, y, x_2, mask,
-                                                       grad_weight))
+                                                        grad_weight))
         point_difference = extmath.norm(x_1 - x_2)
         assert_true(
             gradient_difference <= lipschitz_constant * point_difference)

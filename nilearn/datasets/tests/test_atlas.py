@@ -180,11 +180,11 @@ def test_fetch_atlas_craddock_2012():
             "scorr_2level", "tcorr_2level",
             "random")
     filenames = [
-            "scorr05_mean_all.nii.gz",
-            "tcorr05_mean_all.nii.gz",
-            "scorr05_2level_all.nii.gz",
-            "tcorr05_2level_all.nii.gz",
-            "random_all.nii.gz",
+        "scorr05_mean_all.nii.gz",
+        "tcorr05_mean_all.nii.gz",
+        "scorr05_2level_all.nii.gz",
+        "tcorr05_2level_all.nii.gz",
+        "random_all.nii.gz",
     ]
     assert_equal(len(mock_url_request.urls), 1)
     for key, fn in zip(keys, filenames):
@@ -199,12 +199,12 @@ def test_fetch_atlas_smith_2009():
     keys = ("rsn20", "rsn10", "rsn70",
             "bm20", "bm10", "bm70")
     filenames = [
-            "rsn20.nii.gz",
-            "PNAS_Smith09_rsn10.nii.gz",
-            "rsn70.nii.gz",
-            "bm20.nii.gz",
-            "PNAS_Smith09_bm10.nii.gz",
-            "bm70.nii.gz",
+        "rsn20.nii.gz",
+        "PNAS_Smith09_rsn10.nii.gz",
+        "rsn70.nii.gz",
+        "bm20.nii.gz",
+        "PNAS_Smith09_bm10.nii.gz",
+        "bm70.nii.gz",
     ]
 
     assert_equal(len(mock_url_request.urls), 6)

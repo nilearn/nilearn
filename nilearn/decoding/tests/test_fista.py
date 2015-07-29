@@ -3,9 +3,9 @@ import numpy as np
 from nilearn.decoding.fista import mfista
 from nilearn.decoding.proximal_operators import _prox_l1
 from nilearn.decoding.objective_functions import (_squared_loss, _logistic,
-                                   _squared_loss_grad,
-                                   _logistic_loss_lipschitz_constant,
-                                   spectral_norm_squared)
+                                                  _squared_loss_grad,
+                                                  _logistic_loss_lipschitz_constant,
+                                                  spectral_norm_squared)
 from nilearn.decoding.fista import _check_lipschitz_continuous
 
 
@@ -53,7 +53,7 @@ def test_input_args_and_kwargs():
     l1_weight = alpha_ * l1_ratio
     f1 = lambda w: _squared_loss(X, y, w, compute_grad=False)
     f1_grad = lambda w: _squared_loss(X, y, w, compute_grad=True,
-                               compute_energy=False)
+                                      compute_energy=False)
     f2_prox = lambda w, l, *args, **kwargs: (_prox_l1(w, l * l1_weight),
                                              dict(converged=True))
     total_energy = lambda w: f1(w) + l1_weight * np.sum(np.abs(w))

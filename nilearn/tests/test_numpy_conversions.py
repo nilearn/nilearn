@@ -142,7 +142,7 @@ def test_as_ndarray():
         in_dtype, in_order, copy, out_dtype, out_order, copied = case
         arr1 = np.ones(shape, dtype=in_dtype, order=in_order)
         arr2 = as_ndarray(arr1,
-                                copy=copy, dtype=out_dtype, order=out_order)
+                          copy=copy, dtype=out_dtype, order=out_order)
         assert_true(not are_arrays_identical(arr1[0], arr2[0]) == copied,
                     msg=str(case))
         if out_dtype is None:
@@ -156,7 +156,7 @@ def test_as_ndarray():
         else:
             assert_true(arr2.flags["C_CONTIGUOUS"], msg=str(case))
 
-    ## memmap
+    # memmap
     filename = os.path.join(os.path.dirname(__file__), "data", "mmap.dat")
 
     # same dtype, no copy requested
@@ -204,7 +204,7 @@ def test_as_ndarray():
     assert(arr2.dtype == np.int32)
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
-    ## list
+    # list
     # same dtype, no copy requested
     arr1 = [0, 1, 2, 3]
     arr2 = as_ndarray(arr1)
@@ -228,7 +228,7 @@ def test_as_ndarray():
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
-    ## Unhandled cases
+    # Unhandled cases
     assert_raises(ValueError, as_ndarray, "test string")
     assert_raises(ValueError, as_ndarray, [], order="invalid")
 

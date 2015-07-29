@@ -120,7 +120,7 @@ def test_joblib_cache():
     mask_img = Nifti1Image(mask, np.eye(4))
 
     with write_tmp_imgs(mask_img, create_files=True)\
-                as filename:
+            as filename:
         masker = MultiNiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)

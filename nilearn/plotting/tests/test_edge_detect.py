@@ -1,10 +1,7 @@
-
 import numpy as np
 
 from nilearn.plotting.edge_detect import _edge_detect
 
-
-###############################################################################
 
 def test_edge_detect():
     img = np.zeros((10, 10))

@@ -111,8 +111,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     a = tvl1_solver(unmasked_X, y, alpha, 1., mask, loss="mse",
                     max_iter=max_iter)[0]
     b = _graph_net_squared_loss(unmasked_X, y, alpha, 1.,
-                                  max_iter=max_iter,
-                                  mask=mask)[0]
+                                max_iter=max_iter,
+                                mask=mask)[0]
 
     mask = nibabel.Nifti1Image(mask.astype(np.float), np.eye(4))
     X = nibabel.Nifti1Image(X.astype(np.float), np.eye(4))
@@ -121,8 +121,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
             alphas=alpha, l1_ratios=1., mask=mask, penalty="graph-net",
             max_iter=max_iter, standardize=standardize).fit(X, y)
         tvl1 = BaseSpaceNet(
-                alphas=alpha, l1_ratios=1., mask=mask, penalty="tv-l1",
-                max_iter=max_iter, standardize=standardize).fit(X, y)
+            alphas=alpha, l1_ratios=1., mask=mask, penalty="tv-l1",
+            max_iter=max_iter, standardize=standardize).fit(X, y)
 
         # Should be exactly the same (except for numerical errors).
         # However because of the TV-L1 prox approx, results might be 'slightly'
@@ -153,11 +153,11 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
                     max_iter=max_iter)[0]
     for standardize in [True, False]:
         sl = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
-                      max_iter=max_iter, mask=mask_, penalty="graph-net",
-                      standardize=standardize).fit(X_, y)
+                                max_iter=max_iter, mask=mask_, penalty="graph-net",
+                                standardize=standardize).fit(X_, y)
         tvl1 = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
-                        max_iter=max_iter, mask=mask_, penalty="tv-l1",
-                        standardize=standardize).fit(X_, y)
+                                  max_iter=max_iter, mask=mask_, penalty="tv-l1",
+                                  standardize=standardize).fit(X_, y)
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(a, b, decimal=decimal)
@@ -184,8 +184,8 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(decimal=1):
                           mask=mask, is_classif=False,
                           standardize=standardize, verbose=0).fit(X, y)
         tvl1 = BaseSpaceNet(alphas=alpha, l1_ratios=l1_ratio, penalty="tv-l1",
-                        max_iter=max_iter, mask=mask, is_classif=False,
-                        standardize=standardize, verbose=0).fit(X, y)
+                            max_iter=max_iter, mask=mask, is_classif=False,
+                            standardize=standardize, verbose=0).fit(X, y)
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)

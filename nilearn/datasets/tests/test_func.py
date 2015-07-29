@@ -108,10 +108,10 @@ def test_fail_fetch_haxby_simple():
 
     opts = {'uncompress': True}
     files = [
-            (os.path.join(path, 'attributes.txt'), local_url, opts),
-            # The following file does not exists. It will cause an abortion of
-            # the fetching procedure
-            (os.path.join(path, 'bald.nii.gz'), local_url, opts)
+        (os.path.join(path, 'attributes.txt'), local_url, opts),
+        # The following file does not exists. It will cause an abortion of
+        # the fetching procedure
+        (os.path.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
     assert_raises(IOError, utils._fetch_files,
@@ -129,7 +129,8 @@ def test_fetch_haxby():
     for i in range(1, 6):
         haxby = func.fetch_haxby(data_dir=tmpdir, n_subjects=i,
                                  verbose=0)
-        assert_equal(len(mock_url_request.urls), 1 + (i == 1))  # subject_data + md5
+        # subject_data + md5
+        assert_equal(len(mock_url_request.urls), 1 + (i == 1))
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
         assert_equal(len(haxby.session_target), i)

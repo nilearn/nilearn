@@ -41,8 +41,8 @@ def test_space_net_alpha_grid(n_samples=4, n_features=3):
     for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
         alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
         np.testing.assert_almost_equal(_space_net_alpha_grid(
-                X, y, n_alphas=1, l1_ratio=l1_ratio,
-                logistic=is_classif), alpha_max)
+            X, y, n_alphas=1, l1_ratio=l1_ratio,
+            logistic=is_classif), alpha_max)
 
     for l1_ratio, is_classif in itertools.product([.5, 1.], [True, False]):
         alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
@@ -95,7 +95,7 @@ def test_params_correctly_propagated_in_constructors():
     for (penalty, is_classif, n_alphas, l1_ratio, n_jobs,
          cv, perc) in itertools.product(
         ["graph-net", "tv-l1"], [True, False],
-        [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
+             [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
         cvobj = BaseSpaceNet(
             mask="dummy", n_alphas=n_alphas, n_jobs=n_jobs, l1_ratios=l1_ratio,
             cv=cv, screening_percentile=perc, penalty=penalty,
@@ -152,8 +152,8 @@ def test_tv_regression_simple():
     for l1_ratio in [1.]:
         for debias in [True]:
             BaseSpaceNet(mask=mask, alphas=alphas, l1_ratios=l1_ratio,
-                     penalty="tv-l1", is_classif=False, max_iter=10,
-                     debias=debias).fit(X, y)
+                         penalty="tv-l1", is_classif=False, max_iter=10,
+                         debias=debias).fit(X, y)
 
 
 def test_tv_regression_3D_image_doesnt_crash():
@@ -261,10 +261,10 @@ def test_get_mask_volume():
     # Test that hard-coded standard mask volume can be corrected computed
     if os.path.isfile(mni152_brain_mask):
         assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
-                    mni152_brain_mask)))
+            mni152_brain_mask)))
     else:
         warnings.warn("Couldn't find %s (for testing)" % (
-                mni152_brain_mask))
+            mni152_brain_mask))
 
 
 def test_space_net_classifier_subclass():
