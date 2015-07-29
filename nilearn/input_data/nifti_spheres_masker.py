@@ -8,19 +8,17 @@ import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
+from distutils.version import LooseVersion
 
-from .. import _utils
-from .._utils import logger, CacheMixin
-from .._utils.niimg_conversions import check_niimg, check_niimg_3d
-from .. import signal
+from .._utils import CacheMixin
+from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .. import image
 from .. import masking
-from distutils.version import LooseVersion
+from .base_masker import filter_and_extract
 
 
 def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
     seeds = list(seeds)
-    niimg = check_niimg(niimg)
     affine = niimg.get_affine()
 
     # Compute world coordinates of all in-mask voxels.
@@ -64,18 +62,6 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
         if len(row) == 0:
             raise ValueError('Sphere around seed #%i is empty' % i)
         yield X[:, row]
-
-
-def _signals_from_spheres(seeds, niimg, radius, mask_img=None):
-    seeds = list(seeds)
-    n_seeds = len(seeds)
-
-    signals = np.empty((niimg.shape[3], n_seeds))
-    for i, sphere in enumerate(_iter_signals_from_spheres(
-            seeds, niimg, radius, mask_img=mask_img)):
-        signals[:, i] = np.mean(sphere, axis=1)
-
-    return signals
 
 
 class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
@@ -238,26 +224,28 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         self._check_fitted()
 
-        logger.log("loading images: %s" %
-                   _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
-        imgs = _utils.check_niimg(imgs)
+        def _signals_from_spheres(imgs):
+            n_seeds = len(self.seeds_)
+            imgs = check_niimg_4d(imgs)
 
-        if self.smoothing_fwhm is not None:
-            logger.log("smoothing images", verbose=self.verbose)
-            imgs = self._cache(image.smooth_img)(
-                imgs, fwhm=self.smoothing_fwhm)
+            signals = np.empty((imgs.shape[3], n_seeds))
+            for i, sphere in enumerate(_iter_signals_from_spheres(
+                    self.seeds_, imgs, self.radius, mask_img=self.mask_img)):
+                signals[:, i] = np.mean(sphere, axis=1)
 
-        logger.log("extracting region signals", verbose=self.verbose)
-        signals = self._cache(_signals_from_spheres)(
-                self.seeds_, imgs, radius=self.radius, mask_img=self.mask_img)
+            return signals, None
 
-        logger.log("cleaning extracted signals", verbose=self.verbose)
-        signals = self._cache(signal.clean
-                                     )(signals,
-                                       detrend=self.detrend,
-                                       standardize=self.standardize,
-                                       t_r=self.t_r,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       confounds=confounds)
+        signals, _ = self._cache(
+                filter_and_extract,
+                ignore=['verbose', 'memory', 'memory_level'])(
+            # Images
+            imgs, _signals_from_spheres,
+            # Pre-processing
+            self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
+            self.low_pass, self.high_pass, confounds,
+            # Caching
+            self.memory, self.memory_level,
+            # kwargs
+            verbose=self.verbose)
+
         return signals

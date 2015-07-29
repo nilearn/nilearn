@@ -226,10 +226,11 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 imgs, self._resampled_labels_img_,
                 background_label=self.background_label)
 
-        target_fov = None
+        target_shape = None
+        target_affine = None
         if self.resampling_target == 'labels':
-            target_fov = (self._resampled_labels_img_.shape[:3],
-                          self._resampled_labels_img_.get_affine())
+            target_shape = self._resampled_labels_img_.shape[:3]
+            target_affine = self._resampled_labels_img_.get_affine()
 
         region_signals, labels_ = self._cache(
                 filter_and_extract,
@@ -242,7 +243,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # Caching
             self.memory, self.memory_level,
             # kwargs
-            target_fov=target_fov,
+            target_shape=target_shape,
+            target_affine=target_affine,
             verbose=self.verbose)
 
         self.labels_ = labels_
