@@ -381,6 +381,8 @@ def _compute_mean(imgs, target_affine=None,
                          % (mean_data.ndim, input_repr))
     if mean_data.ndim == 4:
         mean_data = mean_data.mean(axis=-1)
+    else:
+        mean_data = mean_data.copy()
     mean_data = resampling.resample_img(
         nibabel.Nifti1Image(mean_data, affine),
         target_affine=target_affine, target_shape=target_shape,
@@ -447,6 +449,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     running_mean, first_affine = _compute_mean(first_img,
                 target_affine=target_affine,
                 target_shape=target_shape)
+
     if target_affine is None or target_shape is None:
         target_affine = first_affine
         target_shape = running_mean.shape[:3]
@@ -458,10 +461,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         n_imgs += 1
         # _compute_mean returns (mean_img, affine)
         this_mean = this_mean[0]
-        if running_mean is None:
-            running_mean = this_mean
-        else:
-            running_mean += this_mean
+        running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
     return new_img_like(first_img, running_mean, target_affine)
