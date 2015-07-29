@@ -47,6 +47,7 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     Returns
     -------
     float
+        Value of Graph-Net objective.
     """
     data_section = np.dot(X, w) - y
     grad_buffer = np.zeros(mask.shape)
@@ -110,8 +111,9 @@ def _graph_net_data_function(X, w, mask, grad_weight):
 
     Returns
     -------
-    float
-
+    ndarray, shape (n_features + mask.ndim * n_samples,)
+        Data-fit term augmented with design matrix augmented with
+        nabla operator (for spatial gradient).
     """
     data_buffer = np.zeros(mask.shape)
     data_buffer[mask] = w
@@ -145,7 +147,8 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
 
     Returns
     -------
-    ndarray
+    ndarray, shape (n_samples,)
+        Value of adjoint.
     """
     n_samples, _ = X.shape
     out = X.T.dot(w[:n_samples])
