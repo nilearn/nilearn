@@ -15,7 +15,7 @@ def create_graph_net_simulation_data(
 
     """
     generator = check_random_state(random_state)
-    ### Coefs
+    # Coefs
     w = np.zeros((size, size, size))
     for _ in range(n_points):
         point = (generator.randint(0, size), generator.randint(0, size),
@@ -25,7 +25,7 @@ def create_graph_net_simulation_data(
     w = ndimage.gaussian_filter(w, sigma=1)
     w = w[mask]
 
-    ### Generate smooth background noise
+    # Generate smooth background noise
     XX = generator.randn(n_samples, size, size, size)
     noise = []
     for i in range(n_samples):
@@ -34,7 +34,7 @@ def create_graph_net_simulation_data(
         noise.append(Xi)
     noise = np.array(noise)
 
-    ### Generate the signal y
+    # Generate the signal y
     if task == "regression":
         y = generator.randn(n_samples)
     elif task == "classification":
@@ -46,7 +46,7 @@ def create_graph_net_simulation_data(
     noise *= noise_coef
     snr = 20 * np.log(linalg.norm(X, 2) / linalg.norm(noise, 2))
 
-    ### Mixing of signal + noise and splitting into train/test
+    # Mixing of signal + noise and splitting into train/test
     X += noise
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]

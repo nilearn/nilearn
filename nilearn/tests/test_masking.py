@@ -1,7 +1,6 @@
 """
 Test the mask-extracting utilities.
 """
-import types
 import distutils.version
 import warnings
 import numpy as np
@@ -108,7 +107,7 @@ def test_apply_mask():
             data_img = Nifti1Image(data, affine)
             mask_img = Nifti1Image(mask, affine)
             with write_tmp_imgs(data_img, mask_img, create_files=create_files)\
-                     as filenames:
+                    as filenames:
                 series = masking.apply_mask(filenames[0], filenames[1],
                                             smoothing_fwhm=9)
 
@@ -262,7 +261,7 @@ def test_intersect_masks_filename():
     # +---+---+---+---+
 
     with write_tmp_imgs(mask_a_img, mask_b_img, create_files=True)\
-                     as filenames:
+            as filenames:
         mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
         mask_ab[2, 2] = 1
         mask_ab_ = intersect_masks(filenames, threshold=1.)

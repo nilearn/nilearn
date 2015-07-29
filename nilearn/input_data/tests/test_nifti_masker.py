@@ -123,7 +123,7 @@ def test_mask_3d():
     data_img = Nifti1Image(data, np.eye(4))
 
     with testing.write_tmp_imgs(data_img, create_files=True)\
-                as filename:
+            as filename:
         masker = NiftiMasker(mask_img=filename)
         assert_raises(TypeError, masker.fit)
 
@@ -134,7 +134,6 @@ def test_mask_4d():
     mask[3:7, 3:7, 3:7] = 1
     mask_bool = mask.astype(bool)
     mask_img = Nifti1Image(mask, np.eye(4))
-    n_mask_vox = mask_bool.sum()
 
     # Dummy data
     data = np.zeros((10, 10, 10, 3), dtype=int)
@@ -205,7 +204,7 @@ def test_joblib_cache():
     mask_img = Nifti1Image(mask, np.eye(4))
 
     with testing.write_tmp_imgs(mask_img, create_files=True)\
-                as filename:
+            as filename:
         masker = NiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
@@ -230,8 +229,9 @@ def test_joblib_cache():
 def test_mask_init_errors():
     # Errors that are caught in init
     mask = NiftiMasker(mask_strategy='oops')
-    testing.assert_raises_regex(ValueError, "Unknown value of mask_strategy 'oops'",
-                                mask.fit)
+    testing.assert_raises_regex(
+        ValueError, "Unknown value of mask_strategy 'oops'",
+        mask.fit)
 
 
 def test_compute_epi_mask():

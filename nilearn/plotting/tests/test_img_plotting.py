@@ -23,10 +23,10 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            _get_plot_stat_map_params)
 from nilearn._utils.testing import assert_raises_regex
 
-mni_affine = np.array([[  -2.,    0.,    0.,   90.],
-                       [   0.,    2.,    0., -126.],
-                       [   0.,    0.,    2.,  -72.],
-                       [   0.,    0.,    0.,    1.]])
+mni_affine = np.array([[-2.,    0.,    0.,   90.],
+                       [0.,    2.,    0., -126.],
+                       [0.,    0.,    2.,  -72.],
+                       [0.,    0.,    0.,    1.]])
 
 
 def _generate_img():
@@ -440,12 +440,12 @@ def test_plot_prob_atlas():
     data_rng = rng.normal(size=shape)
     img = nibabel.Nifti1Image(data_rng, affine)
     # Testing the 4D plot prob atlas with contours
-    display = plot_prob_atlas(img, view_type='contours')
+    plot_prob_atlas(img, view_type='contours')
     # Testing the 4D plot prob atlas with contours
-    display = plot_prob_atlas(img, view_type='filled_contours',
-                              threshold=0.2)
+    plot_prob_atlas(img, view_type='filled_contours',
+                    threshold=0.2)
     # Testing the 4D plot prob atlas with contours
-    display = plot_prob_atlas(img, view_type='continuous')
+    plot_prob_atlas(img, view_type='continuous')
 
 
 def test_get_plot_stat_map_params_pos_neg():

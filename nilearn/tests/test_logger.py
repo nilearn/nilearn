@@ -37,12 +37,14 @@ def other_run():
 
 
 class Run3(object):
+
     def run3(self):
         log("method Test3")
         run()
 
 
 class Run2(BaseEstimator):
+
     def run2(self):
         log("method Test2")
         t = Run()
@@ -50,6 +52,7 @@ class Run2(BaseEstimator):
 
 
 class Run(BaseEstimator):
+
     def run(self):
         log("method Test")
         run()

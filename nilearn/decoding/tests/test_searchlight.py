@@ -27,7 +27,6 @@ def test_searchlight():
     data[2, 2, 2][cond.astype(np.bool)] = 2
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-
     # Define cross validation
     from sklearn.cross_validation import check_cv
     # avoid using KFold for compatibility with sklearn 0.10-0.13

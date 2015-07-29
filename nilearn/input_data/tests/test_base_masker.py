@@ -40,13 +40,13 @@ def test_cropping_code_paths():
                   "t_r": None,
                   "detrend": None,
                   "standardize": None
-                                 }
+                  }
 
     # Now do the two maskings
     out_data_uncropped, affine_uncropped = filter_and_mask(img,
-                                mask_img, parameters)
+                                                           mask_img, parameters)
     out_data_cropped, affine_cropped = filter_and_mask(img,
-                                cropped_mask_img, parameters)
+                                                       cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)
 
@@ -60,4 +60,4 @@ def test_filter_and_mask():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
-                         data_img, mask_img, {})
+                        data_img, mask_img, {})
