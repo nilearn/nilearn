@@ -26,7 +26,7 @@ al. 2011] <https://hal.inria.fr/inria-00563468/document>`_, TV-L1
 <https://hal.archives-ouvertes.fr/hal-00462882/document>`_ (known
 as GraphNet in neuroimaging `[Grosenick et al. 2013]
 <https://hal.inria.fr/hal-00839984>`_) (option:
-penalty="smooth-lasso") to regularize classification and regression
+penalty="graph-net") to regularize classification and regression
 problems in brain imaging. The result are brain maps which are both
 sparse (i.e regression coefficients are zero everywhere, except at
 predictive voxels) and structured (blobby). The superiority of TV-L1
@@ -42,7 +42,7 @@ The following table summarizes the parameter(s) used to activate a
 given penalty:
 
 - TV-L1: `penalty="tv-l1"`
-- Graph-Net: `penalty="smooth-lasso"` (this is the default prior in
+- Graph-Net: `penalty="graph-net"` (this is the default prior in
   SpaceNet)
 
 Note that TV-L1 prior leads to a hard optimization problem, and so can

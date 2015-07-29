@@ -96,9 +96,9 @@ def test_lipschitz_constant_loss_logreg():
     assert_equal(a, b)
 
 
-def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
+def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     ###############################################################
-    # smoothlasso_solver and tvl1_solver should give same results
+    # graph_net_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
     ###############################################################
 
@@ -132,10 +132,10 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
                                              decimal=decimal)
 
 
-def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
+def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
                                                         decimal=2):
     ###############################################################
-    # smoothlasso_solver and tvl1_solver should give same results
+    # graph_net_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
     ###############################################################
 
@@ -148,7 +148,7 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
 
     # results should be exactly the same for pure lasso
     a = _graph_net_logistic(X, y, alpha, 1., mask=mask,
-                              max_iter=max_iter)[0]
+                            max_iter=max_iter)[0]
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
     for standardize in [True, False]:
@@ -165,9 +165,9 @@ def test_smoothlasso_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
                                          decimal=decimal)
 
 
-def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=1):
+def test_graph_net_and_tv_same_for_pure_l1_another_test(decimal=1):
     ###############################################################
-    # smoothlasso_solver and tvl1_solver should give same results
+    # graph_net_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
     ###############################################################
 

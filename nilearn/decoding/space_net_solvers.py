@@ -235,10 +235,9 @@ def _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask,
 
 
 def _graph_net_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
-                              max_iter=1000, tol=1e-4, callback=None,
-                              lipschitz_constant=None, verbose=0):
-    """Computes a solution for the Graph-Net regression problem, as in the
-    SmoothLassoRegressor estimator, with no data preprocessing.
+                            max_iter=1000, tol=1e-4, callback=None,
+                            lipschitz_constant=None, verbose=0):
+    """Computes a solution for the Graph-Net regression problem.
 
     This function invokes the mfista backend (from fista.py) to solve the
     underlying optimization problem.
