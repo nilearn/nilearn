@@ -18,14 +18,14 @@ age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
 
 
-### Split data into training set and test set
+# Split data into training set and test set
 from sklearn.utils import check_random_state
 from sklearn.cross_validation import train_test_split
 rng = check_random_state(42)
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
     gm_imgs, age, train_size=.6, random_state=rng)
 
-### Sort test data for better visualization (trend, etc.)
+# Sort test data for better visualization (trend, etc.)
 perm = np.argsort(age_test)[::-1]
 age_test = age_test[perm]
 gm_imgs_test = gm_imgs_test[perm]

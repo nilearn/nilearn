@@ -38,9 +38,10 @@ from nilearn.input_data import NiftiMasker
 mask_filename = haxby_dataset.mask_vt[0]
 masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 func_filename = haxby_dataset.func[0]
-masked_timecourses = masker.fit_transform(func_filename)[np.logical_not(resting_state)]
+masked_timecourses = masker.fit_transform(
+    func_filename)[np.logical_not(resting_state)]
 
-### Classifiers definition
+# Classifiers definition
 
 # A support vector classifier
 from sklearn.svm import SVC
@@ -65,7 +66,8 @@ logistic_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
                            param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
                            scoring='f1')
 logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l2"),
-                              param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
+                              param_grid={
+                                  'C': [.1, .5, 1., 5., 10., 50., 100.]},
                               scoring='f1')
 
 ridge = RidgeClassifier()
@@ -93,7 +95,8 @@ for classifier_name, classifier in sorted(classifiers.items()):
     print(70 * '_')
 
     for category in categories:
-        classification_target = stimuli[np.logical_not(resting_state)] == category
+        classification_target = stimuli[
+            np.logical_not(resting_state)] == category
         t0 = time.time()
         classifiers_scores[classifier_name][category] = cross_val_score(
             classifier,
@@ -140,7 +143,8 @@ mean_epi_img = image.mean_img(func_filename)
 
 # Restrict the decoding to face vs house
 condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
-masked_timecourses = masked_timecourses[condition_mask[np.logical_not(resting_state)]]
+masked_timecourses = masked_timecourses[
+    condition_mask[np.logical_not(resting_state)]]
 stimuli = stimuli[condition_mask]
 # Transform the stimuli to binary values
 stimuli = (stimuli == b'face').astype(np.int)

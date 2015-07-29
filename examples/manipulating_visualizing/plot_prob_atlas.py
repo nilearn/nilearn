@@ -49,6 +49,6 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
                'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf'])}
 
 for name, atlas in sorted(atlas_types.items()):
-        plotting.plot_prob_atlas(atlas, title=name)
+    plotting.plot_prob_atlas(atlas, title=name)
 
 plotting.show()

@@ -26,7 +26,7 @@ decoder = SpaceNetRegressor(mask=mask_img, penalty="tv-l1",
                             memory="cache")
 decoder.fit(zmaps, object_category)  # fit
 
-### Visualize TV-L1 weights
+# Visualize TV-L1 weights
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_stat_map
 plot_stat_map(decoder.coef_img_, title="tv-l1", display_mode="yz",
@@ -39,7 +39,7 @@ decoder = SpaceNetRegressor(mask=mask_img, penalty="graph-net",
                             memory="cache")
 decoder.fit(zmaps, object_category)  # fit
 
-### Visualize Graph-Net weights
+# Visualize Graph-Net weights
 plot_stat_map(decoder.coef_img_, title="graph-net",
               display_mode="yz", cut_coords=[20, -2])
 

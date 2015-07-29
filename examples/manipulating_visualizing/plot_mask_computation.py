@@ -94,8 +94,8 @@ trended_data = trended.fit_transform(nyu_img)
 detrended_data = detrended.fit_transform(nyu_img)
 
 print("Trended: mean %.2f, std %.2f" %
-       (np.mean(trended_data), np.std(trended_data)))
+      (np.mean(trended_data), np.std(trended_data)))
 print("Detrended: mean %.2f, std %.2f" %
-       (np.mean(detrended_data), np.std(detrended_data)))
+      (np.mean(detrended_data), np.std(detrended_data)))
 
 show()

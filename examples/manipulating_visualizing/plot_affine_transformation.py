@@ -76,7 +76,7 @@ source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
 img = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
 img_in_mm_space = resample_img(img, target_affine=np.eye(4),
-                                 target_shape=(512, 512, 1))
+                               target_shape=(512, 512, 1))
 
 target_affine_3x3 = np.eye(3) * 2
 target_affine_4x4 = np.eye(4) * 2
