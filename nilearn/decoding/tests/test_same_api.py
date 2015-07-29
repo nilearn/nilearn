@@ -134,13 +134,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
 
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
                                                         decimal=2):
-<<<<<<< HEAD
     ###############################################################
     # graph_net_solver and tvl1_solver should give same results
-=======
-    #
-    # smoothlasso_solver and tvl1_solver should give same results
->>>>>>> Super PEP8
     # when l1_ratio = 1.
     #
 
@@ -170,15 +165,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
                                          decimal=decimal)
 
 
-<<<<<<< HEAD
 def test_graph_net_and_tv_same_for_pure_l1_another_test(decimal=1):
     ###############################################################
     # graph_net_solver and tvl1_solver should give same results
-=======
-def test_smoothlasso_and_tv_same_for_pure_l1_another_test(decimal=1):
-    #
-    # smoothlasso_solver and tvl1_solver should give same results
->>>>>>> Super PEP8
     # when l1_ratio = 1.
     #
 
