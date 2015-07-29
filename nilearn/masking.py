@@ -254,8 +254,6 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     if verbose > 0:
         print("EPI mask computation")
 
-    epi_img = _utils.check_niimg(epi_img)
-
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
     mean_epi, affine = cache(_compute_mean, memory)(epi_img,

@@ -14,7 +14,6 @@ from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
 from nilearn._utils import testing, niimg_conversions
-from nilearn._utils import niimg
 from nilearn.image import new_img_like
 
 
