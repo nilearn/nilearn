@@ -100,7 +100,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     ###############################################################
     # graph_net_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
-    #
+    ###############################################################
 
     X, y, _, mask = _make_data()
     alpha = .1
@@ -137,7 +137,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     ###############################################################
     # graph_net_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
-    #
+    ###############################################################
 
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -169,7 +169,7 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(decimal=1):
     ###############################################################
     # graph_net_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
-    #
+    ###############################################################
 
     dim = (3, 3, 3)
     X, y, _, mask = _make_data(masked=True, dim=dim)

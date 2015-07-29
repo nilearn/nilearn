@@ -15,7 +15,7 @@ from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.extmath import fast_abs_percentile
 
 
-#
+##############################################################################
 # Some smoke testing for graphics-related code
 
 def test_demo_ortho_slicer():

@@ -10,7 +10,7 @@ from sklearn.base import BaseEstimator
 
 from nilearn._utils import class_inspect
 
-#
+##############################################################################
 # Helpers for the tests
 
 
@@ -43,7 +43,7 @@ def get_scope_name(stack=0, *args, **kwargs):
     return get_scope_name(stack - 1, *args, **kwargs)
 
 
-#
+##############################################################################
 # The tests themselves
 
 def test_get_params():
