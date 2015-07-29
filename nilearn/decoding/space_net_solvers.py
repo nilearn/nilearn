@@ -78,6 +78,7 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     Returns
     -------
     ndarray, shape (n_features,)
+        Derivative of _squared_loss_and_spatial_grad function.
     """
     data_section = np.dot(X, w) - y
     image_buffer = np.zeros(mask.shape)
@@ -140,12 +141,11 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
         Unmasked, ravelized weights map.
 
     grad_weight: float
-        l1_ratio * alpha
+        l1_ratio * alpha.
 
     Returns
     -------
-    float
-
+    ndarray
     """
     n_samples, _ = X.shape
     out = X.T.dot(w[:n_samples])
@@ -156,7 +156,7 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
 
 
 def _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
-                                               n_iterations=100):
+                                                n_iterations=100):
     """
     Computes the lipschitz constant of the gradient of the smooth part
     of the Graph-Net regression problem (squared_loss + grad_weight*grad)
@@ -186,7 +186,7 @@ def _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight,
 
 
 def _logistic_derivative_lipschitz_constant(X, mask, grad_weight,
-                                           n_iterations=100):
+                                            n_iterations=100):
     """
     Computes the lipschitz constant of the gradient of the smooth part
     of the Graph-Net classification problem (logistic_loss +
@@ -368,6 +368,7 @@ def _tvl1_objective_from_gradient(gradient):
     Returns
     -------
     float
+        Value of TV-L1 penalty.
     """
 
     tv_term = np.sum(np.sqrt(np.sum(gradient[:-1] * gradient[:-1],
@@ -376,12 +377,13 @@ def _tvl1_objective_from_gradient(gradient):
     return l1_term + tv_term
 
 
-def tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
+def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
     """The TV-L1 squared loss regression objective functions.
 
     Returns
     -------
     float
+        Value of TV-L1 penalty.
     """
 
     loss = loss.lower()
@@ -502,7 +504,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
     def total_energy(w):
-        return tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss=loss)
+        return _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss=loss)
 
     # Lipschitz constant of f1_grad
     if lipschitz_constant is None:
