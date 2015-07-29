@@ -84,7 +84,7 @@ masker.fit(nyu_img)
 plot_roi(masker.mask_img_, nyu_mean_img,
          title='EPI Mask: high lower_cutoff')
 
-################################################################################
+###############################################################################
 # Extract time series
 
 # trended vs detrended

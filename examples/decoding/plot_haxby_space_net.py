@@ -32,7 +32,7 @@ y_train = target[condition_mask_train]
 y_test = target[condition_mask_test]
 
 
-### Loop over Graph-Net and TV-L1 penalties ####################################
+### Loop over Graph-Net and TV-L1 penalties ###################################
 from nilearn.decoding import SpaceNetClassifier
 import matplotlib.pyplot as plt
 from nilearn.image import mean_img
