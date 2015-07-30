@@ -53,6 +53,12 @@ from sklearn.metrics import make_scorer
 
 # from .._utils.fixes.scorer import check_scoring
 
+# scikit-learn 0.13
+# ImportError: cannot import name ParameterGrid (>=0.14)
+# ImportError: cannot import name check_X_y (>=0.16)
+# ImportError: cannot import name scorer and make_scorer (>=0.14)
+
+
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
@@ -306,7 +312,6 @@ class Decoder(BaseEstimator):
         cv_pred = {}
         cv_true = {}
         self.cv_params_ = {}
-        # XXX change this here to a list of dict
         for c, best_coef, best_intercept, best_y, best_params in results:
             coefs.setdefault(c, []).append(best_coef)
             intercepts.setdefault(c, []).append(best_intercept)
@@ -324,12 +329,12 @@ class Decoder(BaseEstimator):
                 intercepts.setdefault(other_class, []).append(-best_intercept)
 
         # Transforming cv_pred into a list of dict
-        y_prob = []
+        cv_pred_ = []
         for i in range(len(cv_pred[cv_pred.keys()[0]])):
-            cv_pred_ = {}
+            tmp = {}
             for c, cv_pred_values in cv_pred.items():
-                cv_pred_[c] = cv_pred_values[i]
-            y_prob.append(cv_pred_)
+                tmp[c] = cv_pred_values[i]
+            cv_pred_.append(tmp)
 
         self.cv_y_pred_ = []
         self.cv_y_true_ = []
@@ -337,8 +342,8 @@ class Decoder(BaseEstimator):
 
         if is_classification_:
             classes = self.classes_
-            for k in range(len(y_prob)):
-                y_prob_ = np.vstack([y_prob[k][c] for c in classes]).T
+            for k in range(len(cv_pred_)):
+                y_prob_ = np.vstack([cv_pred_[k][c] for c in classes]).T
                 y_pred_ = self.classes_[np.argmax(y_prob_, axis=1)]
                 y_true_ = cv_true[cv_true.keys()[0]][k]
 
@@ -347,8 +352,8 @@ class Decoder(BaseEstimator):
                 self.cv_scores_.append(scorer._score_func(y_true_, y_pred_))
         else:
             classes = classes_to_predict
-            for k in range(len(y_prob)):
-                y_pred_ = np.vstack([y_prob[k][c] for c in classes]).T
+            for k in range(len(cv_pred_)):
+                y_pred_ = np.vstack([cv_pred_[k][c] for c in classes]).T
                 y_true_ = cv_true[cv_true.keys()[0]][k]
 
                 self.cv_y_pred_.append(y_pred_)
