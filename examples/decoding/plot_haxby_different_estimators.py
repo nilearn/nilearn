@@ -95,8 +95,8 @@ for classifier_name, classifier in sorted(classifiers.items()):
     print(70 * '_')
 
     for category in categories:
-        classification_target = stimuli[
-            np.logical_not(resting_state)] == category
+        task_mask = np.logical_not(resting_state)
+        classification_target = (stimuli[task_mask] == category)
         t0 = time.time()
         classifiers_scores[classifier_name][category] = cross_val_score(
             classifier,
