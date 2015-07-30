@@ -65,6 +65,11 @@ class region_signal_extractor(object):
         limit the number of regions to extract from a set of
         brain maps.
 
+    masker: Niimg-like image/object instance of NiftiMasker, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask is used. If no mask is provided, this function
+        will automatically compute mask from NiftiMasker.
+
     min_size: int, default size 20, optional
         suppresses the smallest spurious regions by selecting
         the regions with the size of voxels survived more than
@@ -97,7 +102,7 @@ class region_signal_extractor(object):
 
     Returns
     -------
-    regions_: a 4D Nifti like image/object
+    regions_: Niimg-like image/object
         a list of seperate regions with each region lying on
         a 3D volume concatenated into a 4D Nifti object.
 
@@ -112,16 +117,30 @@ class region_signal_extractor(object):
       brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
       Sep 2014, Boston, United States. pp.8
     """
-    def __init__(self, n_regions=None, min_size=20,
+    def __init__(self, n_regions=None,
+                 masker=None, min_size=20,
                  threshold='auto',
                  extractor='voxel_regions',
                  smooth_fwhm=6., verbose=0):
         self.n_regions = n_regions
+        self.masker = masker
         self.min_size = min_size
         self.threshold = threshold
         self.extractor = extractor
         self.smooth_fwhm = smooth_fwhm
         self.verbose = verbose
+
+    def fit(self, mask_img, maps_img):
+        """ Compute the mask and fit the mask to the data.
+
+        Parameters
+        ----------
+        mask_img:
+
+        maps_img:
+        """
+        if self.mask is None:
+            raise ValueError("Please provide a ")
 
     def transform(self, maps_img):
         """ Extract the regions from the maps
