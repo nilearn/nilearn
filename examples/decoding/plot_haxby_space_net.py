@@ -22,17 +22,17 @@ condition_mask = np.logical_or(target == "face", target == "house")
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 
-### make X (design matrix) and y (response variable)
+# make X (design matrix) and y (response variable)
 import nibabel
 from nilearn.image import index_img
-niimgs  = nibabel.load(data_files.func[0])
+niimgs = nibabel.load(data_files.func[0])
 X_train = index_img(niimgs, condition_mask_train)
 X_test = index_img(niimgs, condition_mask_test)
 y_train = target[condition_mask_train]
 y_test = target[condition_mask_test]
 
 
-### Loop over Graph-Net and TV-L1 penalties ####################################
+### Loop over Graph-Net and TV-L1 penalties ###################################
 from nilearn.decoding import SpaceNetClassifier
 import matplotlib.pyplot as plt
 from nilearn.image import mean_img

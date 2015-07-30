@@ -46,7 +46,7 @@ session = session[condition_mask]
 
 ### Prediction function #######################################################
 
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
 svc = SVC(kernel='linear')
@@ -55,7 +55,7 @@ svc = SVC(kernel='linear')
 
 from sklearn.feature_selection import SelectKBest, f_classif
 
-### Define the dimension reduction to be used.
+# Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 500
 feature_selection = SelectKBest(f_classif, k=500)
@@ -73,7 +73,7 @@ y_pred = anova_svc.predict(X)
 
 ### Visualization #############################################################
 
-### Look at the SVC's discriminating weights
+# Look at the SVC's discriminating weights
 coef = svc.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
@@ -81,7 +81,7 @@ coef = feature_selection.inverse_transform(coef)
 weight_img = nifti_masker.inverse_transform(coef)
 
 
-### Create the figure
+# Create the figure
 from nilearn import image
 from nilearn.plotting import plot_stat_map, show
 
@@ -90,19 +90,19 @@ mean_img = image.mean_img(func_filename)
 
 plot_stat_map(weight_img, mean_img, title='SVM weights')
 
-### Saving the results as a Nifti file may also be important
+# Saving the results as a Nifti file may also be important
 weight_img.to_filename('haxby_face_vs_house.nii')
 
 ### Cross validation ##########################################################
 
 from sklearn.cross_validation import LeaveOneLabelOut
 
-### Define the cross-validation scheme used for validation.
+# Define the cross-validation scheme used for validation.
 # Here we use a LeaveOneLabelOut cross-validation on the session label
 # divided by 2, which corresponds to a leave-two-session-out
 cv = LeaveOneLabelOut(session // 2)
 
-### Compute the prediction accuracy for the different folds (i.e. session)
+# Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = []
 for train, test in cv:
     anova_svc.fit(X[train], y[train])
@@ -111,13 +111,13 @@ for train, test in cv:
 
 ### Print results #############################################################
 
-### Return the corresponding mean prediction accuracy
+# Return the corresponding mean prediction accuracy
 classification_accuracy = np.mean(cv_scores)
 
-### Printing the results
+# Printing the results
 print("=== ANOVA ===")
-print("Classification accuracy: %.4f / Chance level: %f" % \
-    (classification_accuracy, 1. / n_conditions))
+print("Classification accuracy: %.4f / Chance level: %f" %
+      (classification_accuracy, 1. / n_conditions))
 # Classification accuracy: 0.9861 / Chance level: 0.5000
 
 show()

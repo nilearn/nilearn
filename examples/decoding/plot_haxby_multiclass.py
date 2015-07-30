@@ -46,7 +46,7 @@ session = session[non_rest]
 
 ### Predictor #################################################################
 
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
 from sklearn.feature_selection import SelectKBest, f_classif
@@ -54,14 +54,14 @@ from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.pipeline import Pipeline
 
 svc_ovo = OneVsOneClassifier(Pipeline([
-                ('anova', SelectKBest(f_classif, k=500)),
-                ('svc', SVC(kernel='linear'))
-                ]))
+    ('anova', SelectKBest(f_classif, k=500)),
+    ('svc', SVC(kernel='linear'))
+]))
 
 svc_ova = OneVsRestClassifier(Pipeline([
-                ('anova', SelectKBest(f_classif, k=500)),
-                ('svc', SVC(kernel='linear'))
-                ]))
+    ('anova', SelectKBest(f_classif, k=500)),
+    ('svc', SVC(kernel='linear'))
+]))
 
 ### Cross-validation scores ###################################################
 from sklearn.cross_validation import cross_val_score

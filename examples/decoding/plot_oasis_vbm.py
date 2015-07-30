@@ -74,12 +74,12 @@ print("%d samples, %d features" % (n_subjects, n_features))
 
 ### Prediction with SVR #######################################################
 print("ANOVA + SVR")
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVR
 svr = SVR(kernel='linear')
 
-### Dimension reduction
+# Dimension reduction
 from sklearn.feature_selection import SelectKBest, f_regression
 
 # Here we use a classical univariate feature selection based on F-test,
@@ -96,15 +96,15 @@ anova_svr = Pipeline([('anova', feature_selection), ('svr', svr)])
 anova_svr.fit(gm_maps_masked, age)
 age_pred = anova_svr.predict(gm_maps_masked)
 
-### Visualization
-### Look at the SVR's discriminating weights
+# Visualization
+# Look at the SVR's discriminating weights
 coef = svr.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
 # reverse masking
 weight_img = nifti_masker.inverse_transform(coef)
 
-### Create the figure
+# Create the figure
 from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
@@ -122,11 +122,11 @@ display = plot_stat_map(weight_img, bg_img=bg_filename,
                         figure=fig, vmax=vmax)
 display.title('SVM weights', y=1.2)
 
-### Measure accuracy with cross validation
+# Measure accuracy with cross validation
 from sklearn.cross_validation import cross_val_score
 cv_scores = cross_val_score(anova_svr, gm_maps_masked, age)
 
-### Return the corresponding mean prediction accuracy
+# Return the corresponding mean prediction accuracy
 prediction_accuracy = np.mean(cv_scores)
 print("=== ANOVA ===")
 print("Prediction accuracy: %f" % prediction_accuracy)
@@ -135,7 +135,7 @@ print("")
 ### Inference with massively univariate model #################################
 print("Massively univariate model")
 
-### Statistical inference
+# Statistical inference
 from nilearn.mass_univariate import permuted_ols
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
@@ -145,7 +145,7 @@ signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals)
 
-### Show results
+# Show results
 threshold = -np.log10(0.1)  # 10% corrected
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')

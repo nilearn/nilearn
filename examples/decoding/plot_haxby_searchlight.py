@@ -57,7 +57,7 @@ process_mask_img = new_img_like(mask_img, process_mask)
 #     information output.
 n_jobs = 1
 
-### Define the cross-validation scheme used for validation.
+# Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the session, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
@@ -99,7 +99,7 @@ plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
               title="Searchlight", display_mode="z", cut_coords=[-16],
               colorbar=False)
 
-### F_score results
+# F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 plot_stat_map(new_img_like(mean_fmri, p_ma), mean_fmri,
               title="F-scores", display_mode="z",

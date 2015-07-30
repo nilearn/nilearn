@@ -68,7 +68,7 @@ session = session[condition_mask]
 
 ### Prediction function #######################################################
 
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
 svc = SVC(kernel='linear')
@@ -77,7 +77,7 @@ svc = SVC(kernel='linear')
 
 from sklearn.feature_selection import SelectKBest, f_classif
 
-### Define the dimension reduction to be used.
+# Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 500
 feature_selection = SelectKBest(f_classif, k=500)

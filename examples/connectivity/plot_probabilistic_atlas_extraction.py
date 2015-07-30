@@ -34,7 +34,7 @@ names = labels['name']
 
 from nilearn.input_data import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
-                           memory='nilearn_cache', verbose=5)
+                         memory='nilearn_cache', verbose=5)
 
 data = datasets.fetch_adhd(n_subjects=1)
 
