@@ -98,7 +98,6 @@ class GroupIterator(object):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'. Defaut is 1
     """
-
     def __init__(self, n_features, n_jobs=1):
         self.n_features = n_features
         if n_jobs == -1:
