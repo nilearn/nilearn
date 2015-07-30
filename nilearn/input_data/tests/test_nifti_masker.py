@@ -20,10 +20,13 @@ from numpy.testing import assert_array_equal
 from nibabel import Nifti1Image
 import nibabel
 
-from nilearn.input_data.nifti_masker import NiftiMasker
+from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn._utils import testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import index_img
+from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.class_inspect import get_params
 
 
 def test_auto_mask():
@@ -297,3 +300,18 @@ def test_compute_epi_mask():
 
     assert_false(np.allclose(mask1.get_data(),
                              mask4.get_data()[3:12, 3:12]))
+
+
+def test_filter_and_mask():
+    data = np.zeros([20, 30, 40, 5])
+    mask = np.zeros([20, 30, 40, 2])
+    mask[10, 15, 20, :] = 1
+
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker()
+    params = get_params(NiftiMasker, masker)
+
+    assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
+                         data_img, mask_img, params)

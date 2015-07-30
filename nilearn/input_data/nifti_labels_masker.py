@@ -4,21 +4,31 @@ Transformer for computing ROI signals.
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
 from .. import _utils
-from .._utils import logger
-from .._utils import CacheMixin
-from .._utils import _compose_err_msg
+from .._utils import logger, CacheMixin, _compose_err_msg
+from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import region
 from .. import masking
 from .. import image
-from .base_masker import filter_and_extract
+from .base_masker import filter_and_extract, BaseMasker
 
 
-class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class _ExtractionFunctor(object):
+
+    def __init__(self, _resampled_labels_img_, background_label):
+        self._resampled_labels_img_ = _resampled_labels_img_
+        self.background_label = background_label
+
+    def __call__(self, imgs):
+        return region.img_to_signals_labels(
+            imgs, self._resampled_labels_img_,
+            background_label=self.background_label)
+
+
+class NiftiLabelsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
@@ -165,8 +175,8 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     interpolation="nearest",
                     copy=True)
             else:
-                raise ValueError("Invalid value for resampling_target: "
-                                 + str(self.resampling_target))
+                raise ValueError("Invalid value for resampling_target: " +
+                                 str(self.resampling_target))
 
             mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
 
@@ -181,7 +191,7 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def transform(self, imgs, confounds=None):
+    def transform_single_imgs(self, imgs, confounds=None):
         """Extract signals from images.
 
         Parameters
@@ -203,7 +213,6 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             shape: (number of scans, number of regions)
 
         """
-        self._check_fitted()
 
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
@@ -221,30 +230,29 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.get_affine())
 
-        def extraction_function(imgs):
-            return region.img_to_signals_labels(
-                imgs, self._resampled_labels_img_,
-                background_label=self.background_label)
-
         target_shape = None
         target_affine = None
         if self.resampling_target == 'labels':
             target_shape = self._resampled_labels_img_.shape[:3]
             target_affine = self._resampled_labels_img_.get_affine()
 
+        params = get_params(NiftiLabelsMasker, self,
+                            ignore=['resampling_target'])
+        params['target_shape'] = target_shape
+        params['target_affine'] = target_affine
+
         region_signals, labels_ = self._cache(
                 filter_and_extract,
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
-            imgs, extraction_function,
+            imgs, _ExtractionFunctor(self._resampled_labels_img_,
+                                     self.background_label),
             # Pre-processing
-            self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
-            self.low_pass, self.high_pass, confounds,
+            params,
+            confounds=confounds,
             # Caching
-            self.memory, self.memory_level,
-            # kwargs
-            target_shape=target_shape,
-            target_affine=target_affine,
+            memory=self.memory,
+            memory_level=self.memory_level,
             verbose=self.verbose)
 
         self.labels_ = labels_

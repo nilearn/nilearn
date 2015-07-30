@@ -5,16 +5,16 @@ Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
 import sklearn
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
 from distutils.version import LooseVersion
 
 from .._utils import CacheMixin
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
+from .._utils.class_inspect import get_params
 from .. import image
 from .. import masking
-from .base_masker import filter_and_extract
+from .base_masker import filter_and_extract, BaseMasker
 
 
 def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
@@ -64,7 +64,26 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
         yield X[:, row]
 
 
-class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class _ExtractionFunctor(object):
+
+    def __init__(self, seeds_, radius, mask_img):
+        self.seeds_ = seeds_
+        self.radius = radius
+        self.mask_img = mask_img
+
+    def __call__(self, imgs):
+        n_seeds = len(self.seeds_)
+        imgs = check_niimg_4d(imgs)
+
+        signals = np.empty((imgs.shape[3], n_seeds))
+        for i, sphere in enumerate(_iter_signals_from_spheres(
+                self.seeds_, imgs, self.radius, mask_img=self.mask_img)):
+            signals[:, i] = np.mean(sphere, axis=1)
+
+        return signals, None
+
+
+class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects using seeds.
 
     NiftiSpheresMasker is useful when data from given seeds should be
@@ -200,7 +219,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def transform(self, imgs, confounds=None):
+    def transform_single_imgs(self, imgs, confounds=None):
         """Extract signals from Nifti-like objects.
 
         Parameters
@@ -224,27 +243,19 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         self._check_fitted()
 
-        def _signals_from_spheres(imgs):
-            n_seeds = len(self.seeds_)
-            imgs = check_niimg_4d(imgs)
-
-            signals = np.empty((imgs.shape[3], n_seeds))
-            for i, sphere in enumerate(_iter_signals_from_spheres(
-                    self.seeds_, imgs, self.radius, mask_img=self.mask_img)):
-                signals[:, i] = np.mean(sphere, axis=1)
-
-            return signals, None
+        params = get_params(NiftiSpheresMasker, self)
 
         signals, _ = self._cache(
                 filter_and_extract,
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
-            imgs, _signals_from_spheres,
+            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img),
             # Pre-processing
-            self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
-            self.low_pass, self.high_pass, confounds,
+            params,
+            confounds=confounds,
             # Caching
-            self.memory, self.memory_level,
+            memory=self.memory,
+            memory_level=self.memory_level,
             # kwargs
             verbose=self.verbose)
 

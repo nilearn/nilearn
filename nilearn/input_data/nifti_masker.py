@@ -16,6 +16,49 @@ from .base_masker import BaseMasker, filter_and_extract
 from nilearn._utils.niimg_conversions import _check_same_fov
 
 
+class _ExtractionFunctor(object):
+
+    def __init__(self, mask_img_):
+        self.mask_img_ = mask_img_
+
+    def __call__(self, imgs):
+        return masking.apply_mask(imgs, self.mask_img_), imgs.get_affine()
+
+
+def filter_and_mask(imgs, mask_img_, parameters,
+                    memory_level=0, memory=Memory(cachedir=None),
+                    verbose=0,
+                    confounds=None,
+                    copy=True):
+
+    imgs = _utils.check_niimg(imgs, atleast_4d=True)
+
+    # Check whether resampling is truly necessary. If so, crop mask
+    # as small as possible in order to speed up the process
+
+    if not _check_same_fov(imgs, mask_img_):
+        parameters = copy_object(parameters)
+        # now we can crop
+        mask_img_ = image.crop_img(mask_img_, copy=False)
+        parameters['target_shape'] = mask_img_.shape
+        parameters['target_affine'] = mask_img_.get_affine()
+
+    data, affine = filter_and_extract(imgs, _ExtractionFunctor(mask_img_),
+                                      parameters,
+                                      memory_level=memory_level,
+                                      memory=memory,
+                                      verbose=verbose,
+                                      confounds=confounds, copy=copy)
+
+    # For _later_: missing value removal or imputing of missing data
+    # (i.e. we want to get rid of NaNs, if smoothing must be done
+    # earlier)
+    # Optionally: 'doctor_nan', remove voxels with NaNs, other option
+    # for later: some form of imputation
+
+    return data, affine
+
+
 class NiftiMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
@@ -151,15 +194,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def _get_call_params(self):
-        # Ignore the mask-computing params: they are not useful and will
-        # just invalid the cache for no good reason
-        # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(self.__class__, self,
-                            ignore=['mask_img', 'mask_args', 'mask_strategy'])
-        params['mask_img_'] = self.mask_img_
-        return params
-
     def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data
 
@@ -216,58 +250,21 @@ class NiftiMasker(BaseMasker, CacheMixin):
             print("[%s.fit] Finished fit" % self.__class__.__name__)
         return self
 
-    @staticmethod
-    def filter_and_mask(imgs, parameters,
-                        memory_level=0,
-                        memory=Memory(cachedir=None),
-                        verbose=0,
-                        confounds=None,
-                        copy=True):
+    def transform_single_imgs(self, imgs, confounds=None, copy=True):
 
-        mask_img_ = parameters['mask_img_']
-        imgs = _utils.check_niimg(imgs, atleast_4d=True)
+        # Ignore the mask-computing params: they are not useful and will
+        # just invalid the cache for no good reason
+        # target_shape and target_affine are conveyed implicitly in mask_img
+        params = get_params(self.__class__, self,
+                            ignore=['mask_img', 'mask_args', 'mask_strategy'])
 
-        # Check whether resampling is truly necessary. If so, crop mask
-        # as small as possible in order to speed up the process
-
-        if not _check_same_fov(imgs, mask_img_):
-            parameters = copy_object(parameters)
-            # now we can crop
-            mask_img_ = image.crop_img(mask_img_, copy=False)
-            parameters['target_shape'] = mask_img_.shape
-            parameters['target_affine'] = mask_img_.get_affine()
-
-        def extraction_function(imgs):
-            return masking.apply_mask(imgs, mask_img_), imgs.get_affine()
-
-        data, affine = filter_and_extract(imgs, extraction_function,
-                                          memory_level=memory_level,
-                                          memory=memory,
-                                          verbose=verbose,
-                                          confounds=confounds, copy=copy,
-                                          **parameters)
-
-        # For _later_: missing value removal or imputing of missing data
-        # (i.e. we want to get rid of NaNs, if smoothing must be done
-        # earlier)
-        # Optionally: 'doctor_nan', remove voxels with NaNs, other option
-        # for later: some form of imputation
-
-        return data, affine
-
-    def transform(self, imgs, confounds=None):
-        """ Apply mask, spatial and temporal preprocessing
-
-        Parameters
-        ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            Data to be preprocessed
-
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
-        """
-        self._check_fitted()
-
-        return self.transform_single_imgs(imgs, confounds)
+        data, _ = self._cache(filter_and_mask,
+                              ignore=['verbose', 'memory', 'copy'])(
+                                    imgs, self.mask_img_, params,
+                                    memory_level=self.memory_level,
+                                    memory=self.memory,
+                                    verbose=self.verbose,
+                                    confounds=confounds,
+                                    copy=copy
+        )
+        return data

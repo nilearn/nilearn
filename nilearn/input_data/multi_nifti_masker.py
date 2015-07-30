@@ -6,18 +6,21 @@ Transformer used to apply basic transformations on multi subject MRI data.
 
 import warnings
 import collections
+import itertools
 
-from sklearn.externals.joblib import Memory
+from sklearn.externals.joblib import Memory, Parallel, delayed
 
 from .. import masking
 from .. import image
 from .. import _utils
 from .._utils import CacheMixin
-from .base_masker import BaseMasker
-from .._utils.compat import _basestring
+from .nifti_masker import NiftiMasker, filter_and_mask
+from .._utils.compat import _basestring, izip
+from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils.class_inspect import get_params
 
 
-class MultiNiftiMasker(BaseMasker, CacheMixin):
+class MultiNiftiMasker(NiftiMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
@@ -210,6 +213,67 @@ class MultiNiftiMasker(BaseMasker, CacheMixin):
         # Load data in memory
         self.mask_img_.get_data()
         return self
+
+    def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):
+        ''' Prepare multi subject data in parallel
+
+        Parameters
+        ----------
+
+        imgs_list: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            List of imgs file to prepare. One item per subject.
+
+        confounds: list of confounds, optional
+            List of confounds (2D arrays or filenames pointing to CSV
+            files). Must be of same length than imgs_list.
+
+        copy: boolean, optional
+            If True, guarantees that output array has no memory in common with
+            input array.
+
+        n_jobs: integer, optional
+            The number of cpus to use to do the computation. -1 means
+            'all cpus'.
+        '''
+
+        if not hasattr(self, 'mask_img_'):
+            raise ValueError('It seems that %s has not been fitted. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
+        target_fov = None
+        if self.target_affine is None:
+            # Force resampling on first image
+            target_fov = 'first'
+
+        niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
+                                       atleast_4d=False,
+                                       target_fov=target_fov,
+                                       memory=self.memory,
+                                       memory_level=self.memory_level,
+                                       verbose=self.verbose)
+
+        if confounds is None:
+            confounds = itertools.repeat(None, len(imgs_list))
+
+        # Ignore the mask-computing params: they are not useful and will
+        # just invalid the cache for no good reason
+        # target_shape and target_affine are conveyed implicitly in mask_img
+        params = get_params(self.__class__, self,
+                            ignore=['mask_img', 'mask_args', 'mask_strategy',
+                                    'copy'])
+
+        func = self._cache(filter_and_mask,
+                          ignore=['verbose', 'memory', 'copy'])
+        data = Parallel(n_jobs=n_jobs)(
+            [delayed(func)(imgs, self.mask_img_, params,
+                           memory_level=self.memory_level,
+                           memory=self.memory,
+                           verbose=self.verbose,
+                           confounds=cfs,
+                           copy=copy)
+             for imgs, cfs in izip(niimg_iter, confounds)])
+        return list(zip(*data))[0]
 
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing

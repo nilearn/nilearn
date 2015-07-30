@@ -2,19 +2,30 @@
 Transformer for computing ROI signals.
 """
 
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
 from .. import _utils
-from .._utils import logger
-from .._utils import CacheMixin
+from .._utils import logger, CacheMixin
+from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import region
 from .. import image
-from .base_masker import filter_and_extract
+from .base_masker import filter_and_extract, BaseMasker
 
 
-class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class _ExtractionFunctor(object):
+
+    def __init__(self, _resampled_maps_img_, _resampled_mask_img_):
+        self._resampled_maps_img_ = _resampled_maps_img_
+        self._resampled_mask_img_ = _resampled_mask_img_
+
+    def __call__(self, imgs):
+            return region.img_to_signals_maps(
+                imgs, self._resampled_maps_img_,
+                mask_img=self._resampled_mask_img_)
+
+
+class NiftiMapsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiMapsMasker is useful when data from overlapping volumes should be
@@ -181,7 +192,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def fit_transform(self, imgs, confounds=None):
         return self.fit().transform(imgs, confounds=confounds)
 
-    def transform(self, imgs, confounds=None):
+    def transform_single_imgs(self, imgs, confounds=None):
         """Extract signals from images.
 
         Parameters
@@ -202,8 +213,6 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Signal for each region.
             shape: (number of scans, number of regions)
         """
-        self._check_fitted()
-
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
@@ -247,29 +256,29 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
 
-        def extraction_function(imgs):
-            return region.img_to_signals_maps(
-                imgs, self._resampled_maps_img_,
-                mask_img=self._resampled_mask_img_)
-
         target_shape = None
         target_affine = None
         if self.resampling_target != 'data':
             target_shape = self._resampled_maps_img_.shape[:3]
             target_affine = self._resampled_maps_img_.get_affine()
 
+        params = get_params(NiftiMapsMasker, self,
+                            ignore=['resampling_target'])
+        params['target_shape'] = target_shape
+        params['target_affine'] = target_affine
+
         region_signals, labels_ = self._cache(
             filter_and_extract, ignore=['verbose', 'memory', 'memory_level'])(
                 # Images
-                imgs, extraction_function,
+                imgs, _ExtractionFunctor(self._resampled_maps_img_,
+                                         self._resampled_mask_img_),
                 # Pre-treatments
-                self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
-                self.low_pass, self.high_pass, confounds,
+                params,
+                confounds=confounds,
                 # Caching
-                self.memory, self.memory_level,
+                memory=self.memory,
+                memory_level=self.memory_level,
                 # kwargs
-                target_shape=target_shape,
-                target_affine=target_affine,
                 verbose=self.verbose)
         self.labels_ = labels_
 

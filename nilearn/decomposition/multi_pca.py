@@ -12,7 +12,7 @@ from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
-from ..input_data.base_masker import filter_and_mask
+from ..input_data.nifti_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache, CacheMixin
 from .._utils import as_ndarray
