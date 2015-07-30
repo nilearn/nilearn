@@ -27,7 +27,7 @@ def test_tvl1_from_gradient(size=5, n_samples=10, random_state=42):
 def test_tvl1_objective_raises_value_error_if_invalid_loss():
     assert_raises(ValueError, lambda loss: _tvl1_objective(
         None, None, None, None, None, None, loss=loss),
-                  "invalidloss")
+        "invalidloss")
 
 
 def test_tvl1_solver_raises_value_error_if_invalid_loss():

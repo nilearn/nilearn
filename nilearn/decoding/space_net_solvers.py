@@ -277,7 +277,7 @@ def _graph_net_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
 
     def f1_grad(w):
         return _squared_loss_and_spatial_grad_derivative(X, y, w, mask,
-                                                        grad_weight)
+                                                         grad_weight)
 
     # prox of nonsmooth path of energy (account for the intercept)
     def f2(w):
@@ -297,8 +297,8 @@ def _graph_net_squared_loss(X, y, alpha, l1_ratio, mask, init=None,
 
 
 def _graph_net_logistic(X, y, alpha, l1_ratio, mask, init=None,
-                          max_iter=1000, tol=1e-4, callback=None, verbose=0,
-                          lipschitz_constant=None):
+                        max_iter=1000, tol=1e-4, callback=None, verbose=0,
+                        lipschitz_constant=None):
     """Computes a solution for the Graph-Net classification problem, with
     response vector in {-1, 1}^n_samples.
 
@@ -339,7 +339,7 @@ def _graph_net_logistic(X, y, alpha, l1_ratio, mask, init=None,
 
     def f1_grad(w):
         return _logistic_data_loss_and_spatial_grad_derivative(X, y, w, mask,
-                                                              grad_weight)
+                                                               grad_weight)
 
     # prox of nonsmooth path of energy (account for the intercept)
     def f2(w):
@@ -538,5 +538,5 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
         f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         dgap_factor=(.1 + l1_ratio) ** 2, tol=tol, init=init, verbose=verbose,
         max_iter=max_iter, callback=callback)
- 
+
     return w, obj, init

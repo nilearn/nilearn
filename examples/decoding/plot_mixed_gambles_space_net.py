@@ -8,10 +8,7 @@ The segmenting power of SpaceNet is quite visible here.
 #         GRAMFORT Alexandre
 
 
-### Load data ################################################################
-import numpy as np
-import nibabel
-from scipy import ndimage
+### Load data #################################################################
 from nilearn.datasets import fetch_mixed_gambles
 data = fetch_mixed_gambles(n_subjects=16)
 zmaps, object_category, mask_img = data.zmaps, data.gain, data.mask_img
@@ -33,15 +30,14 @@ plot_stat_map(decoder.coef_img_, title="tv-l1", display_mode="yz",
               cut_coords=[20, -2])
 
 
-### Fit Graph-Net ##########################################################
+### Fit Graph-Net #############################################################
 decoder = SpaceNetRegressor(mask=mask_img, penalty="graph-net",
                             eps=1e-1,  # prefer large alphas
                             memory="cache")
 decoder.fit(zmaps, object_category)  # fit
 
 # Visualize Graph-Net weights
-plot_stat_map(decoder.coef_img_, title="graph-net",
-              display_mode="yz", cut_coords=[20, -2])
-
+plot_stat_map(decoder.coef_img_, title="graph-net", display_mode="yz",
+              cut_coords=[20, -2])
 
 plt.show()

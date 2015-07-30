@@ -42,7 +42,8 @@ def _projector_on_tvl1_dual(grad, l1_ratio):
         end = len(grad) - int(l1_ratio > 0.)
         norm = np.sqrt(np.sum(grad[:end] * grad[:end], 0))
         norm.clip(1., out=norm)  # set everythx < 1 to 1
-        for grad_comp in grad[:end]: grad_comp /= norm
+        for grad_comp in grad[:end]:
+            grad_comp /= norm
 
     # The L1 ball for the identity direction
     if l1_ratio > 0.:
@@ -74,8 +75,8 @@ def _objective_function_prox_tvl1(
 
 
 def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
-              max_iter=200, check_gap_frequency=4, val_min=None, val_max=None,
-              verbose=False, fista=True, init=None):
+               max_iter=200, check_gap_frequency=4, val_min=None, val_max=None,
+               verbose=False, fista=True, init=None):
     """
     Compute the TV-L1 proximal (ie total-variation +l1 denoising) on 3d images.
 
@@ -199,7 +200,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
         grad_aux += grad_tmp
         grad_tmp = _projector_on_tvl1_dual(
             grad_aux, l1_ratio
-            )
+        )
 
         # Careful, in the next few lines, grad_tmp and grad_aux are a
         # view on the same array, as _projector_on_tvl1_dual returns a view
@@ -245,12 +246,12 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 diff = np.max(np.abs(negated_output_old - negated_output))
                 diff /= np.max(np.abs(negated_output))
                 if verbose:
-                    print(('\tProxTVl1 iteration % 2i, relative difference:'
-                           ' % 6.3e, energy: % 6.3e' ) % (i, diff,
-                            _objective_function_prox_tvl1(
-                                input_img, -negated_output, _gradient_id(
-                                    negated_output, l1_ratio=l1_ratio),
-                                weight)))
+                    gid = _gradient_id(negated_output, l1_ratio=l1_ratio)
+                    energy = _objective_function_prox_tvl1(input_img,
+                                                           -negated_output,
+                                                           gid, weight)
+                    print('\tProxTVl1 iteration % 2i, relative difference:'
+                          ' % 6.3e, energy: % 6.3e' % (i, diff, energy))
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output

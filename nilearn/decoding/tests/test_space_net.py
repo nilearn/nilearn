@@ -93,9 +93,10 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
 
 def test_params_correctly_propagated_in_constructors():
     for (penalty, is_classif, n_alphas, l1_ratio, n_jobs,
-         cv, perc) in itertools.product(
-        ["graph-net", "tv-l1"], [True, False],
-             [.1, .01], [.5, 1.], [1, -1], [2, 3], [5, 10]):
+         cv, perc) in itertools.product(["graph-net", "tv-l1"],
+                                        [True, False], [.1, .01],
+                                        [.5, 1.], [1, -1], [2, 3],
+                                        [5, 10]):
         cvobj = BaseSpaceNet(
             mask="dummy", n_alphas=n_alphas, n_jobs=n_jobs, l1_ratios=l1_ratio,
             cv=cv, screening_percentile=perc, penalty=penalty,
@@ -110,7 +111,7 @@ def test_params_correctly_propagated_in_constructors():
 def testlogistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
-    X_, mask = to_niimgs(X, [2, 2, 2])
+    _, mask = to_niimgs(X, [2, 2, 2])
     mask = mask.get_data().astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = logistic_path_scores(

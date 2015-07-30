@@ -12,8 +12,11 @@ def test_get_params():
             kwargs = {}
             for param in ["max_iter", "alphas", "l1_ratios", "verbose",
                           "tol", "mask", "memory", "fit_intercept", "alphas"]:
-                m = BaseSpaceNet(mask='dummy',
-                                 penalty=penalty, is_classif=is_classif, **kwargs)
+                m = BaseSpaceNet(
+                    mask='dummy',
+                    penalty=penalty,
+                    is_classif=is_classif,
+                    **kwargs)
                 try:
                     params = m.get_params()
                 except AttributeError:
@@ -24,4 +27,4 @@ def test_get_params():
 
                 assert_true(param in params,
                             msg="%s doesn't have parameter '%s'." % (
-                            m, param))
+                                m, param))

@@ -2,10 +2,12 @@ from nose.tools import assert_equal, assert_true
 import numpy as np
 from nilearn.decoding.fista import mfista
 from nilearn.decoding.proximal_operators import _prox_l1
-from nilearn.decoding.objective_functions import (_squared_loss, _logistic,
-                                                  _squared_loss_grad,
-                                                  _logistic_loss_lipschitz_constant,
-                                                  spectral_norm_squared)
+from nilearn.decoding.objective_functions import (
+    _squared_loss,
+    _logistic,
+    _squared_loss_grad,
+    _logistic_loss_lipschitz_constant,
+    spectral_norm_squared)
 from nilearn.decoding.fista import _check_lipschitz_continuous
 
 
