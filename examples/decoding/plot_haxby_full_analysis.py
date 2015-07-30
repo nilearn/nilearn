@@ -72,8 +72,8 @@ for mask_name in mask_names:
 
     for category in categories:
         print("Processing %s %s" % (mask_name, category))
-        classification_target = stimuli[
-            np.logical_not(resting_state)] == category
+        task_mask = np.logical_not(resting_state)
+        classification_target = (stimuli[task_mask] == category)
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
             masked_timecourses,
