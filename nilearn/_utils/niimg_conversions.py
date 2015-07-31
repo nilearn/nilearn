@@ -138,6 +138,10 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         % (i, ref_fov[0], niimg.get_affine(), ref_fov[1],
                            niimg.shape))
             yield niimg
+        except DimensionError as exc:
+            # Keep track of the additional dimension in the error
+            exc.increment_stack_counter()
+            raise
         except TypeError as exc:
             img_name = ''
             if isinstance(niimg, _basestring):
@@ -145,10 +149,6 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
             exc.args = (('Error encountered while loading image #%d%s'
                          % (i, img_name),) + exc.args)
-            raise
-        except DimensionError as exc:
-            # Keep track of the additional dimension in the error
-            exc.increment_stack_counter()
             raise
 
 
