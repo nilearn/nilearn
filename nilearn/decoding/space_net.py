@@ -131,7 +131,7 @@ def _univariate_feature_screening(
     mask_ = mask.copy()
     mask_[mask] = (support > 0)
     mask_ = ndimage.binary_dilation(ndimage.binary_erosion(
-                mask_)).astype(np.bool)
+        mask_)).astype(np.bool)
     mask_[np.logical_not(mask)] = 0
     support = mask_[mask]
     X = X[:, support]
@@ -140,7 +140,7 @@ def _univariate_feature_screening(
 
 
 def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
-        logistic=False):
+                          logistic=False):
     """Compute the grid of alpha values for TV-L1 and Graph-Net.
 
     Parameters
@@ -211,6 +211,7 @@ class _EarlyStoppingCallback(object):
         rising. We use a Spearman correlation (btween X_test.w and y_test)
         for scoring.
     """
+
     def __init__(self, X_test, y_test, is_classif, debias=False, verbose=0):
         self.X_test = X_test
         self.y_test = y_test
@@ -718,8 +719,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         if self.memory is None or isinstance(self.memory, _basestring):
             self.memory_ = Memory(self.memory,
                                   verbose=max(0, self.verbose - 1))
-        else: self.memory_ = self.memory
-        if self.verbose: tic = time.time()
+        else:
+            self.memory_ = self.memory
+        if self.verbose:
+            tic = time.time()
 
         # nifti masking
         if isinstance(self.mask, NiftiMasker):
@@ -743,18 +746,24 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
-        if isinstance(l1_ratios, numbers.Number): l1_ratios = [l1_ratios]
+        if isinstance(l1_ratios, numbers.Number):
+            l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if isinstance(alphas, numbers.Number): alphas = [alphas]
-        if not self.loss is None: loss = self.loss
-        elif self.is_classif: loss = "logistic"
-        else: loss = "mse"
+        if isinstance(alphas, numbers.Number):
+            alphas = [alphas]
+        if not self.loss is None:
+            loss = self.loss
+        elif self.is_classif:
+            loss = "logistic"
+        else:
+            loss = "mse"
 
         # set backend solver
         if self.penalty.lower() == "graph-net":
             if not self.is_classif or loss == "mse":
                 solver = _graph_net_squared_loss
-            else: solver = _graph_net_logistic
+            else:
+                solver = _graph_net_logistic
         else:
             if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")
@@ -762,15 +771,19 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                 solver = partial(tvl1_solver, loss="logistic")
 
         # number of problems to solve
-        if self.is_classif: y = self._binarize_y(y)
-        else: y = y[:, np.newaxis]
+        if self.is_classif:
+            y = self._binarize_y(y)
+        else:
+            y = y[:, np.newaxis]
         if self.is_classif and self.n_classes_ > 2:
             n_problems = self.n_classes_
-        else: n_problems = 1
+        else:
+            n_problems = 1
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
-        if n_problems == 1: y = y[:, 0]
+        if n_problems == 1:
+            y = y[:, 0]
 
         # generate fold indices
         if (None in [alphas, l1_ratios] and self.n_alphas > 1) or min(
@@ -1065,6 +1078,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
+
     def __init__(self, penalty="graph-net", loss="logistic",
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
@@ -1232,6 +1246,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
     """
+
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,

@@ -133,7 +133,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
 
 
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
-                                                        decimal=2):
+                                                      decimal=2):
     ###############################################################
     # graph_net_solver and tvl1_solver should give same results
     # when l1_ratio = 1.
@@ -152,12 +152,24 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     b = tvl1_solver(X, y, alpha, 1., loss="logistic", mask=mask,
                     max_iter=max_iter)[0]
     for standardize in [True, False]:
-        sl = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
-                                max_iter=max_iter, mask=mask_, penalty="graph-net",
-                                standardize=standardize).fit(X_, y)
-        tvl1 = SpaceNetClassifier(alphas=alpha, l1_ratios=1.,
-                                  max_iter=max_iter, mask=mask_, penalty="tv-l1",
-                                  standardize=standardize).fit(X_, y)
+        sl = SpaceNetClassifier(
+            alphas=alpha,
+            l1_ratios=1.,
+            max_iter=max_iter,
+            mask=mask_,
+            penalty="graph-net",
+            standardize=standardize).fit(
+            X_,
+            y)
+        tvl1 = SpaceNetClassifier(
+            alphas=alpha,
+            l1_ratios=1.,
+            max_iter=max_iter,
+            mask=mask_,
+            penalty="tv-l1",
+            standardize=standardize).fit(
+            X_,
+            y)
 
     # should be exactly the same (except for numerical errors)
     np.testing.assert_array_almost_equal(a, b, decimal=decimal)

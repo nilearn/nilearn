@@ -298,7 +298,7 @@ def _logistic_loss_grad(X, y, w):
 
 # gradient of squared loss function
 _squared_loss_grad = partial(_squared_loss, compute_energy=False,
-                            compute_grad=True)
+                             compute_grad=True)
 
 
 def _gradient(w):
