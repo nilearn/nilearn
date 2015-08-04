@@ -129,11 +129,12 @@ def test_fetch_haxby():
     for i in range(1, 6):
         haxby = func.fetch_haxby(data_dir=tmpdir, n_subjects=i,
                                  verbose=0)
-        # subject_data + md5
-        assert_equal(len(mock_url_request.urls), 1 + (i == 1))
+        # subject_data + (md5 + mask if first subj)
+        assert_equal(len(mock_url_request.urls), 1 + 2 * (i == 1))
         assert_equal(len(haxby.func), i)
         assert_equal(len(haxby.anat), i)
         assert_equal(len(haxby.session_target), i)
+        assert_true(haxby.mask is not None)
         assert_equal(len(haxby.mask_vt), i)
         assert_equal(len(haxby.mask_face), i)
         assert_equal(len(haxby.mask_house), i)
