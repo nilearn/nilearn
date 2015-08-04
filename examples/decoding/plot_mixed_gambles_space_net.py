@@ -3,6 +3,8 @@ SpaceNet on Jimura et al "mixed gambles" dataset.
 ==================================================
 
 The segmenting power of SpaceNet is quite visible here.
+
+See also the SpaceNet documentation: :ref:`space_net`.
 """
 # author: DOHMATOB Elvis Dopgima,
 #         GRAMFORT Alexandre

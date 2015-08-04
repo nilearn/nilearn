@@ -5,6 +5,8 @@ Decoding with SpaceNet: face vs house object recognition
 Here is a simple example of decoding with a SpaceNet prior (i.e Graph-Net,
 TV-l1, etc.), reproducing the Haxby 2001 study on a face vs house
 discrimination task.
+
+See also the SpaceNet documentation: :ref:`space_net`.
 """
 
 ### Load Haxby dataset ########################################################
