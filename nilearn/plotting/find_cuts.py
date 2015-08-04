@@ -329,8 +329,9 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         if np.all(left_hemi == False) or np.all(right_hemi == False):
             pass
         # Case 2: Connected component spanning both hemispheres
-        #elif np.any(right_hemi[int(x)]) and np.any(left_hemi[int(x-1.)]):
-        #    pass
+        #elif np.any(right_hemi[int(x)]) and np.any(left_hemi[int(x-1)]):
+        #    if not np.any(right_hemi[int(x-10)]) and np.any(left_hemi[int(x-10)]):
+        #        pass
         # Case 3: Two Connected component in both hemispheres
         else:
             if label_hemisphere is 'left':
