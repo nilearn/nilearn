@@ -12,16 +12,11 @@ from scipy import ndimage
 # Local imports
 from .._utils.ndimage import largest_connected_component
 from .._utils import check_niimg, check_niimg_3d
-<<<<<<< HEAD
 from ..image import new_img_like, reorder_img
-=======
-from ..image import new_img_like
->>>>>>> fixes bug in taking largest component and check image, tests amened and passed
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array, iter_img
-from ..image import reorder_img
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -286,10 +281,6 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     labels_img: 3D Nifti1Image
         A brain parcellation atlas with specific mask labels for each parcellated region.
 
-<<<<<<< HEAD
-
-=======
->>>>>>> param to grab coords from hemispheres for laterlized atlases
     background_label: int, optional (default 0)
         Label value used in labels_img to represent background.
 
@@ -304,28 +295,13 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     -------
     coords: array
         Label regions cut coordinates in image space (mm).
-<<<<<<< HEAD
-
-    labels_list: list
-        Label region.
-    coords: List
-        World coordinates for center of label regions
-        World coordinates in mm for center of label regions.
-=======
->>>>>>> param to grab coords from hemispheres for laterlized atlases
 
     labels_list: list
         Label region.
     """
 
-<<<<<<< HEAD
-
     # grab data and affine
-    labels_img = check_niimg_3d(labels_img)
-=======
-    # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
->>>>>>> param to grab coords from hemispheres for laterlized atlases
     labels_data = labels_img.get_data()
     labels_affine = labels_img.get_affine()
 
@@ -353,8 +329,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         if np.all(left_hemi == False) or np.all(right_hemi == False):
             pass
         # Case 2: Connected component spanning both hemispheres
-        elif np.any(right_hemi[int(x)]) and np.any(left_hemi[int(x-1.)]):
-            pass
+        #elif np.any(right_hemi[int(x)]) and np.any(left_hemi[int(x-1.)]):
+        #    pass
         # Case 3: Two Connected component in both hemispheres
         else:
             if label_hemisphere is 'left':
