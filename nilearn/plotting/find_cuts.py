@@ -21,6 +21,7 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array, iter_img
+from ..image import reorder_img
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -285,7 +286,10 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     labels_img: 3D Nifti1Image
         A brain parcellation atlas with specific mask labels for each parcellated region.
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> param to grab coords from hemispheres for laterlized atlases
     background_label: int, optional (default 0)
         Label value used in labels_img to represent background.
 
@@ -300,24 +304,32 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     -------
     coords: array
         Label regions cut coordinates in image space (mm).
+<<<<<<< HEAD
 
     labels_list: list
         Label region.
     coords: List
         World coordinates for center of label regions
         World coordinates in mm for center of label regions.
+=======
+>>>>>>> param to grab coords from hemispheres for laterlized atlases
 
-    labels_list: List
-        Label region values.
+    labels_list: list
+        Label region.
     """
 
+<<<<<<< HEAD
 
     # grab data and affine
     labels_img = check_niimg_3d(labels_img)
+=======
+    # Grab data and affine
+    labels_img = reorder_img(check_niimg_3d(labels_img))
+>>>>>>> param to grab coords from hemispheres for laterlized atlases
     labels_data = labels_img.get_data()
     labels_affine = labels_img.get_affine()
 
-    # grab number of unique values in 3d image
+    # Grab number of unique values in 3d image
     unique_labels = set(np.unique(labels_data)) - set([background_label])
 
     # Loop over parcellation labels, grab center of mass and dump into coords list
@@ -382,7 +394,7 @@ def find_probabilistic_atlas_cut_coords(label_img):
     Returns
     -------
     coords: array of shape (3, n_maps)
-       center coordinates for each label region of the probabilistic atlas.
+       Label regions cut coordinates in image space (mm).
     """
 
     label_img = check_niimg(label_img)
