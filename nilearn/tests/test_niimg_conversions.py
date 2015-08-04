@@ -152,7 +152,7 @@ def test_check_niimg_4d():
 
     # This should raise an error: a 3D img is given and we want a 4D
     assert_raises_regex(DimensionError, 'Data must be a 4D Niimg-like object but '
-                        'you provided',
+                        'you provided a 3D',
                         _utils.check_niimg_4d, img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
