@@ -300,7 +300,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         Label region.
     """
 
-    # grab data and affine
+    # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
     labels_data = labels_img.get_data()
     labels_affine = labels_img.get_affine()
@@ -315,8 +315,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     for cur_label in unique_labels:
         cur_img = labels_data == cur_label
 
-        # Below inspecting whether the current atlas label is laterlized, spans hemipsheres or
-        # disconnected and present in both hemispheres
+        # Below inspecting whether the current atlas label is (a)laterlized, (b)spans hemipsheres, or
+        # (c)is disconnected and present in both hemispheres
 
         # Grab hemispheres separatley
         x,y,z = coord_transform(0,0,0, np.linalg.inv(labels_affine))
@@ -355,9 +355,10 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     coords = [coord_transform(i[0], i[1], i[2], labels_affine) for i in coord_list]
 
     if return_label_names:
-        return np.array(coords), label_list
+        return np.array(coords),label_list
     else:
         return np.array(coords)
+
 
 def find_probabilistic_atlas_cut_coords(label_img):
     """ Return coordinates of center probabilistic atlas 4D image

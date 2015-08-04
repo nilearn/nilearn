@@ -27,6 +27,7 @@ def _set_mpl_backend():
         _import_module_with_version_check('matplotlib',
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
 
+
 _set_mpl_backend()
 
 ###############################################################################
