@@ -103,6 +103,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         'func': string list. Paths to nifti file with bold data.
         'session_target': string list. Paths to text file containing
         session and target data.
+        'mask': string. Path to fullbrain mask file.
         'mask_vt': string list. Paths to nifti ventral temporal mask file.
         'mask_face': string list. Paths to nifti ventral temporal mask file.
         'mask_house': string list. Paths to nifti ventral temporal mask file.
@@ -139,6 +140,11 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     dataset_name = 'haxby2001'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
+
+    # Get the mask
+    url_mask = 'https://www.nitrc.org/frs/download.php/7868/mask.nii.gz'
+    mask = _fetch_files(data_dir, [('mask.nii.gz', url_mask, {})],
+                        verbose=verbose)[0]
 
     # Dataset files
     if url is None:
@@ -191,6 +197,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             mask_house=files[4::n_files],
             mask_face_little=files[5::n_files],
             mask_house_little=files[6::n_files],
+            mask=mask,
             description=fdescr,
             **kwargs)
 
