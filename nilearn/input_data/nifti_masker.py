@@ -31,7 +31,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     confounds=None,
                     copy=True):
 
-    imgs = _utils.check_niimg(imgs, atleast_4d=True)
+    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process
