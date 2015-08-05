@@ -22,6 +22,7 @@ import nibabel
 
 from nilearn.input_data.nifti_masker import NiftiMasker
 from nilearn._utils import testing
+from nilearn._utils.exceptions import DimensionError
 from nilearn.image import index_img
 
 
@@ -165,6 +166,9 @@ def test_4d_single_scan():
     mask[3:7, 3:7, 3:7] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
 
+    # Test that, in list of 4d images with last dimension=1, they are
+    # considered as 3d
+
     data_5d = [np.random.random((10, 10, 10, 1)) for i in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
@@ -176,6 +180,24 @@ def test_4d_single_scan():
     data_trans_4d = masker.transform(data_4d)
 
     assert_array_equal(data_trans_4d, data_trans_5d)
+
+
+def test_5d():
+    mask = np.zeros((10, 10, 10))
+    mask[3:7, 3:7, 3:7] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    # Test that, in list of 4d images with last dimension=1, they are
+    # considered as 3d
+
+    data_5d = [np.random.random((10, 10, 10, 3)) for i in range(5)]
+    data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
+
+    masker = NiftiMasker(mask_img=mask_img)
+    masker.fit()
+    testing.assert_raises_regex(
+        DimensionError, 'Data must be a 4D Niimg-like object but you provided'
+        ' a list of 4D images.', masker.transform, data_5d)
 
 
 def test_sessions():
