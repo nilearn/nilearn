@@ -60,7 +60,7 @@ mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
                            smoothing_fwhm=4, standardize=True,
                            memory="nilearn_cache", memory_level=1)
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 X = nifti_masker.fit_transform(func_filename)
 # Restrict to non rest data
 X = X[condition_mask]

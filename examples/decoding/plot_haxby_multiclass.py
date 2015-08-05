@@ -18,7 +18,7 @@ haxby_dataset = datasets.fetch_haxby_simple()
 print('Mask nifti images are located at: %s' % haxby_dataset.mask)
 print('Functional nifti images are located at: %s' % haxby_dataset.func)
 
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
 
 y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T

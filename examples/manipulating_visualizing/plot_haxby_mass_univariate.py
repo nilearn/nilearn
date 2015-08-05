@@ -46,7 +46,7 @@ mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     memory='nilearn_cache', memory_level=1)  # cache options
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 fmri_masked = nifti_masker.fit_transform(func_filename)
 
 ### Restrict to faces and houses ##############################################
