@@ -30,7 +30,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         'func': list of string.  Path to nifti file with bold data.
         'session_target': list of string. Path to text file containing session and
         target data.
-        'mask': list of string. Path to nifti mask file.
+        'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
         (can be used for LeaveOneLabelOut cross validation for example).
 
@@ -75,7 +75,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
 
     # return the example data
     # single subject data in a list and list being used to be consistent
-    return Bunch(func=[files[1]], session_target=[files[0]], mask=[files[2]],
+    return Bunch(func=[files[1]], session_target=[files[0]], mask=files[2],
                  conditions_target=[files[3]], description=fdescr)
 
 
