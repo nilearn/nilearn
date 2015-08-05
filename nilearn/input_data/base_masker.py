@@ -42,7 +42,7 @@ def filter_and_mask(imgs, mask_img_,
 
     mask_img_ = _utils.check_niimg_3d(mask_img_)
 
-    imgs = _utils.check_niimg(imgs, atleast_4d=True)
+    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
     if sample_mask is not None:
         imgs = image.index_img(imgs, sample_mask)
 
@@ -84,10 +84,10 @@ def filter_and_mask(imgs, mask_img_,
 
     if verbose > 1:
         print("[%s] Cleaning signal" % class_name)
-    if not 'sessions' in parameters or parameters['sessions'] is None:
+    if 'sessions' not in parameters or parameters['sessions'] is None:
         clean_memory_level = 2
-        if (parameters['high_pass'] is not None
-                and parameters['low_pass'] is not None):
+        if (parameters['high_pass'] is not None and
+                parameters['low_pass'] is not None):
             clean_memory_level = 4
 
         data = cache(signal.clean, memory,
@@ -118,7 +118,7 @@ def filter_and_mask(imgs, mask_img_,
                         t_r=parameters['t_r'],
                         detrend=parameters['detrend'],
                         standardize=parameters['standardize']
-                )
+            )
 
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -154,7 +154,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                   confounds=confounds,
                                   copy=copy,
                                   sample_mask=sample_mask
-                                  )
+        )
         return data
 
     def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):
@@ -315,7 +315,8 @@ def filter_and_extract(imgs, extraction_function,
 
     if verbose > 0:
         print("Extracting region signals")
-    region_signals, aux = cache(extraction_function, memory, func_memory_level=2,
+    region_signals, aux = cache(extraction_function, memory,
+                                func_memory_level=2,
                                 memory_level=memory_level)(imgs)
 
     if verbose > 0:
