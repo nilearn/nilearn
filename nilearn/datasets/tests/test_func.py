@@ -89,7 +89,7 @@ def test_fetch_haxby_simple():
             ('func', 'bold.nii.gz'),
             ('mask', 'mask.nii.gz'),
             ('conditions_target', 'attributes_literal.txt')]:
-        assert_equal(haxby[key], os.path.join(datasetdir, file))
+        assert_equal(haxby[key], [os.path.join(datasetdir, file)])
         assert_true(os.path.exists(os.path.join(datasetdir, file)))
 
 
