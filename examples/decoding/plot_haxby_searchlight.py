@@ -22,9 +22,9 @@ print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func)
 
 fmri_filename = haxby_dataset.func
-fmri_img = nibabel.load(fmri_filename)
-y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+fmri_img = nibabel.load(fmri_filename[0])
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 ### Restrict to faces and houses ##############################################
 from nilearn.image import index_img

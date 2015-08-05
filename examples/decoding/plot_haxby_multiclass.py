@@ -21,8 +21,8 @@ print('Functional nifti images are located at: %s' % haxby_dataset.func)
 func_filename = haxby_dataset.func
 mask_filename = haxby_dataset.mask
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 # Remove the rest condition, it is not very interesting
 non_rest = conditions != b'rest'

@@ -17,8 +17,8 @@ print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' %
       haxby_dataset.func)
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 ### Preprocess data ###########################################################
 

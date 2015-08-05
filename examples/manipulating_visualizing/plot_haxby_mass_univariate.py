@@ -51,8 +51,8 @@ fmri_masked = nifti_masker.fit_transform(func_filename)
 
 ### Restrict to faces and houses ##############################################
 conditions_encoded, sessions = np.loadtxt(
-    haxby_dataset.session_target).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+    haxby_dataset.session_target[0]).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
