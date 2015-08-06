@@ -368,7 +368,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
            Timeseries. Must have shape (instant number, features number).
            This array is not modified.
 
-
+    sessions : numpy array, optional
+        Add a session level to the cleaning process. Each session will be
+        cleaned independently. Must be a 1D array of n_samples elements.
 
        confounds: numpy.ndarray, str or list of
            Confounds timeseries. Shape must be
