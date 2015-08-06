@@ -192,28 +192,6 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                              % self.__class__.__name__)
 
     def transform_single_imgs(self, imgs, confounds=None):
-        """Extract signals from images.
-
-        Parameters
-        ==========
-        imgs: Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
-
-        confounds: array-like, optional
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
-
-        Returns
-        =======
-        signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
-
-        """
-
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 

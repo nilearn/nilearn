@@ -116,6 +116,26 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, copy=True):
+        """Extract signals from a single 4D niimg.
+
+        Parameters
+        ==========
+        imgs: Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            Images to process. It must boil down to a 4D image with scans
+            number as last dimension.
+
+        confounds: array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
+
+        Returns
+        =======
+        region_signals: 2D numpy.ndarray
+            Signal for each region.
+            shape: (number of scans, number of regions)
+        """
         raise NotImplemented()
 
     def transform(self, imgs, confounds=None):
