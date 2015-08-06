@@ -19,7 +19,7 @@ haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func)
+print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
 fmri_filename = haxby_dataset.func[0]
 fmri_img = nibabel.load(fmri_filename)

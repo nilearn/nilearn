@@ -16,7 +16,7 @@ haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Mask nifti images are located at: %s' % haxby_dataset.mask)
-print('Functional nifti images are located at: %s' % haxby_dataset.func)
+print('Functional nifti images are located at: %s' % haxby_dataset.func[0])
 
 func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
