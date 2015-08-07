@@ -711,7 +711,9 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
-                abort = "Target file cannot be found"
+                abort = ("Dataset has been downloaded but requested file was "
+                         "not provided:\nURL:%s\nFile:%s" %
+                         (url, target_file))
             else:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
