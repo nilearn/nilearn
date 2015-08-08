@@ -1,5 +1,5 @@
 """
-Downloading NeuroImaging datasets: altas datasets
+Downloading NeuroImaging datasets: atlas datasets
 """
 import os
 import numpy as np
