@@ -269,6 +269,11 @@ def test_concat_niimgs():
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
 
+    img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine)
+    assert_raises_regex(TypeError, 'Concatenated images must be 3D or 4D. '
+                        'You gave a list of 5D images', _utils.concat_niimgs,
+                        [img5d, img5d])
+
 
 def nifti_generator(buffer):
     for i in range(10):

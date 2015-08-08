@@ -363,6 +363,10 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     if ndim is None:
         ndim = len(first_niimg.shape)
 
+    if ndim not in [3, 4]:
+        raise TypeError('Concatenated images must be 3D or 4D. You gave a '
+                        'list of %dD images' % ndim)
+
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:
         # We check the dimensionality of the niimg
