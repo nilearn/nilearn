@@ -576,3 +576,76 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
         url=url,
         resume=resume,
         verbose=verbose)
+
+
+def fetch_atlas_aal(data_dir=None, url=None, resume=True, verbose=1):
+    """Download and return file names for the AAL for SPM 12 parcellation.
+
+    The provided images are based on the spatially normalized single-subject
+    high-resolution T1 volume provided by the Montreal Neurological Institute
+    (MNI)
+
+    Parameters
+    ----------
+    data_dir: string
+        directory where data should be downloaded and unpacked.
+
+    url: string
+        url of file to download.
+
+    spm_version: int
+        spm version of the aal files. Ex. 99, 2, 5, 8 and 12 (12 by default)
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, keys are:
+
+        - "anat": anatomy image.
+
+        - "labels": labels id in an xml file
+
+    Notes
+    -----
+    For more information on this dataset's structure, see
+    http://www.gin.cnrs.fr/AAL-217?lang=en
+
+    N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello,
+    O. Etard, N. Delcroix, B. Mazoyer, and M. Joliot.
+    NeuroImage 2002. 15 :273-28
+
+    Licence: unknown.
+    """
+    spm_version = 12
+    if url is None:
+        baseurl = "http://www.gin.cnrs.fr/AAL/aal_for_SPM%i.tar.gz"
+        url = baseurl % spm_version
+    opts = {'uncompress': True}
+
+    dataset_name = "aal"
+    # keys and basenames would need to be handled for each spm_version
+    # for now spm_version 12 is hardcoded.
+    keys = ("anat",
+            "labels")
+    basenames = (
+        "AAL.nii",
+        "AAL.xml")
+
+    filenames = [(os.path.join("aal_for_SPM%i" % spm_version, f), url, opts)
+                 for f in basenames]
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+    return Bunch(**params)
