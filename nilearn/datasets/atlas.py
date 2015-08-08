@@ -593,9 +593,6 @@ def fetch_atlas_aal(data_dir=None, url=None, resume=True, verbose=1):
     url: string
         url of file to download.
 
-    spm_version: int
-        spm version of the aal files. Ex. 99, 2, 5, 8 and 12 (12 by default)
-
     resume: bool
         whether to resumed download of a partly-downloaded file.
 
