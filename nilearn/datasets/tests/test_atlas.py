@@ -266,3 +266,12 @@ def test_fetch_atlas_yeo_2011():
     assert_true(isinstance(dataset.thin_17, _basestring))
     assert_true(isinstance(dataset.thin_7, _basestring))
     assert_equal(len(mock_url_request.urls), 1)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_atlas_aal():
+    dataset = atlas.fetch_atlas_aal(data_dir=tmpdir, verbose=0)
+    assert_true(isinstance(dataset.anat, _basestring))
+    assert_true(isinstance(dataset.labels, _basestring))
+    assert_equal(len(mock_url_request.urls), 1)
