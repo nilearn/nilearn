@@ -618,11 +618,12 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
     files: list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
-        options regarding the files. Ex. (file_name, url, opt). If a file_name
-        is not found in data_dir, as in data_dir/file_name the download will
-        be cancelled at the end. Options supported are 'uncompress' to indicate
-        that the file is an archive, 'md5sum' to check the md5 sum of the file
-        and 'move' if renaming the file or moving it to a subfolder is needed.
+        options regarding the files. Eg. (file_path, url, opt). If a file_name
+        is not found in data_dir, as in data_dir/file_path the download will
+        be immediately cancelled and any downloaded files will be deleted.
+        Options supported are 'uncompress' to indicate that the file is an
+        archive, 'md5sum' to check the md5 sum of the file and 'move' if
+        renaming the file or moving it to a subfolder is needed.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
