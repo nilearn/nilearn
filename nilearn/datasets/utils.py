@@ -488,9 +488,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # on the fact that the server will return a 401 error with proper
             # www-authentication header, which is not the case of most
             # servers.
-            request.add_header(
-                'Authorization',
-                b'Basic ' + base64.b64encode(username + b':' + password))
+            encoded_auth = base64.b64encode(
+                (username + ':' + password).encode())
+            request.add_header(b'Authorization', b'Basic ' + encoded_auth)
         if verbose > 0:
             displayed_url = url.split('?')[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
