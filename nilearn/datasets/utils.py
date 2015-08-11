@@ -618,7 +618,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
     files: list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
-        options regarding the files. Eg. (file_path, url, opt). If a file_name
+        options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
         be immediately cancelled and any downloaded files will be deleted.
         Options supported are 'uncompress' to indicate that the file is an
