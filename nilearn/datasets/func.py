@@ -15,7 +15,7 @@ from .._utils.compat import BytesIO, _basestring, _urllib
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load an example haxby dataset
+    """Download and load a simple example haxby dataset.
 
     Parameters
     ----------
@@ -27,12 +27,12 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, interest attributes are:
-        'func': string.  Path to nifti file with bold data.
-        'session_target': string. Path to text file containing session and
+        'func': list of string.  Path to nifti file with bold data.
+        'session_target': list of string. Path to text file containing session and
         target data.
         'mask': string. Path to nifti mask file.
-        'session': string. Path to text file containing labels (can be used
-        for LeaveOneLabelOut cross validation for example).
+        'session': list of string. Path to text file containing labels
+        (can be used for LeaveOneLabelOut cross validation for example).
 
     References
     ----------
@@ -73,9 +73,10 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     # There is a common file for the two versions of Haxby
     fdescr = _get_dataset_descr('haxby2001')
 
-    # return the data
-    return Bunch(func=files[1], session_target=files[0], mask=files[2],
-                 conditions_target=files[3], description=fdescr)
+    # return the example data
+    # single subject data in a list and list being used to be consistent
+    return Bunch(func=[files[1]], session_target=[files[0]], mask=files[2],
+                 conditions_target=[files[3]], description=fdescr)
 
 
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,

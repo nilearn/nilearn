@@ -39,20 +39,20 @@ haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func)
+print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
 ### Mask data #################################################################
 mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     memory='nilearn_cache', memory_level=1)  # cache options
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 fmri_masked = nifti_masker.fit_transform(func_filename)
 
 ### Restrict to faces and houses ##############################################
 conditions_encoded, sessions = np.loadtxt(
-    haxby_dataset.session_target).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+    haxby_dataset.session_target[0]).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]

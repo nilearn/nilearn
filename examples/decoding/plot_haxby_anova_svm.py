@@ -15,10 +15,10 @@ haxby_dataset = datasets.fetch_haxby_simple()
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' %
-      haxby_dataset.func)
+      haxby_dataset.func[0])
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 ### Preprocess data ###########################################################
 
@@ -38,7 +38,7 @@ mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
                            smoothing_fwhm=4, standardize=True,
                            memory="nilearn_cache", memory_level=1)
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 X = nifti_masker.fit_transform(func_filename)
 # Apply our condition_mask
 X = X[condition_mask]
