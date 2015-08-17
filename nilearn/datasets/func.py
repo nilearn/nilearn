@@ -73,8 +73,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     # There is a common file for the two versions of Haxby
     fdescr = _get_dataset_descr('haxby2001')
 
-    # return the example data
-    # single subject data in a list and list being used to be consistent
+    # List of length 1 are used because haxby_simple is single-subject
     return Bunch(func=[files[1]], session_target=[files[0]], mask=files[2],
                  conditions_target=[files[3]], description=fdescr)
 
