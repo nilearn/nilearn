@@ -246,38 +246,59 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
 
 def fetch_fiac_first_level(data_dir=None, verbose=1):
     """ Download a first-level fiac fMRI dataset (2 sessions)
+
     Parameters
     ----------
     data_dir: string
         directory where data should be downloaded and unpacked.
-        dictionary-like object, keys are:
-        epi_img: the input 4D image
-        paradigm: a csv file describing the paardigm
     """
-    import tarfile
-    url = 'ftp://ftp.cea.fr/pub/dsv/madic/FIAC/fiac0'
+    data_dir = _get_dataset_dir('', data_dir=data_dir, verbose=verbose)
 
-    dataset_name = "fiac_first_level"
-    files = dict(run_1="fiac0_fonc1.tar",
-                 run_2="fiac0_fonc2.tar")
-    """
-    files = dict(run_1="run1.nii.gz",
-                 run_2="run2.nii.gz",
-                 run_1_design="run1_design.npz",
-                 run_2_design="run1_design.npz")
-    """
-    # The options needed for _fetch_files
-    options = [(filename, os.path.join(url, filename), {})
-               for _, filename in sorted(files.items())]
+    def _glob_fiac_data():
+        """glob data from subject_dir."""
+        _subject_data = {}
+        subject_dir = os.path.join(data_dir, 'nipy-data-0.2/data/fiac/fiac0')
+        for session in [1, 2]:
+            # glob func data for session s + 1
+            session_func = os.path.join(subject_dir, 'run%i.nii.gz' % session)
+            if not os.path.isfile(session_func):
+                print('Missing functional scan for session %i.' % session)
+                return None
+            else:
+                _subject_data['func%i' % session] = session_func
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    sub_files = _fetch_files(data_dir, options, resume=True,
-                             verbose=verbose)
-    for sub_file in sub_files:
-        tar = tarfile.open(sub_file)
-        plop = tar.extractall(data_dir)
-        tar.close()
-    params = dict(zip(sorted(files.keys()), sub_files))
+            # glob design matrix .npz file
+            sess_dmtx = os.path.join(subject_dir, 'run%i_design.npz' % session)
+            if not os.path.isfile(sess_dmtx):
+                print('Missing session file: %s' % sess_dmtx)
+                return None
+            else:
+                _subject_data['dmtx_ses%i' % session] = sess_dmtx
 
-    return Bunch(**params)
+        # glob for mask data
+        mask = os.path.join(subject_dir, 'mask.nii.gz')
+        if not os.path.isfile(mask):
+            print('Missing mask image.')
+            return None
+        else:
+            _subject_data['mask'] = mask
+        return Bunch(**_subject_data)
+
+    # maybe data_dir already contains the data ?
+    data = _glob_fiac_data()
+    if not data is None:
+        return data
+
+    # No. Download the data
+    print('Data absent, downloading...')
+    url = 'http://nipy.sourceforge.net/data-packages/nipy-data-0.2.tar.gz'
+
+    archive_path = os.path.join(data_dir, os.path.basename(url))
+    _fetch_file(url, data_dir)
+    try:
+        _uncompress_file(archive_path)
+    except:
+        print('Archive corrupted, trying to download it again.')
+        return fetch_fiac_first_level(data_dir=data_dir)
+
+    return _glob_fiac_data()
