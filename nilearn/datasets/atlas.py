@@ -2,6 +2,7 @@
 Downloading NeuroImaging datasets: atlas datasets
 """
 import os
+import xml.etree.ElementTree as ET
 import numpy as np
 from scipy import ndimage
 
@@ -194,7 +195,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         requested and 3D labels if a maximum probabilistic atlas was
         requested.
 
-        - "labels": string list, labels of the regions in the altas.
+        - "labels": string list, labels of the regions in the atlas.
     """
     atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                    "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
@@ -578,8 +579,8 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
         verbose=verbose)
 
 
-def fetch_atlas_aal(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the AAL for SPM 12 parcellation.
+def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
+    """Downloads and returns the AAL template for SPM 12.
 
     The provided images are based on the spatially normalized single-subject
     high-resolution T1 volume provided by the Montreal Neurological Institute
@@ -604,15 +605,18 @@ def fetch_atlas_aal(data_dir=None, url=None, resume=True, verbose=1):
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "anat": anatomy image.
+        - "maps": str. path to nifti file containing regions definition.
 
-        - "labels": labels id in an xml file
+        - "labels": dict. labels dictionary with their id as key and
+                    name as value
 
     Notes
     -----
     For more information on this dataset's structure, see
     http://www.gin.cnrs.fr/AAL-217?lang=en
 
+    Automated Anatomical Labeling of Activations in SPM Using a Macroscopic
+    Anatomical Parcellation of the MNI MRI Single-Subject Brain.
     N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello,
     O. Etard, N. Delcroix, B. Mazoyer, and M. Joliot.
     NeuroImage 2002. 15 :273-28
@@ -625,24 +629,30 @@ def fetch_atlas_aal(data_dir=None, url=None, resume=True, verbose=1):
         url = baseurl % spm_version
     opts = {'uncompress': True}
 
-    dataset_name = "aal"
+    dataset_name = "aal_spm_12"
     # keys and basenames would need to be handled for each spm_version
     # for now spm_version 12 is hardcoded.
-    keys = ("anat",
-            "labels")
+    keys = ("maps", "labels")
     basenames = (
-        "AAL.nii",
-        "AAL.xml")
+        "AAL.nii", "AAL.xml")
 
     filenames = [(os.path.join("aal_for_SPM%i" % spm_version, f), url, opts)
                  for f in basenames]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume,
-                             verbose=verbose)
+    atlas_img, labels_file = _fetch_files(data_dir, filenames, resume=resume,
+                                          verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
 
-    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+    # We return the labels contained in the xml file as a dictionary
+    xml_tree = ET.parse(labels_file)
+    root = xml_tree.getroot()
+    labels_dict = {}
+    for label in root.iter('label'):
+        labels_dict[label.find('index').text] = label.find('name').text
+
+    params = dict([('description', fdescr)] + [(keys[0], atlas_img)] +
+                  [(keys[1], labels_dict)])
     return Bunch(**params)

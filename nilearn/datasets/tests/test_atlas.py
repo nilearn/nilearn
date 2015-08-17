@@ -270,8 +270,8 @@ def test_fetch_atlas_yeo_2011():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_atlas_aal():
-    dataset = atlas.fetch_atlas_aal(data_dir=tmpdir, verbose=0)
-    assert_true(isinstance(dataset.anat, _basestring))
-    assert_true(isinstance(dataset.labels, _basestring))
+def test_fetch_atlas_aal_spm_12():
+    dataset = atlas.fetch_atlas_aal_spm_12(data_dir=tmpdir, verbose=0)
+    assert_true(isinstance(dataset.maps, _basestring))
+    assert_equal(len(dataset.labels), 116)
     assert_equal(len(mock_url_request.urls), 1)
