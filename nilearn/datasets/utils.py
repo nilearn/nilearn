@@ -617,11 +617,13 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         Unique dataset name
 
     files: list of (string, string, dict)
-        List of files and their corresponding url. The dictionary contains
-        options regarding the files. Options supported are 'uncompress' to
-        indicates that the file is an archive, 'md5sum' to check the md5 sum of
-        the file and 'move' if renaming the file or moving it to a subfolder is
-        needed.
+        List of files and their corresponding url with dictionary that contains
+        options regarding the files. Eg. (file_path, url, opt). If a file_path
+        is not found in data_dir, as in data_dir/file_path the download will
+        be immediately cancelled and any downloaded files will be deleted.
+        Options supported are 'uncompress' to indicate that the file is an
+        archive, 'md5sum' to check the md5 sum of the file and 'move' if
+        renaming the file or moving it to a subfolder is needed.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
