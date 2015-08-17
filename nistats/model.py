@@ -26,16 +26,22 @@ class LikelihoodModelResults(object):
         ----------
         theta : ndarray
             parameter estimates from estimated model
+
         Y : ndarray
             data
+
         model : ``LikelihoodModel`` instance
             model used to generate fit
+
         cov : None or ndarray, optional
             covariance of thetas
+
         dispersion : scalar, optional
             multiplicative factor in front of `cov`
+
         nuisance : None of ndarray
             parameter estimates needed to compute logL
+
         rank : None or scalar
             rank of the model.  If rank is not None, it is used for df_model
             instead of the usual counting of parameters.
@@ -99,10 +105,13 @@ class LikelihoodModelResults(object):
             numerical contrast specification, where ``dim`` refers to the
             'dimension' of the contrast i.e. 1 for t contrasts, 1 or more
             for F contrasts.
+
         column: int, optional
             alternative way of specifying contrasts (column index)
+
         dispersion: float or (n_voxels,) array, optional
             value(s) for the dispersion parameters
+
         other: (dim, self.theta.shape[0]) array, optional
             alternative contrast specification (?)
 
@@ -152,9 +161,11 @@ class LikelihoodModelResults(object):
         ----------
         matrix : 1D array-like
             contrast matrix
+
         store : sequence, optional
             components of t to store in results output object.  Defaults to all
             components ('t', 'effect', 'sd').
+
         dispersion : None or float, optional
 
         Returns
@@ -209,8 +220,10 @@ class LikelihoodModelResults(object):
         ----------
         matrix : 1D array-like
             contrast matrix
+
         dispersion : None or float, optional
             If None, use ``self.dispersion``
+
         invcov : None or array, optional
             Known inverse of variance covariance matrix.
             If None, calculate this matrix.
@@ -256,8 +269,10 @@ class LikelihoodModelResults(object):
         alpha : float, optional
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
+
         cols : tuple, optional
             `cols` specifies which confidence intervals to return
+
         dispersion : None or scalar
             scale factor for the variance / covariance (see class docstring and
             ``vcov`` method docstring)

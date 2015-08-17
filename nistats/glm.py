@@ -51,12 +51,12 @@ def data_scaling(Y):
 
     Parameters
     ----------
-    Y: array of shape(n_time_points, n_voxels)
+    Y : array of shape(n_time_points, n_voxels)
        the input data
 
     Returns
     -------
-    Y: array of shape (n_time_points, n_voxels),
+    Y : array of shape (n_time_points, n_voxels),
        the data after mean-scaling, de-meaning and multiplication by 100
     mean : array of shape (n_voxels,)
         the data mean
@@ -92,7 +92,7 @@ class GeneralLinearModel(object):
         self.labels_ = None
         self.results_ = None
 
-    def fit(self, Y, model='ar1', steps=100):
+    def fit(self, Y, model='ar1', bins=100):
         """GLM fitting of a dataset using 'ols' regression or the two-pass
 
         Parameters
@@ -101,8 +101,8 @@ class GeneralLinearModel(object):
             the fMRI data
         model : {'ar1', 'ols'}, optional
             the temporal variance model. Defaults to 'ar1'
-        steps : int, optional
-            Maximum number of discrete steps for the AR(1) coef histogram
+        bins : int, optional
+            Maximum number of discrete bins for the AR(1) coef histogram
         """
         if model not in ['ar1', 'ols']:
             raise ValueError('Unknown model')
@@ -119,7 +119,7 @@ class GeneralLinearModel(object):
         # compute and discretize the AR1 coefs
         ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
                (ols_result.resid ** 2).sum(0))
-        ar1 = (ar1 * steps).astype(np.int) * 1. / steps
+        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
 
         # Fit the AR model acccording to current AR(1) estimates
         if model == 'ar1':
@@ -138,14 +138,14 @@ class GeneralLinearModel(object):
 
         Parameters
         ----------
-        column_index: int or array-like of int or None, optional
+        column_index : int or array-like of int or None, optional
             The indexed of the columns to be returned.  if None (default
             behaviour), the whole vector is returned
 
         Returns
         -------
         beta: array of shape (n_voxels, n_columns)
-            the beta
+            the required coefficients
         """
         # make colum_index a list if it an int
         if column_index is None:
@@ -195,6 +195,7 @@ class GeneralLinearModel(object):
         ----------
         con_val : numpy.ndarray of shape (p) or (q, p)
             where q = number of contrast vectors and p = number of regressors
+
         contrast_type : {None, 't', 'F' or 'tmin-conjunction'}, optional
             type of the contrast.  If None, then defaults to 't' for 1D
             `con_val` and 'F' for 2D `con_val`
@@ -259,13 +260,18 @@ class Contrast(object):
                  tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
-        ==========
-        effect: array of shape (contrast_dim, n_voxels)
-                the effects related to the contrast
-        variance: array of shape (contrast_dim, contrast_dim, n_voxels)
-                  the associated variance estimate
-        dof: scalar, the degrees of freedom
-        contrast_type: string to be chosen among 't' and 'F'
+        ----------
+        effect : array of shape (contrast_dim, n_voxels)
+            the effects related to the contrast
+
+        variance : array of shape (contrast_dim, contrast_dim, n_voxels)
+            the associated variance estimate
+
+        dof : scalar
+            the degrees of freedom of the resiudals
+
+        contrast_type: {'t', 'F'}
+            specification of the contrast type
         """
         if variance.ndim != 3:
             raise ValueError('Variance array should have 3 dimensions')
@@ -276,6 +282,7 @@ class Contrast(object):
         if ((variance.shape[1] != effect.shape[0]) or
             (variance.shape[2] != effect.shape[1])):
             raise ValueError('Effect and variance have inconsistent shape')
+
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
@@ -295,9 +302,14 @@ class Contrast(object):
         null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
-        ==========
-        baseline: float, optional,
-                  Baseline value for the test statistic
+        ----------
+        baseline : float, optional
+            Baseline value for the test statistic
+
+        Returns
+        -------
+        stat: 1-d array, shape=(n_voxels,)
+            statistical values, one per voxel
         """
         self.baseline = baseline
 
@@ -336,31 +348,42 @@ class Contrast(object):
         with the null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
-        ==========
-        baseline: float, optional,
-        Baseline value for the test statistic
+        ----------
+        baseline : float, optional
+            baseline value for the test statistic
+
+        Returns
+        -------
+        p_values : 1-d array, shape=(n_voxels,)
+            p-values, one per voxel
         """
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type in ['t', 'tmin-conjunction']:
-            p = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
+            p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
-            p = sps.f.sf(self.stat_, self.dim, np.minimum(
+            p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
                     self.dof, self.dofmax))
         else:
             raise ValueError('Unknown statistic type')
-        self.p_value_ = p
-        return p
+        self.p_value_ = p_values
+        return p_values
 
     def z_score(self, baseline=0.0):
         """Return a parametric estimation of the z-score associated
         with the null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
-        ==========
+        ----------
         baseline: float, optional,
                   Baseline value for the test statistic
+
+        Returns
+        -------
+        z_score: 1-d array, shape=(n_voxels,)
+            statistical values, one per voxel
+
         """
         if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
@@ -412,13 +435,16 @@ class FMRILinearModel(object):
         ----------
         fmri_data : Image or str or sequence of Images / str
             fmri images / paths of the (4D) fmri images
+
         design_matrices : arrays or str or sequence of arrays / str
             design matrix arrays / paths of .npz files
+
         mask : str or Image or None, optional
             string can be 'compute' or a path to an image
             image is an input (assumed binary) mask image(s),
             if 'compute', the mask is computed
             if None, no masking will be applied
+
         m, M, threshold: float, optional
             parameters of the masking procedure.  Should be within [0, 1]
 
@@ -444,6 +470,7 @@ class FMRILinearModel(object):
                 self.fmri_data.append(load(fmri_run))
             else:
                 self.fmri_data.append(fmri_run)
+
         # set self.affine as the affine of the first image
         self.affine = self.fmri_data[0].get_affine()
 
@@ -469,16 +496,18 @@ class FMRILinearModel(object):
             else:
                 self.mask = mask
 
-    def fit(self, do_scaling=True, model='ar1', steps=100):
+    def fit(self, do_scaling=True, model='ar1', bins=100):
         """ Load the data, mask the data, scale the data, fit the GLM
 
         Parameters
         ----------
         do_scaling : bool, optional
             if True, the data should be scaled as pourcent of voxel mean
+
         model : string, optional,
             the kind of glm ('ols' or 'ar1') you want to fit to the data
-        steps : int, optional
+
+        bins : int, optional
             in case of an ar1, discretization of the ar1 parameter
         """
         # get the mask as an array
@@ -497,7 +526,7 @@ class FMRILinearModel(object):
             self.means.append(Nifti1Image(mean_data, self.affine))
             # fit the GLM
             glm = GeneralLinearModel(design_matrix)
-            glm.fit(data, model, steps)
+            glm.fit(data, model, bins)
             self.glms.append(glm)
 
     def contrast(self, contrasts, con_id='', contrast_type=None, output_z=True,
@@ -510,22 +539,28 @@ class FMRILinearModel(object):
         contrasts : array or list of arrays of shape (n_col) or (n_dim, n_col)
             where ``n_col`` is the number of columns of the design matrix,
             numerical definition of the contrast (one array per run)
+
         con_id : str, optional
             name of the contrast
+
         contrast_type : {'t', 'F', 'tmin-conjunction'}, optional
             type of the contrast
+
         output_z : bool, optional
             Return or not the corresponding z-stat image
+
         output_stat : bool, optional
             Return or not the base (t/F) stat image
+
         output_effects : bool, optional
             Return or not the corresponding effect image
+
         output_variance : bool, optional
             Return or not the corresponding variance image
 
         Returns
         -------
-        output_images : list of nibabel images
+        output_images : list of Nifti1Images
             The desired output images
         """
         if self.glms == []:

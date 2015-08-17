@@ -85,9 +85,10 @@ def multiple_mahalanobis(effect, covariance):
     Parameters
     ----------
     effect: array of shape (n_features, n_samples),
-            Each column represents a vector to be evaluated
+        Each column represents a vector to be evaluated
+
     covariance: array of shape (n_features, n_features, n_samples),
-                Corresponding covariance models stacked along the last axis
+        Corresponding covariance models stacked along the last axis
 
     Returns
     -------
@@ -216,8 +217,8 @@ def full_rank(X, r=None):
     order = order[::-1]
     value = []
     for i in range(r):
-        value.append(V[:,order[i]])
-    return np.asarray(np.transpose(value)).astype(np.float64)
+        value.append(V[:, order[i]])
+    return np.asarray(value).T.astype(np.float64)
 
 
 def pos_recipr(X):
@@ -238,7 +239,7 @@ def pos_recipr(X):
        1/X where X > 0, 0 otherwise
     """
     X = np.asarray(X)
-    return np.where(X<=0, 0, 1. / X)
+    return np.where(X <= 0, 0, 1. / X)
 
 
 def open4csv(fname, mode):

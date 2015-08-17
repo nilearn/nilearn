@@ -22,22 +22,25 @@ def check_paradigm(paradigm):
 
     Parameters
     ----------
-    paradigm: pandas DataFrame
-              describes a functional paradigm
+    paradigm : pandas DataFrame
+        describes a functional paradigm
 
     Returns
     -------
-    name: array of shape (n_events), dtype='s'
-           per-event experimental conditions identifier
-           Defaults to np.repeat('dummy', len(onsets))
-    onset: array of shape (n_events), dtype='f'
-           per-event onset time (in seconds)
-    duration: array of shape (n_events), dtype='f'
-              per-event durantion, (in seconds)
-              defaults to zeros(n_events) when no duration is provided
-    modulation: array of shape (n_events), dtype='f'
-              per-event modulation, (in seconds)
-              defaults to ones(n_events) when no duration is provided
+    name : array of shape (n_events), dtype='s'
+        per-event experimental conditions identifier
+        Defaults to np.repeat('dummy', len(onsets))
+
+    onset : array of shape (n_events), dtype='f'
+        per-event onset time (in seconds)
+
+    duration : array of shape (n_events), dtype='f'
+        per-event durantion, (in seconds)
+        defaults to zeros(n_events) when no duration is provided
+
+    modulation : array of shape (n_events), dtype='f'
+        per-event modulation, (in seconds)
+        defaults to ones(n_events) when no duration is provided
 
     """
     if 'onset' not in paradigm.keys():
@@ -63,13 +66,13 @@ def paradigm_from_csv(csv_file):
 
     Parameters
     ----------
-    csv_file: string,
-              path to a csv file
+    csv_file : string,
+        path to a csv file
 
     Returns
     -------
-    paradigm: pandas DataFrame,
-              holding the paradigm information
+    paradigm : pandas DataFrame,
+        holding the paradigm information
     """
     import pandas
     return pandas.DataFrame().from_csv(csv_file)
