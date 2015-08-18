@@ -45,7 +45,7 @@ if not path.exists(write_dir):
 # Data and analysis parameters
 data = datasets.fetch_fiac_first_level()
 fmri_files = [data['func1'], data['func2']]
-design_files = [data['dmtx_ses1'], data['dmtx_ses2']]
+design_files = [data['design_matrix1'], data['design_matrix2']]
 
 # Load all the data into a common GLM
 multi_session_model = FMRILinearModel(fmri_files, design_files, data['mask'])
@@ -92,7 +92,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     if contrast_id == 'Effects_of_interest':
         vmax = max(- z_map.get_data().min(), z_map.get_data().max())
         vmin = - vmax
-        plot_stat_map(z_map, bg_img=mean_img, threshold=2.5)
+        plot_stat_map(z_map, bg_img=mean_img, threshold=2.5, title=contrast_id)
         plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 print('All the  results were witten in %s' % write_dir)

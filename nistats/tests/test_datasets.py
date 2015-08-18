@@ -37,3 +37,12 @@ def test_fetch_spm_multimodal():
     assert_equal(dataset.slice_order, 'descending')
     assert_true(dataset.trials_ses1, _basestring)
     assert_true(dataset.trials_ses2, _basestring)
+
+
+def test_fiac():
+    dataset = datasets.fetch_fiac_first_level(data_dir=tmpdir)
+    assert_true(isinstance(dataset.func1, _basestring))
+    assert_true(isinstance(dataset.func2, _basestring))
+    assert_true(isinstance(dataset.design_matrix1, _basestring))
+    assert_true(isinstance(dataset.design_matrix2, _basestring))
+    assert_true(isinstance(dataset.mask, _basestring))

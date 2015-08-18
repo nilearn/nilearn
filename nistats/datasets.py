@@ -273,7 +273,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
                 print('Missing session file: %s' % sess_dmtx)
                 return None
             else:
-                _subject_data['dmtx_ses%i' % session] = sess_dmtx
+                _subject_data['design_matrix%i' % session] = sess_dmtx
 
         # glob for mask data
         mask = os.path.join(subject_dir, 'mask.nii.gz')
