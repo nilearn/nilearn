@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import numpy as np
-from scipy.stats import norm
 
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from nose.tools import (assert_true, assert_equal, assert_false,
-                        assert_raises)
+from nose.tools import assert_true, assert_equal
 from nibabel.tmpdirs import InTemporaryDirectory
 from ..utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
                      matrix_rank, full_rank, pos_recipr)
