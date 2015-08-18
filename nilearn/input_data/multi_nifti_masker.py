@@ -300,6 +300,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             preprocessed images
         """
         self._check_fitted()
+        if not hasattr(imgs, '__iter__')\
                     or isinstance(imgs, _basestring):
                 return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)
