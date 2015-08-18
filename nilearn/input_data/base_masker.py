@@ -135,7 +135,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: array-like, optional
+        confounds: CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
@@ -149,17 +149,19 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         raise NotImplementedError()
 
     def transform(self, imgs, confounds=None):
-        """ Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing
 
         Parameters
         ----------
-        imgs: list of Niimg-like objects
+        imgs: 3D/4D Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            Data to be preprocessed
+            Images to process. It must boil down to a 4D image with scans
+            number as last dimension.
 
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
+        confounds: CSV file or array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
 
         Returns
         -------

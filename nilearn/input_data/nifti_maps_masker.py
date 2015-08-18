@@ -193,6 +193,26 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         return self.fit().transform(imgs, confounds=confounds)
 
     def transform_single_imgs(self, imgs, confounds=None):
+        """Extract signals from a single 4D niimg.
+
+        Parameters
+        ----------
+        imgs: 3D/4D Niimg-like object
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            Images to process. It must boil down to a 4D image with scans
+            number as last dimension.
+
+        confounds: CSV file or array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
+
+        Returns
+        -------
+        region_signals: 2D numpy.ndarray
+            Signal for each map.
+            shape: (number of scans, number of maps)
+        """
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
