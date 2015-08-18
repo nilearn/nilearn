@@ -259,7 +259,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                             ignore=['mask_img', 'mask_args', 'mask_strategy'])
 
         data, _ = self._cache(filter_and_mask,
-                              ignore=['verbose', 'memory', 'copy'])(
+                              ignore=['verbose', 'memory', 'memory_level', 'copy'])(
                                     imgs, self.mask_img_, params,
                                     memory_level=self.memory_level,
                                     memory=self.memory,

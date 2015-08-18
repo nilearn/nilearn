@@ -264,15 +264,15 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                                     'copy'])
 
         func = self._cache(filter_and_mask,
-                          ignore=['verbose', 'memory', 'copy'])
+                          ignore=['verbose', 'memory', 'memory_level', 'copy'])
         data = Parallel(n_jobs=n_jobs)(
-            [delayed(func)(imgs, self.mask_img_, params,
+            delayed(func)(imgs, self.mask_img_, params,
                            memory_level=self.memory_level,
                            memory=self.memory,
                            verbose=self.verbose,
                            confounds=cfs,
                            copy=copy)
-             for imgs, cfs in izip(niimg_iter, confounds)])
+            for imgs, cfs in izip(niimg_iter, confounds))
         return list(zip(*data))[0]
 
     def transform(self, imgs, confounds=None):
