@@ -24,7 +24,7 @@ warnings.simplefilter("always", MaskWarning)
 
 
 def _load_mask_img(mask_img, allow_empty=False):
-    ''' Check that a mask is valid, ie with two values including 0 and load it.
+    """Check that a mask is valid, ie with two values including 0 and load it.
 
     Parameters
     ----------
@@ -39,7 +39,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     -------
     mask: numpy.ndarray
         boolean version of the mask
-    '''
+    """
     mask_img = _utils.check_niimg_3d(mask_img)
     mask = mask_img.get_data()
     values = np.unique(mask)
@@ -184,8 +184,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
                      ensure_finite=True,
                      target_affine=None, target_shape=None,
                      memory=None, verbose=0,):
-    """
-    Compute a brain mask from fMRI data in 3D or 4D ndarrays.
+    """Compute a brain mask from fMRI data in 3D or 4D ndarrays.
 
     This is based on an heuristic proposed by T.Nichols:
     find the least dense point of the histogram, between fractions

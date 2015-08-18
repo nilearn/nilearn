@@ -215,7 +215,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         return self
 
     def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):
-        ''' Prepare multi subject data in parallel
+        """Prepare multi subject data in parallel
 
         Parameters
         ----------
@@ -235,7 +235,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         n_jobs: integer, optional
             The number of cpus to use to do the computation. -1 means
             'all cpus'.
-        '''
+        """
 
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '

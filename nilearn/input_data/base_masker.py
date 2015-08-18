@@ -35,13 +35,22 @@ def filter_and_extract(imgs, extraction_function,
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
     extraction_function: function
-        Function used to extract the time series from 4D data.
+        Function used to extract the time series from 4D data. This function
+        should take images as argument and returns a 2D array with masked
+        signals. If any other parameter is needed, a functor or a partial
+        function must be provided.
 
     For all other parameters refer to NiftiMasker documentation
+
+    Returns
+    -------
+    signals: 2D numpy array
+        Signals extracted using the extraction function. It is a scikit-learn
+        friendly 2D array with shape n_samples x n_features.
     """
     # Since the calling class can be any *Nifti*Masker, we look for exact type
     if verbose > 0:
-        class_name = enclosing_scope_name(stack_level=3)
+        class_name = enclosing_scope_name(stack_level=10)
 
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
@@ -54,12 +63,12 @@ def filter_and_extract(imgs, extraction_function,
             _utils._repr_niimgs(imgs)[:200]))
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
-    sample_mask = parameters.get('sample_mask', None)
+    sample_mask = parameters.get('sample_mask')
     if sample_mask is not None:
         imgs = image.index_img(imgs, sample_mask)
 
-    target_shape = parameters.get('target_shape', None)
-    target_affine = parameters.get('target_affine', None)
+    target_shape = parameters.get('target_shape')
+    target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:
         if verbose > 0:
             print("[%s] Resampling images" % class_name)
@@ -71,7 +80,8 @@ def filter_and_extract(imgs, extraction_function,
                 target_affine=target_affine,
                 copy=copy)
 
-    if 'smoothing_fwhm' in parameters:
+    smoothing_fwhm = parameters.get('smoothing_fwhm')
+    if smoothing_fwhm is not None:
         if verbose > 0:
             print("[%s] Smoothing images" % class_name)
         imgs = cache(
@@ -94,7 +104,7 @@ def filter_and_extract(imgs, extraction_function,
 
     if verbose > 0:
         print("[%s] Cleaning extracted signals" % class_name)
-    sessions = parameters.get('sessions', None)
+    sessions = parameters.get('sessions')
     region_signals = cache(
         signal.clean, memory=memory, func_memory_level=2,
         memory_level=memory_level)(
