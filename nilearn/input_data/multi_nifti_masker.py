@@ -28,7 +28,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     CanICA (multi-subject models)
 
     Parameters
-    ==========
+    ----------
     mask_img: Niimg-like object
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask of the data. If not given, a mask is computed in the fit step.
@@ -97,7 +97,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed
 
     Attributes
-    ==========
+    ----------
     mask_img_: nibabel.Nifti1Image object
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
@@ -108,7 +108,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         subject data have been resampled.
 
     See Also
-    ========
+    --------
     nilearn.image.resample_img: image resampling
     nilearn.masking.compute_epi_mask: mask computation
     nilearn.masking.apply_mask: mask application on image
@@ -235,6 +235,12 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         n_jobs: integer, optional
             The number of cpus to use to do the computation. -1 means
             'all cpus'.
+        
+        Returns
+        -------
+        region_signals: list of 2D numpy.ndarray
+            List of signal for each element per subject.
+            shape: list of (number of scans, number of elements)
         """
 
         if not hasattr(self, 'mask_img_'):
