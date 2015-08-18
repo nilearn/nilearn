@@ -31,8 +31,8 @@ def filter_and_extract(imgs, extraction_function,
 
     Parameters
     ----------
-    imgs: images
-        Images to be masked
+    imgs: 3D/4D Niimg-like object
+        Images to be masked. Can be 3-dimensional or 4-dimensional.
 
     extraction_function: function
         Function used to extract the time series from 4D data.

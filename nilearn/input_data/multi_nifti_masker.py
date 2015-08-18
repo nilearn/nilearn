@@ -257,7 +257,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             confounds = itertools.repeat(None, len(imgs_list))
 
         # Ignore the mask-computing params: they are not useful and will
-        # just invalid the cache for no good reason
+        # just invalidate the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
         params = get_params(self.__class__, self,
                             ignore=['mask_img', 'mask_args', 'mask_strategy',
