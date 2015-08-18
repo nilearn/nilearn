@@ -129,8 +129,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """Extract signals from a single 4D niimg.
 
         Parameters
-        ==========
-        imgs: Niimg-like object
+        ----------
+        imgs: 3D/4D Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
@@ -141,12 +141,12 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             shape: (number of scans, number of confounds)
 
         Returns
-        =======
+        -------
         region_signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
+            Signal for each element.
+            shape: (number of scans, number of elements)
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
@@ -160,6 +160,12 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         confounds: CSV file path or 2D matrix
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
+
+        Returns
+        -------
+        region_signals: 2D numpy.ndarray
+            Signal for each element.
+            shape: (number of scans, number of elements)
         """
         self._check_fitted()
 
@@ -184,7 +190,6 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         -------
         X_new : numpy array of shape [n_samples, n_features_new]
             Transformed array.
-
         """
         # non-optimized default implementation; override when a better
         # method is possible for a given clustering algorithm
