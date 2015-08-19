@@ -9,15 +9,12 @@ from scipy.stats import norm
 
 py3 = sys.version_info[0] >= 3
 
-TINY = 1e-15
-
 
 def z_score(pvalue):
     """ Return the z-score corresponding to a given p-value.
     """
-    pvalue = np.minimum(np.maximum(pvalue, TINY), 1. - TINY)
-    z = norm.isf(pvalue)
-    return z
+    pvalue = np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16)
+    return norm.isf(pvalue)
 
 
 def multiple_fast_inv(a):

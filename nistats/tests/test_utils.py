@@ -11,9 +11,10 @@ from ..utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
 
 def test_z_score():
     p = np.random.rand(10)
-    z = z_score(p)
-    assert_array_almost_equal(norm.sf(z), p)
-
+    assert_array_almost_equal(norm.sf(z_score(p)), p)
+    # check the numerical precision
+    for p in [1.e-100, 1.e-16]:
+        assert_array_almost_equal(z_score(p), norm.isf(p))
 
 def test_mahalanobis():
     x = np.random.rand(100) / 100
