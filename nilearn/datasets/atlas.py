@@ -2,7 +2,7 @@
 Downloading NeuroImaging datasets: atlas datasets
 """
 import os
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree
 import numpy as np
 from scipy import ndimage
 
@@ -605,7 +605,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "maps": str. path to nifti file containing regions definition.
+        - "multi_mask": str. path to nifti file containing regions.
 
         - "labels": dict. labels dictionary with their id as key and
                     name as value
@@ -632,7 +632,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     dataset_name = "aal_spm_12"
     # keys and basenames would need to be handled for each spm_version
     # for now spm_version 12 is hardcoded.
-    keys = ("maps", "labels")
+    keys = ("multi_mask", "labels")
     basenames = (
         "AAL.nii", "AAL.xml")
 
@@ -647,7 +647,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     fdescr = _get_dataset_descr(dataset_name)
 
     # We return the labels contained in the xml file as a dictionary
-    xml_tree = ET.parse(labels_file)
+    xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
     labels_dict = {}
     for label in root.iter('label'):

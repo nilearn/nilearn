@@ -272,6 +272,6 @@ def test_fetch_atlas_yeo_2011():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_atlas_aal_spm_12():
     dataset = atlas.fetch_atlas_aal_spm_12(data_dir=tmpdir, verbose=0)
-    assert_true(isinstance(dataset.maps, _basestring))
+    assert_true(isinstance(dataset.multi_mask, _basestring))
     assert_equal(len(dataset.labels), 116)
     assert_equal(len(mock_url_request.urls), 1)
