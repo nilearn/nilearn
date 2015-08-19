@@ -279,7 +279,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                            confounds=cfs,
                            copy=copy)
             for imgs, cfs in izip(niimg_iter, confounds))
-        return list(zip(*data))[0]
+        return [d[0] for d in data]
 
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
