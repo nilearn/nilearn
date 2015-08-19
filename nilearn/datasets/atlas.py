@@ -605,9 +605,9 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "multi_mask": str. path to nifti file containing regions.
+        - "regions": str. path to nifti file containing regions.
 
-        - "labels": dict. labels dictionary with their id as key and
+        - "labels": dict. labels dictionary with their region id as key and
                     name as value
 
     Notes
@@ -632,7 +632,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     dataset_name = "aal_spm_12"
     # keys and basenames would need to be handled for each spm_version
     # for now spm_version 12 is hardcoded.
-    keys = ("multi_mask", "labels")
+    keys = ("regions", "labels")
     basenames = (
         "AAL.nii", "AAL.xml")
 
