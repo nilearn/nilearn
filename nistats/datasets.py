@@ -179,29 +179,29 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
         """glob data from subject_dir."""
         _subject_data = {'slice_order': 'descending'}
 
-        for s in range(2):
+        for session in range(2):
             # glob func data for session s + 1
             session_func = sorted(glob.glob(
                     os.path.join(
                         subject_dir,
                         ("fMRI/Session%i/fMETHODS-000%i-*-01.img" % (
-                                s + 1, s + 5)))))
+                                session + 1, session + 5)))))
             if len(session_func) < 390:
                 print("Missing %i functional scans for session %i." % (
-                    390 - len(session_func), s))
+                    390 - len(session_func), session))
                 return None
             else:
-                _subject_data['func%i' % (s + 1)] = session_func
+                _subject_data['func%i' % (session + 1)] = session_func
 
             # glob trials .mat file
             sess_trials = os.path.join(
                 subject_dir,
-                "fMRI/trials_ses%i.mat" % (s + 1))
+                "fMRI/trials_ses%i.mat" % (session + 1))
             if not os.path.isfile(sess_trials):
                 print("Missing session file: %s" % sess_trials)
                 return None
             else:
-                _subject_data['trials_ses%i' % (s + 1)] = sess_trials
+                _subject_data['trials_ses%i' % (session + 1)] = sess_trials
 
         # glob for anat data
         anat = os.path.join(subject_dir, "sMRI/smri.img")
