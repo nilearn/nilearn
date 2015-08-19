@@ -158,18 +158,6 @@ def test_glm_beta():
     assert_equal(mulm.get_beta(6).shape, (1, n))
 
 
-def test_glm_mse():
-    mulm, n, p, q = ols_glm()
-    mse = mulm.get_mse()
-    assert_array_almost_equal(mse, np.ones(n), 0)
-
-
-def test_glm_logL():
-    mulm, n, p, q = ols_glm()
-    logL = mulm.get_logL()
-    assert_array_almost_equal(logL / n, - p * 1.41 * np.ones(n) / n, 0)
-
-
 def test_glm_ar():
     mulm, n, p, q = ar1_glm()
     assert_equal(len(mulm.labels_), n)

@@ -160,34 +160,6 @@ class GeneralLinearModel(object):
             beta[:, self.labels_ == l] = self.results_[l].theta[column_index]
         return beta
 
-    def get_mse(self):
-        """Acessor for the mean squared error of the model
-
-        Returns
-        -------
-        mse: array of shape (n_voxels)
-            the sum of square error per voxel
-        """
-        # build the beta array
-        mse = np.zeros(self.labels_.size, dtype=np.float)
-        for l in self.results_.keys():
-            mse[self.labels_ == l] = self.results_[l].MSE
-        return mse
-
-    def get_logL(self):
-        """Acessor for the log-likelihood of the model
-
-        Returns
-        -------
-        logL: array of shape (n_voxels,)
-            the sum of square error per voxel
-        """
-        # build the beta array
-        logL = np.zeros(self.labels_.size, dtype=np.float)
-        for l in self.results_.keys():
-            logL[self.labels_ == l] = self.results_[l].logL
-        return logL
-
     def contrast(self, con_val, contrast_type=None):
         """ Specify and estimate a linear contrast
 
