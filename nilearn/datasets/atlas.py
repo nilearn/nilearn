@@ -650,7 +650,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
     labels_dict = {}
-    for label in root.iter('label'):
+    for label in root.getiterator('label'):
         labels_dict[label.find('index').text] = label.find('name').text
 
     params = dict([('description', fdescr)] + [(keys[0], atlas_img)] +
