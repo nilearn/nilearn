@@ -19,4 +19,5 @@ __all__ = ['fetch_icbm152_2009', 'load_mni152_template', 'fetch_oasis_vbm',
            'fetch_harvard_oxford', 'fetch_atlas_msdl', 'fetch_msdl_atlas',
            'fetch_atlas_power_2011', 'fetch_atlas_smith_2009',
            'fetch_smith_2009', 'fetch_atlas_yeo_2011',
-           'fetch_yeo_2011_atlas', 'fetch_mixed_gambles']
+           'fetch_yeo_2011_atlas', 'fetch_mixed_gambles',
+           'fetch_atlas_aal_spm_12']

@@ -525,7 +525,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - "anat": anatomy image.
 
-    Notes
+    References
     -----
     For more information on this dataset's structure, see
     http://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
@@ -536,6 +536,20 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
 
     Licence: unknown.
+
+    Notes
+    -----
+    This atlas is the result of an automated anatomical parcellation of the
+    spatially normalized single-subject high-resolution T1 volume provided by 
+    the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
+    Trans. Med. Imag. 17, 463–468, PubMed).
+
+    Using this parcellation method, three procedures to perform the automated
+    anatomical labeling of functional studies are proposed: (1) labeling of an
+    extremum defined by a set of coordinates, (2) percentage of voxels
+    belonging to each of the AVOI intersected by a sphere centered by a set of
+    coordinates, and (3) percentage of voxels belonging to each of the AVOI
+    intersected by an activated cluster.
     """
     if url is None:
         url = "ftp://surfer.nmr.mgh.harvard.edu/" \
@@ -582,9 +596,10 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     """Downloads and returns the AAL template for SPM 12.
 
-    The provided images are based on the spatially normalized single-subject
-    high-resolution T1 volume provided by the Montreal Neurological Institute
-    (MNI)
+    This atlas is the result of an automated anatomical parcellation of the
+    spatially normalized single-subject high-resolution T1 volume provided by
+    the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
+    Trans. Med. Imag. 17, 463–468, PubMed).
 
     Parameters
     ----------
