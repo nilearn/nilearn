@@ -540,7 +540,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     This atlas is the result of an automated anatomical parcellation of the
-    spatially normalized single-subject high-resolution T1 volume provided by 
+    spatially normalized single-subject high-resolution T1 volume provided by
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
     Trans. Med. Imag. 17, 463–468, PubMed).
 
@@ -599,7 +599,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     This atlas is the result of an automated anatomical parcellation of the
     spatially normalized single-subject high-resolution T1 volume provided by
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
-    Trans. Med. Imag. 17, 463–468, PubMed).
+    Trans. Med. Imag. 17, 463-468, PubMed).
 
     Parameters
     ----------
