@@ -36,8 +36,10 @@ def filter_and_extract(imgs, extraction_function,
 
     extraction_function: function
         Function used to extract the time series from 4D data. This function
-        should take images as argument and returns a 2D array with masked
-        signals. If any other parameter is needed, a functor or a partial
+        should take images as argument and returns a tuple containing a 2D
+        array with masked signals along with a auxiliary value used if
+        returning a second value is needed.
+        If any other parameter is needed, a functor or a partial
         function must be provided.
 
     For all other parameters refer to NiftiMasker documentation
