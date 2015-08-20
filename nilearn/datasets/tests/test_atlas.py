@@ -280,5 +280,5 @@ def test_fetch_atlas_aal_spm_12():
     dummy.close()
     dataset = atlas.fetch_atlas_aal_spm_12(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.regions, _basestring))
-    assert_true(isinstance(dataset.labels, dict)
+    assert_true(isinstance(dataset.labels, dict))
     assert_equal(len(mock_url_request.urls), 1)
