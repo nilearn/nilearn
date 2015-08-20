@@ -273,11 +273,10 @@ def test_fetch_atlas_yeo_2011():
 def test_fetch_atlas_aal_spm_12():
     ho_dir = os.path.join(tmpdir, 'aal_spm_12', 'aal_for_SPM12')
     os.makedirs(ho_dir)
-    dummy = open(os.path.join(ho_dir, 'AAL.xml'), 'w')
-    dummy.write("<?xml version='1.0' encoding='us-ascii'?> "
-                "<metadata>"
-                "</metadata>")
-    dummy.close()
+    with open(os.path.join(ho_dir, 'AAL.xml'), 'w') as xml_file:
+        xml_file.write("<?xml version='1.0' encoding='us-ascii'?> "
+                       "<metadata>"
+                       "</metadata>")
     dataset = atlas.fetch_atlas_aal_spm_12(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.regions, _basestring))
     assert_true(isinstance(dataset.labels, dict))

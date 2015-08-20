@@ -632,10 +632,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     dataset_name = "aal_spm_12"
     # keys and basenames would need to be handled for each spm_version
     # for now spm_version 12 is hardcoded.
-    keys = ("regions", "labels")
-    basenames = (
-        "AAL.nii", "AAL.xml")
-
+    basenames = ("AAL.nii", "AAL.xml")
     filenames = [(os.path.join("aal_for_SPM%i" % spm_version, f), url, opts)
                  for f in basenames]
 
@@ -653,6 +650,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     for label in root.getiterator('label'):
         labels_dict[label.find('index').text] = label.find('name').text
 
-    params = dict([('description', fdescr)] + [(keys[0], atlas_img)] +
-                  [(keys[1], labels_dict)])
+    params = {'description': fdescr, 'regions': atlas_img,
+              'labels': labels_dict}
+
     return Bunch(**params)
