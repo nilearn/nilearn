@@ -11,7 +11,9 @@ import numpy as np
 import scipy.linalg as spl
 from nibabel import load, Nifti1Image, save
 
-from ..glm import GeneralLinearModel, data_scaling, FMRILinearModel
+from ..glm import (
+    GeneralLinearModel, data_scaling, session_glm, FirstLevelGLM,
+    FMRILinearModel)
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
@@ -28,8 +30,8 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     mask_file, fmri_files, design_files = 'mask.nii', [], []
     for i, shape in enumerate(shapes):
         fmri_files.append('fmri_run%d.nii' % i)
-        data = 100 + np.random.randn(*shape)
-        data[0] -= 10
+        data = np.random.randn(*shape)
+        data[1:-1, 1:-1, 1:-1] += 100
         save(Nifti1Image(data, affine), fmri_files[-1])
         design_files.append('dmtx_%d.npz' % i)
         np.savez(design_files[-1], np.random.randn(shape[3], rk))
@@ -42,8 +44,8 @@ def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     fmri_data = []
     design_matrices = []
     for i, shape in enumerate(shapes):
-        data = 100 + np.random.randn(*shape)
-        data[0] -= 10
+        data = np.random.randn(*shape)
+        data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
         design_matrices.append(np.random.randn(shape[3], rk))
     mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
@@ -128,6 +130,25 @@ def test_high_level_glm_null_contrasts():
     np.testing.assert_almost_equal(z1.get_data(), z2.get_data())
 
 
+def test_high_level_glm_one_session():
+    # New API
+    shapes, rk = [(5, 6, 7, 20)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
+
+    single_session_model = FirstLevelGLM(mask=None).fit(
+        design_matrices[0], fmri_data[0])
+    assert_true(isinstance(single_session_model.masker_.mask_img_,
+                           Nifti1Image))
+
+    single_session_model = FirstLevelGLM(mask=mask).fit(
+        design_matrices[0], fmri_data[0])
+    z1, = single_session_model.transform(np.eye(rk)[:1])
+    assert_true(isinstance(z1, Nifti1Image))
+
+
+
+
+
 def ols_glm(n=100, p=80, q=10):
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
     glm = GeneralLinearModel(X)
@@ -142,29 +163,36 @@ def ar1_glm(n=100, p=80, q=10):
     return glm, n, p, q
 
 
-def test_glm_ols():
-    mulm, n, p, q = ols_glm()
-    assert_array_equal(mulm.labels_, np.zeros(n))
-    assert_equal(list(mulm.results_.keys()), [0.0])
-    assert_equal(mulm.results_[0.0].theta.shape, (q, n))
-    assert_almost_equal(mulm.results_[0.0].theta.mean(), 0, 1)
-    assert_almost_equal(mulm.results_[0.0].theta.var(), 1. / p, 1)
+def test_session_glm():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
 
+    # ols case
+    labels, results = session_glm(Y, X, 'ols')
+    assert_array_equal(labels, np.zeros(n))
+    assert_equal(list(results.keys()), [0.0])
+    assert_equal(results[0.0].theta.shape, (q, n))
+    assert_almost_equal(results[0.0].theta.mean(), 0, 1)
+    assert_almost_equal(results[0.0].theta.var(), 1. / p, 1)
 
+    # ar(1) case
+    labels, results = session_glm(Y, X, 'ar1')
+    assert_equal(len(labels), n)
+    assert_true(len(results.keys()) > 1)
+    tmp = sum([val.theta.shape[1] for val in results.values()])
+    assert_equal(tmp, n)
+    
+    # non-existant case
+    assert_raises(ValueError, session_glm, Y, X, 'ar2')
+    assert_raises(ValueError, session_glm, Y, X.T)
+
+"""
 def test_glm_beta():
     mulm, n, p, q = ols_glm()
     assert_equal(mulm.get_beta().shape, (q, n))
     assert_equal(mulm.get_beta([0, -1]).shape, (2, n))
     assert_equal(mulm.get_beta(6).shape, (1, n))
-
-
-def test_glm_ar():
-    mulm, n, p, q = ar1_glm()
-    assert_equal(len(mulm.labels_), n)
-    assert_true(len(mulm.results_.keys()) > 1)
-    tmp = sum([mulm.results_[key].theta.shape[1]
-               for key in mulm.results_.keys()])
-    assert_equal(tmp, n)
+"""
 
 
 def test_Tcontrast():
@@ -262,7 +290,7 @@ def test_t_contrast_values():
     assert_almost_equal(np.ravel(con.stat()), t_ref)
 
 
-def test_F_contrast_calues():
+def test_F_contrast_values():
     mulm, n, p, q = ar1_glm(n=1)
     cval = np.eye(q)[:3]
     con = mulm.contrast(cval)
