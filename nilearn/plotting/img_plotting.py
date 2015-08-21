@@ -869,7 +869,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
-    stat_map_img = _utils.check_niimg_3d(stat_map_img)
+    stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(
         stat_map_img,
@@ -976,7 +976,7 @@ def plot_glass_brain(stat_map_img,
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
 
     if stat_map_img:
-        stat_map_img = _utils.check_niimg_3d(stat_map_img)
+        stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = \
                         _get_plot_stat_map_params(stat_map_img,
