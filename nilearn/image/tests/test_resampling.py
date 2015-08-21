@@ -121,6 +121,36 @@ def test_resampling_with_affine():
             assert_equal(rot_img.get_data().dtype, data.dtype)
 
 
+def test_resampling_continuous_with_affine():
+    prng = np.random.RandomState(10)
+
+    data_3d = prng.randint(1, 4, size=(1, 10, 10))
+    data_4d = prng.randint(1, 4, size=(1, 10, 10, 3))
+
+    for data in [data_3d, data_4d]:
+        for angle in (0, np.pi / 2., np.pi, 3 * np.pi / 2.):
+            rot = rotation(0, angle)
+
+            img = Nifti1Image(data, np.eye(4))
+            rot_img = resample_img(
+                img,
+                target_affine=rot,
+                interpolation='continuous')
+            rot_img_back = resample_img(
+                rot_img,
+                target_affine=np.eye(4),
+                interpolation='continuous')
+
+            center = slice(1, 9)
+            # values on the edges are wrong for some reason
+            mask = (0, center, center)
+            np.testing.assert_allclose(
+                img.get_data()[mask],
+                rot_img_back.get_data()[mask])
+            assert_equal(rot_img.get_data().dtype,
+                         np.dtype(data.dtype.name.replace('int', 'float')))
+
+
 def test_resampling_error_checks():
     shape = (3, 2, 5, 2)
     target_shape = (5, 3, 2)

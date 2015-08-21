@@ -454,10 +454,16 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
+    if interpolation == 'continuous' and data.dtype.kind == 'i':
+        resampled_data_dtype = np.dtype(
+            data.dtype.name.replace('int', 'float'))
+    else:
+        resampled_data_dtype = data.dtype
+
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
     resampled_data = np.empty(list(target_shape) + other_shape,
-                              order=order, dtype=data.dtype)
+                              order=order, dtype=resampled_data_dtype)
 
     all_img = (slice(None), ) * 3
 
