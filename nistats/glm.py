@@ -55,7 +55,7 @@ def data_scaling(Y):
     mean = Y.mean(0)
     if (mean == 0).any():
         warn('Mean values of 0 observed.'
-             'The data have porbably been centered.'
+             'The data have probably been centered.'
              'Scaling might not work as expected')
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -253,17 +253,13 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             contrast.z_score()
 
         # Prepare the returned images
-        # mask = self.mask.get_data().astype(np.bool)
-
         do_outputs = [output_z, output_stat, output_effects, output_variance]
         estimates = ['z_score_', 'stat_', 'effect', 'variance']
         descrips = ['z statistic', 'Statistical value', 'Estimated effect',
                     'Estimated variance']
-        dims = [1, 1, contrast.dim, contrast.dim ** 2]
-        # n_vox = contrast.z_score_.size
         output_images = []
-        for (do_output, estimate, descrip, dim) in zip(
-            do_outputs, estimates, descrips, dims):
+        for do_output, estimate, descrip in zip(
+                do_outputs, estimates, descrips):
             if not do_output:
                 continue
             output = self.masker_.inverse_transform(

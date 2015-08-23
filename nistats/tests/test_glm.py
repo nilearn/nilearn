@@ -13,7 +13,7 @@ from nibabel import load, Nifti1Image, save
 
 from ..glm import (
     GeneralLinearModel, data_scaling, session_glm, FirstLevelGLM,
-    FMRILinearModel)
+    FMRILinearModel, compute_contrast)
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
@@ -164,6 +164,7 @@ def ar1_glm(n=100, p=80, q=10):
 
 
 def test_session_glm():
+    # New API
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
 
@@ -196,90 +197,73 @@ def test_glm_beta():
 
 
 def test_Tcontrast():
-    mulm, n, p, q = ar1_glm()
-    cval = np.hstack((1, np.ones(9)))
-    z_vals = mulm.contrast(cval).z_score()
+    # new API
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    labels, results = session_glm(Y, X, 'ar1')
+    con_val = np.eye(q)[0]
+    z_vals = compute_contrast(labels, results, con_val).z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
 
 
-def test_Fcontrast_1d():
-    mulm, n, p, q = ar1_glm()
-    cval = np.hstack((1, np.ones(9)))
-    con = mulm.contrast(cval, contrast_type='F')
-    z_vals = con.z_score()
-    assert_almost_equal(z_vals.mean(), 0, 0)
-    assert_almost_equal(z_vals.std(), 1, 0)
+def test_Fcontrast():
+    # new API
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    for model in ['ols', 'ar1']:
+        labels, results = session_glm(Y, X, model)
+        for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
+            z_vals = compute_contrast(
+                labels, results, con_val, contrast_type='F').z_score()
+            assert_almost_equal(z_vals.mean(), 0, 0)
+            assert_almost_equal(z_vals.std(), 1, 0)
 
-
-def test_Fcontrast_nd():
-    mulm, n, p, q = ar1_glm()
-    cval = np.eye(q)[:3]
-    con = mulm.contrast(cval)
-    assert_equal(con.contrast_type, 'F')
-    z_vals = con.z_score()
-    assert_almost_equal(z_vals.mean(), 0, 0)
-    assert_almost_equal(z_vals.std(), 1, 0)
-
-
-def test_Fcontrast_1d_old():
-    mulm, n, p, q = ols_glm()
-    cval = np.hstack((1, np.ones(9)))
-    con = mulm.contrast(cval, contrast_type='F')
-    z_vals = con.z_score()
-    assert_almost_equal(z_vals.mean(), 0, 0)
-    assert_almost_equal(z_vals.std(), 1, 0)
-
-
-def test_Fcontrast_nd_ols():
-    mulm, n, p, q = ols_glm()
-    cval = np.eye(q)[:3]
-    con = mulm.contrast(cval)
-    assert_equal(con.contrast_type, 'F')
-    z_vals = con.z_score()
-    assert_almost_equal(z_vals.mean(), 0, 0)
-    assert_almost_equal(z_vals.std(), 1, 0)
 
 
 def test_t_contrast_add():
-    mulm, n, p, q = ols_glm()
+    # new API
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    lab, res = session_glm(Y, X, 'ols')
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
-    con = mulm.contrast(c1) + mulm.contrast(c2)
+    con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
 
 
 def test_F_contrast_add():
-    mulm, n, p, q = ar1_glm()
-    # first test with independent contrast
+    # new API
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    lab, res = session_glm(Y, X, 'ar1')
     c1, c2 = np.eye(q)[:2], np.eye(q)[2:4]
-    con = mulm.contrast(c1) + mulm.contrast(c2)
+    con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
+
     # first test with dependent contrast
-    con1 = mulm.contrast(c1)
-    con2 = mulm.contrast(c1) + mulm.contrast(c1)
+    con1 = compute_contrast(lab, res, c1)
+    con2 = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c1)
     assert_almost_equal(con1.effect * 2, con2.effect)
     assert_almost_equal(con1.variance * 2, con2.variance)
     assert_almost_equal(con1.stat() * 2, con2.stat())
 
 
-def test_t_contrast_mul():
-    mulm, n, p, q = ar1_glm()
-    con1 = mulm.contrast(np.eye(q)[0])
-    con2 = con1 * 2
-    assert_almost_equal(con1.z_score(), con2.z_score())
-    assert_almost_equal(con1.effect * 2, con2.effect)
-
-
-def test_F_contrast_mul():
-    mulm, n, p, q = ar1_glm()
-    con1 = mulm.contrast(np.eye(q)[:4])
-    con2 = con1 * 2
-    assert_almost_equal(con1.z_score(), con2.z_score())
-    assert_almost_equal(con1.effect * 2, con2.effect)
+def test_contrast_mul():
+    # new API
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    lab, res = session_glm(Y, X, 'ar1')
+    for  c1 in [np.eye(q)[0], np.eye(q)[:3]]:
+        con1 = compute_contrast(lab, res, c1)
+        con2 = con1 * 2
+        assert_almost_equal(con1.effect * 2, con2.effect)
+        # assert_almost_equal(con1.variance * 2, con2.variance) FIXME
+        # assert_almost_equal(con1.stat() * 2, con2.stat()) FIXME
+        assert_almost_equal(con1.z_score(), con2.z_score())
 
 
 def test_t_contrast_values():
@@ -314,10 +298,10 @@ def test_scaling():
     """Test the scaling function"""
     shape = (400, 10)
     u = np.random.randn(*shape)
-    mean = 100 * np.random.rand(shape[1])
+    mean = 100 * np.random.rand(shape[1]) + 1
     Y = u + mean
-    Y, mean_ = data_scaling(Y)
-    assert_almost_equal(Y.mean(0), 0)
+    Y_, mean_ = data_scaling(Y)
+    assert_almost_equal(Y_.mean(0), 0, 5)
     assert_almost_equal(mean_, mean, 0)
     assert_true(Y.std() > 1)
 
