@@ -499,11 +499,15 @@ def test_get_colorbar_and_data_ranges_pos_neg():
                      [1.5, 2.5, 3.]])
     img = nibabel.Nifti1Image(data, affine)
 
+    # Reasonable additional arguments that would end up being passed
+    # to imshow in a real plotting use case
+    kwargs = {'aspect': 'auto', 'alpha': 0.9}
+
     # symmetric_cbar set to True
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         img, vmax=None,
         symmetric_cbar=True,
-        kwargs={})
+        kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(data))
     assert_equal(vmax, np.nanmax(data))
     assert_equal(cbar_vmin, None)
@@ -512,7 +516,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         img, vmax=2,
         symmetric_cbar=True,
-        kwargs={})
+        kwargs=kwargs)
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
@@ -522,7 +526,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         img, vmax=None,
         symmetric_cbar=False,
-        kwargs={})
+        kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(data))
     assert_equal(vmax, np.nanmax(data))
     assert_equal(cbar_vmin, np.nanmin(data))
@@ -531,7 +535,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         img, vmax=2,
         symmetric_cbar=False,
-        kwargs={})
+        kwargs=kwargs)
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, np.nanmin(data))
@@ -541,7 +545,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         img, vmax=None,
         symmetric_cbar='auto',
-        kwargs={})
+        kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(data))
     assert_equal(vmax, np.nanmax(data))
     assert_equal(cbar_vmin, None)
@@ -550,7 +554,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         img, vmax=2,
         symmetric_cbar='auto',
-        kwargs={})
+        kwargs=kwargs)
     assert_equal(vmin, -2)
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
