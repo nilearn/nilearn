@@ -477,6 +477,20 @@ def test_plot_prob_atlas():
     plot_prob_atlas(img, view_type='continuous')
 
 
+def test_get_colorbar_and_data_ranges_with_vmin():
+    affine = np.eye(4)
+    data = np.array([[-.5, 1., np.nan],
+                     [0., np.nan, -.2],
+                     [1.5, 2.5, 3.]])
+    img = nibabel.Nifti1Image(data, affine)
+
+    assert_raises_regex(ValueError,
+                        'does not accept a "vmin" argument',
+                        _get_colorbar_and_data_ranges,
+                        img, vmax=None,
+                        symmetric_cbar=True, kwargs={'vmin': 1.})
+
+
 def test_get_colorbar_and_data_ranges_pos_neg():
     # data with positive and negative range
     affine = np.eye(4)
