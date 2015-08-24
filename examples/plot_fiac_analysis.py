@@ -1,4 +1,4 @@
-_doc = """
+"""
 GLM fitting in fMRI
 ===================
 
@@ -12,7 +12,6 @@ JB. Functional segregation of cortical language areas by sentence
 repetition. Hum Brain Mapp. 2006: 27:360--371.
 http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=2653076#R11
 
-
 More specifically:
 
 1. A sequence of fMRI volumes are loaded
@@ -20,9 +19,11 @@ More specifically:
 3. a mask of the useful brain volume is computed
 4. A GLM is applied to the dataset (effect/covariance,
    then contrast estimation)
+
+Author: Bertrand Thirion, 2015
 """
 
-print _doc
+print(__doc__)
 
 from os import mkdir, path, getcwd
 
@@ -92,8 +93,9 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     if contrast_id == 'Effects_of_interest':
         vmax = max(- z_map.get_data().min(), z_map.get_data().max())
         vmin = - vmax
-        plot_stat_map(z_map, bg_img=mean_img, threshold=2.5, title=contrast_id)
-        plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+        display = plot_stat_map(z_map, bg_img=mean_img, threshold=2.5,
+                                title=contrast_id)
+        display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 print('All the  results were witten in %s' % write_dir)
 plt.show()

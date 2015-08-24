@@ -190,8 +190,8 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
                 print("Missing %i functional scans for session %i." % (
                     390 - len(session_func), session))
                 return None
-            else:
-                _subject_data['func%i' % (session + 1)] = session_func
+
+            _subject_data['func%i' % (session + 1)] = session_func
 
             # glob trials .mat file
             sess_trials = os.path.join(
@@ -200,16 +200,16 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
             if not os.path.isfile(sess_trials):
                 print("Missing session file: %s" % sess_trials)
                 return None
-            else:
-                _subject_data['trials_ses%i' % (session + 1)] = sess_trials
+
+            _subject_data['trials_ses%i' % (session + 1)] = sess_trials
 
         # glob for anat data
         anat = os.path.join(subject_dir, "sMRI/smri.img")
         if not os.path.isfile(anat):
             print("Missing structural image.")
             return None
-        else:
-            _subject_data["anat"] = anat
+
+        _subject_data["anat"] = anat
 
         return Bunch(**_subject_data)
 
@@ -259,29 +259,29 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         _subject_data = {}
         subject_dir = os.path.join(data_dir, 'nipy-data-0.2/data/fiac/fiac0')
         for session in [1, 2]:
-            # glob func data for session s + 1
+            # glob func data for session session + 1
             session_func = os.path.join(subject_dir, 'run%i.nii.gz' % session)
             if not os.path.isfile(session_func):
                 print('Missing functional scan for session %i.' % session)
                 return None
-            else:
-                _subject_data['func%i' % session] = session_func
+
+            _subject_data['func%i' % session] = session_func
 
             # glob design matrix .npz file
             sess_dmtx = os.path.join(subject_dir, 'run%i_design.npz' % session)
             if not os.path.isfile(sess_dmtx):
                 print('Missing session file: %s' % sess_dmtx)
                 return None
-            else:
-                _subject_data['design_matrix%i' % session] = sess_dmtx
+
+            _subject_data['design_matrix%i' % session] = sess_dmtx
 
         # glob for mask data
         mask = os.path.join(subject_dir, 'mask.nii.gz')
         if not os.path.isfile(mask):
             print('Missing mask image.')
             return None
-        else:
-            _subject_data['mask'] = mask
+
+        _subject_data['mask'] = mask
         return Bunch(**_subject_data)
 
     # maybe data_dir already contains the data ?
