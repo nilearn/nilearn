@@ -18,6 +18,8 @@ from nilearn._utils.niimg_conversions import _check_same_fov
 
 class _ExtractionFunctor(object):
 
+    func_name = 'nifti_masker_extractor'
+
     def __init__(self, mask_img_):
         self.mask_img_ = mask_img_
 

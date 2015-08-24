@@ -18,6 +18,8 @@ from .base_masker import filter_and_extract, BaseMasker
 
 class _ExtractionFunctor(object):
 
+    func_name = 'nifti_labels_masker_extractor'
+
     def __init__(self, _resampled_labels_img_, background_label):
         self._resampled_labels_img_ = _resampled_labels_img_
         self.background_label = background_label
