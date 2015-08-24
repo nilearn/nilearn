@@ -257,7 +257,7 @@ def test_contrast_mul():
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
     lab, res = session_glm(Y, X, 'ar1')
-    for  c1 in [np.eye(q)[0], np.eye(q)[:3]]:
+    for c1 in [np.eye(q)[0], np.eye(q)[:3]]:
         con1 = compute_contrast(lab, res, c1)
         con2 = con1 * 2
         assert_almost_equal(con1.effect * 2, con2.effect)
@@ -266,22 +266,25 @@ def test_contrast_mul():
         assert_almost_equal(con1.z_score(), con2.z_score())
 
 
-def test_t_contrast_values():
-    mulm, n, p, q = ar1_glm(n=1)
+def test_contrast_values():
+    # new API
+    # but this test is circular and should be removed 
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    lab, res = session_glm(Y, X, 'ar1', bins=1)
+    # t test
     cval = np.eye(q)[0]
-    con = mulm.contrast(cval)
-    t_ref = list(mulm.results_.values())[0].Tcontrast(cval).t
+    con = compute_contrast(lab, res, cval)
+    t_ref = list(res.values())[0].Tcontrast(cval).t
     assert_almost_equal(np.ravel(con.stat()), t_ref)
-
-
-def test_F_contrast_values():
-    mulm, n, p, q = ar1_glm(n=1)
+    # F test
     cval = np.eye(q)[:3]
-    con = mulm.contrast(cval)
-    F_ref = list(mulm.results_.values())[0].Fcontrast(cval).F
+    con = compute_contrast(lab, res, cval)
+    F_ref = list(res.values())[0].Fcontrast(cval).F
     # Note that the values are not strictly equal,
     # this seems to be related to a bug in Mahalanobis
     assert_almost_equal(np.ravel(con.stat()), F_ref, 3)
+
 
 
 def test_tmin():
