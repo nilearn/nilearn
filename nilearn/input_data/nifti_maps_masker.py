@@ -15,6 +15,8 @@ from .base_masker import filter_and_extract, BaseMasker
 
 class _ExtractionFunctor(object):
 
+    func_name = 'nifti_maps_masker_extractor'
+
     def __init__(self, _resampled_maps_img_, _resampled_mask_img_):
         self._resampled_maps_img_ = _resampled_maps_img_
         self._resampled_mask_img_ = _resampled_mask_img_

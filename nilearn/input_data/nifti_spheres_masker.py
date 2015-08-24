@@ -66,6 +66,8 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
 
 class _ExtractionFunctor(object):
 
+    func_name = 'nifti_spheres_masker_extractor'
+
     def __init__(self, seeds_, radius, mask_img):
         self.seeds_ = seeds_
         self.radius = radius
