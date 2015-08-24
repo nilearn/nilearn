@@ -49,8 +49,8 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
-                              force_min_stat_map_value=None):
+def _get_colorbar_and_data_ranges(stat_map_img, vmax, symmetric_cbar, kwargs,
+                                  force_min_stat_map_value=None):
     """ Internal function for setting colormap and colorbar limits
 
     Used by for plot_stat_map and plot_glass_brain.
@@ -59,6 +59,12 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
     The limits for the colorbar depend on the symmetric_cbar argument, please
     refer to docstring of plot_stat_map.
     """
+    if 'vmin' in kwargs:
+        raise ValueError('this function does not accept a "vmin" '
+                         'argument, as it uses a symmetrical range '
+                         'defined via the vmax argument. To threshold '
+                         'the plotted map, use the "threshold" argument')
+
     # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
         stat_map_data = stat_map_img.get_data()
@@ -71,16 +77,14 @@ def _get_plot_stat_map_params(stat_map_img, vmax, symmetric_cbar, kwargs,
             stat_map_min = np.nanmin(stat_map_data)
         else:
             stat_map_min = force_min_stat_map_value
+
     if symmetric_cbar == 'auto':
         symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+
     if vmax is None:
         vmax = max(-stat_map_min, stat_map_max)
-    if 'vmin' in kwargs:
-        raise ValueError('this function does not accept a "vmin" '
-                         'argument, as it uses a symmetrical range '
-                         'defined via the vmax argument. To threshold '
-                         'the map, use the "threshold" argument')
     vmin = -vmax
+
     if not symmetric_cbar:
         negative_range = stat_map_max <= 0
         positive_range = stat_map_min >= 0
@@ -871,7 +875,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_plot_stat_map_params(
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         stat_map_img,
         vmax,
         symmetric_cbar,
@@ -978,25 +982,24 @@ def plot_glass_brain(stat_map_img,
     if stat_map_img:
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
-            cbar_vmin, cbar_vmax, vmin, vmax = \
-                        _get_plot_stat_map_params(stat_map_img,
-                                                  vmax,
-                                                  symmetric_cbar,
-                                                  kwargs,
-                                                  0)
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+                stat_map_img,
+                vmax,
+                symmetric_cbar,
+                kwargs,
+                0)
         else:
-            cbar_vmin, cbar_vmax, vmin, vmax = \
-                        _get_plot_stat_map_params(stat_map_img,
-                                                  vmax,
-                                                  symmetric_cbar,
-                                                  kwargs)
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+                stat_map_img,
+                vmax,
+                symmetric_cbar,
+                kwargs)
     else:
         cbar_vmin, cbar_vmax = None, None
 
     def display_factory(display_mode):
         return functools.partial(get_projector(display_mode),
                                  alpha=alpha, plot_abs=plot_abs)
-
     display = _plot_img_with_bg(img=stat_map_img,
                                 output_file=output_file,
                                 display_mode=display_mode,
