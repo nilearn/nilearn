@@ -8,7 +8,7 @@ from __future__ import with_statement
 import os
 
 import numpy as np
-
+import scipy.linalg as spl
 from nibabel import load, Nifti1Image, save
 
 from ..glm import GeneralLinearModel, data_scaling, FMRILinearModel

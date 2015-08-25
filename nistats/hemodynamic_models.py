@@ -302,7 +302,7 @@ def _orthogonalize(X):
     """
     if X.size == X.shape[0]:
         return X
-    from numpy.linalg import pinv
+    from scipy.linalg import pinv
     for i in range(1, X.shape[1]):
         X[:, i] -= np.dot(X[:, i], np.dot(X[:, :i], pinv(X[:, :i])))
     return X

@@ -29,12 +29,14 @@ Design matrices contain three different types of regressors:
 
 Author: Bertrand Thirion, 2009-2015
 """
-import numpy as np
 from warnings import warn
+import numpy as np
+import scipy.linalg as spl
+from pandas import DataFrame
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
 from .experimental_paradigm import check_paradigm
-from pandas import DataFrame
+
 
 
 ######################################################################
@@ -238,7 +240,7 @@ def _full_rank(X, cmax=1e15):
     cond : float,
         actual condition number
     """
-    U, s, V = np.linalg.svd(X, 0)
+    U, s, V = spl.svd(X, 0)
     smax, smin = s.max(), s.min()
     cond = smax / smin
     if cond < cmax:

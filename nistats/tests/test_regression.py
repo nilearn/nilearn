@@ -6,8 +6,6 @@ Test functions for models.regression
 
 import numpy as np
 
-import scipy.linalg as spl
-
 from ..regression import OLSModel, ARModel
 
 from nose.tools import assert_equal, assert_true

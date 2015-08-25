@@ -107,7 +107,7 @@ def multiple_mahalanobis(effect, covariance):
 
     # compute the inverse of the covariances
     Kt = multiple_fast_inv(Kt)
-    
+
     # derive the squared Mahalanobis distances
     sqd = np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
     return sqd
@@ -178,7 +178,7 @@ def matrix_rank(M, tol=None):
     if M.ndim > 2:
         raise TypeError('array should have 2 or fewer dimensions')
     if M.ndim < 2:
-        return int(not np.all(M==0))
+        return int(not np.all(M == 0))
     S = spl.svd(M, compute_uv=False)
     if tol is None:
         tol = S.max() * np.finfo(S.dtype).eps * max(M.shape)
