@@ -13,22 +13,26 @@ def test_z_score():
     p = np.random.rand(10)
     assert_array_almost_equal(norm.sf(z_score(p)), p)
     # check the numerical precision
-    for p in [1.e-100, 1.e-16]:
+    for p in [1.e-250, 1 - 1.e-16]:
         assert_array_almost_equal(z_score(p), norm.isf(p))
+    assert_array_almost_equal(z_score(np.float32(1.e-100)), norm.isf(1.e-300))
+
 
 def test_mahalanobis():
-    x = np.random.rand(100) / 100
-    A = np.random.rand(100, 100) / 100
-    A = np.dot(A.transpose(), A) + np.eye(100)
+    n = 50
+    x = np.random.rand(n) / n
+    A = np.random.rand(n, n) / n
+    A = np.dot(A.transpose(), A) + np.eye(n)
     mah = np.dot(x, np.dot(np.linalg.inv(A), x))
     assert_almost_equal(mah, multiple_mahalanobis(x, A), decimal=1)
 
 
 def test_mahalanobis2():
-    x = np.random.randn(100, 3)
-    Aa = np.zeros([100, 100, 3])
+    n = 50
+    x = np.random.randn(n, 3)
+    Aa = np.zeros([n, n, 3])
     for i in range(3):
-        A = np.random.randn(120, 100)
+        A = np.random.randn(120, n)
         A = np.dot(A.T, A)
         Aa[:, :, i] = A
     i = np.random.randint(3)
