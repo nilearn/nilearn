@@ -73,10 +73,11 @@ class _ExtractionFunctor(object):
 
     func_name = 'nifti_spheres_masker_extractor'
 
-    def __init__(self, seeds_, radius, mask_img):
+    def __init__(self, seeds_, radius, mask_img, allow_overlap):
         self.seeds_ = seeds_
         self.radius = radius
         self.mask_img = mask_img
+        self.allow_overlap = allow_overlap
 
     def __call__(self, imgs):
         n_seeds = len(self.seeds_)
@@ -257,7 +258,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 filter_and_extract,
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
-            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img),
+            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,
+                                     self.allow_overlap),
             # Pre-processing
             params,
             confounds=confounds,
