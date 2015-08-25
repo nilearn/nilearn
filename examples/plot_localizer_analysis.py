@@ -121,8 +121,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 
     # Create snapshots of the contrasts
     vmax = max(-z_map.get_data().min(), z_map.get_data().max())
-    plotting.plot_stat_map(z_map,
+    display = plotting.plot_stat_map(z_map,
              display_mode='z', threshold=3.0, title=contrast_id)
-    plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+    display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 plt.show()
