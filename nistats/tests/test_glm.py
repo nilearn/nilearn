@@ -8,7 +8,7 @@ from __future__ import with_statement
 import os
 
 import numpy as np
-import scipy.linalg as spl
+
 from nibabel import load, Nifti1Image, save
 
 from ..glm import (
@@ -156,13 +156,6 @@ def ols_glm(n=100, p=80, q=10):
     return glm, n, p, q
 
 
-def ar1_glm(n=100, p=80, q=10):
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
-    glm = GeneralLinearModel(X)
-    glm.fit(Y, 'ar1')
-    return glm, n, p, q
-
-
 def test_session_glm():
     # New API
     n, p, q = 100, 80, 10
@@ -220,7 +213,6 @@ def test_Fcontrast():
             assert_almost_equal(z_vals.std(), 1, 0)
 
 
-
 def test_t_contrast_add():
     # new API
     n, p, q = 100, 80, 10
@@ -268,7 +260,7 @@ def test_contrast_mul():
 
 def test_contrast_values():
     # new API
-    # but this test is circular and should be removed 
+    # but this test is circular and should be removed
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
     lab, res = session_glm(Y, X, 'ar1', bins=1)
@@ -284,17 +276,6 @@ def test_contrast_values():
     # Note that the values are not strictly equal,
     # this seems to be related to a bug in Mahalanobis
     assert_almost_equal(np.ravel(con.stat()), F_ref, 3)
-
-
-
-def test_tmin():
-    mulm, n, p, q = ar1_glm(n=1)
-    c1, c2, c3 = np.eye(q)[0], np.eye(q)[1], np.eye(q)[2]
-    t1, t2, t3 = mulm.contrast(c1).stat(), mulm.contrast(c2).stat(), \
-        mulm.contrast(c3).stat()
-    tmin = min(t1, t2, t3)
-    con = mulm.contrast(np.eye(q)[:3], 'tmin-conjunction')
-    assert_equal(con.stat(), tmin)
 
 
 def test_scaling():
