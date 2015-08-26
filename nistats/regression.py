@@ -23,9 +23,8 @@ __docformat__ = 'restructuredtext en'
 import warnings
 
 import numpy as np
-
-from scipy import stats
 import scipy.linalg as spl
+from scipy import stats
 
 from nibabel.onetime import setattr_on_read
 

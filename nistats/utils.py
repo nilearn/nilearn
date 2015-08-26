@@ -9,15 +9,12 @@ from scipy.stats import norm
 
 py3 = sys.version_info[0] >= 3
 
-TINY = 1e-15
-
 
 def z_score(pvalue):
     """ Return the z-score corresponding to a given p-value.
     """
-    pvalue = np.minimum(np.maximum(pvalue, TINY), 1. - TINY)
-    z = norm.isf(pvalue)
-    return z
+    pvalue = np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16)
+    return norm.isf(pvalue)
 
 
 def multiple_fast_inv(a):
@@ -110,7 +107,7 @@ def multiple_mahalanobis(effect, covariance):
 
     # compute the inverse of the covariances
     Kt = multiple_fast_inv(Kt)
-    
+
     # derive the squared Mahalanobis distances
     sqd = np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
     return sqd
@@ -181,7 +178,7 @@ def matrix_rank(M, tol=None):
     if M.ndim > 2:
         raise TypeError('array should have 2 or fewer dimensions')
     if M.ndim < 2:
-        return int(not np.all(M==0))
+        return int(not np.all(M == 0))
     S = spl.svd(M, compute_uv=False)
     if tol is None:
         tol = S.max() * np.finfo(S.dtype).eps * max(M.shape)
@@ -241,29 +238,4 @@ def pos_recipr(X):
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1. / X)
 
-
-def open4csv(fname, mode):
-    """ Open filename `fname` for CSV IO in read or write `mode`
-
-    Parameters
-    ----------
-    fname : str
-        filename to open
-    mode : {'r', 'w'}
-        Mode to open file.  Don't specify binary or text modes; we need to
-        chose these according to python version.
-
-    Returns
-    -------
-    fobj : file object
-        open file object; needs to be closed by the caller
-    """
-    if mode not in ('r', 'w'):
-        raise ValueError('Only "r" and "w" allowed for mode')
-    if not py3: # Files for csv reading and writing should be binary mode
-        return open(fname, mode + 'b')
-    return open(fname, mode, newline='')
-
-
 _basestring = str if py3 else basestring
-
