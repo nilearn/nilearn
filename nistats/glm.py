@@ -172,7 +172,6 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
                     contrast_type=contrast_type)
 
 
-
 class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
     """ Implementation of the General Linear Model for Single-session fMRI data
 
@@ -197,8 +196,8 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         self.smoothing_fwhm = smoothing_fwhm
         self.noise_model = noise_model
 
-    def fit(self, X, imgs):
-        """ Note: X is the design matrix !
+    def fit(self, imgs, design_matrices):
+        """ Note: design_matrices is the design matrix !
         1. does a masker job: fMRI_data -> Y
         2. fit an ols regression to (Y, X)
         3. fit an AR(1) regression of require
@@ -229,15 +228,41 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
                     warn('Parameter %s of the masker overriden' % param_name)
                 setattr(self.masker_, param_name, our_param)
 
-        # to do: loop on imgs and design matrices
-        Y = self.masker_.fit_transform(imgs)
-        if self.standardize is False:
-            Y, _ = data_scaling(Y)
-        self.labels_, self.results_ = session_glm(
-            Y, X, noise_model=self.noise_model, bins=100)
+        # make design_matrices a list of arrays
+        design_matrices_ = [X for X in design_matrices]
+        if isinstance(design_matrices, (_basestring, np.ndarray)):
+            design_matrices_ = [design_matrices]
+
+        design_matrices = []
+        for design_matrix in design_matrices_:
+            if isinstance(design_matrix, _basestring):
+                loaded = np.load(design_matrix)
+                design_matrices.append(loaded[loaded.files[0]])
+            else:
+                design_matrices.append(design_matrix)
+
+        # make imgs a list of Nifti1Images
+        if not hasattr(imgs, '__iter__'):
+            imgs = [imgs]
+
+        if len(imgs) != len(design_matrices):
+            raise ValueError(
+                'len(imgs) %d does not match len(design_matrices) %d'
+                % (len(imgs), len(design_matrices)))
+
+        # Loop on imgs and design matrices
+        self.labels_, self.results_ = [], []
+        for X, img in zip(design_matrices, imgs):
+            Y = self.masker_.fit_transform(img)
+            if self.standardize is False:
+                Y, _ = data_scaling(Y)
+            labels_, results_ = session_glm(
+                Y, X, noise_model=self.noise_model, bins=100)
+            self.labels_.append(labels_)
+            self.results_.append(results_)
         return self
 
-    def transform(self, con_val, contrast_type=None, contrast_name='',
+    def transform(self, con_vals, contrast_type=None, contrast_name='',
                   output_z=True, output_stat=False, output_effects=False,
                   output_variance=False):
         """Generate different outputs corresponding to
@@ -246,8 +271,25 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         if self.labels_ is None or self.results_ is None:
             raise ValueError('The model has not been fit yet')
 
-        contrast = compute_contrast(self.labels_, self.results_, con_val,
-                                    contrast_type)
+        if isinstance(con_vals, np.ndarray):
+            con_val = [con_vals]
+        if len(con_vals) != len(self.results_):
+            raise ValueError(
+                'contrasts must be a sequence of %d session contrasts' %
+                len(self.results_))
+
+        contrast = None
+        for i, (labels_, results_, con_val) in enumerate(zip(
+                self.labels_, self.results_, con_vals)):
+            if np.all(con_val == 0):
+                warn('Contrast for session %d is null' % i)
+            contrast_ = compute_contrast(labels_, results_, con_val,
+                                         contrast_type)
+            if contrast is None:
+                contrast = contrast_
+            else:
+                contrast = contrast + contrast_
+
         if output_z or output_stat:
             # compute the contrast and stat
             contrast.z_score()
@@ -262,19 +304,24 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
                 do_outputs, estimates, descrips):
             if not do_output:
                 continue
-            output = self.masker_.inverse_transform(
-                getattr(contrast, estimate))
+            estimate_ = getattr(contrast, estimate)
+            if estimate_.ndim == 3:
+                shape_ = estimate_.shape
+                estimate_ = np.reshape(estimate_,
+                                       (shape_[0] * shape_[1], shape_[2]))
+            output = self.masker_.inverse_transform(estimate_)
             output.get_header()['descrip'] = (
-                '%s associated with contrast %s' % (descrip, contrast_name))
+                '%s of contrast %s' % (descrip, contrast_name))
             output_images.append(output)
         return output_images
 
-    def fit_transform(self, X, fmri_images, contrast, contrast_type=None,
-                      contrast_name='', output_z=True, output_stat=False,
-                      output_effects=False, output_variance=False):
+    def fit_transform(
+        self, design_matrices, fmri_images, con_vals, contrast_type=None,
+        contrast_name='', output_z=True, output_stat=False,
+        output_effects=False, output_variance=False):
         """ Fit then transform"""
-        return self.fit(X, fmri_images,).transform(
-            contrast, contrast_type, contrast_name, output_z=True,
+        return self.fit(design_matrices, fmri_images).transform(
+            con_vals, contrast_type, contrast_name, output_z=True,
             output_stat=False, output_effects=False, output_variance=False)
 
 
