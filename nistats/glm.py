@@ -246,6 +246,15 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             imgs = [imgs]
 
         if len(imgs) != len(design_matrices):
+            ### temporary debug ######################################
+            print imgs
+            print type(imgs)
+            print hasattr(imgs, '__iter__')
+            print imgs[0]
+            print type(imgs[0])
+            print hasattr(imgs[0], '__iter__')
+            print len(design_matrices)
+            ##########################################################
             raise ValueError(
                 'len(imgs) %d does not match len(design_matrices) %d'
                 % (len(imgs), len(design_matrices)))

@@ -12,8 +12,7 @@ import numpy as np
 from nibabel import load, Nifti1Image, save
 
 from ..glm import (
-    GeneralLinearModel, data_scaling, session_glm, FirstLevelGLM,
-    FMRILinearModel, compute_contrast)
+    data_scaling, session_glm, FirstLevelGLM, compute_contrast)
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
