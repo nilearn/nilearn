@@ -13,10 +13,9 @@ effects on contrasts
 
 """
 
-import numpy as np
-
 from warnings import warn
 
+import numpy as np
 import scipy.stats as sps
 
 from nibabel import load, Nifti1Image
@@ -242,17 +241,15 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
                 design_matrices.append(design_matrix)
 
         # make imgs a list of Nifti1Images
-        if not hasattr(imgs, '__iter__'):
+        if isinstance(imgs, (Nifti1Image, _basestring)):
             imgs = [imgs]
 
         if len(imgs) != len(design_matrices):
             ### temporary debug ######################################
             print(imgs)
             print(type(imgs))
-            print(hasattr(imgs, '__iter__'))
             print(imgs[0])
             print(type(imgs[0]))
-            print(hasattr(imgs[0], '__iter__'))
             print(len(design_matrices))
             ##########################################################
             raise ValueError(
