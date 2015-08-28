@@ -245,21 +245,15 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             imgs = [imgs]
 
         if len(imgs) != len(design_matrices):
-            ### temporary debug ######################################
-            print(imgs)
-            print(type(imgs))
-            print(imgs[0])
-            print(type(imgs[0]))
-            print(len(design_matrices))
-            ##########################################################
             raise ValueError(
                 'len(imgs) %d does not match len(design_matrices) %d'
                 % (len(imgs), len(design_matrices)))
 
         # Loop on imgs and design matrices
         self.labels_, self.results_ = [], []
+        self.masker_.fit(imgs)
         for X, img in zip(design_matrices, imgs):
-            Y = self.masker_.fit_transform(img)
+            Y = self.masker_.transform(img)
             if self.standardize is False:
                 Y, _ = data_scaling(Y)
             labels_, results_ = session_glm(
@@ -278,7 +272,7 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('The model has not been fit yet')
 
         if isinstance(con_vals, np.ndarray):
-            con_val = [con_vals]
+            con_vals = [con_vals]
         if len(con_vals) != len(self.results_):
             raise ValueError(
                 'contrasts must be a sequence of %d session contrasts' %

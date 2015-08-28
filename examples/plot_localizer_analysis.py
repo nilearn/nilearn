@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 from nibabel import save
 
-from nistats.glm import FMRILinearModel
+from nistats.glm import FirstLevelGLM
 from nistats.design_matrix import (
     make_design_matrix, plot_design_matrix, check_design_matrix)
 from nistats import datasets
@@ -72,8 +72,7 @@ plt.savefig(path.join(write_dir, 'design_matrix.png'))
 # Perform a GLM analysis
 ########################################
 
-fmri_glm = FMRILinearModel(epi_img, matrix, mask='compute')
-fmri_glm.fit(do_scaling=True, model='ar1')
+fmri_glm = FirstLevelGLM().fit(epi_img, matrix)
 
 #########################################
 # Estimate contrasts
@@ -116,7 +115,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
           (index + 1, len(contrasts), contrast_id))
     # save the z_image
     image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
-    z_map, = fmri_glm.contrast(contrast_val, con_id=contrast_id, output_z=True)
+    z_map, = fmri_glm.transform(contrast_val, contrast_name=contrast_id,
+                                output_z=True)
     save(z_map, image_path)
 
     # Create snapshots of the contrasts

@@ -146,20 +146,6 @@ def test_session_glm():
     assert_raises(ValueError, session_glm, Y, X, 'ar2')
     assert_raises(ValueError, session_glm, Y, X.T)
 
-"""
-def ols_glm(n=100, p=80, q=10):
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
-    glm = GeneralLinearModel(X)
-    glm.fit(Y, 'ols')
-    return glm, n, p, q
-
-def test_glm_beta():
-    mulm, n, p, q = ols_glm()
-    assert_equal(mulm.get_beta().shape, (q, n))
-    assert_equal(mulm.get_beta([0, -1]).shape, (2, n))
-    assert_equal(mulm.get_beta(6).shape, (1, n))
-"""
-
 
 def test_Tcontrast():
     # new API

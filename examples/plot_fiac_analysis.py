@@ -31,10 +31,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from nilearn.plotting import plot_stat_map
+from nilearn.image import mean_img
 import nibabel as nib
 
-from nistats.glm import FMRILinearModel
-from nistats.design_matrix import make_design_matrix
+from nistats.glm import FirstLevelGLM
 from nistats import datasets
 
 
@@ -49,11 +49,11 @@ fmri_files = [data['func1'], data['func2']]
 design_files = [data['design_matrix1'], data['design_matrix2']]
 
 # Load all the data into a common GLM
-multi_session_model = FMRILinearModel(fmri_files, design_files, data['mask'])
+multi_session_model = FirstLevelGLM(data['mask'], standardize=False,
+                                    noise_model='ar1')
 
 # GLM fitting
-multi_session_model.fit(do_scaling=True, model='ar1')
-
+multi_session_model.fit(fmri_files, design_files)
 
 def make_fiac_contrasts(n_columns):
     """ Specify some contrasts for the FIAC experiment"""
@@ -80,20 +80,20 @@ n_columns = np.load(design_files[0])['X'].shape[1]
 contrasts = make_fiac_contrasts(n_columns)
 
 print('Computing contrasts...')
-mean_img = multi_session_model.means[0]  # for display
+mean_ = mean_img(data['func1'])
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id))
     z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
-    z_map, = multi_session_model.contrast(
-        [contrast_val] * 2, con_id=contrast_id, output_z=True)
+    z_map, = multi_session_model.transform(
+        [contrast_val] * 2, contrast_name=contrast_id, output_z=True)
     nib.save(z_map, z_image_path)
 
     # make a snapshot of the contrast activation
     if contrast_id == 'Effects_of_interest':
         vmax = max(- z_map.get_data().min(), z_map.get_data().max())
         vmin = - vmax
-        display = plot_stat_map(z_map, bg_img=mean_img, threshold=2.5,
+        display = plot_stat_map(z_map, bg_img=mean_, threshold=2.5,
                                 title=contrast_id)
         display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 

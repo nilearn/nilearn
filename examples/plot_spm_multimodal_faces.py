@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 from nilearn.image import concat_imgs, resample_img, mean_img
 from nistats.design_matrix import make_design_matrix, check_design_matrix
-from nistats.glm import FMRILinearModel
+from nistats.glm import FirstLevelGLM
 from nistats.datasets import fetch_spm_multimodal_fmri
 
 # fetch spm multimodal_faces data
@@ -41,10 +41,11 @@ design_matrices = []
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-# resample the images 
+# resample the images
 subject_data.func = [concat_imgs(subject_data.func1, auto_resample=True),
                      concat_imgs(subject_data.func2, auto_resample=True)]
 affine, shape = subject_data.func[0].get_affine(), subject_data.func[0].shape
+print('Resampling the second image (this takes time)...')
 subject_data.func[1] = resample_img(subject_data.func[1], affine, shape[:3])
 
 for x in range(2):
@@ -83,22 +84,21 @@ contrasts['effects_of_interest'] = np.vstack((contrasts['faces'],
                                               contrasts['scrambled']))
 
 # fit GLM
-print('Fitting a GLM (this takes time)...')
-fmri_glm = FMRILinearModel(
-    subject_data.func,
-    [check_design_matrix(design_matrix)[1] for design_matrix in design_matrices],
-    mask='compute')
-fmri_glm.fit(do_scaling=True, model='ar1')
+print('Fitting a GLM')
+X = [check_design_matrix(design_)[1] for design_ in design_matrices]
+fmri_glm = FirstLevelGLM(standardize=False).fit(subject_data.func, X)
+
 
 # Create mean image for display
 mean_image = mean_img(subject_data.func)
 
 # compute contrast maps
+print('Computing contrasts')
 from nilearn.plotting import plot_stat_map
 for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
-    z_map, t_map, effects_map, var_map = fmri_glm.contrast(
-        [contrast_val] * 2, con_id=contrast_id, output_z=True,
+    z_map, t_map, effects_map, var_map = fmri_glm.transform(
+        [contrast_val] * 2, contrast_name=contrast_id, output_z=True,
         output_stat=True, output_effects=True, output_variance=True)
     for map_type, out_map in zip(['z', 't', 'effects', 'variance'],
                               [z_map, t_map, effects_map, var_map]):
