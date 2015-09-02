@@ -63,12 +63,7 @@ nifti_masker = NiftiMasker(
     standardize=False,
     smoothing_fwhm=2,
     memory='nilearn_cache')  # cache options
-# remove features with too low between-subject variance
 gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
-gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
-# final masking
-new_images = nifti_masker.inverse_transform(gm_maps_masked)
-gm_maps_masked = nifti_masker.fit_transform(new_images)
 n_samples, n_features = gm_maps_masked.shape
 print("%d samples, %d features" % (n_subjects, n_features))
 
@@ -80,7 +75,11 @@ from sklearn.svm import SVR
 svr = SVR(kernel='linear')
 
 # Dimension reduction
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, \
+        f_regression
+
+# Remove features with too low between-subject variance
+variance_threshold = VarianceThreshold(threshold=.01)
 
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova.
@@ -90,7 +89,10 @@ feature_selection = SelectKBest(f_regression, k=2000)
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
-anova_svr = Pipeline([('anova', feature_selection), ('svr', svr)])
+anova_svr = Pipeline([
+            ('variance_threshold', variance_threshold),
+            ('anova', feature_selection),
+            ('svr', svr)])
 
 ### Fit and predict
 anova_svr.fit(gm_maps_masked, age)
@@ -101,6 +103,8 @@ age_pred = anova_svr.predict(gm_maps_masked)
 coef = svr.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
+# reverse variance threshold
+coef = variance_threshold.inverse_transform(coef)
 # reverse masking
 weight_img = nifti_masker.inverse_transform(coef)
 
@@ -137,13 +141,14 @@ print("Massively univariate model")
 
 # Statistical inference
 from nilearn.mass_univariate import permuted_ols
+data = variance_threshold.fit_transform(gm_maps_masked)
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
-    age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=1000,  # 1,000 in the interest of time; 10000 would be better
+    age, data,  # + intercept as a covariate by default
+    n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     n_jobs=1)  # can be changed to use more CPUs
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    signed_neg_log_pvals)
+    variance_threshold.inverse_transform(signed_neg_log_pvals))
 
 # Show results
 threshold = -np.log10(0.1)  # 10% corrected
