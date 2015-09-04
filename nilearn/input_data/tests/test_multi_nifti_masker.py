@@ -3,6 +3,7 @@ Test the multi_nifti_masker module
 """
 # Author: Gael Varoquaux
 # License: simplified BSD
+import os
 
 from nose.tools import assert_true, assert_false, assert_raises, assert_equal
 from nose import SkipTest
@@ -12,6 +13,7 @@ from numpy.testing import assert_array_equal
 from nibabel import Nifti1Image
 import nibabel
 from distutils.version import LooseVersion
+from os.path import join
 
 from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
 from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
@@ -126,3 +128,76 @@ def test_joblib_cache():
         mask_hash = hash(masker.mask_img_)
         masker.mask_img_.get_data()
         assert_true(mask_hash == hash(masker.mask_img_))
+
+
+def test_transform_cache():
+    from nilearn.input_data import MultiNiftiMasker
+    from tempfile import mkdtemp
+
+    data = np.zeros((40, 40, 40, 2))
+    data[20:30, 20:30, 20:30] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+    temp_dir = mkdtemp()
+    with write_tmp_imgs(data_img) as filename:
+        masker = MultiNiftiMasker(memory=temp_dir, memory_level=1, verbose=0)
+        masker.fit([filename, ])
+        masker.transform([filename, ])
+        masker.fit([filename, ])
+        masker.transform([filename, ])
+        l = os.listdir(join(temp_dir, 'joblib', 'nilearn', 'input_data',
+                            'nifti_masker',
+                            'filter_and_mask'))
+    try:
+        l.remove('func_code.py')
+    except ValueError:
+        pass
+    assert_equal(len(l), 1)
+
+
+def test_transform_cache_file():
+    from nilearn.input_data import MultiNiftiMasker
+    from tempfile import mkdtemp
+
+    data = np.zeros((40, 40, 40, 2))
+    data[20:30, 20:30, 20:30] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+    temp_dir = mkdtemp()
+    masker = MultiNiftiMasker(memory=temp_dir, memory_level=1, verbose=10)
+    masker.fit([data_img, ])
+    masker.transform([data_img, ])
+    masker.fit([data_img, ])
+    masker.transform([data_img, ])
+    l = os.listdir(join(temp_dir, 'joblib', 'nilearn', 'input_data',
+                        'nifti_masker',
+                        'filter_and_mask'))
+    try:
+        l.remove('func_code.py')
+    except ValueError:
+        pass
+    assert_equal(len(l), 1)
+
+
+def test_transform_cache_with_mask_img():
+    from nilearn.input_data import MultiNiftiMasker
+    from tempfile import mkdtemp
+
+    data = np.zeros((40, 40, 40, 2))
+    mask = np.ones((40, 40, 40))
+    data[20:30, 20:30, 20:30] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
+    temp_dir = mkdtemp()
+    masker = MultiNiftiMasker(memory=temp_dir, memory_level=1, verbose=10,
+                              mask_img=mask_img)
+    masker.fit()
+    masker.transform([data_img, ])
+    masker.fit()
+    masker.transform([data_img, ])
+    l = os.listdir(join(temp_dir, 'joblib', 'nilearn', 'input_data',
+                        'nifti_masker',
+                        'filter_and_mask'))
+    try:
+        l.remove('func_code.py')
+    except ValueError:
+        pass
+    assert_equal(len(l), 1)
